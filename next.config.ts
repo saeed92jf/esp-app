@@ -2,7 +2,6 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   
   images: {
     domains: ['localhost', 'avatars.githubusercontent.com'],
@@ -10,7 +9,9 @@ const nextConfig: NextConfig = {
   },
   
   compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'] 
+    } : false,
   },
   
   async headers() {
@@ -32,7 +33,7 @@ const nextConfig: NextConfig = {
           },
         ],
       },
-    ],
+    ]
   },
 }
 

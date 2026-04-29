@@ -1,24 +1,15 @@
-
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import '@/styles/globals.css'
-import { ThemeProvider } from '@/theme'
+import './globals.css'
+import { Header } from '@/components/layout/Header/Header'
+import { Footer } from '@/components/layout/Footer/Footer'
 
-const inter = Inter({ 
-  subsets: ['latin'],
-  variable: '--font-sans',
-})
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: {
-    default: 'ESP-App',
-    template: '%s | ESP-App',
-  },
-  description: 'Professional React + Next.js application',
-  keywords: ['react', 'nextjs', 'typescript', 'tailwind'],
-  authors: [{ name: 'ESP Team' }],
-  creator: 'ESP Team',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: 'ESP Webapp - Unified Platform for Engineering & Service Businesses',
+  description: 'Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.',
+  keywords: 'CRM, project management, invoicing, client portal, scheduling',
 }
 
 export default function RootLayout({
@@ -27,11 +18,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider>
+    <html lang="en">
+      <body className={`${inter.className} bg-white`}>
+        <Header />
+        <main className="min-h-screen">
           {children}
-        </ThemeProvider>
+        </main>
+        <Footer />
       </body>
     </html>
   )
