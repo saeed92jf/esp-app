@@ -24,9 +24,8 @@ export type { NumberInputProps } from './NumberInput/NumberInput'
 export { Textarea } from './Textarea/Textarea'
 export type { TextareaProps } from './Textarea/Textarea'
 
-// Button
 export { Button } from './Button/Button'
-
+export type { ButtonProps } from './Button/Button'
 
 // Card
 export { Card } from './Card/card'
