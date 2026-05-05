@@ -3,6 +3,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { authApi } from '../services/authApi'
+import { mapToUser } from '../utils/userMapper'
 import type { User, LoginCredentials, RegisterData } from '../types/auth.types'
 
 interface AuthStore {
@@ -29,65 +30,81 @@ export const useAuth = create<AuthStore>()(
           const response = await authApi.login(credentials)
           console.log('Login response:', response)
           
-          if (response.token) {
-            localStorage.setItem('token', response.token)
+          if (response.success && response.data?.token) {
+            localStorage.setItem('token', response.data.token)
             set({ 
-              user: response.user, 
+              user: response.data.user, 
               isAuthenticated: true, 
               isLoading: false 
             })
             console.log('Login successful, state updated')
             return { success: true }
           } else {
-            throw new Error('No token received')
+            throw new Error(response.message || 'No token received')
           }
         } catch (error: any) {
           console.error('Login error:', error)
           set({ isLoading: false })
           return { 
             success: false, 
-            error: error.message || 'Login failed' 
+            error: error.response?.data?.message || error.message || 'Login failed' 
           }
         }
       },
 
       register: async (data) => {
+        console.log('Register called with:', data.email)
         set({ isLoading: true })
         try {
           const response = await authApi.register(data)
-          localStorage.setItem('token', response.token)
-          set({ 
-            user: response.user, 
-            isAuthenticated: true, 
-            isLoading: false 
-          })
-          return { success: true }
+          console.log('Register response:', response)
+          
+          if (response.success && response.data?.token) {
+            localStorage.setItem('token', response.data.token)
+            set({ 
+              user: response.data.user, 
+              isAuthenticated: true, 
+              isLoading: false 
+            })
+            console.log('Register successful, state updated')
+            return { success: true }
+          } else {
+            throw new Error(response.message || 'Registration failed')
+          }
         } catch (error: any) {
+          console.error('Register error:', error)
           set({ isLoading: false })
+          
           return { 
             success: false, 
-            error: error.message || 'Registration failed' 
+            error: error.response?.data?.message || error.message || 'Registration failed' 
           }
         }
       },
 
       logout: async () => {
+        console.log('Logout called')
         set({ isLoading: true })
         try {
           await authApi.logout()
           localStorage.removeItem('token')
+          localStorage.removeItem('user')
           set({ 
             user: null, 
             isAuthenticated: false, 
             isLoading: false 
           })
+          console.log('Logout successful')
         } catch (error) {
+          console.error('Logout error:', error)
           set({ isLoading: false })
         }
       },
 
       checkAuth: async () => {
         const token = localStorage.getItem('token')
+        console.log('Check auth, token exists:', !!token)
+        
         if (!token) {
           set({ isAuthenticated: false, user: null })
           return
@@ -98,10 +115,12 @@ export const useAuth = create<AuthStore>()(
           const user = await authApi.getCurrentUser()
           if (user) {
             set({ user, isAuthenticated: true, isLoading: false })
+            console.log('User authenticated:', user.email)
           } else {
             set({ isAuthenticated: false, user: null, isLoading: false })
           }
-        } catch {
+        } catch (error) {
+          console.error('Check auth error:', error)
           set({ isAuthenticated: false, user: null, isLoading: false })
         }
       },

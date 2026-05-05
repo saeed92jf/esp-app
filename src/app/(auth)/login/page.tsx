@@ -8,4 +8,6 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return <LoginClient />
+  
 }
+

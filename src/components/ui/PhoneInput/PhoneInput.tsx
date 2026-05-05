@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { Input, InputProps } from '@/components/ui'
+import { Input, InputProps } from '../Input/Input'
 
 export interface PhoneInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   onChange?: (value: string, isValid: boolean) => void
@@ -10,17 +10,18 @@ export interface PhoneInputProps extends Omit<InputProps, 'type' | 'onChange'> {
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
   ({ onChange, value: initialValue = '', ...props }, ref) => {
     const [value, setValue] = useState(initialValue as string)
-    const [error, setError] = useState<string>('')
+    const [error, setError] = useState('')
 
     const validatePhone = (phone: string): boolean => {
-      const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,5}[-\s\.]?[0-9]{1,5}$/
-      return phoneRegex.test(phone) && phone.replace(/[^0-9]/g, '').length >= 10
+      const digits = phone.replace(/\D/g, '')
+      return digits.length >= 10 && digits.length <= 15
     }
 
     const formatPhone = (phone: string): string => {
       const digits = phone.replace(/\D/g, '')
-      if (digits.length <= 4) return digits
-      if (digits.length <= 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+      if (digits.length === 0) return ''
+      if (digits.length <= 3) return `(${digits}`
+      if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
       return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}`
     }
 
@@ -41,17 +42,15 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     }
 
     return (
-      <div>
-        <Input
-          ref={ref}
-          type="tel"
-          value={value}
-          onChange={handleChange}
-          placeholder="(555) 555-5555"
-          error={error}
-          {...props}
-        />
-      </div>
+      <Input
+        ref={ref}
+        type="tel"
+        value={value}
+        onChange={handleChange}
+        placeholder="(555) 555-5555"
+        error={error}
+        {...props}
+      />
     )
   }
 )

@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { Input, InputProps } from '@/components/ui'
+import { Input, InputProps } from '@/components/ui/Input/Input'
 
 export interface EmailInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   onChange?: (value: string, isValid: boolean) => void
@@ -10,7 +10,7 @@ export interface EmailInputProps extends Omit<InputProps, 'type' | 'onChange'> {
 export const EmailInput = forwardRef<HTMLInputElement, EmailInputProps>(
   ({ onChange, value: initialValue = '', ...props }, ref) => {
     const [value, setValue] = useState(initialValue as string)
-    const [error, setError] = useState<string>('')
+    const [error, setError] = useState('')
 
     const validateEmail = (email: string): boolean => {
       const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/
@@ -33,16 +33,14 @@ export const EmailInput = forwardRef<HTMLInputElement, EmailInputProps>(
     }
 
     return (
-      <div>
-        <Input
-          ref={ref}
-          type="email"
-          value={value}
-          onChange={handleChange}
-          error={error}
-          {...props}
-        />
-      </div>
+      <Input
+        ref={ref}
+        type="email"
+        value={value}
+        onChange={handleChange}
+        error={error}
+        {...props}
+      />
     )
   }
 )

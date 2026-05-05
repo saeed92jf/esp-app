@@ -1,71 +1,49 @@
 'use client'
 
-import { apiClient } from '@/lib/axios'
-import type { LoginCredentials, RegisterData, AuthResponse, User } from '../types/auth.types'
+import axios from 'axios'
+import type { User, LoginCredentials, RegisterData, AuthResponse } from '../types/auth.types'
 
-// Mock API - در آینده با API واقعی جایگزین کن
-const MOCK_DELAY = 500
+const API_BASE = '/api'
 
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    // Mock API call - حذف کن وقتی API واقعی داری
-    await new Promise(resolve => setTimeout(resolve, MOCK_DELAY))
-    
-    // بررسی اعتبار ساده برای دمو
-    if (credentials.email === 'test@example.com' && credentials.password === '123456') {
-      return {
-        user: {
-          id: '1',
-          email: credentials.email,
-          name: 'Test User',
-          role: 'user',
-          createdAt: new Date().toISOString(),
-        },
-        token: 'mock-jwt-token-123456',
-      }
-    }
-    
-    throw new Error('Invalid email or password')
-    
-    // وقتی API واقعی داری، از این استفاده کن:
-    // const response = await apiClient.post<AuthResponse>('/auth/login', credentials)
-    // return response.data
+    const response = await axios.post(`${API_BASE}/auth/login`, credentials)
+    return response.data
   },
 
   register: async (data: RegisterData): Promise<AuthResponse> => {
-    await new Promise(resolve => setTimeout(resolve, MOCK_DELAY))
-    
-    return {
-      user: {
-        id: Date.now().toString(),
-        email: data.email,
-        name: data.name,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-      },
-      token: 'mock-jwt-token-' + Date.now(),
-    }
+    const response = await axios.post(`${API_BASE}/auth/register`, data)
+    return response.data
   },
 
-  logout: async (): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, MOCK_DELAY))
-    // await apiClient.post('/auth/logout')
+  forgotPassword: async (data: { email: string }): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/auth/forgot-password`, data)
+    return response.data
+  },
+
+  resetPassword: async (data: { token: string; password: string }): Promise<{ success: boolean; message: string }> => {
+    const response = await axios.post(`${API_BASE}/auth/reset-password`, data)
+    return response.data
+  },
+
+  logout: async () => {
+    localStorage.removeItem('token')
+    return { success: true }
   },
 
   getCurrentUser: async (): Promise<User | null> => {
     const token = localStorage.getItem('token')
     if (!token) return null
     
-    // Mock - از API واقعی استفاده کن
-    return {
-      id: '1',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'user',
-      createdAt: new Date().toISOString(),
+    try {
+      const response = await axios.get(`${API_BASE}/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response.data.data
+    } catch {
+      return null
     }
-    
-    // const response = await apiClient.get<User>('/auth/me')
-    // return response.data
   },
 }

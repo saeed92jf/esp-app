@@ -1,9 +1,11 @@
+export type UserRole = 'user' | 'admin'
+
 export interface User {
   id: string
   email: string
   name: string
   avatar?: string
-  role: 'user' | 'admin'
+  role: UserRole  // تغییر به نوع خاص
   createdAt: string
 }
 
@@ -16,12 +18,16 @@ export interface RegisterData {
   name: string
   email: string
   password: string
-  confirmPassword: string
+  confirmPassword?: string
 }
 
 export interface AuthResponse {
-  user: User
-  token: string
+  success: boolean
+  data: {
+    user: User
+    token: string
+  }
+  message?: string
 }
 
 export interface AuthState {
