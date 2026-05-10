@@ -1,0 +1,7 @@
+export {UserAvatar} from './UserAvatar/UserAvatar'
+export {SideMenu} from './SideMenu/SideMenu'
+export {SettingsModal} from './SettingsModal/SettingsModal'
+export {AvatarHeader} from './AvatarHeader/AvatarHeader'
+export {Header} from './Header/Header'
+export {Footer} from './Footer/Footer'
+export {MegaMenu} from './MegaMenu/MegaMenu'

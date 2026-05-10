@@ -1,14 +1,14 @@
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { Input, InputProps } from '../Input/Input'
-
+import { Input, InputProps } from '@/components/ui/Input/Input'
 export interface PhoneInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   onChange?: (value: string, isValid: boolean) => void
+  countryCode?: string
 }
 
 export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ onChange, value: initialValue = '', ...props }, ref) => {
+  ({ onChange, value: initialValue = '', countryCode = '+1', ...props }, ref) => {
     const [value, setValue] = useState(initialValue as string)
     const [error, setError] = useState('')
 
@@ -42,15 +42,24 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     }
 
     return (
-      <Input
-        ref={ref}
-        type="tel"
-        value={value}
-        onChange={handleChange}
-        placeholder="(555) 555-5555"
-        error={error}
-        {...props}
-      />
+      <div className="relative">
+        {/* Country code prefix (optional) */}
+        {countryCode && (
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none z-10">
+            <span className="text-sm">{countryCode}</span>
+          </div>
+        )}
+        <Input
+          ref={ref}
+          type="tel"
+          value={value}
+          onChange={handleChange}
+          placeholder="(555) 555-5555"
+          error={error}
+          className={countryCode ? 'pl-12' : ''}
+          {...props}
+        />
+      </div>
     )
   }
 )

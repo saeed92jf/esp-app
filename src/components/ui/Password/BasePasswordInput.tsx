@@ -2,6 +2,7 @@
 
 import { forwardRef, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { Input } from '@/components/ui/Input/Input'
 
 export interface BasePasswordInputProps {
   name?: string
@@ -15,6 +16,14 @@ export interface BasePasswordInputProps {
   disabled?: boolean
   showStrength?: boolean
   strength?: number
+  
+  // Input customization props
+  inputSize?: 'sm' | 'md' | 'lg'
+  radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
+  borderWidth?: 'none' | 'sm' | 'md' | 'lg'
+  borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'gray' | 'white'
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+  variant?: 'default' | 'filled' | 'flushed' | 'unstyled'
 }
 
 export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputProps>(
@@ -30,6 +39,13 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
     disabled = false,
     showStrength = false,
     strength: externalStrength,
+    // Input customization defaults
+    inputSize = 'md',
+    radius = 'lg',
+    borderWidth = 'sm',
+    borderColor = 'primary',
+    shadow = 'none',
+    variant = 'default',
   }, ref) => {
     const [showPassword, setShowPassword] = useState(false)
     const [internalValue, setInternalValue] = useState(value || '')
@@ -57,7 +73,6 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
     const currentValue = value !== undefined ? value : internalValue
     const currentStrength = externalStrength !== undefined ? externalStrength : internalStrength
     const displayError = externalError
-    const inputId = name || label?.toLowerCase().replace(/\s+/g, '-')
 
     const getStrengthColor = (score: number) => {
       if (score <= 2) return 'bg-danger text-danger'
@@ -75,7 +90,7 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
       <div className="form-group">
         {label && (
           <label 
-            htmlFor={inputId}
+            htmlFor={name}
             className={`form-label ${required ? 'form-label-required' : ''}`}
           >
             {label}
@@ -83,23 +98,30 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
         )}
         
         <div className="relative">
-          <input
+          <Input
             ref={ref}
-            id={inputId}
             name={name}
             type={showPassword ? 'text' : 'password'}
             value={currentValue}
             onChange={handleChange}
             placeholder={placeholder}
             disabled={disabled}
-            className={`form-input ${displayError ? 'form-input-error' : ''} ${className || ''}`}
-            style={{ paddingRight: '2.5rem' }}
+            error={displayError}
+            // Pass through customization props
+            inputSize={inputSize}
+            radius={radius}
+            borderWidth={borderWidth}
+            borderColor={borderColor}
+            shadow={shadow}
+            variant={variant}
+            className={`pr-10 ${className}`}
           />
           
+          {/* Eye button */}
           <button
             type="button"
             onClick={toggleShowPassword}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none z-10"
             tabIndex={-1}
           >
             {showPassword ? (
@@ -118,10 +140,9 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
           </button>
         </div>
 
-        {displayError && (
-          <p className="form-error">{displayError}</p>
-        )}
+        {displayError && <p className="form-error">{displayError}</p>}
 
+        {/* Strength meter */}
         {showStrength && currentValue.length > 0 && !displayError && (
           <div className="mt-2">
             <div className="flex gap-1 mb-1">
@@ -129,13 +150,22 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
                 <div
                   key={level}
                   className={cn(
-                    'h-1 flex-1 rounded-full transition-all',
-                    level <= currentStrength ? getStrengthColor(currentStrength).split(' ')[0] : 'bg-gray-200 dark:bg-gray-600'
+                    'h-1 flex-1 rounded-full transition-all duration-300',
+                    level <= currentStrength 
+                      ? currentStrength <= 2 
+                        ? 'bg-danger' 
+                        : currentStrength <= 4 
+                          ? 'bg-warning' 
+                          : 'bg-success'
+                      : 'bg-gray-200 dark:bg-gray-600'
                   )}
                 />
               ))}
             </div>
-            <p className={cn('text-xs', getStrengthColor(currentStrength).split(' ')[1])}>
+            <p className={cn(
+              'text-xs',
+              currentStrength <= 2 ? 'text-danger' : currentStrength <= 4 ? 'text-warning' : 'text-success'
+            )}>
               Password strength: {getStrengthText(currentStrength)}
             </p>
           </div>

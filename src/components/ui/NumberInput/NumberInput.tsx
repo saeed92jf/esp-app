@@ -2,46 +2,40 @@
 
 import { forwardRef, useState } from 'react'
 import { cn } from '@/lib/cn'
-
-export interface NumberInputProps {
-  name?: string
+import { Input, InputProps } from '@/components/ui/Input/Input'
+export interface NumberInputProps extends Omit<InputProps, 'type' | 'onChange' | 'value'> {
   value?: number
   min?: number
   max?: number
   step?: number
   onChange?: (value: number, isValid: boolean) => void
-  label?: string
-  required?: boolean
-  error?: string
-  disabled?: boolean
+  showButtons?: boolean
 }
 
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
   ({ 
-    name,
-    value: externalValue,
+    onChange, 
+    value: externalValue, 
     min = 0,
     max = 100,
     step = 1,
-    onChange,
-    label,
-    required = false,
-    error: externalError,
-    disabled = false,
+    showButtons = true,
+    className,
+    ...props 
   }, ref) => {
     const [internalValue, setInternalValue] = useState(externalValue || 0)
-    const [internalError, setInternalError] = useState('')
+    const [error, setError] = useState('')
 
     const validateNumber = (num: number): boolean => {
-      if (num < min) {
-        setInternalError(`Minimum value is ${min}`)
+      if (min !== undefined && num < min) {
+        setError(`Minimum value is ${min}`)
         return false
       }
-      if (num > max) {
-        setInternalError(`Maximum value is ${max}`)
+      if (max !== undefined && num > max) {
+        setError(`Maximum value is ${max}`)
         return false
       }
-      setInternalError('')
+      setError('')
       return true
     }
 
@@ -53,7 +47,6 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     }
 
     const increment = () => {
-      if (disabled) return
       const newValue = internalValue + step
       if (max === undefined || newValue <= max) {
         setInternalValue(newValue)
@@ -63,7 +56,6 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     }
 
     const decrement = () => {
-      if (disabled) return
       const newValue = internalValue - step
       if (min === undefined || newValue >= min) {
         setInternalValue(newValue)
@@ -73,78 +65,50 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     }
 
     const currentValue = externalValue !== undefined ? externalValue : internalValue
-    const displayError = externalError || internalError
-    const inputId = name || label?.toLowerCase().replace(/\s+/g, '-')
+    const displayError = props.error || error
 
     return (
-      <div className="w-full">
-        {label && (
-          <label 
-            htmlFor={inputId}
-            className={cn(
-              'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1',
-              required && "after:content-['*'] after:text-danger after:ml-1"
-            )}
-          >
-            {label}
-          </label>
-        )}
-        
-        <div className="flex items-center">
-          <button
-            type="button"
-            onClick={decrement}
-            disabled={disabled || currentValue <= min}
-            className={cn(
-              'px-3 py-2 border border-r-0 rounded-l-md',
-              'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600',
-              'text-gray-700 dark:text-gray-300 font-medium',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'transition-colors duration-200'
-            )}
-          >
-            −
-          </button>
-          
-          <input
+      <div className="space-y-1">
+        {showButtons ? (
+          <div className="relative">
+            <Input
+              ref={ref}
+              type="number"
+              value={currentValue}
+              onChange={handleChange}
+              error={displayError}
+              className={cn('text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none', className)}
+              {...props}
+            />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+              <button
+                type="button"
+                onClick={increment}
+                disabled={currentValue >= max}
+                className="px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              >
+                ▲
+              </button>
+              <button
+                type="button"
+                onClick={decrement}
+                disabled={currentValue <= min}
+                className="px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+              >
+                ▼
+              </button>
+            </div>
+          </div>
+        ) : (
+          <Input
             ref={ref}
-            id={inputId}
-            name={name}
             type="number"
             value={currentValue}
             onChange={handleChange}
-            disabled={disabled}
-            className={cn(
-              'w-full px-3 py-2 text-center border',
-              'bg-white dark:bg-gray-800 text-gray-900 dark:text-white',
-              'focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary',
-              'disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed',
-              '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
-              displayError 
-                ? 'border-danger focus:border-danger focus:ring-danger/30' 
-                : 'border-gray-300 dark:border-gray-600',
-              'flex-1'
-            )}
+            error={displayError}
+            className={cn('[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none', className)}
+            {...props}
           />
-          
-          <button
-            type="button"
-            onClick={increment}
-            disabled={disabled || currentValue >= max}
-            className={cn(
-              'px-3 py-2 border border-l-0 rounded-r-md',
-              'bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600',
-              'text-gray-700 dark:text-gray-300 font-medium',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              'transition-colors duration-200'
-            )}
-          >
-            +
-          </button>
-        </div>
-
-        {displayError && (
-          <p className="mt-1 text-sm text-danger">{displayError}</p>
         )}
       </div>
     )

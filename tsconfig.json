@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -23,63 +19,25 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "@/app/*": [
-        "./src/app/*"
-      ],
-      "@/components/*": [
-        "./src/components/*"
-      ],
-      "@/components/ui/*": [
-        "./src/components/ui/*"
-      ],
-      "@/components/forms/*": [
-        "./src/components/forms/*"
-      ],
-      "@/components/layout/*": [
-        "./src/components/layout/*"
-      ],
-      "@/components/shared/*": [
-        "./src/components/shared/*"
-      ],
-      "@/modules/*": [
-        "./src/modules/*"
-      ],
-      "@/hooks/*": [
-        "./src/hooks/*"
-      ],
-      "@/lib/*": [
-        "./src/lib/*"
-      ],
-      "@/store/*": [
-        "./src/store/*"
-      ],
-      "@/services/*": [
-        "./src/services/*"
-      ],
-      "@/types/*": [
-        "./src/types/*"
-      ],
-      "@/utils/*": [
-        "./src/utils/*"
-      ],
-      "@/validations/*": [
-        "./src/validations/*"
-      ],
-      "@/config/*": [
-        "./src/config/*"
-      ],
-      "@/theme/*": [
-        "./src/theme/*"
-      ],
-      "@/styles/*": [
-        "./src/styles/*"
-      ],
-      "@/public/*": [
-        "./public/*"
-      ]
+      "@/*": ["./src/*"],
+      "@/store/*": ["./src/store/*"],  
+      "@/app/*": ["./src/app/*"],
+      "@/components/*": ["./src/components/*"],
+      "@/components/ui/*": ["./src/components/ui/*"],
+      "@/components/forms/*": ["./src/components/forms/*"],
+      "@/components/layout/*": ["./src/components/layout/*"],
+      "@/components/shared/*": ["./src/components/shared/*"],
+      "@/modules/*": ["./src/modules/*"],
+      "@/hooks/*": ["./src/hooks/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/services/*": ["./src/services/*"],
+      "@/types/*": ["./src/types/*"],
+      "@/utils/*": ["./src/utils/*"],
+      "@/validations/*": ["./src/validations/*"],
+      "@/config/*": ["./src/config/*"],
+      "@/theme/*": ["./src/theme/*"],
+      "@/styles/*": ["./src/styles/*"],
+      "@/public/*": ["./public/*"]
     }
   },
   "include": [
@@ -87,8 +45,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-, "tailwind.config.ts", "postcss.config.js"  ],
+    ".next/dev/types/**/*.ts",
+    "tailwind.config.ts",
+    "postcss.config.js"
+  ],
   "exclude": [
     "node_modules",
     ".next",

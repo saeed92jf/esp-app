@@ -1,16 +1,14 @@
-import type { Metadata } from 'next'
+// app/layout.tsx
+'use client'
+
 import { Inter } from 'next/font/google'
-import { ThemeProvider } from '@/lib/ThemeProvider'
-import { Header } from '@/components/layout/Header/Header'
+import { SessionProvider } from 'next-auth/react'
+import { ThemeProvider } from '@/theme/ThemeProvider'
+import { AvatarHeader } from '@/components/layout'
 import { Footer } from '@/components/layout/Footer/Footer'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
-
-export const metadata: Metadata = {
-  title: 'ESP Webapp',
-  description: 'Unified platform for engineering and service businesses',
-}
 
 export default function RootLayout({
   children,
@@ -18,13 +16,15 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider>
-          <Header />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider>
+            <AvatarHeader />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   )

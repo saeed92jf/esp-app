@@ -26,6 +26,6 @@
   --border-medium: var(--color-gray-600);
   --border-dark: var(--color-gray-500);
   --border-focus: var(--color-primary-400);
-  --border-error: var(--color-danger-400);
-  --border-success: var(--color-success-400);
+  --border-error: var(--color-danger-500);
+  --border-success: var(--color-success-500);
 }

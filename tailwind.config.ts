@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import forms from '@tailwindcss/forms'
 
 const config: Config = {
   darkMode: 'class',
@@ -131,6 +132,11 @@ const config: Config = {
         focus: 'var(--border-focus)',
         error: 'var(--border-error)',
         success: 'var(--border-success)',
+        primary: 'var(--color-primary)',
+        'primary-hover': 'var(--color-primary-hover)',
+        secondary: 'var(--color-secondary)',
+        danger: 'var(--color-danger)',
+        warning: 'var(--color-warning)',
       },
       fontFamily: {
         sans: ['var(--font-sans)', 'system-ui'],
@@ -293,7 +299,11 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+    plugins: [
+    forms({
+      strategy: 'class',
+    }),
+  ],
 }
 
 export default config

@@ -1,22 +1,52 @@
 'use client'
 
 import Link from 'next/link'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRocket } from '@fortawesome/free-solid-svg-icons'
 
 export interface LogoProps {
-  variant?: 'default' | 'footer'
+  variant?: 'default' | 'hero' | 'footer'
   className?: string
 }
 
 export function Logo({ variant = 'default', className = '' }: LogoProps) {
-  const size = variant === 'footer' ? 'w-9 h-9' : 'w-10 h-10'
-  
+  const getSizeClasses = () => {
+    switch (variant) {
+      case 'hero':
+        return {
+          text: 'text-4xl md:text-6xl',
+          gap: 'gap-3 md:gap-4',
+        }
+      case 'footer':
+        return {
+          text: 'text-sm md:text-base',
+          gap: 'gap-1.5',
+        }
+      default:
+        return {
+          text: 'text-xl md:text-2xl',
+          gap: 'gap-2',
+        }
+    }
+  }
+
+  const sizes = getSizeClasses()
+
   return (
-    <Link href="/" className={`flex items-center gap-2 group ${className}`}>
-      <div className={`${size} bg-linear-to-br from-blue-600 to-blue-500 rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
-        <span className="text-white font-bold text-lg md:text-xl">E</span>
-      </div>
-      <span className="font-bold text-xl md:text-2xl text-gray-900 dark:text-white">
-        ESP<span className="text-blue-600">Webapp</span>
+    <Link 
+      href="/" 
+      className={`inline-flex items-center ${sizes.gap} group ${className}`}
+    >
+      <FontAwesomeIcon 
+        icon={faRocket} 
+        className={`${sizes.text} text-primary-600 dark:text-primary-400`}
+      />
+      
+      <span className={`font-bold ${sizes.text} text-gray-900 dark:text-white`}>
+        ESP{' '}
+         <span className="gradient-logo-text font-bold ">
+              Webapp
+            </span>
       </span>
     </Link>
   )

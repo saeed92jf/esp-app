@@ -1,11 +1,12 @@
+// modules/auth/components/LoginClient.tsx (کد اصلاح شده)
 'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn } from 'next-auth/react'  // تغییر اینجا
 import Link from 'next/link'
 import { Button, EmailInput } from '@/components/ui'
 import { LoginPasswordInput } from '@/components/ui/Password'
-import { authApi } from '@/modules/auth/services/authApi'
 
 export function LoginClient() {
   const router = useRouter()
@@ -20,16 +21,22 @@ export function LoginClient() {
     setError('')
 
     try {
-      const response = await authApi.login({ email, password })
-      if (response.success) {
-        localStorage.setItem('token', response.data.token)
-        localStorage.setItem('user', JSON.stringify(response.data.user))
-        router.push('/dashboard')
+      // استفاده از signIn NextAuth
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,  // جلوگیری از ریدایرکت خودکار
+      })
+
+      if (result?.error) {
+        setError('Invalid email or password')
       } else {
-        setError(response.message || 'Login failed')
+        router.push('/')
+        router.refresh() 
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Something went wrong')
+      setError('Something went wrong')
+      console.error('Login error:', err)
     } finally {
       setIsLoading(false)
     }
@@ -76,7 +83,6 @@ export function LoginClient() {
                 required
               />
 
-              {/* Forgot Password Link */}
               <div className="text-right">
                 <Link 
                   href="/forgot-password" 
@@ -97,10 +103,18 @@ export function LoginClient() {
                 </Link>
               </p>
 
+              {/* اکانت‌های تست (فقط برای توسعه) */}
               <div className="demo-box mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-center border border-gray-200 dark:border-gray-600">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  🔐 Demo: test@example.com / 123456
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">
+                  🔐 Test Accounts (password: 123456)
                 </p>
+                <div className="text-xs text-left space-y-1">
+                  <p>👑 Admin: admin@company.com</p>
+                  <p>🔧 Engineer: engineer@company.com</p>
+                  <p>💼 Employee: employee@company.com</p>
+                  <p>👤 Customer: customer@company.com</p>
+                  <p>🧪 Test: test@example.com</p>
+                </div>
               </div>
             </form>
           </div>

@@ -1,47 +1,250 @@
 'use client'
 
 import { forwardRef } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
+// ============================================
+// BUTTON PROPS INTERFACE
+// ============================================
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
-  size?: 'sm' | 'md' | 'lg'
+  // Button variants
+  variant?: 
+    | 'primary' 
+    | 'secondary' 
+    | 'outline' 
+    | 'ghost' 
+    | 'danger' 
+    | 'success' 
+    | 'warning'
+  
+  // Button sizes
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  
+  // Border radius - custom radius
+  radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
+  
+  // Border options
+  border?: boolean
+  borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'white'
+  
+  // Animation types
+  animation?: 
+    | 'slide-text-up'      // Slide text upward
+    | 'slide-text-down'    // Slide text downward
+    | 'slide-text-left'    // Slide text to left
+    | 'slide-text-right'   // Slide text to right
+    | 'slide-bg-left'      // Background slides from left
+    | 'slide-bg-right'     // Background slides from right
+    | 'slide-bg-top'       // Background slides from top
+    | 'slide-bg-bottom'    // Background slides from bottom
+    | 'icon-slide'         // Icon slides on hover
+    | 'icon-bounce'        // Icon bounces on hover
+    | 'icon-rotate'        // Icon rotates on hover
+    | 'line-slide'         // Animated underline slides in
+    | 'line-expand'        // Underline expands from center
+    | 'scale'              // Button scales up
+    | 'glow'               // Button glows
+    | 'pulse'              // Button pulses
+    | 'none'               // No animation
+  
+  // Text replacement for slide-text animations
+  hoverText?: string
+  
+  // Icon position
+  iconPosition?: 'left' | 'right'
+  
+  // Icon animation only (without text animation)
+  iconAnimation?: 'slide' | 'bounce' | 'rotate' | 'none'
+  
+  // Underline animation configs
+  underlineColor?: 'primary' | 'white' | 'current'
+  underlineHeight?: 'sm' | 'md' | 'lg'
+  
+  // Icons
+  leftIcon?: any
+  rightIcon?: any
+  
+  // States
   fullWidth?: boolean
   isLoading?: boolean
+  
+  // Custom styles
+  customBg?: string
+  customColor?: string
 }
 
+// ============================================
+// MAIN BUTTON COMPONENT
+// ============================================
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', fullWidth, isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
+  ({ 
+    // Variant and size
+    variant = 'primary', 
+    size = 'md', 
+    radius = 'xl',
+    border = false,
+    borderColor = 'primary',
+    animation = 'none',
+    hoverText,
+    iconPosition = 'right',
+    iconAnimation = 'none',
+    underlineColor = 'primary',
+    underlineHeight = 'md',
+    fullWidth, 
+    isLoading, 
+    leftIcon, 
+    rightIcon,
+    children, 
+    disabled, 
+    className,
+    customBg,
+    customColor,
+    ...props 
+  }, ref) => {
     
+    // Base button classes
+    const baseStyles = 'btn'
+    
+    // Variant classes
     const variants = {
-      primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 shadow-md',
-      secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-      outline: 'border-2 border-blue-600 text-blue-600 bg-transparent hover:bg-blue-50 focus:ring-blue-500',
-      ghost: 'text-gray-700 bg-transparent hover:bg-gray-100 focus:ring-gray-300',
-      danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
-      success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
+      primary: 'btn-primary',
+      secondary: 'btn-secondary',
+      outline: 'btn-outline',
+      ghost: 'btn-ghost',
+      danger: 'btn-danger',
+      success: 'btn-success',
+      warning: 'btn-warning',
     }
     
+    // Size classes
     const sizes = {
-      sm: 'px-4 py-2 text-sm',
-      md: 'px-6 py-3 text-base',
-      lg: 'px-8 py-4 text-lg',
+      xs: 'btn-xs',
+      sm: 'btn-sm',
+      md: 'btn-md',
+      lg: 'btn-lg',
+      xl: 'btn-xl',
+    }
+    
+    // Border radius classes
+    const radiusClasses = {
+      none: 'rounded-none',
+      sm: 'rounded-sm',
+      md: 'rounded-md',
+      lg: 'rounded-lg',
+      xl: 'rounded-xl',
+      '2xl': 'rounded-2xl',
+      '3xl': 'rounded-3xl',
+      full: 'rounded-full',
+    }
+    
+    // Border color classes
+    const borderColorClasses = {
+      primary: 'border-primary',
+      secondary: 'border-secondary',
+      danger: 'border-danger',
+      success: 'border-success',
+      warning: 'border-warning',
+      white: 'border-white',
+    }
+    
+    // Animation classes
+    const animations = {
+      'slide-text-up': 'btn-animate-slide-text-up',
+      'slide-text-down': 'btn-animate-slide-text-down',
+      'slide-text-left': 'btn-animate-slide-text-left',
+      'slide-text-right': 'btn-animate-slide-text-right',
+      'slide-bg-left': 'btn-animate-slide-bg-left',
+      'slide-bg-right': 'btn-animate-slide-bg-right',
+      'slide-bg-top': 'btn-animate-slide-bg-top',
+      'slide-bg-bottom': 'btn-animate-slide-bg-bottom',
+      'icon-slide': 'btn-animate-icon-slide',
+      'icon-bounce': 'btn-animate-icon-bounce',
+      'icon-rotate': 'btn-animate-icon-rotate',
+      'line-slide': 'btn-animate-line-slide',
+      'line-expand': 'btn-animate-line-expand',
+      'scale': 'btn-animate-scale',
+      'glow': 'btn-animate-glow',
+      'pulse': 'btn-animate-pulse',
+      'none': '',
+    }
+    
+    // Underline height classes
+    const underlineHeights = {
+      sm: 'h-0.5',
+      md: 'h-1',
+      lg: 'h-1.5',
+    }
+    
+    // Underline color classes
+    const underlineColors = {
+      primary: 'bg-primary',
+      white: 'bg-white',
+      current: 'bg-current',
+    }
+    
+    // Get icon based on position
+    const getIcon = () => {
+      if (isLoading) return <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
+      if (iconPosition === 'left') return leftIcon && <FontAwesomeIcon icon={leftIcon} className="icon-animate w-4 h-4" />
+      if (iconPosition === 'right') return rightIcon && <FontAwesomeIcon icon={rightIcon} className="icon-animate w-4 h-4" />
+      return null
+    }
+    
+    const hoverDisplayText = hoverText || children
+    const isTextAnimation = animation === 'slide-text-up' || 
+                            animation === 'slide-text-down' || 
+                            animation === 'slide-text-left' || 
+                            animation === 'slide-text-right'
+    
+    const isUnderlineAnimation = animation === 'line-slide' || animation === 'line-expand'
+    
+    // Determine if border should be applied
+    const borderClass = border ? `border-2 ${borderColorClasses[borderColor]}` : ''
+    
+    // Custom styles inline
+    const customStyles = {
+      ...(customBg && { backgroundColor: customBg }),
+      ...(customColor && { color: customColor }),
     }
     
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className || ''}`}
+        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${radiusClasses[radius]} ${animations[animation]} ${borderClass} ${fullWidth ? 'btn-full' : ''} ${className || ''} group`}
+        style={customStyles}
         {...props}
       >
+        {/* Loading state */}
         {isLoading && (
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
+          <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
         )}
-        {children}
+        
+        {/* Icon on left (when not loading) */}
+        {!isLoading && iconPosition === 'left' && leftIcon && (
+          <FontAwesomeIcon icon={leftIcon} className="icon-animate w-4 h-4" />
+        )}
+        
+        {/* Button text with animation */}
+        {isTextAnimation ? (
+          <span className="btn-text-wrapper">
+            <span className="btn-text-default">{children}</span>
+            <span className="btn-text-hover">{hoverDisplayText}</span>
+          </span>
+        ) : (
+          <span>{children}</span>
+        )}
+        
+        {/* Underline animation */}
+        {isUnderlineAnimation && (
+          <span className={`btn-underline ${underlineHeights[underlineHeight]} ${underlineColors[underlineColor]}`} />
+        )}
+        
+        {/* Icon on right (when not loading) */}
+        {!isLoading && iconPosition === 'right' && rightIcon && (
+          <FontAwesomeIcon icon={rightIcon} className="icon-animate w-4 h-4" />
+        )}
       </button>
     )
   }
