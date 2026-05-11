@@ -13,10 +13,10 @@ import {
   faChartLine,
   faBell,
   faShieldAlt,
-  faCrown,        // برای ادمین
-  faWrench,       // برای مهندس
-  faBriefcase,    // برای کارمند
-  faUserAlt       // برای مشتری
+  faCrown,
+  faWrench,
+  faBriefcase,
+  faUserAlt
 } from '@fortawesome/free-solid-svg-icons'
 
 interface UserAvatarProps {
@@ -33,14 +33,12 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Mock user data for demo
   const mockUser = user || {
     name: 'John Doe',
     email: 'john@example.com',
     role: 'CUSTOMER' as const,
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -52,13 +50,12 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // آیکون‌های FontAwesome برای نقش‌ها
   const getRoleIcon = (role: string) => {
     switch (role) {
-      case 'ADMIN': return faCrown     
-      case 'ENGINEER': return faWrench  
+      case 'ADMIN': return faCrown
+      case 'ENGINEER': return faWrench
       case 'EMPLOYEE': return faBriefcase
-      default: return faUserAlt      
+      default: return faUserAlt
     }
   }
 
@@ -68,15 +65,6 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
       case 'ENGINEER': return 'ENGINEER'
       case 'EMPLOYEE': return 'EMPLOYEE'
       default: return 'CUSTOMER'
-    }
-  }
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'ADMIN': return 'from-purple-500 to-purple-600'
-      case 'ENGINEER': return 'from-blue-500 to-blue-600'
-      case 'EMPLOYEE': return 'from-green-500 to-green-600'
-      default: return 'from-gray-500 to-gray-600'
     }
   }
 
@@ -91,40 +79,33 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Avatar Button */}
+      {/* Avatar Button - بدون هاور */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 group"
+        className="flex items-center gap-3  rounded-xl  bg-transparent py-0 my-0 focus:outline-none"
       >
-        {/* Avatar Image / Icon */}
+        {/* Avatar Image / Icon با آیکون نقش */}
         <div className="relative">
-          <div className={`w-10 h-10 rounded-full ${getAvatarColor(mockUser.role)} flex items-center justify-center text-white font-semibold shadow-md group-hover:scale-105 transition-transform`}>
+          <div className={`w-9 h-9 my-0 rounded-full ${getAvatarColor(mockUser.role)} flex items-center justify-center text-white font-semibold shadow-md`}>
             {user?.avatar ? (
               <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
             ) : (
-              <span className="text-base">
-                {mockUser.name.charAt(0).toUpperCase()}
-              </span>
+              <FontAwesomeIcon 
+                icon={getRoleIcon(mockUser.role)} 
+                className="w-5 h-5"
+              />
             )}
           </div>
-          {/* Online indicator */}
-          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
-        </div>
+           </div>
         
-        {/* User Info with Role under name */}
+        {/* User Info - چپ‌چین و نقش نزدیک به نام */}
         <div className="hidden md:block text-left">
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white my-0">
             {mockUser.name}
           </p>
-          <div className="flex items-center gap-1.5">
-            <FontAwesomeIcon 
-              icon={getRoleIcon(mockUser.role)} 
-              className="w-3 h-3 text-gray-500 dark:text-gray-400" 
-            />
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {getRoleLabel(mockUser.role)}
-            </p>
-          </div>
+          <p className="text-xs text-gray-500 dark:text-gray-400 my-0.5">
+            {getRoleLabel(mockUser.role)}
+          </p>
         </div>
         
         <FontAwesomeIcon 
@@ -140,17 +121,16 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
           <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-linear-to-r from-primary-50/50 to-transparent dark:from-primary-900/20">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-full ${getAvatarColor(mockUser.role)} flex items-center justify-center text-white font-semibold shadow-md`}>
-                {mockUser.name.charAt(0).toUpperCase()}
+                <FontAwesomeIcon 
+                  icon={getRoleIcon(mockUser.role)} 
+                  className="w-6 h-6"
+                />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-white">{mockUser.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{mockUser.email}</p>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <FontAwesomeIcon 
-                    icon={getRoleIcon(mockUser.role)} 
-                    className="w-3 h-3 text-primary-500" 
-                  />
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                <p className="font-semibold text-gray-900 dark:text-white my-0">{mockUser.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{mockUser.email}</p>
+                <div className="flex items-center gap-1.5 my-0">
+                  <span className="text-xs px-0 py-0 my-0 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 ">
                     {getRoleLabel(mockUser.role)}
                   </span>
                 </div>

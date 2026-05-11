@@ -37,10 +37,10 @@ export function Logo({ variant = 'default', className = '' }: LogoProps) {
       href="/" 
       className={`inline-flex items-center ${sizes.gap} group ${className}`}
     >
-      <FontAwesomeIcon 
-        icon={faRocket} 
-        className={`${sizes.text} text-primary-600 dark:text-primary-400`}
-      />
+    <FontAwesomeIcon
+      icon={faRocket}
+      className={`${sizes.text} fill-primary`}
+    />
       
       <span className={`font-bold ${sizes.text} text-gray-900 dark:text-white`}>
         ESP{' '}

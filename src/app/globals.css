@@ -13,6 +13,7 @@
    ============================================ */
 @import '../styles/themes/light.css';
 @import '../styles/themes/dark.css';
+@import '../styles/themes/theme-colors.css';
 
 /* Import Components index */
 @import '../styles/components/index.css';
@@ -77,4 +78,6 @@ body {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+
+
 }

@@ -18,15 +18,15 @@ export function AvatarHeader() {
     isSettingsOpen, 
     openSideMenu, 
     closeSideMenu, 
-    openSettings, 
-    closeSettings 
+    toggleSettings,
+    closeSettings
   } = useUIStore()
 
   if (isLoading) {
     return (
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-800/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 md:h-16">
             <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
             <div className="flex items-center gap-2">
               <div className="w-9 h-9 bg-gray-200 dark:bg-gray-700 rounded-xl animate-pulse" />
@@ -40,9 +40,9 @@ export function AvatarHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-white/20 dark:border-gray-800/30 shadow-sm">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl">
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 md:h-16">
             {/* Left Section - User Avatar */}
             <div className="flex items-center gap-3">
               {session ? (
@@ -75,14 +75,21 @@ export function AvatarHeader() {
                     </button>
                   </Link>
 
-                  {/* Settings Button */}
-                  <button
-                    onClick={openSettings}
-                    className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:scale-105"
-                    aria-label="Settings"
-                  >
-                    <FontAwesomeIcon icon={faCog} className="w-5 h-5" />
-                  </button>
+                  {/* Settings Button با container relative */}
+                 <div className="relative">
+  <button
+    onClick={toggleSettings}
+    className={`p-2.5 rounded-xl transition-all duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105 ${
+      isSettingsOpen ? 'bg-gray-100 dark:bg-gray-800 scale-105' : ''
+    }`}
+    aria-label="Settings"
+  >
+    <FontAwesomeIcon icon={faCog} className="w-5 h-5" />
+  </button>
+  
+  {/* Settings Modal */}
+  <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
+</div>
 
                   {/* Menu Button */}
                   <button
@@ -95,7 +102,6 @@ export function AvatarHeader() {
                 </>
               ) : (
                 <>
-                  {/* Home Button for non-logged in users */}
                   <Link href="/">
                     <button
                       className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 text-gray-700 dark:text-gray-300 hover:scale-105"
@@ -105,7 +111,6 @@ export function AvatarHeader() {
                     </button>
                   </Link>
 
-                  {/* Login Button */}
                   <Link href="/login">
                     <Button 
                       variant="ghost" 
@@ -114,20 +119,20 @@ export function AvatarHeader() {
                       leftIcon={faSignInAlt}
                     >
                       <span className="hidden sm:inline">Login</span>
-                      <span className="sm:hidden">ورود</span>
+                      <span className="sm:hidden">Login</span>
                     </Button>
                   </Link>
 
-                  {/* Sign Up Button */}
                   <Link href="/register">
                     <Button 
                       variant="primary" 
+                      animation='slide-text-up'
                       size="sm" 
                       radius="xl"
                       leftIcon={faUserPlus}
                     >
                       <span className="hidden sm:inline">Sign Up</span>
-                      <span className="sm:hidden">ثبت‌نام</span>
+                      <span className="sm:hidden">Sign Up</span>
                     </Button>
                   </Link>
                 </>
@@ -135,19 +140,11 @@ export function AvatarHeader() {
             </div>
           </div>
         </div>
-
-        {/* Decorative gradient line at bottom */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-primary-500/50 to-transparent" />
       </header>
 
       {/* Side Menu - فقط برای کاربران لاگین شده */}
       {session && (
         <SideMenu isOpen={isSideMenuOpen} onClose={closeSideMenu} />
-      )}
-
-      {/* Settings Modal - فقط برای کاربران لاگین شده */}
-      {session && (
-        <SettingsModal isOpen={isSettingsOpen} onClose={closeSettings} />
       )}
     </>
   )

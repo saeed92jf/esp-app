@@ -37,6 +37,15 @@ export function HomeClient() {
     }
   }
 
+  const getRoleIconColor = (role?: string) => {
+  switch (role) {
+    case 'ADMIN': return 'text-yellow-500' 
+    case 'ENGINEER': return 'text-blue-500'
+    case 'EMPLOYEE': return 'text-green-500'
+    default: return 'text-primary-500'
+  }
+}
+
   // تابع برای گرفتن متن نقش
   const getRoleLabel = (role?: string) => {
     switch (role) {
@@ -99,12 +108,12 @@ export function HomeClient() {
   // QUICK ACCESS ITEMS
   // ============================================
   const quickAccessItems = [
-    { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', color: 'from-blue-500 to-blue-600' },
-    { icon: faUsers, title: 'CRM', href: '/crm', color: 'from-purple-500 to-purple-600' },
-    { icon: faCalendarAlt, title: 'Calendar', href: '/calendar', color: 'from-green-500 to-green-600' },
-    { icon: faClock, title: 'Time Tracking', href: '/time', color: 'from-orange-500 to-orange-600' },
-    { icon: faFolder, title: 'Projects', href: '/projects', color: 'from-red-500 to-red-600' },
-    { icon: faFileInvoice, title: 'Invoices', href: '/invoices', color: 'from-teal-500 to-teal-600' },
+    { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500 dark:bg-blue-500/10' },
+    { icon: faUsers, title: 'CRM', href: '/', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50 dark:bg-purple-500/10' },
+    { icon: faCalendarAlt, title: 'Calendar', href: '/', color: 'from-green-500 to-green-600', bgColor: 'bg-green-50 dark:bg-green-500/10' },
+    { icon: faClock, title: 'Time Tracking', href: '/', color: 'from-orange-500 to-orange-600', bgColor: 'bg-orange-50 dark:bg-orange-500/10' },
+    { icon: faFolder, title: 'Projects', href: '/', color: 'from-red-500 to-red-600', bgColor: 'bg-red-50 dark:bg-red-500/10' },
+    { icon: faFileInvoice, title: 'Invoices', href: '/', color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50 dark:bg-teal-500/10' },
   ]
 
   // ============================================
@@ -194,22 +203,22 @@ export function HomeClient() {
         <div className="relative container text-center py-20">
           {/* Logo */}
             <div className="flex justify-center mb-8 animate-fade-in-up delay-200">
-  <Link href="/" className="inline-flex items-center gap-4">
+  
     <Logo variant="hero" />
-  </Link>
+
 </div>
 
        
 
           {/* Search Input */}
-          <div className={`relative z-20 mb-6 ${isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'}`}>
+          <div className={`relative z-20 mb-4 ${isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'}`}>
             <SearchInput />
           </div>
           
           {/* Access Status Message - فقط پیام بدون لینک */}
-          <div className={`mt-6 ${isRevealed('hero') ? 'animate-fade-in-up delay-300' : 'opacity-0'}`}>
+          <div className={`mt-2 ${isRevealed('hero') ? 'animate-fade-in-up delay-300' : 'opacity-0'}`}>
             {!isLoading && (
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-md border border-gray-200 dark:border-gray-700">
+              <div className="inline-flex items-center gap-3 px-6 py-3 bg-transparent backdrop-blur-sm rounded-full">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 {session ? (
                   <div className="flex items-center gap-2">
@@ -218,7 +227,7 @@ export function HomeClient() {
                     </span>
                     <FontAwesomeIcon 
                       icon={getRoleIcon(session.user?.role)} 
-                      className="w-4 h-4 text-primary-500"
+                        className={`w-4 h-4 ${getRoleIconColor(session.user?.role)}`}
                     />
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       {session.user?.name}
@@ -236,152 +245,136 @@ export function HomeClient() {
             )}
           </div>
 
-          {/* Quick Access Section */}
-          <div className={`mb-12 mt-12 ${isRevealed('hero') ? 'animate-fade-in-up delay-400' : 'opacity-0'}`}>
-            <div className="text-center mb-6">
-              <span className="text-primary dark:text-primary-400 font-semibold text-sm uppercase tracking-wider opacity-70">
-                Quick Access
-              </span>
-              <h3 className="text-gray-500 dark:text-gray-400 text-sm mt-1">Jump to your workspace</h3>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {quickAccessItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={session ? item.href : '/login'}
-                  className={`group block text-center p-5 rounded-3xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border border-gray-100 dark:border-gray-700 ${
-                    !session && 'opacity-50 hover:opacity-70'
-                  } ${
-                    isRevealed('hero') ? `animate-fade-in-up delay-${400 + (index + 1) * 50}` : 'opacity-0'
-                  }`}
-                >
-                  <div className={`w-14 h-14 mx-auto rounded-2xl bg-linear-to-br ${item.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-all duration-300 shadow-md`}>
-                    <FontAwesomeIcon icon={item.icon} className="text-white text-xl" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{item.title}</span>
-                  {!session && (
-                    <span className="text-xs text-gray-400 block mt-1">(Login required)</span>
-                  )}
-                </Link>
-              ))}
-            </div>
-          </div>
+{/* ============================================
+   QUICK ACCESS SECTION
+   ============================================ */}
+<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-15">
+  {quickAccessItems.map((item, index) => (
+    <Link
+      key={index}
+      href={session ? item.href : '/login'}
+      className="quick-card group"
+    >
+      <div className="quick-card-icon">
+        <FontAwesomeIcon icon={item.icon} />
+      </div>
+      <div className="quick-card-title">{item.title}</div>
+      {!session && (
+        <div className="quick-card-subtitle">Login required</div>
+      )}
+    </Link>
+  ))}
+</div>
         </div>
       </section>
 
-      {/* ============================================
-         STATS SECTION with CountUp Animation
-         ============================================ */}
-      <section 
-        id="stats" 
-        ref={el => { if (el) sectionsRef.current[1] = el as HTMLDivElement }}
-        className="section bg-linear-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600"
+  {/* ============================================
+   STATS SECTION with CountUp Animation
+   ============================================ */}
+<section 
+  id="stats" 
+  ref={el => { if (el) sectionsRef.current[1] = el as HTMLDivElement }}
+  className="stats-section"
+>
+  <div className="stats-container bg-transparent dark:bg-red-900 rounded-2xl p-8">
+    <div className="stats-grid">
+      {stats.map((stat, index) => (
+        <div 
+          key={index}
+          className={`stats-card ${isRevealed('stats') ? `animate-stats stats-delay-${index + 1}` : 'stats-hidden'}`}
+        >
+          <div className="stats-icon">
+            <FontAwesomeIcon icon={stat.icon} />
+          </div>
+          <div className="stats-number">
+            <CountUp end={stat.value} suffix={stat.suffix} duration={2000} />
+          </div>
+          <div className="stats-label">{stat.label}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+    {/* ============================================
+   FEATURES SECTION
+   ============================================ */}
+<section className="section bg-gray-50 dark:bg-gray-800/50">
+  <div className="container">
+    {/* Section Header */}
+    <div className="text-center mb-12">
+      <span className="text-primary dark:text-primary-400 font-semibold text-sm uppercase tracking-wider">
+        Features
+      </span>
+      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2">
+        Everything you need to succeed
+      </h2>
+      <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto">
+        Powerful tools designed to help you work smarter, not harder
+      </p>
+    </div>
+
+    {/* Tabs with Sliding Underline */}
+    <div className="flex justify-center mb-12">
+      <div 
+        ref={containerRef}
+        className="relative flex flex-wrap justify-center gap-2 bg-white dark:bg-gray-800/50 p-1.5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700"
       >
-        <div className="container">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
-              <div 
-                key={index}
-                className={`text-center bg-white/10 dark:bg-black/20 backdrop-blur-sm rounded-3xl p-6 transition-all duration-300 hover:scale-105 hover:bg-white/20 dark:hover:bg-black/30 ${
-                  isRevealed('stats') ? `animate-fade-in-up delay-${(index + 1) * 100}` : 'opacity-0'
-                }`}
-              >
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-white/20 flex items-center justify-center mb-4">
-                  <FontAwesomeIcon icon={stat.icon} className="text-2xl text-white" />
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-white mb-1">
-                  <CountUp end={stat.value} suffix={stat.suffix} duration={2000} />
-                </div>
-                <div className="text-primary-100 dark:text-primary-200 text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        {tabs.map((tab, index) => (
+          <button
+            key={tab.id}
+            ref={el => { if (el) tabsRef.current[index] = el }}
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative px-6 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 z-10 ${
+              activeTab === tab.id
+                ? 'text-primary dark:text-primary-400 bg-transparent'
+                : 'text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            <FontAwesomeIcon icon={tab.icon} className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+        
+        {/* Animated Underline */}
+        <div
+          className="tabs-underline"
+          style={{
+            left: underlineStyle.left,
+            width: underlineStyle.width,
+            bottom: '0px',
+            height: '3px',
+          }}
+        />
+      </div>
+    </div>
 
-      {/* ============================================
-         FEATURES SECTION with Sliding Underline Tabs
-         ============================================ */}
-      <section 
-        id="features" 
-        ref={el => { if (el) sectionsRef.current[2] = el as HTMLDivElement }}
-        className="section bg-gray-50 dark:bg-gray-800/50"
-      >
-        <div className="container">
-          {/* Section Header */}
-          <div className={`text-center mb-12 ${isRevealed('features') ? 'animate-fade-in-up' : 'opacity-0'}`}>
-            <span className="text-primary dark:text-primary-400 font-semibold text-sm uppercase tracking-wider">Features</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2">
-              Everything you need to succeed
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto">
-              Powerful tools designed to help you work smarter, not harder
-            </p>
-          </div>
-
-          {/* Tabs with Sliding Underline */}
-          <div className="flex justify-center mb-12">
-            <div 
-              ref={containerRef}
-              className="relative flex flex-wrap justify-center gap-2 bg-white dark:bg-gray-800/50 p-1.5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700"
-            >
-              {tabs.map((tab, index) => (
-                <button
-                  key={tab.id}
-                  ref={el => { if (el) tabsRef.current[index] = el }}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-6 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 z-10 ${
-                    activeTab === tab.id
-                      ? 'text-primary dark:text-primary-400 bg-transparent'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                  }`}
-                >
-                  <FontAwesomeIcon icon={tab.icon} className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-              
-              {/* Animated Underline */}
-              <div
-                className="tabs-underline"
-                style={{
-                  left: underlineStyle.left,
-                  width: underlineStyle.width,
-                  bottom: '0px',
-                  height: '3px',
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {features[activeTab as keyof typeof features].map((feature, index) => (
-              <div
-                key={index}
-                className={`group bg-white dark:bg-gray-800 rounded-3xl p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-100 dark:border-gray-700 ${
-                  isRevealed('features') ? `animate-fade-in-up delay-${(index % 8 + 1) * 100}` : 'opacity-0'
-                }`}
-              >
-                <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-all duration-300 shadow-md`}>
-                  <FontAwesomeIcon icon={feature.icon} className="text-white text-xl" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                  {feature.desc}
-                </p>
-                <div className="mt-4 flex items-center gap-1 text-primary dark:text-primary-400 text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
-                  Learn more
-                  <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+   {/* Features Grid */}
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+  {features[activeTab as keyof typeof features].map((feature, index) => (
+    <Link
+      key={index}
+      href={`/features/${feature.title.toLowerCase()}`}
+      className="feature-card group"
+    >
+      <div className="feature-card-icon">
+        <FontAwesomeIcon icon={feature.icon} className="text-xl" />
+      </div>
+      <h3 className="feature-card-title">
+        {feature.title}
+      </h3>
+      <p className="feature-card-desc">
+        {feature.desc}
+      </p>
+      <div className="feature-card-link">
+        Learn more
+        <FontAwesomeIcon icon={faChevronRight} />
+      </div>
+    </Link>
+  ))}
+</div>
+  </div>
+</section>
       {/* ============================================
          CTA SECTION
          ============================================ */}

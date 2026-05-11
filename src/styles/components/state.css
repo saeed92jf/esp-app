@@ -1,0 +1,246 @@
+/* ============================================
+   STATS SECTION STYLES
+   بخش آمار با CountUp
+   ============================================ */
+
+/* Stats Section */
+.stats-section {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
+}
+
+/* Dark mode - بدون تغییر */
+.dark .stats-section {
+  background: transparent;
+}
+
+/* Responsive padding */
+@media (min-width: 768px) {
+  .stats-section {
+    padding-top: var(--space-20);
+    padding-bottom: var(--space-20);
+  }
+}
+
+/* Stats Container */
+.stats-container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .stats-container {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-container {
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-6);
+  }
+}
+
+/* Stats Card */
+.stats-card {
+  text-align: center;
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4);
+  transition: all var(--duration-base) var(--ease-out);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Light mode card */
+.stats-card {
+  background-color: transparent;
+  border: 1px solid transparent;
+}
+
+
+
+/* Dark mode card -  */
+.dark .stats-card {
+  background-color:transparent;
+  border: 1px solid transparent;
+}
+
+
+
+/* Responsive card padding */
+@media (min-width: 768px) {
+  .stats-card {
+    padding: var(--space-6);
+  }
+}
+
+/* Stats Icon */
+.stats-icon {
+  width: 56px;
+  height: 56px;
+
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+/* Light mode icon */
+.stats-icon {
+  background-color: transparent;
+}
+
+
+/* Responsive icon size */
+@media (min-width: 768px) {
+  .stats-icon {
+    width: 64px;
+    height: 64px;
+
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-icon {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+.stats-icon svg {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+  margin: 0;
+  color: var(--color-primary-200);
+}
+
+@media (min-width: 768px) {
+  .stats-icon svg {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-icon svg {
+    width: 40px;
+    height: 40px;
+     margin: 0;
+    font-size: 40px;
+  }
+}
+
+/* Stats Number */
+.stats-number {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-primary-200);
+  margin-bottom: var(--space-1);
+  text-align: center;
+  line-height: var(--leading-tight);
+}
+
+@media (min-width: 768px) {
+  .stats-number {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-number {
+    font-size: var(--text-4xl);
+  }
+}
+
+@media (min-width: 1280px) {
+  .stats-number {
+    font-size: var(--text-5xl);
+  }
+}
+
+/* Stats Label */
+.stats-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color:var(--color-primary-200);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .stats-label {
+    font-size: var(--text-base);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-label {
+    font-size: var(--text-lg);
+  }
+}
+
+/* Dark mode label - بدون تغییر */
+.dark .stats-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ============================================
+   STATS ANIMATIONS
+   ============================================ */
+
+@keyframes statsFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stats {
+  animation: statsFadeInUp var(--duration-slow) var(--ease-out) forwards;
+}
+
+/* Animation Delays */
+.stats-delay-1 { animation-delay: 100ms; }
+.stats-delay-2 { animation-delay: 200ms; }
+.stats-delay-3 { animation-delay: 300ms; }
+.stats-delay-4 { animation-delay: 400ms; }
+
+/* ============================================
+   OPACITY UTILITY
+   ============================================ */
+
+.stats-hidden {
+  opacity: 0;
+}

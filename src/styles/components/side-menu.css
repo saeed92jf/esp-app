@@ -2,12 +2,12 @@
 
 /* متغیرهای ثابت هدر */
 :root {
-  --header-height: 64px;
+  --header-height: 56px;
 }
 
 @media (min-width: 768px) {
   :root {
-    --header-height: 80px;
+    --header-height: 64px;
   }
 }
 

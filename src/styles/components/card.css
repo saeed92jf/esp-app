@@ -331,18 +331,20 @@
 
 /* ============================================
    QUICK ACCESS CARD
-   کارت‌های دسترسی سریع با ترنزیشن نرم
+   کارت‌های دسترسی سریع شبیه به feature-card
    ============================================ */
 
 .quick-card {
   background-color: var(--bg-primary);
-  border: 1px solid var(--border-light);
   border-radius: var(--radius-2xl);
   padding: var(--space-4);
   transition: all var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  border: 1px solid var(--border-light);
   cursor: pointer;
   text-align: center;
-  will-change: transform, box-shadow;
+  will-change: transform, box-shadow, border-color;
+  display: block;
+  text-decoration: none;
 }
 
 .quick-card:hover {
@@ -353,29 +355,77 @@
 
 .dark .quick-card {
   background-color: var(--bg-secondary);
-  border-color: var(--border-dark);
+  border-color: var(--border-medium);
 }
 
 .dark .quick-card:hover {
   border-color: var(--color-primary-400);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  background-color: var(--bg-secondary);
 }
 
 .quick-card-icon {
-  font-size: var(--icon-2xl);
-  margin-bottom: var(--space-2);
-  transition: transform var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  will-change: transform;
+  width: 56px;
+  height: 56px;
+  background-color: var(--color-primary-50);
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--space-4) auto;
+  transition: all var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  will-change: transform, background-color;
 }
 
+
 .quick-card:hover .quick-card-icon {
-  transform: scale(1.1);
+  background-color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.dark .quick-card-icon {
+  background-color: var(--color-primary-900);
+}
+
+.dark .quick-card:hover .quick-card-icon {
+  background-color: var(--color-primary);
+}
+
+.quick-card-icon svg {
+  width: 24px;
+  height: 24px;
+  color: var(--color-primary);
+  fill: var(--color-primary);
+  transition: color var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.quick-card:hover .quick-card-icon svg {
+  color: var(--color-white);
 }
 
 .quick-card-title {
   font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   color: var(--text-primary);
+  margin-bottom: var(--space-1);
+  transition: color var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.quick-card:hover .quick-card-title {
+  color: var(--color-primary);
+}
+
+.dark .quick-card-title {
+  color: var(--text-primary-dark);
+}
+
+.dark .quick-card:hover .quick-card-title {
+  color: var(--color-primary-400);
+}
+
+.quick-card-subtitle {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  margin-top: var(--space-1);
 }
 
 /* ============================================
@@ -390,6 +440,9 @@
   transition: all var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
   border: 1px solid var(--border-light);
   will-change: transform, box-shadow, border-color;
+  display: block;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .feature-card:hover {
@@ -400,10 +453,12 @@
 
 .dark .feature-card {
   background-color: var(--bg-secondary);
+  border-color: var(--border-medium);
 }
 
 .dark .feature-card:hover {
   border-color: var(--color-primary-400);
+  background-color: var(--bg-secondary);
 }
 
 .feature-card-icon {
@@ -428,6 +483,10 @@
   background-color: var(--color-primary-900);
 }
 
+.dark .feature-card:hover .feature-card-icon {
+  background-color: var(--color-primary);
+}
+
 .feature-card-icon svg {
   color: var(--color-primary);
   transition: color var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
@@ -442,10 +501,57 @@
   font-weight: var(--font-semibold);
   color: var(--text-primary);
   margin-bottom: var(--space-2);
+  transition: color var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.feature-card:hover .feature-card-title {
+  color: var(--color-primary);
+}
+
+.dark .feature-card-title {
+  color: var(--text-primary-dark);
+}
+
+.dark .feature-card:hover .feature-card-title {
+  color: var(--color-primary-400);
 }
 
 .feature-card-desc {
   font-size: var(--text-sm);
   color: var(--text-secondary);
   line-height: var(--leading-relaxed);
+  transition: color var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+/* Learn more link */
+.feature-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-primary);
+  transition: all var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  opacity: 0;
+  transform: translateX(0);
+}
+
+.feature-card:hover .feature-card-link {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.dark .feature-card-link {
+  color: var(--color-primary-400);
+}
+
+.feature-card-link svg {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+.feature-card:hover .feature-card-link svg {
+  transform: translateX(2px);
 }
