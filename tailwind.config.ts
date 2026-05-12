@@ -124,6 +124,7 @@ const config: Config = {
         tertiary: 'var(--text-tertiary)',
         inverse: 'var(--text-inverse)',
         disabled: 'var(--text-disabled)',
+        'primary-dark': 'var(--text-primary)',
       },
       borderColor: {
         light: 'var(--border-light)',

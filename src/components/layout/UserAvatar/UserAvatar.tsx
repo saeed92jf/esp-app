@@ -68,14 +68,14 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
     }
   }
 
-  const getAvatarColor = (role: string) => {
-    switch (role) {
-      case 'ADMIN': return 'bg-gradient-to-br from-purple-500 to-purple-600'
-      case 'ENGINEER': return 'bg-gradient-to-br from-blue-500 to-blue-600'
-      case 'EMPLOYEE': return 'bg-gradient-to-br from-green-500 to-green-600'
-      default: return 'bg-gradient-to-br from-gray-500 to-gray-600'
-    }
+const getAvatarColor = (role: string) => {
+  switch (role) {
+    case 'ADMIN': return 'avatar-admin'
+    case 'ENGINEER': return 'avatar-engineer'
+    case 'EMPLOYEE': return 'avatar-employee'
+    default: return 'avatar-customer'
   }
+}
 
   return (
     <div className="relative" ref={dropdownRef}>

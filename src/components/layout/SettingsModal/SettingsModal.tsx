@@ -1,11 +1,10 @@
 // components/layout/SettingsModal/SettingsModal.tsx
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes, faMoon, faSun, faGlobe, faShieldAlt, faPalette } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faMoon, faSun, faGlobe, faShieldAlt, faPalette, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { useTheme } from '@/theme'
-import { useUIStore } from '@/store/uiStore'
 
 interface SettingsModalProps {
   isOpen: boolean
@@ -13,20 +12,18 @@ interface SettingsModalProps {
 }
 
 const colorOptions = [
-  { name: 'Blue', value: 'blue', color: '#4f46e5', bgClass: 'bg-indigo-500' },
-  { name: 'Green', value: 'green', color: '#10b981', bgClass: 'bg-emerald-500' },
-  { name: 'Red', value: 'red', color: '#ef4444', bgClass: 'bg-red-500' },
-  { name: 'Purple', value: 'purple', color: '#a855f7', bgClass: 'bg-purple-500' },
-  { name: 'Orange', value: 'orange', color: '#f97316', bgClass: 'bg-orange-500' },
-  { name: 'Pink', value: 'pink', color: '#ec4899', bgClass: 'bg-pink-500' },
+  { name: 'Blue', className: 'primary-color-blue', hue: 239, sat: 50, light: 50, bgColor: '#4f46e5' },
+  { name: 'Green', className: 'primary-color-green', hue: 142, sat: 60, light: 40, bgColor: '#10b981' },
+  { name: 'Red', className: 'primary-color-red', hue: 0, sat: 84, light: 45, bgColor: '#ef4444' },
+  { name: 'Orange', className: 'primary-color-orange', hue: 25, sat: 84, light: 45, bgColor: '#f97316' },
+  { name: 'Purple', className: 'primary-color-purple', hue: 262, sat: 83, light: 45, bgColor: '#a855f7' },
 ]
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme } = useTheme()
-  const { customColor, setCustomColor } = useUIStore()
   const modalRef = useRef<HTMLDivElement>(null)
+  const [activeColor, setActiveColor] = useState('primary-color-blue')
 
-  // بستن با کلیک بیرون
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -43,35 +40,52 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }, [isOpen, onClose])
 
-  // تغییر رنگ اصلی
-  const handleColorChange = (colorValue: string) => {
-    setCustomColor(colorValue)
-    
+  const handleColorChange = (colorClassName: string, hue: number, sat: number, light: number) => {
     // حذف کلاس‌های قبلی
-    const body = document.body
-    colorOptions.forEach(option => {
-      body.classList.remove(`primary-color-${option.value}`)
-    })
+    document.body.classList.remove(
+      'primary-color-blue',
+      'primary-color-green',
+      'primary-color-red',
+      'primary-color-orange',
+      'primary-color-purple'
+    )
     
     // اضافه کردن کلاس جدید
-    body.classList.add(`primary-color-${colorValue}`)
+    document.body.classList.add(colorClassName)
+    setActiveColor(colorClassName)
+    
+    // تغییر مستقیم متغیرها
+    const root = document.documentElement
+    root.style.setProperty('--primary-h', hue.toString())
+    root.style.setProperty('--primary-s', `${sat}%`)
+    root.style.setProperty('--primary-l', `${light}%`)
     
     // ذخیره در localStorage
-    localStorage.setItem('primary-color', colorValue)
+    localStorage.setItem('primary-color', colorClassName)
+    localStorage.setItem('primary-hue', hue.toString())
+    localStorage.setItem('primary-saturation', sat.toString())
+    localStorage.setItem('primary-lightness', light.toString())
   }
 
-  // بارگذاری رنگ ذخیره شده
+  // بارگذاری رنگ ذخیره شده در شروع
   useEffect(() => {
     const savedColor = localStorage.getItem('primary-color')
-    if (savedColor && savedColor !== 'blue') {
-      const body = document.body
-      colorOptions.forEach(option => {
-        body.classList.remove(`primary-color-${option.value}`)
-      })
-      body.classList.add(`primary-color-${savedColor}`)
-      setCustomColor(colorOptions.find(c => c.value === savedColor)?.color || '#4f46e5')
+    const savedHue = localStorage.getItem('primary-hue')
+    const savedSat = localStorage.getItem('primary-saturation')
+    const savedLight = localStorage.getItem('primary-lightness')
+    
+    if (savedColor) {
+      document.body.classList.add(savedColor)
+      setActiveColor(savedColor)
     }
-  }, [setCustomColor])
+    
+    if (savedHue && savedSat && savedLight) {
+      const root = document.documentElement
+      root.style.setProperty('--primary-h', savedHue)
+      root.style.setProperty('--primary-s', savedSat)
+      root.style.setProperty('--primary-l', savedLight)
+    }
+  }, [])
 
   if (!isOpen) return null
 
@@ -137,32 +151,41 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
 
-        {/* Custom Color - انتخاب رنگ */}
+        {/* Primary Color - انتخاب رنگ با نمایش رنگ فعال */}
         <div className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <FontAwesomeIcon icon={faPalette} className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Primary Color</span>
           </div>
-          <div className="flex gap-2 ml-5">
+          <div className="flex gap-2 ml-5 flex-wrap">
             {colorOptions.map((color) => (
               <button
-                key={color.value}
-                onClick={() => handleColorChange(color.value)}
-                className={`w-6 h-6 rounded-full transition-all ${
-                  customColor === color.color
-                    ? 'ring-2 ring-offset-2 ring-primary scale-110'
-                    : 'hover:scale-110'
+                key={color.name}
+                onClick={() => handleColorChange(color.className, color.hue, color.sat, color.light)}
+                className={`relative w-7 h-7 rounded-full transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
+                  activeColor === color.className ? 'ring-2 ring-offset-2 ring-primary scale-110' : ''
                 }`}
-                style={{ backgroundColor: color.color }}
+                style={{ 
+                  backgroundColor: color.bgColor,
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                }}
                 title={color.name}
-              />
+              >
+                {/* آیکون تیک برای رنگ فعال */}
+                {activeColor === color.className && (
+                  <FontAwesomeIcon 
+                    icon={faCheck} 
+                    className="absolute inset-0 m-auto w-3 h-3 text-white drop-shadow-md"
+                  />
+                )}
+              </button>
             ))}
           </div>
         </div>
 
         <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
 
-        {/* Security - باریک شده */}
+        {/* Security */}
         <div className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

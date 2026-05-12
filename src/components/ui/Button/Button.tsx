@@ -4,82 +4,32 @@ import { forwardRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
-// ============================================
-// BUTTON PROPS INTERFACE
-// ============================================
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // Button variants
-  variant?: 
-    | 'primary' 
-    | 'secondary' 
-    | 'outline' 
-    | 'ghost' 
-    | 'danger' 
-    | 'success' 
-    | 'warning'
-  
-  // Button sizes
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  
-  // Border radius - custom radius
   radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
-  
-  // Border options
   border?: boolean
   borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'white'
-  
-  // Animation types
-  animation?: 
-    | 'slide-text-up'      // Slide text upward
-    | 'slide-text-down'    // Slide text downward
-    | 'slide-text-left'    // Slide text to left
-    | 'slide-text-right'   // Slide text to right
-    | 'slide-bg-left'      // Background slides from left
-    | 'slide-bg-right'     // Background slides from right
-    | 'slide-bg-top'       // Background slides from top
-    | 'slide-bg-bottom'    // Background slides from bottom
-    | 'icon-slide'         // Icon slides on hover
-    | 'icon-bounce'        // Icon bounces on hover
-    | 'icon-rotate'        // Icon rotates on hover
-    | 'line-slide'         // Animated underline slides in
-    | 'line-expand'        // Underline expands from center
-    | 'scale'              // Button scales up
-    | 'glow'               // Button glows
-    | 'pulse'              // Button pulses
-    | 'none'               // No animation
-  
-  // Text replacement for slide-text animations
+  animation?: 'slide-text-up' | 'slide-text-down' | 'slide-text-left' | 'slide-text-right'
+    | 'slide-bg-left' | 'slide-bg-right' | 'slide-bg-top' | 'slide-bg-bottom'
+    | 'icon-slide' | 'icon-bounce' | 'icon-rotate'
+    | 'line-slide' | 'line-expand'
+    | 'scale' | 'glow' | 'pulse' | 'none'
   hoverText?: string
-  
-  // Icon position
   iconPosition?: 'left' | 'right'
-  
-  // Icon animation only (without text animation)
   iconAnimation?: 'slide' | 'bounce' | 'rotate' | 'none'
-  
-  // Underline animation configs
   underlineColor?: 'primary' | 'white' | 'current'
   underlineHeight?: 'sm' | 'md' | 'lg'
-  
-  // Icons
   leftIcon?: any
   rightIcon?: any
-  
-  // States
   fullWidth?: boolean
   isLoading?: boolean
-  
-  // Custom styles
   customBg?: string
   customColor?: string
 }
 
-// ============================================
-// MAIN BUTTON COMPONENT
-// ============================================
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ 
-    // Variant and size
     variant = 'primary', 
     size = 'md', 
     radius = 'xl',
@@ -138,11 +88,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       full: 'rounded-full',
     }
     
-    // Border color classes
+    // Border color classes - استفاده از متغیرهای معنایی
     const borderColorClasses = {
       primary: 'border-primary',
       secondary: 'border-secondary',
-      danger: 'border-danger',
+      danger: 'border-error',
       success: 'border-success',
       warning: 'border-warning',
       white: 'border-white',
@@ -179,11 +129,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Underline color classes
     const underlineColors = {
       primary: 'bg-primary',
-      white: 'bg-white',
+      white: 'bg-inverse',
       current: 'bg-current',
     }
     
-    // Get icon based on position
     const getIcon = () => {
       if (isLoading) return <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
       if (iconPosition === 'left') return leftIcon && <FontAwesomeIcon icon={leftIcon} className="icon-animate w-4 h-4" />
@@ -199,10 +148,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const isUnderlineAnimation = animation === 'line-slide' || animation === 'line-expand'
     
-    // Determine if border should be applied
     const borderClass = border ? `border-2 ${borderColorClasses[borderColor]}` : ''
     
-    // Custom styles inline
     const customStyles = {
       ...(customBg && { backgroundColor: customBg }),
       ...(customColor && { color: customColor }),
@@ -216,17 +163,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         style={customStyles}
         {...props}
       >
-        {/* Loading state */}
         {isLoading && (
           <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin" />
         )}
         
-        {/* Icon on left (when not loading) */}
         {!isLoading && iconPosition === 'left' && leftIcon && (
           <FontAwesomeIcon icon={leftIcon} className="icon-animate w-4 h-4" />
         )}
         
-        {/* Button text with animation */}
         {isTextAnimation ? (
           <span className="btn-text-wrapper">
             <span className="btn-text-default">{children}</span>
@@ -236,12 +180,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <span>{children}</span>
         )}
         
-        {/* Underline animation */}
         {isUnderlineAnimation && (
           <span className={`btn-underline ${underlineHeights[underlineHeight]} ${underlineColors[underlineColor]}`} />
         )}
         
-        {/* Icon on right (when not loading) */}
         {!isLoading && iconPosition === 'right' && rightIcon && (
           <FontAwesomeIcon icon={rightIcon} className="icon-animate w-4 h-4" />
         )}

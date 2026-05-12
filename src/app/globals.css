@@ -11,9 +11,9 @@
 /* ============================================
    Import Themes
    ============================================ */
-@import '../styles/themes/light.css';
-@import '../styles/themes/dark.css';
-@import '../styles/themes/theme-colors.css';
+
+@import '../styles/themes/primary-colors.css';
+@import '../styles/themes/semantic.css';
 
 /* Import Components index */
 @import '../styles/components/index.css';
@@ -26,11 +26,23 @@
   transition-property: background-color, border-color, color, fill, stroke;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
+  color-scheme: light dark;
+}
+
+html {
+  min-width: 320px;
 }
 
 body {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-width: 320px;
+  overflow-x: auto;
+}
+@media (max-width: 320px) {
+  body {
+    overflow-x: scroll;
+  }
 }
 
 @layer base {
@@ -81,3 +93,4 @@ body {
 
 
 }
+

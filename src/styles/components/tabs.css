@@ -1,161 +1,44 @@
-/* ============================================
-   TABS COMPONENT STYLES
-   Animated sliding underline for modern tabs
-   ============================================ */
+/* app/globals.css */
 
-@layer components {
-  
-  /* ============================================
-     TABS CONTAINER
-     ============================================ */
-  
-  .tabs-container {
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--space-1);
-    background-color: transparent;
-    border-radius: var(--radius-xl);
+/* مخفی کردن اسکرول بار */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tabs-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-600));
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  z-index: 1;
+  box-shadow: 0 0 8px var(--color-primary);
+}
+
+.dark .tabs-underline {
+  background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-600));
+  box-shadow: 0 0 8px var(--color-primary-500);
+}
+
+/* انیمیشن محتوای تب */
+.tab-content {
+  animation: tabFadeIn 0.3s ease-out forwards;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  /* ============================================
-     TAB BUTTONS
-     ============================================ */
-  
-  .tab-btn {
-    position: relative;
-    padding: var(--space-2-5) var(--space-5);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    color: var(--text-secondary);
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all var(--duration-base) var(--ease-out);
-    border-radius: var(--radius-lg);
-    z-index: 2;
-  }
-  
-  .tab-btn:hover {
-    color: var(--color-primary);
-    background-color: var(--bg-secondary);
-  }
-  
-  .tab-btn-active {
-    color: var(--color-primary);
-    font-weight: var(--font-semibold);
-  }
-  
-  /* ============================================
-     SLIDING UNDERLINE
-     خط زیرین متحرک
-     ============================================ */
-  
-  .tabs-underline {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-700));
-    border-radius: var(--radius-full);
-    transition: all var(--duration-base) cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    z-index: 1;
-    box-shadow: 0 0 8px var(--color-primary-400);
-  }
-  
-  /* Dark mode underline */
-  .dark .tabs-underline {
-    background: linear-gradient(90deg, var(--color-primary-400), var(--color-primary-600));
-    box-shadow: 0 0 8px var(--color-primary-500);
-  }
-  
-  /* ============================================
-     TAB WITH ICON
-     تب‌های دارای آیکون
-     ============================================ */
-  
-  .tab-btn-icon {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-  }
-  
-  .tab-btn-icon svg {
-    width: 1.125rem;
-    height: 1.125rem;
-    transition: transform var(--duration-base) var(--ease-out);
-  }
-  
-  .tab-btn-icon:hover svg {
-    transform: scale(1.1);
-  }
-  
-  .tab-btn-active svg {
-    color: var(--color-primary);
-  }
-  
-  /* ============================================
-     TAB WITH PILL STYLE
-     تب‌های قرصی شکل
-     ============================================ */
-  
-  .tabs-pill {
-    background-color: var(--bg-secondary);
-    padding: var(--space-1);
-    border-radius: var(--radius-2xl);
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: var(--space-1);
-  }
-  
-  .tab-pill {
-    padding: var(--space-2) var(--space-5);
-    font-size: var(--text-sm);
-    font-weight: var(--font-medium);
-    color: var(--text-secondary);
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: var(--radius-xl);
-    transition: all var(--duration-base) var(--ease-out);
-    position: relative;
-    z-index: 2;
-  }
-  
-  .tab-pill-active {
-    background-color: var(--color-primary);
-    color: var(--color-white);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .tab-pill:hover:not(.tab-pill-active) {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-  }
-  
-  /* Dark mode pill */
-  .dark .tab-pill-active {
-    background-color: var(--color-primary-600);
-  }
-  
-  /* ============================================
-     RESPONSIVE TABS
-     ============================================ */
-  
-  @media (max-width: 640px) {
-    .tab-btn {
-      padding: var(--space-2) var(--space-3);
-      font-size: var(--text-xs);
-    }
-    
-    .tabs-pill {
-      padding: var(--space-0-5);
-    }
-    
-    .tab-pill {
-      padding: var(--space-1-5) var(--space-3);
-      font-size: var(--text-xs);
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

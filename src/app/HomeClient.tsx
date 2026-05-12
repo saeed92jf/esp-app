@@ -12,7 +12,7 @@ import {
   faChartSimple, faUserGroup, faMoneyBill, faBriefcase,
   faCrown, faWrench, faUserAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { Button, EmailInput, CountUp, SearchInput } from '@/components/ui'
+import { Button, EmailInput, CountUp, SearchInput,Tabs } from '@/components/ui'
 import { Logo } from '@/components/ui'
 
 export function HomeClient() {
@@ -27,6 +27,13 @@ export function HomeClient() {
   const containerRef = useRef<HTMLDivElement>(null)
   const sectionsRef = useRef<(HTMLDivElement | null)[]>([])
 
+  const featureTabs = [
+  { id: 'all', label: 'All Features', icon: faChartSimple },
+  { id: 'crm', label: 'CRM', icon: faUserGroup },
+  { id: 'project', label: 'Projects', icon: faFolder },
+  { id: 'finance', label: 'Finance', icon: faMoneyBill },
+  { id: 'hr', label: 'HR', icon: faBriefcase },
+]
   // تابع برای گرفتن آیکون نقش
   const getRoleIcon = (role?: string) => {
     switch (role) {
@@ -198,7 +205,7 @@ export function HomeClient() {
       <section 
         id="hero" 
         ref={el => { if (el) sectionsRef.current[0] = el as HTMLDivElement }}
-        className="relative min-h-screen flex items-center justify-center bg-linear-to-br from-primary-50 via-white to-primary-100 dark:from-primary-950 dark:via-gray-900 dark:to-primary-900"
+        className="relative min-h-screen flex items-center justify-center bg-primary"
       >
         <div className="relative container text-center py-20">
           {/* Logo */}
@@ -214,36 +221,7 @@ export function HomeClient() {
           <div className={`relative z-20 mb-4 ${isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'}`}>
             <SearchInput />
           </div>
-          
-          {/* Access Status Message - فقط پیام بدون لینک */}
-          <div className={`mt-2 ${isRevealed('hero') ? 'animate-fade-in-up delay-300' : 'opacity-0'}`}>
-            {!isLoading && (
-              <div className="inline-flex items-center gap-3 px-6 py-3 bg-transparent backdrop-blur-sm rounded-full">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                {session ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600 dark:text-gray-300">
-                      Logged in as
-                    </span>
-                    <FontAwesomeIcon 
-                      icon={getRoleIcon(session.user?.role)} 
-                        className={`w-4 h-4 ${getRoleIconColor(session.user?.role)}`}
-                    />
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {session.user?.name}
-                    </span>
-                    <span className="px-2 py-0.5 text-xs rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
-                      {getRoleLabel(session.user?.role)}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    You have limited access. Please login to get full access.
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
+         
 
 {/* ============================================
    QUICK ACCESS SECTION
@@ -299,55 +277,29 @@ export function HomeClient() {
     {/* ============================================
    FEATURES SECTION
    ============================================ */}
-<section className="section bg-gray-50 dark:bg-gray-800/50">
+<section className="section bg-primary">
   <div className="container">
     {/* Section Header */}
     <div className="text-center mb-12">
-      <span className="text-primary dark:text-primary-400 font-semibold text-sm uppercase tracking-wider">
-        Features
-      </span>
-      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2">
+   <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+  Features
+</span>
+      <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2">
         Everything you need to succeed
       </h2>
-      <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto">
+      <p className="text-xl text-secondary mt-2 max-w-2xl mx-auto">
         Powerful tools designed to help you work smarter, not harder
       </p>
     </div>
 
-    {/* Tabs with Sliding Underline */}
-    <div className="flex justify-center mb-12">
-      <div 
-        ref={containerRef}
-        className="relative flex flex-wrap justify-center gap-2 bg-white dark:bg-gray-800/50 p-1.5 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700"
-      >
-        {tabs.map((tab, index) => (
-          <button
-            key={tab.id}
-            ref={el => { if (el) tabsRef.current[index] = el }}
-            onClick={() => setActiveTab(tab.id)}
-            className={`relative px-6 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 z-10 ${
-              activeTab === tab.id
-                ? 'text-primary dark:text-primary-400 bg-transparent'
-                : 'text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-            }`}
-          >
-            <FontAwesomeIcon icon={tab.icon} className="w-4 h-4" />
-            {tab.label}
-          </button>
-        ))}
-        
-        {/* Animated Underline */}
-        <div
-          className="tabs-underline"
-          style={{
-            left: underlineStyle.left,
-            width: underlineStyle.width,
-            bottom: '0px',
-            height: '3px',
-          }}
-        />
-      </div>
-    </div>
+   <div className="flex justify-center mb-12">
+  <Tabs
+    items={featureTabs}
+    activeTab={activeTab}
+    onChange={setActiveTab}
+    className="w-full max-w-4xl"
+  />
+</div>
 
    {/* Features Grid */}
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

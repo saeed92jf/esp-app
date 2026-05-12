@@ -45,3 +45,7 @@ export { CountUp } from './CountUp/CountUp'
 
 // SearchInput
 export { SearchInput } from './SearchInput/SearchInput'
+
+// Tabs
+export { Tabs } from './Tab/Tabs'
+export type { TabsProps, TabItem } from './Tab/Tabs'

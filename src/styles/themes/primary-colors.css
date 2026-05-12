@@ -1,0 +1,121 @@
+/* styles/primary-colors.css */
+
+/* ============================================
+   PRIMARY COLOR SYSTEM (HSL)
+   رنگ اصلی با قابلیت تغییر پویا
+   ============================================ */
+
+:root {
+  --primary-h: 0;
+  --primary-s: 84%;
+  --primary-l: 45%;
+}
+
+/* ============================================
+   رنگ‌های آماده برای انتخاب کاربر
+   ============================================ */
+
+.primary-color-blue {
+  --primary-h: 239;
+  --primary-s: 50%;
+  --primary-l: 50%;
+}
+
+.primary-color-green {
+  --primary-h: 142;
+  --primary-s: 60%;
+  --primary-l: 40%;
+}
+
+.primary-color-red {
+  --primary-h: 0;
+  --primary-s: 84%;
+  --primary-l: 45%;
+}
+
+.primary-color-orange {
+  --primary-h: 25;
+  --primary-s: 84%;
+  --primary-l: 45%;
+}
+
+.primary-color-purple {
+  --primary-h: 262;
+  --primary-s: 83%;
+  --primary-l: 45%;
+}
+
+/* ============================================
+   تولید طیف رنگی از 50 تا 900
+   ============================================ */
+
+:root,
+.primary-color-blue,
+.primary-color-green,
+.primary-color-red,
+.primary-color-orange,
+.primary-color-purple {
+  --color-primary: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --color-primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 8%));
+  --color-primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 15%));
+  --color-primary-disabled: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 20%));
+  
+  /* طیف رنگی 50 تا 900 - از روشن به تیره */
+  --color-primary-50: hsl(var(--primary-h), var(--primary-s), 97%);
+  --color-primary-100: hsl(var(--primary-h), var(--primary-s), 90%);
+  --color-primary-200: hsl(var(--primary-h), var(--primary-s), 80%);
+  --color-primary-300: hsl(var(--primary-h), var(--primary-s), 70%);
+  --color-primary-400: hsl(var(--primary-h), var(--primary-s), 60%);
+  --color-primary-500: hsl(var(--primary-h), var(--primary-s), var(--primary-l));
+  --color-primary-600: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 10%));
+  --color-primary-700: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 20%));
+  --color-primary-800: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 30%));
+  --color-primary-900: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) - 40%));
+  
+  /* RGB برای استفاده در rgba */
+  --color-primary-rgb: var(--primary-h), calc(var(--primary-s) * 1%), calc(var(--primary-l) * 1%);
+}
+
+/* ============================================
+   دارک مود - تنظیم lightness برای دید بهتر
+   ============================================ */
+
+.dark,
+.dark.primary-color-blue,
+.dark.primary-color-green,
+.dark.primary-color-red,
+.dark.primary-color-orange,
+.dark.primary-color-purple {
+  --color-primary: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 10%));
+  --color-primary-hover: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 18%));
+  --color-primary-active: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 25%));
+  
+  /* طیف رنگی برای دارک مود */
+  --color-primary-50: hsl(var(--primary-h), var(--primary-s), 18%);
+  --color-primary-100: hsl(var(--primary-h), var(--primary-s), 25%);
+  --color-primary-200: hsl(var(--primary-h), var(--primary-s), 32%);
+  --color-primary-300: hsl(var(--primary-h), var(--primary-s), 40%);
+  --color-primary-400: hsl(var(--primary-h), var(--primary-s), 48%);
+  --color-primary-500: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 10%));
+  --color-primary-600: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 20%));
+  --color-primary-700: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 30%));
+  --color-primary-800: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 40%));
+  --color-primary-900: hsl(var(--primary-h), var(--primary-s), calc(var(--primary-l) + 50%));
+}
+
+/* تنظیمات اختصاصی برای هر رنگ در دارک مود */
+.dark.primary-color-green {
+  --primary-l: 45%;
+}
+
+.dark.primary-color-red {
+  --primary-l: 50%;
+}
+
+.dark.primary-color-orange {
+  --primary-l: 50%;
+}
+
+.dark.primary-color-purple {
+  --primary-l: 50%;
+}

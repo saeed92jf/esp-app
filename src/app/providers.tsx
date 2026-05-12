@@ -5,23 +5,25 @@ import { useEffect } from 'react'
 import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from '@/theme/ThemeProvider'
 import { useUIStore } from '@/store/uiStore'
+// app/providers.tsx
 
 function ColorInitializer({ children }: { children: React.ReactNode }) {
   const { setCustomColor } = useUIStore()
 
   useEffect(() => {
-    const savedColor = localStorage.getItem('primary-color')
-    if (savedColor && savedColor !== 'blue') {
-      document.body.classList.add(`primary-color-${savedColor}`)
+    const savedColorClass = localStorage.getItem('primary-color')
+    
+    if (savedColorClass && savedColorClass !== 'primary-color-red') {
+      document.documentElement.classList.add(savedColorClass)
+      
       const colorMap: Record<string, string> = {
-        blue: '#4f46e5',
-        green: '#10b981',
-        red: '#ef4444',
-        purple: '#a855f7',
-        orange: '#f97316',
-        pink: '#ec4899',
+        'primary-color-blue': '#4f46e5',
+        'primary-color-green': '#10b981',
+        'primary-color-red': '#ef4444',
+        'primary-color-orange': '#f97316',
+        'primary-color-purple': '#a855f7',
       }
-      setCustomColor(colorMap[savedColor] || '#4f46e5')
+      setCustomColor(colorMap[savedColorClass] || '#ef4444')
     }
   }, [setCustomColor])
 

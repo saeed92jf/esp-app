@@ -1,462 +1,304 @@
+/* styles/components/button.css */
+
 /* ============================================
-   BUTTON COMPONENT STYLES
-   Complete button system with all animations
-   Full dark mode support
+   BASE BUTTON
    ============================================ */
 
-@layer components {
-  
-  /* ----- Base Button ----- */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    font-weight: var(--font-semibold);
-    transition: all var(--duration-base) var(--ease-out);
-    cursor: pointer;
-    white-space: nowrap;
-    border: none;
-    position: relative;
-    overflow: hidden;
-  }
-  .btn:disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
-  }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
 
-  /* ----- Sizes ----- */
-  .btn-xs { 
-    padding: var(--space-1) var(--space-2); 
-    font-size: var(--text-xs); 
-    min-height: 32px; 
-  }
-  .btn-sm { 
-    padding: var(--space-1-5) var(--space-3); 
-    font-size: var(--text-sm); 
-    min-height: 36px; 
-  }
-  .btn-md { 
-    padding: var(--space-2) var(--space-4); 
-    font-size: var(--text-base); 
-    min-height: 40px; 
-  }
-  .btn-lg { 
-    padding: var(--space-2-5) var(--space-6); 
-    font-size: var(--text-lg); 
-    min-height: 44px; 
-  }
-  .btn-xl { 
-    padding: var(--space-3) var(--space-8); 
-    font-size: var(--text-xl); 
-    min-height: 52px; 
-  }
-  .btn-full { 
-    width: 100%; 
-  }
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-  /* ============================================
-     BUTTON VARIANTS - با پشتیبانی دارک مود
-     ============================================ */
-  
-  /* Primary Button */
-  .btn-primary { 
-    background-color: var(--color-primary); 
-    color: var(--color-white); 
-    box-shadow: var(--shadow-sm); 
-  }
-  .btn-primary:hover:not(:disabled) { 
-    background-color: var(--color-primary-hover); 
-    transform: translateY(-1px); 
-    box-shadow: var(--shadow-md); 
-  }
-  .btn-primary:active:not(:disabled) { 
-    background-color: var(--color-primary-active); 
-    transform: translateY(0); 
-  }
-
-  /* Secondary Button */
-  .btn-secondary { 
-    background-color: var(--color-secondary); 
-    color: var(--color-white); 
-  }
-  .btn-secondary:hover:not(:disabled) { 
-    background-color: var(--color-secondary-hover); 
-  }
-
-  /* Outline Button - Dark mode friendly */
-  .btn-outline { 
-    background-color: transparent; 
-    color: var(--color-primary); 
-    box-shadow: inset 0 0 0 2px var(--color-primary); 
-  }
-  .btn-outline:hover:not(:disabled) { 
-    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent); 
-  }
-
-  /* Ghost Button */
-  .btn-ghost { 
-    background-color: transparent; 
-    color: var(--color-primary); 
-  }
-  .btn-ghost:hover:not(:disabled) { 
-    background-color: var(--bg-secondary); 
-  }
-
-  /* Danger Button - Dark mode optimized */
-  .btn-danger { 
-    background-color: var(--color-danger); 
-    color: var(--color-white); 
-  }
-  .btn-danger:hover:not(:disabled) { 
-    background-color: var(--color-danger-hover); 
-  }
-
-  /* Success Button - Dark mode optimized */
-  .btn-success { 
-    background-color: var(--color-success); 
-    color: var(--color-white); 
-  }
-  .btn-success:hover:not(:disabled) { 
-    background-color: var(--color-success-hover); 
-  }
-
-  /* Warning Button - Dark mode optimized */
-  .btn-warning { 
-    background-color: var(--color-warning); 
-    color: var(--color-white); 
-  }
-  .btn-warning:hover:not(:disabled) { 
-    background-color: var(--color-warning-hover); 
-  }
-
-  /* ============================================
-     TEXT SLIDE ANIMATIONS - Dark mode compatible
-     ============================================ */
-  
-  /* Slide text upward */
-  .btn-animate-slide-text-up .btn-text-wrapper,
-  .btn-animate-slide-text-down .btn-text-wrapper {
-    position: relative; 
-    display: inline-block; 
-    overflow: hidden; 
-    height: 1.5em;
-  }
-  .btn-animate-slide-text-up .btn-text-default,
-  .btn-animate-slide-text-up .btn-text-hover,
-  .btn-animate-slide-text-down .btn-text-default,
-  .btn-animate-slide-text-down .btn-text-hover {
-    display: block; 
-    transition: transform var(--duration-base) var(--ease-out);
-  }
-  .btn-animate-slide-text-up .btn-text-default { 
-    transform: translateY(0); 
-  }
-  .btn-animate-slide-text-up .btn-text-hover { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    transform: translateY(100%); 
-  }
-  .btn-animate-slide-text-up:hover .btn-text-default { 
-    transform: translateY(-100%); 
-  }
-  .btn-animate-slide-text-up:hover .btn-text-hover { 
-    transform: translateY(0); 
-  }
-  
-  /* Slide text downward */
-  .btn-animate-slide-text-down .btn-text-default { 
-    transform: translateY(0); 
-  }
-  .btn-animate-slide-text-down .btn-text-hover { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    transform: translateY(-100%); 
-  }
-  .btn-animate-slide-text-down:hover .btn-text-default { 
-    transform: translateY(100%); 
-  }
-  .btn-animate-slide-text-down:hover .btn-text-hover { 
-    transform: translateY(0); 
-  }
-
-  /* Slide text to left */
-  .btn-animate-slide-text-left .btn-text-wrapper,
-  .btn-animate-slide-text-right .btn-text-wrapper {
-    position: relative; 
-    display: inline-block; 
-    overflow: hidden; 
-    width: 100%;
-  }
-  .btn-animate-slide-text-left .btn-text-default,
-  .btn-animate-slide-text-left .btn-text-hover,
-  .btn-animate-slide-text-right .btn-text-default,
-  .btn-animate-slide-text-right .btn-text-hover {
-    display: inline-block; 
-    transition: transform var(--duration-base) var(--ease-out); 
-    white-space: nowrap;
-  }
-  .btn-animate-slide-text-left .btn-text-default { 
-    transform: translateX(0); 
-  }
-  .btn-animate-slide-text-left .btn-text-hover { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    transform: translateX(-100%); 
-  }
-  .btn-animate-slide-text-left:hover .btn-text-default { 
-    transform: translateX(100%); 
-  }
-  .btn-animate-slide-text-left:hover .btn-text-hover { 
-    transform: translateX(0); 
-  }
-  
-  /* Slide text to right */
-  .btn-animate-slide-text-right .btn-text-default { 
-    transform: translateX(0); 
-  }
-  .btn-animate-slide-text-right .btn-text-hover { 
-    position: absolute; 
-    top: 0; 
-    left: 0; 
-    transform: translateX(100%); 
-  }
-  .btn-animate-slide-text-right:hover .btn-text-default { 
-    transform: translateX(-100%); 
-  }
-  .btn-animate-slide-text-right:hover .btn-text-hover { 
-    transform: translateX(0); 
-  }
-
-  /* ============================================
-     BACKGROUND SLIDE ANIMATIONS - Dark mode compatible
-     ============================================ */
-  
-  .btn-animate-slide-bg-left, .btn-animate-slide-bg-right,
-  .btn-animate-slide-bg-top, .btn-animate-slide-bg-bottom {
-    position: relative; 
-    z-index: 1;
-  }
-  .btn-animate-slide-bg-left::before,
-  .btn-animate-slide-bg-right::before,
-  .btn-animate-slide-bg-top::before,
-  .btn-animate-slide-bg-bottom::before {
-    content: ''; 
-    position: absolute; 
-    inset: 0; 
-    background-color: var(--color-primary-hover);
-    transition: all var(--duration-base) var(--ease-out); 
-    z-index: -1; 
-    border-radius: inherit;
-  }
-  .btn-animate-slide-bg-left::before { 
-    right: 100%; 
-  }
-  .btn-animate-slide-bg-left:hover::before { 
-    right: 0; 
-  }
-  .btn-animate-slide-bg-right::before { 
-    left: 100%; 
-  }
-  .btn-animate-slide-bg-right:hover::before { 
-    left: 0; 
-  }
-  .btn-animate-slide-bg-top::before { 
-    bottom: 100%; 
-  }
-  .btn-animate-slide-bg-top:hover::before { 
-    bottom: 0; 
-  }
-  .btn-animate-slide-bg-bottom::before { 
-    top: 100%; 
-  }
-  .btn-animate-slide-bg-bottom:hover::before { 
-    top: 0; 
-  }
-
-  /* ============================================
-     ICON ANIMATIONS - Dark mode compatible
-     ============================================ */
-  
-  .btn-animate-icon-slide .icon-animate { 
-    transition: transform var(--duration-base) var(--ease-out); 
-  }
-  .btn-animate-icon-slide:hover .icon-animate { 
-    transform: translateX(4px); 
-  }
-  
-  .btn-animate-icon-bounce .icon-animate { 
-    transition: transform var(--duration-base) var(--ease-out); 
-  }
-  .btn-animate-icon-bounce:hover .icon-animate { 
-    animation: iconBounce 0.5s ease-out; 
-  }
-  @keyframes iconBounce { 
-    0%,100% { transform: translateX(0); } 
-    50% { transform: translateX(5px) scale(1.1); } 
-  }
-  
-  .btn-animate-icon-rotate .icon-animate { 
-    transition: transform var(--duration-base) var(--ease-out); 
-  }
-  .btn-animate-icon-rotate:hover .icon-animate { 
-    transform: rotate(90deg); 
-  }
-
-  /* ============================================
-     UNDERLINE ANIMATIONS - Dark mode compatible
-     ============================================ */
-  
-  .btn-animate-line-slide, .btn-animate-line-expand { 
-    position: relative; 
-  }
-  .btn-animate-line-slide .btn-underline,
-  .btn-animate-line-expand .btn-underline {
-    position: absolute; 
-    bottom: 0; 
-    left: 0; 
-    width: 0%; 
-    transition: all var(--duration-base) var(--ease-out);
-    background-color: var(--color-primary);
-  }
-  .btn-animate-line-slide:hover .btn-underline { 
-    width: 100%; 
-  }
-  .btn-animate-line-expand .btn-underline { 
-    left: 50%; 
-    transform: translateX(-50%); 
-  }
-  .btn-animate-line-expand:hover .btn-underline { 
-    width: 100%; 
-  }
-
-  /* ============================================
-     SCALE, GLOW, PULSE - Dark mode compatible
-     ============================================ */
-  
-  .btn-animate-scale { 
-    transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out); 
-  }
-  .btn-animate-scale:hover { 
-    transform: scale(1.05); 
-    box-shadow: var(--shadow-lg); 
-  }
-  .btn-animate-scale:active { 
-    transform: scale(0.98); 
-  }
-  
-  .btn-animate-glow { 
-    transition: all var(--duration-base) var(--ease-out); 
-  }
-  .btn-animate-glow:hover { 
-    box-shadow: 0 0 20px var(--color-primary); 
-    transform: translateY(-1px); 
-  }
-  
-  .btn-animate-pulse { 
-    animation: pulse 2s infinite; 
-  }
-  .btn-animate-pulse:hover { 
-    animation: none; 
-  }
-  @keyframes pulse { 
-    0%,100% { 
-      box-shadow: 0 0 0 0 var(--color-primary); 
-    } 
-    50% { 
-      box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary) 50%, transparent); 
-    } 
-  }
-
-  /* ============================================
-     MOBILE OPTIMIZATIONS - با پشتیبانی دارک مود
-     ============================================ */
-  @media (max-width: 768px) {
-    /* Disable complex text slide animations on mobile */
-    .btn-animate-slide-text-up .btn-text-default,
-    .btn-animate-slide-text-up .btn-text-hover,
-    .btn-animate-slide-text-down .btn-text-default,
-    .btn-animate-slide-text-down .btn-text-hover,
-    .btn-animate-slide-text-left .btn-text-default,
-    .btn-animate-slide-text-left .btn-text-hover,
-    .btn-animate-slide-text-right .btn-text-default,
-    .btn-animate-slide-text-right .btn-text-hover { 
-      transition: none !important; 
-    }
-    
-    .btn-animate-slide-text-up .btn-text-hover,
-    .btn-animate-slide-text-down .btn-text-hover,
-    .btn-animate-slide-text-left .btn-text-hover,
-    .btn-animate-slide-text-right .btn-text-hover { 
-      display: none !important; 
-    }
-    
-    /* Disable hover animations on mobile (no hover effect) */
-    .btn-animate-scale:hover { 
-      transform: none !important; 
-    }
-    .btn-animate-glow:hover { 
-      box-shadow: none !important; 
-    }
-    .btn-animate-pulse { 
-      animation: none !important; 
-    }
-    
-    /* Touch feedback for all buttons on mobile */
-    .btn:active { 
-      transform: scale(0.97) !important; 
-      transition: transform 0.1s ease-out !important; 
-    }
-    
-    /* Active states for touch feedback - Dark mode compatible */
-    .btn-primary:active { 
-      background-color: var(--color-primary-active) !important; 
-    }
-    .btn-outline:active { 
-      background-color: color-mix(in srgb, var(--color-primary) 20%, transparent) !important; 
-    }
-    .btn-danger:active { 
-      background-color: var(--color-danger-hover) !important; 
-    }
-    .btn-success:active { 
-      background-color: var(--color-success-hover) !important; 
-    }
-  }
+.btn-full {
+  width: 100%;
 }
 
 /* ============================================
-   ADDITIONAL DARK MODE SPECIFIC OVERRIDES
+   BUTTON VARIANTS with Gradients
    ============================================ */
 
-/* Ensure buttons look good in dark mode */
-.dark .btn-outline {
-  box-shadow: inset 0 0 0 2px var(--color-primary);
+/* Primary Button - با گرادیانت */
+.btn-primary {
+  background: var(--gradient-btn-primary);
+  color: var(--text-inverse);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.dark .btn-outline:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+.btn-primary:hover:not(:disabled) {
+  background: var(--gradient-btn-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
-.dark .btn-ghost:hover:not(:disabled) {
-  background-color: var(--bg-secondary);
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-.dark .btn-animate-glow:hover {
+/* Secondary Button */
+.btn-secondary {
+  background: var(--gradient-btn-secondary);
+  color: var(--text-inverse);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--gradient-btn-secondary-hover);
+  transform: translateY(-1px);
+}
+
+/* Outline Button */
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--bg-tertiary);
+  color: var(--color-primary);
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Danger Button */
+.btn-danger {
+  background: var(--gradient-btn-danger);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+  transform: translateY(-1px);
+}
+
+/* Success Button */
+.btn-success {
+  background: var(--gradient-btn-success);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: var(--color-success-hover);
+  transform: translateY(-1px);
+}
+
+/* Warning Button */
+.btn-warning {
+  background: var(--gradient-btn-warning);
+  color: white;
+}
+
+/* ============================================
+   BUTTON SIZES
+   ============================================ */
+
+.btn-xs {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.btn-md {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 1rem;
+}
+
+.btn-xl {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  border-radius: 1rem;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+/* Slide Text Up */
+.btn-animate-slide-text-up {
+  overflow: hidden;
+}
+
+.btn-text-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.btn-animate-slide-text-up:hover .btn-text-wrapper {
+  transform: translateY(-100%);
+}
+
+.btn-text-hover {
+  position: absolute;
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.btn-animate-slide-text-up:hover .btn-text-hover {
+  position: relative;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scale Animation */
+.btn-animate-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Glow Animation */
+.btn-animate-glow {
+  transition: box-shadow 0.2s ease;
+}
+
+.btn-animate-glow:hover {
   box-shadow: 0 0 20px var(--color-primary);
 }
 
-.dark .btn-animate-pulse {
-  animation: pulse-dark 2s infinite;
+/* Pulse Animation */
+.btn-animate-pulse:hover {
+  animation: btnPulse 0.6s ease-out;
 }
 
-@keyframes pulse-dark {
-  0%,100% { 
-    box-shadow: 0 0 0 0 var(--color-primary); 
-  } 
-  50% { 
-    box-shadow: 0 0 0 10px color-mix(in srgb, var(--color-primary) 30%, transparent); 
-  } 
+@keyframes btnPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
 }
+
+/* Icon Slide */
+.btn-animate-icon-slide .icon-animate {
+  transition: transform 0.2s ease;
+}
+
+.btn-animate-icon-slide:hover .icon-animate {
+  transform: translateX(4px);
+}
+
+/* Icon Bounce */
+.btn-animate-icon-bounce .icon-animate {
+  transition: transform 0.2s ease;
+}
+
+.btn-animate-icon-bounce:hover .icon-animate {
+  animation: iconBounce 0.4s ease;
+}
+
+@keyframes iconBounce {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(4px);
+  }
+}
+
+/* Icon Rotate */
+.btn-animate-icon-rotate .icon-animate {
+  transition: transform 0.2s ease;
+}
+
+.btn-animate-icon-rotate:hover .icon-animate {
+  transform: rotate(90deg);
+}
+
+/* Slide Background */
+.btn-animate-slide-bg-left {
+  position: relative;
+  z-index: 1;
+}
+
+.btn-animate-slide-bg-left::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.btn-animate-slide-bg-left:hover::before {
+  left: 0;
+}
+
+/* Underline Animations */
+.btn-animate-line-slide {
+  position: relative;
+}
+
+.btn-underline {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  transition: all 0.3s ease;
+}
+
+.btn-animate-line-slide:hover .btn-underline {
+  left: 0;
+  width: 100%;
+}
+
+.btn-animate-line-expand .btn-underline {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  transition: all 0.3s ease;
+}
+
+.btn-animate-line-expand:hover .btn-underline {
+  left: 0;
+  width: 100%;
+}
+
+/* Rounded Borders */
+.rounded-none { border-radius: 0; }
+.rounded-sm { border-radius: 0.125rem; }
+.rounded-md { border-radius: 0.375rem; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-3xl { border-radius: 1.5rem; }
+.rounded-full { border-radius: 9999px; }

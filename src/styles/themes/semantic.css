@@ -1,0 +1,190 @@
+/* styles/themes/semantic.css */
+
+/* ============================================
+   SEMANTIC VARIABLES (Light & Dark)
+   با استفاده از توکن‌های رنگ
+   ============================================ */
+
+/* ============================================
+   LIGHT MODE (پیش‌فرض)
+   ============================================ */
+
+:root,
+.light {
+  /* ===== Text Colors ===== */
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-600);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-white);
+  --text-disabled: var(--color-gray-400);
+  --text-placeholder: var(--color-gray-400);
+  --text-link: var(--color-primary);
+  --text-link-hover: var(--color-primary-hover);
+  
+  /* ===== Background Colors ===== */
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray-50);
+  --bg-tertiary: var(--color-gray-100);
+  --bg-inverse: var(--color-gray-900);
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-overlay-light: rgba(255, 255, 255, 0.8);
+  
+  /* ===== Border Colors ===== */
+  --border-light: var(--color-gray-200);
+  --border-medium: var(--color-gray-300);
+  --border-dark: var(--color-gray-400);
+  --border-focus: var(--color-primary);
+  --border-error: var(--color-danger-500);
+  --border-success: var(--color-success-500);
+  --border-warning: var(--color-warning-500);
+  
+  /* ===== Surface Colors ===== */
+  --surface-primary: var(--color-white);
+  --surface-secondary: var(--color-gray-50);
+  --surface-tertiary: var(--color-gray-100);
+  --surface-hover: var(--color-gray-100);
+  
+  /* ===== Shadow Colors ===== */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ============================================
+   DARK MODE
+   ============================================ */
+
+.dark {
+  /* ===== Text Colors ===== */
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-400);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-gray-900);
+  --text-disabled: var(--color-gray-600);
+  --text-placeholder: var(--color-gray-600);
+  --text-link: var(--color-primary-400);
+  --text-link-hover: var(--color-primary-300);
+  
+  /* ===== Background Colors ===== */
+  --bg-primary: var(--color-gray-950);
+  --bg-secondary: var(--color-gray-900);
+  --bg-tertiary: var(--color-gray-800);
+  --bg-inverse: var(--color-white);
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-overlay-light: rgba(0, 0, 0, 0.5);
+  
+  /* ===== Border Colors ===== */
+  --border-light: var(--color-gray-800);
+  --border-medium: var(--color-gray-700);
+  --border-dark: var(--color-gray-600);
+  --border-focus: var(--color-primary-400);
+  --border-error: var(--color-danger-500);
+  --border-success: var(--color-success-500);
+  --border-warning: var(--color-warning-500);
+  
+  /* ===== Surface Colors ===== */
+  --surface-primary: var(--color-gray-900);
+  --surface-secondary: var(--color-gray-800);
+  --surface-tertiary: var(--color-gray-700);
+  --surface-hover: var(--color-gray-700);
+  
+  /* ===== Shadow Colors (Dark mode - more depth) ===== */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+}
+
+/* ============================================
+   GRADIENTS (عمومی - یکبار تولید)
+   ============================================ */
+
+:root,
+.light {
+  /* Background Gradients */
+  --gradient-hero: linear-gradient(135deg, var(--color-primary-50) 0%, var(--bg-primary) 50%, var(--color-primary-100) 100%);
+  --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
+  --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  
+  /* Text Gradients */
+  --text-gradient-primary: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
+  --text-gradient-secondary: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-500));
+  --text-gradient-gold: linear-gradient(135deg, #fbbf24, #d97706);
+  
+  /* Border Gradients */
+  --border-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-600));
+  --border-gradient-success: linear-gradient(135deg, var(--color-success-400), var(--color-success-600));
+  --border-gradient-danger: linear-gradient(135deg, var(--color-danger-400), var(--color-danger-600));
+  
+  /* Button Gradients */
+  --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+  --gradient-btn-secondary: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-600));
+  --gradient-btn-secondary-hover: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-700));
+  --gradient-btn-success: linear-gradient(135deg, var(--color-success-500), var(--color-success-600));
+  --gradient-btn-danger: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-600));
+}
+
+/* Dark Mode Gradients */
+.dark {
+  --gradient-hero: linear-gradient(135deg, var(--color-primary-900) 0%, var(--bg-primary) 50%, var(--color-primary-950) 100%);
+  --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
+  --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  
+  --text-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
+  --text-gradient-secondary: linear-gradient(135deg, var(--color-secondary-400), var(--color-secondary-500));
+  
+  --border-gradient-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  
+  --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
+  --gradient-btn-secondary: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-700));
+  --gradient-btn-secondary-hover: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-600));
+}
+
+/* ============================================
+   UTILITY CLASSES (برای استفاده آسان)
+   ============================================ */
+
+/* Text Colors */
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-inverse { color: var(--text-inverse); }
+
+/* Background Colors */
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-tertiary { background-color: var(--bg-tertiary); }
+.bg-inverse { background-color: var(--bg-inverse); }
+
+/* Border Colors */
+.border-light { border-color: var(--border-light); }
+.border-medium { border-color: var(--border-medium); }
+.border-dark { border-color: var(--border-dark); }
+.border-error { border-color: var(--border-error); }
+.border-success { border-color: var(--border-success); }
+
+/* Gradients */
+.bg-gradient-hero { background: var(--gradient-hero); }
+.bg-gradient-card { background: var(--gradient-card); }
+.bg-gradient-cta { background: var(--gradient-cta); }
+
+.text-gradient-primary {
+  background: var(--text-gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+
+/* Hover Utilities */
+.hover\:bg-tertiary:hover { background-color: var(--bg-tertiary); }
+.hover\:text-primary:hover { color: var(--color-primary); }

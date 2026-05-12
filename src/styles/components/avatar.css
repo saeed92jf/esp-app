@@ -1,0 +1,5 @@
+/* در globals.css */
+.avatar-admin,.avatar-engineer,.avatar-employee,.avatar-customer {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+}
+
