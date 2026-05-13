@@ -72,7 +72,7 @@ export const ConfirmPasswordInput = forwardRef<HTMLInputElement, ConfirmPassword
         />
         
         {currentValue.length > 0 && !error && currentValue === passwordValue && (
-          <div className="mt-3 p-3 bg-success/10 rounded-lg border border-success/20 animate-fade-in">
+          <div className="mt-3 p-3 bg-success/10 rounded-lg border border-success/30 animate-fade-in">
             <p className="text-sm text-success flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

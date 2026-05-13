@@ -123,7 +123,7 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
       {showLeftArrow && (
         <button
           onClick={() => scroll('left')}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-secondary shadow-md border border-border-light transition-all hover:bg-tertiary"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-secondary shadow-md border border-light transition-all hover:bg-tertiary"
         >
           <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4 text-primary" />
         </button>
@@ -136,7 +136,7 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
       >
         <div 
           ref={containerRef}
-          className="relative flex justify-center items-center gap-2 bg-secondary p-1.5 rounded-2xl shadow-sm border border-border-light min-w-max"
+          className="relative flex justify-center items-center gap-2 bg-secondary p-1.5 rounded-2xl shadow-sm border border-light min-w-max"
         >
           {items.map((item, index) => (
             <button
@@ -165,7 +165,7 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
       {showRightArrow && (
         <button
           onClick={() => scroll('right')}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-secondary shadow-md border border-border-light transition-all hover:bg-tertiary"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-secondary shadow-md border border-light transition-all hover:bg-tertiary"
         >
           <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4 text-primary" />
         </button>

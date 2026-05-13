@@ -11,6 +11,9 @@ export {
   Card, 
   CardTitle, 
   CardContent, 
+  CardDescription,
+  CardHeader,
+  CardFooter
 } from './Card/card'
 export type { 
   CardProps, 

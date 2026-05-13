@@ -3,6 +3,7 @@
 import { forwardRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { Input, InputProps } from '@/components/ui/Input/Input'
+
 export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   label?: string
   error?: string
@@ -11,7 +12,6 @@ export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTex
   maxLength?: number
   rows?: number
   
-  // Input customization props (same as Input component)
   inputSize?: 'sm' | 'md' | 'lg'
   radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
   borderWidth?: 'none' | 'sm' | 'md' | 'lg'
@@ -20,14 +20,12 @@ export interface TextareaProps extends Omit<React.TextareaHTMLAttributes<HTMLTex
   variant?: 'default' | 'filled' | 'flushed' | 'unstyled'
 }
 
-// Size classes (same as Input)
 const sizeClasses = {
   sm: 'px-3 py-1.5 text-sm',
   md: 'px-4 py-2.5 text-base',
   lg: 'px-5 py-3.5 text-lg',
 }
 
-// Radius mapping (same as Input)
 const radiusMap = {
   none: 'rounded-none',
   sm: 'rounded-sm',
@@ -39,7 +37,6 @@ const radiusMap = {
   full: 'rounded-full',
 }
 
-// Border width mapping (same as Input)
 const borderWidthMap = {
   none: 'border-0',
   sm: 'border',
@@ -47,29 +44,26 @@ const borderWidthMap = {
   lg: 'border-4',
 }
 
-// Border color mapping for normal state (same as Input)
 const borderColorNormalMap = {
-  primary: 'border-gray-300 dark:border-gray-600',
-  secondary: 'border-gray-300 dark:border-gray-600',
-  danger: 'border-gray-300 dark:border-gray-600',
-  success: 'border-gray-300 dark:border-gray-600',
-  warning: 'border-gray-300 dark:border-gray-600',
-  gray: 'border-gray-300 dark:border-gray-600',
-  white: 'border-white',
+  primary: 'border-light',
+  secondary: 'border-light',
+  danger: 'border-light',
+  success: 'border-light',
+  warning: 'border-light',
+  gray: 'border-light',
+  white: 'border-light',
 }
 
-// Border color mapping for focus state (same as Input)
 const borderColorFocusMap = {
-  primary: 'focus:border-primary focus:ring-primary/20',
-  secondary: 'focus:border-secondary focus:ring-secondary/20',
-  danger: 'focus:border-danger focus:ring-danger/20',
+  primary: 'focus:border-focus focus:ring-ring focus:ring-1',
+  secondary: 'focus:border-focus focus:ring-ring focus:ring-1',
+  danger: 'focus:border-error focus:ring-error/20',
   success: 'focus:border-success focus:ring-success/20',
   warning: 'focus:border-warning focus:ring-warning/20',
-  gray: 'focus:border-gray-500 focus:ring-gray-500/20',
+  gray: 'focus:border-medium focus:ring-medium/20',
   white: 'focus:border-white focus:ring-white/20',
 }
 
-// Shadow mapping (same as Input)
 const shadowMap = {
   none: '',
   sm: 'shadow-sm',
@@ -79,19 +73,17 @@ const shadowMap = {
   '2xl': 'shadow-2xl',
 }
 
-// Variant styles (same as Input)
 const variantStyles = {
-  default: 'bg-white dark:bg-gray-800',
-  filled: 'bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-700',
+  default: 'bg-primary',
+  filled: 'bg-secondary border-transparent focus:bg-primary',
   flushed: 'border-b border-x-0 border-t-0 rounded-none px-0 bg-transparent',
   unstyled: 'border-none bg-transparent p-0 shadow-none focus:ring-0',
 }
 
-// Hover styles (same as Input)
 const hoverStyles = {
-  default: 'hover:border-gray-400 dark:hover:border-gray-500',
-  filled: 'hover:bg-gray-200 dark:hover:bg-gray-700',
-  flushed: 'hover:border-gray-400 dark:hover:border-gray-500',
+  default: 'hover:border-focus/50',
+  filled: 'hover:bg-tertiary',
+  flushed: 'hover:border-focus/50',
   unstyled: '',
 }
 
@@ -107,7 +99,6 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     rows = 4,
     value: initialValue = '',
     onChange,
-    // Input customization props with defaults
     inputSize = 'md',
     radius = 'lg',
     borderWidth = 'sm',
@@ -128,43 +119,29 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     const isNearLimit = maxLength && currentLength > maxLength * 0.8
     const isOverLimit = maxLength && currentLength > maxLength
 
-    // Build class names (same as Input component)
     const textareaClasses = [
-      // Base classes
       'w-full transition-all duration-200 outline-none',
-      // Variant
       variantStyles[variant],
-      // Size
       sizeClasses[inputSize],
-      // Radius
       radiusMap[radius],
-      // Border width
       borderWidthMap[borderWidth],
-      // Normal border color
       borderColorNormalMap[borderColor],
-      // Focus border color & ring
       !error && borderColorFocusMap[borderColor],
-      // Hover effect
       !error && hoverStyles[variant],
-      // Shadow
       shadowMap[shadow],
-      // Error state
-      error && 'border-danger focus:border-danger focus:ring-danger/20',
-      // Disabled state
+      error && 'border-error focus:border-error focus:ring-error/20',
       'disabled:opacity-50 disabled:cursor-not-allowed',
-      // Placeholder
-      'placeholder:text-gray-400 dark:placeholder:text-gray-500',
-      // Textarea specific
+      'placeholder:text-tertiary',
       'resize-y min-h-[80px]',
       className,
     ].filter(Boolean).join(' ')
 
     return (
-      <div className="form-group">
+      <div className="flex flex-col gap-1.5">
         {label && (
           <label 
             htmlFor={inputId} 
-            className={`form-label ${required ? 'form-label-required' : ''}`}
+            className={`text-sm font-medium text-secondary ${required ? 'after:content-["*"] after:ml-0.5 after:text-error' : ''}`}
           >
             {label}
           </label>
@@ -179,12 +156,12 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           className={textareaClasses}
           {...props}
         />
-        <div className="flex justify-between items-center">
-          {error && <p className="form-error">{error}</p>}
+        <div className="flex justify-between items-center gap-2">
+          {error && <p className="text-sm text-error">{error}</p>}
           {showCount && maxLength && (
             <p className={cn(
               'text-xs ml-auto',
-              isOverLimit ? 'text-danger' : isNearLimit ? 'text-warning' : 'text-gray-400'
+              isOverLimit ? 'text-error' : isNearLimit ? 'text-warning' : 'text-tertiary'
             )}>
               {currentLength} / {maxLength}
             </p>

@@ -2,6 +2,7 @@
 
 import { forwardRef, useState } from 'react'
 import { Input, InputProps } from '@/components/ui/Input/Input'
+
 export interface UrlInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   onChange?: (value: string, isValid: boolean) => void
 }

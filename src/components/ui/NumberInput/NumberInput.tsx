@@ -3,6 +3,7 @@
 import { forwardRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { Input, InputProps } from '@/components/ui/Input/Input'
+
 export interface NumberInputProps extends Omit<InputProps, 'type' | 'onChange' | 'value'> {
   value?: number
   min?: number
@@ -68,7 +69,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     const displayError = props.error || error
 
     return (
-      <div className="space-y-1">
+      <div className="flex flex-col gap-1.5">
         {showButtons ? (
           <div className="relative">
             <Input
@@ -85,7 +86,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
                 type="button"
                 onClick={increment}
                 disabled={currentValue >= max}
-                className="px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                className="px-2 py-0.5 text-xs text-secondary hover:text-primary disabled:opacity-50"
               >
                 ▲
               </button>
@@ -93,7 +94,7 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
                 type="button"
                 onClick={decrement}
                 disabled={currentValue <= min}
-                className="px-2 py-0.5 text-xs text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                className="px-2 py-0.5 text-xs text-secondary hover:text-primary disabled:opacity-50"
               >
                 ▼
               </button>

@@ -125,8 +125,10 @@ const config: Config = {
         inverse: 'var(--text-inverse)',
         disabled: 'var(--text-disabled)',
         'primary-dark': 'var(--text-primary)',
+        'primary-gradiant': 'var(--text-primary)',
       },
       borderColor: {
+        extralight: 'var(--border-extralight)',
         light: 'var(--border-light)',
         medium: 'var(--border-medium)',
         dark: 'var(--border-dark)',

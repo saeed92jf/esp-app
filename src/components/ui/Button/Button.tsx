@@ -1,11 +1,12 @@
 'use client'
 
 import { forwardRef } from 'react'
+import { Slot } from '@radix-ui/react-slot'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
+variant?: 'default' | 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
   border?: boolean
@@ -26,6 +27,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   isLoading?: boolean
   customBg?: string
   customColor?: string
+  asChild?: boolean
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -50,24 +52,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     className,
     customBg,
     customColor,
+    asChild = false,
     ...props 
   }, ref) => {
     
-    // Base button classes
+    const Comp = asChild ? Slot : 'button'
     const baseStyles = 'btn'
     
-    // Variant classes
-    const variants = {
-      primary: 'btn-primary',
-      secondary: 'btn-secondary',
-      outline: 'btn-outline',
-      ghost: 'btn-ghost',
-      danger: 'btn-danger',
-      success: 'btn-success',
-      warning: 'btn-warning',
-    }
+   const variants = {
+  default: 'btn-primary',
+  primary: 'btn-primary',
+  secondary: 'btn-secondary',
+  outline: 'btn-outline',
+  ghost: 'btn-ghost',
+  danger: 'btn-danger',
+  success: 'btn-success',
+  warning: 'btn-warning',
+}
     
-    // Size classes
     const sizes = {
       xs: 'btn-xs',
       sm: 'btn-sm',
@@ -76,7 +78,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       xl: 'btn-xl',
     }
     
-    // Border radius classes
     const radiusClasses = {
       none: 'rounded-none',
       sm: 'rounded-sm',
@@ -88,7 +89,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       full: 'rounded-full',
     }
     
-    // Border color classes - استفاده از متغیرهای معنایی
     const borderColorClasses = {
       primary: 'border-primary',
       secondary: 'border-secondary',
@@ -98,7 +98,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       white: 'border-white',
     }
     
-    // Animation classes
     const animations = {
       'slide-text-up': 'btn-animate-slide-text-up',
       'slide-text-down': 'btn-animate-slide-text-down',
@@ -119,14 +118,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'none': '',
     }
     
-    // Underline height classes
     const underlineHeights = {
       sm: 'h-0.5',
       md: 'h-1',
       lg: 'h-1.5',
     }
     
-    // Underline color classes
     const underlineColors = {
       primary: 'bg-primary',
       white: 'bg-inverse',
@@ -156,7 +153,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
     
     return (
-      <button
+      <Comp
         ref={ref}
         disabled={disabled || isLoading}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${radiusClasses[radius]} ${animations[animation]} ${borderClass} ${fullWidth ? 'btn-full' : ''} ${className || ''} group`}
@@ -187,7 +184,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {!isLoading && iconPosition === 'right' && rightIcon && (
           <FontAwesomeIcon icon={rightIcon} className="icon-animate w-4 h-4" />
         )}
-      </button>
+      </Comp>
     )
   }
 )

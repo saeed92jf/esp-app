@@ -44,7 +44,6 @@ export function SearchInput({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -55,7 +54,6 @@ export function SearchInput({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Adjust dropdown position dynamically
   useEffect(() => {
     if (isOpen && wrapperRef.current && dropdownRef.current) {
       const inputRect = wrapperRef.current.getBoundingClientRect()
@@ -127,23 +125,21 @@ export function SearchInput({
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'feature': return 'bg-primary/10 text-primary dark:bg-primary/20'
-      case 'document': return 'bg-success/10 text-success dark:bg-success/20'
-      case 'project': return 'bg-purple-500/10 text-purple-500 dark:bg-purple-500/20'
-      case 'page': return 'bg-orange-500/10 text-orange-500 dark:bg-orange-500/20'
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+      case 'feature': return 'bg-primary/10 text-primary'
+      case 'document': return 'bg-success/10 text-success'
+      case 'project': return 'bg-purple-500/10 text-purple-500'
+      case 'page': return 'bg-warning/10 text-warning'
+      default: return 'bg-tertiary text-secondary'
     }
   }
 
   return (
     <div ref={wrapperRef} className={`relative w-full max-w-md mx-auto ${className}`}>
       <div className="relative">
-        {/* Search Icon */}
         <div className="absolute inset-y-0 left-0 flex items-center pl-4 z-10 pointer-events-none">
-          <FontAwesomeIcon icon={faSearch} className="w-4 h-4 text-gray-400 dark:text-gray-500 group-focus-within:text-primary transition-colors" />
+          <FontAwesomeIcon icon={faSearch} className="w-4 h-4 text-tertiary group-focus-within:text-primary transition-colors" />
         </div>
         
-        {/* Input Field */}
         <Input
           type="text"
           value={query}
@@ -157,18 +153,16 @@ export function SearchInput({
           shadow="lg"
         />
         
-        {/* Loading Indicator */}
         {isLoading && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 z-10">
-            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         
-        {/* Clear Button */}
         {!isLoading && query && (
           <button
             onClick={clearSearch}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 z-10 transition-colors text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 z-10 transition-colors text-tertiary hover:text-primary"
             aria-label="Clear search"
           >
             <FontAwesomeIcon icon={faTimes} className="w-3.5 h-3.5" />
@@ -176,16 +170,10 @@ export function SearchInput({
         )}
       </div>
 
-      {/* 
-        ============================================
-        RESULTS DROPDOWN
-        انیمیشن خفن + خط سبز در پایین
-        ============================================
-      */}
       {isOpen && query.length > 1 && (
         <div 
           ref={dropdownRef}
-          className="absolute left-0 right-0 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-dropdown"
+          className="absolute left-0 right-0 bg-primary rounded-2xl shadow-2xl border border-light overflow-hidden animate-dropdown"
           style={{ 
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
             zIndex: 9999,
@@ -194,27 +182,25 @@ export function SearchInput({
         >
           {results.length > 0 ? (
             <div>
-              {/* Header with results count - بدون فوتر اضافی */}
-              <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-light flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <p className="text-xs font-medium text-success dark:text-success-400">
+                  <p className="text-xs font-medium text-success">
                     {results.length} result{results.length !== 1 ? 's' : ''} found
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-xs text-success">✓</span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">Ready</span>
+                  <span className="text-xs text-secondary">Ready</span>
                 </div>
               </div>
               
-              {/* Results list with staggered animation */}
               <div className="max-h-80 overflow-y-auto">
                 {results.map((result, idx) => (
                   <button
                     key={result.id}
                     onClick={() => handleSelect(result)}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100 dark:border-gray-700 last:border-0 group animate-result-item"
+                    className="w-full text-left px-4 py-3 hover:bg-secondary transition-all duration-200 border-b border-light last:border-0 group animate-result-item"
                     style={{ animationDelay: `${idx * 30}ms` }}
                   >
                     <div className="flex items-start gap-3">
@@ -223,14 +209,14 @@ export function SearchInput({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-primary transition-colors">
+                          <span className="text-sm font-semibold text-primary group-hover:text-primary transition-colors">
                             {result.title}
                           </span>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(result.type)}`}>
                             {result.type}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">{result.description}</p>
+                        <p className="text-xs text-secondary line-clamp-1">{result.description}</p>
                       </div>
                       <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1">
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,23 +228,16 @@ export function SearchInput({
                 ))}
               </div>
               
-              {/* 
-                ============================================
-                خط سبز خوشکل - جایگزین فوتر
-                یک خط باریک با گرادیانت سبز
-                ============================================
-              */}
-              <div className="relative h-0.75 bg-linear-to-r from-transparent via-success to-transparent dark:from-transparent dark:via-success-400 dark:to-transparent" />
+              <div className="relative h-0.5 bg-linear-to-r from-transparent via-success to-transparent" />
             </div>
           ) : (
             !isLoading && (
-              // No results - Sad chick only
-              <div className="p-8 text-center bg-white dark:bg-gray-800 animate-fade-in-up">
+              <div className="p-8 text-center bg-primary animate-fade-in-up">
                 <div className="text-6xl mb-4">😔</div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  No results found for "<span className="font-medium text-gray-700 dark:text-gray-300">{query}</span>"
+                <p className="text-sm text-secondary">
+                  No results found for "<span className="font-medium text-primary">{query}</span>"
                 </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                <p className="text-xs text-tertiary mt-2">
                   Try searching with different keywords
                 </p>
               </div>
@@ -267,9 +246,6 @@ export function SearchInput({
         </div>
       )}
 
-      {/* ============================================
-         CSS ANIMATIONS (inline style to ensure they work)
-         ============================================ */}
       <style jsx>{`
         @keyframes dropdownFadeIn {
           0% {

@@ -9,6 +9,7 @@ interface CountUpProps {
   prefix?: string
   start?: number
   decimals?: number
+  className?: string
 }
 
 export function CountUp({ 
@@ -17,7 +18,8 @@ export function CountUp({
   suffix = '', 
   prefix = '', 
   start = 0,
-  decimals = 0 
+  decimals = 0,
+  className = ''
 }: CountUpProps) {
   const [count, setCount] = useState(start)
   const [isVisible, setIsVisible] = useState(false)
@@ -65,7 +67,7 @@ export function CountUp({
   }, [isVisible, end, start, duration, decimals])
 
   return (
-    <span ref={elementRef}>
+    <span ref={elementRef} className={className}>
       {prefix}{count.toFixed(decimals)}{suffix}
     </span>
   )

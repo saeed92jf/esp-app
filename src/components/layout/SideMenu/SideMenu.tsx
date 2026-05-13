@@ -64,15 +64,12 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
   return (
     <>
-      {/* Backdrop */}
       <div 
         className={`side-menu-backdrop ${isOpen ? 'open' : 'closed'}`}
         onClick={onClose}
       />
       
-      {/* Side Menu Panel */}
       <div className={`side-menu-panel ${isOpen ? 'open' : 'closed'}`}>
-        {/* Header */}
         <div className="side-menu-header">
           <div>
             <h2 className="side-menu-title">Menu</h2>
@@ -83,7 +80,6 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
           </button>
         </div>
 
-        {/* Navigation Items */}
         <div className="side-menu-content">
           <div className="side-menu-items">
             {menuItems.map((item) => {
@@ -120,7 +116,6 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="side-menu-footer">
           <p className="side-menu-version">ESP Webapp v1.0.0</p>
         </div>

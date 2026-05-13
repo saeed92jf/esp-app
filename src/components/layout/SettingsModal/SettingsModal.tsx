@@ -23,6 +23,23 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme } = useTheme()
   const modalRef = useRef<HTMLDivElement>(null)
   const [activeColor, setActiveColor] = useState('primary-color-blue')
+  const [position, setPosition] = useState<'bottom' | 'top'>('bottom')
+
+  // بررسی فضای کافی برای نمایش منو در موبایل
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      const rect = modalRef.current.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      
+      // اگر فضای کافی در پایین نیست، منو را بالا نمایش بده
+      if (spaceBelow < 300 && spaceAbove > spaceBelow) {
+        setPosition('top')
+      } else {
+        setPosition('bottom')
+      }
+    }
+  }, [isOpen])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,8 +58,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   }, [isOpen, onClose])
 
   const handleColorChange = (colorClassName: string, hue: number, sat: number, light: number) => {
-    // حذف کلاس‌های قبلی
-    document.body.classList.remove(
+    document.documentElement.classList.remove(
       'primary-color-blue',
       'primary-color-green',
       'primary-color-red',
@@ -50,24 +66,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       'primary-color-purple'
     )
     
-    // اضافه کردن کلاس جدید
-    document.body.classList.add(colorClassName)
+    document.documentElement.classList.add(colorClassName)
     setActiveColor(colorClassName)
     
-    // تغییر مستقیم متغیرها
     const root = document.documentElement
     root.style.setProperty('--primary-h', hue.toString())
     root.style.setProperty('--primary-s', `${sat}%`)
     root.style.setProperty('--primary-l', `${light}%`)
     
-    // ذخیره در localStorage
     localStorage.setItem('primary-color', colorClassName)
     localStorage.setItem('primary-hue', hue.toString())
     localStorage.setItem('primary-saturation', sat.toString())
     localStorage.setItem('primary-lightness', light.toString())
   }
 
-  // بارگذاری رنگ ذخیره شده در شروع
   useEffect(() => {
     const savedColor = localStorage.getItem('primary-color')
     const savedHue = localStorage.getItem('primary-hue')
@@ -75,7 +87,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const savedLight = localStorage.getItem('primary-lightness')
     
     if (savedColor) {
-      document.body.classList.add(savedColor)
+      document.documentElement.classList.add(savedColor)
       setActiveColor(savedColor)
     }
     
@@ -92,34 +104,43 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   return (
     <div 
       ref={modalRef}
-      className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50 animate-fade-in-up"
+      className={`
+        absolute right-0 z-50 w-80 sm:w-72
+        bg-primary rounded-2xl shadow-xl border border-light overflow-hidden
+        transition-all duration-200 animate-fade-in-up
+        ${position === 'bottom' ? 'mt-2 top-full' : 'mb-2 bottom-full'}
+      `}
+      style={{
+        maxHeight: 'calc(100vh - 100px)',
+        overflowY: 'auto'
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-linear-to-r from-primary-50/50 to-transparent dark:from-primary-900/20">
-        <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Settings</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-light bg-linear-to-r from-primary/5 to-transparent">
+        <h3 className="font-semibold text-sm text-primary">Settings</h3>
         <button
           onClick={onClose}
-          className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-1 rounded-lg hover:bg-tertiary transition-colors"
         >
-          <FontAwesomeIcon icon={faTimes} className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+          <FontAwesomeIcon icon={faTimes} className="w-3.5 h-3.5 text-tertiary" />
         </button>
       </div>
 
       {/* Body */}
       <div className="py-2">
         {/* Theme */}
-        <div className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+        <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <FontAwesomeIcon icon={faGlobe} className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Appearance</span>
+            <span className="text-xs font-medium text-secondary">Appearance</span>
           </div>
           <div className="flex gap-1.5 ml-5">
             <button
               onClick={() => setTheme('light')}
               className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 theme === 'light'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary text-inverse shadow-sm'
+                  : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               }`}
             >
               <FontAwesomeIcon icon={faSun} className="w-3 h-3 mr-1" />
@@ -129,8 +150,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               onClick={() => setTheme('dark')}
               className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 theme === 'dark'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary text-inverse shadow-sm'
+                  : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               }`}
             >
               <FontAwesomeIcon icon={faMoon} className="w-3 h-3 mr-1" />
@@ -140,8 +161,8 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               onClick={() => setTheme('system')}
               className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 theme === 'system'
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary text-inverse shadow-sm'
+                  : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               }`}
             >
               System
@@ -149,13 +170,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
+        <div className="h-px bg-light my-1" />
 
-        {/* Primary Color - انتخاب رنگ با نمایش رنگ فعال */}
-        <div className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+        {/* Primary Color */}
+        <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <FontAwesomeIcon icon={faPalette} className="w-3.5 h-3.5 text-primary" />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Primary Color</span>
+            <span className="text-xs font-medium text-secondary">Primary Color</span>
           </div>
           <div className="flex gap-2 ml-5 flex-wrap">
             {colorOptions.map((color) => (
@@ -171,7 +192,6 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 }}
                 title={color.name}
               >
-                {/* آیکون تیک برای رنگ فعال */}
                 {activeColor === color.className && (
                   <FontAwesomeIcon 
                     icon={faCheck} 
@@ -183,16 +203,16 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
           </div>
         </div>
 
-        <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
+        <div className="h-px bg-light my-1" />
 
         {/* Security */}
-        <div className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+        <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FontAwesomeIcon icon={faShieldAlt} className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">2FA Security</span>
+              <span className="text-xs font-medium text-secondary">2FA Security</span>
             </div>
-            <button className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <button className="px-2.5 py-1 rounded-lg text-[10px] font-medium bg-tertiary text-secondary hover:bg-tertiary/80 transition-colors">
               Enable
             </button>
           </div>

@@ -138,7 +138,6 @@
   height: 28px;
   font-size: 28px;
   margin: 0;
-  color: var(--color-primary-200);
 }
 
 @media (min-width: 768px) {
@@ -162,7 +161,6 @@
 .stats-number {
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
-  color: var(--color-primary-200);
   margin-bottom: var(--space-1);
   text-align: center;
   line-height: var(--leading-tight);
@@ -191,7 +189,6 @@
 .stats-label {
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
-  color:var(--color-primary-200);
   text-align: center;
 }
 
@@ -243,4 +240,32 @@
 
 .stats-hidden {
   opacity: 0;
+}
+
+.text-gradient-azure {
+  background: var(--gradient-azure);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-emerald {
+  background: var(--gradient-emerald);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-amber {
+  background: var(--gradient-amber);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-rose {
+  background: var(--gradient-rose);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

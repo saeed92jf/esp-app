@@ -2,6 +2,7 @@
 
 import { forwardRef, useState } from 'react'
 import { Input, InputProps } from '@/components/ui/Input/Input'
+
 export interface PhoneInputProps extends Omit<InputProps, 'type' | 'onChange'> {
   onChange?: (value: string, isValid: boolean) => void
   countryCode?: string
@@ -43,9 +44,8 @@ export const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
 
     return (
       <div className="relative">
-        {/* Country code prefix (optional) */}
         {countryCode && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 pointer-events-none z-10">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none z-10">
             <span className="text-sm">{countryCode}</span>
           </div>
         )}

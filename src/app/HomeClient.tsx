@@ -1,4 +1,4 @@
-// app/page.tsx (Home page)
+// app/HomeClient.tsx
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -12,8 +12,9 @@ import {
   faChartSimple, faUserGroup, faMoneyBill, faBriefcase,
   faCrown, faWrench, faUserAlt
 } from '@fortawesome/free-solid-svg-icons'
-import { Button, EmailInput, CountUp, SearchInput,Tabs } from '@/components/ui'
+import { Button, EmailInput, CountUp, SearchInput, Tabs } from '@/components/ui'
 import { Logo } from '@/components/ui'
+import { Card, CardContent } from '@/components/ui'
 
 export function HomeClient() {
   const { data: session, status } = useSession()
@@ -28,13 +29,13 @@ export function HomeClient() {
   const sectionsRef = useRef<(HTMLDivElement | null)[]>([])
 
   const featureTabs = [
-  { id: 'all', label: 'All Features', icon: faChartSimple },
-  { id: 'crm', label: 'CRM', icon: faUserGroup },
-  { id: 'project', label: 'Projects', icon: faFolder },
-  { id: 'finance', label: 'Finance', icon: faMoneyBill },
-  { id: 'hr', label: 'HR', icon: faBriefcase },
-]
-  // تابع برای گرفتن آیکون نقش
+    { id: 'all', label: 'All Features', icon: faChartSimple },
+    { id: 'crm', label: 'CRM', icon: faUserGroup },
+    { id: 'project', label: 'Projects', icon: faFolder },
+    { id: 'finance', label: 'Finance', icon: faMoneyBill },
+    { id: 'hr', label: 'HR', icon: faBriefcase },
+  ]
+
   const getRoleIcon = (role?: string) => {
     switch (role) {
       case 'ADMIN': return faCrown
@@ -45,15 +46,14 @@ export function HomeClient() {
   }
 
   const getRoleIconColor = (role?: string) => {
-  switch (role) {
-    case 'ADMIN': return 'text-yellow-500' 
-    case 'ENGINEER': return 'text-blue-500'
-    case 'EMPLOYEE': return 'text-green-500'
-    default: return 'text-primary-500'
+    switch (role) {
+      case 'ADMIN': return 'text-yellow-500' 
+      case 'ENGINEER': return 'text-blue-500'
+      case 'EMPLOYEE': return 'text-green-500'
+      default: return 'text-primary'
+    }
   }
-}
 
-  // تابع برای گرفتن متن نقش
   const getRoleLabel = (role?: string) => {
     switch (role) {
       case 'ADMIN': return 'Administrator'
@@ -63,7 +63,6 @@ export function HomeClient() {
     }
   }
 
-  // Intersection Observer for scroll animations
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -84,7 +83,6 @@ export function HomeClient() {
     return () => observer.disconnect()
   }, [])
 
-  // Update underline position when active tab changes
   const updateUnderlinePosition = useCallback(() => {
     const activeTabElement = tabsRef.current[getTabIndex(activeTab)]
     if (activeTabElement && containerRef.current) {
@@ -111,9 +109,6 @@ export function HomeClient() {
     return tabIds.indexOf(tabId)
   }
 
-  // ============================================
-  // QUICK ACCESS ITEMS
-  // ============================================
   const quickAccessItems = [
     { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', color: 'from-blue-500 to-blue-600', bgColor: 'bg-blue-500 dark:bg-blue-500/10' },
     { icon: faUsers, title: 'CRM', href: '/', color: 'from-purple-500 to-purple-600', bgColor: 'bg-purple-50 dark:bg-purple-500/10' },
@@ -123,30 +118,48 @@ export function HomeClient() {
     { icon: faFileInvoice, title: 'Invoices', href: '/', color: 'from-teal-500 to-teal-600', bgColor: 'bg-teal-50 dark:bg-teal-500/10' },
   ]
 
-  // ============================================
-  // STATS DATA with actual values for countup
-  // ============================================
-  const stats = [
-    { value: 10250, label: 'Active Users', icon: faUsers, suffix: '+' },
-    { value: 528, label: 'Companies', icon: faBuilding, suffix: '+' },
-    { value: 98, label: 'Satisfaction', icon: faStar, suffix: '%' },
-    { value: 24, label: 'Support', icon: faHeadset, suffix: '/7' },
-  ]
+ // ============================================
+// STATS DATA with colors
+// ============================================
+const stats = [
+  { 
+    value: 10250, 
+    label: 'Active Users', 
+    icon: faUsers, 
+    suffix: '+',
+    iconColor: 'text-blue-500 bg-blue-100 dark:bg-blue-900/20',
+    numberColor: 'text-blue-600 dark:text-blue-400',
+    labelColor: 'text-blue-600/80 dark:text-blue-400/80'
+  },
+  { 
+    value: 528, 
+    label: 'Companies', 
+    icon: faBuilding, 
+    suffix: '+',
+    iconColor: 'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/20',
+    numberColor: 'text-emerald-600 dark:text-emerald-400',
+    labelColor: 'text-emerald-600/80 dark:text-emerald-400/80'
+  },
+  { 
+    value: 98, 
+    label: 'Satisfaction', 
+    icon: faStar, 
+    suffix: '%',
+    iconColor: 'text-amber-500 bg-amber-100 dark:bg-amber-900/20',
+    numberColor: 'text-amber-600 dark:text-amber-400',
+    labelColor: 'text-amber-600/80 dark:text-amber-400/80'
+  },
+  { 
+    value: 24, 
+    label: 'Support', 
+    icon: faHeadset, 
+    suffix: '/7',
+    iconColor: 'text-purple-500 bg-purple-100 dark:bg-purple-900/20',
+    numberColor: 'text-purple-600 dark:text-purple-400',
+    labelColor: 'text-purple-600/80 dark:text-purple-400/80'
+  },
+]
 
-  // ============================================
-  // TABS WITH ICONS
-  // ============================================
-  const tabs = [
-    { id: 'all', label: 'All Features', icon: faChartSimple },
-    { id: 'crm', label: 'CRM', icon: faUserGroup },
-    { id: 'project', label: 'Projects', icon: faFolder },
-    { id: 'finance', label: 'Finance', icon: faMoneyBill },
-    { id: 'hr', label: 'HR', icon: faBriefcase },
-  ]
-
-  // ============================================
-  // FEATURES DATA
-  // ============================================
   const features = {
     all: [
       { icon: faUsers, title: 'CRM', desc: 'Manage client relationships and interactions.', category: 'crm', color: 'from-blue-500 to-blue-600' },
@@ -198,228 +211,164 @@ export function HomeClient() {
 
   return (
     <>
-
-      {/* ============================================
-         HERO SECTION
-         ============================================ */}
+      {/* HERO SECTION */}
       <section 
         id="hero" 
         ref={el => { if (el) sectionsRef.current[0] = el as HTMLDivElement }}
         className="relative min-h-screen flex items-center justify-center bg-primary"
       >
         <div className="relative container text-center py-20">
-          {/* Logo */}
-            <div className="flex justify-center mb-8 animate-fade-in-up delay-200">
-  
-    <Logo variant="hero" />
+          <div className="flex justify-center mb-8 animate-fade-in-up delay-200">
+            <Logo variant="hero" />
+          </div>
 
-</div>
-
-       
-
-          {/* Search Input */}
           <div className={`relative z-20 mb-4 ${isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'}`}>
             <SearchInput />
           </div>
-         
 
-{/* ============================================
-   QUICK ACCESS SECTION
-   ============================================ */}
-<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-15">
-  {quickAccessItems.map((item, index) => (
-    <Link
-      key={index}
-      href={session ? item.href : '/login'}
-      className="quick-card group"
-    >
-      <div className="quick-card-icon">
-        <FontAwesomeIcon icon={item.icon} />
-      </div>
-      <div className="quick-card-title">{item.title}</div>
-      {!session && (
-        <div className="quick-card-subtitle">Login required</div>
-      )}
-    </Link>
-  ))}
-</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+            {quickAccessItems.map((item, index) => (
+              <Link
+                key={index}
+                href={session ? item.href : '/login'}
+                className="quick-card group"
+              >
+                <div className="quick-card-icon">
+                  <FontAwesomeIcon icon={item.icon} />
+                </div>
+                <div className="quick-card-title">{item.title}</div>
+                {!session && (
+                  <div className="quick-card-subtitle">Login required</div>
+                )}
+              </Link>
+            ))}
+          </div>
+     
         </div>
+        
       </section>
 
-  {/* ============================================
-   STATS SECTION with CountUp Animation
-   ============================================ */}
+      {/* STATS SECTION */}
 <section 
   id="stats" 
   ref={el => { if (el) sectionsRef.current[1] = el as HTMLDivElement }}
   className="stats-section"
 >
-  <div className="stats-container bg-transparent dark:bg-red-900 rounded-2xl p-8">
+  <div className="stats-container rounded-2xl p-8">
     <div className="stats-grid">
       {stats.map((stat, index) => (
         <div 
           key={index}
           className={`stats-card ${isRevealed('stats') ? `animate-stats stats-delay-${index + 1}` : 'stats-hidden'}`}
         >
-          <div className="stats-icon">
+          <div className={`stats-icon ${stat.iconColor}`}>
             <FontAwesomeIcon icon={stat.icon} />
           </div>
-          <div className="stats-number">
+          <div className={`stats-number ${stat.numberColor}`}>
             <CountUp end={stat.value} suffix={stat.suffix} duration={2000} />
           </div>
-          <div className="stats-label">{stat.label}</div>
+          <div className={`stats-label ${stat.labelColor}`}>{stat.label}</div>
         </div>
       ))}
     </div>
   </div>
 </section>
 
-    {/* ============================================
-   FEATURES SECTION
-   ============================================ */}
-<section className="section bg-primary">
-  <div className="container">
-    {/* Section Header */}
-    <div className="text-center mb-12">
-   <span className="text-primary font-semibold text-sm uppercase tracking-wider">
-  Features
-</span>
-      <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2">
-        Everything you need to succeed
+      {/* FEATURES SECTION */}
+      <section className="section bg-primary">
+        <div className="container">
+          <div className="text-center mb-12">
+            <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+              Features
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2">
+              Everything you need to succeed
+            </h2>
+            <p className="text-xl text-secondary mt-2 max-w-2xl mx-auto">
+              Powerful tools designed to help you work smarter, not harder
+            </p>
+          </div>
+
+          <div className="flex justify-center mb-12">
+            <Tabs
+              items={featureTabs}
+              activeTab={activeTab}
+              onChange={setActiveTab}
+              className="w-full max-w-4xl"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {features[activeTab as keyof typeof features].map((feature, index) => (
+              <Link
+                key={index}
+                href={`/features/${feature.title.toLowerCase()}`}
+                className="feature-card group"
+              >
+                <div className="feature-card-icon">
+                  <FontAwesomeIcon icon={feature.icon} className="text-xl" />
+                </div>
+                <h3 className="feature-card-title">
+                  {feature.title}
+                </h3>
+                <p className="feature-card-desc">
+                  {feature.desc}
+                </p>
+                <div className="feature-card-link">
+                  Learn more
+                  <FontAwesomeIcon icon={faChevronRight} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* NEWSLETTER SECTION */}
+<section 
+  id="newsletter" 
+  ref={el => { if (el) sectionsRef.current[3] = el as HTMLDivElement }}
+  className="section bg-primary"
+>
+  <div className="container max-w-2xl mx-auto text-center">
+    <div className={isRevealed('newsletter') ? 'animate-fade-in-up' : 'opacity-0'}>
+      <div className="w-20 h-20 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-0">
+        <FontAwesomeIcon icon={faEnvelope} className="text-5xl text-disabled" />
+      </div>
+      <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+        Stay in the loop
       </h2>
-      <p className="text-xl text-secondary mt-2 max-w-2xl mx-auto">
-        Powerful tools designed to help you work smarter, not harder
+      <p className="text-xl text-secondary mb-8">
+        Get the latest updates, features, and insights delivered straight to your inbox.
       </p>
+
+      {isSubmitted ? (
+        <div className="bg-success/10 border border-success/30 rounded-2xl p-4">
+          <p className="text-success flex items-center justify-center gap-2">
+            <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5" />
+            Thanks for subscribing! Check your email for confirmation.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto justify-center">
+          <EmailInput
+            placeholder="Enter your email address"
+            value={newsletterEmail}
+            onChange={(val) => setNewsletterEmail(val)}
+            required
+            className="flex-1 min-w-60"
+            inputSize="lg"
+          />
+          <Button type="submit" variant="primary" size="lg" rightIcon={faRocket}>
+            Subscribe
+          </Button>
+        </form>
+      )}
+      <p className="text-sm text-tertiary mt-4">No spam. Unsubscribe anytime.</p>
     </div>
-
-   <div className="flex justify-center mb-12">
-  <Tabs
-    items={featureTabs}
-    activeTab={activeTab}
-    onChange={setActiveTab}
-    className="w-full max-w-4xl"
-  />
-</div>
-
-   {/* Features Grid */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-  {features[activeTab as keyof typeof features].map((feature, index) => (
-    <Link
-      key={index}
-      href={`/features/${feature.title.toLowerCase()}`}
-      className="feature-card group"
-    >
-      <div className="feature-card-icon">
-        <FontAwesomeIcon icon={feature.icon} className="text-xl" />
-      </div>
-      <h3 className="feature-card-title">
-        {feature.title}
-      </h3>
-      <p className="feature-card-desc">
-        {feature.desc}
-      </p>
-      <div className="feature-card-link">
-        Learn more
-        <FontAwesomeIcon icon={faChevronRight} />
-      </div>
-    </Link>
-  ))}
-</div>
   </div>
 </section>
-      {/* ============================================
-         CTA SECTION
-         ============================================ */}
-      <section className="section bg-linear-to-r from-primary-600 to-primary-500 dark:from-primary-700 dark:to-primary-600">
-        <div className="container text-center">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Ready to transform your business?
-            </h2>
-            <p className="text-lg text-primary-100 dark:text-primary-200 mb-8">
-              Join thousands of satisfied customers and start your journey today
-            </p>
-            <div className="flex flex-wrap gap-4 justify-center">
-              <Link href={session ? "/dashboard" : "/register"}>
-                <Button variant="primary" size="lg" rightIcon={faArrowRight} className="bg-white text-primary hover:bg-gray-100 dark:bg-gray-100 dark:text-primary-700">
-                  {session ? "Go to Dashboard" : "Get Started Free"}
-                </Button>
-              </Link>
-              <Link href="/contact">
-                <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
-                  Talk to Sales
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============================================
-         NEWSLETTER SECTION
-         ============================================ */}
-      <section 
-        id="newsletter" 
-        ref={el => { if (el) sectionsRef.current[3] = el as HTMLDivElement }}
-        className="section bg-white dark:bg-gray-900"
-      >
-        <div className="container max-w-2xl mx-auto text-center">
-          <div className={isRevealed('newsletter') ? 'animate-fade-in-up' : 'opacity-0'}>
-            <div className="w-20 h-20 mx-auto bg-primary/10 dark:bg-primary-500/20 rounded-2xl flex items-center justify-center mb-6">
-              <FontAwesomeIcon icon={faEnvelope} className="text-3xl text-primary dark:text-primary-400" />
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-              Stay in the loop
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-              Get the latest updates, features, and insights delivered straight to your inbox.
-            </p>
-
-            {isSubmitted ? (
-              <div className="bg-success/10 dark:bg-success-500/20 border border-success/30 dark:border-success-500/30 rounded-2xl p-4">
-                <p className="text-success dark:text-success-400 flex items-center justify-center gap-2">
-                  <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5" />
-                  Thanks for subscribing! Check your email for confirmation.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
-                <EmailInput
-                  placeholder="Enter your email address"
-                  value={newsletterEmail}
-                  onChange={(val) => setNewsletterEmail(val)}
-                  required
-                  className="flex-1"
-                />
-                <Button type="submit" variant="primary" size="lg" rightIcon={faRocket}>
-                  Subscribe
-                </Button>
-              </form>
-            )}
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">No spam. Unsubscribe anytime.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Styles for Sliding Underline */}
-      <style jsx>{`
-        .tabs-underline {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          height: 3px;
-          background: linear-gradient(90deg, #4f46e5, #6366f1);
-          border-radius: 9999px;
-          transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-          z-index: 1;
-          box-shadow: 0 0 8px #4f46e5;
-        }
-        
-        .dark .tabs-underline {
-          background: linear-gradient(90deg, #818cf8, #a5b4fc);
-          box-shadow: 0 0 8px #6366f1;
-        }
-      `}</style>
     </>
   )
 }

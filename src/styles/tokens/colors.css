@@ -1,12 +1,10 @@
-/* فایل styles/tokens/colors.css - نسخه نهایی و کوتاه */
 
 /* ============================================
    COLOR SYSTEM - TOKENS (HSL - Dynamic)
-   با یک خط برای هر خانواده رنگی
    ============================================ */
 
 :root {
-  /* ===== Secondary (خاکستری/آبی) ===== */
+  /* ===== Secondary ===== */
   --secondary-h: 215;
   --secondary-s: 25%;
   --secondary-l: 50%;
@@ -93,18 +91,115 @@
 }
 
 /* ============================================
-   DARK MODE - فقط تغییر lightness
+   DARK MODE 
    ============================================ */
 
 .dark {
-  /* Gray - در دارک مود lighter می‌شود */
   --gray-l: 35%;
-  
-  /* Secondary - کمی brighter */
   --secondary-l: 55%;
-  
-  /* Success, Danger, Warning - کمی brighter */
   --success-l: 55%;
   --danger-l: 55%;
   --warning-l: 55%;
+}
+
+/* ======= Custom ==========*/
+/* styles/tokens/dual-colors.css */
+
+:root {
+  /* ===== GOLD (طلایی) ===== */
+  --gold-light: hsl(45, 96%, 55%);
+  --gold-dark: hsl(45, 96%, 35%);
+  
+  /* ===== SILVER (نقره‌ای) ===== */
+  --silver-light: hsl(220, 14%, 60%);
+  --silver-dark: hsl(220, 14%, 40%);
+  
+  /* ===== COPPER (مسی) ===== */
+  --copper-light: hsl(20, 85%, 55%);
+  --copper-dark: hsl(20, 85%, 35%);
+  
+  /* ===== AZURE (آبی لاجوردی) ===== */
+  --azure-light: hsl(210, 92%, 55%);
+  --azure-dark: hsl(210, 92%, 35%);
+  
+  /* ===== BROWN (قهوه‌ای) ===== */
+  --brown-light: hsl(30, 70%, 45%);
+  --brown-dark: hsl(30, 70%, 25%);
+  
+  /* ===== TEAL (فیروزه‌ای) ===== */
+  --teal-light: hsl(170, 80%, 50%);
+  --teal-dark: hsl(170, 80%, 30%);
+  
+  /* ===== ROSE (رزگلی) ===== */
+  --rose-light: hsl(340, 85%, 60%);
+  --rose-dark: hsl(340, 85%, 40%);
+  
+  /* ===== LIME (لیمویی) ===== */
+  --lime-light: hsl(80, 85%, 55%);
+  --lime-dark: hsl(80, 85%, 35%);
+  
+  /* ===== INDIGO (نیلی) ===== */
+  --indigo-light: hsl(245, 80%, 60%);
+  --indigo-dark: hsl(245, 80%, 40%);
+  
+  /* ===== EMERALD (زمردی) ===== */
+  --emerald-light: hsl(160, 84%, 45%);
+  --emerald-dark: hsl(160, 84%, 25%);
+  
+  /* ===== AMBER (کهربایی) ===== */
+  --amber-light: hsl(45, 100%, 50%);
+  --amber-dark: hsl(45, 100%, 30%);
+  
+  /* ===== PLATINUM (پلاتینی) ===== */
+  --platinum-light: hsl(0, 0%, 75%);
+  --platinum-dark: hsl(0, 0%, 55%);
+  
+  /* ===== BRONZE (برنزی) ===== */
+  --bronze-light: hsl(30, 60%, 40%);
+  --bronze-dark: hsl(30, 60%, 20%);
+}
+
+/* ============================================
+   DARK MODE - فقط رنگ تیره تغییر می‌کند
+   ============================================ */
+
+.dark {
+  --gold-light: hsl(45, 96%, 65%);
+  --gold-dark: hsl(45, 96%, 45%);
+  
+  --silver-light: hsl(220, 14%, 70%);
+  --silver-dark: hsl(220, 14%, 50%);
+  
+  --copper-light: hsl(20, 85%, 65%);
+  --copper-dark: hsl(20, 85%, 45%);
+  
+  --azure-light: hsl(210, 92%, 65%);
+  --azure-dark: hsl(210, 92%, 45%);
+  
+  --brown-light: hsl(30, 70%, 55%);
+  --brown-dark: hsl(30, 70%, 35%);
+  
+  --teal-light: hsl(170, 80%, 60%);
+  --teal-dark: hsl(170, 80%, 40%);
+  
+  --rose-light: hsl(340, 85%, 70%);
+  --rose-dark: hsl(340, 85%, 50%);
+  
+  --lime-light: hsl(80, 85%, 65%);
+  --lime-dark: hsl(80, 85%, 45%);
+  
+  --indigo-light: hsl(245, 80%, 70%);
+  --indigo-dark: hsl(245, 80%, 50%);
+  
+  --emerald-light: hsl(160, 84%, 55%);
+  --emerald-dark: hsl(160, 84%, 35%);
+  
+  --amber-light: hsl(45, 100%, 60%);
+  --amber-dark: hsl(45, 100%, 40%);
+  
+  --platinum-light: hsl(0, 0%, 85%);
+  --platinum-dark: hsl(0, 0%, 65%);
+  
+  --bronze-light: hsl(30, 60%, 50%);
+  --bronze-dark: hsl(30, 60%, 30%);
 }

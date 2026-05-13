@@ -1,50 +1,31 @@
-// src/app/test/page.tsx
-'use client'
+import { Button } from "@/components/ui/shadcn.components/button.shadcn"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/shadcn.components/card.shadcn"
+import { Input } from "@/components/ui/shadcn.components/input.shadcn"
+import { Label } from "@/components/ui/shadcn.components/label.shadcn"
 
-import { useTheme } from '@/theme/ThemeProvider'
-
-export default function TestPage() {
-  const { theme, toggleTheme, resolvedTheme } = useTheme()
-  
+export default function TestShadcnPage() {
   return (
-    <div className="p-8">
-      <h1>تست رنگ‌ها</h1>
-      
-      <div className="space-y-4 mt-4">
-        <div className="bg-primary p-4 rounded">
-          <p className="text-white">bg-primary - text-white</p>
-        </div>
-        
-        <p className="text-primary">text-primary (باید به رنگ پرایمری باشد)</p>
-        <p className="text-primary-dark">text-primary-dark (باید سفید/مشکی باشد)</p>
-        <p className="text-secondary">text-secondary (باید خاکستری باشد)</p>
-        
-        <div className="mt-4 p-4 bg-secondary rounded">
-          <p>bg-secondary</p>
-        </div>
-
-    <span className="text-primary font-semibold text-sm uppercase tracking-wider">
-  Features
-</span>
-
-<span 
-  className="font-semibold text-sm uppercase tracking-wider"
-  style={{ color: 'var(--color-primary)' }}
->
-  Features
-</span>
-        
-        <button 
-          onClick={toggleTheme}
-          className="px-4 py-2 bg-primary text-white rounded mt-4"
-        >
-          Current Theme: {resolvedTheme} - کلیک برای تغییر
-        </button>
-      </div>
-      
-      <div className="mt-4 text-xs text-gray-500">
-        dark class on html: {document.documentElement.classList.contains('dark') ? '✅ دارد' : '❌ ندارد'}
-      </div>
+    <div className="container mx-auto py-10 space-y-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>تست shadcn/ui</CardTitle>
+          <CardDescription>کامپوننت‌ها با موفقیت نصب شدن</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">ایمیل</Label>
+            <Input id="email" type="email" placeholder="example@email.com" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">رمز عبور</Label>
+            <Input id="password" type="password" />
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">انصراف</Button>
+          <Button>ورود</Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }

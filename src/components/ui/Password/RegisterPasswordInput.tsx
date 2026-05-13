@@ -61,7 +61,7 @@ export const RegisterPasswordInput = forwardRef<HTMLInputElement, RegisterPasswo
     }
 
     const getStrengthColor = () => {
-      if (strength <= 2) return 'text-danger'
+      if (strength <= 2) return 'text-error'
       if (strength <= 4) return 'text-warning'
       return 'text-success'
     }
@@ -84,8 +84,8 @@ export const RegisterPasswordInput = forwardRef<HTMLInputElement, RegisterPasswo
         />
         
         {internalValue.length > 0 && !isValid && (
-          <div className="form-hint-box mt-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
+          <div className="mt-3 p-3 bg-secondary rounded-lg border border-light">
+            <p className="text-xs font-medium text-secondary mb-2">
               Password must contain:
             </p>
             <ul className="space-y-1">
@@ -94,10 +94,10 @@ export const RegisterPasswordInput = forwardRef<HTMLInputElement, RegisterPasswo
                   key={index} 
                   className={cn(
                     'text-xs flex items-center gap-2',
-                    req.met ? 'text-success' : 'text-gray-400 dark:text-gray-500'
+                    req.met ? 'text-success' : 'text-tertiary'
                   )}
                 >
-                  <span className={req.met ? 'text-success' : ''}>
+                  <span className={req.met ? 'text-success' : 'text-tertiary'}>
                     {req.met ? '✓' : '○'}
                   </span>
                   {req.text}
@@ -108,7 +108,7 @@ export const RegisterPasswordInput = forwardRef<HTMLInputElement, RegisterPasswo
         )}
 
         {internalValue.length > 0 && isValid && (
-          <div className="mt-3 p-3 bg-success/10 rounded-lg border border-success/20 animate-fade-in">
+          <div className="mt-3 p-3 bg-success/10 rounded-lg border border-success/30 animate-fade-in">
             <p className="text-sm text-success flex items-center gap-2">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

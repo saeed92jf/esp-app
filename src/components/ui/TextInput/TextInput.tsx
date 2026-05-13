@@ -2,6 +2,7 @@
 
 import { forwardRef } from 'react'
 import { Input, InputProps } from '@/components/ui/Input/Input'
+
 export interface TextInputProps extends Omit<InputProps, 'type'> {
   // No additional props needed
 }
