@@ -1,10 +1,33 @@
+// components/layout/MegaMenu/MegaMenu.tsx
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { cn } from '@/lib/cn'
+import { cn } from '@/lib/utils'
 
-const menuItems = [
+// ============================================
+// MEGA MENU COMPONENT
+// Desktop mega menu with dropdown on hover
+// Mobile responsive with horizontal scroll
+// Uses Tailwind CSS - minimal custom CSS for scrollbar
+// ============================================
+
+interface MegaMenuItem {
+  title: string
+  href?: string
+  megaMenu?: {
+    columns: {
+      title: string
+      items: {
+        name: string
+        href: string
+        desc?: string
+      }[]
+    }[]
+  }
+}
+
+const menuItems: MegaMenuItem[] = [
   {
     title: 'Company',
     megaMenu: {
@@ -153,7 +176,7 @@ export function MegaMenu() {
 
   return (
     <>
-      {/* Menu Bar - بدون wrap با اسکرول در موبایل */}
+      {/* Menu Bar - Scrollable on mobile, no wrap */}
       <div className="relative w-full">
         <div className="overflow-x-auto scrollbar-none lg:overflow-visible">
           <nav className="flex items-center gap-1 min-w-max lg:min-w-0">
@@ -215,7 +238,7 @@ export function MegaMenu() {
         />
       )}
 
-      {/* MegaMenu Content - Full Width Responsive */}
+      {/* MegaMenu Content - Full Width */}
       <div 
         ref={megaMenuRef}
         className={cn(
@@ -270,6 +293,7 @@ export function MegaMenu() {
         <div className="h-0.5 bg-linear-to-r from-transparent via-primary/50 to-transparent" />
       </div>
 
+      {/* Custom scrollbar hide styles */}
       <style jsx>{`
         .scrollbar-none::-webkit-scrollbar {
           display: none;

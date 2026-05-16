@@ -18,26 +18,29 @@
   
   /* ===== Background Colors ===== */
   --bg-primary: var(--color-white);
-  --bg-secondary: var(--color-gray-50);
-  --bg-tertiary: var(--color-gray-100);
-  --bg-inverse: var(--color-gray-900);
+  --bg-secondary: var(--color-slate-300);
+  --bg-tertiary: var(--color-slate-200);
+  --bg-inverse: var(--color-slate-900);
+  --bg-input: var(--color-slate-100);
   --bg-overlay: rgba(0, 0, 0, 0.5);
   --bg-overlay-light: rgba(255, 255, 255, 0.8);
   
   /* ===== Border Colors ===== */
-  --border-light: var(--color-gray-100);
-  --border-medium: var(--color-gray-300);
-  --border-dark: var(--color-gray-400);
+  --border-extra-light: var(--color-slate-300);
+  --border-light: var(--color-slate-400);
+  --border-medium: var(--color-slate-500);
+  --border-dark: var(--color-slate-600);
   --border-focus: var(--color-primary);
   --border-error: var(--color-danger-500);
   --border-success: var(--color-success-500);
   --border-warning: var(--color-warning-500);
+  --border-input: var(--color-slate-700)
   
   /* ===== Surface Colors ===== */
   --surface-primary: var(--color-white);
-  --surface-secondary: var(--color-gray-50);
-  --surface-tertiary: var(--color-gray-100);
-  --surface-hover: var(--color-gray-100);
+  --surface-secondary: var(--color-slate-50);
+  --surface-tertiary: var(--color-slate-100);
+  --surface-hover: var(--color-slate-100);
   
  }
 
@@ -57,33 +60,34 @@
   --text-link-hover: var(--color-primary-300);
   
   /* ===== Background Colors ===== */
-  --bg-primary: var(--color-gray-950);
-  --bg-secondary: var(--color-gray-900);
-  --bg-tertiary: var(--color-gray-800);
+  --bg-primary: var(--color-slate-950);
+  --bg-secondary: var(--color-slate-900);
+  --bg-tertiary: var(--color-slate-800);
   --bg-inverse: var(--color-white);
   --bg-overlay: rgba(0, 0, 0, 0.7);
   --bg-overlay-light: rgba(0, 0, 0, 0.5);
   
   /* ===== Border Colors ===== */
-  --border-light: var(--color-gray-400);
-  --border-medium: var(--color-gray-700);
-  --border-dark: var(--color-gray-600);
+   --border-extra-light: var(--color-slate-300);
+  --border-light: var(--color-slate-400);
+  --border-medium: var(--color-slate-500);
+  --border-dark: var(--color-slate-600);
   --border-focus: var(--color-primary-400);
   --border-error: var(--color-danger-500);
   --border-success: var(--color-success-500);
   --border-warning: var(--color-warning-500);
   
   /* ===== Surface Colors ===== */
-  --surface-primary: var(--color-gray-900);
-  --surface-secondary: var(--color-gray-800);
-  --surface-tertiary: var(--color-gray-700);
-  --surface-hover: var(--color-gray-700);
+  --surface-primary: var(--color-slate-900);
+  --surface-secondary: var(--color-slate-800);
+  --surface-tertiary: var(--color-slate-700);
+  --surface-hover: var(--color-slate-700);
   
 
 }
 
 /* ============================================
-   GRADIENTS (عمومی - یکبار تولید)
+   GRADIENTS 
    ============================================ */
 
 :root,
@@ -93,6 +97,7 @@
   --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
   --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   --gradient-shine: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  --gradient-logo:  linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   
   /* Text Gradients */
   --text-gradient-primary: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
@@ -130,7 +135,7 @@
 }
 
 /* ============================================
-   UTILITY CLASSES (برای استفاده آسان)
+   UTILITY CLASSES 
    ============================================ */
 
 /* Text Colors */
@@ -156,6 +161,7 @@
 .bg-gradient-hero { background: var(--gradient-hero); }
 .bg-gradient-card { background: var(--gradient-card); }
 .bg-gradient-cta { background: var(--gradient-cta); }
+.bg-gradient-logo {background: var(--gradient-logo);}
 
 .text-gradient-primary {
   background: var(--text-gradient-primary);
@@ -164,286 +170,8 @@
   color: transparent;
 }
 
-
 /* Hover Utilities */
 .hover\:bg-tertiary:hover { background-color: var(--bg-tertiary); }
 .hover\:text-primary:hover { color: var(--color-primary); }
 
-/* styles/themes/semantic-gradients.css */
 
-/* ============================================
-   SEMANTIC GRADIENTS
-   ============================================ */
-
-/* ============================================
-   LIGHT MODE
-   ============================================ */
-
-:root,
-.light {
-  /* ===== Gold Gradients ===== */
-  --gradient-gold: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
-  --gradient-gold-reverse: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-  --gradient-gold-soft: linear-gradient(135deg, var(--gold-light), color-mix(in srgb, var(--gold-dark), transparent 30%));
-  
-  /* ===== Silver Gradients ===== */
-  --gradient-silver: linear-gradient(135deg, var(--silver-light), var(--silver-dark));
-  --gradient-silver-reverse: linear-gradient(135deg, var(--silver-dark), var(--silver-light));
-  --gradient-silver-soft: linear-gradient(135deg, var(--silver-light), color-mix(in srgb, var(--silver-dark), transparent 30%));
-  
-  /* ===== Copper Gradients ===== */
-  --gradient-copper: linear-gradient(135deg, var(--copper-light), var(--copper-dark));
-  --gradient-copper-reverse: linear-gradient(135deg, var(--copper-dark), var(--copper-light));
-  --gradient-copper-soft: linear-gradient(135deg, var(--copper-light), color-mix(in srgb, var(--copper-dark), transparent 30%));
-  
-  /* ===== Azure Gradients ===== */
-  --gradient-azure: linear-gradient(135deg, var(--azure-light), var(--azure-dark));
-  --gradient-azure-reverse: linear-gradient(135deg, var(--azure-dark), var(--azure-light));
-  --gradient-azure-soft: linear-gradient(135deg, var(--azure-light), color-mix(in srgb, var(--azure-dark), transparent 30%));
-  
-  /* ===== Brown Gradients ===== */
-  --gradient-brown: linear-gradient(135deg, var(--brown-light), var(--brown-dark));
-  --gradient-brown-reverse: linear-gradient(135deg, var(--brown-dark), var(--brown-light));
-  --gradient-brown-soft: linear-gradient(135deg, var(--brown-light), color-mix(in srgb, var(--brown-dark), transparent 30%));
-  
-  /* ===== Teal Gradients ===== */
-  --gradient-teal: linear-gradient(135deg, var(--teal-light), var(--teal-dark));
-  --gradient-teal-reverse: linear-gradient(135deg, var(--teal-dark), var(--teal-light));
-  --gradient-teal-soft: linear-gradient(135deg, var(--teal-light), color-mix(in srgb, var(--teal-dark), transparent 30%));
-  
-  /* ===== Rose Gradients ===== */
-  --gradient-rose: linear-gradient(135deg, var(--rose-light), var(--rose-dark));
-  --gradient-rose-reverse: linear-gradient(135deg, var(--rose-dark), var(--rose-light));
-  --gradient-rose-soft: linear-gradient(135deg, var(--rose-light), color-mix(in srgb, var(--rose-dark), transparent 30%));
-  
-  /* ===== Lime Gradients ===== */
-  --gradient-lime: linear-gradient(135deg, var(--lime-light), var(--lime-dark));
-  --gradient-lime-reverse: linear-gradient(135deg, var(--lime-dark), var(--lime-light));
-  --gradient-lime-soft: linear-gradient(135deg, var(--lime-light), color-mix(in srgb, var(--lime-dark), transparent 30%));
-  
-  /* ===== Indigo Gradients ===== */
-  --gradient-indigo: linear-gradient(135deg, var(--indigo-light), var(--indigo-dark));
-  --gradient-indigo-reverse: linear-gradient(135deg, var(--indigo-dark), var(--indigo-light));
-  --gradient-indigo-soft: linear-gradient(135deg, var(--indigo-light), color-mix(in srgb, var(--indigo-dark), transparent 30%));
-  
-  /* ===== Emerald Gradients ===== */
-  --gradient-emerald: linear-gradient(135deg, var(--emerald-light), var(--emerald-dark));
-  --gradient-emerald-reverse: linear-gradient(135deg, var(--emerald-dark), var(--emerald-light));
-  --gradient-emerald-soft: linear-gradient(135deg, var(--emerald-light), color-mix(in srgb, var(--emerald-dark), transparent 30%));
-  
-  /* ===== Amber Gradients ===== */
-  --gradient-amber: linear-gradient(135deg, var(--amber-light), var(--amber-dark));
-  --gradient-amber-reverse: linear-gradient(135deg, var(--amber-dark), var(--amber-light));
-  --gradient-amber-soft: linear-gradient(135deg, var(--amber-light), color-mix(in srgb, var(--amber-dark), transparent 30%));
-  
-  /* ===== Platinum Gradients ===== */
-  --gradient-platinum: linear-gradient(135deg, var(--platinum-light), var(--platinum-dark));
-  --gradient-platinum-reverse: linear-gradient(135deg, var(--platinum-dark), var(--platinum-light));
-  --gradient-platinum-soft: linear-gradient(135deg, var(--platinum-light), color-mix(in srgb, var(--platinum-dark), transparent 30%));
-  
-  /* ===== Bronze Gradients ===== */
-  --gradient-bronze: linear-gradient(135deg, var(--bronze-light), var(--bronze-dark));
-  --gradient-bronze-reverse: linear-gradient(135deg, var(--bronze-dark), var(--bronze-light));
-  --gradient-bronze-soft: linear-gradient(135deg, var(--bronze-light), color-mix(in srgb, var(--bronze-dark), transparent 30%));
-}
-
-/* ============================================
-   DARK MODE
-   ============================================ */
-
-.dark {
-  /* ===== Gold Gradients ===== */
-  --gradient-gold: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
-  --gradient-gold-reverse: linear-gradient(135deg, var(--gold-dark), var(--gold-light));
-  --gradient-gold-soft: linear-gradient(135deg, var(--gold-light), color-mix(in srgb, var(--gold-dark), transparent 30%));
-  
-  /* ===== Silver Gradients ===== */
-  --gradient-silver: linear-gradient(135deg, var(--silver-light), var(--silver-dark));
-  --gradient-silver-reverse: linear-gradient(135deg, var(--silver-dark), var(--silver-light));
-  --gradient-silver-soft: linear-gradient(135deg, var(--silver-light), color-mix(in srgb, var(--silver-dark), transparent 30%));
-  
-  /* ===== Copper Gradients ===== */
-  --gradient-copper: linear-gradient(135deg, var(--copper-light), var(--copper-dark));
-  --gradient-copper-reverse: linear-gradient(135deg, var(--copper-dark), var(--copper-light));
-  --gradient-copper-soft: linear-gradient(135deg, var(--copper-light), color-mix(in srgb, var(--copper-dark), transparent 30%));
-  
-  /* ===== Azure Gradients ===== */
-  --gradient-azure: linear-gradient(135deg, var(--azure-light), var(--azure-dark));
-  --gradient-azure-reverse: linear-gradient(135deg, var(--azure-dark), var(--azure-light));
-  --gradient-azure-soft: linear-gradient(135deg, var(--azure-light), color-mix(in srgb, var(--azure-dark), transparent 30%));
-  
-  /* ===== Brown Gradients ===== */
-  --gradient-brown: linear-gradient(135deg, var(--brown-light), var(--brown-dark));
-  --gradient-brown-reverse: linear-gradient(135deg, var(--brown-dark), var(--brown-light));
-  --gradient-brown-soft: linear-gradient(135deg, var(--brown-light), color-mix(in srgb, var(--brown-dark), transparent 30%));
-  
-  /* ===== Teal Gradients ===== */
-  --gradient-teal: linear-gradient(135deg, var(--teal-light), var(--teal-dark));
-  --gradient-teal-reverse: linear-gradient(135deg, var(--teal-dark), var(--teal-light));
-  --gradient-teal-soft: linear-gradient(135deg, var(--teal-light), color-mix(in srgb, var(--teal-dark), transparent 30%));
-  
-  /* ===== Rose Gradients ===== */
-  --gradient-rose: linear-gradient(135deg, var(--rose-light), var(--rose-dark));
-  --gradient-rose-reverse: linear-gradient(135deg, var(--rose-dark), var(--rose-light));
-  --gradient-rose-soft: linear-gradient(135deg, var(--rose-light), color-mix(in srgb, var(--rose-dark), transparent 30%));
-  
-  /* ===== Lime Gradients ===== */
-  --gradient-lime: linear-gradient(135deg, var(--lime-light), var(--lime-dark));
-  --gradient-lime-reverse: linear-gradient(135deg, var(--lime-dark), var(--lime-light));
-  --gradient-lime-soft: linear-gradient(135deg, var(--lime-light), color-mix(in srgb, var(--lime-dark), transparent 30%));
-  
-  /* ===== Indigo Gradients ===== */
-  --gradient-indigo: linear-gradient(135deg, var(--indigo-light), var(--indigo-dark));
-  --gradient-indigo-reverse: linear-gradient(135deg, var(--indigo-dark), var(--indigo-light));
-  --gradient-indigo-soft: linear-gradient(135deg, var(--indigo-light), color-mix(in srgb, var(--indigo-dark), transparent 30%));
-  
-  /* ===== Emerald Gradients ===== */
-  --gradient-emerald: linear-gradient(135deg, var(--emerald-light), var(--emerald-dark));
-  --gradient-emerald-reverse: linear-gradient(135deg, var(--emerald-dark), var(--emerald-light));
-  --gradient-emerald-soft: linear-gradient(135deg, var(--emerald-light), color-mix(in srgb, var(--emerald-dark), transparent 30%));
-  
-  /* ===== Amber Gradients ===== */
-  --gradient-amber: linear-gradient(135deg, var(--amber-light), var(--amber-dark));
-  --gradient-amber-reverse: linear-gradient(135deg, var(--amber-dark), var(--amber-light));
-  --gradient-amber-soft: linear-gradient(135deg, var(--amber-light), color-mix(in srgb, var(--amber-dark), transparent 30%));
-  
-  /* ===== Platinum Gradients ===== */
-  --gradient-platinum: linear-gradient(135deg, var(--platinum-light), var(--platinum-dark));
-  --gradient-platinum-reverse: linear-gradient(135deg, var(--platinum-dark), var(--platinum-light));
-  --gradient-platinum-soft: linear-gradient(135deg, var(--platinum-light), color-mix(in srgb, var(--platinum-dark), transparent 30%));
-  
-  /* ===== Bronze Gradients ===== */
-  --gradient-bronze: linear-gradient(135deg, var(--bronze-light), var(--bronze-dark));
-  --gradient-bronze-reverse: linear-gradient(135deg, var(--bronze-dark), var(--bronze-light));
-  --gradient-bronze-soft: linear-gradient(135deg, var(--bronze-light), color-mix(in srgb, var(--bronze-dark), transparent 30%));
-}
-
-/* ============================================
-   UTILITY CLASSES FOR GRADIENTS
-   ============================================ */
-
-/* Background Gradients */
-.bg-gradient-gold { background: var(--gradient-gold); }
-.bg-gradient-silver { background: var(--gradient-silver); }
-.bg-gradient-copper { background: var(--gradient-copper); }
-.bg-gradient-azure { background: var(--gradient-azure); }
-.bg-gradient-brown { background: var(--gradient-brown); }
-.bg-gradient-teal { background: var(--gradient-teal); }
-.bg-gradient-rose { background: var(--gradient-rose); }
-.bg-gradient-lime { background: var(--gradient-lime); }
-.bg-gradient-indigo { background: var(--gradient-indigo); }
-.bg-gradient-emerald { background: var(--gradient-emerald); }
-.bg-gradient-amber { background: var(--gradient-amber); }
-.bg-gradient-platinum { background: var(--gradient-platinum); }
-.bg-gradient-bronze { background: var(--gradient-bronze); }
-
-/* Text Gradients */
-.text-gradient-gold {
-  background: var(--gradient-gold);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-silver {
-  background: var(--gradient-silver);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-copper {
-  background: var(--gradient-copper);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-azure {
-  background: var(--gradient-azure);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-brown {
-  background: var(--gradient-brown);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-teal {
-  background: var(--gradient-teal);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-rose {
-  background: var(--gradient-rose);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-lime {
-  background: var(--gradient-lime);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-indigo {
-  background: var(--gradient-indigo);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-emerald {
-  background: var(--gradient-emerald);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-amber {
-  background: var(--gradient-amber);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-platinum {
-  background: var(--gradient-platinum);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.text-gradient-bronze {
-  background: var(--gradient-bronze);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Hover Effects */
-.hover\:bg-gradient-gold:hover { background: var(--gradient-gold); }
-.hover\:bg-gradient-silver:hover { background: var(--gradient-silver); }
-.hover\:bg-gradient-copper:hover { background: var(--gradient-copper); }
-.hover\:bg-gradient-azure:hover { background: var(--gradient-azure); }
-.hover\:bg-gradient-teal:hover { background: var(--gradient-teal); }
-.hover\:bg-gradient-rose:hover { background: var(--gradient-rose); }
-
-/* Border Gradients (برای المان‌های خاص) */
-.border-gradient-gold {
-  border-image: var(--gradient-gold);
-  border-image-slice: 1;
-}
-
-.border-gradient-silver {
-  border-image: var(--gradient-silver);
-  border-image-slice: 1;
-}

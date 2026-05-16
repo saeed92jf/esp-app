@@ -1,18 +1,39 @@
+// components/ui/Password/ConfirmPasswordInput.tsx
 'use client'
 
 import { forwardRef, useState, useEffect } from 'react'
 import { BasePasswordInput } from './BasePasswordInput'
-import { cn } from '@/lib/cn'
+import { cn } from '@/lib/utils'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckCircle } from '@fortawesome/free-solid-svg-icons'
+
+// ============================================
+// CONFIRM PASSWORD INPUT PROPS
+// ============================================
 
 export interface ConfirmPasswordInputProps {
+  /** Input name attribute */
   name?: string
+  /** Current confirm password value */
   value?: string
+  /** Original password to compare against */
   passwordValue?: string
+  /** Callback when value changes with validation status */
   onChange?: (value: string, isValid: boolean) => void
+  /** Placeholder text */
   placeholder?: string
+  /** Label text */
   label?: string
+  /** Whether field is required */
   required?: boolean
+  /** Whether input is disabled */
   disabled?: boolean
+  /** Input size variant */
+  inputSize?: 'sm' | 'md' | 'lg'
+  /** Border radius variant */
+  radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
+  /** Additional CSS classes */
+  className?: string
 }
 
 export const ConfirmPasswordInput = forwardRef<HTMLInputElement, ConfirmPasswordInputProps>(
@@ -25,6 +46,9 @@ export const ConfirmPasswordInput = forwardRef<HTMLInputElement, ConfirmPassword
     label = 'Confirm Password',
     required = false,
     disabled = false,
+    inputSize = 'md',
+    radius = 'lg',
+    className,
   }, ref) => {
     const [internalValue, setInternalValue] = useState(value || '')
     const [error, setError] = useState('')
@@ -55,9 +79,10 @@ export const ConfirmPasswordInput = forwardRef<HTMLInputElement, ConfirmPassword
     }, [passwordValue])
 
     const currentValue = value !== undefined ? value : internalValue
+    const isMatch = currentValue.length > 0 && !error && currentValue === passwordValue
 
     return (
-      <div>
+      <div className={cn("flex flex-col gap-2", className)}>
         <BasePasswordInput
           ref={ref}
           name={name}
@@ -69,14 +94,14 @@ export const ConfirmPasswordInput = forwardRef<HTMLInputElement, ConfirmPassword
           error={error}
           disabled={disabled}
           showStrength={false}
+          inputSize={inputSize}
+          radius={radius}
         />
         
-        {currentValue.length > 0 && !error && currentValue === passwordValue && (
-          <div className="mt-3 p-3 bg-success/10 rounded-lg border border-success/30 animate-fade-in">
+        {isMatch && (
+          <div className="mt-1 p-3 bg-success/10 rounded-lg border border-success/30 animate-fade-in">
             <p className="text-sm text-success flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
+              <FontAwesomeIcon icon={faCheckCircle} className="w-4 h-4" />
               Passwords match
             </p>
           </div>

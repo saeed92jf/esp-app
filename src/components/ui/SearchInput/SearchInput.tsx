@@ -1,9 +1,18 @@
+// components/ui/SearchInput.tsx
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons'
 import { Input } from '@/components/ui'
+import { cn } from '@/lib/utils'
+
+// ============================================
+// SEARCH INPUT COMPONENT
+// Search input with debounced results and dropdown
+// Includes loading states, type badges, and keyboard navigation
+// Uses Tailwind CSS - no separate CSS file needed
+// ============================================
 
 export interface SearchResult {
   id: string
@@ -15,12 +24,23 @@ export interface SearchResult {
 }
 
 interface SearchInputProps {
+  /** Placeholder text for the search input */
   placeholder?: string
+  
+  /** Callback when search is performed */
   onSearch?: (query: string) => void
+  
+  /** Callback when a result is selected */
   onResultSelect?: (result: SearchResult) => void
+  
+  /** Additional CSS classes */
   className?: string
+  
+  /** Whether the component is disabled */
+  disabled?: boolean
 }
 
+// Mock data for demonstration
 const mockResults: SearchResult[] = [
   { id: '1', title: 'CRM', description: 'Manage client relationships', type: 'feature', url: '/features/crm', icon: '👥' },
   { id: '2', title: 'Pipeline', description: 'Track leads and deals', type: 'feature', url: '/features/pipeline', icon: '📊' },
@@ -34,7 +54,8 @@ export function SearchInput({
   placeholder = 'Search features, documents, or projects...', 
   onSearch, 
   onResultSelect, 
-  className = '' 
+  className = '',
+  disabled = false
 }: SearchInputProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -43,7 +64,9 @@ export function SearchInput({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
@@ -54,6 +77,7 @@ export function SearchInput({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Adjust dropdown position (open upward if not enough space below)
   useEffect(() => {
     if (isOpen && wrapperRef.current && dropdownRef.current) {
       const inputRect = wrapperRef.current.getBoundingClientRect()
@@ -75,12 +99,14 @@ export function SearchInput({
     }
   }, [isOpen, results])
 
+  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
   }, [])
 
+  // Debounced search
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
@@ -120,10 +146,37 @@ export function SearchInput({
     setQuery('')
     setIsOpen(false)
     setResults([])
+    setSelectedIndex(-1)
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
   }
 
-  const getTypeColor = (type: string) => {
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen || results.length === 0) return
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev + 1) % results.length)
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setSelectedIndex((prev) => (prev - 1 + results.length) % results.length)
+        break
+      case 'Enter':
+        e.preventDefault()
+        if (selectedIndex >= 0 && selectedIndex < results.length) {
+          handleSelect(results[selectedIndex])
+        }
+        break
+      case 'Escape':
+        setIsOpen(false)
+        setSelectedIndex(-1)
+        break
+    }
+  }
+
+  const getTypeStyles = (type: string) => {
     switch (type) {
       case 'feature': return 'bg-primary/10 text-primary'
       case 'document': return 'bg-success/10 text-success'
@@ -134,18 +187,26 @@ export function SearchInput({
   }
 
   return (
-    <div ref={wrapperRef} className={`relative w-full max-w-md mx-auto ${className}`}>
+    <div ref={wrapperRef} className={cn('relative w-full max-w-md mx-auto', className)}>
+      {/* Search Input Container */}
       <div className="relative">
+        {/* Search icon */}
         <div className="absolute inset-y-0 left-0 flex items-center pl-4 z-10 pointer-events-none">
-          <FontAwesomeIcon icon={faSearch} className="w-4 h-4 text-tertiary group-focus-within:text-primary transition-colors" />
+          <FontAwesomeIcon 
+            icon={faSearch} 
+            className="w-4 h-4 text-tertiary transition-colors" 
+          />
         </div>
         
+        {/* Input field */}
         <Input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setIsOpen(query.length > 1)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          disabled={disabled}
           inputSize="md"       
           className="pl-10 pr-10"
           radius="full"
@@ -153,12 +214,17 @@ export function SearchInput({
           shadow="lg"
         />
         
+        {/* Loading spinner */}
         {isLoading && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 z-10">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <FontAwesomeIcon 
+              icon={faSpinner} 
+              className="w-4 h-4 text-primary animate-spin" 
+            />
           </div>
         )}
         
+        {/* Clear button */}
         {!isLoading && query && (
           <button
             onClick={clearSearch}
@@ -170,18 +236,20 @@ export function SearchInput({
         )}
       </div>
 
+      {/* Results Dropdown */}
       {isOpen && query.length > 1 && (
         <div 
           ref={dropdownRef}
-          className="absolute left-0 right-0 bg-primary rounded-2xl shadow-2xl border border-light overflow-hidden animate-dropdown"
+          className="absolute left-0 right-0 bg-primary rounded-2xl shadow-2xl border border-light overflow-hidden z-50"
           style={{ 
             boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            zIndex: 9999,
-            transformOrigin: 'top center'
+            transformOrigin: 'top center',
+            animation: 'dropdownFadeIn 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards'
           }}
         >
           {results.length > 0 ? (
-            <div>
+            <>
+              {/* Results header */}
               <div className="px-4 py-3 border-b border-light flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
@@ -195,29 +263,41 @@ export function SearchInput({
                 </div>
               </div>
               
+              {/* Results list */}
               <div className="max-h-80 overflow-y-auto">
                 {results.map((result, idx) => (
                   <button
                     key={result.id}
                     onClick={() => handleSelect(result)}
-                    className="w-full text-left px-4 py-3 hover:bg-secondary transition-all duration-200 border-b border-light last:border-0 group animate-result-item"
-                    style={{ animationDelay: `${idx * 30}ms` }}
+                    className={cn(
+                      'w-full text-left px-4 py-3 transition-all duration-200 border-b border-light last:border-0 group',
+                      selectedIndex === idx && 'bg-secondary'
+                    )}
+                    style={{ animation: `resultItemFadeIn 0.2s ease-out ${idx * 30}ms forwards`, opacity: 0 }}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110 ${getTypeColor(result.type)}`}>
+                      {/* Icon container */}
+                      <div className={cn(
+                        'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110',
+                        getTypeStyles(result.type)
+                      )}>
                         <span className="text-base">{result.icon || '🔍'}</span>
                       </div>
+                      
+                      {/* Result details */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-primary group-hover:text-primary transition-colors">
+                          <span className="text-sm font-semibold text-primary transition-colors">
                             {result.title}
                           </span>
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(result.type)}`}>
+                          <span className={cn('text-xs px-2 py-0.5 rounded-full', getTypeStyles(result.type))}>
                             {result.type}
                           </span>
                         </div>
                         <p className="text-xs text-secondary line-clamp-1">{result.description}</p>
                       </div>
+                      
+                      {/* Arrow icon */}
                       <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1">
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -228,11 +308,13 @@ export function SearchInput({
                 ))}
               </div>
               
-              <div className="relative h-0.5 bg-linear-to-r from-transparent via-success to-transparent" />
-            </div>
+              {/* Bottom gradient line */}
+              <div className="h-0.5 bg-linear-to-r from-transparent via-success to-transparent" />
+            </>
           ) : (
             !isLoading && (
-              <div className="p-8 text-center bg-primary animate-fade-in-up">
+              // No results state
+              <div className="p-8 text-center animate-fade-in-up">
                 <div className="text-6xl mb-4">😔</div>
                 <p className="text-sm text-secondary">
                   No results found for "<span className="font-medium text-primary">{query}</span>"
@@ -246,6 +328,7 @@ export function SearchInput({
         </div>
       )}
 
+      {/* CSS Animations */}
       <style jsx>{`
         @keyframes dropdownFadeIn {
           0% {
@@ -267,28 +350,6 @@ export function SearchInput({
             opacity: 1;
             transform: translateX(0);
           }
-        }
-        
-        @keyframes bounceSoft {
-          0%, 100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(-5px);
-          }
-        }
-        
-        .animate-dropdown {
-          animation: dropdownFadeIn 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
-        }
-        
-        .animate-result-item {
-          opacity: 0;
-          animation: resultItemFadeIn 0.2s ease-out forwards;
-        }
-        
-        .animate-bounce-soft {
-          animation: bounceSoft 0.6s ease-in-out infinite;
         }
         
         .line-clamp-1 {

@@ -1,6 +1,6 @@
-
 /* ============================================
    COLOR SYSTEM - TOKENS (HSL - Dynamic)
+   با تمام متغیرهای مورد نیاز
    ============================================ */
 
 :root {
@@ -20,6 +20,13 @@
   --color-secondary-800: hsl(var(--secondary-h), var(--secondary-s), calc(var(--secondary-l) * 0.55));
   --color-secondary-900: hsl(var(--secondary-h), var(--secondary-s), calc(var(--secondary-l) * 0.4));
   
+  --secondary: var(--color-secondary-500);
+  --secondary-foreground: 0 0% 100%;
+  --secondary-hover: var(--color-secondary-600);
+  --secondary-active: var(--color-secondary-700);
+  --secondary-disabled: var(--color-secondary-300);
+  --secondary-rgb: var(--secondary-h), calc(var(--secondary-s) * 1%), calc(var(--secondary-l) * 1%);
+  
   /* ===== Success ===== */
   --success-h: 142;
   --success-s: 76%;
@@ -35,6 +42,13 @@
   --color-success-700: hsl(var(--success-h), var(--success-s), calc(var(--success-l) * 0.7));
   --color-success-800: hsl(var(--success-h), var(--success-s), calc(var(--success-l) * 0.55));
   --color-success-900: hsl(var(--success-h), var(--success-s), calc(var(--success-l) * 0.4));
+  
+  --success: var(--color-success-500);
+  --success-foreground: 0 0% 100%;
+  --success-hover: var(--color-success-600);
+  --success-active: var(--color-success-700);
+  --success-disabled: var(--color-success-300);
+  --success-rgb: var(--success-h), calc(var(--success-s) * 1%), calc(var(--success-l) * 1%);
   
   /* ===== Danger ===== */
   --danger-h: 0;
@@ -52,6 +66,13 @@
   --color-danger-800: hsl(var(--danger-h), var(--danger-s), calc(var(--danger-l) * 0.55));
   --color-danger-900: hsl(var(--danger-h), var(--danger-s), calc(var(--danger-l) * 0.4));
   
+  --danger: var(--color-danger-500);
+  --danger-foreground: 0 0% 100%;
+  --danger-hover: var(--color-danger-600);
+  --danger-active: var(--color-danger-700);
+  --danger-disabled: var(--color-danger-300);
+  --danger-rgb: var(--danger-h), calc(var(--danger-s) * 1%), calc(var(--danger-l) * 1%);
+  
   /* ===== Warning ===== */
   --warning-h: 38;
   --warning-s: 92%;
@@ -68,26 +89,35 @@
   --color-warning-800: hsl(var(--warning-h), var(--warning-s), calc(var(--warning-l) * 0.55));
   --color-warning-900: hsl(var(--warning-h), var(--warning-s), calc(var(--warning-l) * 0.4));
   
-  /* ===== Gray (Neutral) ===== */
-  --gray-h: 220;
-  --gray-s: 9%;
-  --gray-l: 50%;
+  --warning: var(--color-warning-500);
+  --warning-foreground: 0 0% 100%;
+  --warning-hover: var(--color-warning-600);
+  --warning-active: var(--color-warning-700);
+  --warning-disabled: var(--color-warning-300);
+  --warning-rgb: var(--warning-h), calc(var(--warning-s) * 1%), calc(var(--warning-l) * 1%);
   
-  --color-gray-50: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 1.9));
-  --color-gray-100: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 1.7));
-  --color-gray-200: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 1.5));
-  --color-gray-300: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 1.3));
-  --color-gray-400: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 1.1));
-  --color-gray-500: hsl(var(--gray-h), var(--gray-s), var(--gray-l));
-  --color-gray-600: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 0.8));
-  --color-gray-700: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 0.6));
-  --color-gray-800: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 0.4));
-  --color-gray-900: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 0.25));
-  --color-gray-950: hsl(var(--gray-h), var(--gray-s), calc(var(--gray-l) * 0.15));
+  /* ===== Info ===== */
+  --info-h: 200;
+  --info-s: 90%;
+  --info-l: 50%;
   
-  /* ===== Basic ===== */
-  --color-white: hsl(0, 0%, 100%);
-  --color-black: hsl(0, 0%, 0%);
+  --color-info-50: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 1.8));
+  --color-info-100: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 1.6));
+  --color-info-200: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 1.4));
+  --color-info-300: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 1.2));
+  --color-info-400: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 1.0));
+  --color-info-500: hsl(var(--info-h), var(--info-s), var(--info-l));
+  --color-info-600: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 0.85));
+  --color-info-700: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 0.7));
+  --color-info-800: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 0.55));
+  --color-info-900: hsl(var(--info-h), var(--info-s), calc(var(--info-l) * 0.4));
+  
+  --info: var(--color-info-500);
+  --info-foreground: 0 0% 100%;
+  --info-hover: var(--color-info-600);
+  --info-active: var(--color-info-700);
+  --info-disabled: var(--color-info-300);
+  --info-rgb: var(--info-h), calc(var(--info-s) * 1%), calc(var(--info-l) * 1%);
 }
 
 /* ============================================
@@ -95,111 +125,38 @@
    ============================================ */
 
 .dark {
-  --gray-l: 35%;
+  /* Secondary */
   --secondary-l: 55%;
+  --secondary: var(--color-secondary-500);
+  --secondary-hover: var(--color-secondary-400);
+  --secondary-active: var(--color-secondary-300);
+  --secondary-disabled: var(--color-secondary-600);
+  
+  /* Success */
   --success-l: 55%;
+  --success: var(--color-success-500);
+  --success-hover: var(--color-success-400);
+  --success-active: var(--color-success-300);
+  --success-disabled: var(--color-success-600);
+  
+  /* Danger */
   --danger-l: 55%;
+  --danger: var(--color-danger-500);
+  --danger-hover: var(--color-danger-400);
+  --danger-active: var(--color-danger-300);
+  --danger-disabled: var(--color-danger-600);
+  
+  /* Warning */
   --warning-l: 55%;
-}
-
-/* ======= Custom ==========*/
-/* styles/tokens/dual-colors.css */
-
-:root {
-  /* ===== GOLD (طلایی) ===== */
-  --gold-light: hsl(45, 96%, 55%);
-  --gold-dark: hsl(45, 96%, 35%);
+  --warning: var(--color-warning-500);
+  --warning-hover: var(--color-warning-400);
+  --warning-active: var(--color-warning-300);
+  --warning-disabled: var(--color-warning-600);
   
-  /* ===== SILVER (نقره‌ای) ===== */
-  --silver-light: hsl(220, 14%, 60%);
-  --silver-dark: hsl(220, 14%, 40%);
-  
-  /* ===== COPPER (مسی) ===== */
-  --copper-light: hsl(20, 85%, 55%);
-  --copper-dark: hsl(20, 85%, 35%);
-  
-  /* ===== AZURE (آبی لاجوردی) ===== */
-  --azure-light: hsl(210, 92%, 55%);
-  --azure-dark: hsl(210, 92%, 35%);
-  
-  /* ===== BROWN (قهوه‌ای) ===== */
-  --brown-light: hsl(30, 70%, 45%);
-  --brown-dark: hsl(30, 70%, 25%);
-  
-  /* ===== TEAL (فیروزه‌ای) ===== */
-  --teal-light: hsl(170, 80%, 50%);
-  --teal-dark: hsl(170, 80%, 30%);
-  
-  /* ===== ROSE (رزگلی) ===== */
-  --rose-light: hsl(340, 85%, 60%);
-  --rose-dark: hsl(340, 85%, 40%);
-  
-  /* ===== LIME (لیمویی) ===== */
-  --lime-light: hsl(80, 85%, 55%);
-  --lime-dark: hsl(80, 85%, 35%);
-  
-  /* ===== INDIGO (نیلی) ===== */
-  --indigo-light: hsl(245, 80%, 60%);
-  --indigo-dark: hsl(245, 80%, 40%);
-  
-  /* ===== EMERALD (زمردی) ===== */
-  --emerald-light: hsl(160, 84%, 45%);
-  --emerald-dark: hsl(160, 84%, 25%);
-  
-  /* ===== AMBER (کهربایی) ===== */
-  --amber-light: hsl(45, 100%, 50%);
-  --amber-dark: hsl(45, 100%, 30%);
-  
-  /* ===== PLATINUM (پلاتینی) ===== */
-  --platinum-light: hsl(0, 0%, 75%);
-  --platinum-dark: hsl(0, 0%, 55%);
-  
-  /* ===== BRONZE (برنزی) ===== */
-  --bronze-light: hsl(30, 60%, 40%);
-  --bronze-dark: hsl(30, 60%, 20%);
-}
-
-/* ============================================
-   DARK MODE - فقط رنگ تیره تغییر می‌کند
-   ============================================ */
-
-.dark {
-  --gold-light: hsl(45, 96%, 65%);
-  --gold-dark: hsl(45, 96%, 45%);
-  
-  --silver-light: hsl(220, 14%, 70%);
-  --silver-dark: hsl(220, 14%, 50%);
-  
-  --copper-light: hsl(20, 85%, 65%);
-  --copper-dark: hsl(20, 85%, 45%);
-  
-  --azure-light: hsl(210, 92%, 65%);
-  --azure-dark: hsl(210, 92%, 45%);
-  
-  --brown-light: hsl(30, 70%, 55%);
-  --brown-dark: hsl(30, 70%, 35%);
-  
-  --teal-light: hsl(170, 80%, 60%);
-  --teal-dark: hsl(170, 80%, 40%);
-  
-  --rose-light: hsl(340, 85%, 70%);
-  --rose-dark: hsl(340, 85%, 50%);
-  
-  --lime-light: hsl(80, 85%, 65%);
-  --lime-dark: hsl(80, 85%, 45%);
-  
-  --indigo-light: hsl(245, 80%, 70%);
-  --indigo-dark: hsl(245, 80%, 50%);
-  
-  --emerald-light: hsl(160, 84%, 55%);
-  --emerald-dark: hsl(160, 84%, 35%);
-  
-  --amber-light: hsl(45, 100%, 60%);
-  --amber-dark: hsl(45, 100%, 40%);
-  
-  --platinum-light: hsl(0, 0%, 85%);
-  --platinum-dark: hsl(0, 0%, 65%);
-  
-  --bronze-light: hsl(30, 60%, 50%);
-  --bronze-dark: hsl(30, 60%, 30%);
+  /* Info */
+  --info-l: 55%;
+  --info: var(--color-info-500);
+  --info-hover: var(--color-info-400);
+  --info-active: var(--color-info-300);
+  --info-disabled: var(--color-info-600);
 }

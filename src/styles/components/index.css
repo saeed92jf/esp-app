@@ -3,14 +3,7 @@
    Import all component styles here
    ============================================ */
 
-@import './button.css';
-@import './card.css';
 @import './form.css';
 @import './layout.css';
 @import './modal.css';
 @import './utilities.css';
-@import './tabs.css';
-@import './side-menu.css';
-@import './state.css';
-@import './avatar.css'; 
-@import './logo.css';

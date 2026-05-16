@@ -11,8 +11,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // ===== Primary (رنگ اصلی - قابل تغییر توسط کاربر) =====
         primary: {
           DEFAULT: 'var(--color-primary)',
+          foreground: 'var(--color-primary-foreground)',
           hover: 'var(--color-primary-hover)',
           active: 'var(--color-primary-active)',
           disabled: 'var(--color-primary-disabled)',
@@ -27,9 +29,14 @@ const config: Config = {
           800: 'var(--color-primary-800)',
           900: 'var(--color-primary-900)',
         },
+        
+        // ===== Secondary (رنگ ثانویه) =====
         secondary: {
           DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
           hover: 'var(--color-secondary-hover)',
+          active: 'var(--color-secondary-active)',
+          disabled: 'var(--color-secondary-disabled)',
           50: 'var(--color-secondary-50)',
           100: 'var(--color-secondary-100)',
           200: 'var(--color-secondary-200)',
@@ -41,9 +48,14 @@ const config: Config = {
           800: 'var(--color-secondary-800)',
           900: 'var(--color-secondary-900)',
         },
+        
+        // ===== Success (رنگ موفقیت) =====
         success: {
           DEFAULT: 'var(--color-success)',
+          foreground: 'var(--color-success-foreground)',
           hover: 'var(--color-success-hover)',
+          active: 'var(--color-success-active)',
+          disabled: 'var(--color-success-disabled)',
           50: 'var(--color-success-50)',
           100: 'var(--color-success-100)',
           200: 'var(--color-success-200)',
@@ -55,9 +67,14 @@ const config: Config = {
           800: 'var(--color-success-800)',
           900: 'var(--color-success-900)',
         },
+        
+        // ===== Danger/Error (رنگ خطا) =====
         danger: {
           DEFAULT: 'var(--color-danger)',
+          foreground: 'var(--color-danger-foreground)',
           hover: 'var(--color-danger-hover)',
+          active: 'var(--color-danger-active)',
+          disabled: 'var(--color-danger-disabled)',
           50: 'var(--color-danger-50)',
           100: 'var(--color-danger-100)',
           200: 'var(--color-danger-200)',
@@ -69,9 +86,14 @@ const config: Config = {
           800: 'var(--color-danger-800)',
           900: 'var(--color-danger-900)',
         },
+        
+        // ===== Warning (رنگ هشدار) =====
         warning: {
           DEFAULT: 'var(--color-warning)',
+          foreground: 'var(--color-warning-foreground)',
           hover: 'var(--color-warning-hover)',
+          active: 'var(--color-warning-active)',
+          disabled: 'var(--color-warning-disabled)',
           50: 'var(--color-warning-50)',
           100: 'var(--color-warning-100)',
           200: 'var(--color-warning-200)',
@@ -83,8 +105,14 @@ const config: Config = {
           800: 'var(--color-warning-800)',
           900: 'var(--color-warning-900)',
         },
+        
+        // ===== Info (رنگ اطلاع‌رسانی) =====
         info: {
           DEFAULT: 'var(--color-info)',
+          foreground: 'var(--color-info-foreground)',
+          hover: 'var(--color-info-hover)',
+          active: 'var(--color-info-active)',
+          disabled: 'var(--color-info-disabled)',
           50: 'var(--color-info-50)',
           100: 'var(--color-info-100)',
           200: 'var(--color-info-200)',
@@ -96,6 +124,8 @@ const config: Config = {
           800: 'var(--color-info-800)',
           900: 'var(--color-info-900)',
         },
+
+        // ===== Gray (رنگ‌های خنثی - ثابت) =====
         gray: {
           50: 'var(--color-gray-50)',
           100: 'var(--color-gray-100)',
@@ -109,43 +139,56 @@ const config: Config = {
           900: 'var(--color-gray-900)',
           950: 'var(--color-gray-950)',
         },
+        
         white: 'var(--color-white)',
         black: 'var(--color-black)',
       },
+      
+      // ===== Background Colors (معنایی) =====
       backgroundColor: {
         primary: 'var(--bg-primary)',
         secondary: 'var(--bg-secondary)',
         tertiary: 'var(--bg-tertiary)',
         inverse: 'var(--bg-inverse)',
+        input: 'var(--bg-input)',
+        overlay: 'var(--bg-overlay)',
       },
+      
+      // ===== Text Colors (معنایی) =====
       textColor: {
         primary: 'var(--text-primary)',
         secondary: 'var(--text-secondary)',
         tertiary: 'var(--text-tertiary)',
         inverse: 'var(--text-inverse)',
         disabled: 'var(--text-disabled)',
-        'primary-dark': 'var(--text-primary)',
-        'primary-gradiant': 'var(--text-primary)',
       },
+      
+      // ===== Border Colors (معنایی) =====
       borderColor: {
-        extralight: 'var(--border-extralight)',
         light: 'var(--border-light)',
         medium: 'var(--border-medium)',
         dark: 'var(--border-dark)',
         focus: 'var(--border-focus)',
         error: 'var(--border-error)',
         success: 'var(--border-success)',
-        primary: 'var(--color-primary)',
-        'primary-hover': 'var(--color-primary-hover)',
-        secondary: 'var(--color-secondary)',
-        danger: 'var(--color-danger)',
-        warning: 'var(--color-warning)',
+        warning: 'var(--border-warning)',
+        info: 'var(--border-info)',
+        input: 'var(--border-input)',
       },
+      
+      // ===== Ring Color =====
+      ringColor: {
+        DEFAULT: 'var(--border-focus)',
+      },
+      
+      // ===== Font Family =====
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui'],
-        serif: ['var(--font-serif)', 'Georgia'],
+        sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },
+      
+      // ===== Font Size =====
       fontSize: {
         xs: 'var(--text-xs)',
         sm: 'var(--text-sm)',
@@ -161,6 +204,8 @@ const config: Config = {
         '8xl': 'var(--font-size-8xl)',
         '9xl': 'var(--font-size-9xl)',
       },
+      
+      // ===== Font Weight =====
       fontWeight: {
         thin: 'var(--font-thin)',
         extralight: 'var(--font-extralight)',
@@ -172,6 +217,8 @@ const config: Config = {
         extrabold: 'var(--font-extrabold)',
         black: 'var(--font-black)',
       },
+      
+      // ===== Line Height =====
       lineHeight: {
         none: 'var(--leading-none)',
         tight: 'var(--leading-tight)',
@@ -180,6 +227,8 @@ const config: Config = {
         relaxed: 'var(--leading-relaxed)',
         loose: 'var(--leading-loose)',
       },
+      
+      // ===== Letter Spacing =====
       letterSpacing: {
         tighter: 'var(--tracking-tighter)',
         tight: 'var(--tracking-tight)',
@@ -188,6 +237,8 @@ const config: Config = {
         wider: 'var(--tracking-wider)',
         widest: 'var(--tracking-widest)',
       },
+      
+      // ===== Spacing =====
       spacing: {
         '0': 'var(--space-0)',
         '0.5': 'var(--space-0-5)',
@@ -224,6 +275,8 @@ const config: Config = {
         '80': 'var(--space-80)',
         '96': 'var(--space-96)',
       },
+      
+      // ===== Border Radius =====
       borderRadius: {
         none: 'var(--radius-none)',
         sm: 'var(--radius-sm)',
@@ -236,6 +289,8 @@ const config: Config = {
         '4xl': 'var(--radius-4xl)',
         full: 'var(--radius-full)',
       },
+      
+      // ===== Box Shadow =====
       boxShadow: {
         xs: 'var(--shadow-xs)',
         sm: 'var(--shadow-sm)',
@@ -248,6 +303,8 @@ const config: Config = {
         inner: 'var(--shadow-inner)',
         none: 'var(--shadow-none)',
       },
+      
+      // ===== Screens (Breakpoints) =====
       screens: {
         xs: 'var(--breakpoint-xs)',
         sm: 'var(--breakpoint-sm)',
@@ -257,6 +314,8 @@ const config: Config = {
         '2xl': 'var(--breakpoint-2xl)',
         '3xl': 'var(--breakpoint-3xl)',
       },
+      
+      // ===== Z-Index =====
       zIndex: {
         '0': 'var(--z-0)',
         '10': 'var(--z-10)',
@@ -274,6 +333,8 @@ const config: Config = {
         tooltip: 'var(--z-tooltip)',
         toast: 'var(--z-toast)',
       },
+      
+      // ===== Transition Duration =====
       transitionDuration: {
         instant: 'var(--duration-instant)',
         fast: 'var(--duration-fast)',
@@ -282,27 +343,72 @@ const config: Config = {
         slower: 'var(--duration-slower)',
         slowest: 'var(--duration-slowest)',
       },
+      
+      // ===== Transition Timing Function =====
       transitionTimingFunction: {
         linear: 'var(--ease-linear)',
         in: 'var(--ease-in)',
         out: 'var(--ease-out)',
         'in-out': 'var(--ease-in-out)',
       },
+      
+      // ===== Animation =====
       animation: {
-        'fade-in': 'fade-in var(--duration-base) var(--ease-out)',
-        'fade-out': 'fade-out var(--duration-base) var(--ease-in)',
-        'slide-in-top': 'slide-in-top var(--duration-base) var(--ease-out)',
-        'slide-in-bottom': 'slide-in-bottom var(--duration-base) var(--ease-out)',
-        'slide-in-left': 'slide-in-left var(--duration-base) var(--ease-out)',
-        'slide-in-right': 'slide-in-right var(--duration-base) var(--ease-out)',
-        'scale-in': 'scale-in var(--duration-base) var(--ease-out)',
-        'spin': 'spin var(--duration-slow) linear infinite',
-        'pulse': 'pulse 2s ease-in-out infinite',
-        'bounce': 'bounce 1s infinite',
+        // Fade Animations
+  'fade-in': 'fade-in var(--duration-base) var(--ease-out)',
+  'fade-out': 'fade-out var(--duration-base) var(--ease-in)',
+  'fade-in-up': 'fade-in-up var(--duration-slow) var(--ease-out)',
+  'fade-in-down': 'fade-in-down var(--duration-slow) var(--ease-out)',
+  'fade-in-left': 'fade-in-left var(--duration-slow) var(--ease-out)',
+  'fade-in-right': 'fade-in-right var(--duration-slow) var(--ease-out)',
+  
+  // Slide Animations
+  'slide-in-top': 'slide-in-top var(--duration-base) var(--ease-out)',
+  'slide-out-top': 'slide-out-top var(--duration-base) var(--ease-in)',
+  'slide-in-bottom': 'slide-in-bottom var(--duration-base) var(--ease-out)',
+  'slide-out-bottom': 'slide-out-bottom var(--duration-base) var(--ease-in)',
+  'slide-in-left': 'slide-in-left var(--duration-base) var(--ease-out)',
+  'slide-out-left': 'slide-out-left var(--duration-base) var(--ease-in)',
+  'slide-in-right': 'slide-in-right var(--duration-base) var(--ease-out)',
+  'slide-out-right': 'slide-out-right var(--duration-base) var(--ease-in)',
+  
+  // Scale Animations
+  'scale-in': 'scale-in var(--duration-base) var(--ease-out)',
+  'scale-out': 'scale-out var(--duration-base) var(--ease-in)',
+  'scale-elastic': 'scale-elastic var(--duration-slow) var(--ease-elastic)',
+  
+  // Rotate Animations
+  'spin': 'spin var(--duration-slow) linear infinite',
+  'spin-slow': 'spin-slow var(--duration-slower) linear infinite',
+  'ping': 'ping var(--duration-slow) var(--ease-out) infinite',
+  
+  // Pulse & Bounce Animations
+  'pulse': 'pulse 2s ease-in-out infinite',
+  'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
+  'bounce': 'bounce 1s infinite',
+  'bounce-soft': 'bounce-soft 1.5s ease-in-out infinite',
+  
+  // Special Effects
+  'shimmer': 'shimmer 1.5s infinite',
+  'float': 'float 3s ease-in-out infinite',
+  'float-soft': 'float-soft 2s ease-in-out infinite',
+  'wiggle': 'wiggle 0.5s ease-in-out',
+  'shake': 'shake 0.3s ease-in-out',
+  'glow': 'glow 2s ease-in-out infinite',
+  'ripple': 'ripple 0.6s ease-out',
+  'swing': 'swing 0.5s ease-in-out',
+      },
+      
+      // ===== Opacity (اضافی) =====
+      opacity: {
+        '15': '0.15',
+        '35': '0.35',
+        '65': '0.65',
+        '85': '0.85',
       },
     },
   },
-    plugins: [
+  plugins: [
     forms({
       strategy: 'class',
     }),

@@ -6,19 +6,6 @@ export type { LogoProps } from './Logo/Logo'
 export { Button } from './Button/Button'
 export type { ButtonProps } from './Button/Button'
 
-// Card
-export { 
-  Card, 
-  CardTitle, 
-  CardContent, 
-  CardDescription,
-  CardHeader,
-  CardFooter
-} from './Card/card'
-export type { 
-  CardProps, 
-} from './Card/card'
-
 // Input
 export { Input } from './Input/Input'
 export type { InputProps } from './Input/Input'
@@ -52,3 +39,7 @@ export { SearchInput } from './SearchInput/SearchInput'
 // Tabs
 export { Tabs } from './Tab/Tabs'
 export type { TabsProps, TabItem } from './Tab/Tabs'
+
+// Skeleton
+export { Skeleton } from './Skeleton/Skeleton'
+export type { SkeletonProps } from './Skeleton/Skeleton'

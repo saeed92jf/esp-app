@@ -1,11 +1,20 @@
+// modules/auth/components/ResetPasswordClient.tsx
 'use client'
 
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Button } from '@/components/ui'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowRight, faCheckCircle, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { Button } from '@/components/ui/Button'
 import { RegisterPasswordInput, ConfirmPasswordInput } from '@/components/ui/Password'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui'
+
+// ============================================
+// RESET PASSWORD CLIENT COMPONENT
+// Password reset form with token validation
+// Shows success message on completion
+// Uses Tailwind CSS - no separate CSS file needed
+// ============================================
 
 export function ResetPasswordClient() {
   const router = useRouter()
@@ -30,6 +39,7 @@ export function ResetPasswordClient() {
     setError('')
 
     try {
+      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       setIsSubmitted(true)
       
@@ -49,24 +59,33 @@ export function ResetPasswordClient() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
-            <Card className="shadow-xl text-center">
-              <CardContent className="pt-6">
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-primary mb-2">Invalid reset link</h2>
-                  <p className="text-secondary mb-6">
-                    This password reset link is invalid or has expired.
-                  </p>
-                  <Button variant="primary" asChild>
-                    <Link href="/forgot-password">Request New Link</Link>
-                  </Button>
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <Link href="/" className="inline-flex items-center justify-center gap-2 group">
+                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                  <span className="text-inverse font-bold text-xl">E</span>
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-2xl font-bold text-primary">
+                  ESP<span className="text-primary">Webapp</span>
+                </span>
+              </Link>
+            </div>
+
+            {/* Invalid Token Card */}
+            <div className="bg-primary rounded-2xl shadow-xl border border-light overflow-hidden text-center">
+              <div className="p-8">
+                <div className="w-20 h-20 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="w-10 h-10 text-error" />
+                </div>
+                <h2 className="text-2xl font-bold text-primary mb-2">Invalid reset link</h2>
+                <p className="text-secondary mb-8">
+                  This password reset link is invalid or has expired.
+                </p>
+                <Button variant="primary" asChild size="lg">
+                  <Link href="/forgot-password">Request New Link</Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -79,24 +98,33 @@ export function ResetPasswordClient() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
         <div className="container mx-auto px-4">
           <div className="max-w-md mx-auto">
-            <Card className="shadow-xl text-center">
-              <CardContent className="pt-6">
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-primary mb-2">Password reset successful!</h2>
-                  <p className="text-secondary mb-6">
-                    Your password has been reset successfully. Redirecting to login...
-                  </p>
-                  <Button variant="primary" asChild>
-                    <Link href="/login">Go to Login</Link>
-                  </Button>
+            {/* Logo */}
+            <div className="text-center mb-8">
+              <Link href="/" className="inline-flex items-center justify-center gap-2 group">
+                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                  <span className="text-inverse font-bold text-xl">E</span>
                 </div>
-              </CardContent>
-            </Card>
+                <span className="text-2xl font-bold text-primary">
+                  ESP<span className="text-primary">Webapp</span>
+                </span>
+              </Link>
+            </div>
+
+            {/* Success Card */}
+            <div className="bg-primary rounded-2xl shadow-xl border border-light overflow-hidden text-center">
+              <div className="p-8">
+                <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <FontAwesomeIcon icon={faCheckCircle} className="w-10 h-10 text-success" />
+                </div>
+                <h2 className="text-2xl font-bold text-primary mb-2">Password reset successful!</h2>
+                <p className="text-secondary mb-8">
+                  Your password has been reset successfully. Redirecting to login...
+                </p>
+                <Button variant="primary" asChild size="lg">
+                  <Link href="/login">Go to Login</Link>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -108,71 +136,100 @@ export function ResetPasswordClient() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
       <div className="container mx-auto px-4">
         <div className="max-w-md mx-auto">
-          <Card className="shadow-xl">
-            <CardHeader className="text-center">
-              <Link href="/" className="inline-flex items-center justify-center gap-2 mb-6 group">
-                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <span className="text-inverse font-bold text-xl">E</span>
-                </div>
-                <span className="text-2xl font-bold text-primary">
-                  ESP<span className="text-primary">Webapp</span>
-                </span>
-              </Link>
-              <CardTitle className="text-2xl">Create new password</CardTitle>
-              <CardDescription>
-                Enter your new password below.
-              </CardDescription>
-            </CardHeader>
+          {/* Logo Section */}
+          <div className="text-center mb-8">
+            <Link href="/" className="inline-flex items-center justify-center gap-2 group">
+              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                <span className="text-inverse font-bold text-xl">E</span>
+              </div>
+              <span className="text-2xl font-bold text-primary">
+                ESP<span className="text-primary">Webapp</span>
+              </span>
+            </Link>
+          </div>
 
-            <CardContent>
+          {/* Reset Password Form Card */}
+          <div className="bg-primary rounded-2xl shadow-xl border border-light overflow-hidden">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4 text-center border-b border-light">
+              <h1 className="text-2xl font-bold text-primary mb-1">Create new password</h1>
+              <p className="text-sm text-secondary">Enter your new password below.</p>
+            </div>
+
+            {/* Form Body */}
+            <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Error Message */}
                 {error && (
                   <div className="p-3 bg-error/10 border border-error/30 rounded-lg">
-                    <p className="text-sm text-error m-0">{error}</p>
+                    <p className="text-sm text-error m-0 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-error" />
+                      {error}
+                    </p>
                   </div>
                 )}
 
-                <RegisterPasswordInput
-                  label="New Password"
-                  placeholder="Enter new password"
-                  value={password}
-                  onChange={(val, isValid) => {
-                    setPassword(val)
-                    setIsPasswordValid(isValid || false)
-                  }}
-                  required
-                />
+                {/* New Password Input */}
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-1.5">
+                    New Password
+                  </label>
+                  <RegisterPasswordInput
+                    placeholder="Enter new password"
+                    value={password}
+                    onChange={(val, isValid) => {
+                      setPassword(val)
+                      setIsPasswordValid(isValid || false)
+                    }}
+                    required
+                    inputSize="md"
+                    radius="lg"
+                    className="w-full"
+                  />
+                </div>
 
-                <ConfirmPasswordInput
-                  label="Confirm New Password"
-                  placeholder="Confirm your new password"
-                  passwordValue={password}
-                  onChange={(val, isValid) => {
-                    setConfirmPassword(val)
-                    setIsConfirmValid(isValid)
-                  }}
-                  required
-                />
+                {/* Confirm Password Input */}
+                <div>
+                  <label className="block text-sm font-medium text-secondary mb-1.5">
+                    Confirm New Password
+                  </label>
+                  <ConfirmPasswordInput
+                    placeholder="Confirm your new password"
+                    passwordValue={password}
+                    onChange={(val, isValid) => {
+                      setConfirmPassword(val)
+                      setIsConfirmValid(isValid)
+                    }}
+                    required
+                    inputSize="md"
+                    radius="lg"
+                    className="w-full"
+                  />
+                </div>
 
+                {/* Submit Button */}
                 <Button 
                   type="submit" 
                   variant="primary" 
                   className="w-full" 
                   isLoading={isLoading} 
                   disabled={!isFormValid}
+                  rightIcon={faArrowRight}
+                  size="lg"
                 >
                   Reset Password
                 </Button>
 
+                {/* Login Link */}
                 <p className="text-center text-sm text-secondary">
                   Remember your password?{' '}
-                  <Link href="/login" className="text-primary hover:underline">
+                  <Link href="/login" className="text-primary hover:underline font-medium">
                     Back to Login
                   </Link>
                 </p>
               </form>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

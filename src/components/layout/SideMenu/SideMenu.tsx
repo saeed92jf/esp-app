@@ -1,3 +1,4 @@
+// components/layout/SideMenu.tsx
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -17,9 +18,19 @@ import {
   faClock,
   faFileInvoice
 } from '@fortawesome/free-solid-svg-icons'
+import { cn } from '@/lib/utils'
+
+// ============================================
+// SIDE MENU COMPONENT
+// Slide-out navigation menu from the right side
+// Opens below the header, does not cover the full screen
+// Uses Tailwind CSS only - no separate CSS file needed
+// ============================================
 
 interface SideMenuProps {
+  /** Whether the menu is open */
   isOpen: boolean
+  /** Callback to close the menu */
   onClose: () => void
 }
 
@@ -27,20 +38,18 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
+  // Prevent body scroll when menu is open
   useEffect(() => {
     setMounted(true)
     
     if (isOpen) {
       document.body.style.overflow = 'hidden'
-      document.body.classList.add('menu-open')
     } else {
       document.body.style.overflow = 'unset'
-      document.body.classList.remove('menu-open')
     }
     
     return () => {
       document.body.style.overflow = 'unset'
-      document.body.classList.remove('menu-open')
     }
   }, [isOpen])
 
@@ -64,24 +73,45 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
   return (
     <>
+      {/* Backdrop */}
       <div 
-        className={`side-menu-backdrop ${isOpen ? 'open' : 'closed'}`}
+        className={cn(
+          'fixed inset-0 bg-black/30 transition-all duration-300 z-40',
+          'top-(--header-height,56px) md:top-(--header-height,64px)',
+          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+        )}
         onClick={onClose}
       />
       
-      <div className={`side-menu-panel ${isOpen ? 'open' : 'closed'}`}>
-        <div className="side-menu-header">
+      {/* Side Menu Panel */}
+      <div 
+        className={cn(
+          'fixed right-0 z-40 flex flex-col',
+          'w-80 bg-primary shadow-2xl',
+          'transition-transform duration-500 ease-out',
+          'top-(--header-height,56px) md:top-(--header-height,64px)',
+          'h-[calc(100vh-var(--header-height,56px))] md:h-[calc(100vh-var(--header-height,64px))]',
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-light bg-primary rounded-tl-2xl">
           <div>
-            <h2 className="side-menu-title">Menu</h2>
-            <p className="side-menu-subtitle">Navigate through the app</p>
+            <h2 className="text-xl font-bold text-primary">Menu</h2>
+            <p className="text-xs text-secondary">Navigate through the app</p>
           </div>
-          <button onClick={onClose} className="side-menu-close-btn">
-            <FontAwesomeIcon icon={faTimes} className="side-menu-close-icon" />
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-tertiary transition-all duration-200 hover:scale-105"
+            aria-label="Close menu"
+          >
+            <FontAwesomeIcon icon={faTimes} className="w-5 h-5 text-tertiary" />
           </button>
         </div>
 
-        <div className="side-menu-content">
-          <div className="side-menu-items">
+        {/* Navigation Items */}
+        <div className="flex-1 overflow-y-auto py-4 px-3 custom-scrollbar">
+          <div className="flex flex-col gap-1">
             {menuItems.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -89,37 +119,79 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
                   key={item.label}
                   href={item.href}
                   onClick={onClose}
-                  className={`side-menu-link ${isActive ? 'active' : 'inactive'}`}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 group',
+                    isActive
+                      ? 'bg-linear-to-r from-primary to-primary-600 text-inverse shadow-md'
+                      : 'text-secondary hover:bg-tertiary hover:text-primary'
+                  )}
                 >
-                  <FontAwesomeIcon icon={item.icon} className="side-menu-icon" />
-                  <span className="side-menu-label">{item.label}</span>
-                  {isActive && <span className="side-menu-active-indicator" />}
+                  <FontAwesomeIcon 
+                    icon={item.icon} 
+                    className={cn(
+                      'w-5 h-5 transition-transform duration-200',
+                      !isActive && 'group-hover:scale-110'
+                    )} 
+                  />
+                  <span className="font-medium">{item.label}</span>
+                  {isActive && (
+                    <span className="ml-auto w-1.5 h-1.5 bg-inverse rounded-full animate-pulse" />
+                  )}
                 </Link>
               )
             })}
           </div>
 
-          <div className="side-menu-divider" />
+          {/* Divider */}
+          <div className="my-4 h-px bg-linear-to-r from-transparent via-light to-transparent" />
 
-          <div className="side-menu-items">
+          {/* Footer Items */}
+          <div className="flex flex-col gap-1">
             {footerItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 onClick={onClose}
-                className="side-menu-link inactive"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-secondary hover:bg-tertiary hover:text-primary transition-all duration-200 group"
               >
-                <FontAwesomeIcon icon={item.icon} className="side-menu-icon" />
-                <span className="side-menu-label">{item.label}</span>
+                <FontAwesomeIcon 
+                  icon={item.icon} 
+                  className="w-5 h-5 transition-transform group-hover:scale-110" 
+                />
+                <span className="font-medium">{item.label}</span>
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="side-menu-footer">
-          <p className="side-menu-version">ESP Webapp v1.0.0</p>
+        {/* Footer */}
+        <div className="p-4 border-t border-light bg-primary rounded-br-2xl">
+          <p className="text-xs text-center text-tertiary">
+            ESP Webapp v1.0.0
+          </p>
         </div>
       </div>
+
+      {/* Custom Scrollbar Styles */}
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: var(--bg-tertiary);
+          border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: var(--border-medium);
+          border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: var(--border-dark);
+        }
+      `}</style>
     </>
   )
 }

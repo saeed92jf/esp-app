@@ -3,11 +3,21 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes, faMoon, faSun, faGlobe, faShieldAlt, faPalette, faCheck } from '@fortawesome/free-solid-svg-icons'
+import { faTimes, faMoon, faSun, faGlobe, faShieldAlt, faPalette, faCheck, faDesktop } from '@fortawesome/free-solid-svg-icons'
 import { useTheme } from '@/theme'
+import { cn } from '@/lib/utils'
+
+// ============================================
+// SETTINGS MODAL COMPONENT
+// Dropdown menu for theme and color settings
+// Opens below the settings button or above if not enough space
+// Uses Tailwind CSS - no separate CSS file needed
+// ============================================
 
 interface SettingsModalProps {
+  /** Whether the modal is open */
   isOpen: boolean
+  /** Callback to close the modal */
   onClose: () => void
 }
 
@@ -22,17 +32,16 @@ const colorOptions = [
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const { theme, setTheme } = useTheme()
   const modalRef = useRef<HTMLDivElement>(null)
-  const [activeColor, setActiveColor] = useState('primary-color-blue')
+  const [activeColor, setActiveColor] = useState('primary-color-red')
   const [position, setPosition] = useState<'bottom' | 'top'>('bottom')
 
-  // بررسی فضای کافی برای نمایش منو در موبایل
+  // Check available space to position dropdown correctly
   useEffect(() => {
     if (isOpen && modalRef.current) {
       const rect = modalRef.current.getBoundingClientRect()
       const spaceBelow = window.innerHeight - rect.bottom
       const spaceAbove = rect.top
       
-      // اگر فضای کافی در پایین نیست، منو را بالا نمایش بده
       if (spaceBelow < 300 && spaceAbove > spaceBelow) {
         setPosition('top')
       } else {
@@ -41,6 +50,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     }
   }, [isOpen])
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
@@ -58,6 +68,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   }, [isOpen, onClose])
 
   const handleColorChange = (colorClassName: string, hue: number, sat: number, light: number) => {
+    // Remove previous color classes
     document.documentElement.classList.remove(
       'primary-color-blue',
       'primary-color-green',
@@ -66,50 +77,28 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       'primary-color-purple'
     )
     
+    // Add new color class
     document.documentElement.classList.add(colorClassName)
     setActiveColor(colorClassName)
     
+    // Update HSL variables
     const root = document.documentElement
     root.style.setProperty('--primary-h', hue.toString())
     root.style.setProperty('--primary-s', `${sat}%`)
     root.style.setProperty('--primary-l', `${light}%`)
-    
-    localStorage.setItem('primary-color', colorClassName)
-    localStorage.setItem('primary-hue', hue.toString())
-    localStorage.setItem('primary-saturation', sat.toString())
-    localStorage.setItem('primary-lightness', light.toString())
   }
-
-  useEffect(() => {
-    const savedColor = localStorage.getItem('primary-color')
-    const savedHue = localStorage.getItem('primary-hue')
-    const savedSat = localStorage.getItem('primary-saturation')
-    const savedLight = localStorage.getItem('primary-lightness')
-    
-    if (savedColor) {
-      document.documentElement.classList.add(savedColor)
-      setActiveColor(savedColor)
-    }
-    
-    if (savedHue && savedSat && savedLight) {
-      const root = document.documentElement
-      root.style.setProperty('--primary-h', savedHue)
-      root.style.setProperty('--primary-s', savedSat)
-      root.style.setProperty('--primary-l', savedLight)
-    }
-  }, [])
 
   if (!isOpen) return null
 
   return (
     <div 
       ref={modalRef}
-      className={`
-        absolute right-0 z-50 w-80 sm:w-72
-        bg-primary rounded-2xl shadow-xl border border-light overflow-hidden
-        transition-all duration-200 animate-fade-in-up
-        ${position === 'bottom' ? 'mt-2 top-full' : 'mb-2 bottom-full'}
-      `}
+      className={cn(
+        'absolute right-0 z-50 w-64 max-w-[calc(100vw-1rem)]',
+        'bg-primary rounded-2xl shadow-xl border border-light overflow-hidden',
+        'transition-all duration-200 animate-fade-in-up',
+        position === 'bottom' ? 'mt-2 top-full' : 'mb-2 bottom-full'
+      )}
       style={{
         maxHeight: 'calc(100vh - 100px)',
         overflowY: 'auto'
@@ -121,6 +110,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         <button
           onClick={onClose}
           className="p-1 rounded-lg hover:bg-tertiary transition-colors"
+          aria-label="Close settings"
         >
           <FontAwesomeIcon icon={faTimes} className="w-3.5 h-3.5 text-tertiary" />
         </button>
@@ -128,51 +118,76 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
       {/* Body */}
       <div className="py-2">
-        {/* Theme */}
+        {/* Theme Section */}
         <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <FontAwesomeIcon icon={faGlobe} className="w-3.5 h-3.5 text-primary" />
             <span className="text-xs font-medium text-secondary">Appearance</span>
           </div>
-          <div className="flex gap-1.5 ml-5">
+          
+          <div className="flex flex-col gap-2 ml-5">
+            {/* Light Theme Option */}
             <button
               onClick={() => setTheme('light')}
-              className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={cn(
+                'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'light'
                   ? 'bg-primary text-inverse shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
-              }`}
+              )}
             >
-              <FontAwesomeIcon icon={faSun} className="w-3 h-3 mr-1" />
-              Light
+              <span className="flex items-center gap-2">
+                <FontAwesomeIcon icon={faSun} className="w-4 h-4" />
+                Light
+              </span>
+              {theme === 'light' && (
+                <FontAwesomeIcon icon={faCheck} className="w-3.5 h-3.5" />
+              )}
             </button>
+
+            {/* Dark Theme Option */}
             <button
               onClick={() => setTheme('dark')}
-              className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={cn(
+                'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'dark'
                   ? 'bg-primary text-inverse shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
-              }`}
+              )}
             >
-              <FontAwesomeIcon icon={faMoon} className="w-3 h-3 mr-1" />
-              Dark
+              <span className="flex items-center gap-2">
+                <FontAwesomeIcon icon={faMoon} className="w-4 h-4" />
+                Dark
+              </span>
+              {theme === 'dark' && (
+                <FontAwesomeIcon icon={faCheck} className="w-3.5 h-3.5" />
+              )}
             </button>
+
+            {/* System Theme Option */}
             <button
               onClick={() => setTheme('system')}
-              className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={cn(
+                'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'system'
                   ? 'bg-primary text-inverse shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
-              }`}
+              )}
             >
-              System
+              <span className="flex items-center gap-2">
+                <FontAwesomeIcon icon={faDesktop} className="w-4 h-4" />
+                System
+              </span>
+              {theme === 'system' && (
+                <FontAwesomeIcon icon={faCheck} className="w-3.5 h-3.5" />
+              )}
             </button>
           </div>
         </div>
 
         <div className="h-px bg-light my-1" />
 
-        {/* Primary Color */}
+        {/* Primary Color Section */}
         <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center gap-2 mb-2">
             <FontAwesomeIcon icon={faPalette} className="w-3.5 h-3.5 text-primary" />
@@ -183,9 +198,11 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <button
                 key={color.name}
                 onClick={() => handleColorChange(color.className, color.hue, color.sat, color.light)}
-                className={`relative w-7 h-7 rounded-full transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary ${
-                  activeColor === color.className ? 'ring-2 ring-offset-2 ring-primary scale-110' : ''
-                }`}
+                className={cn(
+                  'relative w-7 h-7 rounded-full transition-all hover:scale-110',
+                  'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
+                  activeColor === color.className && 'ring-2 ring-offset-2 ring-primary scale-110'
+                )}
                 style={{ 
                   backgroundColor: color.bgColor,
                   boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
@@ -205,7 +222,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
         <div className="h-px bg-light my-1" />
 
-        {/* Security */}
+        {/* Security Section */}
         <div className="px-4 py-2.5 hover:bg-tertiary/50 transition-colors">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">

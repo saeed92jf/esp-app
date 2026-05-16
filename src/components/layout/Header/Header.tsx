@@ -1,28 +1,56 @@
+// components/layout/Header.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Logo,Button } from '@/components/ui'
+import { Logo, Button } from '@/components/ui'
 import { MegaMenu } from '@/components/layout/MegaMenu/MegaMenu'
+import { cn } from '@/lib/utils'
+
+// ============================================
+// HEADER COMPONENT
+// Main navigation header with logo, mega menu, and mobile menu
+// Responsive design with mobile sidebar menu
+// Uses Tailwind CSS - no separate CSS file needed
+// ============================================
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
+  // Detect scroll to add shadow effect
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isMenuOpen])
+
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-primary/95 backdrop-blur-md shadow-md' : 'bg-primary'}`}>
+    <header className={cn(
+      'sticky top-0 z-50 transition-all duration-300',
+      isScrolled ? 'bg-primary/95 backdrop-blur-md shadow-md' : 'bg-primary'
+    )}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
+          {/* Logo */}
           <Logo />
 
+          {/* Desktop Mega Menu */}
           <MegaMenu />
 
+          {/* Desktop Auth Buttons */}
           <div className="hidden lg:flex items-center gap-4">
             <Link 
               href="/login" 
@@ -35,7 +63,7 @@ export function Header() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden p-2 rounded-lg hover:bg-tertiary transition-colors"
@@ -51,35 +79,41 @@ export function Header() {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         <div 
-          className={`
-            lg:hidden overflow-hidden transition-all duration-300 ease-in-out
-            ${isMenuOpen ? 'max-h-[calc(100vh-64px)] opacity-100' : 'max-h-0 opacity-0'}
-          `}
+          className={cn(
+            'lg:hidden overflow-hidden transition-all duration-300 ease-in-out',
+            isMenuOpen ? 'max-h-[calc(100vh-64px)] opacity-100' : 'max-h-0 opacity-0'
+          )}
         >
           <div className="py-4 border-t border-light">
             <div className="flex flex-col gap-2">
+              {/* Mobile Navigation Items */}
               <MobileNavItem title="Company">
                 <MobileSub href="/company/story">Our Story</MobileSub>
                 <MobileSub href="/company/mission">Mission</MobileSub>
                 <MobileSub href="/company/careers">Careers</MobileSub>
               </MobileNavItem>
+              
               <MobileNavItem title="HR">
                 <MobileSub href="/hr/ats">ATS</MobileSub>
                 <MobileSub href="/hr/directory">Directory</MobileSub>
                 <MobileSub href="/hr/payroll">Payroll</MobileSub>
               </MobileNavItem>
+              
               <MobileNavItem title="Marketing">
                 <MobileSub href="/marketing/email">Email</MobileSub>
                 <MobileSub href="/marketing/social">Social</MobileSub>
                 <MobileSub href="/marketing/dashboard">Dashboard</MobileSub>
               </MobileNavItem>
+              
               <MobileNavItem title="Project">
                 <MobileSub href="/project/roadmap">Roadmap</MobileSub>
                 <MobileSub href="/project/tasks">Tasks</MobileSub>
                 <MobileSub href="/project/time">Time</MobileSub>
               </MobileNavItem>
+              
+              {/* Direct Links */}
               <Link 
                 href="/about" 
                 className="px-3 py-2 text-secondary hover:text-primary hover:bg-tertiary rounded-lg transition-colors"
@@ -92,6 +126,8 @@ export function Header() {
               >
                 Contact
               </Link>
+              
+              {/* Auth Buttons for Mobile */}
               <div className="flex gap-3 pt-3 mt-2 border-t border-light">
                 <Link 
                   href="/login" 
@@ -114,8 +150,19 @@ export function Header() {
   )
 }
 
-function MobileNavItem({ title, children }: { title: string; children: React.ReactNode }) {
+// ============================================
+// MOBILE NAV ITEM COMPONENT
+// Expandable/collapsible section for mobile menu
+// ============================================
+
+interface MobileNavItemProps {
+  title: string
+  children: React.ReactNode
+}
+
+function MobileNavItem({ title, children }: MobileNavItemProps) {
   const [open, setOpen] = useState(false)
+  
   return (
     <div>
       <button
@@ -124,7 +171,10 @@ function MobileNavItem({ title, children }: { title: string; children: React.Rea
       >
         <span className="font-medium">{title}</span>
         <svg 
-          className={`w-4 h-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} 
+          className={cn(
+            'w-4 h-4 transition-transform duration-200',
+            open && 'rotate-180'
+          )} 
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -132,14 +182,27 @@ function MobileNavItem({ title, children }: { title: string; children: React.Rea
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out pl-4 ${open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+      <div className={cn(
+        'overflow-hidden transition-all duration-300 ease-in-out pl-4',
+        open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+      )}>
         {children}
       </div>
     </div>
   )
 }
 
-function MobileSub({ href, children }: { href: string; children: React.ReactNode }) {
+// ============================================
+// MOBILE SUB LINK COMPONENT
+// Nested link for mobile menu sections
+// ============================================
+
+interface MobileSubProps {
+  href: string
+  children: React.ReactNode
+}
+
+function MobileSub({ href, children }: MobileSubProps) {
   return (
     <Link 
       href={href} 

@@ -14,9 +14,10 @@
 
 @import '../styles/themes/primary-colors.css';
 @import '../styles/themes/semantic.css';
+@import '../styles/themes/semantic-gradients.css';
 
 /* Import Components index */
-@import '../styles/components/index.css';
+  @import '../styles/components/index.css'; 
 
 /* ============================================
    BASE STYLES
@@ -28,6 +29,7 @@
   transition-duration: 150ms;
   color-scheme: light dark;
 }
+
 
 html {
   min-width: 320px;

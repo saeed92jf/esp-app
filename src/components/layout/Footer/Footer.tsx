@@ -1,3 +1,4 @@
+// components/layout/Footer.tsx
 'use client'
 
 import Link from 'next/link'
@@ -11,11 +12,19 @@ import {
 } from '@fortawesome/free-brands-svg-icons'
 import { faArrowUp } from '@fortawesome/free-solid-svg-icons'
 import { useState, useEffect } from 'react'
+import { cn } from '@/lib/utils'
+
+// ============================================
+// FOOTER COMPONENT
+// Main footer with brand info, links, social media, and scroll to top button
+// Uses Tailwind CSS - no separate CSS file needed
+// ============================================
 
 export function Footer() {
   const year = new Date().getFullYear()
   const [showScrollTop, setShowScrollTop] = useState(false)
 
+  // Show scroll to top button when page is scrolled down
   useEffect(() => {
     const handleScroll = () => {
       setShowScrollTop(window.scrollY > 500)
@@ -68,16 +77,17 @@ export function Footer() {
   return (
     <>
       <footer className="relative bg-secondary border-t border-light">
-        {/* Main Footer */}
+        {/* Main Footer Content */}
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-12">
+            
             {/* Brand Column */}
             <div className="sm:col-span-2 md:col-span-3 lg:col-span-1">
               <Logo variant="footer" />
               <p className="text-secondary text-xs mt-4 leading-relaxed">
                 Unified platform for engineering and service businesses.
-                
               </p>
+              {/* Social Links */}
               <div className="flex gap-3 mt-6">
                 {socialLinks.map((social) => (
                   <Link
@@ -139,9 +149,15 @@ export function Footer() {
       {/* Scroll to Top Button */}
       <button
         onClick={scrollToTop}
-        className={`fixed bottom-8 right-8 z-50 w-10 h-10 rounded-full bg-primary text-inverse shadow-lg hover:bg-primary/90 transition-all duration-300 flex items-center justify-center ${
-          showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'
-        }`}
+        className={cn(
+          'fixed bottom-8 right-8 z-50 w-10 h-10 rounded-full',
+          'bg-primary text-inverse shadow-lg',
+          'hover:bg-primary/90 transition-all duration-300',
+          'flex items-center justify-center',
+          showScrollTop 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 translate-y-10 pointer-events-none'
+        )}
         aria-label="Scroll to top"
       >
         <FontAwesomeIcon icon={faArrowUp} className="w-4 h-4" />

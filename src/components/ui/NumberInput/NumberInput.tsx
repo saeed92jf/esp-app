@@ -1,15 +1,36 @@
+// components/ui/NumberInput.tsx
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { cn } from '@/lib/cn'
-import { Input, InputProps } from '@/components/ui/Input/Input'
+import { cn } from '@/lib/utils'
+import { Input, InputProps } from '@/components/ui'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+
+// ============================================
+// NUMBER INPUT COMPONENT
+// Enhanced number input with increment/decrement buttons and validation
+// Wraps the base Input component with number-specific logic
+// Uses Tailwind CSS only - inherits styles from Input component
+// ============================================
 
 export interface NumberInputProps extends Omit<InputProps, 'type' | 'onChange' | 'value'> {
+  /** Current numeric value */
   value?: number
+  
+  /** Minimum allowed value */
   min?: number
+  
+  /** Maximum allowed value */
   max?: number
+  
+  /** Step increment/decrement value */
   step?: number
+  
+  /** Callback when value changes */
   onChange?: (value: number, isValid: boolean) => void
+  
+  /** Whether to show increment/decrement buttons */
   showButtons?: boolean
 }
 
@@ -27,6 +48,10 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
     const [internalValue, setInternalValue] = useState(externalValue || 0)
     const [error, setError] = useState('')
 
+    /**
+     * Validates number against min and max constraints
+     * @returns true if valid, false otherwise
+     */
     const validateNumber = (num: number): boolean => {
       if (min !== undefined && num < min) {
         setError(`Minimum value is ${min}`)
@@ -78,25 +103,34 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
               value={currentValue}
               onChange={handleChange}
               error={displayError}
-              className={cn('text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none', className)}
+              className={cn(
+                'text-center',
+                // Hide native number input spinners
+                '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+                className
+              )}
               {...props}
             />
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex flex-col">
+            
+            {/* Custom increment/decrement buttons */}
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col">
               <button
                 type="button"
                 onClick={increment}
                 disabled={currentValue >= max}
-                className="px-2 py-0.5 text-xs text-secondary hover:text-primary disabled:opacity-50"
+                className="px-1.5 py-0.5 text-xs text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Increase value"
               >
-                ▲
+                <FontAwesomeIcon icon={faChevronUp} className="w-2.5 h-2.5" />
               </button>
               <button
                 type="button"
                 onClick={decrement}
                 disabled={currentValue <= min}
-                className="px-2 py-0.5 text-xs text-secondary hover:text-primary disabled:opacity-50"
+                className="px-1.5 py-0.5 text-xs text-secondary hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Decrease value"
               >
-                ▼
+                <FontAwesomeIcon icon={faChevronDown} className="w-2.5 h-2.5" />
               </button>
             </div>
           </div>
@@ -107,7 +141,10 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
             value={currentValue}
             onChange={handleChange}
             error={displayError}
-            className={cn('[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none', className)}
+            className={cn(
+              '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none',
+              className
+            )}
             {...props}
           />
         )}

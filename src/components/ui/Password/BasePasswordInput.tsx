@@ -1,27 +1,69 @@
+// components/ui/BasePasswordInput.tsx
 'use client'
 
 import { forwardRef, useState } from 'react'
-import { cn } from '@/lib/cn'
-import { Input } from '@/components/ui/Input/Input'
+import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+
+// ============================================
+// BASE PASSWORD INPUT COMPONENT
+// Password input with show/hide toggle and optional strength meter
+// Wraps the base Input component with password-specific logic
+// Uses Tailwind CSS only - inherits styles from Input component
+// ============================================
 
 export interface BasePasswordInputProps {
+  /** Input name attribute */
   name?: string
+  
+  /** Current password value */
   value?: string
+  
+  /** Callback when value changes */
   onChange?: (value: string) => void
+  
+  /** Placeholder text */
   placeholder?: string
+  
+  /** Label text above the input */
   label?: string
+  
+  /** Whether the field is required */
   required?: boolean
+  
+  /** Error message to display */
   error?: string
+  
+  /** Additional CSS classes */
   className?: string
+  
+  /** Whether the input is disabled */
   disabled?: boolean
+  
+  /** Whether to show password strength meter */
   showStrength?: boolean
+  
+  /** External strength value (0-5) */
   strength?: number
   
+  /** Size of the input */
   inputSize?: 'sm' | 'md' | 'lg'
+  
+  /** Border radius of the input */
   radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
+  
+  /** Border width of the input */
   borderWidth?: 'none' | 'sm' | 'md' | 'lg'
+  
+  /** Border color variant */
   borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'gray' | 'white'
+  
+  /** Shadow size of the input */
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+  
+  /** Visual style variant */
   variant?: 'default' | 'filled' | 'flushed' | 'unstyled'
 }
 
@@ -49,6 +91,10 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
     const [internalValue, setInternalValue] = useState(value || '')
     const [internalStrength, setInternalStrength] = useState(0)
 
+    /**
+     * Calculate password strength score (0-5)
+     * Based on length, uppercase, numbers, and special characters
+     */
     const calculateStrength = (password: string): number => {
       let score = 0
       if (password.length >= 8) score++
@@ -72,12 +118,6 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
     const currentStrength = externalStrength !== undefined ? externalStrength : internalStrength
     const displayError = externalError
 
-    const getStrengthColor = (score: number) => {
-      if (score <= 2) return 'bg-error text-error'
-      if (score <= 4) return 'bg-warning text-warning'
-      return 'bg-success text-success'
-    }
-
     const getStrengthText = (score: number) => {
       if (score <= 2) return 'Weak'
       if (score <= 4) return 'Medium'
@@ -86,15 +126,20 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
 
     return (
       <div className="flex flex-col gap-1.5">
+        {/* Label */}
         {label && (
           <label 
             htmlFor={name}
-            className={`text-sm font-medium text-secondary ${required ? 'after:content-["*"] after:ml-0.5 after:text-error' : ''}`}
+            className={cn(
+              'text-sm font-medium text-secondary',
+              required && "after:content-['*'] after:ml-0.5 after:text-error"
+            )}
           >
             {label}
           </label>
         )}
         
+        {/* Input with eye toggle button */}
         <div className="relative">
           <Input
             ref={ref}
@@ -111,35 +156,33 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
             borderColor={borderColor}
             shadow={shadow}
             variant={variant}
-            className={`pr-10 ${className}`}
+            className={cn('pr-10', className)}
           />
           
+          {/* Show/hide password toggle button */}
           <button
             type="button"
             onClick={toggleShowPassword}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-tertiary hover:text-primary transition-colors focus:outline-none z-10"
             tabIndex={-1}
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            {showPassword ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-            )}
+            <FontAwesomeIcon 
+              icon={showPassword ? faEyeSlash : faEye} 
+              className="w-5 h-5" 
+            />
           </button>
         </div>
 
-        {displayError && <p className="text-sm text-error">{displayError}</p>}
+        {/* Error message */}
+        {displayError && (
+          <p className="text-sm text-error">{displayError}</p>
+        )}
 
+        {/* Password strength meter */}
         {showStrength && currentValue.length > 0 && !displayError && (
           <div className="mt-2">
+            {/* Strength bar */}
             <div className="flex gap-1 mb-1">
               {[1, 2, 3, 4, 5].map((level) => (
                 <div
@@ -157,9 +200,13 @@ export const BasePasswordInput = forwardRef<HTMLInputElement, BasePasswordInputP
                 />
               ))}
             </div>
+            
+            {/* Strength text */}
             <p className={cn(
               'text-xs',
-              currentStrength <= 2 ? 'text-error' : currentStrength <= 4 ? 'text-warning' : 'text-success'
+              currentStrength <= 2 ? 'text-error' : 
+              currentStrength <= 4 ? 'text-warning' : 
+              'text-success'
             )}>
               Password strength: {getStrengthText(currentStrength)}
             </p>
