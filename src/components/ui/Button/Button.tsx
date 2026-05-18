@@ -129,8 +129,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 // ============================================
 
 const variantClasses: Record<string, string> = {
-  default: 'bg-primary text-inverse hover:bg-primary/90 shadow-sm',
-  primary: 'bg-primary text-inverse hover:bg-primary/90 shadow-sm',
+  default: 'btn-gradient-primary text-primary hover:bg-primary/90 shadow-sm',
+  primary: 'bg-gradient-logo text-primary hover:bg-primary/90 shadow-sm',
   secondary: 'bg-secondary text-inverse hover:bg-secondary/90 shadow-sm',
   outline: 'border border-light bg-transparent text-primary hover:bg-tertiary',
   ghost: 'text-secondary hover:bg-tertiary hover:text-primary',

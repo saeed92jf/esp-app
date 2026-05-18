@@ -1,7 +1,7 @@
-@layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css" layer(utilities);
+
+@import "tailwindcss/theme.css" ;
+@import "tailwindcss/preflight.css" ;
+@import "tailwindcss/utilities.css" ;
 
 /* ============================================
    Import Tokens (CSS Variables)
@@ -16,8 +16,6 @@
 @import '../styles/themes/semantic.css';
 @import '../styles/themes/semantic-gradients.css';
 
-/* Import Components index */
-  @import '../styles/components/index.css'; 
 
 /* ============================================
    BASE STYLES
@@ -36,8 +34,6 @@ html {
 }
 
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
   min-width: 320px;
   overflow-x: auto;
 }
@@ -49,11 +45,6 @@ body {
 
 @layer base {
   body {
-    font-family: var(--font-sans);
-    font-size: var(--text-base);
-    line-height: var(--leading-normal);
-    color: var(--text-primary);
-    background-color: var(--bg-primary);
     -webkit-font-smoothing: antialiased;
   }
 

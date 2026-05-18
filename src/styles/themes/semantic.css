@@ -15,34 +15,39 @@
   --text-placeholder: var(--color-gray-400);
   --text-link: var(--color-primary);
   --text-link-hover: var(--color-primary-hover);
+  --text-success: var(--color-success);
   
   /* ===== Background Colors ===== */
   --bg-primary: var(--color-white);
   --bg-secondary: var(--color-slate-300);
   --bg-tertiary: var(--color-slate-200);
   --bg-inverse: var(--color-slate-900);
+  --bg-error: var(--color-danger-500);
   --bg-input: var(--color-slate-100);
-  --bg-overlay: rgba(0, 0, 0, 0.5);
-  --bg-overlay-light: rgba(255, 255, 255, 0.8);
+  --bg-overlay: var(--color-slate-400);
+  --bg-overlay-light: var(--color-slate-300);
   
   /* ===== Border Colors ===== */
-  --border-extra-light: var(--color-slate-300);
-  --border-light: var(--color-slate-400);
+  --border-extra-light: var(--color-slate-200);
+  --border-light: var(--color-slate-300);
   --border-medium: var(--color-slate-500);
   --border-dark: var(--color-slate-600);
-  --border-focus: var(--color-primary);
+  --border-focus: rgba(0,174,255,1);
+  --border-primary: var(--color-primary);
   --border-error: var(--color-danger-500);
   --border-success: var(--color-success-500);
   --border-warning: var(--color-warning-500);
-  --border-input: var(--color-slate-700)
+  --border-input: var(--color-slate-700);
   
+  /* ===== Ring Colors ===== */
+  --ring: var(--color-primary);
+
   /* ===== Surface Colors ===== */
   --surface-primary: var(--color-white);
   --surface-secondary: var(--color-slate-50);
   --surface-tertiary: var(--color-slate-100);
   --surface-hover: var(--color-slate-100);
-  
- }
+}
 
 /* ============================================
    DARK MODE
@@ -61,117 +66,102 @@
   
   /* ===== Background Colors ===== */
   --bg-primary: var(--color-slate-950);
-  --bg-secondary: var(--color-slate-900);
+  --bg-secondary: var(--color-slate-800);
   --bg-tertiary: var(--color-slate-800);
   --bg-inverse: var(--color-white);
-  --bg-overlay: rgba(0, 0, 0, 0.7);
-  --bg-overlay-light: rgba(0, 0, 0, 0.5);
+  --bg-error: var(--color-danger-500);
+  --bg-input: var(--color-slate-900);
+  --bg-overlay: var(--color-slate-500);
+  --bg-overlay-light: var(--color-slate-600);
   
   /* ===== Border Colors ===== */
-   --border-extra-light: var(--color-slate-300);
+  --border-extra-light: var(--color-slate-100);
   --border-light: var(--color-slate-400);
   --border-medium: var(--color-slate-500);
   --border-dark: var(--color-slate-600);
-  --border-focus: var(--color-primary-400);
+  --border-focus: var(--color-blue-400);
   --border-error: var(--color-danger-500);
   --border-success: var(--color-success-500);
   --border-warning: var(--color-warning-500);
+  --border-primary: var(--color-primary);
   
   /* ===== Surface Colors ===== */
   --surface-primary: var(--color-slate-900);
   --surface-secondary: var(--color-slate-800);
   --surface-tertiary: var(--color-slate-700);
   --surface-hover: var(--color-slate-700);
-  
-
 }
 
 /* ============================================
-   GRADIENTS 
+   UTILITY CLASSES
+   کلیه کلاس‌های مورد نیاز برای استفاده در کامپوننت‌ها
    ============================================ */
 
-:root,
-.light {
-  /* Background Gradients */
-  --gradient-hero: linear-gradient(135deg, var(--color-primary-50) 0%, var(--bg-primary) 50%, var(--color-primary-100) 100%);
-  --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
-  --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  --gradient-shine: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  --gradient-logo:  linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  
-  /* Text Gradients */
-  --text-gradient-primary: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
-  --text-gradient-secondary: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-500));
-  
-  /* Border Gradients */
-  --border-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-600));
-  --border-gradient-success: linear-gradient(135deg, var(--color-success-400), var(--color-success-600));
-  --border-gradient-danger: linear-gradient(135deg, var(--color-danger-400), var(--color-danger-600));
-  
-  /* Button Gradients */
-  --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
-  --gradient-btn-secondary: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-600));
-  --gradient-btn-secondary-hover: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-700));
-  --gradient-btn-success: linear-gradient(135deg, var(--color-success-500), var(--color-success-600));
-  --gradient-btn-danger: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-600));
-}
-
-/* Dark Mode Gradients */
-.dark {
-  --gradient-hero: linear-gradient(135deg, var(--color-primary-900) 0%, var(--bg-primary) 50%, var(--color-primary-950) 100%);
-  --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
-  --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  
-  --text-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
-  --text-gradient-secondary: linear-gradient(135deg, var(--color-secondary-400), var(--color-secondary-500));
-  
-  --border-gradient-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  
-  --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-  --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
-  --gradient-btn-secondary: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-700));
-  --gradient-btn-secondary-hover: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-600));
-}
-
-/* ============================================
-   UTILITY CLASSES 
-   ============================================ */
-
-/* Text Colors */
+/* ===== Text Colors ===== */
 .text-primary { color: var(--text-primary); }
 .text-secondary { color: var(--text-secondary); }
 .text-tertiary { color: var(--text-tertiary); }
 .text-inverse { color: var(--text-inverse); }
+.text-disabled { color: var(--text-disabled); }
+.text-placeholder { color: var(--text-placeholder); }
+.text-link { color: var(--text-link); }
+.text-link-hover { color: var(--text-link-hover); }
+.text-success { color: var(--text-success); }
 
-/* Background Colors */
+/* ===== Background Colors ===== */
 .bg-primary { background-color: var(--bg-primary); }
 .bg-secondary { background-color: var(--bg-secondary); }
 .bg-tertiary { background-color: var(--bg-tertiary); }
 .bg-inverse { background-color: var(--bg-inverse); }
+.bg-error { background-color: var(--bg-error); }
+.bg-input { background-color: var(--bg-input); }
+.bg-overlay { background-color: var(--bg-overlay); }
+.bg-overlay-light { background-color: var(--bg-overlay-light); }
 
-/* Border Colors */
+/* ===== Border Colors ===== */
+.border-extra-light { border-color: var(--border-extra-light); }
 .border-light { border-color: var(--border-light); }
 .border-medium { border-color: var(--border-medium); }
 .border-dark { border-color: var(--border-dark); }
+.border-focus { border-color: var(--border-focus); }
+.border-primary { border-color: var(--border-primary); }
 .border-error { border-color: var(--border-error); }
 .border-success { border-color: var(--border-success); }
+.border-warning { border-color: var(--border-warning); }
+.border-input { border-color: var(--border-input); }
 
-/* Gradients */
-.bg-gradient-hero { background: var(--gradient-hero); }
-.bg-gradient-card { background: var(--gradient-card); }
-.bg-gradient-cta { background: var(--gradient-cta); }
-.bg-gradient-logo {background: var(--gradient-logo);}
+/* ===== Ring Colors ===== */
+.ring-primary { border-color: var(--ring); }
+.ring-focus { border-color: var(--border-focus); }
 
-.text-gradient-primary {
-  background: var(--text-gradient-primary);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
+/* ===== Surface Colors ===== */
+.surface-primary { background-color: var(--surface-primary); }
+.surface-secondary { background-color: var(--surface-secondary); }
+.surface-tertiary { background-color: var(--surface-tertiary); }
+.surface-hover { background-color: var(--surface-hover); }
 
-/* Hover Utilities */
+/* ===== Hover Utilities ===== */
 .hover\:bg-tertiary:hover { background-color: var(--bg-tertiary); }
-.hover\:text-primary:hover { color: var(--color-primary); }
+.hover\:bg-primary:hover { background-color: var(--bg-primary); }
+.hover\:bg-secondary:hover { background-color: var(--bg-secondary); }
+.hover\:text-primary:hover { color: var(--text-primary); }
+.hover\:text-secondary:hover { color: var(--text-secondary); }
+.hover\:border-primary:hover { border-color: var(--border-primary); }
+.hover\:border-focus:hover { border-color: var(--border-focus); }
 
+/* ===== Focus Utilities ===== */
+.focus\:ring-primary:focus { border-color: var(--ring); }
+.focus\:ring-focus:focus { border-color: var(--border-focus); }
+.focus\:border-focus:focus { border-color: var(--border-focus); }
+.focus\:border-primary:focus { border-color: var(--border-primary); } 
+.focus\:border-success:focus { border-color: var(--border-success); } 
+.focus\:border-warning:focus { border-color: var(--border-warning); } 
+.focus\:border-danger:focus { border-color: var(--border-danger); } 
+.focus\:border-error:focus { border-color: var(--border-error); } 
+.focus\:border-info:focus { border-color: var(--border-info); }
+.focus\:outline-none:focus { outline: none; }
 
+/* ===== Transition Utilities ===== */
+.transition-smooth { transition: all var(--duration-base) var( --ease-smooth); }
+.transition-fast { transition: all var(--duration-fast) var(--ease-out); }
+.transition-slow { transition: all var(--duration-slow) var(--ease-out); }

@@ -95,17 +95,25 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
       {/* Avatar Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 rounded-xl bg-transparent py-0 my-0 focus:outline-none"
+        className={cn(
+          'flex items-center gap-3 rounded-xl bg-transparent',
+          'py-0 my-0 focus:outline-none'
+        )}
         aria-label="User menu"
       >
         {/* Avatar Image / Icon */}
         <div className="relative">
           <div className={cn(
-            'w-9 h-9 my-0 rounded-full flex items-center justify-center text-inverse font-semibold shadow-md',
+            'w-9 h-9 my-0 rounded-full flex items-center justify-center',
+            'text-inverse font-semibold shadow-md',
             getAvatarColor(mockUser.role)
           )}>
             {user?.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
+              <img 
+                src={user.avatar} 
+                alt={user.name} 
+                className="w-full h-full rounded-full object-cover" 
+              />
             ) : (
               <FontAwesomeIcon 
                 icon={getRoleIcon(mockUser.role)} 
@@ -114,15 +122,19 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
             )}
           </div>
           {/* Online status indicator */}
-          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white dark:ring-gray-900" />
+          <div className={cn(
+            'absolute bottom-0 right-0 w-2.5 h-2.5',
+            'bg-green-500 rounded-full',
+            'ring-2 ring-white dark:ring-gray-900'
+          )} />
         </div>
         
         {/* User Info */}
         <div className="hidden md:block text-left">
-          <p className="text-sm font-semibold text-primary my-0">
+          <p className={cn('text-sm font-semibold text-primary my-0')}>
             {mockUser.name}
           </p>
-          <p className="text-xs text-secondary my-0.5">
+          <p className={cn('text-xs text-secondary my-0.5')}>
             {getRoleLabel(mockUser.role)}
           </p>
         </div>
@@ -139,12 +151,21 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-72 bg-primary rounded-2xl shadow-xl border border-light overflow-hidden z-50 animate-fade-in-up">
+        <div className={cn(
+          'absolute left-0 mt-2 w-72',
+          'bg-primary rounded-2xl shadow-xl',
+          'border border-light overflow-hidden',
+          'z-50 animate-fade-in-up'
+        )}>
           {/* User Info Section */}
-          <div className="p-4 border-b border-light bg-linear-to-r from-primary/5 to-transparent">
+          <div className={cn(
+            'p-4 border-b border-light',
+            'bg-linear-to-r from-primary/5 to-transparent'
+          )}>
             <div className="flex items-center gap-3">
               <div className={cn(
-                'w-12 h-12 rounded-full flex items-center justify-center text-inverse font-semibold shadow-md',
+                'w-12 h-12 rounded-full flex items-center justify-center',
+                'text-inverse font-semibold shadow-md',
                 getAvatarColor(mockUser.role)
               )}>
                 <FontAwesomeIcon 
@@ -153,10 +174,17 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
                 />
               </div>
               <div className="flex-1">
-                <p className="font-semibold text-primary my-0">{mockUser.name}</p>
-                <p className="text-xs text-secondary mb-2">{mockUser.email}</p>
+                <p className={cn('font-semibold text-primary my-0')}>
+                  {mockUser.name}
+                </p>
+                <p className={cn('text-xs text-secondary mb-2')}>
+                  {mockUser.email}
+                </p>
                 <div className="flex items-center gap-1.5 my-0">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                  <span className={cn(
+                    'text-xs px-2 py-0.5 rounded-full',
+                    'bg-primary/10 text-primary'
+                  )}>
                     {getRoleLabel(mockUser.role)}
                   </span>
                 </div>
@@ -168,55 +196,117 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
           <div className="p-2">
             <Link
               href="/profile"
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-secondary hover:bg-tertiary hover:text-primary rounded-xl transition-colors group"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5',
+                'text-sm text-secondary',
+                'hover:bg-tertiary hover:text-primary',
+                'rounded-xl transition-colors group'
+              )}
               onClick={() => setIsOpen(false)}
             >
-              <FontAwesomeIcon icon={faUserCircle} className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
+              <FontAwesomeIcon 
+                icon={faUserCircle} 
+                className={cn(
+                  'w-4 h-4 text-tertiary',
+                  'group-hover:text-primary transition-colors'
+                )} 
+              />
               <span>My Profile</span>
             </Link>
             
             <Link
               href="/dashboard"
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-secondary hover:bg-tertiary hover:text-primary rounded-xl transition-colors group"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5',
+                'text-sm text-secondary',
+                'hover:bg-tertiary hover:text-primary',
+                'rounded-xl transition-colors group'
+              )}
               onClick={() => setIsOpen(false)}
             >
-              <FontAwesomeIcon icon={faChartLine} className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
+              <FontAwesomeIcon 
+                icon={faChartLine} 
+                className={cn(
+                  'w-4 h-4 text-tertiary',
+                  'group-hover:text-primary transition-colors'
+                )} 
+              />
               <span>Dashboard</span>
             </Link>
             
             <Link
               href="/settings"
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-secondary hover:bg-tertiary hover:text-primary rounded-xl transition-colors group"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5',
+                'text-sm text-secondary',
+                'hover:bg-tertiary hover:text-primary',
+                'rounded-xl transition-colors group'
+              )}
               onClick={() => setIsOpen(false)}
             >
-              <FontAwesomeIcon icon={faCog} className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
+              <FontAwesomeIcon 
+                icon={faCog} 
+                className={cn(
+                  'w-4 h-4 text-tertiary',
+                  'group-hover:text-primary transition-colors'
+                )} 
+              />
               <span>Account Settings</span>
             </Link>
 
             <Link
               href="/notifications"
-              className="flex items-center gap-3 px-3 py-2.5 text-sm text-secondary hover:bg-tertiary hover:text-primary rounded-xl transition-colors group"
+              className={cn(
+                'flex items-center gap-3 px-3 py-2.5',
+                'text-sm text-secondary',
+                'hover:bg-tertiary hover:text-primary',
+                'rounded-xl transition-colors group'
+              )}
               onClick={() => setIsOpen(false)}
             >
-              <FontAwesomeIcon icon={faBell} className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
-              <span>Notifications</span>
-              <span className="ml-auto text-xs bg-error text-inverse px-2 py-0.5 rounded-full">3</span>
+              <FontAwesomeIcon 
+                icon={faBell} 
+                className={cn(
+                  'w-4 h-4 text-tertiary',
+                  'group-hover:text-primary transition-colors'
+                )} 
+              />
+            <span>Notifications</span>
+<span className={cn(
+  'ml-auto text-xs font-medium tabular-nums',  
+  'bg-error text-inverse',
+  'min-w-6 h-6 px-1 rounded-full',
+  'flex items-center justify-center'
+)}>
+5
+</span>
             </Link>
 
             {/* Admin only menu item */}
             {mockUser.role === 'ADMIN' && (
               <Link
                 href="/admin"
-                className="flex items-center gap-3 px-3 py-2.5 text-sm text-secondary hover:bg-tertiary hover:text-primary rounded-xl transition-colors group"
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5',
+                  'text-sm text-secondary',
+                  'hover:bg-tertiary hover:text-primary',
+                  'rounded-xl transition-colors group'
+                )}
                 onClick={() => setIsOpen(false)}
               >
-                <FontAwesomeIcon icon={faShieldAlt} className="w-4 h-4 text-tertiary group-hover:text-primary transition-colors" />
+                <FontAwesomeIcon 
+                  icon={faShieldAlt} 
+                  className={cn(
+                    'w-4 h-4 text-tertiary',
+                    'group-hover:text-primary transition-colors'
+                  )} 
+                />
                 <span>Admin Panel</span>
               </Link>
             )}
             
             {/* Divider */}
-            <div className="my-2 h-px bg-light" />
+            <div className={cn('my-2 h-px bg-overlay')} />
             
             {/* Logout Button */}
             <button
@@ -224,9 +314,22 @@ export function UserAvatar({ user, onLogout }: UserAvatarProps) {
                 setIsOpen(false)
                 onLogout?.()
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-error hover:bg-error/10 rounded-xl transition-colors group"
+          className={cn(
+  'w-full flex items-center gap-3 px-3 py-2.5',
+  'text-sm text-error',
+  'hover:text-white',
+  'hover:bg-gradient-danger',
+  'rounded-xl',
+  'group'
+)}
             >
-              <FontAwesomeIcon icon={faSignOutAlt} className="w-4 h-4 group-hover:scale-110 transition-transform" />
+              <FontAwesomeIcon 
+                icon={faSignOutAlt} 
+                className={cn(
+                  'w-4 h-4',
+                  'group-hover:scale-110 transition-transform'
+                )} 
+              />
               <span>Sign Out</span>
             </button>
           </div>

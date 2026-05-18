@@ -4,58 +4,43 @@
 import { useState, useEffect, useRef } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSearch, faTimes, faSpinner } from '@fortawesome/free-solid-svg-icons'
-import { Input } from '@/components/ui'
 import { cn } from '@/lib/utils'
-
-// ============================================
-// SEARCH INPUT COMPONENT
-// Search input with debounced results and dropdown
-// Includes loading states, type badges, and keyboard navigation
-// Uses Tailwind CSS - no separate CSS file needed
-// ============================================
-
-export interface SearchResult {
-  id: string
-  title: string
-  description: string
-  type: 'feature' | 'document' | 'project' | 'page'
-  url: string
-  icon?: string
-}
+import { searchData, type SearchResult } from '@/data/search-data'
 
 interface SearchInputProps {
-  /** Placeholder text for the search input */
   placeholder?: string
-  
-  /** Callback when search is performed */
   onSearch?: (query: string) => void
-  
-  /** Callback when a result is selected */
   onResultSelect?: (result: SearchResult) => void
-  
-  /** Additional CSS classes */
   className?: string
-  
-  /** Whether the component is disabled */
   disabled?: boolean
+  data?: SearchResult[]
 }
 
-// Mock data for demonstration
-const mockResults: SearchResult[] = [
-  { id: '1', title: 'CRM', description: 'Manage client relationships', type: 'feature', url: '/features/crm', icon: '👥' },
-  { id: '2', title: 'Pipeline', description: 'Track leads and deals', type: 'feature', url: '/features/pipeline', icon: '📊' },
-  { id: '3', title: 'Time Tracking', description: 'Track billable hours', type: 'feature', url: '/features/time-tracking', icon: '⏱️' },
-  { id: '4', title: 'Client Portal', description: 'Secure client access', type: 'feature', url: '/features/client-portal', icon: '🔒' },
-  { id: '5', title: 'Estimates', description: 'Professional estimates', type: 'document', url: '/docs/estimates', icon: '💰' },
-  { id: '6', title: 'Getting Started Guide', description: 'Learn the basics', type: 'document', url: '/docs/getting-started', icon: '📚' },
-]
+// تابع هایلایت متن با متغیرهای تم
+const highlightText = (text: string, query: string) => {
+  if (!query || query.length < 2) return text
+  
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  const parts = text.split(regex)
+  
+  return parts.map((part, index) => 
+    regex.test(part) ? (
+     <mark key={index} className="px-0.5 py-0" style={{ backgroundColor: 'rgba(255, 0, 0, 0.4)', color: 'var(--color-warning)' }}>
+  {part}
+</mark>
+    ) : (
+      <span key={index}>{part}</span>
+    )
+  )
+}
 
 export function SearchInput({ 
   placeholder = 'Search features, documents, or projects...', 
   onSearch, 
   onResultSelect, 
   className = '',
-  disabled = false
+  disabled = false,
+  data = searchData
 }: SearchInputProps) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
@@ -64,20 +49,24 @@ export function SearchInput({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const selectedIndexRef = useRef(-1)
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const isSelectingRef = useRef(false)
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false)
+        setSelectedIndex(-1)
+        selectedIndexRef.current = -1
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Adjust dropdown position (open upward if not enough space below)
+  // Adjust dropdown position
   useEffect(() => {
     if (isOpen && wrapperRef.current && dropdownRef.current) {
       const inputRect = wrapperRef.current.getBoundingClientRect()
@@ -99,6 +88,24 @@ export function SearchInput({
     }
   }, [isOpen, results])
 
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && dropdownRef.current) {
+      const selectedElement = dropdownRef.current.querySelector(`[data-index="${selectedIndex}"]`)
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+      }
+    }
+  }, [selectedIndex])
+
+  // Reset selected index when results change
+  useEffect(() => {
+    if (!isSelectingRef.current) {
+      setSelectedIndex(-1)
+      selectedIndexRef.current = -1
+    }
+  }, [results])
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
@@ -110,12 +117,12 @@ export function SearchInput({
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
 
-    if (query.length > 1) {
+    if (query.length > 1 && !isSelectingRef.current) {
       setIsLoading(true)
       setIsOpen(true)
       
       timeoutRef.current = setTimeout(() => {
-        const filtered = mockResults.filter(
+        const filtered = data.filter(
           (r) =>
             r.title.toLowerCase().includes(query.toLowerCase()) ||
             r.description.toLowerCase().includes(query.toLowerCase())
@@ -124,30 +131,58 @@ export function SearchInput({
         setIsLoading(false)
         onSearch?.(query)
       }, 500)
-    } else {
+    } else if (query.length <= 1 && !isSelectingRef.current) {
       setIsLoading(false)
-      if (query.length === 0) {
-        setResults([])
-        setIsOpen(false)
-      } else {
-        setIsOpen(false)
-        setResults([])
-      }
+      setIsOpen(false)
+      setResults([])
+      setSelectedIndex(-1)
+      selectedIndexRef.current = -1
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [query, onSearch])
+  }, [query, onSearch, data])
 
   const handleSelect = (result: SearchResult) => {
-    setQuery(result.title)
+    // جلوگیری از اجرای مجدد
+    isSelectingRef.current = true
+    
+    // بستن پاپ‌آپ بلافاصله
     setIsOpen(false)
+    setResults([])
+    setSelectedIndex(-1)
+    selectedIndexRef.current = -1
+    
+    // تنظیم مقدار query
+    setQuery(result.title)
+    
+    // پاک کردن تایمرهای در حال اجرا
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    
+    // صدا زدن callback
     onResultSelect?.(result)
+    
+    // ریست فلگ بعد از یک تاخیر کوتاه
+    setTimeout(() => {
+      isSelectingRef.current = false
+    }, 200)
   }
 
   const clearSearch = () => {
+    isSelectingRef.current = false
     setQuery('')
     setIsOpen(false)
     setResults([])
     setSelectedIndex(-1)
+    selectedIndexRef.current = -1
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
+  }
+
+  const handleFocus = () => {
+    if (query.length > 1 && !isSelectingRef.current) {
+      setIsOpen(true)
+    }
   }
 
   // Keyboard navigation
@@ -157,21 +192,37 @@ export function SearchInput({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault()
-        setSelectedIndex((prev) => (prev + 1) % results.length)
+        e.stopPropagation()
+        setSelectedIndex((prev) => {
+          const newIndex = prev + 1
+          const nextIndex = newIndex >= results.length ? 0 : newIndex
+          selectedIndexRef.current = nextIndex
+          return nextIndex
+        })
         break
       case 'ArrowUp':
         e.preventDefault()
-        setSelectedIndex((prev) => (prev - 1 + results.length) % results.length)
+        e.stopPropagation()
+        setSelectedIndex((prev) => {
+          const newIndex = prev - 1
+          const nextIndex = newIndex < 0 ? results.length - 1 : newIndex
+          selectedIndexRef.current = nextIndex
+          return nextIndex
+        })
         break
       case 'Enter':
         e.preventDefault()
+        e.stopPropagation()
         if (selectedIndex >= 0 && selectedIndex < results.length) {
           handleSelect(results[selectedIndex])
         }
         break
       case 'Escape':
+        e.preventDefault()
+        e.stopPropagation()
         setIsOpen(false)
         setSelectedIndex(-1)
+        selectedIndexRef.current = -1
         break
     }
   }
@@ -180,9 +231,9 @@ export function SearchInput({
     switch (type) {
       case 'feature': return 'bg-primary/10 text-primary'
       case 'document': return 'bg-success/10 text-success'
-      case 'project': return 'bg-purple-500/10 text-purple-500'
+      case 'project': return 'bg-info/10 text-info'
       case 'page': return 'bg-warning/10 text-warning'
-      default: return 'bg-tertiary text-secondary'
+      default: return 'bg-secondary/10 text-secondary'
     }
   }
 
@@ -198,24 +249,34 @@ export function SearchInput({
           />
         </div>
         
-        {/* Input field */}
-        <Input
+        {/* Input field with semantic variables */}
+        <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => setIsOpen(query.length > 1)}
+          onChange={(e) => {
+            if (!isSelectingRef.current) {
+              setQuery(e.target.value)
+            }
+          }}
+          onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          inputSize="md"       
-          className="pl-10 pr-10"
-          radius="full"
-          borderColor="secondary"
-          shadow="lg"
+          className={cn(
+            'w-full h-12 px-4 py-2 text-base rounded-full outline-none',
+            'bg-primary',
+            'text-primary placeholder:text-placeholder',
+            'border border-light',
+            'shadow-lg',
+            'transition-all duration-200',
+            'focus:border-focus focus:outline-none',
+            disabled && 'opacity-50 cursor-not-allowed',
+            'pl-10 pr-10'
+          )}
         />
         
-        {/* Loading spinner */}
-        {isLoading && (
+        {/* Loading spinner - فقط در حالت غیر انتخاب نمایش داده شود */}
+        {isLoading && !isSelectingRef.current && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 z-10">
             <FontAwesomeIcon 
               icon={faSpinner} 
@@ -225,10 +286,10 @@ export function SearchInput({
         )}
         
         {/* Clear button */}
-        {!isLoading && query && (
+        {!isLoading && query && !isSelectingRef.current && (
           <button
             onClick={clearSearch}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 z-10 transition-colors text-tertiary hover:text-primary"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 z-10 transition-colors text-tertiary hover:text-primary cursor-pointer"
             aria-label="Clear search"
           >
             <FontAwesomeIcon icon={faTimes} className="w-3.5 h-3.5" />
@@ -236,31 +297,34 @@ export function SearchInput({
         )}
       </div>
 
-      {/* Results Dropdown */}
-      {isOpen && query.length > 1 && (
+      {/* Results Dropdown - فقط در حالت غیر انتخاب و باز بودن نمایش داده شود */}
+      {isOpen && query.length > 1 && !isSelectingRef.current && (
         <div 
           ref={dropdownRef}
-          className="absolute left-0 right-0 bg-primary rounded-2xl shadow-2xl border border-light overflow-hidden z-50"
-          style={{ 
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            transformOrigin: 'top center',
-            animation: 'dropdownFadeIn 0.25s cubic-bezier(0.34, 1.2, 0.64, 1) forwards'
-          }}
+          className="absolute left-0 right-0 mt-2 rounded-2xl shadow-2xl border border-light overflow-hidden z-50 bg-primary  animate-fade-in-up"
         >
-          {results.length > 0 ? (
+          {isLoading ? (
+            // حالت لودینگ
+            <div className="px-4 py-8 text-center">
+              <FontAwesomeIcon 
+                icon={faSpinner} 
+                className="w-6 h-6 text-primary animate-spin mx-auto mb-3" 
+              />
+              <p className="text-sm text-tertiary">Searching...</p>
+            </div>
+          ) : results.length > 0 ? (
             <>
               {/* Results header */}
-              <div className="px-4 py-3 border-b border-light flex items-center justify-between">
+              <div className="px-4 py-3 border-b border-light flex items-center justify-between ">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
                   <p className="text-xs font-medium text-success">
                     {results.length} result{results.length !== 1 ? 's' : ''} found
                   </p>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-success">✓</span>
-                  <span className="text-xs text-secondary">Ready</span>
-                </div>
+                <p className="text-xs text-tertiary">
+                  ↑ ↓ to navigate • Enter to select
+                </p>
               </div>
               
               {/* Results list */}
@@ -268,90 +332,66 @@ export function SearchInput({
                 {results.map((result, idx) => (
                   <button
                     key={result.id}
+                    data-index={idx}
                     onClick={() => handleSelect(result)}
+                    onMouseEnter={() => {
+                      if (!isSelectingRef.current) {
+                        setSelectedIndex(idx)
+                        selectedIndexRef.current = idx
+                      }
+                    }}
                     className={cn(
-                      'w-full text-left px-4 py-3 transition-all duration-200 border-b border-light last:border-0 group',
+                      'w-full text-left px-4 py-3 transition-all duration-200 border-b border-light last:border-0 group cursor-pointer',
                       selectedIndex === idx && 'bg-secondary'
                     )}
-                    style={{ animation: `resultItemFadeIn 0.2s ease-out ${idx * 30}ms forwards`, opacity: 0 }}
                   >
                     <div className="flex items-start gap-3">
                       {/* Icon container */}
                       <div className={cn(
-                        'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 group-hover:scale-110',
+                        'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200',
                         getTypeStyles(result.type)
                       )}>
                         <span className="text-base">{result.icon || '🔍'}</span>
                       </div>
                       
-                      {/* Result details */}
+                      {/* Result details with highlight */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold text-primary transition-colors">
-                            {result.title}
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-sm font-semibold text-primary">
+                            {highlightText(result.title, query)}
                           </span>
                           <span className={cn('text-xs px-2 py-0.5 rounded-full', getTypeStyles(result.type))}>
                             {result.type}
                           </span>
                         </div>
-                        <p className="text-xs text-secondary line-clamp-1">{result.description}</p>
-                      </div>
-                      
-                      {/* Arrow icon */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-1">
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
+                        <p className="text-xs text-tertiary line-clamp-1">
+                          {highlightText(result.description, query)}
+                        </p>
                       </div>
                     </div>
                   </button>
                 ))}
               </div>
-              
-              {/* Bottom gradient line */}
-              <div className="h-0.5 bg-linear-to-r from-transparent via-success to-transparent" />
             </>
           ) : (
-            !isLoading && (
-              // No results state
-              <div className="p-8 text-center animate-fade-in-up">
-                <div className="text-6xl mb-4">😔</div>
-                <p className="text-sm text-secondary">
-                  No results found for "<span className="font-medium text-primary">{query}</span>"
-                </p>
-                <p className="text-xs text-tertiary mt-2">
-                  Try searching with different keywords
-                </p>
-              </div>
-            )
+            // حالت بدون نتیجه
+            <div className="px-4 py-8 text-center">
+              <div className="text-5xl mb-3">😕</div>
+              <p className="text-sm text-secondary font-medium">
+                No results found
+              </p>
+              <p className="text-xs text-tertiary mt-1">
+                We couldn't find anything for "<span className="font-medium text-primary">{query}</span>"
+              </p>
+              <p className="text-xs text-tertiary mt-2">
+                Try different keywords or check your spelling
+              </p>
+            </div>
           )}
         </div>
       )}
 
-      {/* CSS Animations */}
       <style jsx>{`
-        @keyframes dropdownFadeIn {
-          0% {
-            opacity: 0;
-            transform: scale(0.95) translateY(-10px);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
-        }
-        
-        @keyframes resultItemFadeIn {
-          0% {
-            opacity: 0;
-            transform: translateX(-10px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        
         .line-clamp-1 {
           display: -webkit-box;
           -webkit-line-clamp: 1;

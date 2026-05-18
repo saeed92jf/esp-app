@@ -1,9 +1,0 @@
-/* ============================================
-   COMPONENTS STYLES - Index File
-   Import all component styles here
-   ============================================ */
-
-@import './form.css';
-@import './layout.css';
-@import './modal.css';
-@import './utilities.css';

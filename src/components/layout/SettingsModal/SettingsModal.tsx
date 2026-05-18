@@ -132,7 +132,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className={cn(
                 'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'light'
-                  ? 'bg-primary text-inverse shadow-sm'
+                  ? 'bg-primary text-primary shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               )}
             >
@@ -151,7 +151,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className={cn(
                 'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'dark'
-                  ? 'bg-primary text-inverse shadow-sm'
+                  ? 'bg-primary text-primary shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               )}
             >
@@ -170,7 +170,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               className={cn(
                 'flex items-center justify-between w-full px-3 py-2 rounded-lg text-sm font-medium transition-all',
                 theme === 'system'
-                  ? 'bg-primary text-inverse shadow-sm'
+                  ? 'bg-primary text-primary shadow-sm'
                   : 'bg-tertiary text-secondary hover:bg-tertiary/80'
               )}
             >

@@ -14,7 +14,12 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Button, EmailInput, CountUp, SearchInput, Tabs } from '@/components/ui'
 import { Logo } from '@/components/ui'
+import { FeatureCard } from '@/components/ui'
+import { QuickCard } from '@/components/ui'
+import { StatsCard } from '@/components/ui'
 import { cn } from '@/lib/utils'
+import { searchData, type SearchResult } from '@/data/search-data'
+import { useRouter } from 'next/navigation'
 
 // ============================================
 // HOME CLIENT COMPONENT
@@ -24,6 +29,7 @@ import { cn } from '@/lib/utils'
 // ============================================
 
 export function HomeClient() {
+  const router = useRouter()
   const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState('all')
   const [newsletterEmail, setNewsletterEmail] = useState('')
@@ -68,6 +74,12 @@ export function HomeClient() {
       case 'EMPLOYEE': return 'Employee'
       default: return 'Guest User'
     }
+  }
+
+  // Handle search result selection
+  const handleResultSelect = (result: SearchResult) => {
+    console.log('Selected result:', result)
+    router.push(result.url)
   }
 
   // Intersection Observer for scroll animations
@@ -119,57 +131,57 @@ export function HomeClient() {
 
   // Quick Access Items
   const quickAccessItems = [
-    { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', iconColor: 'text-blue-500' },
-    { icon: faUsers, title: 'CRM', href: '/', iconColor: 'text-emerald-500' },
-    { icon: faCalendarAlt, title: 'Calendar', href: '/', iconColor: 'text-amber-500' },
-    { icon: faClock, title: 'Time Tracking', href: '/', iconColor: 'text-rose-500' },
-    { icon: faFolder, title: 'Projects', href: '/', iconColor: 'text-indigo-500' },
-    { icon: faFileInvoice, title: 'Invoices', href: '/', iconColor: 'text-teal-500' },
+    { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', iconColor: 'text-blue-500', gradient: 'bg-gradient-azure' },
+    { icon: faUsers, title: 'CRM', href: '/crm', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
+    { icon: faCalendarAlt, title: 'Calendar', href: '/calendar', iconColor: 'text-amber-500', gradient: 'bg-gradient-amber' },
+    { icon: faClock, title: 'Time Tracking', href: '/time-tracking', iconColor: 'text-rose-500', gradient: 'bg-gradient-rose' },
+    { icon: faFolder, title: 'Projects', href: '/projects', iconColor: 'text-indigo-500', gradient: 'bg-gradient-indigo' },
+    { icon: faFileInvoice, title: 'Invoices', href: '/invoices', iconColor: 'text-teal-500', gradient: 'bg-gradient-teal' },
   ]
 
   // Stats Data
   const stats = [
-    { value: 10250, label: 'Active Users', icon: faUsers, suffix: '+', iconColor: 'text-blue-500 bg-blue-100 dark:bg-blue-900/20' },
-    { value: 528, label: 'Companies', icon: faBuilding, suffix: '+', iconColor: 'text-emerald-500 bg-emerald-100 dark:bg-emerald-900/20' },
-    { value: 98, label: 'Satisfaction', icon: faStar, suffix: '%', iconColor: 'text-amber-500 bg-amber-100 dark:bg-amber-900/20' },
-    { value: 24, label: 'Support', icon: faHeadset, suffix: '/7', iconColor: 'text-purple-500 bg-purple-100 dark:bg-purple-900/20' },
+    { value: 10250, label: 'Active Users', icon: faUsers, suffix: '+', iconColor: 'text-blue-500' },
+    { value: 528, label: 'Companies', icon: faBuilding, suffix: '+', iconColor: 'text-emerald-500' },
+    { value: 98, label: 'Satisfaction', icon: faStar, suffix: '%', iconColor: 'text-amber-500' },
+    { value: 24, label: 'Support', icon: faHeadset, suffix: '/7', iconColor: 'text-rose-500' },
   ]
 
   // Features Data
   const features = {
     all: [
-      { icon: faUsers, title: 'CRM', desc: 'Manage client relationships and interactions.', category: 'crm', iconColor: 'text-blue-500' },
-      { icon: faChartLine, title: 'Pipeline', desc: 'Track leads and deals through your sales pipeline.', category: 'crm', iconColor: 'text-indigo-500' },
-      { icon: faCalendarAlt, title: 'Scheduling', desc: 'Book appointments and manage your calendar.', category: 'crm', iconColor: 'text-teal-500' },
-      { icon: faFolder, title: 'Projects', desc: 'Organize and manage all your client projects.', category: 'project', iconColor: 'text-emerald-500' },
-      { icon: faUserCheck, title: 'Tasks', desc: 'Assign, track, and manage tasks efficiently.', category: 'project', iconColor: 'text-lime-500' },
-      { icon: faClock, title: 'Time Tracking', desc: 'Track billable hours accurately.', category: 'project', iconColor: 'text-amber-500' },
-      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600' },
-      { icon: faFileInvoice, title: 'Invoices', desc: 'Generate and send invoices to clients.', category: 'finance', iconColor: 'text-orange-500' },
-      { icon: faChartLine, title: 'Reports', desc: 'Detailed financial reports and analytics.', category: 'finance', iconColor: 'text-slate-500' },
-      { icon: faUsers, title: 'Recruitment', desc: 'Manage job postings and candidates.', category: 'hr', iconColor: 'text-rose-500' },
-      { icon: faUserCheck, title: 'Onboarding', desc: 'Streamline new employee onboarding.', category: 'hr', iconColor: 'text-pink-500' },
-      { icon: faFileInvoice, title: 'Payroll', desc: 'Manage employee payroll and benefits.', category: 'hr', iconColor: 'text-fuchsia-500' },
+      { icon: faUsers, title: 'CRM', desc: 'Manage client relationships and interactions.', category: 'crm', iconColor: 'text-blue-500', gradient: 'bg-gradient-azure' },
+      { icon: faChartLine, title: 'Pipeline', desc: 'Track leads and deals through your sales pipeline.', category: 'crm', iconColor: 'text-indigo-500', gradient: 'bg-gradient-indigo' },
+      { icon: faCalendarAlt, title: 'Scheduling', desc: 'Book appointments and manage your calendar.', category: 'crm', iconColor: 'text-teal-500', gradient: 'bg-gradient-teal' },
+      { icon: faFolder, title: 'Projects', desc: 'Organize and manage all your client projects.', category: 'project', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
+      { icon: faUserCheck, title: 'Tasks', desc: 'Assign, track, and manage tasks efficiently.', category: 'project', iconColor: 'text-lime-500', gradient: 'bg-gradient-lime' },
+      { icon: faClock, title: 'Time Tracking', desc: 'Track billable hours accurately.', category: 'project', iconColor: 'text-amber-500', gradient: 'bg-gradient-amber' },
+      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600', gradient: 'bg-gradient-silver' },
+      { icon: faFileInvoice, title: 'Invoices', desc: 'Generate and send invoices to clients.', category: 'finance', iconColor: 'text-orange-500', gradient: 'bg-gradient-copper' },
+      { icon: faChartLine, title: 'Reports', desc: 'Detailed financial reports and analytics.', category: 'finance', iconColor: 'text-slate-500', gradient: 'bg-gradient-silver' },
+      { icon: faUsers, title: 'Recruitment', desc: 'Manage job postings and candidates.', category: 'hr', iconColor: 'text-rose-500', gradient: 'bg-gradient-rose' },
+      { icon: faUserCheck, title: 'Onboarding', desc: 'Streamline new employee onboarding.', category: 'hr', iconColor: 'text-pink-500', gradient: 'bg-gradient-pink' },
+      { icon: faFileInvoice, title: 'Payroll', desc: 'Manage employee payroll and benefits.', category: 'hr', iconColor: 'text-fuchsia-500', gradient: 'bg-gradient-fuchsia' },
     ],
     crm: [
-      { icon: faUsers, title: 'CRM', desc: 'Manage client relationships and interactions.', category: 'crm', iconColor: 'text-blue-500' },
-      { icon: faChartLine, title: 'Pipeline', desc: 'Track leads and deals through your sales pipeline.', category: 'crm', iconColor: 'text-indigo-500' },
-      { icon: faCalendarAlt, title: 'Scheduling', desc: 'Book appointments and manage your calendar.', category: 'crm', iconColor: 'text-teal-500' },
+      { icon: faUsers, title: 'CRM', desc: 'Manage client relationships and interactions.', category: 'crm', iconColor: 'text-blue-500', gradient: 'bg-gradient-azure' },
+      { icon: faChartLine, title: 'Pipeline', desc: 'Track leads and deals through your sales pipeline.', category: 'crm', iconColor: 'text-indigo-500', gradient: 'bg-gradient-indigo' },
+      { icon: faCalendarAlt, title: 'Scheduling', desc: 'Book appointments and manage your calendar.', category: 'crm', iconColor: 'text-teal-500', gradient: 'bg-gradient-teal' },
     ],
     project: [
-      { icon: faFolder, title: 'Projects', desc: 'Organize and manage all your client projects.', category: 'project', iconColor: 'text-emerald-500' },
-      { icon: faUserCheck, title: 'Tasks', desc: 'Assign, track, and manage tasks efficiently.', category: 'project', iconColor: 'text-lime-500' },
-      { icon: faClock, title: 'Time Tracking', desc: 'Track billable hours accurately.', category: 'project', iconColor: 'text-amber-500' },
+      { icon: faFolder, title: 'Projects', desc: 'Organize and manage all your client projects.', category: 'project', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
+      { icon: faUserCheck, title: 'Tasks', desc: 'Assign, track, and manage tasks efficiently.', category: 'project', iconColor: 'text-lime-500', gradient: 'bg-gradient-lime' },
+      { icon: faClock, title: 'Time Tracking', desc: 'Track billable hours accurately.', category: 'project', iconColor: 'text-amber-500', gradient: 'bg-gradient-amber' },
     ],
     finance: [
-      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600' },
-      { icon: faFileInvoice, title: 'Invoices', desc: 'Generate and send invoices to clients.', category: 'finance', iconColor: 'text-orange-500' },
-      { icon: faChartLine, title: 'Reports', desc: 'Detailed financial reports and analytics.', category: 'finance', iconColor: 'text-slate-500' },
+      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600', gradient: 'bg-gradient-gold' },
+      { icon: faFileInvoice, title: 'Invoices', desc: 'Generate and send invoices to clients.', category: 'finance', iconColor: 'text-orange-500', gradient: 'bg-gradient-copper' },
+      { icon: faChartLine, title: 'Reports', desc: 'Detailed financial reports and analytics.', category: 'finance', iconColor: 'text-slate-500', gradient: 'bg-gradient-silver' },
     ],
     hr: [
-      { icon: faUsers, title: 'Recruitment', desc: 'Manage job postings and candidates.', category: 'hr', iconColor: 'text-rose-500' },
-      { icon: faUserCheck, title: 'Onboarding', desc: 'Streamline new employee onboarding.', category: 'hr', iconColor: 'text-pink-500' },
-      { icon: faFileInvoice, title: 'Payroll', desc: 'Manage employee payroll and benefits.', category: 'hr', iconColor: 'text-fuchsia-500' },
+      { icon: faUsers, title: 'Recruitment', desc: 'Manage job postings and candidates.', category: 'hr', iconColor: 'text-rose-500', gradient: 'bg-gradient-rose' },
+      { icon: faUserCheck, title: 'Onboarding', desc: 'Streamline new employee onboarding.', category: 'hr', iconColor: 'text-pink-500', gradient: 'bg-gradient-pink' },
+      { icon: faFileInvoice, title: 'Payroll', desc: 'Manage employee payroll and benefits.', category: 'hr', iconColor: 'text-fuchsia-500', gradient: 'bg-gradient-fuchsia' },
     ],
   }
 
@@ -187,52 +199,50 @@ export function HomeClient() {
 
   return (
     <>
-    <div className="fixed inset-0 -z-10 bg-gradient-hero" />
-<div className="relative z-10">
       {/* HERO SECTION */}
       <section 
         id="hero" 
         ref={el => { if (el) sectionsRef.current[0] = el as HTMLDivElement }}
-        className="relative min-h-screen flex items-center justify-center bg-transparent "
+        className="relative min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50"
       >
         <div className="relative container text-center py-20">
           {/* Logo */}
           <div className={cn(
-            "flex justify-center mb-8",
-            isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'
+            "flex justify-center mb-8 transition-all duration-700",
+            isRevealed('hero') ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-4'
           )}>
             <Logo variant="hero" />
           </div>
 
           {/* Search Input */}
           <div className={cn(
-            "relative z-20 mb-4",
-            isRevealed('hero') ? 'animate-fade-in-up delay-200' : 'opacity-0'
+            "relative z-20 mb-12 max-w-2xl mx-auto transition-all duration-700 delay-200",
+            isRevealed('hero') ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-4'
           )}>
-            <SearchInput />
+            <SearchInput 
+              data={searchData}
+              onResultSelect={handleResultSelect}
+              placeholder="Try searching for 'CRM', 'API', 'Mobile App'..."
+            />
           </div>
 
+        
+
           {/* Quick Access Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-8">
+          <div className={cn(
+            "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 transition-all duration-700 delay-400",
+            isRevealed('hero') ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-4'
+          )}>
             {quickAccessItems.map((item, index) => (
-              <Link
+              <QuickCard
                 key={index}
-                href={session ? item.href : '/login'}
-                className="group block text-center p-4 rounded-2xl transition-all duration-300 hover:bg-tertiary"
-              >
-                <div className="w-14 h-14 mx-auto mb-3 rounded-full bg-tertiary flex items-center justify-center transition-all duration-300 group-hover:bg-primary">
-                  <FontAwesomeIcon 
-                    icon={item.icon} 
-                    className={cn("w-6 h-6 transition-colors duration-300", item.iconColor, "group-hover:text-inverse")}
-                  />
-                </div>
-                <div className="text-sm font-semibold text-secondary transition-colors duration-300 group-hover:text-primary">
-                  {item.title}
-                </div>
-                {!session && (
-                  <div className="text-xs text-tertiary mt-1">Login required</div>
-                )}
-              </Link>
+                icon={item.icon}
+                title={item.title}
+                href={item.href}
+                isAuthenticated={!!session}
+                subtitle="Login required"
+                iconColor={item.iconColor}
+              />
             ))}
           </div>
         </div>
@@ -242,27 +252,21 @@ export function HomeClient() {
       <section 
         id="stats" 
         ref={el => { if (el) sectionsRef.current[1] = el as HTMLDivElement }}
-        className="py-16 bg-transparent"
+        className="py-20 bg-transparent"
       >
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
-              <div 
+              <StatsCard
                 key={index}
-                className={cn(
-                  "text-center p-6 rounded-2xl bg-primary border border-light shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg",
-                  isRevealed('stats') ? `animate-fade-in-up` : 'opacity-0'
-                )}
-                style={{ animationDelay: isRevealed('stats') ? `${(index + 1) * 100}ms` : '0ms' }}
-              >
-                <div className={cn("w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center", stat.iconColor)}>
-                  <FontAwesomeIcon icon={stat.icon} className="w-7 h-7" />
-                </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
-                  <CountUp end={stat.value} suffix={stat.suffix} duration={2000} />
-                </div>
-                <div className="text-sm font-medium text-secondary">{stat.label}</div>
-              </div>
+                icon={stat.icon}
+                value={stat.value}
+                label={stat.label}
+                suffix={stat.suffix}
+                iconColor={stat.iconColor}
+                delay={index}
+                isRevealed={isRevealed('stats')}
+              />
             ))}
           </div>
         </div>
@@ -276,49 +280,36 @@ export function HomeClient() {
             <span className="text-primary font-semibold text-sm uppercase tracking-wider">
               Features
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mt-2">
+            <h2 className="text-3xl md:text-4xl font-bold text-secondary mt-2">
               Everything you need to succeed
             </h2>
-            <p className="text-xl text-secondary mt-2 max-w-2xl mx-auto">
+            <p className="text-xl text-tertiary mt-2 max-w-2xl mx-auto">
               Powerful tools designed to help you work smarter, not harder
             </p>
           </div>
 
           {/* Tabs */}
           <div className="flex justify-center mb-12">
-            <Tabs
-              items={featureTabs}
-              activeTab={activeTab}
-              onChange={setActiveTab}
-              className="w-full max-w-4xl"
-            />
+            <div className="w-full max-w-4xl">
+              <Tabs
+                items={featureTabs}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+              />
+            </div>
           </div>
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {features[activeTab as keyof typeof features].map((feature, index) => (
-              <Link
+              <FeatureCard
                 key={index}
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.desc}
                 href={`/features/${feature.title.toLowerCase()}`}
-                className="group block p-6 rounded-2xl bg-primary border border-light transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-primary"
-              >
-                <div className="w-14 h-14 rounded-xl bg-tertiary flex items-center justify-center mb-4 transition-all duration-300 group-hover:bg-primary group-hover:scale-105">
-                  <FontAwesomeIcon 
-                    icon={feature.icon} 
-                    className={cn("text-2xl transition-colors duration-300", feature.iconColor, "group-hover:text-inverse")}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-primary mb-2 transition-colors duration-300 group-hover:text-primary">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-secondary leading-relaxed">
-                  {feature.desc}
-                </p>
-                <div className="inline-flex items-center gap-2 mt-4 text-sm font-medium text-primary opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1">
-                  Learn more
-                  <FontAwesomeIcon icon={faChevronRight} className="w-3.5 h-3.5" />
-                </div>
-              </Link>
+                iconColor={feature.iconColor}
+              />
             ))}
           </div>
         </div>
@@ -376,7 +367,6 @@ export function HomeClient() {
           </div>
         </div>
       </section>
-      </div>
     </>
   )
 }

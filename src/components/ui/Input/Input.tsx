@@ -4,47 +4,23 @@
 import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 
-// ============================================
-// INPUT COMPONENT
-// A fully customizable input field with label, error, and variants
-// Uses Tailwind CSS only - no separate CSS file needed
-// ============================================
-
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  /** Label text displayed above the input */
   label?: string
-  
-  /** Error message to display below the input */
   error?: string
-  
-  /** Whether the field is required (adds asterisk to label) */
+  warning?: string
+  success?: string
+  info?: string
   required?: boolean
-  
-  /** Size of the input field */
   inputSize?: 'sm' | 'md' | 'lg'
-  
-  /** Border radius of the input */
   radius?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | 'full'
-  
-  /** Border width of the input */
   borderWidth?: 'none' | 'sm' | 'md' | 'lg'
-  
-  /** Border color variant (affects focus color as well) */
-  borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'gray' | 'white'
-  
-  /** Shadow size of the input */
+  borderColor?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'info' | 'gray' | 'white'
   shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-  
-  /** Visual style variant of the input */
   variant?: 'default' | 'filled' | 'flushed' | 'unstyled'
+  state?: 'default' | 'error' | 'warning' | 'success' | 'info'
 }
 
-// ============================================
-// STYLE MAPPINGS
-// Using semantic Tailwind classes
-// ============================================
-
-// Border radius mappings - using standard Tailwind rounded classes
+// Radius mappings
 const radiusClasses: Record<string, string> = {
   none: 'rounded-none',
   sm: 'rounded-sm',
@@ -64,10 +40,22 @@ const borderWidthClasses: Record<string, string> = {
   lg: 'border-4',
 }
 
+// Border color mappings (non-state mode)
+const borderColorClasses: Record<string, string> = {
+  primary: 'border-primary',
+  secondary: 'border-secondary',
+  danger: 'border-danger',
+  success: 'border-success',
+  warning: 'border-warning',
+  info: 'border-info',
+  gray: 'border-gray-300',
+  white: 'border-white',
+}
+
 // Variant styles
 const variantClasses: Record<string, string> = {
   default: 'bg-primary',
-  filled: 'bg-secondary border-transparent focus:bg-primary',
+  filled: 'bg-input border-transparent focus:bg-primary',
   flushed: 'border-b border-x-0 border-t-0 rounded-none px-0 bg-transparent',
   unstyled: 'border-none bg-transparent p-0 shadow-none focus:ring-0',
 }
@@ -89,22 +77,71 @@ const shadowClasses: Record<string, string> = {
   '2xl': 'shadow-2xl',
 }
 
-// Focus ring colors based on borderColor
-const focusRingClasses: Record<string, string> = {
-  primary: 'focus:ring-primary focus:border-focus',
-  secondary: 'focus:ring-secondary focus:border-focus',
-  danger: 'focus:ring-error focus:border-error',
-  success: 'focus:ring-success focus:border-success',
-  warning: 'focus:ring-warning focus:border-warning',
-  gray: 'focus:ring-gray-500 focus:border-medium',
-  white: 'focus:ring-white focus:border-white',
+// ============ STATE STYLES ============
+
+// 1. DEFAULT STATE (Primary)
+const defaultStateClasses = {
+  border: 'border-light',
+  focus: 'focus:border-focus focus:shadow-[0_0_0_3px_var(--border-focus)] focus:outline-none',
+  hover: 'hover:border-primary/50',
+  label: 'text-secondary',
+  message: 'text-primary',
 }
 
-// Hover styles
-const hoverClasses: Record<string, string> = {
-  default: 'hover:border-focus/50',
-  filled: 'hover:bg-tertiary',
-  flushed: 'hover:border-focus/50',
+// 2. ERROR STATE
+const errorStateClasses = {
+  border: 'border-error',
+  focus: 'focus:border-error focus:shadow-[0_0_0_3px_var(--border-error)] focus:outline-none',
+  hover: 'hover:border-error/70',
+  label: 'text-error',
+  message: 'text-error',
+}
+
+// 3. WARNING STATE
+const warningStateClasses = {
+  border: 'border-warning',
+  focus: 'focus:border-warning focus:shadow-[0_0_0_3px_var(--border-warning)] focus:outline-none',
+  hover: 'hover:border-warning/70',
+  label: 'text-warning',
+  message: 'text-warning',
+}
+
+// 4. SUCCESS STATE
+const successStateClasses = {
+  border: 'border-success',
+  focus: 'focus:border-success focus:shadow-[0_0_0_3px_var(--border-success)] focus:outline-none',
+  hover: 'hover:border-success/70',
+  label: 'text-success',
+  message: 'text-success',
+}
+
+// 5. INFO STATE
+const infoStateClasses = {
+  border: 'border-info',
+  focus: 'focus:border-info focus:shadow-[0_0_0_3px_var(--border-info)] focus:outline-none',
+  hover: 'hover:border-info/70',
+  label: 'text-info',
+  message: 'text-info',
+}
+
+// Get state classes based on state prop or error/warning/success/info props
+const getStateClasses = (state?: string, error?: string, warning?: string, success?: string, info?: string) => {
+  if (error) return errorStateClasses
+  if (warning) return warningStateClasses
+  if (success) return successStateClasses
+  if (info) return infoStateClasses
+  if (state === 'error') return errorStateClasses
+  if (state === 'warning') return warningStateClasses
+  if (state === 'success') return successStateClasses
+  if (state === 'info') return infoStateClasses
+  return defaultStateClasses
+}
+
+// Hover styles map for variants
+const hoverClassesMap: Record<string, string> = {
+  default: 'hover:border-primary/50',
+  filled: 'hover:bg-secondary/10',
+  flushed: 'hover:border-primary/50',
   unstyled: '',
 }
 
@@ -115,12 +152,16 @@ const DEFAULT_VALUES = {
   borderColor: 'primary' as const,
   shadow: 'none' as const,
   variant: 'default' as const,
+  state: 'default' as const,
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ 
     label, 
     error, 
+    warning,
+    success,
+    info,
     required, 
     className, 
     id, 
@@ -130,17 +171,26 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     borderColor = DEFAULT_VALUES.borderColor,
     shadow = DEFAULT_VALUES.shadow,
     variant = DEFAULT_VALUES.variant,
+    state = DEFAULT_VALUES.state,
     disabled,
     ...props 
   }, ref) => {
-    const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
+    const inputId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
     
-    // Base input classes
+    // Get the appropriate state classes
+    const stateClasses = getStateClasses(state, error, warning, success, info)
+    
+    // Get message text (priority: error > warning > success > info)
+    const messageText = error || warning || success || info
+    
+    // Get message type for styling
+    const messageType = error ? 'error' : warning ? 'warning' : success ? 'success' : info ? 'info' : null
+    
     const inputClasses = cn(
       // Base styles
       'w-full transition-all duration-200 outline-none',
       'text-primary',
-      'placeholder:text-tertiary',
+      'placeholder:text-placeholder',
       
       // Variant styles
       variantClasses[variant],
@@ -154,56 +204,66 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       // Border width
       borderWidthClasses[borderWidth],
       
-      // Border color - default light border
-      'border-light',
+      // Border color based on state
+      variant !== 'flushed' && variant !== 'unstyled' && stateClasses.border,
+      
+      // For flushed variant
+      variant === 'flushed' && `border-b ${stateClasses.border}`,
       
       // Shadow
       shadowClasses[shadow],
       
-      // Focus styles
-      !error && focusRingClasses[borderColor],
-      !error && 'focus:ring-2 focus:ring-offset-0',
+      // Focus styles based on state
+      stateClasses.focus,
       
-      // Hover styles
-      !error && hoverClasses[variant],
+      // Hover styles based on variant
+      hoverClassesMap[variant],
       
-      // Error state
-      error && 'border-error focus:border-error focus:ring-error/20',
-      error && 'hover:border-error/70',
+      // Additional hover based on state
+      stateClasses.hover,
       
       // Disabled state
-      disabled && 'opacity-50 cursor-not-allowed bg-tertiary text-tertiary',
+      disabled && 'opacity-50 cursor-not-allowed bg-secondary/20 text-tertiary',
       
       className
     )
     
+    const labelClasses = cn(
+      'text-sm font-medium transition-colors duration-200',
+      stateClasses.label,
+      required && "after:content-['*'] after:ml-0.5 after:text-error"
+    )
+    
+    const messageClasses = cn(
+      'text-sm transition-colors duration-200 mt-1',
+      messageType === 'error' && 'text-error',
+      messageType === 'warning' && 'text-warning',
+      messageType === 'success' && 'text-success',
+      messageType === 'info' && 'text-info',
+    )
+    
     return (
-      <div className="flex flex-col gap-1.5">
-        {/* Label */}
+      <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label 
-            htmlFor={inputId} 
-            className={cn(
-              'text-sm font-medium text-secondary',
-              required && "after:content-['*'] after:ml-0.5 after:text-error"
-            )}
-          >
+          <label htmlFor={inputId} className={labelClasses}>
             {label}
           </label>
         )}
         
-        {/* Input field */}
         <input
           ref={ref}
           id={inputId}
           disabled={disabled}
+          aria-invalid={!!error}
+          aria-describedby={messageText ? `${inputId}-message` : undefined}
           className={inputClasses}
           {...props}
         />
         
-        {/* Error message */}
-        {error && (
-          <p className="text-sm text-error">{error}</p>
+        {messageText && (
+          <p id={`${inputId}-message`} className={messageClasses}>
+            {messageText}
+          </p>
         )}
       </div>
     )

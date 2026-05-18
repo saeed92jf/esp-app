@@ -95,7 +95,7 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-light bg-primary rounded-tl-2xl">
+        <div className="flex items-center justify-between p-5 border-b border-light bg-primary  ">
           <div>
             <h2 className="text-xl font-bold text-primary">Menu</h2>
             <p className="text-xs text-secondary">Navigate through the app</p>

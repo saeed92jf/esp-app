@@ -17,7 +17,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-gradient-page-primary text-primary`}>
         <SessionProvider>
           <ThemeProvider>
             <AvatarHeader />
