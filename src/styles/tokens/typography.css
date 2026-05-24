@@ -4,9 +4,14 @@
 
 :root {
   /* ===== Font Families ===== */
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans:'Inter', 'Shabnam', 'system-ui', '-apple-system', 'sans-serif';
   --font-serif: 'Times New Roman', Georgia, serif;
   --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --font-persian: 'Shabnam', 'Inter', 'sans-serif';
+  --font-english:'Inter', 'Shabnam', 'sans-serif';
+  --font-shabnam:'Shabnam', 'Inter', 'sans-serif';
+  --font-inter: 'Inter', 'Shabnam', 'sans-serif';
+  --font-poppins: 'Poppins', 'Shabnam', 'sans-serif';
   
   /* ===== Font Sizes ===== */
   --font-size-xs: 0.75rem;    /* 12px */
@@ -60,4 +65,24 @@
   --text-3xl: var(--font-size-3xl);
   --text-4xl: var(--font-size-4xl);
   --text-5xl: var(--font-size-5xl);
+}
+
+.font-persian{
+  font-family: var(--font-persian);
+}
+
+.font-english{
+  font-family: var(--font-english);
+}
+
+.font-inter{
+  font-family: var(--font-inter);
+}
+
+.font-poppins{
+  font-family: var(--font-poppins);
+}
+
+.font-serif{
+  font-family: var(--font-serif);
 }

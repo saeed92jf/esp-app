@@ -10,7 +10,8 @@ import {
   faChevronRight, faCheckCircle, faEnvelope, faRocket,
   faTachometerAlt, faCalendarAlt, faClock, faFolder, faFileInvoice, faChartLine, faUserCheck,
   faChartSimple, faUserGroup, faMoneyBill, faBriefcase,
-  faCrown, faWrench, faUserAlt
+  faCrown, faWrench, faUserAlt,
+  faPlay
 } from '@fortawesome/free-solid-svg-icons'
 import { Button, EmailInput, CountUp, SearchInput, Tabs } from '@/components/ui'
 import { Logo } from '@/components/ui'
@@ -20,6 +21,7 @@ import { StatsCard } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { searchData, type SearchResult } from '@/data/search-data'
 import { useRouter } from 'next/navigation'
+import { faViadeo } from '@fortawesome/free-brands-svg-icons'
 
 // ============================================
 // HOME CLIENT COMPONENT
@@ -132,7 +134,7 @@ export function HomeClient() {
   // Quick Access Items
   const quickAccessItems = [
     { icon: faTachometerAlt, title: 'Dashboard', href: '/dashboard', iconColor: 'text-blue-500', gradient: 'bg-gradient-azure' },
-    { icon: faUsers, title: 'CRM', href: '/crm', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
+    { icon: faPlay, title: 'Video', href: '/video-gallery', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
     { icon: faCalendarAlt, title: 'Calendar', href: '/calendar', iconColor: 'text-amber-500', gradient: 'bg-gradient-amber' },
     { icon: faClock, title: 'Time Tracking', href: '/time-tracking', iconColor: 'text-rose-500', gradient: 'bg-gradient-rose' },
     { icon: faFolder, title: 'Projects', href: '/projects', iconColor: 'text-indigo-500', gradient: 'bg-gradient-indigo' },
@@ -203,7 +205,7 @@ export function HomeClient() {
       <section 
         id="hero" 
         ref={el => { if (el) sectionsRef.current[0] = el as HTMLDivElement }}
-        className="relative min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-white to-purple-50"
+        className="relative min-h-screen flex items-center justify-center bg-transparent"
       >
         <div className="relative container text-center py-20">
           {/* Logo */}

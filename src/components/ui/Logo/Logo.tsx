@@ -68,7 +68,8 @@ export function Logo({ variant = 'header', className = '', customIcon, customSvg
         <img 
           src={customSvg} 
           alt="Logo"
-          className={cn(sizes.svg, 'object-contain')}
+          className={cn(sizes.svg, 'object-contain select-none')}
+          draggable={false}
         />
       )
     }
@@ -80,7 +81,7 @@ export function Logo({ variant = 'header', className = '', customIcon, customSvg
     return (
       <FontAwesomeIcon
         icon={faRocket}
-        className={cn(sizes.icon, 'text-inverse')}
+        className={cn(sizes.icon, 'text-inverse select-none')}
       />
     )
   }
@@ -88,20 +89,19 @@ export function Logo({ variant = 'header', className = '', customIcon, customSvg
   // Logo content shared between hero and link variants
   const logoContent = (
     <>
-      {/* Logo icon box with gradient background */}
+      {/* Logo icon box with gradient background - بدون انیمیشن */}
       <div className={cn(
         sizes.box,
-        'bg-gradient-logo flex items-center justify-center shadow-md',
-        variant !== 'hero' && 'transition-all duration-300 group-hover:scale-105'
+        'bg-gradient-logo flex items-center justify-center shadow-md select-none'
       )}>
         {renderIcon()}
       </div>
       
-      {/* Logo text */}
-      <span className={cn('font-bold', sizes.text, 'text-primary')}>
+      {/* Logo text - بدون انیمیشن و بدون قابلیت انتخاب */}
+      <span className={cn('font-bold select-none', sizes.text, 'text-primary')}>
         ESP{' '}
         <span className={cn(
-          'font-bold',
+          'font-bold select-none',
           variant === 'hero' ? 'text-gradient-primary' : 'text-primary'
         )}>
           Webapp
@@ -119,9 +119,13 @@ export function Logo({ variant = 'header', className = '', customIcon, customSvg
     )
   }
 
-  // Header and footer variants - clickable link to home
+  // Header and footer variants - clickable link to home (بدون انیمیشن گروهی)
   return (
-    <Link href="/" className={cn('inline-flex items-center', sizes.gap, 'group', className)}>
+    <Link 
+      href="/" 
+      className={cn('inline-flex items-center', sizes.gap, className)}
+      draggable={false}
+    >
       {logoContent}
     </Link>
   )

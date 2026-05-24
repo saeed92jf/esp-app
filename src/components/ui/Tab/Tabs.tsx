@@ -1,4 +1,4 @@
-// components/ui/Tabs.tsx
+// src/components/ui/Tabs.tsx
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
@@ -6,30 +6,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { cn } from '@/lib/utils'
 
-// ============================================
-// TABS COMPONENT
-// Accessible tabs with sliding underline and scrollable container
-// Supports left/right arrows when tabs overflow
-// Uses Tailwind CSS - no separate CSS file needed
-// ============================================
-
 export interface TabItem {
-  /** Unique identifier for the tab */
   id: string
-  /** Display label for the tab */
   label: string
-  /** Optional FontAwesome icon */
   icon?: any
 }
 
 export interface TabsProps {
-  /** Array of tab items to display */
   items: TabItem[]
-  /** Currently active tab ID */
   activeTab: string
-  /** Callback when tab changes */
   onChange: (tabId: string) => void
-  /** Additional CSS classes */
   className?: string
 }
 
@@ -42,9 +28,23 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
   const containerRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
 
-  // ============================================
-  // Update underline position based on active tab
-  // ============================================
+  // لاگ برای بررسی تکراری بودن کلیدها
+  console.log('📋 Tabs rendered with items:', items.map(item => ({ id: item.id, label: item.label })))
+  
+  // بررسی وجود کلیدهای تکراری
+  const uniqueIds = new Set()
+  const duplicates = items.filter(item => {
+    if (uniqueIds.has(item.id)) {
+      return true
+    }
+    uniqueIds.add(item.id)
+    return false
+  })
+  
+  if (duplicates.length > 0) {
+    console.error('❌ Duplicate tab IDs found:', duplicates.map(d => d.id))
+  }
+
   const updateUnderlinePosition = useCallback(() => {
     const activeIndex = items.findIndex(item => item.id === activeTab)
     const activeTabElement = tabsRef.current[activeIndex]
@@ -61,9 +61,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
     }
   }, [activeTab, items])
 
-  // ============================================
-  // Check scroll position to show/hide arrows
-  // ============================================
   const checkScrollPosition = useCallback(() => {
     if (!wrapperRef.current) return
     
@@ -72,9 +69,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
     setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10)
   }, [])
 
-  // ============================================
-  // Scroll the tabs container
-  // ============================================
   const scroll = (direction: 'left' | 'right') => {
     if (!wrapperRef.current) return
     const scrollAmount = direction === 'left' ? -200 : 200
@@ -82,9 +76,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
     setTimeout(updateUnderlinePosition, 300)
   }
 
-  // ============================================
-  // Scroll to make active tab visible
-  // ============================================
   const scrollToActiveTab = useCallback(() => {
     const activeIndex = items.findIndex(item => item.id === activeTab)
     const activeTabElement = tabsRef.current[activeIndex]
@@ -104,17 +95,14 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
     }
   }, [activeTab, items, updateUnderlinePosition])
 
-  // Update underline when active tab changes
   useEffect(() => {
     updateUnderlinePosition()
   }, [updateUnderlinePosition])
 
-  // Scroll to active tab on mount and when active tab changes
   useEffect(() => {
     scrollToActiveTab()
   }, [scrollToActiveTab])
 
-  // Set up scroll observer and resize observer
   useEffect(() => {
     const wrapper = wrapperRef.current
     if (wrapper) {
@@ -134,15 +122,11 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
     }
   }, [checkScrollPosition, updateUnderlinePosition])
 
-  // Update underline on window resize
   useEffect(() => {
     window.addEventListener('resize', updateUnderlinePosition)
     return () => window.removeEventListener('resize', updateUnderlinePosition)
   }, [updateUnderlinePosition])
 
-  // ============================================
-  // Tab button styles
-  // ============================================
   const getTabButtonClass = (isActive: boolean) => {
     return cn(
       'relative px-4 sm:px-5 py-2 sm:py-2.5',
@@ -158,7 +142,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
 
   return (
     <div className={cn('relative w-full max-w-max mx-auto', className)}>
-      {/* Left Arrow */}
       {showLeftArrow && (
         <button
           onClick={() => scroll('left')}
@@ -176,13 +159,11 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
         </button>
       )}
       
-      {/* Scrollable Tabs Container */}
       <div 
         ref={wrapperRef}
         className="overflow-x-auto scrollbar-none"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {/* Tabs Inner Container */}
         <div 
           ref={containerRef}
           className={cn(
@@ -206,7 +187,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
             </button>
           ))}
           
-          {/* Animated Underline */}
           <div
             className="absolute bottom-0 h-0.5 rounded-full transition-all duration-300 z-10"
             style={{
@@ -218,7 +198,6 @@ export function Tabs({ items, activeTab, onChange, className = '' }: TabsProps) 
         </div>
       </div>
       
-      {/* Right Arrow */}
       {showRightArrow && (
         <button
           onClick={() => scroll('right')}

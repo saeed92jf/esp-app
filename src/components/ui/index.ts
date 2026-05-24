@@ -55,3 +55,9 @@ export type {QuickCardProps } from './QuickCard/QuickCard'
 // StatsCard
 export { StatsCard } from './StatsCard/StatsCard'
 export type { StatsCardProps } from './StatsCard/StatsCard'
+
+// HighlightText
+export { HighlightText } from './HighlightText/HighlightText'
+
+// AutoText
+export { AutoText } from './AutoText/AutoText'

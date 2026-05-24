@@ -16,6 +16,11 @@
 @import '../styles/themes/semantic.css';
 @import '../styles/themes/semantic-gradients.css';
 
+/* ============================================
+   Font Farsi
+   ============================================ */
+@import '../styles/font/fonts.css';
+
 
 /* ============================================
    BASE STYLES
@@ -26,16 +31,24 @@
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
   color-scheme: light dark;
+   font-family: var(--font-english);
+    direction: auto;
 }
 
+.auto-direction {
+  direction: auto;
+}
 
 html {
+   direction: auto;
   min-width: 320px;
 }
 
 body {
+ 
   min-width: 320px;
   overflow-x: auto;
+    direction: auto;
 }
 @media (max-width: 320px) {
   body {
@@ -84,6 +97,27 @@ body {
     outline-offset: 2px;
   }
 
+.persian-text,
+[lang="fa"] {
+  font-family: 'Shabnam', 'Inter', sans-serif;
+  direction: rtl;
+}
+
+.english-text,
+[lang="en"] {
+  font-family: 'Inter', 'Shabnam', sans-serif;
+  direction: ltr;
+}
+
+.auto-font {
+  font-family: 'Inter', 'Shabnam', sans-serif;
+}
+
+.numbers-text {
+  font-family: 'Inter', 'Shabnam', sans-serif;
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
 
 }
 

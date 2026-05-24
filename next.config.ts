@@ -3,35 +3,33 @@ import type { NextConfig } from 'next'
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
-  
   images: {
-    domains: ['localhost', 'avatars.githubusercontent.com'],
+    domains: [
+      'localhost',
+      'www.aparat.com',
+      'static.cdn.asset.aparat.com',
+      's3.aparat.ir',
+      'cover.aparat.ir'
+    ],
     formats: ['image/avif', 'image/webp'],
   },
   
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production' ? {
-      exclude: ['error', 'warn'] 
-    } : false,
+  async rewrites() {
+    return [
+      {
+        source: '/api/aparat/:path*',
+        destination: 'https://www.aparat.com/etc/api/:path*',
+      },
+    ]
   },
   
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/api/:path*',
         headers: [
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET' },
         ],
       },
     ]

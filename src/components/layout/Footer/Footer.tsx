@@ -151,7 +151,7 @@ export function Footer() {
         onClick={scrollToTop}
         className={cn(
           'fixed bottom-8 right-8 z-50 w-10 h-10 rounded-full',
-          'bg-primary text-inverse shadow-lg',
+          'bg-primary text-primary shadow-lg',
           'hover:bg-primary/90 transition-all duration-300',
           'flex items-center justify-center',
           showScrollTop 

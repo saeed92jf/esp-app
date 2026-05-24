@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="auto" suppressHydrationWarning>
       <body className={`${inter.className} bg-gradient-page-primary text-primary`}>
         <SessionProvider>
           <ThemeProvider>

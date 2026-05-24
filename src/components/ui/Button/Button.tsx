@@ -125,12 +125,11 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 // ============================================
 // BUTTON VARIANT CLASSES
-// All styles use semantic CSS variables from tailwind.config.ts
 // ============================================
 
 const variantClasses: Record<string, string> = {
-  default: 'btn-gradient-primary text-primary hover:bg-primary/90 shadow-sm',
-  primary: 'bg-gradient-logo text-primary hover:bg-primary/90 shadow-sm',
+  default: 'bg-gradient-logo text-white hover:bg-primary/90 shadow-sm',
+  primary: 'bg-gradient-logo text-white hover:bg-primary/90 shadow-sm',
   secondary: 'bg-secondary text-inverse hover:bg-secondary/90 shadow-sm',
   outline: 'border border-light bg-transparent text-primary hover:bg-tertiary',
   ghost: 'text-secondary hover:bg-tertiary hover:text-primary',
@@ -141,20 +140,19 @@ const variantClasses: Record<string, string> = {
 
 // ============================================
 // BUTTON SIZE CLASSES
-// Using semantic spacing from tailwind.config.ts
+// ارتفاع ثابت برای هر سایز - کاملاً مطابق با ارتفاع Input
 // ============================================
 
 const sizeClasses: Record<string, string> = {
-  xs: 'px-2.5 py-1.5 text-xs rounded-lg',
-  sm: 'px-3 py-2 text-sm rounded-lg',
-  md: 'px-4 py-2.5 text-sm rounded-xl',
-  lg: 'px-5 py-3 text-base rounded-2xl',
-  xl: 'px-6 py-3.5 text-lg rounded-2xl',
+  xs: 'h-8 px-2.5 text-xs rounded-lg',      // ارتفاع 32px - مطابق با inputSize='xs'
+  sm: 'h-9 px-3 text-sm rounded-lg',        // ارتفاع 36px - مطابق با inputSize='sm'
+  md: 'h-10 px-4 text-sm rounded-xl',       // ارتفاع 40px - مطابق با inputSize='md'
+  lg: 'h-12 px-5 text-base rounded-2xl',    // ارتفاع 48px - مطابق با inputSize='lg'
+  xl: 'h-14 px-6 text-lg rounded-2xl',      // ارتفاع 56px - مطابق با inputSize='xl'
 }
 
 // ============================================
 // RADIUS CLASSES
-// Using semantic border radius from tailwind.config.ts
 // ============================================
 
 const radiusClasses: Record<string, string> = {
@@ -170,7 +168,6 @@ const radiusClasses: Record<string, string> = {
 
 // ============================================
 // BORDER COLOR CLASSES
-// Using semantic border colors from tailwind.config.ts
 // ============================================
 
 const borderColorClasses: Record<string, string> = {
@@ -184,7 +181,6 @@ const borderColorClasses: Record<string, string> = {
 
 // ============================================
 // ANIMATION CLASSES
-// All animations are defined in tailwind.config.ts keyframes
 // ============================================
 
 const animationClasses: Record<string, string> = {
@@ -262,12 +258,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     const Comp = asChild ? Slot : 'button'
     
-    // Base styles - shared across all button variants
+    // Base styles - ارتفاع ثابت با h-* و عرض منعطف با inline-flex
     const baseStyles = cn(
       'inline-flex items-center justify-center gap-2 font-medium',
       'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
       'disabled:pointer-events-none disabled:opacity-50',
       'transition-all duration-200',
+      'whitespace-nowrap',           // جلوگیری از شکستن متن
       sizeClasses[size],
       radiusClasses[radius],
       variantClasses[variant],
@@ -300,10 +297,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     
     // Render icon based on position and loading state
     const renderIcon = () => {
-      const iconClass = cn('h-4 w-4', iconAnimClass)
+      const iconClass = cn('h-4 w-4 shrink-0', iconAnimClass)
       
       if (isLoading) {
-        return <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin" />
+        return <FontAwesomeIcon icon={faSpinner} className="h-4 w-4 animate-spin shrink-0" />
       }
       if (iconPosition === 'left' && leftIcon) {
         return <FontAwesomeIcon icon={leftIcon} className={iconClass} />
@@ -325,7 +322,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-          <span>{children}</span>
+          <span className="inline-block">{children}</span>
           {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
         </Comp>
       )
@@ -342,7 +339,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-          <span>{children}</span>
+          <span className="inline-block">{children}</span>
           {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
         </Comp>
       )
@@ -359,7 +356,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-          <span>{children}</span>
+          <span className="inline-block">{children}</span>
           {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
         </Comp>
       )
@@ -377,7 +374,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-          <span className="relative z-10">{children}</span>
+          <span className="relative z-10 inline-block">{children}</span>
           {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
         </Comp>
       )
@@ -395,7 +392,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
           
-          <span className="relative">
+          <span className="relative inline-block">
             {children}
             <span className={cn(
               'absolute bottom-0 left-0 transition-all duration-300',
@@ -424,8 +421,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
           
           <span className="relative inline-flex flex-col items-center transition-transform duration-200 group-hover:-translate-y-full">
-            <span className="inline-block">{children}</span>
-            <span className="absolute inset-0 inline-block translate-y-full group-hover:translate-y-0">
+            <span className="inline-block whitespace-nowrap">{children}</span>
+            <span className="absolute inset-0 inline-block translate-y-full whitespace-nowrap group-hover:translate-y-0">
               {hoverDisplayText}
             </span>
           </span>
@@ -446,7 +443,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           {...props}
         >
           {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-          <span>{children}</span>
+          <span className="inline-block">{children}</span>
           {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
         </Comp>
       )
@@ -462,7 +459,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {(isLoading || (iconPosition === 'left' && leftIcon)) && renderIcon()}
-        <span>{children}</span>
+        <span className="inline-block">{children}</span>
         {!isLoading && iconPosition === 'right' && rightIcon && renderIcon()}
       </Comp>
     )
