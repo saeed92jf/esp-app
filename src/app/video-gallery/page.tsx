@@ -175,7 +175,7 @@ export default function HomePage() {
             <div className="mt-4">
               <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300"
+                  className="h-full bg-linear-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-300"
                   style={{ width: `${percentage}%` }}
                 />
               </div>
@@ -218,7 +218,7 @@ export default function HomePage() {
       </div>
 
       {/* Search Bar - Below channel name, above player and playlist */}
-      <div className="sticky top-[73px] z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+      <div className="sticky top-18.25 z-30 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex justify-center">
             <div className="w-full max-w-2xl">

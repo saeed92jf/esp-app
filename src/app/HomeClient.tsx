@@ -1,9 +1,7 @@
-// app/HomeClient.tsx
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { useSession } from 'next-auth/react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faArrowRight, faStar, faUsers, faBuilding, faHeadset,
@@ -21,7 +19,6 @@ import { StatsCard } from '@/components/ui'
 import { cn } from '@/lib/utils'
 import { searchData, type SearchResult } from '@/data/search-data'
 import { useRouter } from 'next/navigation'
-import { faViadeo } from '@fortawesome/free-brands-svg-icons'
 
 // ============================================
 // HOME CLIENT COMPONENT
@@ -32,7 +29,6 @@ import { faViadeo } from '@fortawesome/free-brands-svg-icons'
 
 export function HomeClient() {
   const router = useRouter()
-  const { data: session, status } = useSession()
   const [activeTab, setActiveTab] = useState('all')
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -50,33 +46,33 @@ export function HomeClient() {
     { id: 'finance', label: 'Finance', icon: faMoneyBill },
     { id: 'hr', label: 'HR', icon: faBriefcase },
   ]
-
-  const getRoleIcon = (role?: string) => {
-    switch (role) {
-      case 'ADMIN': return faCrown
-      case 'ENGINEER': return faWrench
-      case 'EMPLOYEE': return faBriefcase
-      default: return faUserAlt
-    }
+// در قسمت getRoleIcon و getRoleIconColor و getRoleLabel
+const getRoleIcon = (role?: string) => {
+  switch (role) {
+    case 'ADMIN': return faCrown
+    case 'ENGINEER': return faWrench
+    case 'EMPLOYEE': return faBriefcase
+    default: return faUserAlt
   }
+}
 
-  const getRoleIconColor = (role?: string) => {
-    switch (role) {
-      case 'ADMIN': return 'text-yellow-500' 
-      case 'ENGINEER': return 'text-blue-500'
-      case 'EMPLOYEE': return 'text-green-500'
-      default: return 'text-primary'
-    }
+const getRoleIconColor = (role?: string) => {
+  switch (role) {
+    case 'ADMIN': return 'text-yellow-500' 
+    case 'ENGINEER': return 'text-blue-500'
+    case 'EMPLOYEE': return 'text-green-500'
+    default: return 'text-gray-500'
   }
+}
 
-  const getRoleLabel = (role?: string) => {
-    switch (role) {
-      case 'ADMIN': return 'Administrator'
-      case 'ENGINEER': return 'Engineer'
-      case 'EMPLOYEE': return 'Employee'
-      default: return 'Guest User'
-    }
+const getRoleLabel = (role?: string) => {
+  switch (role) {
+    case 'ADMIN': return 'Administrator'
+    case 'ENGINEER': return 'Engineer'
+    case 'EMPLOYEE': return 'Employee'
+    default: return 'Guest User'
   }
+}
 
   // Handle search result selection
   const handleResultSelect = (result: SearchResult) => {
@@ -158,7 +154,7 @@ export function HomeClient() {
       { icon: faFolder, title: 'Projects', desc: 'Organize and manage all your client projects.', category: 'project', iconColor: 'text-emerald-500', gradient: 'bg-gradient-emerald' },
       { icon: faUserCheck, title: 'Tasks', desc: 'Assign, track, and manage tasks efficiently.', category: 'project', iconColor: 'text-lime-500', gradient: 'bg-gradient-lime' },
       { icon: faClock, title: 'Time Tracking', desc: 'Track billable hours accurately.', category: 'project', iconColor: 'text-amber-500', gradient: 'bg-gradient-amber' },
-      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600', gradient: 'bg-gradient-silver' },
+      { icon: faFileInvoice, title: 'Estimates', desc: 'Create and send professional estimates.', category: 'finance', iconColor: 'text-yellow-600', gradient: 'bg-gradient-gold' },
       { icon: faFileInvoice, title: 'Invoices', desc: 'Generate and send invoices to clients.', category: 'finance', iconColor: 'text-orange-500', gradient: 'bg-gradient-copper' },
       { icon: faChartLine, title: 'Reports', desc: 'Detailed financial reports and analytics.', category: 'finance', iconColor: 'text-slate-500', gradient: 'bg-gradient-silver' },
       { icon: faUsers, title: 'Recruitment', desc: 'Manage job postings and candidates.', category: 'hr', iconColor: 'text-rose-500', gradient: 'bg-gradient-rose' },
@@ -197,7 +193,6 @@ export function HomeClient() {
   }
 
   const isRevealed = (sectionId: string) => revealedSections.includes(sectionId)
-  const isLoading = status === 'loading'
 
   return (
     <>
@@ -228,9 +223,7 @@ export function HomeClient() {
             />
           </div>
 
-        
-
-          {/* Quick Access Cards */}
+          {/* Quick Access Cards - با بررسی وضعیت احراز هویت */}
           <div className={cn(
             "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 transition-all duration-700 delay-400",
             isRevealed('hero') ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-4'
@@ -241,7 +234,6 @@ export function HomeClient() {
                 icon={item.icon}
                 title={item.title}
                 href={item.href}
-                isAuthenticated={!!session}
                 subtitle="Login required"
                 iconColor={item.iconColor}
               />
@@ -275,17 +267,17 @@ export function HomeClient() {
       </section>
 
       {/* FEATURES SECTION */}
-      <section className="py-20 bg-secondary">
+      <section className="py-20 bg-gray-50 dark:bg-gray-800/50">
         <div className="container mx-auto px-4">
           {/* Section Header */}
           <div className="text-center mb-12">
-            <span className="text-primary font-semibold text-sm uppercase tracking-wider">
+            <span className="text-purple-600 dark:text-purple-400 font-semibold text-sm uppercase tracking-wider">
               Features
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-secondary mt-2">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mt-2">
               Everything you need to succeed
             </h2>
-            <p className="text-xl text-tertiary mt-2 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-400 mt-2 max-w-2xl mx-auto">
               Powerful tools designed to help you work smarter, not harder
             </p>
           </div>
@@ -321,29 +313,29 @@ export function HomeClient() {
       <section 
         id="newsletter" 
         ref={el => { if (el) sectionsRef.current[3] = el as HTMLDivElement }}
-        className="py-20 bg-primary"
+        className="py-20 bg-white dark:bg-gray-900"
       >
         <div className="container max-w-2xl mx-auto text-center px-4">
           <div className={isRevealed('newsletter') ? 'animate-fade-in-up' : 'opacity-0'}>
             {/* Icon */}
-            <div className="w-20 h-20 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-6">
-              <FontAwesomeIcon icon={faEnvelope} className="text-5xl text-tertiary" />
+            <div className="w-20 h-20 mx-auto bg-purple-100 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center mb-6">
+              <FontAwesomeIcon icon={faEnvelope} className="text-5xl text-purple-600 dark:text-purple-400" />
             </div>
             
             {/* Title */}
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Stay in the loop
             </h2>
             
             {/* Description */}
-            <p className="text-xl text-secondary mb-8">
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
               Get the latest updates, features, and insights delivered straight to your inbox.
             </p>
 
             {/* Form */}
             {isSubmitted ? (
-              <div className="bg-success/10 border border-success/30 rounded-2xl p-4">
-                <p className="text-success flex items-center justify-center gap-2">
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-2xl p-4">
+                <p className="text-green-700 dark:text-green-400 flex items-center justify-center gap-2">
                   <FontAwesomeIcon icon={faCheckCircle} className="w-5 h-5" />
                   Thanks for subscribing! Check your email for confirmation.
                 </p>
@@ -365,7 +357,7 @@ export function HomeClient() {
             )}
             
             {/* Footer text */}
-            <p className="text-sm text-tertiary mt-4">No spam. Unsubscribe anytime.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-500 mt-4">No spam. Unsubscribe anytime.</p>
           </div>
         </div>
       </section>

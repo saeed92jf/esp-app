@@ -3,6 +3,12 @@
 @import "tailwindcss/preflight.css" ;
 @import "tailwindcss/utilities.css" ;
 
+
+/* ============================================
+   Font Farsi
+   ============================================ */
+@import '../styles/font/fonts.css';
+
 /* ============================================
    Import Tokens (CSS Variables)
    ============================================ */
@@ -16,10 +22,7 @@
 @import '../styles/themes/semantic.css';
 @import '../styles/themes/semantic-gradients.css';
 
-/* ============================================
-   Font Farsi
-   ============================================ */
-@import '../styles/font/fonts.css';
+
 
 
 /* ============================================

@@ -4,14 +4,39 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   images: {
-    domains: [
-      'localhost',
-      'www.aparat.com',
-      'static.cdn.asset.aparat.com',
-      's3.aparat.ir',
-      'cover.aparat.ir'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'www.aparat.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'static.cdn.asset.aparat.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 's3.aparat.ir',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cover.aparat.ir',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'via.placeholder.com',
+        pathname: '/**',
+      },
     ],
-    formats: ['image/avif', 'image/webp'],
+  },
+
+  allowedDevOrigins: ['*'],
+
+  experimental: {
+    serverActions: { allowedOrigins: ["*"] },
   },
   
   async rewrites() {
@@ -29,11 +54,13 @@ const nextConfig: NextConfig = {
         source: '/api/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
         ],
       },
     ]
   },
+
+
 }
 
 export default nextConfig
