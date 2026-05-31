@@ -1,8 +1,6 @@
 
-@import "tailwindcss/theme.css" ;
-@import "tailwindcss/preflight.css" ;
-@import "tailwindcss/utilities.css" ;
-
+/* globals.css */
+@import "tailwindcss";
 
 /* ============================================
    Font Farsi
@@ -21,6 +19,8 @@
 @import '../styles/themes/primary-colors.css';
 @import '../styles/themes/semantic.css';
 @import '../styles/themes/semantic-gradients.css';
+
+
 
 
 

@@ -77,7 +77,7 @@ export function Skeleton({
     // Pulse animation - creates gentle opacity cycling
     animation === 'pulse' && 'animate-pulse',
     // Shimmer animation - creates moving gradient effect
-    animation === 'shimmer' && 'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-[shimmer_1.5s_infinite]',
+    animation === 'shimmer' && 'relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:bg-linear-to-r before:from-transparent before:via-white/20 before:to-transparent before:animate-[shimmer_1.5s_infinite]',
     className
   )
   

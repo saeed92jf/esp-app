@@ -1,232 +1,207 @@
-/* styles/themes/semantic.css */
+/* globals.css — Semantic Tokens Section */
 
 /* ============================================
-   SEMANTIC VARIABLES (Light & Dark)
+   SEMANTIC COLOR TOKENS
+   Register semantic tokens in @theme so Tailwind
+   generates utilities like bg-surface-primary,
+   text-content-primary, border-semantic-light, etc.
+   
+   NOTE: Naming avoids collision with Tailwind's
+   built-in `text-*` (font-size) and `bg-primary`
+   (from primary color system). We use namespaced
+   prefixes: content-*, surface-*, semantic-*.
    ============================================ */
+@theme {
+  /* --- Text / Content Colors --- */
+  --color-content-primary: var(--text-primary);
+  --color-content-secondary: var(--text-secondary);
+  --color-content-tertiary: var(--text-tertiary);
+  --color-content-inverse: var(--text-inverse);
+  --color-content-disabled: var(--text-disabled);
+  --color-content-placeholder: var(--text-placeholder);
+  --color-content-link: var(--text-link);
+  --color-content-link-hover: var(--text-link-hover);
+  --color-content-success: var(--text-success);
 
-:root,
-.light {
-  /* ===== Text Colors ===== */
-  --text-primary: var(--color-gray-900);
-  --text-secondary: var(--color-gray-600);
-  --text-tertiary: var(--color-gray-500);
-  --text-inverse: var(--color-white);
-  --text-disabled: var(--color-gray-400);
-  --text-placeholder: var(--color-gray-400);
-  --text-link: var(--color-primary);
-  --text-link-hover: var(--color-primary-hover);
-  --text-success: var(--color-success);
-  
-  /* ===== Background Colors ===== */
-  --bg-primary: var(--color-white);
-  --bg-secondary: var(--color-slate-300);
-  --bg-tertiary: var(--color-slate-200);
-  --bg-inverse: var(--color-slate-900);
-  --bg-error: var(--color-danger-500);
-  --bg-input: var(--color-slate-100);
-  --bg-overlay: var(--color-slate-400);
-  --bg-overlay-light: var(--color-slate-300);
-  
-  /* ===== Primary Background Opacity Variants ===== */
-  --bg-primary-5: rgba(255, 255, 255, 0.05);
-  --bg-primary-10: rgba(255, 255, 255, 0.1);
-  --bg-primary-20: rgba(255, 255, 255, 0.2);
-  --bg-primary-30: rgba(255, 255, 255, 0.3);
-  --bg-primary-40: rgba(255, 255, 255, 0.4);
-  --bg-primary-50: rgba(255, 255, 255, 0.5);
-  --bg-primary-60: rgba(255, 255, 255, 0.6);
-  --bg-primary-70: rgba(255, 255, 255, 0.7);
-  --bg-primary-80: rgba(255, 255, 255, 0.8);
-  --bg-primary-90: rgba(255, 255, 255, 0.9);
-  
-  /* ===== Primary Background with Color Variants ===== */
-  --bg-primary-light: var(--color-primary-50);
-  --bg-primary-light-10: var(--color-primary-100);
-  --bg-primary-light-20: var(--color-primary-200);
-  --bg-primary-light-30: var(--color-primary-300);
-  --bg-primary-light-40: var(--color-primary-400);
-  --bg-primary-light-50: var(--color-primary-500);
-  
-  /* ===== Border Colors ===== */
-  --border-extra-light: var(--color-slate-200);
-  --border-light: var(--color-slate-300);
-  --border-medium: var(--color-slate-500);
-  --border-dark: var(--color-slate-600);
-  --border-focus: rgba(0,174,255,1);
-  --border-primary: var(--color-primary);
-  --border-error: var(--color-danger-500);
-  --border-success: var(--color-success-500);
-  --border-warning: var(--color-warning-500);
-  --border-input: var(--color-slate-700);
-  
-  /* ===== Ring Colors ===== */
-  --ring: var(--color-primary);
+  /* --- Background / Surface Colors --- */
+  --color-surface-primary: var(--surface-primary);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-surface-tertiary: var(--surface-tertiary);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-inverse: var(--bg-inverse);
+  --color-surface-error: var(--bg-error);
+  --color-surface-input: var(--bg-input);
+  --color-surface-overlay: var(--bg-overlay);
+  --color-surface-overlay-light: var(--bg-overlay-light);
 
-  /* ===== Surface Colors ===== */
-  --surface-primary: var(--color-white);
-  --surface-secondary: var(--color-slate-50);
-  --surface-tertiary: var(--color-slate-100);
-  --surface-hover: var(--color-slate-100);
+  /* --- Background Opacity Variants --- */
+  --color-surface-primary-5: var(--bg-primary-5);
+  --color-surface-primary-10: var(--bg-primary-10);
+  --color-surface-primary-20: var(--bg-primary-20);
+  --color-surface-primary-30: var(--bg-primary-30);
+  --color-surface-primary-40: var(--bg-primary-40);
+  --color-surface-primary-50: var(--bg-primary-50);
+  --color-surface-primary-60: var(--bg-primary-60);
+  --color-surface-primary-70: var(--bg-primary-70);
+  --color-surface-primary-80: var(--bg-primary-80);
+  --color-surface-primary-90: var(--bg-primary-90);
+
+  /* --- Primary Light Background Variants --- */
+  --color-surface-primary-light: var(--bg-primary-light);
+  --color-surface-primary-light-10: var(--bg-primary-light-10);
+  --color-surface-primary-light-20: var(--bg-primary-light-20);
+  --color-surface-primary-light-30: var(--bg-primary-light-30);
+  --color-surface-primary-light-40: var(--bg-primary-light-40);
+  --color-surface-primary-light-50: var(--bg-primary-light-50);
+
+  /* --- Border Colors --- */
+  --color-border-extra-light: var(--border-extra-light);
+  --color-border-light: var(--border-light);
+  --color-border-medium: var(--border-medium);
+  --color-border-dark: var(--border-dark);
+  --color-border-focus: var(--border-focus);
+  --color-border-primary: var(--border-primary);
+  --color-border-error: var(--border-error);
+  --color-border-success: var(--border-success);
+  --color-border-warning: var(--border-warning);
+  --color-border-input: var(--border-input);
+
+  /* --- Ring --- */
+  --color-ring-primary: var(--ring);
+  --color-ring-focus: var(--border-focus);
+
+  /* --- Transitions --- */
+  --transition-smooth: all var(--duration-base) var(--ease-smooth);
+  --transition-fast: all var(--duration-fast) var(--ease-out);
+  --transition-slow: all var(--duration-slow) var(--ease-out);
 }
 
 /* ============================================
-   DARK MODE
+   SEMANTIC CSS VARIABLES (Light & Dark)
+   These drive the @theme tokens above.
    ============================================ */
+@layer base {
+  :root,
+  .light {
+    /* --- Text --- */
+    --text-primary: var(--color-gray-900);
+    --text-secondary: var(--color-gray-600);
+    --text-tertiary: var(--color-gray-500);
+    --text-inverse: var(--color-white);
+    --text-disabled: var(--color-gray-400);
+    --text-placeholder: var(--color-gray-400);
+    --text-link: var(--color-primary);
+    --text-link-hover: var(--color-primary-hover);
+    --text-success: var(--color-success);
 
-.dark {
-  /* ===== Text Colors ===== */
-  --text-primary: var(--color-white);
-  --text-secondary: var(--color-gray-100);
-  --text-tertiary: var(--color-gray-400);
-  --text-inverse: var(--color-gray-900);
-  --text-disabled: var(--color-gray-600);
-  --text-placeholder: var(--color-gray-600);
-  --text-link: var(--color-primary-400);
-  --text-link-hover: var(--color-primary-300);
-  
-  /* ===== Background Colors ===== */
-  --bg-primary: var(--color-slate-950);
-  --bg-secondary: var(--color-slate-800);
-  --bg-tertiary: var(--color-slate-800);
-  --bg-inverse: var(--color-white);
-  --bg-error: var(--color-danger-500);
-  --bg-input: var(--color-slate-900);
-  --bg-overlay: var(--color-slate-500);
-  --bg-overlay-light: var(--color-slate-600);
-  
-  /* ===== Primary Background Opacity Variants (Dark Mode) ===== */
-  --bg-primary-5: rgba(15, 23, 42, 0.05);
-  --bg-primary-10: rgba(15, 23, 42, 0.1);
-  --bg-primary-20: rgba(15, 23, 42, 0.2);
-  --bg-primary-30: rgba(15, 23, 42, 0.3);
-  --bg-primary-40: rgba(15, 23, 42, 0.4);
-  --bg-primary-50: rgba(15, 23, 42, 0.5);
-  --bg-primary-60: rgba(15, 23, 42, 0.6);
-  --bg-primary-70: rgba(15, 23, 42, 0.7);
-  --bg-primary-80: rgba(15, 23, 42, 0.8);
-  --bg-primary-90: rgba(15, 23, 42, 0.9);
-  
-  /* ===== Primary Background with Color Variants (Dark Mode) ===== */
-  --bg-primary-light: var(--color-primary-900);
-  --bg-primary-light-10: var(--color-primary-800);
-  --bg-primary-light-20: var(--color-primary-700);
-  --bg-primary-light-30: var(--color-primary-600);
-  --bg-primary-light-40: var(--color-primary-500);
-  --bg-primary-light-50: var(--color-primary-400);
-  
-  /* ===== Border Colors ===== */
-  --border-extra-light: var(--color-slate-100);
-  --border-light: var(--color-slate-400);
-  --border-medium: var(--color-slate-500);
-  --border-dark: var(--color-slate-600);
-  --border-focus: var(--color-blue-400);
-  --border-error: var(--color-danger-500);
-  --border-success: var(--color-success-500);
-  --border-warning: var(--color-warning-500);
-  --border-primary: var(--color-primary);
-  
-  /* ===== Surface Colors ===== */
-  --surface-primary: var(--color-slate-900);
-  --surface-secondary: var(--color-slate-800);
-  --surface-tertiary: var(--color-slate-700);
-  --surface-hover: var(--color-slate-700);
+    /* --- Background --- */
+    --bg-primary: var(--color-white);
+    --bg-secondary: var(--color-slate-300);
+    --bg-tertiary: var(--color-slate-200);
+    --bg-inverse: var(--color-slate-900);
+    --bg-error: var(--color-danger-500);
+    --bg-input: var(--color-slate-100);
+    --bg-overlay: var(--color-slate-400);
+    --bg-overlay-light: var(--color-slate-300);
+
+    /* --- Background Opacity Variants --- */
+    --bg-primary-5: rgba(255, 255, 255, 0.05);
+    --bg-primary-10: rgba(255, 255, 255, 0.1);
+    --bg-primary-20: rgba(255, 255, 255, 0.2);
+    --bg-primary-30: rgba(255, 255, 255, 0.3);
+    --bg-primary-40: rgba(255, 255, 255, 0.4);
+    --bg-primary-50: rgba(255, 255, 255, 0.5);
+    --bg-primary-60: rgba(255, 255, 255, 0.6);
+    --bg-primary-70: rgba(255, 255, 255, 0.7);
+    --bg-primary-80: rgba(255, 255, 255, 0.8);
+    --bg-primary-90: rgba(255, 255, 255, 0.9);
+
+    /* --- Primary Light Variants --- */
+    --bg-primary-light: var(--color-primary-50);
+    --bg-primary-light-10: var(--color-primary-100);
+    --bg-primary-light-20: var(--color-primary-200);
+    --bg-primary-light-30: var(--color-primary-300);
+    --bg-primary-light-40: var(--color-primary-400);
+    --bg-primary-light-50: var(--color-primary-500);
+
+    /* --- Border --- */
+    --border-extra-light: var(--color-slate-200);
+    --border-light: var(--color-slate-300);
+    --border-medium: var(--color-slate-500);
+    --border-dark: var(--color-slate-600);
+    --border-focus: rgba(0, 174, 255, 1);
+    --border-primary: var(--color-primary);
+    --border-error: var(--color-danger-500);
+    --border-success: var(--color-success-500);
+    --border-warning: var(--color-warning-500);
+    --border-input: var(--color-slate-700);
+
+    /* --- Ring --- */
+    --ring: var(--color-primary);
+
+    /* --- Surface --- */
+    --surface-primary: var(--color-white);
+    --surface-secondary: var(--color-slate-50);
+    --surface-tertiary: var(--color-slate-100);
+    --surface-hover: var(--color-slate-100);
+  }
+
+  .dark {
+    /* --- Text --- */
+    --text-primary: var(--color-white);
+    --text-secondary: var(--color-gray-100);
+    --text-tertiary: var(--color-gray-400);
+    --text-inverse: var(--color-gray-900);
+    --text-disabled: var(--color-gray-600);
+    --text-placeholder: var(--color-gray-600);
+    --text-link: var(--color-primary-400);
+    --text-link-hover: var(--color-primary-300);
+
+    /* --- Background --- */
+    --bg-primary: var(--color-slate-950);
+    --bg-secondary: var(--color-slate-800);
+    --bg-tertiary: var(--color-slate-800);
+    --bg-inverse: var(--color-white);
+    --bg-error: var(--color-danger-500);
+    --bg-input: var(--color-slate-900);
+    --bg-overlay: var(--color-slate-500);
+    --bg-overlay-light: var(--color-slate-600);
+
+    /* --- Background Opacity Variants --- */
+    --bg-primary-5: rgba(15, 23, 42, 0.05);
+    --bg-primary-10: rgba(15, 23, 42, 0.1);
+    --bg-primary-20: rgba(15, 23, 42, 0.2);
+    --bg-primary-30: rgba(15, 23, 42, 0.3);
+    --bg-primary-40: rgba(15, 23, 42, 0.4);
+    --bg-primary-50: rgba(15, 23, 42, 0.5);
+    --bg-primary-60: rgba(15, 23, 42, 0.6);
+    --bg-primary-70: rgba(15, 23, 42, 0.7);
+    --bg-primary-80: rgba(15, 23, 42, 0.8);
+    --bg-primary-90: rgba(15, 23, 42, 0.9);
+
+    /* --- Primary Light Variants --- */
+    --bg-primary-light: var(--color-primary-900);
+    --bg-primary-light-10: var(--color-primary-800);
+    --bg-primary-light-20: var(--color-primary-700);
+    --bg-primary-light-30: var(--color-primary-600);
+    --bg-primary-light-40: var(--color-primary-500);
+    --bg-primary-light-50: var(--color-primary-400);
+
+    /* --- Border --- */
+    --border-extra-light: var(--color-slate-100);
+    --border-light: var(--color-slate-400);
+    --border-medium: var(--color-slate-500);
+    --border-dark: var(--color-slate-600);
+    --border-focus: var(--color-blue-400);
+    --border-error: var(--color-danger-500);
+    --border-success: var(--color-success-500);
+    --border-warning: var(--color-warning-500);
+    --border-primary: var(--color-primary);
+
+    /* --- Surface --- */
+    --surface-primary: var(--color-slate-900);
+    --surface-secondary: var(--color-slate-800);
+    --surface-tertiary: var(--color-slate-700);
+    --surface-hover: var(--color-slate-700);
+  }
 }
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-
-/* ===== Text Colors ===== */
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-tertiary { color: var(--text-tertiary); }
-.text-inverse { color: var(--text-inverse); }
-.text-disabled { color: var(--text-disabled); }
-.text-placeholder { color: var(--text-placeholder); }
-.text-link { color: var(--text-link); }
-.text-link-hover { color: var(--text-link-hover); }
-.text-success { color: var(--text-success); }
-
-/* ===== Background Colors ===== */
-.bg-primary { background-color: var(--bg-primary); }
-.bg-secondary { background-color: var(--bg-secondary); }
-.bg-tertiary { background-color: var(--bg-tertiary); }
-.bg-inverse { background-color: var(--bg-inverse); }
-.bg-error { background-color: var(--bg-error); }
-.bg-input { background-color: var(--bg-input); }
-.bg-overlay { background-color: var(--bg-overlay); }
-.bg-overlay-light { background-color: var(--bg-overlay-light); }
-
-/* ===== Primary Background Opacity Classes ===== */
-.bg-primary-5 { background-color: var(--bg-primary-5); }
-.bg-primary-10 { background-color: var(--bg-primary-10); }
-.bg-primary-20 { background-color: var(--bg-primary-20); }
-.bg-primary-30 { background-color: var(--bg-primary-30); }
-.bg-primary-40 { background-color: var(--bg-primary-40); }
-.bg-primary-50 { background-color: var(--bg-primary-50); }
-.bg-primary-60 { background-color: var(--bg-primary-60); }
-.bg-primary-70 { background-color: var(--bg-primary-70); }
-.bg-primary-80 { background-color: var(--bg-primary-80); }
-.bg-primary-90 { background-color: var(--bg-primary-90); }
-
-/* ===== Primary Light Background Classes (with color) ===== */
-.bg-primary-light { background-color: var(--bg-primary-light); }
-.bg-primary-light-10 { background-color: var(--bg-primary-light-10); }
-.bg-primary-light-20 { background-color: var(--bg-primary-light-20); }
-.bg-primary-light-30 { background-color: var(--bg-primary-light-30); }
-.bg-primary-light-40 { background-color: var(--bg-primary-light-40); }
-.bg-primary-light-50 { background-color: var(--bg-primary-light-50); }
-
-/* ===== Border Colors ===== */
-.border-extra-light { border-color: var(--border-extra-light); }
-.border-light { border-color: var(--border-light); }
-.border-medium { border-color: var(--border-medium); }
-.border-dark { border-color: var(--border-dark); }
-.border-focus { border-color: var(--border-focus); }
-.border-primary { border-color: var(--border-primary); }
-.border-error { border-color: var(--border-error); }
-.border-success { border-color: var(--border-success); }
-.border-warning { border-color: var(--border-warning); }
-.border-input { border-color: var(--border-input); }
-
-/* ===== Ring Colors ===== */
-.ring-primary { border-color: var(--ring); }
-.ring-focus { border-color: var(--border-focus); }
-
-/* ===== Surface Colors ===== */
-.surface-primary { background-color: var(--surface-primary); }
-.surface-secondary { background-color: var(--surface-secondary); }
-.surface-tertiary { background-color: var(--surface-tertiary); }
-.surface-hover { background-color: var(--surface-hover); }
-
-/* ===== Hover Utilities ===== */
-.hover\:bg-tertiary:hover { background-color: var(--bg-tertiary); }
-.hover\:bg-primary:hover { background-color: var(--bg-primary); }
-.hover\:bg-secondary:hover { background-color: var(--bg-secondary); }
-.hover\:text-primary:hover { color: var(--text-primary); }
-.hover\:text-secondary:hover { color: var(--text-secondary); }
-.hover\:border-primary:hover { border-color: var(--border-primary); }
-.hover\:border-focus:hover { border-color: var(--border-focus); }
-
-/* ===== Hover Background Opacity ===== */
-.hover\:bg-primary-10:hover { background-color: var(--bg-primary-10); }
-.hover\:bg-primary-20:hover { background-color: var(--bg-primary-20); }
-.hover\:bg-primary-light-10:hover { background-color: var(--bg-primary-light-10); }
-.hover\:bg-primary-light-20:hover { background-color: var(--bg-primary-light-20); }
-
-/* ===== Focus Utilities ===== */
-.focus\:ring-primary:focus { border-color: var(--ring); }
-.focus\:ring-focus:focus { border-color: var(--border-focus); }
-.focus\:border-focus:focus { border-color: var(--border-focus); }
-.focus\:border-primary:focus { border-color: var(--border-primary); }
-.focus\:border-success:focus { border-color: var(--border-success); }
-.focus\:border-warning:focus { border-color: var(--border-warning); }
-.focus\:border-danger:focus { border-color: var(--border-danger); }
-.focus\:border-error:focus { border-color: var(--border-error); }
-.focus\:border-info:focus { border-color: var(--border-info); }
-.focus\:outline-none:focus { outline: none; }
-
-/* ===== Transition Utilities ===== */
-.transition-smooth { transition: all var(--duration-base) var(--ease-smooth); }
-.transition-fast { transition: all var(--duration-fast) var(--ease-out); }
-.transition-slow { transition: all var(--duration-slow) var(--ease-out); }

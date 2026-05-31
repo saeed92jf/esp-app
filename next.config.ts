@@ -1,4 +1,4 @@
-import type { NextConfig } from 'next'
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -33,21 +33,26 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  allowedDevOrigins: ['*'],
+  // List explicit dev origins. allowedDevOrigins does NOT support the '*'
+  // wildcard, it matches against real hostnames. Using '*' here means no
+  // origin matches, so /_next/* assets and the HMR websocket get blocked
+  // when the app is opened over the LAN IP instead of localhost.
+  allowedDevOrigins: ['localhost', '127.0.0.1', '192.168.0.71'],
 
   experimental: {
-    serverActions: { allowedOrigins: ["*"] },
+    // serverActions origins DO accept wildcard patterns, so '*' is valid here.
+    serverActions: { allowedOrigins: ['*'] },
   },
-  
+
   async rewrites() {
     return [
       {
         source: '/api/aparat/:path*',
         destination: 'https://www.aparat.com/etc/api/:path*',
       },
-    ]
+    ];
   },
-  
+
   async headers() {
     return [
       {
@@ -57,10 +62,8 @@ const nextConfig: NextConfig = {
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
         ],
       },
-    ]
+    ];
   },
+};
 
-
-}
-
-export default nextConfig
+export default nextConfig;
