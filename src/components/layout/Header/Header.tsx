@@ -1,11 +1,11 @@
 // components/layout/Header.tsx
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Logo, Button } from '@/components/ui'
-import { MegaMenu } from '@/components/layout/MegaMenu/MegaMenu'
-import { cn } from '@/lib/utils'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Logo, Button } from '@/components/ui';
+import { MegaMenu } from '@/components/layout/MegaMenu/MegaMenu';
+import { cn } from '@/lib/utils';
 
 // ============================================
 // HEADER COMPONENT
@@ -15,35 +15,37 @@ import { cn } from '@/lib/utils'
 // ============================================
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isScrolled, setIsScrolled] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   // Detect scroll to add shadow effect
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMenuOpen) {
-      document.body.style.overflow = 'hidden'
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'unset'
+      document.body.style.overflow = 'unset';
     }
     return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isMenuOpen])
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
 
   return (
-    <header className={cn(
-      'sticky top-0 z-50 transition-all duration-300',
-      isScrolled ? 'bg-primary/95 backdrop-blur-md shadow-md' : 'bg-primary'
-    )}>
+    <header
+      className={cn(
+        'sticky top-0 z-50 transition-all duration-300',
+        isScrolled ? 'bg-primary/95 shadow-md backdrop-blur-md' : 'bg-primary',
+      )}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 md:h-20">
+        <div className="flex h-16 items-center justify-between md:h-20">
           {/* Logo */}
           <Logo />
 
@@ -51,10 +53,10 @@ export function Header() {
           <MegaMenu />
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
-            <Link 
-              href="/login" 
-              className="text-secondary hover:text-primary transition-colors font-medium"
+          <div className="hidden items-center gap-4 lg:flex">
+            <Link
+              href="/login"
+              className="text-secondary hover:text-primary font-medium transition-colors"
             >
               Sign In
             </Link>
@@ -66,27 +68,44 @@ export function Header() {
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 rounded-lg hover:bg-tertiary transition-colors"
+            className="hover:bg-tertiary rounded-lg p-2 transition-colors lg:hidden"
             aria-label="Toggle menu"
           >
-            <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="text-primary h-6 w-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {isMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
         </div>
 
         {/* Mobile Menu Dropdown */}
-        <div 
+        <div
           className={cn(
-            'lg:hidden overflow-hidden transition-all duration-300 ease-in-out',
-            isMenuOpen ? 'max-h-[calc(100vh-64px)] opacity-100' : 'max-h-0 opacity-0'
+            'overflow-hidden transition-all duration-300 ease-in-out lg:hidden',
+            isMenuOpen
+              ? 'max-h-[calc(100vh-64px)] opacity-100'
+              : 'max-h-0 opacity-0',
           )}
         >
-          <div className="py-4 border-t border-light">
+          <div className="border-light border-t py-4">
             <div className="flex flex-col gap-2">
               {/* Mobile Navigation Items */}
               <MobileNavItem title="Company">
@@ -94,50 +113,50 @@ export function Header() {
                 <MobileSub href="/company/mission">Mission</MobileSub>
                 <MobileSub href="/company/careers">Careers</MobileSub>
               </MobileNavItem>
-              
+
               <MobileNavItem title="HR">
                 <MobileSub href="/hr/ats">ATS</MobileSub>
                 <MobileSub href="/hr/directory">Directory</MobileSub>
                 <MobileSub href="/hr/payroll">Payroll</MobileSub>
               </MobileNavItem>
-              
+
               <MobileNavItem title="Marketing">
                 <MobileSub href="/marketing/email">Email</MobileSub>
                 <MobileSub href="/marketing/social">Social</MobileSub>
                 <MobileSub href="/marketing/dashboard">Dashboard</MobileSub>
               </MobileNavItem>
-              
+
               <MobileNavItem title="Project">
                 <MobileSub href="/project/roadmap">Roadmap</MobileSub>
                 <MobileSub href="/project/tasks">Tasks</MobileSub>
                 <MobileSub href="/project/time">Time</MobileSub>
               </MobileNavItem>
-              
+
               {/* Direct Links */}
-              <Link 
-                href="/about" 
-                className="px-3 py-2 text-secondary hover:text-primary hover:bg-tertiary rounded-lg transition-colors"
+              <Link
+                href="/about"
+                className="text-secondary hover:text-primary hover:bg-tertiary rounded-lg px-3 py-2 transition-colors"
               >
                 About
               </Link>
-              <Link 
-                href="/contact" 
-                className="px-3 py-2 text-secondary hover:text-primary hover:bg-tertiary rounded-lg transition-colors"
+              <Link
+                href="/contact"
+                className="text-secondary hover:text-primary hover:bg-tertiary rounded-lg px-3 py-2 transition-colors"
               >
                 Contact
               </Link>
-              
+
               {/* Auth Buttons for Mobile */}
-              <div className="flex gap-3 pt-3 mt-2 border-t border-light">
-                <Link 
-                  href="/login" 
-                  className="flex-1 text-center px-4 py-2 border border-light rounded-lg hover:border-primary transition-colors text-secondary hover:text-primary"
+              <div className="border-light mt-2 flex gap-3 border-t pt-3">
+                <Link
+                  href="/login"
+                  className="border-light hover:border-primary text-secondary hover:text-primary flex-1 rounded-lg border px-4 py-2 text-center transition-colors"
                 >
                   Sign In
                 </Link>
-                <Link 
-                  href="/register" 
-                  className="flex-1 text-center px-4 py-2 bg-primary text-inverse rounded-lg hover:bg-primary/90 transition-colors"
+                <Link
+                  href="/register"
+                  className="bg-primary text-inverse hover:bg-primary/90 flex-1 rounded-lg px-4 py-2 text-center transition-colors"
                 >
                   Submit
                 </Link>
@@ -147,7 +166,7 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
 
 // ============================================
@@ -156,40 +175,47 @@ export function Header() {
 // ============================================
 
 interface MobileNavItemProps {
-  title: string
-  children: React.ReactNode
+  title: string;
+  children: React.ReactNode;
 }
 
 function MobileNavItem({ title, children }: MobileNavItemProps) {
-  const [open, setOpen] = useState(false)
-  
+  const [open, setOpen] = useState(false);
+
   return (
     <div>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex justify-between items-center px-3 py-2 text-secondary hover:text-primary hover:bg-tertiary rounded-lg transition-colors"
+        className="text-secondary hover:text-primary hover:bg-tertiary flex w-full items-center justify-between rounded-lg px-3 py-2 transition-colors"
       >
         <span className="font-medium">{title}</span>
-        <svg 
+        <svg
           className={cn(
-            'w-4 h-4 transition-transform duration-200',
-            open && 'rotate-180'
-          )} 
-          fill="none" 
-          stroke="currentColor" 
+            'h-4 w-4 transition-transform duration-200',
+            open && 'rotate-180',
+          )}
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </button>
-      <div className={cn(
-        'overflow-hidden transition-all duration-300 ease-in-out pl-4',
-        open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-      )}>
+      <div
+        className={cn(
+          'overflow-hidden pl-4 transition-all duration-300 ease-in-out',
+          open ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0',
+        )}
+      >
         {children}
       </div>
     </div>
-  )
+  );
 }
 
 // ============================================
@@ -198,17 +224,17 @@ function MobileNavItem({ title, children }: MobileNavItemProps) {
 // ============================================
 
 interface MobileSubProps {
-  href: string
-  children: React.ReactNode
+  href: string;
+  children: React.ReactNode;
 }
 
 function MobileSub({ href, children }: MobileSubProps) {
   return (
-    <Link 
-      href={href} 
-      className="block px-3 py-2 text-sm text-secondary hover:text-primary hover:bg-tertiary rounded-lg transition-colors"
+    <Link
+      href={href}
+      className="text-secondary hover:text-primary hover:bg-tertiary block rounded-lg px-3 py-2 text-sm transition-colors"
     >
       {children}
     </Link>
-  )
+  );
 }

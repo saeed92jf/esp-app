@@ -2,10 +2,22 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { VideoItem } from '@/types';
-import { formatEnglishDuration, formatEnglishViews, formatEnglishDate } from '@/utils/englishDate';
-import { AutoText } from '@/components/ui/AutoText/AutoText';
+import {
+  formatEnglishDuration,
+  formatEnglishViews,
+  formatEnglishDate,
+} from '@/utils/englishDate';
+import { AutoText } from '@/components/custom/AutoText/AutoText';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faClock, faTimesCircle, faArrowUp, faArrowDown, faEye, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faSearch,
+  faClock,
+  faTimesCircle,
+  faArrowUp,
+  faArrowDown,
+  faEye,
+  faCalendarAlt,
+} from '@fortawesome/free-solid-svg-icons';
 
 interface SearchPopupProps {
   onVideoSelect: (video: VideoItem) => void;
@@ -15,19 +27,25 @@ interface SearchPopupProps {
 // تابع هایلایت متن
 const highlightText = (text: string, query: string) => {
   if (!query || query.length < 2 || !text) return text;
-  
+
   try {
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    const regex = new RegExp(
+      `(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
+      'gi',
+    );
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
+
+    return parts.map((part, index) =>
       regex.test(part) ? (
-        <mark key={index} className="bg-yellow-200 dark:bg-yellow-800/50 text-gray-900 dark:text-white px-0 rounded">
+        <mark
+          key={index}
+          className="rounded bg-yellow-200 px-0 text-gray-900 dark:bg-yellow-800/50 dark:text-white"
+        >
           {part}
         </mark>
       ) : (
         <span key={index}>{part}</span>
-      )
+      ),
     );
   } catch {
     return text;
@@ -47,7 +65,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
   const [selectedRecentIndex, setSelectedRecentIndex] = useState(-1);
   const [isKeyboardMode, setIsKeyboardMode] = useState(false);
   const [cursorHidden, setCursorHidden] = useState(false);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const resultsContainerRef = useRef<HTMLDivElement>(null);
@@ -64,7 +82,10 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
   // Save to history
   const addToHistory = (searchQuery: string) => {
     if (!searchQuery.trim()) return;
-    const newHistory = [searchQuery, ...recentSearches.filter(h => h !== searchQuery)].slice(0, 10);
+    const newHistory = [
+      searchQuery,
+      ...recentSearches.filter((h) => h !== searchQuery),
+    ].slice(0, 10);
     setRecentSearches(newHistory);
     localStorage.setItem('searchHistory', JSON.stringify(newHistory));
   };
@@ -81,12 +102,14 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
       setSearchResults([]);
       return;
     }
-    
-    const results = videos.filter((video) => 
-      video.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (video.description && video.description.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    const results = videos.filter(
+      (video) =>
+        video.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (video.description &&
+          video.description.toLowerCase().includes(searchQuery.toLowerCase())),
     );
-    
+
     setSearchResults(results);
   };
 
@@ -99,7 +122,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
     const hasResults = searchResults.length > 0;
     const hasNoResults = query.length >= 2 && searchResults.length === 0;
     const hasRecent = recentSearches.length > 0 && query.length < 2;
-    
+
     if (hasResults) {
       setSelectedIndex(0);
       setSelectedRecentIndex(-1);
@@ -132,7 +155,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
     } else {
       document.body.style.cursor = '';
     }
-    
+
     return () => {
       document.body.style.cursor = '';
     };
@@ -144,7 +167,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
       setIsKeyboardMode(false);
       setCursorHidden(false);
     }
-    
+
     if (mouseMoveTimeoutRef.current) {
       clearTimeout(mouseMoveTimeoutRef.current);
     }
@@ -162,10 +185,9 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
     };
   }, []);
 
-  const shouldShowDropdown = isFocused && (
-    query.length >= 2 ||
-    (query.length < 2 && recentSearches.length > 0)
-  );
+  const shouldShowDropdown =
+    isFocused &&
+    (query.length >= 2 || (query.length < 2 && recentSearches.length > 0));
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -220,17 +242,18 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
     const hasResults = searchResults.length > 0;
     const hasNoResults = query.length >= 2 && searchResults.length === 0;
     const hasRecent = recentSearches.length > 0 && query.length < 2;
-    
+
     let totalItems = 0;
     if (hasResults) totalItems = searchResults.length;
-    else if (hasNoResults) totalItems = 1 + (hasRecent ? recentSearches.length : 0);
+    else if (hasNoResults)
+      totalItems = 1 + (hasRecent ? recentSearches.length : 0);
     else if (hasRecent) totalItems = recentSearches.length;
-    
+
     // Enter keyboard mode on any arrow key press
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       setIsKeyboardMode(true);
       setCursorHidden(true);
-      
+
       // Reset keyboard mode after inactivity (3 seconds without keyboard input)
       if (keyboardTimeoutRef.current) {
         clearTimeout(keyboardTimeoutRef.current);
@@ -240,57 +263,70 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
         setCursorHidden(false);
       }, 3000);
     }
-    
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         if (totalItems > 0) {
           if (hasResults && selectedIndex < searchResults.length - 1) {
-            setSelectedIndex(prev => prev + 1);
+            setSelectedIndex((prev) => prev + 1);
           } else if (hasNoResults) {
             if (selectedIndex === 0 && recentSearches.length > 0) {
               setSelectedIndex(-1);
               setSelectedRecentIndex(0);
             } else if (selectedRecentIndex < recentSearches.length - 1) {
-              setSelectedRecentIndex(prev => prev + 1);
+              setSelectedRecentIndex((prev) => prev + 1);
             }
-          } else if (hasRecent && selectedRecentIndex < recentSearches.length - 1) {
-            setSelectedRecentIndex(prev => prev + 1);
+          } else if (
+            hasRecent &&
+            selectedRecentIndex < recentSearches.length - 1
+          ) {
+            setSelectedRecentIndex((prev) => prev + 1);
           }
         }
         break;
-        
+
       case 'ArrowUp':
         e.preventDefault();
         if (totalItems > 0) {
           if (hasResults && selectedIndex > 0) {
-            setSelectedIndex(prev => prev - 1);
+            setSelectedIndex((prev) => prev - 1);
           } else if (hasNoResults) {
             if (selectedRecentIndex === 0) {
               setSelectedRecentIndex(-1);
               setSelectedIndex(0);
             } else if (selectedRecentIndex > 0) {
-              setSelectedRecentIndex(prev => prev - 1);
+              setSelectedRecentIndex((prev) => prev - 1);
             }
           } else if (hasRecent && selectedRecentIndex > 0) {
-            setSelectedRecentIndex(prev => prev - 1);
+            setSelectedRecentIndex((prev) => prev - 1);
           }
         }
         break;
-        
+
       case 'Enter':
         e.preventDefault();
-        if (hasNoResults && selectedRecentIndex >= 0 && recentSearches[selectedRecentIndex]) {
+        if (
+          hasNoResults &&
+          selectedRecentIndex >= 0 &&
+          recentSearches[selectedRecentIndex]
+        ) {
           handleSelectRecent(recentSearches[selectedRecentIndex]);
-        } 
-        else if (hasResults && selectedIndex >= 0 && searchResults[selectedIndex]) {
+        } else if (
+          hasResults &&
+          selectedIndex >= 0 &&
+          searchResults[selectedIndex]
+        ) {
           handleSelectVideo(searchResults[selectedIndex]);
-        } 
-        else if (hasRecent && selectedRecentIndex >= 0 && recentSearches[selectedRecentIndex]) {
+        } else if (
+          hasRecent &&
+          selectedRecentIndex >= 0 &&
+          recentSearches[selectedRecentIndex]
+        ) {
           handleSelectRecent(recentSearches[selectedRecentIndex]);
         }
         break;
-        
+
       case 'Escape':
         e.preventDefault();
         clearQueryOnly();
@@ -308,7 +344,8 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = 'https://via.placeholder.com/640x360?text=No+Thumbnail';
+    e.currentTarget.src =
+      'https://via.placeholder.com/640x360?text=No+Thumbnail';
   };
 
   const handleMouseEnterResult = (index: number) => {
@@ -333,30 +370,35 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
 
   const hasSearchResults = query.length >= 2 && searchResults.length > 0;
   const hasNoResults = query.length >= 2 && searchResults.length === 0;
-  const hasRecentSearches = (query.length < 2 || hasNoResults) && recentSearches.length > 0;
-  const uniqueResults = Array.from(new Map(searchResults.map(v => [v.id, v])).values());
+  const hasRecentSearches =
+    (query.length < 2 || hasNoResults) && recentSearches.length > 0;
+  const uniqueResults = Array.from(
+    new Map(searchResults.map((v) => [v.id, v])).values(),
+  );
 
-  const commonBorderStyle = "border border-gray-200 dark:border-gray-700";
+  const commonBorderStyle = 'border border-gray-200 dark:border-gray-700';
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       className="relative w-full"
       onMouseMove={handleMouseMove}
     >
-      
       {/* Search Input */}
-      <div className={`
-        transition-shadow duration-200 bg-white dark:bg-gray-900
-        ${shouldShowDropdown ? 'rounded-t-3xl rounded-b-none' : 'rounded-3xl'}
-        ${commonBorderStyle}
-        ${shouldShowDropdown ? 'border-b-0' : ''}
-      `}>
-        <div className="relative flex items-center" style={{ height: SEARCH_BOX_HEIGHT }}>
-          <div className="absolute left-4 flex items-center pointer-events-none">
-            <FontAwesomeIcon icon={faSearch} className="w-5 h-5 text-gray-400" />
+      <div
+        className={`bg-white transition-shadow duration-200 dark:bg-gray-900 ${shouldShowDropdown ? 'rounded-t-3xl rounded-b-none' : 'rounded-3xl'} ${commonBorderStyle} ${shouldShowDropdown ? 'border-b-0' : ''} `}
+      >
+        <div
+          className="relative flex items-center"
+          style={{ height: SEARCH_BOX_HEIGHT }}
+        >
+          <div className="pointer-events-none absolute left-4 flex items-center">
+            <FontAwesomeIcon
+              icon={faSearch}
+              className="h-5 w-5 text-gray-400"
+            />
           </div>
-          
+
           <input
             ref={inputRef}
             type="text"
@@ -366,50 +408,43 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
             onFocus={handleFocus}
             onBlur={handleBlur}
             placeholder="Search"
-            className={`
-              w-full h-full bg-transparent text-gray-900 dark:text-white 
-              placeholder:text-gray-400 focus:outline-none 
-              font-poppins text-base
-              pl-11 pr-4
-            `}
+            className={`font-poppins h-full w-full bg-transparent pr-4 pl-11 text-base text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white`}
             style={{ cursor: cursorHidden ? 'none' : 'text' }}
           />
         </div>
       </div>
-      
+
       {/* Dropdown Results */}
       {shouldShowDropdown && (
-        <div 
+        <div
           ref={resultsContainerRef}
           onMouseLeave={handleMouseLeaveContainer}
-          className={`
-            absolute left-0 right-0 bg-white dark:bg-gray-900 rounded-b-3xl shadow-lg 
-            ${commonBorderStyle} border-t-0 overflow-hidden z-50 animate-fade-in-up
-          `}
+          className={`absolute right-0 left-0 rounded-b-3xl bg-white shadow-lg dark:bg-gray-900 ${commonBorderStyle} animate-fade-in-up z-50 overflow-hidden border-t-0`}
           style={{ top: `${SEARCH_BOX_HEIGHT}px` }}
         >
           <div className="max-h-96 overflow-y-auto">
-            
             {/* Search Results - وقتی نتیجه دارد */}
             {hasSearchResults && (
               <>
-                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider font-english">
+                <div className="bg-gray-50 px-4 py-2 dark:bg-gray-800/50">
+                  <p className="font-english text-xs font-semibold tracking-wider text-gray-500 uppercase">
                     Search Results ({uniqueResults.length})
                   </p>
                 </div>
                 {uniqueResults.map((video, idx) => {
                   const isSelected = selectedIndex === idx;
-                  
+
                   return (
                     <div
                       key={`${video.id}-${idx}`}
-                      ref={isSelected && isKeyboardMode ? selectedItemRef : null}
+                      ref={
+                        isSelected && isKeyboardMode ? selectedItemRef : null
+                      }
                       onClick={() => handleSelectVideo(video)}
                       onMouseEnter={() => handleMouseEnterResult(idx)}
-                      className={`w-full px-4 py-3 flex gap-3 text-left cursor-pointer border-l-4 border-transparent transition-colors duration-0 ${
+                      className={`flex w-full cursor-pointer gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
                         isSelected
-                          ? 'bg-primary-light border-l-4 border-primary'
+                          ? 'bg-primary-light border-primary border-l-4'
                           : 'bg-primary hover:bg-gray-50 dark:hover:bg-gray-800/50'
                       }`}
                       style={{ cursor: isKeyboardMode ? 'none' : 'pointer' }}
@@ -417,33 +452,43 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
                       {/* Video Thumbnail */}
                       <div className="relative w-16 shrink-0">
                         <img
-                          src={video.small_poster || video.big_poster || 'https://via.placeholder.com/640x360?text=No+Thumbnail'}
+                          src={
+                            video.small_poster ||
+                            video.big_poster ||
+                            'https://via.placeholder.com/640x360?text=No+Thumbnail'
+                          }
                           alt={video.title}
-                          className="w-full h-12 object-cover rounded-lg"
+                          className="h-12 w-full rounded-lg object-cover"
                           onError={handleImageError}
                           loading="lazy"
                         />
                         {/* Duration Badge */}
-                        <div className="absolute bottom-0 right-0 px-1 py-0.5 bg-black/70 rounded text-white text-[10px] font-english">
-                          <FontAwesomeIcon icon={faClock} className="w-2 h-2 mr-1" />
+                        <div className="font-english absolute right-0 bottom-0 rounded bg-black/70 px-1 py-0.5 text-[10px] text-white">
+                          <FontAwesomeIcon
+                            icon={faClock}
+                            className="mr-1 h-2 w-2"
+                          />
                           {formatEnglishDuration(video.duration)}
                         </div>
                       </div>
-                      
+
                       {/* Video Info */}
-                      <div className="flex-1 min-w-0">
-                        <AutoText 
+                      <div className="min-w-0 flex-1">
+                        <AutoText
                           text={highlightText(video.title, query) as string}
                           as="div"
-                          className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2"
+                          className="line-clamp-2 text-sm font-medium text-gray-900 dark:text-white"
                         />
-                        <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                           <span className="flex items-center gap-1">
-                            <FontAwesomeIcon icon={faEye} className="w-3 h-3" />
+                            <FontAwesomeIcon icon={faEye} className="h-3 w-3" />
                             {formatEnglishViews(video.visit_cnt)}
                           </span>
                           <span className="flex items-center gap-1">
-                            <FontAwesomeIcon icon={faCalendarAlt} className="w-3 h-3" />
+                            <FontAwesomeIcon
+                              icon={faCalendarAlt}
+                              className="h-3 w-3"
+                            />
                             {formatEnglishDate(video.sdate)}
                           </span>
                         </div>
@@ -459,52 +504,80 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
               <>
                 {/* No Result Item */}
                 <div
-                  ref={selectedIndex === 0 && selectedRecentIndex === -1 && isKeyboardMode ? selectedItemRef : null}
-                  className={`w-full px-4 py-3 flex items-center gap-3 text-left cursor-default border-l-4 border-transparent ${
+                  ref={
+                    selectedIndex === 0 &&
+                    selectedRecentIndex === -1 &&
+                    isKeyboardMode
+                      ? selectedItemRef
+                      : null
+                  }
+                  className={`flex w-full cursor-default items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left ${
                     selectedIndex === 0 && selectedRecentIndex === -1
-                      ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500'
+                      ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 border-l-4'
                       : ''
                   }`}
                 >
-                  <FontAwesomeIcon icon={faTimesCircle} className="w-4 h-4 text-gray-400" />
+                  <FontAwesomeIcon
+                    icon={faTimesCircle}
+                    className="h-4 w-4 text-gray-400"
+                  />
                   <div className="flex-1">
                     <div className="text-sm text-gray-700 dark:text-gray-300">
-                      No results for "<span className="font-semibold">{query}</span>"
+                      No results for "
+                      <span className="font-semibold">{query}</span>"
                     </div>
-                    <div className="text-xs text-gray-400 mt-0.5">
+                    <div className="mt-0.5 text-xs text-gray-400">
                       Try different keywords
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Recent Searches Header */}
                 {recentSearches.length > 0 && (
-                  <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
-                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider font-english">Recent</p>
-                    <button onClick={clearHistory} className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-english">Clear</button>
+                  <div className="flex items-center justify-between bg-gray-50 px-4 py-2 dark:bg-gray-800/50">
+                    <p className="font-english text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                      Recent
+                    </p>
+                    <button
+                      onClick={clearHistory}
+                      className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-english text-xs"
+                    >
+                      Clear
+                    </button>
                   </div>
                 )}
-                
+
                 {/* Recent Searches Items */}
                 {recentSearches.map((item, idx) => {
                   const isSelected = selectedRecentIndex === idx;
-                  
+
                   return (
                     <div
                       key={idx}
-                      ref={isSelected && isKeyboardMode ? selectedItemRef : null}
-                      onMouseDown={(e) => { e.preventDefault(); }}
+                      ref={
+                        isSelected && isKeyboardMode ? selectedItemRef : null
+                      }
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                      }}
                       onClick={() => handleRecentSearchClick(item)}
                       onMouseEnter={() => handleMouseEnterRecent(idx)}
-                      className={`w-full px-4 py-3 flex items-center gap-3 text-left cursor-pointer border-l-4 border-transparent transition-colors duration-0 ${
+                      className={`flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
                         isSelected
-                          ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500'
+                          ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 border-l-4'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                       }`}
                       style={{ cursor: isKeyboardMode ? 'none' : 'pointer' }}
                     >
-                      <FontAwesomeIcon icon={faClock} className="w-4 h-4 text-gray-400" />
-                      <AutoText text={item} as="span" className="text-gray-700 dark:text-gray-300" />
+                      <FontAwesomeIcon
+                        icon={faClock}
+                        className="h-4 w-4 text-gray-400"
+                      />
+                      <AutoText
+                        text={item}
+                        as="span"
+                        className="text-gray-700 dark:text-gray-300"
+                      />
                     </div>
                   );
                 })}
@@ -514,41 +587,59 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
             {/* Recent Searches - فقط وقتی query خالی است */}
             {!hasNoResults && query.length < 2 && recentSearches.length > 0 && (
               <>
-                <div className="px-4 py-2 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center">
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider font-english">Recent</p>
-                  <button onClick={clearHistory} className="text-xs text-primary-600 hover:text-primary-700 dark:text-primary-400 font-english">Clear</button>
+                <div className="flex items-center justify-between bg-gray-50 px-4 py-2 dark:bg-gray-800/50">
+                  <p className="font-english text-xs font-semibold tracking-wider text-gray-500 uppercase">
+                    Recent
+                  </p>
+                  <button
+                    onClick={clearHistory}
+                    className="text-primary-600 hover:text-primary-700 dark:text-primary-400 font-english text-xs"
+                  >
+                    Clear
+                  </button>
                 </div>
                 {recentSearches.map((item, idx) => {
                   const isSelected = selectedRecentIndex === idx;
-                  
+
                   return (
                     <div
                       key={idx}
-                      ref={isSelected && isKeyboardMode ? selectedItemRef : null}
-                      onMouseDown={(e) => { e.preventDefault(); }}
+                      ref={
+                        isSelected && isKeyboardMode ? selectedItemRef : null
+                      }
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                      }}
                       onClick={() => handleRecentSearchClick(item)}
                       onMouseEnter={() => handleMouseEnterRecent(idx)}
-                      className={`w-full px-4 py-3 flex items-center gap-3 text-left cursor-pointer border-l-4 border-transparent transition-colors duration-0 ${
+                      className={`flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
                         isSelected
-                          ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500'
+                          ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 border-l-4'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                       }`}
                       style={{ cursor: isKeyboardMode ? 'none' : 'pointer' }}
                     >
-                      <FontAwesomeIcon icon={faClock} className="w-4 h-4 text-gray-400" />
-                      <AutoText text={item} as="span" className="text-gray-700 dark:text-gray-300" />
+                      <FontAwesomeIcon
+                        icon={faClock}
+                        className="h-4 w-4 text-gray-400"
+                      />
+                      <AutoText
+                        text={item}
+                        as="span"
+                        className="text-gray-700 dark:text-gray-300"
+                      />
                     </div>
                   );
                 })}
               </>
             )}
           </div>
-          
+
           {/* Footer */}
-          <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/30 text-xs text-gray-400 flex justify-between font-english">
+          <div className="font-english flex justify-between border-t border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-400 dark:border-gray-700 dark:bg-gray-800/30">
             <span>
-              <FontAwesomeIcon icon={faArrowUp} className="w-3 h-3 mr-1" />
-              <FontAwesomeIcon icon={faArrowDown} className="w-3 h-3 mr-1" />
+              <FontAwesomeIcon icon={faArrowUp} className="mr-1 h-3 w-3" />
+              <FontAwesomeIcon icon={faArrowDown} className="mr-1 h-3 w-3" />
               to navigate
             </span>
             <span>Enter to select</span>

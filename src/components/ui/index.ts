@@ -1,63 +1,63 @@
 // Logo
-export { Logo } from './Logo/Logo'
-export type { LogoProps } from './Logo/Logo'
+export { Logo } from '../custom/Logo/Logo';
+export type { LogoProps } from '../custom/Logo/Logo';
 
 // Button
-export { Button } from './Button/Button'
-export type { ButtonProps } from './Button/Button'
+export { Button } from '../custom/Button/Button';
+export type { ButtonProps } from '../custom/Button/Button';
 
 // Input
-export { Input } from './Input/Input'
-export type { InputProps } from './Input/Input'
+export { Input } from '../custom/Input/Input';
+export type { InputProps } from '../custom/Input/Input';
 
 // EmailInput
-export { EmailInput } from './EmailInput/EmailInput'
-export type { EmailInputProps } from './EmailInput/EmailInput'
+export { EmailInput } from '../custom/EmailInput/EmailInput';
+export type { EmailInputProps } from '../custom/EmailInput/EmailInput';
 
 // UrlInput
-export { UrlInput } from './UrlInput/UrlInput'
-export type { UrlInputProps } from './UrlInput/UrlInput'
+export { UrlInput } from '../custom/UrlInput/UrlInput';
+export type { UrlInputProps } from '../custom/UrlInput/UrlInput';
 
 // TextInput
-export { TextInput } from './TextInput/TextInput'
-export type { TextInputProps } from './TextInput/TextInput'
+export { TextInput } from '../custom/TextInput/TextInput';
+export type { TextInputProps } from '../custom/TextInput/TextInput';
 
 // PhoneInput
-export { PhoneInput } from './PhoneInput/PhoneInput'
-export type { PhoneInputProps } from './PhoneInput/PhoneInput'
+export { PhoneInput } from '../custom/PhoneInput/PhoneInput';
+export type { PhoneInputProps } from '../custom/PhoneInput/PhoneInput';
 
 // NumberInput
-export { NumberInput } from './NumberInput/NumberInput'
-export type { NumberInputProps } from './NumberInput/NumberInput'
+export { NumberInput } from '../custom/NumberInput/NumberInput';
+export type { NumberInputProps } from '../custom/NumberInput/NumberInput';
 
 // CountUp
-export { CountUp } from './CountUp/CountUp'
+export { CountUp } from '../custom/CountUp/CountUp';
 
 // SearchInput
-export { SearchInput } from './SearchInput/SearchInput'
+export { SearchInput } from '../custom/SearchInput/SearchInput';
 
 // Tabs
-export { Tabs } from './Tab/Tabs'
-export type { TabsProps, TabItem } from './Tab/Tabs'
+export { Tabs } from '../custom/Tab/Tabs';
+export type { TabsProps, TabItem } from '../custom/Tab/Tabs';
 
 // Skeleton
-export { Skeleton } from './Skeleton/Skeleton'
-export type { SkeletonProps } from './Skeleton/Skeleton'
+export { Skeleton } from '../custom/Skeleton/Skeleton';
+export type { SkeletonProps } from '../custom/Skeleton/Skeleton';
 
 // FeatureCard
-export { FeatureCard } from './FeatureCard/FeatureCard'
-export type { FeatureCardProps } from './FeatureCard/FeatureCard'
+export { FeatureCard } from '../custom/FeatureCard/FeatureCard';
+export type { FeatureCardProps } from '../custom/FeatureCard/FeatureCard';
 
 // QuickCard
-export { QuickCard } from './QuickCard/QuickCard'
-export type {QuickCardProps } from './QuickCard/QuickCard'
+export { QuickCard } from '../custom/QuickCard/QuickCard';
+export type { QuickCardProps } from '../custom/QuickCard/QuickCard';
 
 // StatsCard
-export { StatsCard } from './StatsCard/StatsCard'
-export type { StatsCardProps } from './StatsCard/StatsCard'
+export { StatsCard } from '../custom/StatsCard/StatsCard';
+export type { StatsCardProps } from '../custom/StatsCard/StatsCard';
 
 // HighlightText
-export { HighlightText } from './HighlightText/HighlightText'
+export { HighlightText } from '../custom/HighlightText/HighlightText';
 
 // AutoText
-export { AutoText } from './AutoText/AutoText'
+export { AutoText } from '../custom/AutoText/AutoText';
