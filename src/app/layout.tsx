@@ -1,25 +1,11 @@
 // src/app/layout.tsx
-import type { Metadata } from 'next';
-import { Providers } from '@/providers';
-import './globals.css';
+import type { ReactNode } from 'react';
 
-export const metadata: Metadata = {
-  title: 'ESP App',
-  description: 'ESP control panel',
-};
-
-// Fonts are self-hosted via @font-face in fonts.css and wired through
-// the --font-sans token in @theme. No next/font is needed here.
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html dir="rtl" lang="fa" suppressHydrationWarning>
-      <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
-      </body>
-    </html>
-  );
+/**
+ * Pass-through root layout.
+ * The real <html>/<body> tags live in [locale]/layout.tsx so that the
+ * lang/dir attributes can depend on the active locale.
+ */
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return children;
 }

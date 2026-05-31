@@ -1,0 +1,41 @@
+{
+  "Common": {
+    "appName": "Brand Name",
+    "search": "Search",
+    "searchPlaceholder": "What are you looking for?",
+    "login": "Login",
+    "register": "Sign up",
+    "loading": "Loading...",
+    "language": "Language"
+  },
+  "Header": {
+    "brand": "Euroslot Pars",
+    "home": "Home",
+    "categories": "Categories",
+    "about": "About",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "Home": {
+    "heroTitle": "Find it simply",
+    "heroSubtitle": "Whatever you need is one search away",
+    "quickAccess": "Quick access"
+  },
+  "Footer": {
+    "rights": "All rights reserved",
+    "quickLinks": "Quick links",
+    "support": "Support",
+    "followUs": "Follow us"
+  },
+  "Cards": {
+    "products": "Products",
+    "productsDesc": "Browse all products",
+    "blog": "Blog",
+    "blogDesc": "Latest articles",
+    "profile": "Profile",
+    "profileDesc": "Your account",
+    "support": "Support",
+    "supportDesc": "Get in touch"
+  }
+}

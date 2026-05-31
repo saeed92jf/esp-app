@@ -1,43 +1,98 @@
 // src/components/layout/header.tsx
 'use client';
-import Link from 'next/link';
-import { Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useUI } from '@/providers/ui-provider';
-import { UserMenu } from './user-menu';
-import { ThemeToggle } from './theme-toggle';
 
-// Top app bar. Uses logical spacing (ms/me/ps/pe) so it mirrors correctly
-// between the (rtl) and (main) route groups without extra conditionals.
+import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
+import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LocaleSwitcher } from '@/components/locale-switcher';
+import { cn } from '@/lib/utils';
+
+/**
+ * Top navigation bar.
+ * Uses logical spacing utilities (ms-/pe-) so layout mirrors correctly
+ * between RTL (fa) and LTR (en) without extra conditionals.
+ */
 export function Header() {
-  // Pull the sidebar toggle from the central UI provider (single source of truth).
-  const { toggleSidebar } = useUI();
+  const t = useTranslations('Header');
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  // Navigation items. `href` values are locale-agnostic; the navigation
+  // helper injects the active locale prefix automatically.
+  const nav = [
+    { href: '/', label: t('home') },
+    { href: '/about', label: t('about') },
+    { href: '/contact', label: t('contact') },
+  ] as const;
 
   return (
-    <header className="bg-background/80 sticky top-0 z-40 border-b backdrop-blur">
-      <div className="flex h-14 items-center gap-2 px-4">
-        {/* Sidebar trigger — hidden on large screens where menu is persistent */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="lg:hidden"
-          onClick={toggleSidebar}
-          aria-label="Toggle navigation menu"
-        >
-          <Menu className="size-5" />
-        </Button>
-
-        {/* Brand. Logical margin-end pushes the rest of the bar away. */}
-        <Link href="/" className="me-auto font-bold">
-          ESP App
+    <header className="bg-background/80 sticky top-0 z-50 w-full border-b backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
+        {/* Brand — use a dedicated brand key, not the "home" nav label */}
+        <Link href="/" className="text-lg font-bold">
+          <span dir="auto">{t('brand')}</span>
         </Link>
 
-        {/* Trailing controls cluster */}
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
-          <UserMenu />
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-1 md:flex">
+          {nav.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? 'page' : undefined}
+                className={cn(
+                  'hover:bg-accent rounded-md px-3 py-2 text-sm font-medium transition-colors',
+                  active && 'text-primary',
+                )}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <LocaleSwitcher />
+          {/* Mobile menu toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-expanded={open}
+            aria-label={open ? t('closeMenu') : t('openMenu')}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? (
+              <X className="size-5" aria-hidden="true" />
+            ) : (
+              <Menu className="size-5" aria-hidden="true" />
+            )}
+          </Button>
         </div>
       </div>
+
+      {/* Mobile nav panel */}
+      {open && (
+        <nav className="border-t md:hidden">
+          <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-3">
+            {nav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="hover:bg-accent rounded-md px-3 py-2 text-sm font-medium"
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
     </header>
   );
 }

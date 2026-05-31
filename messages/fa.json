@@ -1,0 +1,41 @@
+{
+  "Common": {
+    "appName": "نام برند",
+    "search": "جستجو",
+    "searchPlaceholder": "دنبال چی می‌گردی؟",
+    "login": "ورود",
+    "register": "ثبت‌نام",
+    "loading": "در حال بارگذاری...",
+    "language": "زبان"
+  },
+  "Header": {
+    "brand": "یورواسلات پارس",
+    "home": "خانه",
+    "categories": "دسته‌بندی‌ها",
+    "about": "درباره ما",
+    "contact": "تماس با ما",
+    "openMenu": "باز کردن منو",
+    "closeMenu": "بستن منو"
+  },
+  "Home": {
+    "heroTitle": "به سادگی پیدا کن",
+    "heroSubtitle": "هرچه نیاز داری، یک جستجو فاصله داری",
+    "quickAccess": "دسترسی سریع"
+  },
+  "Footer": {
+    "rights": "تمامی حقوق محفوظ است",
+    "quickLinks": "دسترسی سریع",
+    "support": "پشتیبانی",
+    "followUs": "ما را دنبال کنید"
+  },
+  "Cards": {
+    "products": "محصولات",
+    "productsDesc": "مشاهده همه محصولات",
+    "blog": "وبلاگ",
+    "blogDesc": "آخرین مقالات",
+    "profile": "پروفایل",
+    "profileDesc": "حساب کاربری شما",
+    "support": "پشتیبانی",
+    "supportDesc": "ارتباط با ما"
+  }
+}
