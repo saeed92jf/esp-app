@@ -1,6 +1,6 @@
 {
   "Common": {
-    "appName": "Brand Name",
+    "appName": "Euroslot Pars Web App",
     "search": "Search",
     "searchPlaceholder": "What are you looking for?",
     "login": "Login",
@@ -18,10 +18,40 @@
     "closeMenu": "Close menu"
   },
   "Home": {
-    "heroTitle": "Find it simply",
-    "heroSubtitle": "Whatever you need is one search away",
-    "quickAccess": "Quick access"
+    "meta": {
+      "title": "Home",
+      "description": "Manage your business in one place"
+    },
+    "hero": {
+      "tagline": "Everything you need to succeed",
+      "subtitle": "Powerful tools to help you work smarter, not harder.",
+      "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
+    },
+    "quickAccess": { "loginRequired": "Login required" },
+
+    "stats": {
+      "clients": "Happy Clients",
+      "projects": "Successful Projects",
+      "awards": "Awards Won",
+      "support": "Support"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Built for every team",
+      "subtitle": "Pick a category to explore.",
+      "all": "All",
+      "explore": "Explore"
+    },
+    "newsletter": {
+      "title": "Stay in the loop",
+      "subtitle": "Get the latest updates delivered to your inbox.",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe",
+      "success": "Thanks for subscribing! Check your email.",
+      "disclaimer": "No spam. Unsubscribe anytime."
+    }
   },
+
   "Footer": {
     "rights": "All rights reserved",
     "quickLinks": "Quick links",
@@ -37,5 +67,91 @@
     "profileDesc": "Your account",
     "support": "Support",
     "supportDesc": "Get in touch"
+  },
+  "Auth": {
+    "login": "Login",
+    "register": "Sign up",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "forgotPassword": "Forgot your password?",
+    "loginSubtitle": "Log in to continue",
+    "registerSubtitle": "Create a new account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "Menu": {
+    "title": "Menu",
+    "subtitle": "Quick access to all sections",
+    "open": "Open menu",
+    "close": "Close menu",
+    "version": "Version {version}",
+    "sections": {
+      "main": "Main",
+      "marketing": "Marketing",
+      "projectManagement": "Project Management",
+      "documentArchive": "Document Archive",
+      "employees": "Company Employees",
+      "multimedia": "Multimedia"
+    },
+    "items": {
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "campaigns": "Campaigns",
+      "socialMedia": "Social Media",
+      "emailMarketing": "Email Marketing",
+      "marketingAnalytics": "Analytics",
+      "seo": "SEO",
+      "projects": "Projects",
+      "tasks": "Tasks",
+      "calendar": "Calendar",
+      "projectReports": "Reports",
+      "kanban": "Kanban Board",
+      "allDocuments": "All Documents",
+      "contracts": "Contracts",
+      "invoices": "Invoices",
+      "templates": "Templates",
+      "employeeList": "Employee List",
+      "departments": "Departments",
+      "attendance": "Attendance",
+      "payroll": "Payroll",
+      "imageGallery": "Image Gallery",
+      "videos": "Videos",
+      "audio": "Audio",
+      "mediaLibrary": "Media Library"
+    },
+    "descriptions": {
+      "home": "Return to the main page and access sections quickly",
+      "dashboard": "Overview of the system's status and statistics",
+      "campaigns": "Manage and track marketing campaigns",
+      "socialMedia": "Manage social media accounts and schedule posts",
+      "emailMarketing": "Create and manage email campaigns",
+      "marketingAnalytics": "Analyze data and generate reports for better decision-making",
+      "seo": "SEO tools and reports",
+      "projects": "Project management and resource allocation",
+      "tasks": "Create and track team tasks",
+      "calendar": "Schedule and manage events and meetings",
+      "projectReports": "Progress and performance reports for projects",
+      "kanban": "Display tasks on a Kanban board for better management",
+      "allDocuments": "Access all saved documents and files",
+      "contracts": "Manage contracts and agreements",
+      "invoices": "Create and manage invoices and statements",
+      "templates": "Ready-made templates for documents and forms",
+      "employeeList": "Complete list of employees and contact information",
+      "departments": "Management of departments and organizational structure",
+      "attendance": "Recording and tracking employee attendance",
+      "payroll": "Management of salaries and payments",
+      "imageGallery": "Image gallery for storing and managing photos",
+      "videos": "Management and storage of videos and organizational clips",
+      "audio": "Management of audio files and podcasts",
+      "mediaLibrary": "Comprehensive library for managing all types of media"
+    }
+  },
+  "NotFound": {
+    "description": "The page you are looking for could not be found",
+    "backHome": "Back to Home"
   }
 }

@@ -1,7 +1,9 @@
 // src/components/layout/user-menu.tsx
 'use client';
-import Link from 'next/link';
-import { LogIn, LogOut, User as UserIcon } from 'lucide-react';
+
+import { useTranslations } from 'next-intl';
+import { User, LogOut, Settings as SettingsIcon } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,62 +13,80 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useAuth } from '@/providers/auth-provider';
 
-// Account control: shows a login button when signed out, and an avatar
-// dropdown with profile/logout when signed in. Reads state from AuthProvider.
-export function UserMenu() {
-  const { user, logout, isLoading } = useAuth();
+// ============================================================
+// USER MENU
+// Guest state  -> Login + Register buttons.
+// Auth state   -> avatar/profile icon with a dropdown.
+// `isAuthenticated` is a prop for now; wire it to your real
+// session source (next-auth, cookies, etc.) later.
+// ============================================================
 
-  // Skeleton-ish placeholder while the session is being resolved.
-  if (isLoading) {
-    return <div className="bg-muted size-9 animate-pulse rounded-full" />;
-  }
+interface UserMenuProps {
+  // Whether a user session is active. Defaults to guest.
+  isAuthenticated?: boolean;
+  // Display name shown in the dropdown header when signed in.
+  userName?: string;
+}
 
-  // Signed-out state.
-  if (!user) {
+export function UserMenu({ isAuthenticated = false, userName }: UserMenuProps) {
+  const t = useTranslations('Auth');
+
+  // ---- Guest: show auth entry points ----
+  if (!isAuthenticated) {
     return (
-      <Button asChild variant="default" size="sm">
-        <Link href="/login">
-          <LogIn className="me-2 size-4" />
-          ورود
-        </Link>
-      </Button>
+      <div className="flex items-center gap-2">
+        {/* Ghost on small screens to save space, full on md+. */}
+        <Button asChild variant="ghost" size="sm">
+          <Link href="/login">{t('login')}</Link>
+        </Button>
+        <Button asChild size="sm" className="hidden sm:inline-flex">
+          <Link href="/register">{t('register')}</Link>
+        </Button>
+      </div>
     );
   }
 
-  // Derive initials for the avatar fallback (no external image needed).
-  const initials = user.name
-    .split(' ')
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
+  // ---- Authenticated: profile dropdown ----
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar className="size-9">
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+        <Button
+          variant="ghost"
+          size="icon"
+          // Accessible label so screen readers announce the trigger.
+          aria-label={t('accountMenu')}
+        >
+          <User className="size-5" />
         </Button>
       </DropdownMenuTrigger>
-      {/* align="end" keeps the menu edge-aligned in both directions */}
+
+      {/* align="end" pins the panel to the logical end edge. */}
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="truncate">{user.name}</DropdownMenuLabel>
+        <DropdownMenuLabel className="truncate">
+          {userName ?? t('account')}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
+
         <DropdownMenuItem asChild>
-          <Link href="/profile">
-            <UserIcon className="me-2 size-4" />
-            پروفایل
+          <Link href="/profile" className="flex items-center gap-2">
+            <User className="size-4" />
+            <span>{t('profile')}</span>
           </Link>
         </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex items-center gap-2">
+            <SettingsIcon className="size-4" />
+            <span>{t('settings')}</span>
+          </Link>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="text-destructive">
-          <LogOut className="me-2 size-4" />
-          خروج
+
+        <DropdownMenuItem className="text-destructive focus:text-destructive flex items-center gap-2">
+          <LogOut className="size-4" />
+          <span>{t('logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

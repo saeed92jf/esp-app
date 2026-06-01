@@ -1,50 +1,44 @@
-// src/app/[locale]/layout.tsx
 import type { ReactNode } from 'react';
-import { notFound } from 'next/navigation';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { setRequestLocale } from 'next-intl/server';
-import { routing, localeDirection, type Locale } from '@/i18n/routing';
+import { setRequestLocale, getMessages } from 'next-intl/server';
+import { notFound } from 'next/navigation';
+import { routing } from '@/i18n/routing';
 import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
-import '@/styles/globals.css';
+import '@/app/globals.css';
 
-/**
- * Pre-generate a static page for each supported locale at build time.
- */
+// Pre-render all configured locales at build time
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-type LocaleLayoutProps = {
+type Props = {
   children: ReactNode;
-  // In Next.js 15 params is a Promise and must be awaited.
   params: Promise<{ locale: string }>;
 };
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: LocaleLayoutProps) {
+export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
-  // Reject any locale that is not in our routing config.
+  // Reject unknown locales -> render the not-found page
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
 
-  // Enable static rendering for this locale.
+  // Enable static rendering for this locale
   setRequestLocale(locale);
 
-  const dir = localeDirection[locale as Locale];
+  // Load translation messages for the active locale
+  const messages = await getMessages();
+
+  // Text direction follows the locale (Persian = RTL)
+  const dir = locale === 'fa' ? 'rtl' : 'ltr';
 
   return (
     <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="bg-background text-foreground flex min-h-dvh flex-col antialiased">
-        {/* Provider exposes messages to all client components. */}
-        <NextIntlClientProvider>
+      <body className="bg-background text-foreground min-h-dvh antialiased">
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <main className="mx-auto w-full max-w-7xl px-4 py-6">{children}</main>
         </NextIntlClientProvider>
       </body>
     </html>
