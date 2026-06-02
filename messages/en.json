@@ -1,12 +1,23 @@
 {
   "Common": {
-    "appName": "Euroslot Pars Web App",
+    "appName": {
+      "lead": "Euroslot Pars",
+      "trail": "Web App.",
+      "accent": "trail"
+    },
     "search": "Search",
     "searchPlaceholder": "What are you looking for?",
     "login": "Login",
     "register": "Sign up",
     "loading": "Loading...",
     "language": "Language"
+  },
+  "Metadata": {
+    "title": "Euroslot Pars WebApp.",
+    "description": "Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.",
+    "keywords": "CRM, Project Management, Service Business, ESP Webapp",
+    "ogTitle": "ESP Webapp",
+    "ogDescription": "Unified platform for engineering and service businesses"
   },
   "Header": {
     "brand": "Euroslot Pars",
@@ -84,6 +95,8 @@
     "haveAccount": "Already have an account?"
   },
   "Menu": {
+    "search": "Search...",
+    "noResults": "No Results",
     "title": "Menu",
     "subtitle": "Quick access to all sections",
     "open": "Open menu",
@@ -153,5 +166,29 @@
   "NotFound": {
     "description": "The page you are looking for could not be found",
     "backHome": "Back to Home"
+  },
+  "Search": {
+    "placeholder": "Search",
+    "results": "Search Results",
+    "recent": "Recent",
+    "clear": "Clear",
+    "noResults": "No results for \"{query}\"",
+    "tryDifferent": "Try different keywords",
+    "navigate": "to navigate",
+    "select": "Enter to select",
+    "escape": "Esc to clear"
+  },
+  "Settings": {
+    "title": "Appearance",
+    "light": "light",
+    "dark": "dark",
+    "system": "system",
+    "colors": {
+      "blue": "blue",
+      "green": "green",
+      "red": "red",
+      "orange": "orange",
+      "purple": "purple"
+    }
   }
 }

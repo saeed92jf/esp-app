@@ -442,7 +442,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
                       }
                       onClick={() => handleSelectVideo(video)}
                       onMouseEnter={() => handleMouseEnterResult(idx)}
-                      className={`flex w-full cursor-pointer gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
+                      className={`duration-instant flex w-full cursor-pointer gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors ${
                         isSelected
                           ? 'bg-primary-light border-primary border-l-4'
                           : 'bg-primary hover:bg-gray-50 dark:hover:bg-gray-800/50'
@@ -562,7 +562,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
                       }}
                       onClick={() => handleRecentSearchClick(item)}
                       onMouseEnter={() => handleMouseEnterRecent(idx)}
-                      className={`flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
+                      className={`duration-instant flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors ${
                         isSelected
                           ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 border-l-4'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
@@ -612,7 +612,7 @@ export function SearchPopup({ onVideoSelect, videos = [] }: SearchPopupProps) {
                       }}
                       onClick={() => handleRecentSearchClick(item)}
                       onMouseEnter={() => handleMouseEnterRecent(idx)}
-                      className={`flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors duration-0 ${
+                      className={`duration-instant flex w-full cursor-pointer items-center gap-3 border-l-4 border-transparent px-4 py-3 text-left transition-colors ${
                         isSelected
                           ? 'bg-primary-50 dark:bg-primary-900/30 border-primary-500 border-l-4'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'

@@ -1,20 +1,8 @@
-/* globals.css */
+/* src/app/globals.css */
+
 @import 'tailwindcss';
-
-/* ============================================
-   Font Farsi
-   ============================================ */
 @import '../styles/font/fonts.css';
-
-/* ============================================
-   Import Tokens (CSS Variables)
-   ============================================ */
 @import '../styles/tokens/index.css';
-
-/* ============================================
-   Import Themes
-   ============================================ */
-
 @import '../styles/themes/primary-colors.css';
 @import '../styles/themes/semantic.css';
 @import '../styles/themes/semantic-gradients.css';
@@ -198,8 +186,16 @@ body {
   --card-foreground: oklch(0.148 0.004 228.8);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.148 0.004 228.8);
-  --primary: oklch(0.52 0.105 223.128);
-  --primary-foreground: oklch(0.984 0.019 200.873);
+
+  /* ---- DYNAMIC PRIMARY (light) ----
+     The shadcn --primary token is driven by the HSL switcher defined in
+     primary-colors.css (--primary-h / --primary-s / --primary-l), so swapping
+     the `primary-color-*` class on <html> updates BOTH your *-primary-500
+     utilities AND shadcn components (buttons, active sidebar item, ring...).
+     If your file uses different variable names, change the three vars below. */
+  --primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+  --primary-foreground: hsl(0 0% 100%);
+
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.963 0.002 197.1);
@@ -209,7 +205,10 @@ body {
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.925 0.005 214.3);
   --input: oklch(0.925 0.005 214.3);
-  --ring: oklch(0.723 0.014 214.4);
+
+  /* Focus ring follows primary too. */
+  --ring: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
+
   --chart-1: oklch(0.865 0.127 207.078);
   --chart-2: oklch(0.715 0.143 215.221);
   --chart-3: oklch(0.609 0.126 221.723);
@@ -218,8 +217,11 @@ body {
   --radius: 0.625rem;
   --sidebar: oklch(0.987 0.002 197.1);
   --sidebar-foreground: oklch(0.148 0.004 228.8);
-  --sidebar-primary: oklch(0.609 0.126 221.723);
+
+  /* Active sidebar item follows primary. */
+  --sidebar-primary: hsl(var(--primary-h) var(--primary-s) var(--primary-l));
   --sidebar-primary-foreground: oklch(0.984 0.019 200.873);
+
   --sidebar-accent: oklch(0.963 0.002 197.1);
   --sidebar-accent-foreground: oklch(0.218 0.008 223.9);
   --sidebar-border: oklch(0.925 0.005 214.3);
@@ -233,8 +235,15 @@ body {
   --card-foreground: oklch(0.987 0.002 197.1);
   --popover: oklch(0.218 0.008 223.9);
   --popover-foreground: oklch(0.987 0.002 197.1);
-  --primary: oklch(0.45 0.085 224.283);
-  --primary-foreground: oklch(0.984 0.019 200.873);
+
+  /* ---- DYNAMIC PRIMARY (dark) ----
+     +10% lightness to match the dark-mode shift typically used in
+     primary-colors.css. Adjust the offset if your file uses a different one. */
+  --primary: hsl(
+    var(--primary-h) var(--primary-s) calc(var(--primary-l) + 10%)
+  );
+  --primary-foreground: hsl(0 0% 100%);
+
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.275 0.011 216.9);
@@ -244,7 +253,9 @@ body {
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.56 0.021 213.5);
+
+  --ring: hsl(var(--primary-h) var(--primary-s) calc(var(--primary-l) + 10%));
+
   --chart-1: oklch(0.865 0.127 207.078);
   --chart-2: oklch(0.715 0.143 215.221);
   --chart-3: oklch(0.609 0.126 221.723);
@@ -252,8 +263,12 @@ body {
   --chart-5: oklch(0.45 0.085 224.283);
   --sidebar: oklch(0.218 0.008 223.9);
   --sidebar-foreground: oklch(0.987 0.002 197.1);
-  --sidebar-primary: oklch(0.715 0.143 215.221);
+
+  --sidebar-primary: hsl(
+    var(--primary-h) var(--primary-s) calc(var(--primary-l) + 10%)
+  );
   --sidebar-primary-foreground: oklch(0.302 0.056 229.695);
+
   --sidebar-accent: oklch(0.275 0.011 216.9);
   --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
   --sidebar-border: oklch(1 0 0 / 10%);

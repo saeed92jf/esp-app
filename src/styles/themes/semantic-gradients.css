@@ -1,4 +1,4 @@
-/* globals.css — Semantic Gradients Section */
+/* src/styles/themes/semantic-gradients.css */
 
 /* ============================================
    GRADIENT CSS VARIABLES (Light & Dark)
@@ -10,49 +10,216 @@
 @layer base {
   :root,
   .light {
-    --gradient-page-primary: linear-gradient(135deg, var(--bg-primary) 0%, var(--color-primary-50) 50%, var(--bg-primary) 100%);
-    --gradient-page-general: linear-gradient(135deg, var(--color-slate-100) 0%, var(--bg-primary) 50%, var(--color-slate-200) 100%);
-    --gradient-hero: linear-gradient(135deg, var(--color-primary-50) 0%, var(--bg-primary) 50%, var(--color-primary-100) 100%);
-    --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
-    --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --gradient-shine: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    --gradient-logo: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --text-gradient-primary: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
-    --border-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-600));
-    --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
-    --gradient-btn-danger: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-600));
-    --gradient-gold: linear-gradient(135deg, var(--color-amber-400), var(--color-amber-600));
-    --gradient-silver: linear-gradient(135deg, var(--color-gray-400), var(--color-gray-600));
-    --gradient-copper: linear-gradient(135deg, var(--color-orange-400), var(--color-orange-600));
-    --gradient-azure: linear-gradient(135deg, var(--color-sky-400), var(--color-sky-600));
-    --gradient-teal: linear-gradient(135deg, var(--color-teal-400), var(--color-teal-600));
-    --gradient-rose: linear-gradient(135deg, var(--color-rose-400), var(--color-rose-600));
-    --gradient-emerald: linear-gradient(135deg, var(--color-emerald-400), var(--color-emerald-600));
-    --gradient-amber: linear-gradient(135deg, var(--color-amber-400), var(--color-amber-600));
-    --gradient-indigo: linear-gradient(135deg, var(--color-indigo-400), var(--color-indigo-600));
+    --gradient-page-primary: linear-gradient(
+      135deg,
+      var(--bg-primary) 0%,
+      var(--color-primary-50) 50%,
+      var(--bg-primary) 100%
+    );
+    --gradient-page-general: linear-gradient(
+      135deg,
+      var(--color-slate-100) 0%,
+      var(--bg-primary) 50%,
+      var(--color-slate-200) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      var(--color-primary-50) 0%,
+      var(--bg-primary) 50%,
+      var(--color-primary-100) 100%
+    );
+    --gradient-card: linear-gradient(
+      135deg,
+      var(--surface-primary) 0%,
+      var(--surface-secondary) 100%
+    );
+    --gradient-cta: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --gradient-shine: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    --gradient-logo: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --text-gradient-primary: linear-gradient(
+      135deg,
+      var(--color-primary-600),
+      var(--color-primary-500)
+    );
+    --border-gradient-primary: linear-gradient(
+      135deg,
+      var(--color-primary-400),
+      var(--color-primary-600)
+    );
+    --gradient-btn-primary: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --gradient-btn-primary-hover: linear-gradient(
+      135deg,
+      var(--color-primary-600),
+      var(--color-primary-700)
+    );
+    --gradient-btn-danger: linear-gradient(
+      135deg,
+      var(--color-danger-500),
+      var(--color-danger-600)
+    );
+    --gradient-gold: linear-gradient(
+      135deg,
+      var(--color-amber-400),
+      var(--color-amber-600)
+    );
+    --gradient-silver: linear-gradient(
+      135deg,
+      var(--color-gray-400),
+      var(--color-gray-600)
+    );
+    --gradient-copper: linear-gradient(
+      135deg,
+      var(--color-orange-400),
+      var(--color-orange-600)
+    );
+    --gradient-azure: linear-gradient(
+      135deg,
+      var(--color-sky-400),
+      var(--color-sky-600)
+    );
+    --gradient-teal: linear-gradient(
+      135deg,
+      var(--color-teal-400),
+      var(--color-teal-600)
+    );
+    --gradient-rose: linear-gradient(
+      135deg,
+      var(--color-rose-400),
+      var(--color-rose-600)
+    );
+    --gradient-emerald: linear-gradient(
+      135deg,
+      var(--color-emerald-400),
+      var(--color-emerald-600)
+    );
+    --gradient-amber: linear-gradient(
+      135deg,
+      var(--color-amber-400),
+      var(--color-amber-600)
+    );
+    --gradient-indigo: linear-gradient(
+      135deg,
+      var(--color-indigo-400),
+      var(--color-indigo-600)
+    );
   }
 
   .dark {
-    --gradient-page-primary: linear-gradient(135deg, var(--bg-primary) 0%, var(--color-primary-950) 50%, var(--bg-primary) 100%);
-    --gradient-page-general: linear-gradient(135deg, var(--color-slate-800) 0%, var(--bg-primary) 50%, var(--color-slate-900) 100%);
-    --gradient-hero: linear-gradient(135deg, var(--color-primary-900) 0%, var(--bg-primary) 50%, var(--color-primary-950) 100%);
-    --gradient-card: linear-gradient(135deg, var(--surface-primary) 0%, var(--surface-secondary) 100%);
-    --gradient-cta: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --text-gradient-primary: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
-    --border-gradient-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --gradient-btn-primary: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
-    --gradient-btn-primary-hover: linear-gradient(135deg, var(--color-primary-400), var(--color-primary-500));
-    --gradient-btn-danger: linear-gradient(135deg, var(--color-danger-500), var(--color-danger-600));
-    --gradient-gold: linear-gradient(135deg, var(--color-amber-300), var(--color-amber-500));
-    --gradient-silver: linear-gradient(135deg, var(--color-gray-300), var(--color-gray-500));
-    --gradient-copper: linear-gradient(135deg, var(--color-orange-300), var(--color-orange-500));
-    --gradient-azure: linear-gradient(135deg, var(--color-sky-300), var(--color-sky-500));
-    --gradient-teal: linear-gradient(135deg, var(--color-teal-300), var(--color-teal-500));
-    --gradient-rose: linear-gradient(135deg, var(--color-rose-300), var(--color-rose-500));
-    --gradient-emerald: linear-gradient(135deg, var(--color-emerald-300), var(--color-emerald-500));
-    --gradient-amber: linear-gradient(135deg, var(--color-amber-300), var(--color-amber-500));
-    --gradient-indigo: linear-gradient(135deg, var(--color-indigo-300), var(--color-indigo-500));
+    --gradient-page-primary: linear-gradient(
+      135deg,
+      var(--bg-primary) 0%,
+      var(--color-primary-950) 50%,
+      var(--bg-primary) 100%
+    );
+    --gradient-page-general: linear-gradient(
+      135deg,
+      var(--color-slate-800) 0%,
+      var(--bg-primary) 50%,
+      var(--color-slate-900) 100%
+    );
+    --gradient-hero: linear-gradient(
+      135deg,
+      var(--color-primary-900) 0%,
+      var(--bg-primary) 50%,
+      var(--color-primary-950) 100%
+    );
+    --gradient-card: linear-gradient(
+      135deg,
+      var(--surface-primary) 0%,
+      var(--surface-secondary) 100%
+    );
+    --gradient-cta: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --text-gradient-primary: linear-gradient(
+      135deg,
+      var(--color-primary-400),
+      var(--color-primary-500)
+    );
+    --border-gradient-primary: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --gradient-btn-primary: linear-gradient(
+      135deg,
+      var(--color-primary-500),
+      var(--color-primary-600)
+    );
+    --gradient-btn-primary-hover: linear-gradient(
+      135deg,
+      var(--color-primary-400),
+      var(--color-primary-500)
+    );
+    --gradient-btn-danger: linear-gradient(
+      135deg,
+      var(--color-danger-500),
+      var(--color-danger-600)
+    );
+    --gradient-gold: linear-gradient(
+      135deg,
+      var(--color-amber-300),
+      var(--color-amber-500)
+    );
+    --gradient-silver: linear-gradient(
+      135deg,
+      var(--color-gray-300),
+      var(--color-gray-500)
+    );
+    --gradient-copper: linear-gradient(
+      135deg,
+      var(--color-orange-300),
+      var(--color-orange-500)
+    );
+    --gradient-azure: linear-gradient(
+      135deg,
+      var(--color-sky-300),
+      var(--color-sky-500)
+    );
+    --gradient-teal: linear-gradient(
+      135deg,
+      var(--color-teal-300),
+      var(--color-teal-500)
+    );
+    --gradient-rose: linear-gradient(
+      135deg,
+      var(--color-rose-300),
+      var(--color-rose-500)
+    );
+    --gradient-emerald: linear-gradient(
+      135deg,
+      var(--color-emerald-300),
+      var(--color-emerald-500)
+    );
+    --gradient-amber: linear-gradient(
+      135deg,
+      var(--color-amber-300),
+      var(--color-amber-500)
+    );
+    --gradient-indigo: linear-gradient(
+      135deg,
+      var(--color-indigo-300),
+      var(--color-indigo-500)
+    );
   }
 }
 

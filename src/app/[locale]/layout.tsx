@@ -1,46 +1,37 @@
+// src/app/[locale]/layout.tsx
 import type { ReactNode } from 'react';
-import { NextIntlClientProvider, hasLocale } from 'next-intl';
-import { setRequestLocale, getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import { routing } from '@/i18n/routing';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+
 import { Header } from '@/components/layout/header';
-import '@/app/globals.css';
+import { HtmlLangSync } from '@/components/layout/html-lang-sync';
+import { routing } from '@/i18n/routing';
 
-// Pre-render all configured locales at build time
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+// Locale-aware metadata stays here, since this layout receives `locale`.
+export { generateMetadata, viewport } from '@/app/[locale]/metadata';
 
-type Props = {
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
   children: ReactNode;
   params: Promise<{ locale: string }>;
-};
-
-export default async function LocaleLayout({ children, params }: Props) {
+}) {
   const { locale } = await params;
 
-  // Reject unknown locales -> render the not-found page
-  if (!hasLocale(routing.locales, locale)) {
+  if (!routing.locales.includes(locale as never)) {
     notFound();
   }
 
-  // Enable static rendering for this locale
   setRequestLocale(locale);
-
-  // Load translation messages for the active locale
   const messages = await getMessages();
 
-  // Text direction follows the locale (Persian = RTL)
-  const dir = locale === 'fa' ? 'rtl' : 'ltr';
-
   return (
-    <html lang={locale} dir={dir} suppressHydrationWarning>
-      <body className="bg-background text-foreground min-h-dvh antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <Header />
-          <main className="mx-auto w-full max-w-7xl px-4 py-6">{children}</main>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <HtmlLangSync locale={locale} />
+      <Header />
+      {children}
+    </NextIntlClientProvider>
   );
 }

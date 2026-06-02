@@ -23,6 +23,8 @@ import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/logo';
 import { StatsSection } from '@/components/sections/stats-section';
 import { STATS } from '@/data/stats';
+import { SearchPopup } from '@/components/features/search/search-popup';
+import { SiteSearch } from '@/components/features/search/site-search';
 
 // ---------------------------------------------------------------------------
 // Local hook: reveal a section once it scrolls into the viewport (one-way).
@@ -198,12 +200,7 @@ export function HomeClient() {
               isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
             )}
           >
-            <Search className="text-muted-foreground pointer-events-none absolute inset-s-3 top-1/2 size-5 -translate-y-1/2" />
-            <Input
-              className="h-12 ps-11"
-              placeholder={t('hero.searchPlaceholder')}
-              aria-label={t('hero.searchPlaceholder')}
-            />
+            <SiteSearch className="mx-auto max-w-xl" />
           </div>
 
           {/* Quick access cards sourced from the navigation config */}
