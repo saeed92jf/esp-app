@@ -7,7 +7,6 @@ import {
   Share2,
   Mail,
   BarChart3,
-  Search,
   FolderKanban,
   ListChecks,
   Calendar,
@@ -27,36 +26,44 @@ import {
   Video,
   AudioLines,
   Library,
+  Settings,
 } from 'lucide-react';
 
-// A single clickable link inside a group.
 export interface NavItem {
-  // i18n key resolved against the "Menu.items" namespace.
   labelKey: string;
-  // App-relative href (no /[locale] prefix; navigation helper adds it).
   href: string;
-  // Optional icon shown before the label.
   icon?: LucideIcon;
+  public?: boolean;
+  welcome?: boolean;
 }
 
-// A titled, collapsible section in the SideMenu.
+/**
+ * A logical group of navigation items rendered as a titled section/card grid.
+ * - id       : stable identifier, also used as a React key.
+ * - labelKey : i18n key resolved under `Menu.sections.*`.
+ * - icon     : section icon.
+ * - items    : leaf items belonging to this group.
+ */
 export interface NavGroup {
-  // Stable id used as the Accordion item value + defaultOpen logic.
   id: string;
-  // i18n key resolved against the "Menu.sections" namespace.
   labelKey: string;
   icon?: LucideIcon;
   items: NavItem[];
+  custom?: 'settings';
 }
 
-// Full navigation tree. Order here is the render order in the menu.
+/**
+ * Full application navigation tree.
+ * Grouping + sub-items are preserved exactly; only the `multimedia`
+ * group exposes public/welcome items.
+ */
 export const NAVIGATION: NavGroup[] = [
   {
     id: 'main',
     labelKey: 'main',
     icon: Home,
     items: [
-      { labelKey: 'home', href: '/', icon: Home },
+      // Authenticated landing area.
       { labelKey: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
     ],
   },
@@ -66,14 +73,9 @@ export const NAVIGATION: NavGroup[] = [
     icon: Megaphone,
     items: [
       { labelKey: 'campaigns', href: '/marketing/campaigns', icon: Megaphone },
-      { labelKey: 'socialMedia', href: '/marketing/social', icon: Share2 },
-      { labelKey: 'emailMarketing', href: '/marketing/email', icon: Mail },
-      {
-        labelKey: 'marketingAnalytics',
-        href: '/marketing/analytics',
-        icon: BarChart3,
-      },
-      { labelKey: 'seo', href: '/marketing/seo', icon: Search },
+      { labelKey: 'social', href: '/marketing/social', icon: Share2 },
+      { labelKey: 'email', href: '/marketing/email', icon: Mail },
+      { labelKey: 'analytics', href: '/marketing/analytics', icon: BarChart3 },
     ],
   },
   {
@@ -84,12 +86,8 @@ export const NAVIGATION: NavGroup[] = [
       { labelKey: 'projects', href: '/projects', icon: FolderKanban },
       { labelKey: 'tasks', href: '/projects/tasks', icon: ListChecks },
       { labelKey: 'calendar', href: '/projects/calendar', icon: Calendar },
-      {
-        labelKey: 'projectReports',
-        href: '/projects/reports',
-        icon: FileBarChart,
-      },
-      { labelKey: 'kanban', href: '/projects/kanban', icon: LayoutGrid },
+      { labelKey: 'reports', href: '/projects/reports', icon: FileBarChart },
+      { labelKey: 'board', href: '/projects/board', icon: LayoutGrid },
     ],
   },
   {
@@ -97,14 +95,14 @@ export const NAVIGATION: NavGroup[] = [
     labelKey: 'documentArchive',
     icon: Archive,
     items: [
-      { labelKey: 'allDocuments', href: '/documents', icon: Files },
+      { labelKey: 'documents', href: '/archive/documents', icon: Files },
       {
         labelKey: 'contracts',
-        href: '/documents/contracts',
+        href: '/archive/contracts',
         icon: FileSignature,
       },
-      { labelKey: 'invoices', href: '/documents/invoices', icon: Receipt },
-      { labelKey: 'templates', href: '/documents/templates', icon: FileText },
+      { labelKey: 'invoices', href: '/archive/invoices', icon: Receipt },
+      { labelKey: 'letters', href: '/archive/letters', icon: FileText },
     ],
   },
   {
@@ -112,7 +110,7 @@ export const NAVIGATION: NavGroup[] = [
     labelKey: 'employees',
     icon: Users,
     items: [
-      { labelKey: 'employeeList', href: '/employees', icon: Users },
+      { labelKey: 'staff', href: '/employees', icon: Users },
       {
         labelKey: 'departments',
         href: '/employees/departments',
@@ -131,15 +129,58 @@ export const NAVIGATION: NavGroup[] = [
     labelKey: 'multimedia',
     icon: Clapperboard,
     items: [
-      { labelKey: 'imageGallery', href: '/media/images', icon: ImageIcon },
-      { labelKey: 'videos', href: '/media/videos', icon: Video },
-      { labelKey: 'audio', href: '/media/audio', icon: AudioLines },
-      { labelKey: 'mediaLibrary', href: '/media/library', icon: Library },
+      // The only public-facing group. Every item is shown on Welcome too.
+      {
+        labelKey: 'imageGallery',
+        href: '/media/images',
+        icon: ImageIcon,
+        public: true,
+        welcome: true,
+      },
+      {
+        labelKey: 'videos',
+        href: '/media/videos',
+        icon: Video,
+        public: true,
+        welcome: true,
+      },
+      {
+        labelKey: 'audio',
+        href: '/media/audio',
+        icon: AudioLines,
+        public: true,
+        welcome: true,
+      },
+      {
+        labelKey: 'mediaLibrary',
+        href: '/media/library',
+        icon: Library,
+        public: true,
+        welcome: true,
+      },
     ],
+  },
+  {
+    id: 'settings',
+    labelKey: 'settings',
+    icon: Settings,
+    custom: 'settings', // tells the menu this is a special group
+    items: [],
   },
 ];
 
-// Top-level links surfaced inline in the desktop Header.
-// Derived from the "main" group so there is one source of truth.
+/** Primary navigation derived from the `main` group (top bar). */
 export const PRIMARY_NAV: NavItem[] =
-  NAVIGATION.find((g) => g.id === 'main')?.items ?? [];
+  NAVIGATION.find((group) => group.id === 'main')?.items ?? [];
+
+/** All items flagged as public (visible without authentication). */
+export const PUBLIC_NAV_ITEMS: NavItem[] = NAVIGATION.flatMap((group) =>
+  group.items.filter((item) => item.public),
+);
+
+/** Items rendered on the Welcome screen for unauthenticated visitors. */
+export const PUBLIC_WELCOME_ITEMS: NavItem[] = NAVIGATION.flatMap(
+  (group) => group.items.filter((item) => item.welcome),
+  4,
+);
+7;

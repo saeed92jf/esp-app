@@ -1,5 +1,6 @@
 {
   "Common": {
+    "language": "Language",
     "appName": {
       "lead": "Euroslot Pars",
       "trail": "Web App.",
@@ -79,55 +80,85 @@
     "support": "Support",
     "supportDesc": "Get in touch"
   },
+  "Welcome": {
+    "title": "Smart Management Platform",
+    "subtitle": "Modern tools for project management, marketing, and document archiving in one unified space.",
+    "readyToStart": "Sign in to access all features",
+    "ctaLogin": "Sign in",
+    "ctaRegister": "Register",
+    "cards": {
+      "imageGallery": {
+        "description": "Browse categorized image albums and visual project assets."
+      },
+      "videos": {
+        "description": "Watch platform presentation and training videos."
+      },
+      "mediaLibrary": {
+        "description": "Access the central library of multimedia files and shared resources."
+      }
+    }
+  },
   "Auth": {
-    "login": "Login",
+    "loggingIn": "Signing in...",
+    "brand": "Euroslot Pars",
+    "login": "Sign in",
     "register": "Sign up",
-    "logout": "Logout",
-    "profile": "Profile",
-    "settings": "Settings",
-    "email": "Email",
+    "logout": "Sign out",
+    "submit": "submit",
+    "loggingIn": "Signing in...",
+    "loginSubtitle": "Sign in to your account to continue",
+    "identifier": "Email or mobile number",
+    "identifierPlaceholder": "example@mail.com or 09xxxxxxxxx",
     "password": "Password",
-    "fullName": "Full Name",
-    "forgotPassword": "Forgot your password?",
-    "loginSubtitle": "Log in to continue",
-    "registerSubtitle": "Create a new account",
-    "noAccount": "Don't have an account?",
-    "haveAccount": "Already have an account?"
+    "userMenu": "User menu",
+    "demoTitle": "Test accounts",
+    "demoHint": "Click any item to autofill the form.",
+    "roles": {
+      "admin": "Admin",
+      "engineer": "Engineer",
+      "staff": "Staff",
+      "customer": "Customer"
+    },
+    "errors": {
+      "invalidForm": "Invalid email/mobile or password.",
+      "invalidCredentials": "Account not found. Only test accounts are allowed."
+    }
   },
   "Menu": {
-    "search": "Search...",
-    "noResults": "No Results",
     "title": "Menu",
-    "subtitle": "Quick access to all sections",
-    "open": "Open menu",
-    "close": "Close menu",
-    "version": "Version {version}",
+    "subtitle": "All item in one menu",
+    "open": "open",
+    "close": "close",
+    "search": "Search",
+    "version": "V:1.01",
+    "noResults": "No results",
+
     "sections": {
       "main": "Main",
       "marketing": "Marketing",
       "projectManagement": "Project Management",
       "documentArchive": "Document Archive",
-      "employees": "Company Employees",
-      "multimedia": "Multimedia"
+      "employees": "Employees",
+      "multimedia": "Multimedia",
+      "settings": "Settings",
+      "language": "Language"
     },
     "items": {
-      "home": "Home",
       "dashboard": "Dashboard",
       "campaigns": "Campaigns",
-      "socialMedia": "Social Media",
-      "emailMarketing": "Email Marketing",
-      "marketingAnalytics": "Analytics",
-      "seo": "SEO",
+      "social": "Social",
+      "email": "Email",
+      "analytics": "Analytics",
       "projects": "Projects",
       "tasks": "Tasks",
       "calendar": "Calendar",
-      "projectReports": "Reports",
-      "kanban": "Kanban Board",
-      "allDocuments": "All Documents",
+      "reports": "Reports",
+      "board": "Board",
+      "documents": "Documents",
       "contracts": "Contracts",
       "invoices": "Invoices",
-      "templates": "Templates",
-      "employeeList": "Employee List",
+      "letters": "Letters",
+      "staff": "Staff",
       "departments": "Departments",
       "attendance": "Attendance",
       "payroll": "Payroll",
@@ -137,32 +168,40 @@
       "mediaLibrary": "Media Library"
     },
     "descriptions": {
-      "home": "Return to the main page and access sections quickly",
-      "dashboard": "Overview of the system's status and statistics",
-      "campaigns": "Manage and track marketing campaigns",
-      "socialMedia": "Manage social media accounts and schedule posts",
-      "emailMarketing": "Create and manage email campaigns",
-      "marketingAnalytics": "Analyze data and generate reports for better decision-making",
-      "seo": "SEO tools and reports",
-      "projects": "Project management and resource allocation",
-      "tasks": "Create and track team tasks",
-      "calendar": "Schedule and manage events and meetings",
-      "projectReports": "Progress and performance reports for projects",
-      "kanban": "Display tasks on a Kanban board for better management",
-      "allDocuments": "Access all saved documents and files",
-      "contracts": "Manage contracts and agreements",
-      "invoices": "Create and manage invoices and statements",
-      "templates": "Ready-made templates for documents and forms",
-      "employeeList": "Complete list of employees and contact information",
-      "departments": "Management of departments and organizational structure",
-      "attendance": "Recording and tracking employee attendance",
-      "payroll": "Management of salaries and payments",
-      "imageGallery": "Image gallery for storing and managing photos",
-      "videos": "Management and storage of videos and organizational clips",
-      "audio": "Management of audio files and podcasts",
-      "mediaLibrary": "Comprehensive library for managing all types of media"
+      "dashboard": "A clear overview of your key metrics and activity.",
+      "campaigns": "Plan and track advertising campaigns in one place.",
+      "social": "Schedule and publish content across social channels.",
+      "email": "Design and send targeted email campaigns.",
+      "analytics": "Measure performance and understand your results.",
+      "projects": "Define, organize, and track your projects.",
+      "tasks": "Break work into tasks and follow their progress.",
+      "calendar": "See events and deadlines in a unified calendar.",
+      "reports": "Build detailed reports on project progress.",
+      "board": "Manage work visually with a Kanban board.",
+      "documents": "Store and categorize organizational documents.",
+      "contracts": "Archive and manage contracts in one hub.",
+      "invoices": "Create, issue, and track invoices.",
+      "letters": "Archive incoming and outgoing correspondence.",
+      "staff": "Manage employee records and information.",
+      "departments": "Structure your organization's units and teams.",
+      "attendance": "Record and monitor employee attendance.",
+      "payroll": "Calculate and manage salaries and payroll.",
+      "imageGallery": "Browse and manage images in a tidy gallery.",
+      "videos": "Watch and organize your videos in one place.",
+      "audio": "Access and manage your audio files.",
+      "mediaLibrary": "A unified library for all your media files."
     }
   },
+  "Welcome": {
+    "title": "Welcome to our workspace",
+    "subtitle": "Explore the public sections and get to know our content.",
+    "cards": {
+      "videos": "Watch our collection of intro and tutorial videos.",
+      "imageGallery": "Browse images from our projects and activities.",
+      "presentation": "Review our presentations and visual documents."
+    }
+  },
+
   "NotFound": {
     "description": "The page you are looking for could not be found",
     "backHome": "Back to Home"
@@ -190,5 +229,68 @@
       "orange": "orange",
       "purple": "purple"
     }
+  },
+
+  "Dashboard": {
+    "greeting": "Welcome, {name}",
+    "chartTitle": "6-month trend",
+    "chartSubtitle": "Based on sample data",
+    "stats": {
+      "totalUsers": "Total users",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "activeSessions": "Active sessions",
+      "projects": "Projects",
+      "openTickets": "Open tickets",
+      "completedTasks": "Completed tasks",
+      "pendingReview": "Pending review",
+      "myOrders": "My orders",
+      "invoices": "Invoices",
+      "support": "Support tickets",
+      "wallet": "Wallet balance",
+      "tasksToday": "Tasks today",
+      "messages": "Messages"
+    },
+    "roleSummary": {
+      "admin": "Overview of system performance",
+      "engineer": "Your projects and technical tasks",
+      "staff": "Today's work and your tickets",
+      "customer": "Summary of your orders and account"
+    },
+    "months": {
+      "far": "Far",
+      "ord": "Ord",
+      "kho": "Kho",
+      "tir": "Tir",
+      "mor": "Mor",
+      "sha": "Sha"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "items": {
+        "newUser": "New user signed up",
+        "payment": "Payment recorded",
+        "ticket": "New support ticket",
+        "deploy": "New version deployed",
+        "taskDone": "Task completed",
+        "orderShipped": "Order shipped",
+        "invoicePaid": "Invoice paid",
+        "review": "Code review requested"
+      },
+      "time": {
+        "minutes": "{count} minutes ago",
+        "hours": "{count} hours ago",
+        "days": "{count} days ago"
+      }
+    }
+  },
+  "Account": {
+    "menuLabel": "Account menu",
+    "dashboard": "Dashboard",
+    "account": "Account",
+    "settings": "Settings",
+    "logout": "Sign out",
+    "guest": "Guest",
+    "online": "Online"
   }
 }

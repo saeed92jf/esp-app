@@ -1,39 +1,26 @@
 'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import {
-  ArrowRight,
-  Mail,
-  Rocket,
-  CheckCircle2,
-  Search,
-  Users,
-  Building2,
-  Star,
-  Headset,
-  type LucideIcon,
-} from 'lucide-react';
+import { Mail, Rocket, CheckCircle2, type LucideIcon } from 'lucide-react';
 import { NAVIGATION } from '@/config/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/brand/logo';
 import { StatsSection } from '@/components/sections/stats-section';
 import { STATS } from '@/data/stats';
-import { SearchPopup } from '@/components/features/search/search-popup';
 import { SiteSearch } from '@/components/features/search/site-search';
+import { FeatureCard } from '@/components/shared/feature-card';
 
 // ---------------------------------------------------------------------------
 // Local hook: reveal a section once it scrolls into the viewport (one-way).
-// Uses a single IntersectionObserver shared across all registered sections.
+// A single IntersectionObserver is shared across all registered sections.
 // ---------------------------------------------------------------------------
 function useReveal() {
-  // Holds ids of sections that have entered the viewport at least once.
+  // Ids of sections that have entered the viewport at least once.
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  // Map of section id -> DOM element, populated via the `register` callback ref.
+  // Map of section id -> DOM element, populated via the `register` ref.
   const refs = useRef<Map<string, HTMLElement>>(new Map());
 
   useEffect(() => {
@@ -49,7 +36,6 @@ function useReveal() {
       { threshold: 0.1 },
     );
 
-    // Observe all currently registered section elements.
     refs.current.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
@@ -65,36 +51,9 @@ function useReveal() {
   return { register, isRevealed };
 }
 
-// ---------------------------------------------------------------------------
-// Local hook: animated number count-up using requestAnimationFrame.
-// `active` gates the animation so it only runs when the section is visible.
-// ---------------------------------------------------------------------------
-function useCountUp(target: number, active: boolean, duration = 1500) {
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    if (!active) return;
-    let frame = 0;
-    const start = performance.now();
-
-    // Animate with an ease-out cubic curve for a smooth finish.
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(target * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [target, active, duration]);
-
-  return value;
-}
-
-// Sharp, varied gradient palette for feature icon badges. Rotated by index so
-// adjacent cards always differ. Each entry defines a matching shadow tint and a
-// soft background glow revealed on hover.
+// Varied gradient palette for feature icon badges. Rotated by index so
+// adjacent cards always differ. Each entry pairs an icon color, a hover ring
+// tint, and a matching top-bar color consumed by FeatureCard.
 const FEATURE_COLORS = [
   {
     icon: 'text-blue-500',
@@ -132,7 +91,7 @@ export function HomeClient() {
   const t = useTranslations('Home'); // page-scoped translator
   const tSections = useTranslations('Menu.sections'); // group labels
   const tItems = useTranslations('Menu.items'); // item labels
-  const tDesc = useTranslations('Menu.descriptions'); // optional per-item descriptions
+  const tDesc = useTranslations('Menu.descriptions'); // per-item descriptions
   const locale = useLocale();
   const isRtl = locale === 'fa';
 
@@ -184,7 +143,7 @@ export function HomeClient() {
         className="relative flex min-h-[80vh] items-center justify-center"
       >
         <div className="container py-20 text-center">
-          {/* Brand logo — sits above the search box, scales down on mobile */}
+          {/* Brand logo — sits above the search box, scales down on mobile. */}
           <div
             className={cn(
               'mb-8 flex justify-center transition-all delay-100 duration-700',
@@ -203,36 +162,30 @@ export function HomeClient() {
             <SiteSearch className="mx-auto max-w-xl" />
           </div>
 
-          {/* Quick access cards sourced from the navigation config */}
+          {/* Quick access cards sourced from the navigation config. */}
           <div
             className={cn(
               'mt-12 grid grid-cols-2 gap-4 transition-all delay-300 duration-700 md:grid-cols-3 lg:grid-cols-6',
               isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
             )}
           >
-            {quickAccess.map((item) => {
-              const Icon = item.icon; // optional per NavItem type
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Card className="group hover:border-primary h-full transition hover:shadow-md">
-                    <CardContent className="flex flex-col items-center gap-2 p-4">
-                      {Icon && <Icon className="text-primary size-6" />}
-                      <span className="text-sm font-medium">
-                        {tItems(item.labelKey)}
-                      </span>
-                      <span className="text-muted-foreground text-xs">
-                        {t('quickAccess.loginRequired')}
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+            {quickAccess.map((item) => (
+              <FeatureCard
+                key={item.href}
+                href={item.href}
+                icon={item.icon}
+                title={tItems(item.labelKey)}
+                badge={t('quickAccess.loginRequired')}
+                isRtl={isRtl}
+              />
+            ))}
           </div>
         </div>
       </section>
+
       {/* ----------------------------- STATS ---------------------------- */}
-      <StatsSection stats={STATS} />;
+      <StatsSection stats={STATS} />
+
       {/* ---------------------------- FEATURES -------------------------- */}
       <section className="bg-muted/40 py-20">
         <div className="container">
@@ -248,11 +201,11 @@ export function HomeClient() {
             </p>
           </div>
 
-          {/* Category tabs */}
+          {/* Category tabs. */}
           <div className="mb-10 flex flex-wrap justify-center gap-2">
             {tabs.map((tab) => {
               const TabIcon = tab.icon;
-              // "all" tab uses a Home-scoped label; groups use Menu.sections.
+              // "all" uses a Home-scoped label; groups use Menu.sections.
               const label =
                 tab.id === 'all' ? t('features.all') : tSections(tab.labelKey);
               return (
@@ -270,86 +223,38 @@ export function HomeClient() {
           </div>
 
           {/* Features grid:
-    flex + justify-center keeps an incomplete last row centered (grid-cols-*
-    would left-align leftovers). Item widths mirror the 1/2/3/4 column layout,
-    with the gap subtracted via calc to preserve gap-6 (1.5rem) spacing. */}
+              flex + justify-center keeps an incomplete last row centered
+              (grid-cols-* would left-align leftovers). Item widths mirror the
+              1/2/3/4 column layout, with the gap subtracted via calc to keep
+              the gap-6 (1.5rem) spacing intact. */}
           <div className="flex flex-wrap justify-center gap-6">
             {visibleFeatures.map((feature, index) => {
-              const Icon = feature.icon; // optional per NavItem type
               const color = FEATURE_COLORS[index % FEATURE_COLORS.length];
               return (
-                <Link
+                <FeatureCard
                   key={feature.href}
                   href={feature.href}
-                  className="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1.125rem)]"
-                >
-                  <Card
-                    className={cn(
-                      'border-border/60 relative h-full overflow-hidden rounded-xl text-center',
-                      // Minimal + fast hover: short duration, GPU transform, soft easing.
-                      // Only transform/border/shadow animate, so it stays crisp and cheap.
-                      'transform-gpu transition-[transform,border-color,box-shadow] duration-200 ease-out will-change-transform',
-                      'hover:border-primary/50 hover:shadow-lg',
-                      // Respect reduced-motion: disable lift for users who opt out
-                      'motion-reduce:transform-none motion-reduce:transition-none',
-                    )}
-                  >
-                    {/* Engineering accent: a thin top bar that wipes in from the
-              start edge on hover. origin flips for RTL so it grows correctly. */}
-                    <span
-                      className={cn(
-                        'pointer-events-none absolute inset-x-0 top-0 h-0.5 scale-x-0 transition-transform duration-200 ease-out group-hover:scale-x-100',
-                        isRtl ? 'origin-right' : 'origin-left',
-                        color.bar,
-                      )}
-                    />
-
-                    <CardContent className="relative flex flex-col items-center gap-3 p-6">
-                      {/* Fixed neutral badge; only the icon carries color.
-                Subtle scale + ring on hover for a tactile, precise feel. */}
-                      <span
-                        className={cn(
-                          'bg-muted ring-border/50 flex size-14 items-center justify-center rounded-xl ring-1 transition-all duration-200 ease-out',
-                          'group-hover:scale-105 group-hover:ring-2',
-                          'motion-reduce:transform-none motion-reduce:transition-none',
-                          color.ring,
-                        )}
-                      >
-                        {Icon && (
-                          <Icon
-                            className={cn('size-7', color.icon)}
-                            strokeWidth={2}
-                          />
-                        )}
-                      </span>
-
-                      {/* Smaller, balanced title */}
-                      <h3 className="text-base leading-tight font-semibold">
-                        {tItems(feature.labelKey)}
-                      </h3>
-
-                      {/* Optional description — rendered only if a translation exists */}
-                      {tDesc.has(feature.labelKey) && (
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                          {tDesc(feature.labelKey)}
-                        </p>
-                      )}
-
-                      {/* CTA hint fades in on hover (opacity only = minimal + smooth) */}
-                      <span className="text-primary mt-1 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity duration-200 ease-out group-hover:opacity-100">
-                        {t('features.explore')}
-                        <ArrowRight
-                          className={cn('size-4', isRtl && 'rotate-180')}
-                        />
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
+                  icon={feature.icon}
+                  title={tItems(feature.labelKey)}
+                  // Render description only when a translation exists.
+                  description={
+                    tDesc.has(feature.labelKey)
+                      ? tDesc(feature.labelKey)
+                      : undefined
+                  }
+                  cta={t('features.explore')}
+                  iconClassName={color.icon}
+                  barClassName={color.bar}
+                  ringClassName={color.ring}
+                  isRtl={isRtl}
+                  className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1.125rem)]"
+                />
               );
             })}
           </div>
         </div>
       </section>
+
       {/* --------------------------- NEWSLETTER ------------------------- */}
       <section id="newsletter" ref={register('newsletter')} className="py-20">
         <div className="container mx-auto max-w-2xl text-center">
@@ -393,44 +298,5 @@ export function HomeClient() {
         </div>
       </section>
     </>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Presentational component for a single animated stat tile.
-// ---------------------------------------------------------------------------
-function StatItem({
-  icon: Icon,
-  value,
-  suffix,
-  label,
-  active,
-  delay,
-}: {
-  icon: LucideIcon;
-  value: number;
-  suffix: string;
-  label: string;
-  active: boolean;
-  delay: number;
-}) {
-  const count = useCountUp(value, active);
-  return (
-    <Card
-      className={cn(
-        'transition-all duration-700',
-        active ? 'opacity-100' : 'translate-y-4 opacity-0',
-      )}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      <CardContent className="flex flex-col items-center gap-2 p-6">
-        <Icon className="text-primary size-7" />
-        <span className="text-3xl font-bold">
-          {count.toLocaleString()}
-          {suffix}
-        </span>
-        <span className="text-muted-foreground text-sm">{label}</span>
-      </CardContent>
-    </Card>
   );
 }

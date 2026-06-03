@@ -1,79 +1,102 @@
 // src/lib/fake-api.ts
+import type { User } from '@/types/auth';
 
-import { User } from '@/types/auth';
+// Simulated network latency for a realistic demo feel.
+const FAKE_DELAY = 600;
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * Global delay helper for simulation.
- * Defined once to avoid "defined multiple times" error.
+ * A single demo credential record. Both `email` and `mobile` are valid
+ * identifiers for the same account (login with either one + the password).
  */
-const delay = (ms = 800) => new Promise((resolve) => setTimeout(resolve, ms));
-
-interface RegisterArgs {
-  fullName: string;
-  emailOrMobile: string;
+interface DemoCredential {
+  email: string;
+  mobile: string;
   password: string;
-}
-
-interface ForgotPasswordArgs {
-  emailOrMobile: string;
-}
-
-interface ResetPasswordArgs {
-  password: string;
+  user: User;
 }
 
 /**
- * Mock API for authentication and user management.
- * All methods include artificial delay to simulate real network conditions.
+ * The ONLY accounts allowed to sign in. Anything outside this list is rejected.
+ * SECURITY: demo/testing only. Never store real credentials like this.
  */
+export const DEMO_USERS: DemoCredential[] = [
+  {
+    email: 'admin@demo.com',
+    mobile: '09120000001',
+    password: 'admin1234',
+    user: {
+      id: 'u-admin',
+      fullName: 'Morteza Shafiee',
+      email: 'admin@demo.com',
+      mobile: '09120000001',
+      avatar: '',
+      role: 'admin',
+    },
+  },
+  {
+    email: 'engineer@demo.com',
+    mobile: '09120000002',
+    password: 'engineer1234',
+    user: {
+      id: 'u-engineer',
+      fullName: 'Saeed Jalili Fard',
+      email: 'engineer@demo.com',
+      mobile: '09120000002',
+      avatar: '',
+      role: 'engineer',
+    },
+  },
+  {
+    email: 'staff@demo.com',
+    mobile: '09120000003',
+    password: 'staff1234',
+    user: {
+      id: 'u-staff',
+      fullName: 'Morteza Saeedi',
+      email: 'staff@demo.com',
+      mobile: '09120000003',
+      avatar: '',
+      role: 'staff',
+    },
+  },
+  {
+    email: 'customer@demo.com',
+    mobile: '09120000004',
+    password: 'customer1234',
+    user: {
+      id: 'u-customer',
+      fullName: 'Allaye Mahestan',
+      email: 'customer@demo.com',
+      mobile: '09120000004',
+      avatar: '',
+      role: 'customer',
+    },
+  },
+];
+
+// Case-insensitive, whitespace-tolerant comparison for identifiers.
+const normalize = (v: string) => v.trim().toLowerCase();
+
 export const fakeApi = {
-  // Login simulation
-  login: async (emailOrMobile: string, password: string): Promise<User> => {
-    await delay();
-    // Simulate a hardcoded demo user
-    return {
-      id: '1',
-      email: emailOrMobile.includes('@') ? emailOrMobile : 'user@example.com',
-      mobile: !emailOrMobile.includes('@') ? emailOrMobile : '09123456789',
-      fullName: 'کاربر آزمایشی',
-      avatar: 'https://github.com/shadcn.png',
-    };
+  /**
+   * Authenticates against DEMO_USERS. Accepts email OR mobile as identifier.
+   * @throws Error('INVALID_CREDENTIALS') when nothing matches.
+   */
+  async login(identifier: string, password: string): Promise<User> {
+    await delay(FAKE_DELAY);
+    const id = normalize(identifier);
+    const match = DEMO_USERS.find(
+      (c) =>
+        (normalize(c.email) === id || normalize(c.mobile) === id) &&
+        c.password === password,
+    );
+    // Generic error: do not reveal which field was wrong.
+    if (!match) throw new Error('INVALID_CREDENTIALS');
+    return match.user;
   },
 
-  // Registration simulation
-  register: async (args: RegisterArgs): Promise<User> => {
-    await delay();
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      email: args.emailOrMobile.includes('@') ? args.emailOrMobile : '',
-      mobile: !args.emailOrMobile.includes('@') ? args.emailOrMobile : '',
-      fullName: args.fullName,
-    };
-  },
-
-  // Forgot password simulation
-  forgotPassword: async (
-    args: ForgotPasswordArgs,
-  ): Promise<{ message: string }> => {
-    await delay();
-    return {
-      message: 'کد بازیابی به ایمیل یا شماره موبایل شما ارسال شد.',
-    };
-  },
-
-  // Reset password simulation
-  resetPassword: async (
-    args: ResetPasswordArgs,
-  ): Promise<{ success: boolean }> => {
-    await delay();
-    return {
-      success: true,
-    };
-  },
-
-  // Logout simulation
-  logout: async () => {
-    await delay(300);
-    return { success: true };
+  async logout(): Promise<void> {
+    await delay(200);
   },
 };

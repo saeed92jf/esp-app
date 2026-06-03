@@ -1,12 +1,17 @@
-import { useTranslations } from 'next-intl';
+// src/app/[locale]/page.tsx
+import { AuthGate } from '@/components/auth/auth-gate';
+import { Dashboard } from '@/components/dashboard/dashboard';
 
-export default function DashboardPage() {
-  const t = useTranslations('Menu.items');
-
+/**
+ * Home route. The actual content is gated: guests see the WelcomeScreen,
+ * authenticated users see the real home content below.
+ */
+export default function HomePage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">{t('dashboard')}</h1>
-      {/* Dashboard widgets go here */}
-    </div>
+    <AuthGate>
+      <div className="mx-auto w-full max-w-5xl px-4 py-10">
+        <Dashboard />
+      </div>
+    </AuthGate>
   );
 }
