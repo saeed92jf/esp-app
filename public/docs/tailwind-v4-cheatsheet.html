@@ -1,0 +1,1044 @@
+<!doctype html>
+<!-- Tailwind CSS v4 reference cheatsheet — print-ready HTML.
+     Open in any browser, press Ctrl+P, then choose "Save as PDF". -->
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>مرجع کلاس‌های Tailwind CSS v4</title>
+    <style>
+      /* ---- Base layout: readable, print-friendly typography ---- */
+      :root {
+        --fg: #1a1a1a; /* main text color */
+        --muted: #555; /* secondary text */
+        --line: #e2e2e2; /* table borders */
+        --head-bg: #f4f4f5; /* table header background */
+        --code-bg: #f0f0f1; /* inline code background */
+        --accent: #6d28d9; /* section heading accent */
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Vazirmatn', 'Segoe UI', Tahoma, sans-serif;
+        color: var(--fg);
+        line-height: 1.6;
+        margin: 0;
+        padding: 32px 40px;
+        font-size: 13px;
+      }
+
+      /* ---- Document title ---- */
+      h1 {
+        font-size: 26px;
+        margin: 0 0 4px;
+        color: var(--accent);
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin: 0 0 24px;
+        font-size: 13px;
+      }
+
+      /* ---- Section headings ---- */
+      h2 {
+        font-size: 17px;
+        margin: 28px 0 10px;
+        padding-bottom: 6px;
+        border-bottom: 2px solid var(--accent);
+        color: var(--accent);
+        /* keep heading with its table when printing */
+        break-after: avoid;
+        page-break-after: avoid;
+      }
+
+      /* ---- Tables ---- */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 8px;
+        /* avoid splitting a row across pages */
+        break-inside: auto;
+      }
+
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 6px 9px;
+        text-align: right;
+        vertical-align: top;
+      }
+
+      th {
+        background: var(--head-bg);
+        font-weight: 700;
+      }
+
+      tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      /* class-name column: monospace, fixed-ish width */
+      td:first-child {
+        width: 42%;
+      }
+
+      /* ---- Inline code styling for class names ---- */
+      code {
+        font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+        direction: ltr;
+        unicode-bidi: embed;
+        display: inline-block;
+        white-space: nowrap;
+      }
+
+      /* The English CSS-output column should read LTR */
+      td:last-child {
+        direction: ltr;
+        text-align: left;
+        unicode-bidi: plaintext;
+      }
+
+      /* ---- Notes block ---- */
+      .notes {
+        background: #faf5ff;
+        border: 1px solid #e9d5ff;
+        border-radius: 8px;
+        padding: 14px 18px;
+        margin-top: 28px;
+      }
+      .notes h2 {
+        border: none;
+        margin-top: 0;
+      }
+      .notes li {
+        margin-bottom: 6px;
+      }
+
+      /* ---- Print tuning ---- */
+      @page {
+        margin: 14mm;
+      }
+      @media print {
+        body {
+          padding: 0;
+        }
+        a {
+          color: inherit;
+          text-decoration: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>مرجع کلاس‌های Tailwind CSS v4</h1>
+    <p class="subtitle">
+      دسته‌بندی کامل کلاس‌ها به همراه خروجی CSS معادل. مقادیر عددی از مقیاس
+      دینامیک <code>--spacing</code> (پیش‌فرض <code>0.25rem</code>) پیروی
+      می‌کنند؛ مثلاً <code>p-4</code> یعنی
+      <code>calc(0.25rem * 4) = 1rem</code>.
+    </p>
+
+    <!-- ============ LAYOUT ============ -->
+    <h2>Layout</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td>
+          <code>block</code> / <code>inline-block</code> / <code>inline</code>
+        </td>
+        <td>display: block / inline-block / inline</td>
+      </tr>
+      <tr>
+        <td><code>flex</code> / <code>inline-flex</code></td>
+        <td>display: flex / inline-flex</td>
+      </tr>
+      <tr>
+        <td><code>grid</code> / <code>inline-grid</code></td>
+        <td>display: grid / inline-grid</td>
+      </tr>
+      <tr>
+        <td><code>hidden</code></td>
+        <td>display: none</td>
+      </tr>
+      <tr>
+        <td>
+          <code>contents</code> / <code>table</code> / <code>flow-root</code>
+        </td>
+        <td>display: contents / table / flow-root</td>
+      </tr>
+      <tr>
+        <td><code>static absolute relative fixed sticky</code></td>
+        <td>position: ...</td>
+      </tr>
+      <tr>
+        <td><code>inset-0 inset-x-4 top-2 start-0 end-0</code></td>
+        <td>inset / top / left (rtl-aware)</td>
+      </tr>
+      <tr>
+        <td><code>z-0 … z-50</code> / <code>z-auto</code></td>
+        <td>z-index</td>
+      </tr>
+      <tr>
+        <td><code>float-start float-end float-none</code></td>
+        <td>float</td>
+      </tr>
+      <tr>
+        <td><code>clear-both clear-none</code></td>
+        <td>clear</td>
+      </tr>
+      <tr>
+        <td><code>isolate</code> / <code>isolation-auto</code></td>
+        <td>isolation</td>
+      </tr>
+      <tr>
+        <td>
+          <code>object-cover object-contain object-fill object-none</code>
+        </td>
+        <td>object-fit</td>
+      </tr>
+      <tr>
+        <td><code>object-center object-top object-bottom</code></td>
+        <td>object-position</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >overflow-auto overflow-hidden overflow-scroll overflow-x-auto</code
+          >
+        </td>
+        <td>overflow</td>
+      </tr>
+      <tr>
+        <td><code>overscroll-contain overscroll-none overscroll-auto</code></td>
+        <td>overscroll-behavior</td>
+      </tr>
+      <tr>
+        <td><code>visible invisible collapse</code></td>
+        <td>visibility</td>
+      </tr>
+      <tr>
+        <td><code>aspect-square aspect-video aspect-auto</code></td>
+        <td>aspect-ratio</td>
+      </tr>
+      <tr>
+        <td><code>columns-1 … columns-12 columns-auto</code></td>
+        <td>columns</td>
+      </tr>
+      <tr>
+        <td><code>box-border box-content</code></td>
+        <td>box-sizing</td>
+      </tr>
+    </table>
+
+    <!-- ============ FLEXBOX & GRID ============ -->
+    <h2>Flexbox &amp; Grid</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td>
+          <code>flex-row flex-col flex-row-reverse flex-col-reverse</code>
+        </td>
+        <td>flex-direction</td>
+      </tr>
+      <tr>
+        <td><code>flex-wrap flex-nowrap flex-wrap-reverse</code></td>
+        <td>flex-wrap</td>
+      </tr>
+      <tr>
+        <td><code>flex-1 flex-auto flex-initial flex-none</code></td>
+        <td>flex</td>
+      </tr>
+      <tr>
+        <td><code>grow grow-0 shrink shrink-0</code></td>
+        <td>flex-grow / flex-shrink</td>
+      </tr>
+      <tr>
+        <td><code>basis-0 basis-1/2 basis-full basis-auto</code></td>
+        <td>flex-basis</td>
+      </tr>
+      <tr>
+        <td>
+          <code>order-1 … order-12 order-first order-last order-none</code>
+        </td>
+        <td>order</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >grid-cols-1 … grid-cols-12 grid-cols-none grid-cols-subgrid</code
+          >
+        </td>
+        <td>grid-template-columns</td>
+      </tr>
+      <tr>
+        <td><code>grid-rows-1 … grid-rows-12 grid-rows-subgrid</code></td>
+        <td>grid-template-rows</td>
+      </tr>
+      <tr>
+        <td><code>col-span-1 … col-span-12 col-span-full</code></td>
+        <td>grid-column</td>
+      </tr>
+      <tr>
+        <td><code>col-start-1 col-end-2</code></td>
+        <td>grid-column-start/end</td>
+      </tr>
+      <tr>
+        <td><code>row-span-* row-start-* row-end-*</code></td>
+        <td>grid-row</td>
+      </tr>
+      <tr>
+        <td><code>grid-flow-row grid-flow-col grid-flow-dense</code></td>
+        <td>grid-auto-flow</td>
+      </tr>
+      <tr>
+        <td><code>auto-cols-auto auto-cols-fr auto-rows-min</code></td>
+        <td>grid-auto-columns/rows</td>
+      </tr>
+      <tr>
+        <td><code>gap-4 gap-x-2 gap-y-6</code></td>
+        <td>gap</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >justify-start justify-center justify-between justify-around
+            justify-evenly</code
+          >
+        </td>
+        <td>justify-content</td>
+      </tr>
+      <tr>
+        <td><code>justify-items-center justify-items-stretch</code></td>
+        <td>justify-items</td>
+      </tr>
+      <tr>
+        <td><code>justify-self-center justify-self-end</code></td>
+        <td>justify-self</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >items-start items-center items-end items-baseline
+            items-stretch</code
+          >
+        </td>
+        <td>align-items</td>
+      </tr>
+      <tr>
+        <td><code>content-center content-between content-start</code></td>
+        <td>align-content</td>
+      </tr>
+      <tr>
+        <td><code>self-auto self-start self-center self-stretch</code></td>
+        <td>align-self</td>
+      </tr>
+      <tr>
+        <td>
+          <code>place-items-center place-content-center place-self-center</code>
+        </td>
+        <td>place-*</td>
+      </tr>
+    </table>
+
+    <!-- ============ SPACING ============ -->
+    <h2>Spacing</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>p-4 px-2 py-6 pt-1 pe-3 ps-3</code></td>
+        <td>padding (logical / rtl-aware via ps/pe)</td>
+      </tr>
+      <tr>
+        <td><code>m-4 mx-auto my-2 -mt-2 ms-4 me-4</code></td>
+        <td>margin (negative via - prefix)</td>
+      </tr>
+      <tr>
+        <td><code>space-x-4 space-y-2 -space-x-2</code></td>
+        <td>gap between children (&gt; * + *)</td>
+      </tr>
+    </table>
+
+    <!-- ============ SIZING ============ -->
+    <h2>Sizing</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td>
+          <code>w-4 w-1/2 w-full w-screen w-dvw w-min w-max w-fit w-auto</code>
+        </td>
+        <td>width</td>
+      </tr>
+      <tr>
+        <td><code>min-w-0 min-w-full min-w-fit</code></td>
+        <td>min-width</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >max-w-xs … max-w-7xl max-w-full max-w-screen-md max-w-prose
+            max-w-none</code
+          >
+        </td>
+        <td>max-width</td>
+      </tr>
+      <tr>
+        <td>
+          <code>h-4 h-full h-screen h-dvh h-svh h-lvh h-min h-max h-fit</code>
+        </td>
+        <td>height</td>
+      </tr>
+      <tr>
+        <td><code>min-h-0 min-h-screen min-h-dvh min-h-full</code></td>
+        <td>min-height</td>
+      </tr>
+      <tr>
+        <td><code>max-h-96 max-h-screen max-h-full max-h-none</code></td>
+        <td>max-height</td>
+      </tr>
+      <tr>
+        <td><code>size-4 size-full size-px</code></td>
+        <td>width + height together</td>
+      </tr>
+    </table>
+
+    <!-- ============ TYPOGRAPHY ============ -->
+    <h2>Typography</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>font-sans font-serif font-mono</code></td>
+        <td>font-family</td>
+      </tr>
+      <tr>
+        <td><code>text-xs … text-9xl</code></td>
+        <td>font-size + default line-height</td>
+      </tr>
+      <tr>
+        <td><code>font-thin … font-black</code> (100–900)</td>
+        <td>font-weight</td>
+      </tr>
+      <tr>
+        <td><code>italic not-italic</code></td>
+        <td>font-style</td>
+      </tr>
+      <tr>
+        <td><code>tracking-tighter … tracking-widest</code></td>
+        <td>letter-spacing</td>
+      </tr>
+      <tr>
+        <td>
+          <code>leading-none leading-tight … leading-loose leading-6</code>
+        </td>
+        <td>line-height</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >text-left text-center text-right text-justify text-start
+            text-end</code
+          >
+        </td>
+        <td>text-align</td>
+      </tr>
+      <tr>
+        <td><code>text-black text-white text-red-500 text-primary</code></td>
+        <td>color</td>
+      </tr>
+      <tr>
+        <td><code>underline overline line-through no-underline</code></td>
+        <td>text-decoration-line</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >decoration-solid decoration-wavy decoration-2
+            decoration-red-500</code
+          >
+        </td>
+        <td>text-decoration-*</td>
+      </tr>
+      <tr>
+        <td><code>underline-offset-2 underline-offset-auto</code></td>
+        <td>text-underline-offset</td>
+      </tr>
+      <tr>
+        <td><code>uppercase lowercase capitalize normal-case</code></td>
+        <td>text-transform</td>
+      </tr>
+      <tr>
+        <td><code>truncate text-ellipsis text-clip</code></td>
+        <td>text overflow</td>
+      </tr>
+      <tr>
+        <td><code>text-wrap text-nowrap text-balance text-pretty</code></td>
+        <td>text-wrap</td>
+      </tr>
+      <tr>
+        <td><code>indent-4</code></td>
+        <td>text-indent</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >align-baseline align-top align-middle align-bottom align-sub</code
+          >
+        </td>
+        <td>vertical-align</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >whitespace-normal whitespace-nowrap whitespace-pre
+            whitespace-pre-line</code
+          >
+        </td>
+        <td>white-space</td>
+      </tr>
+      <tr>
+        <td><code>break-normal break-words break-all break-keep</code></td>
+        <td>overflow-wrap / word-break</td>
+      </tr>
+      <tr>
+        <td>
+          <code>list-disc list-decimal list-none list-inside list-outside</code>
+        </td>
+        <td>list-style</td>
+      </tr>
+      <tr>
+        <td><code>line-clamp-1 … line-clamp-6 line-clamp-none</code></td>
+        <td>clamp number of lines</td>
+      </tr>
+      <tr>
+        <td><code>antialiased subpixel-antialiased</code></td>
+        <td>font-smoothing</td>
+      </tr>
+    </table>
+
+    <!-- ============ BACKGROUNDS ============ -->
+    <h2>Backgrounds</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>bg-transparent bg-white bg-red-500 bg-primary</code></td>
+        <td>background-color</td>
+      </tr>
+      <tr>
+        <td><code>bg-fixed bg-local bg-scroll</code></td>
+        <td>background-attachment</td>
+      </tr>
+      <tr>
+        <td><code>bg-center bg-top bg-bottom</code></td>
+        <td>background-position</td>
+      </tr>
+      <tr>
+        <td><code>bg-repeat bg-no-repeat bg-repeat-x bg-repeat-round</code></td>
+        <td>background-repeat</td>
+      </tr>
+      <tr>
+        <td><code>bg-auto bg-cover bg-contain</code></td>
+        <td>background-size</td>
+      </tr>
+      <tr>
+        <td><code>bg-clip-border bg-clip-text bg-clip-padding</code></td>
+        <td>background-clip</td>
+      </tr>
+      <tr>
+        <td><code>bg-origin-border bg-origin-padding</code></td>
+        <td>background-origin</td>
+      </tr>
+      <tr>
+        <td><code>bg-blend-multiply bg-blend-screen</code></td>
+        <td>background-blend-mode</td>
+      </tr>
+      <tr>
+        <td><code>bg-linear-to-r bg-linear-to-br bg-radial bg-conic</code></td>
+        <td>background-image (v4 naming)</td>
+      </tr>
+      <tr>
+        <td><code>from-red-500 via-blue-500 to-green-500</code></td>
+        <td>gradient color stops</td>
+      </tr>
+      <tr>
+        <td><code>from-10% via-30% to-90%</code></td>
+        <td>gradient stop position</td>
+      </tr>
+    </table>
+
+    <!-- ============ BORDERS ============ -->
+    <h2>Borders</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>rounded-none … rounded-3xl rounded-full</code></td>
+        <td>border-radius</td>
+      </tr>
+      <tr>
+        <td><code>rounded-t-lg rounded-s-md rounded-tr-xl</code></td>
+        <td>specific / logical corner</td>
+      </tr>
+      <tr>
+        <td><code>border border-0 border-2 border-4 border-8</code></td>
+        <td>border-width</td>
+      </tr>
+      <tr>
+        <td><code>border-x border-t border-s border-e</code></td>
+        <td>side-specific width</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >border-solid border-dashed border-dotted border-double
+            border-none</code
+          >
+        </td>
+        <td>border-style</td>
+      </tr>
+      <tr>
+        <td><code>border-red-500 border-primary border-transparent</code></td>
+        <td>border-color</td>
+      </tr>
+      <tr>
+        <td><code>divide-x divide-y divide-red-500 divide-dashed</code></td>
+        <td>border between children</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >outline outline-2 outline-offset-2 outline-dashed
+            outline-red-500</code
+          >
+        </td>
+        <td>outline-*</td>
+      </tr>
+      <tr>
+        <td>
+          <code>ring ring-2 ring-4 ring-inset ring-red-500 ring-offset-2</code>
+        </td>
+        <td>ring (box-shadow based)</td>
+      </tr>
+    </table>
+
+    <!-- ============ EFFECTS ============ -->
+    <h2>Effects</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>shadow-2xs … shadow-2xl shadow-none</code></td>
+        <td>box-shadow</td>
+      </tr>
+      <tr>
+        <td><code>shadow-red-500</code></td>
+        <td>shadow color</td>
+      </tr>
+      <tr>
+        <td><code>inset-shadow-sm inset-shadow-none</code></td>
+        <td>inner shadow (v4)</td>
+      </tr>
+      <tr>
+        <td><code>opacity-0 … opacity-100</code></td>
+        <td>opacity</td>
+      </tr>
+      <tr>
+        <td>
+          <code>mix-blend-multiply mix-blend-screen mix-blend-overlay</code>
+        </td>
+        <td>mix-blend-mode</td>
+      </tr>
+      <tr>
+        <td><code>mask-* (e.g. mask-b-from-50%)</code></td>
+        <td>mask (v4)</td>
+      </tr>
+    </table>
+
+    <!-- ============ FILTERS ============ -->
+    <h2>Filters</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>blur-sm … blur-3xl blur-none</code></td>
+        <td>filter: blur()</td>
+      </tr>
+      <tr>
+        <td><code>brightness-50 … brightness-200</code></td>
+        <td>filter: brightness()</td>
+      </tr>
+      <tr>
+        <td><code>contrast-* grayscale invert sepia saturate-*</code></td>
+        <td>matching filters</td>
+      </tr>
+      <tr>
+        <td><code>hue-rotate-90 -hue-rotate-30</code></td>
+        <td>filter: hue-rotate()</td>
+      </tr>
+      <tr>
+        <td><code>drop-shadow-sm … drop-shadow-xl</code></td>
+        <td>filter: drop-shadow()</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >backdrop-blur-sm backdrop-brightness-* backdrop-saturate-*</code
+          >
+        </td>
+        <td>backdrop-filter</td>
+      </tr>
+    </table>
+
+    <!-- ============ TABLES ============ -->
+    <h2>Tables</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>table-auto table-fixed</code></td>
+        <td>table-layout</td>
+      </tr>
+      <tr>
+        <td><code>border-collapse border-separate</code></td>
+        <td>border-collapse</td>
+      </tr>
+      <tr>
+        <td><code>border-spacing-2 border-spacing-x-1</code></td>
+        <td>border-spacing</td>
+      </tr>
+      <tr>
+        <td><code>caption-top caption-bottom</code></td>
+        <td>caption-side</td>
+      </tr>
+    </table>
+
+    <!-- ============ TRANSITIONS & ANIMATION ============ -->
+    <h2>Transitions &amp; Animation</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >transition transition-all transition-colors transition-opacity
+            transition-transform transition-none</code
+          >
+        </td>
+        <td>transition-property</td>
+      </tr>
+      <tr>
+        <td><code>duration-75 … duration-1000</code></td>
+        <td>transition-duration</td>
+      </tr>
+      <tr>
+        <td><code>ease-linear ease-in ease-out ease-in-out</code></td>
+        <td>transition-timing-function</td>
+      </tr>
+      <tr>
+        <td><code>delay-75 … delay-1000</code></td>
+        <td>transition-delay</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >animate-spin animate-ping animate-pulse animate-bounce
+            animate-none</code
+          >
+        </td>
+        <td>animation</td>
+      </tr>
+    </table>
+
+    <!-- ============ TRANSFORMS ============ -->
+    <h2>Transforms</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>scale-50 … scale-150 scale-x-* scale-y-*</code></td>
+        <td>scale</td>
+      </tr>
+      <tr>
+        <td><code>rotate-45 -rotate-90</code></td>
+        <td>rotate</td>
+      </tr>
+      <tr>
+        <td><code>translate-x-4 translate-y-1/2 -translate-x-full</code></td>
+        <td>translate</td>
+      </tr>
+      <tr>
+        <td><code>skew-x-6 skew-y-3</code></td>
+        <td>skew</td>
+      </tr>
+      <tr>
+        <td><code>transform-gpu transform-none</code></td>
+        <td>enable / disable</td>
+      </tr>
+      <tr>
+        <td><code>origin-center origin-top-left origin-bottom</code></td>
+        <td>transform-origin</td>
+      </tr>
+      <tr>
+        <td><code>perspective-near perspective-distant (v4)</code></td>
+        <td>perspective</td>
+      </tr>
+      <tr>
+        <td><code>rotate-x-* rotate-y-* rotate-z-* (v4)</code></td>
+        <td>3D rotation</td>
+      </tr>
+    </table>
+
+    <!-- ============ INTERACTIVITY ============ -->
+    <h2>Interactivity</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >cursor-pointer cursor-default cursor-not-allowed cursor-wait</code
+          >
+        </td>
+        <td>cursor</td>
+      </tr>
+      <tr>
+        <td><code>pointer-events-none pointer-events-auto</code></td>
+        <td>pointer-events</td>
+      </tr>
+      <tr>
+        <td><code>select-none select-text select-all select-auto</code></td>
+        <td>user-select</td>
+      </tr>
+      <tr>
+        <td><code>resize resize-x resize-y resize-none</code></td>
+        <td>resize</td>
+      </tr>
+      <tr>
+        <td><code>appearance-none appearance-auto</code></td>
+        <td>appearance</td>
+      </tr>
+      <tr>
+        <td><code>scroll-smooth scroll-auto</code></td>
+        <td>scroll-behavior</td>
+      </tr>
+      <tr>
+        <td><code>scroll-m-4 scroll-p-4</code></td>
+        <td>scroll-margin / scroll-padding</td>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >snap-x snap-y snap-mandatory snap-center snap-start
+            snap-align-none</code
+          >
+        </td>
+        <td>scroll-snap-*</td>
+      </tr>
+      <tr>
+        <td><code>touch-auto touch-none touch-pan-x touch-pinch-zoom</code></td>
+        <td>touch-action</td>
+      </tr>
+      <tr>
+        <td>
+          <code>will-change-auto will-change-scroll will-change-transform</code>
+        </td>
+        <td>will-change</td>
+      </tr>
+      <tr>
+        <td><code>accent-pink-500</code></td>
+        <td>accent-color</td>
+      </tr>
+      <tr>
+        <td><code>caret-red-500</code></td>
+        <td>caret-color</td>
+      </tr>
+      <tr>
+        <td><code>field-sizing-content (v4)</code></td>
+        <td>field-sizing</td>
+      </tr>
+    </table>
+
+    <!-- ============ SVG ============ -->
+    <h2>SVG</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>fill-current fill-red-500 fill-none</code></td>
+        <td>fill</td>
+      </tr>
+      <tr>
+        <td><code>stroke-current stroke-blue-500</code></td>
+        <td>stroke</td>
+      </tr>
+      <tr>
+        <td><code>stroke-0 stroke-1 stroke-2</code></td>
+        <td>stroke-width</td>
+      </tr>
+    </table>
+
+    <!-- ============ ACCESSIBILITY ============ -->
+    <h2>Accessibility</h2>
+    <table>
+      <tr>
+        <th>کلاس</th>
+        <th>CSS</th>
+      </tr>
+      <tr>
+        <td><code>sr-only</code></td>
+        <td>visually hidden, readable by screen readers</td>
+      </tr>
+      <tr>
+        <td><code>not-sr-only</code></td>
+        <td>revert sr-only</td>
+      </tr>
+      <tr>
+        <td><code>forced-color-adjust-auto forced-color-adjust-none</code></td>
+        <td>forced-color-adjust</td>
+      </tr>
+    </table>
+
+    <!-- ============ VARIANTS ============ -->
+    <h2>Variants (پیشوندهای حالت)</h2>
+    <table>
+      <tr>
+        <th>پیشوند</th>
+        <th>کاربرد</th>
+      </tr>
+      <tr>
+        <td>
+          <code
+            >hover: focus: focus-visible: focus-within: active: visited:</code
+          >
+        </td>
+        <td>interaction states</td>
+      </tr>
+      <tr>
+        <td><code>disabled: checked: required: invalid: read-only:</code></td>
+        <td>form states</td>
+      </tr>
+      <tr>
+        <td><code>first: last: odd: even: only: empty:</code></td>
+        <td>child position</td>
+      </tr>
+      <tr>
+        <td><code>group-hover: peer-focus: (+ group/name, peer/name)</code></td>
+        <td>parent / sibling dependent</td>
+      </tr>
+      <tr>
+        <td><code>sm: md: lg: xl: 2xl:</code></td>
+        <td>breakpoints</td>
+      </tr>
+      <tr>
+        <td><code>max-sm: max-md:</code></td>
+        <td>max-width</td>
+      </tr>
+      <tr>
+        <td><code>dark:</code></td>
+        <td>dark mode</td>
+      </tr>
+      <tr>
+        <td><code>rtl: ltr:</code></td>
+        <td>direction</td>
+      </tr>
+      <tr>
+        <td><code>motion-safe: motion-reduce:</code></td>
+        <td>motion preference</td>
+      </tr>
+      <tr>
+        <td><code>print:</code></td>
+        <td>print</td>
+      </tr>
+      <tr>
+        <td>
+          <code>before: after: placeholder: selection: marker: file:</code>
+        </td>
+        <td>pseudo-element</td>
+      </tr>
+      <tr>
+        <td><code>has-[...]: not-[...]: in-[...]: (v4)</code></td>
+        <td>conditional logic</td>
+      </tr>
+      <tr>
+        <td><code>aria-*: data-*: supports-[...]:</code></td>
+        <td>attribute / support condition</td>
+      </tr>
+    </table>
+
+    <!-- ============ V4 NOTES ============ -->
+    <div class="notes">
+      <h2>نکات اختصاصی v4 (تفاوت با v3)</h2>
+      <ul>
+        <li>
+          مقیاس فاصله دینامیک شد؛ هر عددی کار می‌کند، نه فقط مقادیر از
+          پیش‌تعریف‌شده.
+        </li>
+        <li>
+          گرادیان‌ها از <code>bg-gradient-to-*</code> به
+          <code>bg-linear-to-*</code> تغییر نام دادند (<code
+            >bg-gradient-*</code
+          >
+          هنوز alias است).
+        </li>
+        <li>
+          سایه‌ها مقیاس جدید دارند: <code>shadow-sm</code> قدیمی شد
+          <code>shadow-xs</code> و <code>shadow</code> شد
+          <code>shadow-sm</code>.
+        </li>
+        <li>
+          متغیرهای CSS مستقیم: <code>bg-(--my-var)</code> یا
+          <code>w-(--sidebar)</code>.
+        </li>
+        <li>
+          مقادیر دلخواه با براکت: <code>top-[117px]</code> ،
+          <code>bg-[#1da1f2]</code> ، <code>grid-cols-[1fr_auto]</code>.
+        </li>
+        <li>
+          شفافیت رنگ با اسلش: <code>bg-black/50</code> ،
+          <code>text-primary/70</code>.
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

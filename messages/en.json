@@ -21,7 +21,7 @@
     "ogDescription": "Unified platform for engineering and service businesses"
   },
   "Header": {
-    "brand": "Euroslot Pars",
+    "brand": "Euroslot Pars Web App.",
     "home": "Home",
     "categories": "Categories",
     "about": "About",
@@ -100,7 +100,7 @@
   },
   "Auth": {
     "loggingIn": "Signing in...",
-    "brand": "Euroslot Pars",
+    "brand": "ESP Web App.",
     "login": "Sign in",
     "register": "Sign up",
     "logout": "Sign out",
@@ -292,5 +292,41 @@
     "logout": "Sign out",
     "guest": "Guest",
     "online": "Online"
+  },
+
+  "Aparat": {
+    "stats": {
+      "videos": "Videos",
+      "followers": "Followers",
+      "following": "Following"
+    },
+    "Playlist": {
+      "title": "Video list",
+      "count": "{count, plural, one {# video} other {# videos}}",
+      "progress": "{loaded} of {total} videos",
+      "loadMore": "Loading more…",
+      "empty": "empty",
+      "locale": "locale",
+      "views": ""
+    },
+    "loading": "Loading...",
+    "loadedOf": "Loaded {current} of {total} videos",
+    "appearAfterLoad": "Page will appear after loading the first videos...",
+    "youMightLike": "You might also like",
+    "allVideos": "All Videos",
+    "channelCover": "Channel cover",
+    "officialChannel": "Official Channel",
+    "visitChannel": "Visit Channel",
+    "playlist": "Playlist",
+    "uncategorized": "Uncategorized",
+    "videosCount": "{loaded} of {total} videos",
+    "loadingMoreVideos": "Loading {count} more videos...",
+    "allLoaded": "All {count} videos loaded successfully",
+    "noVideos": "No videos available",
+    "noVideosDescription": "Check back later for new content",
+    "selectVideoToWatch": "Select a video to watch",
+    "unableToLoadVideo": "Unable to load video",
+    "watchOnAparat": "Watch on Aparat",
+    "views": ""
   }
 }

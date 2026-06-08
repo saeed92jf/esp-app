@@ -106,7 +106,7 @@
     }
   },
   "Auth": {
-    "brand": "یورواسلات پارس",
+    "brand": "وب اپلیکیشن یورواسلات پارس",
     "login": "ورود",
     "register": "ثبت‌نام",
     "logout": "خروج",
@@ -298,5 +298,43 @@
     "logout": "خروج از حساب",
     "guest": "مهمان",
     "online": "آنلاین"
+  },
+
+  "Aparat": {
+    "stats": {
+      "videos": "ویدیوها",
+      "followers": "دنبال‌کننده‌ها",
+      "following": "دنبال‌شده‌ها"
+    },
+    "Playlist": {
+      "title": "لیست ویدیو ها",
+      "count": "{count, plural, one {# video} other {# videos}}",
+      "progress": "{loaded} of {total} videos",
+      "loadMore": " ...بارگذاری بیشتر",
+      "empty": "خالی",
+      "locale": "موقعیت",
+      "views": ""
+    },
+
+    "loading": "در حال بارگذاری کانال {channel}...",
+    "loadedOf": "{current} از {total} ویدیو بارگذاری شد",
+    "appearAfterLoad": "صفحه پس از بارگذاری اولین ویدیوها نمایش داده می‌شود...",
+    "youMightLike": "شاید این‌ها را هم بپسندید",
+    "allVideos": "همه ویدیوها",
+    "channelCover": "تصویر کاور کانال",
+    "officialChannel": "کانال رسمی",
+    "visitChannel": "مشاهده کانال",
+    "playlist": "لیست پخش",
+    "allVideos": "همه ویدیوها",
+    "uncategorized": "دسته‌بندی‌نشده",
+    "videosCount": "{loaded} از {total} ویدیو",
+    "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",
+    "allLoaded": "هر {count} ویدیو با موفقیت بارگذاری شد",
+    "views": "",
+    "noVideos": "ویدیویی موجود نیست",
+    "noVideosDescription": "بعداً برای محتوای جدید سر بزنید",
+    "selectVideoToWatch": "یک ویدیو جهت پخش انتخاب کنید",
+    "unableToLoadVideo": "ویدیو بارگذاری نمی شود",
+    "watchOnAparat": "در آپارات تماشا کنید"
   }
 }

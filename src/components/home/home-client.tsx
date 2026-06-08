@@ -165,7 +165,7 @@ export function HomeClient() {
           {/* Quick access cards sourced from the navigation config. */}
           <div
             className={cn(
-              'mt-12 grid grid-cols-2 gap-4 transition-all delay-300 duration-700 md:grid-cols-3 lg:grid-cols-6',
+              'mt-20 grid grid-cols-2 gap-4 transition-all delay-300 duration-700 md:grid-cols-3 lg:grid-cols-6',
               isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
             )}
           >
@@ -175,7 +175,6 @@ export function HomeClient() {
                 href={item.href}
                 icon={item.icon}
                 title={tItems(item.labelKey)}
-                badge={t('quickAccess.loginRequired')}
                 isRtl={isRtl}
               />
             ))}
@@ -284,7 +283,7 @@ export function HomeClient() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('newsletter.placeholder')}
-                className="h-12 flex-1"
+                className="flex-1"
               />
               <Button type="submit" size="lg" className="gap-2">
                 {t('newsletter.subscribe')}

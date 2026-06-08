@@ -139,7 +139,7 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: 'videos',
-        href: '/media/videos',
+        href: '/aparat',
         icon: Video,
         public: true,
         welcome: true,

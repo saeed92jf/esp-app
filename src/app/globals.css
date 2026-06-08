@@ -37,11 +37,9 @@ body {
   min-width: 320px;
   overflow-x: auto;
   direction: auto;
+  overflow-x: clip;
 }
 @media (max-width: 320px) {
-  body {
-    overflow-x: scroll;
-  }
 }
 @utility container {
   margin-inline: auto; /* center horizontally */
