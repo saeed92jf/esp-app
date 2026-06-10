@@ -1,32 +1,31 @@
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { User as UserIcon } from 'lucide-react';
-import { Link } from '@/i18n/navigation';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useTranslations } from "next-intl";
+import { User as UserIcon } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
-import { LocaleSwitcher } from '../locale-switcher';
-import { UserMenu } from '../user/user-menu';
-import { SideMenu } from '@/components/layout/side-menu';
+import { UserMenu } from "../user/user-menu";
+import { SideMenu } from "@/components/layout/side-menu";
 
 export function Header() {
-  const t = useTranslations('Auth');
+  const t = useTranslations("Auth");
   const { user, loading, logout } = useSimpleAuth();
 
   const isAuthed = !!user && !loading;
 
   return (
     <header className="bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-header z-header max-w-6xl items-center justify-between px-4">
         {/* Left */}
         <div className="flex items-center gap-2">
           {isAuthed && <SideMenu />}
 
           <Link href="/" className="text-lg font-semibold tracking-tight">
-            {t('brand')}
+            {t("brand")}
           </Link>
         </div>
 
@@ -50,7 +49,7 @@ export function Header() {
               size="icon"
               className="rounded-full"
             >
-              <Link href="/login" aria-label={t('login')}>
+              <Link href="/login" aria-label={t("login")}>
                 <UserIcon className="text-muted-foreground size-5" />
               </Link>
             </Button>

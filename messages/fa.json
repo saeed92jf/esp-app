@@ -1,6 +1,5 @@
 {
   "Common": {
-    "language": "زبان",
     "appName": {
       "lead": "وب اپلیکیشن",
       "trail": "یورو اسلات پارس",
@@ -29,30 +28,25 @@
     "openMenu": "باز کردن منو",
     "closeMenu": "بستن منو"
   },
-
   "Home": {
     "meta": {
       "title": "خانه",
       "description": "کسب‌وکارتان را یکجا مدیریت کنید"
     },
-
     "hero": {
       "tagline": "هر آنچه برای موفقیت نیاز دارید",
       "subtitle": "ابزارهای قدرتمندی که کمک می‌کنند هوشمندانه‌تر کار کنید، نه سخت‌تر.",
       "searchPlaceholder": "جستجو کنید: «CRM»، «پروژه‌ها»، «فاکتورها»..."
     },
-
     "quickAccess": {
       "loginRequired": "نیازمند ورود"
     },
-
     "stats": {
       "clients": "مشتری راضی",
       "projects": "پروژه موفق",
       "awards": "جایزه و افتخار",
       "support": "پشتیبانی"
     },
-
     "features": {
       "eyebrow": "امکانات",
       "title": "ساخته‌شده برای هر تیم",
@@ -60,7 +54,6 @@
       "all": "همه",
       "explore": "کاوش"
     },
-
     "newsletter": {
       "title": "همراه ما بمانید",
       "subtitle": "آخرین به‌روزرسانی‌ها را در ایمیل خود دریافت کنید.",
@@ -70,7 +63,6 @@
       "disclaimer": "بدون اسپم. هر زمان خواستید لغو کنید."
     }
   },
-
   "Footer": {
     "rights": "تمامی حقوق محفوظ است",
     "quickLinks": "دسترسی سریع",
@@ -102,7 +94,8 @@
       },
       "mediaLibrary": {
         "description": "دسترسی به کتابخانه مرکزی فایل‌های چندرسانه‌ای و منابع مشترک."
-      }
+      },
+      "presentation": "ارائه‌ها و اسناد بصری ما را مرور کنید."
     }
   },
   "Auth": {
@@ -197,21 +190,10 @@
       "mediaLibrary": "کتابخانه‌ی یکپارچه برای تمام فایل‌های رسانه‌ای."
     }
   },
-  "Welcome": {
-    "title": "به مجموعه ما خوش آمدید",
-    "subtitle": "بخش‌های عمومی را مرور کنید و با محتوای ما آشنا شوید.",
-    "cards": {
-      "videos": "مجموعه ویدیوهای معرفی و آموزشی ما را تماشا کنید.",
-      "imageGallery": "تصاویر پروژه‌ها و فعالیت‌های ما را ببینید.",
-      "presentation": "ارائه‌ها و اسناد بصری ما را مرور کنید."
-    }
-  },
-
   "NotFound": {
     "description": "صفحه‌ای که دنبالش هستید پیدا نشد",
     "backHome": "بازگشت به خانه"
   },
-
   "Search": {
     "placeholder": "جستجو",
     "results": "نتایج جستجو",
@@ -236,7 +218,6 @@
       "purple": "بنفش"
     }
   },
-
   "Dashboard": {
     "greeting": "خوش آمدید، {name}",
     "chartTitle": "روند ۶ ماهه",
@@ -299,7 +280,6 @@
     "guest": "مهمان",
     "online": "آنلاین"
   },
-
   "Aparat": {
     "stats": {
       "videos": "ویدیوها",
@@ -308,14 +288,22 @@
     },
     "Playlist": {
       "title": "لیست ویدیو ها",
-      "count": "{count, plural, one {# video} other {# videos}}",
-      "progress": "{loaded} of {total} videos",
+      "count": "{count, plural, one {# ویدیو} other {# ویدیو}}",
+      "progress": "{loaded} از {total} ویدیو",
       "loadMore": " ...بارگذاری بیشتر",
       "empty": "خالی",
       "locale": "موقعیت",
       "views": ""
     },
-
+    "time": {
+      "unknown": "نامشخص",
+      "second": "{value} ثانیه پیش",
+      "minute": "{value} دقیقه پیش",
+      "hour": "{value} ساعت پیش",
+      "day": "{value} روز پیش",
+      "month": "{value} ماه پیش",
+      "year": "{value} سال پیش"
+    },
     "loading": "در حال بارگذاری کانال {channel}...",
     "loadedOf": "{current} از {total} ویدیو بارگذاری شد",
     "appearAfterLoad": "صفحه پس از بارگذاری اولین ویدیوها نمایش داده می‌شود...",
@@ -325,7 +313,6 @@
     "officialChannel": "کانال رسمی",
     "visitChannel": "مشاهده کانال",
     "playlist": "لیست پخش",
-    "allVideos": "همه ویدیوها",
     "uncategorized": "دسته‌بندی‌نشده",
     "videosCount": "{loaded} از {total} ویدیو",
     "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",

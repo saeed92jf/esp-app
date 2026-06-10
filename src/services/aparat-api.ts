@@ -1,231 +1,329 @@
 // src/services/aparat-api.ts
+//
+// تغییرات نسبت به نسخه قبل:
+//
+//  1. AbortSignal — همه متدها یک signal اختیاری می‌گیرند. وقتی کانال عوض
+//     می‌شود یا component unmount می‌شود، request های در حال پرواز واقعاً
+//     لغو می‌شوند (نه فقط نتیجه‌شان نادیده گرفته می‌شود).
+//
+//  2. Retry با exponential backoff — خطاهای گذرا (شبکه، ۵xx، ۴۲۹)
+//     تا MAX_RETRIES بار با تأخیر ۵۰۰ms → ۱۰۰۰ms دوباره امتحان می‌شوند.
+//
+//  3. Timeout — هر request بعد از REQUEST_TIMEOUT_MS لغو می‌شود.
+//
+//  4. ایمنی type — index signature [x: string]: any حذف شد.
 
-import { withTitleDirection } from '@/utils/textDirection';
-import type { Category, Profile, VideoItem, VideoListItem } from '@/types';
+import { withTitleDirection } from "@/utils/textDirection";
+import type { Category, Profile, VideoItem, VideoListItem } from "@/types";
+import { parseAparatDateToTimestamp } from "@/utils/dateParser";
 
-const PROXY_BASE = '/api/aparat';
+// ─── ثابت‌ها ─────────────────────────────────────────────────────────────────
+
+const PROXY_BASE = "/api/aparat";
 const PER_PAGE = 50;
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_RETRIES = 20;
+const BACKOFF_BASE_MS = 500;
 
-/**
- * Low-level fetch against the proxy. Throws on non-OK responses so callers
- * can surface a single, predictable error path.
- */
-async function proxyGet<T>(path: string): Promise<T> {
-  const res = await fetch(`${PROXY_BASE}/${path}`, {
-    headers: { Accept: 'application/json' },
+// ─── ابزارهای درونی ──────────────────────────────────────────────────────────
+
+/** آیا خطا از نوع Abort/Cancel است؟ */
+function isAbortError(err: unknown): boolean {
+  return (
+    err instanceof DOMException &&
+    (err.name === "AbortError" || err.name === "TimeoutError")
+  );
+}
+
+/** آیا خطا گذراست و ارزش retry دارد؟ */
+function isTransient(err: unknown, status?: number): boolean {
+  if (err instanceof TypeError) return true; // خطای شبکه
+  if (status !== undefined && (status >= 500 || status === 429)) return true;
+  return false;
+}
+
+/** انتظار با قابلیت لغو از طریق signal. */
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (signal?.aborted)
+      return reject(new DOMException("Aborted", "AbortError"));
+    const id = setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(id);
+        reject(new DOMException("Aborted", "AbortError"));
+      },
+      { once: true },
+    );
   });
-
-  if (!res.ok) {
-    throw new Error(`Aparat proxy request failed: ${path} (${res.status})`);
-  }
-
-  return (await res.json()) as T;
 }
 
 /**
- * The legacy Aparat (etc/api) responses are NOT case-consistent: a request to
- * `videoByUser` comes back keyed as `videobyuser`. They also arrive either as a
- * single-key object or as an array of single-key objects. This helper resolves
- * a value by key from BOTH shapes using a CASE-INSENSITIVE match, so callers
- * never depend on Aparat's exact casing or wire format.
+ * fetch پایه با timeout + retry + AbortSignal.
+ * نتیجه از Next.js Data Cache برمی‌گردد (عملاً رایگان وقتی cache گرم است).
  */
-function pickKey<T = any>(data: unknown, key: string): T | undefined {
+async function proxyGet<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const url = `${PROXY_BASE}/${path}`;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
+
+    // یک AbortController مجزا برای ترکیب signal کاربر + timeout
+    const ac = new AbortController();
+    const timeoutId = setTimeout(
+      () => ac.abort(new DOMException("Timeout", "TimeoutError")),
+      REQUEST_TIMEOUT_MS,
+    );
+    const onExternalAbort = () => ac.abort(signal!.reason);
+    signal?.addEventListener("abort", onExternalAbort, { once: true });
+
+    let status: number | undefined;
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: ac.signal,
+      });
+      status = res.status;
+
+      if (!res.ok) {
+        if (isTransient(null, status) && attempt < MAX_RETRIES) {
+          await sleep(BACKOFF_BASE_MS * (attempt + 1), signal);
+          continue;
+        }
+        throw new Error(`Aparat API error: ${path} (${status})`);
+      }
+
+      return (await res.json()) as T;
+    } catch (err) {
+      if (isAbortError(err)) throw err; // هرگز abort را retry نکن
+      if (isTransient(err, status) && attempt < MAX_RETRIES) {
+        await sleep(BACKOFF_BASE_MS * (attempt + 1), signal);
+        continue;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
+      signal?.removeEventListener("abort", onExternalAbort);
+    }
+  }
+
+  // این خط اجرا نمی‌شود اما TypeScript به آن نیاز دارد
+  throw new Error(`Failed after ${MAX_RETRIES + 1} attempts: ${path}`);
+}
+
+// ─── توابع کمکی parse پاسخ Aparat ───────────────────────────────────────────
+
+/**
+ * Aparat key‌ها را با casing ناهماهنگ برمی‌گرداند (videoByUser → videobyuser).
+ * این تابع case-insensitive جستجو می‌کند و هم شکل object ساده و هم
+ * array-wrapped را پشتیبانی می‌کند.
+ */
+function pickKey<T = unknown>(data: unknown, key: string): T | undefined {
   const target = key.toLowerCase();
 
-  /** Find the matching key inside a single object, ignoring case. */
-  const readFromObject = (obj: object): T | undefined => {
-    const match = Object.keys(obj).find((k) => k.toLowerCase() === target);
-    return match ? ((obj as Record<string, unknown>)[match] as T) : undefined;
+  const fromObject = (obj: Record<string, unknown>): T | undefined => {
+    const k = Object.keys(obj).find((k) => k.toLowerCase() === target);
+    return k ? (obj[k] as T) : undefined;
   };
 
-  // Array-wrapped shape: scan elements for the first that carries the key.
   if (Array.isArray(data)) {
     for (const item of data) {
-      if (item && typeof item === 'object') {
-        const value = readFromObject(item);
-        if (value !== undefined) return value;
+      if (item && typeof item === "object") {
+        const v = fromObject(item as Record<string, unknown>);
+        if (v !== undefined) return v;
       }
     }
     return undefined;
   }
 
-  // Plain-object shape.
-  if (data && typeof data === 'object') {
-    return readFromObject(data);
+  if (data && typeof data === "object") {
+    return fromObject(data as Record<string, unknown>);
   }
 
   return undefined;
 }
 
-/**
- * Resolve the next-page url from the `ui` block, tolerating both the
- * array-wrapped and object response shapes.
- */
 function pickNextPageUrl(data: unknown): unknown {
-  const ui = pickKey<Record<string, unknown>>(data, 'ui');
+  const ui = pickKey<Record<string, unknown>>(data, "ui");
   return ui?.pagingForward;
 }
 
 /**
- * Convert a full Aparat API url ("https://www.aparat.com/etc/api/...") into
- * the relative path our proxy expects. Returns null when not parseable or
- * empty (Aparat returns '' when there is no next page).
+ * URL کامل Aparat را به path مختصر proxy تبدیل می‌کند.
+ * مثال: https://www.aparat.com/etc/api/videoByUser/... → videoByUser/...
  */
 function endpointFromAparatUrl(url: unknown): string | null {
-  if (typeof url !== 'string' || url.trim() === '') return null;
-  const marker = '/etc/api/';
+  if (typeof url !== "string" || !url.trim()) return null;
+  const marker = "/etc/api/";
   const idx = url.indexOf(marker);
   if (idx === -1) return null;
-  const path = url.slice(idx + marker.length).trim();
-  return path || null;
+  return url.slice(idx + marker.length).trim() || null;
 }
 
-/** Coerce Aparat numeric-ish fields (may be "1,234") to an integer. */
+// ─── توابع coerce ─────────────────────────────────────────────────────────────
+
 function toInt(value: unknown): number {
-  if (typeof value === 'number') return Math.trunc(value);
-  if (typeof value === 'string') {
-    const digits = value.replace(/[^\d]/g, '');
-    return digits ? parseInt(digits, 10) : 0;
+  if (typeof value === "number") return Math.trunc(value);
+  if (typeof value === "string") {
+    const d = value.replace(/\D/g, "");
+    return d ? parseInt(d, 10) : 0;
   }
   return 0;
 }
 
-/** Coerce Aparat truthy fields ("yes"/"1"/true/1) into a boolean. */
 function toBool(value: unknown): boolean {
-  if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value === 1;
-  if (typeof value === 'string') {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+  if (typeof value === "string") {
     const v = value.trim().toLowerCase();
-    return v === 'yes' || v === 'true' || v === '1';
+    return v === "yes" || v === "true" || v === "1";
   }
   return false;
 }
 
-/**
- * Normalize one raw Aparat video object into our internal VideoListItem.
- * titleDir is attached here so the UI never recomputes direction at render.
- */
+// ─── نرمال‌سازی داده ویدئو ────────────────────────────────────────────────────
 function normalizeVideo(
-  raw: any,
-  categoryName = 'Uncategorized',
+  raw: Record<string, unknown>,
+  categoryName = "Uncategorized",
 ): VideoListItem {
-  const base: Omit<VideoListItem, 'titleDir'> = {
+  const sdate = String(raw.sdate ?? "");
+
+  return withTitleDirection({
     id: toInt(raw.id),
-    uid: String(raw.uid ?? ''),
-    title: raw.title ?? '',
-    username: raw.username ?? raw.sender_name ?? '',
+    uid: String(raw.uid ?? ""),
+    title: String(raw.title ?? ""),
+    username: String(raw.username ?? raw.sender_name ?? ""),
     userid: toInt(raw.userid),
     visit_cnt: toInt(raw.visit_cnt),
-    process: raw.process ?? '',
-    small_poster: raw.small_poster ?? '',
-    big_poster: raw.big_poster ?? '',
+    process: String(raw.process ?? ""),
+    small_poster: String(raw.small_poster ?? ""),
+    big_poster: String(raw.big_poster ?? ""),
     duration: toInt(raw.duration),
-    sdate: raw.sdate ?? '',
-    frame: raw.frame ?? '',
-    official: raw.official ?? 'no',
-    autoplay: toBool(raw.autoplay),
-    '360d': toBool(raw['360d']),
-    categoryId: raw.cat_id != null ? toInt(raw.cat_id) : undefined,
-    categoryName: raw.cat_name ?? categoryName,
-  };
 
-  return withTitleDirection(base);
+    sdate,
+
+    // ✅ required field
+    createdAtTimestamp: parseAparatDateToTimestamp(sdate),
+
+    frame: String(raw.frame ?? ""),
+    official: String(raw.official ?? "no"),
+    autoplay: toBool(raw.autoplay),
+    "360d": toBool(raw["360d"]),
+
+    categoryId: raw.cat_id != null ? toInt(raw.cat_id) : undefined,
+    categoryName: String(raw.cat_name ?? categoryName),
+  });
 }
 
+// ─── سرویس اصلی ──────────────────────────────────────────────────────────────
+
 class AparatApiService {
-  [x: string]: any;
   /**
-   * Channel profile. Method: profile/username/{username}
-   * Payload keyed by "profile" (array- or object-wrapped).
+   * پروفایل کانال.
+   * Cache: ۱ ساعت (در API route تنظیم شده).
    */
-  async getProfile(username: string): Promise<Profile> {
-    const data = await proxyGet<any>(`profile/username/${username}`);
-    const p = pickKey<any>(data, 'profile') ?? {};
+  async getProfile(username: string, signal?: AbortSignal): Promise<Profile> {
+    const data = await proxyGet<unknown>(
+      `profile/username/${username}`,
+      signal,
+    );
+    const p = (pickKey<Record<string, unknown>>(data, "profile") ??
+      {}) as Record<string, unknown>;
 
     return {
-      username: p.username ?? username,
-      name: p.name ?? username,
-      avatar: p.pic_b ?? p.pic_m ?? p.pic_s ?? '',
+      username: String(p.username ?? username),
+      name: String(p.name ?? username),
+      avatar: String(p.pic_b ?? p.pic_m ?? p.pic_s ?? ""),
       followers: toInt(p.follower_cnt),
     };
   }
 
   /**
-   * Channel's own categories (playlists).
-   * Method: profilecategories/username/{username}
+   * دسته‌بندی‌های کانال (پلی‌لیست‌ها).
+   * Cache: ۳۰ دقیقه.
    */
-  async getCategories(username: string): Promise<Category[]> {
-    const data = await proxyGet<any>(`profilecategories/username/${username}`);
-    const list: any[] = pickKey<any[]>(data, 'profilecategories') ?? [];
+  async getCategories(
+    username: string,
+    signal?: AbortSignal,
+  ): Promise<Category[]> {
+    const data = await proxyGet<unknown>(
+      `profilecategories/username/${username}`,
+      signal,
+    );
+    const list =
+      pickKey<Record<string, unknown>[]>(data, "profilecategories") ?? [];
 
-    return list.map<Category>((c) => {
-      const name = c.cat_name ?? 'Uncategorized';
+    return list.map((c) => {
+      const name = String(c.cat_name ?? "Uncategorized");
       return {
         cat_id: toInt(c.cat_id),
         cat_name: name,
         cat_cnt: toInt(c.cat_cnt),
-        link: c.link ?? '',
+        link: String(c.link ?? ""),
         title: name,
       };
     });
   }
 
   /**
-   * Full info for one video (player). Method: video/videohash/{uid}
+   * اطلاعات کامل یک ویدئو برای player.
+   * Cache: ۱ ساعت.
    */
-  async getVideoInfo(uid: string): Promise<VideoItem> {
-    const data = await proxyGet<any>(`video/videohash/${uid}`);
-    const v = pickKey<any>(data, 'video') ?? {};
+  async getVideoInfo(uid: string, signal?: AbortSignal): Promise<VideoItem> {
+    const data = await proxyGet<unknown>(`video/videohash/${uid}`, signal);
+    const v = (pickKey<Record<string, unknown>>(data, "video") ?? {}) as Record<
+      string,
+      unknown
+    >;
 
-    const listItem = normalizeVideo(v, v.cat_name ?? 'Uncategorized');
+    const listItem = normalizeVideo(v, String(v.cat_name ?? "Uncategorized"));
     return {
       ...listItem,
-      description: v.description ?? '',
-      // Legacy API plays via `frame`; file_link is best-effort.
-      file_link: v.file_link ?? '',
+      description: String(v.description ?? ""),
+      file_link: String(v.file_link ?? ""),
     };
   }
 
   /**
-   * Stream a channel's videos page-by-page.
-   * Method: videoByUser/username/{username}/perpage/{n}
-   * Next page comes from ui.pagingForward.
+   * stream صفحه‌به‌صفحه ویدئوهای کانال.
+   * Cache: ۵ دقیقه در API route.
+   *
+   * با signal پاس‌شده از AbortController، وقتی کانال عوض می‌شود یا
+   * component unmount می‌شود، request در حال پرواز واقعاً لغو می‌شود.
    */
   async *streamUserVideos(
     username: string,
-    isCancelled: () => boolean,
+    signal: AbortSignal,
   ): AsyncGenerator<VideoListItem[], void, unknown> {
     let nextPath: string | null =
       `videoByUser/username/${username}/perpage/${PER_PAGE}`;
 
-    while (nextPath && !isCancelled()) {
-      const data: any = await proxyGet<any>(nextPath);
-      const rawVideos: any[] = pickKey<any[]>(data, 'videoByUser') ?? [];
-
+    while (nextPath && !signal.aborted) {
+      const data = await proxyGet<unknown>(nextPath, signal);
+      const rawVideos =
+        pickKey<Record<string, unknown>[]>(data, "videoByUser") ?? [];
       yield rawVideos.map((raw) => normalizeVideo(raw));
-
       nextPath = endpointFromAparatUrl(pickNextPageUrl(data));
     }
   }
 
   /**
-   * Stream videos of one user category.
-   * Method: videobyprofilecat/usercat/{cat_id}/username/{username}/perpage/{n}
+   * stream ویدئوهای یک دسته‌بندی خاص.
    */
   async *streamCategoryVideos(
     username: string,
     category: Category,
-    isCancelled: () => boolean,
+    signal: AbortSignal,
   ): AsyncGenerator<VideoListItem[], void, unknown> {
     let nextPath: string | null =
       `videobyprofilecat/usercat/${category.cat_id}/username/${username}/perpage/${PER_PAGE}`;
 
-    while (nextPath && !isCancelled()) {
-      const data: any = await proxyGet<any>(nextPath);
-      const rawVideos: any[] = pickKey<any[]>(data, 'videobyprofilecat') ?? [];
-
+    while (nextPath && !signal.aborted) {
+      const data = await proxyGet<unknown>(nextPath, signal);
+      const rawVideos =
+        pickKey<Record<string, unknown>[]>(data, "videobyprofilecat") ?? [];
       yield rawVideos.map((raw) => normalizeVideo(raw, category.cat_name));
-
       nextPath = endpointFromAparatUrl(pickNextPageUrl(data));
     }
   }

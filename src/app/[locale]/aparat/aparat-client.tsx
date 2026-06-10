@@ -1,118 +1,196 @@
-// src/components/aparat/aparat-client.tsx
-'use client';
+"use client";
 
-// ---------------------------------------------------------------------------
-// AparatClient
-// Client-side orchestrator for the Aparat section:
-//   - <Tabs.Root> binds the channel rail to the active username. Tab clicks
-//     inside <ChannelHeader> flow up here via Radix context.
-//   - useAparatChannel drives data for the active channel.
-//   - <ChannelHeader> owns the search box + tabs (we only feed it data).
-//   - Below the header: a 2-column layout
-//       * Left  (2fr): <VideoPlayer> + the random videos grid
-//       * Right (1fr): <Playlist>
-// ---------------------------------------------------------------------------
+import { useMemo, useState, useEffect } from "react";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
 
-import { useMemo, useState } from 'react';
-import * as TabsPrimitive from '@radix-ui/react-tabs';
-
-import { useAparatChannel } from '@/hooks/use-aparat-channel';
-import { ChannelHeader } from '@/components/aparat/channel-header';
-import { VideoPlayer } from '@/components/aparat/video-player';
-import { Playlist } from '@/components/aparat/playlist';
-import { VideoCard } from '@/components/aparat/video-card';
-import type { SlidingTabItem } from '@/components/aparat/sliding-tabs';
+import { useAparatChannel } from "@/hooks/use-aparat-channel";
+import { ChannelHeader } from "@/components/aparat/channel-header";
+import { VideoPlayer } from "@/components/aparat/video-player";
+import { Playlist } from "@/components/aparat/playlist";
+import { VideoCard } from "@/components/aparat/video-card";
+import { AparatSkeleton } from "@/components/aparat/aparat-skeleton";
+import type { SlidingTabItem } from "@/components/aparat/sliding-tabs";
 
 interface AparatClientProps {
-  /** Channel handles (Aparat usernames) available to switch between. */
+  /** List of Aparat channel usernames */
   usernames: string[];
 }
 
+/* ----------------------------- Skeleton Components ----------------------------- */
+
+/**
+ * Skeleton for channel header while channel data is loading
+ */
+function ChannelHeaderSkeleton() {
+  return (
+    <div className="flex items-center gap-4 rounded-xl border bg-card p-4 shadow-sm">
+      <AparatSkeleton className="h-16 w-16 rounded-full" />
+
+      <div className="flex flex-1 flex-col gap-2">
+        <AparatSkeleton className="h-4 w-40" />
+        <AparatSkeleton className="h-3 w-60" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton for video player section
+ */
+function VideoPlayerSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="aspect-video w-full overflow-hidden rounded-xl bg-muted">
+        <AparatSkeleton className="h-full w-full" />
+      </div>
+
+      <div className="space-y-3 rounded-xl border bg-card p-4 shadow-sm">
+        <AparatSkeleton className="h-4 w-2/3" />
+        <AparatSkeleton className="h-3 w-1/2" />
+        <AparatSkeleton className="h-3 w-1/3" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Skeleton for random video cards
+ */
+function RandomVideosSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="space-y-2">
+          <div className="aspect-video overflow-hidden rounded-md bg-muted">
+            <AparatSkeleton className="h-full w-full" />
+          </div>
+
+          <AparatSkeleton className="h-3 w-3/4" />
+          <AparatSkeleton className="h-3 w-1/2" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Skeleton for playlist while videos are loading
+ */
+function PlaylistSkeleton() {
+  return (
+    <div className="rounded-lg border bg-card p-3 shadow-sm">
+      <div className="space-y-3">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-md bg-muted">
+              <AparatSkeleton className="h-full w-full" />
+            </div>
+
+            <div className="flex-1 space-y-2 py-1">
+              <AparatSkeleton className="h-3 w-full" />
+              <AparatSkeleton className="h-3 w-3/4" />
+              <AparatSkeleton className="h-3 w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------------------- */
+
 export function AparatClient({ usernames }: AparatClientProps) {
-  // Active channel handle. Defaults to the first provided username.
   const [activeUsername, setActiveUsername] = useState<string>(
-    usernames[0] ?? '',
+    usernames[0] ?? "",
   );
 
-  // Channel data hook for the active channel.
-  const {
-    channel, // Profile | null   -> header identity (name/avatar/followers)
-    videos, // VideoListItem[]   -> playlist + search source
-    selectedVideo, // VideoListItem | null -> currently playing
-    randomVideos, // VideoListItem[]   -> left-column grid
-    hasMore, // boolean: more playlist pages exist
-    isLoadingMore, // boolean: a load-more request is in flight
-    selectVideo, // (video: VideoListItem) => void
-    loadMore, // () => void: fetch the next playlist page
-  } = useAparatChannel(activeUsername);
+  const { channel, videos, selectedVideo, randomVideos, selectVideo } =
+    useAparatChannel(activeUsername);
 
-  // Channel tab rail: usernames -> SlidingTabItem[] (value === username).
+  /**
+   * Convert usernames to tab items
+   */
   const tabItems = useMemo<SlidingTabItem[]>(
     () => usernames.map((name) => ({ value: name, label: name })),
     [usernames],
   );
 
+  /**
+   * Page becomes ready when we have channel data and at least one video
+   */
+  const isReady = !!channel && videos.length > 0;
+
+  /**
+   * Automatically select the first video when videos load
+   */
+  useEffect(() => {
+    if (isReady && !selectedVideo) {
+      selectVideo(videos[0]);
+    }
+  }, [isReady, videos, selectedVideo, selectVideo]);
+
   return (
-    // Tab clicks inside ChannelHeader's <SlidingTabs> reach this onValueChange
-    // through Radix context, swapping the username fed into useAparatChannel.
     <TabsPrimitive.Root
       value={activeUsername}
       onValueChange={setActiveUsername}
-      // `min-w-0` keeps the whole subtree from forcing the page wider than the
-      // viewport when a child holds long, non-wrapping content.
       className="flex w-full min-w-0 flex-col gap-6"
     >
-      {/* Header owns the search box + tabs; we only pass it data. */}
-      <ChannelHeader
-        channel={channel}
-        fallbackUsername={activeUsername}
-        videos={videos}
-        onVideoSelect={selectVideo}
-        tabs={tabItems}
-        tabValue={activeUsername}
-      />
+      {/* ---------------- Header ---------------- */}
+      {!channel ? (
+        <ChannelHeaderSkeleton />
+      ) : (
+        <ChannelHeader
+          channel={channel}
+          fallbackUsername={activeUsername}
+          videos={videos}
+          onVideoSelect={selectVideo}
+          tabs={tabItems}
+          tabValue={activeUsername}
+        />
+      )}
 
-      {/*
-        Two-column body:
-          - lg+      : [2fr | 1fr] => player+grid on the left, playlist right.
-          - below lg : single column, stacked in source order.
-        `items-start` keeps each column at its natural height (no stretch).
-      */}
+      {/* ---------------- Layout ---------------- */}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[2fr_1fr]">
-        {/* Left column: player on top, random videos grid beneath it. */}
-        {/* `min-w-0` lets the column shrink instead of overflowing the grid. */}
+        {/* LEFT SIDE */}
         <div className="flex min-w-0 flex-col gap-6">
-          <VideoPlayer video={selectedVideo} />
+          {/* Video Player */}
+          {!isReady ? (
+            <VideoPlayerSkeleton />
+          ) : (
+            <VideoPlayer video={selectedVideo} />
+          )}
 
-          {randomVideos.length > 0 && (
+          {/* Random Videos */}
+          {!isReady ? (
+            <RandomVideosSkeleton />
+          ) : randomVideos.length > 0 ? (
             <section className="flex flex-col gap-4">
-              {/* Fewer columns here since the left track is narrower than a
-                  full-width row would be (it shares space with the playlist). */}
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {randomVideos.map((video) => (
                   <VideoCard
                     key={video.id}
                     video={video}
-                    // VideoCardProps requires `isActive` (not optional).
                     isActive={selectedVideo?.id === video.id}
                     onClick={() => selectVideo(video)}
                   />
                 ))}
               </div>
             </section>
-          )}
+          ) : null}
         </div>
 
-        {/* Right column: the playlist. `min-w-0` prevents grid blow-out. */}
+        {/* RIGHT SIDE PLAYLIST */}
         <div className="min-w-0">
-          <Playlist
-            videos={videos}
-            currentVideoId={selectedVideo?.id ?? null}
-            onVideoSelect={selectVideo}
-            hasMore={hasMore}
-            isLoadingMore={isLoadingMore}
-            onLoadMore={loadMore}
-          />
+          {!isReady ? (
+            <PlaylistSkeleton />
+          ) : (
+            <Playlist
+              videos={videos}
+              currentVideoId={selectedVideo?.id ?? null}
+              onVideoSelect={selectVideo}
+            />
+          )}
         </div>
       </div>
     </TabsPrimitive.Root>

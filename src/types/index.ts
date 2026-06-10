@@ -1,6 +1,7 @@
 /* src/types/index.ts */
-import { TextDirection } from '@/utils/textDirection';
-import { ReactNode } from 'react';
+import { TextDirection } from "@/utils/textDirection";
+import { _Translator } from "next-intl";
+import { ReactNode } from "react";
 
 /* ============================================================
  * Category
@@ -25,6 +26,7 @@ export interface CategoryWithVideos extends Category {
  * Field names match the real Aparat API output.
  * ============================================================ */
 export interface VideoListItem {
+  createdAtTimestamp: number;
   id: number; // numeric video id
   uid: string; // public string id used in URLs/embeds
   title: string;
@@ -39,7 +41,7 @@ export interface VideoListItem {
   frame: string; // embed/frame url
   official: string; // "yes" | "no" flag from Aparat
   autoplay: boolean;
-  '360d': boolean; // 360-degree video flag
+  "360d": boolean; // 360-degree video flag
   categoryId?: number; // resolved category id, when available
   categoryName?: string; // resolved category title, or "Uncategorized"
   titleDir: TextDirection; // precomputed in the API normalization layer
@@ -80,7 +82,7 @@ export interface VideoInfo {
   cat_id: number;
   cat_name: string;
   autoplay: boolean;
-  '360d': boolean;
+  "360d": boolean;
   has_comment: string;
   has_comment_txt?: string;
   size?: number;
@@ -106,7 +108,7 @@ export interface UserProfile {
   pic_s: string;
   pic_m: string;
   pic_b: string;
-  banned: 'yes' | 'no';
+  banned: "yes" | "no";
   email?: string;
   mobile_number?: string;
   mobile_valid?: string;
@@ -228,5 +230,5 @@ export interface LiveStream {
 export interface SearchSuggestion {
   text: string;
   count: number;
-  type: 'suggestion' | 'history';
+  type: "suggestion" | "history";
 }

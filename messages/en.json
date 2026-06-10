@@ -1,6 +1,5 @@
 {
   "Common": {
-    "language": "Language",
     "appName": {
       "lead": "Euroslot Pars",
       "trail": "Web App.",
@@ -40,7 +39,6 @@
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
     },
     "quickAccess": { "loginRequired": "Login required" },
-
     "stats": {
       "clients": "Happy Clients",
       "projects": "Successful Projects",
@@ -63,7 +61,6 @@
       "disclaimer": "No spam. Unsubscribe anytime."
     }
   },
-
   "Footer": {
     "rights": "All rights reserved",
     "quickLinks": "Quick links",
@@ -95,7 +92,8 @@
       },
       "mediaLibrary": {
         "description": "Access the central library of multimedia files and shared resources."
-      }
+      },
+      "presentation": "Review our presentations and visual documents."
     }
   },
   "Auth": {
@@ -105,7 +103,6 @@
     "register": "Sign up",
     "logout": "Sign out",
     "submit": "submit",
-    "loggingIn": "Signing in...",
     "loginSubtitle": "Sign in to your account to continue",
     "identifier": "Email or mobile number",
     "identifierPlaceholder": "example@mail.com or 09xxxxxxxxx",
@@ -132,7 +129,6 @@
     "search": "Search",
     "version": "V:1.01",
     "noResults": "No results",
-
     "sections": {
       "main": "Main",
       "marketing": "Marketing",
@@ -192,16 +188,6 @@
       "mediaLibrary": "A unified library for all your media files."
     }
   },
-  "Welcome": {
-    "title": "Welcome to our workspace",
-    "subtitle": "Explore the public sections and get to know our content.",
-    "cards": {
-      "videos": "Watch our collection of intro and tutorial videos.",
-      "imageGallery": "Browse images from our projects and activities.",
-      "presentation": "Review our presentations and visual documents."
-    }
-  },
-
   "NotFound": {
     "description": "The page you are looking for could not be found",
     "backHome": "Back to Home"
@@ -230,7 +216,6 @@
       "purple": "purple"
     }
   },
-
   "Dashboard": {
     "greeting": "Welcome, {name}",
     "chartTitle": "6-month trend",
@@ -293,7 +278,6 @@
     "guest": "Guest",
     "online": "Online"
   },
-
   "Aparat": {
     "stats": {
       "videos": "Videos",
@@ -308,6 +292,15 @@
       "empty": "empty",
       "locale": "locale",
       "views": ""
+    },
+    "time": {
+      "unknown": "Unknown",
+      "second": "{value} seconds ago",
+      "minute": "{value} minutes ago",
+      "hour": "{value} hours ago",
+      "day": "{value} days ago",
+      "month": "{value} months ago",
+      "year": "{value} years ago"
     },
     "loading": "Loading...",
     "loadedOf": "Loaded {current} of {total} videos",

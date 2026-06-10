@@ -1,18 +1,19 @@
 // src/components/aparat/video-search-result.tsx
-import { Calendar, Clock, Eye, VideoOff } from 'lucide-react';
-
-import type { VideoListItem } from '@/types';
-// Unified formatting layer — single source of truth for date/views/duration.
-import { formatDate, formatDuration, formatViews } from '@/utils/aparatUtils';
+import { Calendar, Clock, Eye, VideoOff } from "lucide-react";
+import type { VideoListItem } from "@/types";
+import {
+  formatRelativeTime,
+  formatDuration,
+  formatViews,
+} from "@/utils/aparatUtils";
+import { useTranslations } from "next-intl";
 
 function highlightText(text: string, query: string) {
   if (!query || query.length < 2 || !text) return text;
-
   try {
-    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escaped})`, 'gi');
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escaped})`, "gi");
     const lowerQuery = query.toLowerCase();
-
     return text.split(regex).map((part, index) =>
       part.toLowerCase() === lowerQuery ? (
         <mark key={index} className="bg-primary/20 text-foreground rounded">
@@ -33,7 +34,10 @@ interface VideoSearchResultProps {
 }
 
 export function VideoSearchResult({ video, query }: VideoSearchResultProps) {
+  // Move useTranslations inside the component
+  const tr = useTranslations("Aparat.time");
   const poster = video.small_poster || video.big_poster;
+  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
 
   return (
     <>
@@ -56,9 +60,7 @@ export function VideoSearchResult({ video, query }: VideoSearchResultProps) {
           {formatDuration(video.duration)}
         </div>
       </div>
-
       <div className="min-w-0 flex-1">
-        {/* Align with the precomputed title direction for mixed RTL/LTR text. */}
         <div
           dir={video.titleDir}
           className="text-foreground line-clamp-2 text-sm font-medium"
@@ -72,7 +74,7 @@ export function VideoSearchResult({ video, query }: VideoSearchResultProps) {
           </span>
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />
-            {formatDate(video.sdate)}
+            {timeAgo}
           </span>
         </div>
       </div>

@@ -1,21 +1,16 @@
 @theme {
-  /* ===== Base Z-Index Scale ===== */
-  --z-index-0: 0;
-  --z-index-10: 10;
-  --z-index-20: 20;
-  --z-index-30: 30;
-  --z-index-40: 40;
-  --z-index-50: 50;
-  --z-index-auto: auto;
-
-  /* ===== Semantic Z-Index Layers ===== */
-  --z-index-dropdown: 1000;
-  --z-index-sticky: 1020;
-  --z-index-fixed: 1030;
-  --z-index-modal-backdrop: 1040;
-  --z-index-modal: 1050;
-  --z-index-popover: 1060;
-  --z-index-tooltip: 1070;
-  --z-index-toast: 1080;
-  --z-index-highest: 9999;
+  /* Z-index scale — keep in sync with src/constants/layout.ts */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-header: 300;
+  --z-sidebar: 350;
+  --z-overlay: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-search: 700;
+  --z-logo: 750;
+  --z-toast: 800;
+  --z-tooltip: 900;
 }

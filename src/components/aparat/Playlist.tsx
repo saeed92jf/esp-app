@@ -1,167 +1,117 @@
-/* src/components/playlist.tsx */
-'use client';
+"use client";
 
-import Image from 'next/image';
-// Pull locale directly from next-intl instead of reading it from a translated string.
-import { useTranslations, useLocale } from 'next-intl';
-import { useDeferredValue } from 'react';
-import { Calendar, Eye, Loader2, Play } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import type { PlaylistProps, VideoListItem } from '@/types';
-import { formatDuration, formatViews, formatDate } from '@/utils/aparatUtils';
+import * as React from "react";
+import { useTranslations } from "next-intl";
+import { Calendar, Eye, PlayCircle } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+import type { PlaylistProps, VideoListItem } from "@/types";
+import { formatViews, formatRelativeTime } from "@/utils/aparatUtils";
+
+/**
+ * Playlist component to display a list of videos with a scrollable area.
+ * It strictly follows the PlaylistProps defined in @/types/index.ts
+ */
 export function Playlist({
   videos,
   currentVideoId,
   onVideoSelect,
-  title,
-  hasMore = false,
-  isLoadingMore = false,
-  onLoadMore,
-}: PlaylistProps) {
-  // All user-facing strings for this component live under the "Aparat" namespace.
-  const t = useTranslations('Aparat.Playlist');
+  className,
+}: PlaylistProps & { className?: string }) {
+  const t = useTranslations("Aparat.Playlist");
+  const tr = useTranslations("Aparat.time");
 
-  // Real BCP 47 locale tag (e.g. "fa-IR", "en-US") provided by next-intl.
-  // This is the value Intl.NumberFormat expects — never a translated word.
-  const locale = useLocale();
+  // Scroll to active video on mount or when currentVideoId changes
+  const activeRef = React.useRef<HTMLDivElement>(null);
 
-  // Defer the list value: when the background auto-loader appends new pages,
-  // React renders the larger list at a lower priority. This keeps clicks and
-  // scrolling responsive instead of janking on every batch that arrives.
-  const deferredVideos = useDeferredValue(videos);
-
-  // Empty state: only show it once we truly have nothing AND nothing is
-  // still streaming in, so we don't flash "empty" during the first load.
-  if (deferredVideos.length === 0 && !isLoadingMore) {
-    return (
-      <div className="text-muted-foreground flex h-full items-center justify-center p-6 text-center text-sm">
-        {t('empty')}
-      </div>
-    );
-  }
+  React.useEffect(() => {
+    if (activeRef.current) {
+      activeRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, [currentVideoId]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      {/* Header stays fixed at the top; it must NOT shrink. */}
-      {/* Note: the numeric "count" line was intentionally removed. */}
-      <div className="shrink-0 border-b px-4 py-3">
-        <h2 className="text-foreground text-sm font-semibold">
-          {title ?? t('title')}
-        </h2>
+    <div
+      className={cn(
+        "bg-card flex flex-col overflow-hidden rounded-xl border shadow-sm",
+        className,
+      )}
+    >
+      {/* Header */}
+      <div className="border-b px-4 py-3">
+        <h3 className="flex items-center gap-2 font-bold">
+          <PlayCircle className="text-primary size-5" />
+          {t("title") || "لیست پخش"}
+          <span className="text-muted-foreground text-xs font-normal">
+            ({t("count", { count: videos.length })})
+          </span>
+        </h3>
       </div>
 
-      {/* Scrollable list area. */}
-      <ScrollArea className="min-h-0 flex-1">
-        <ul className="divide-y">
-          {deferredVideos.map((video: VideoListItem) => {
+      {/* Scrollable List */}
+      <div className="max-h-150 overflow-y-auto overflow-x-hidden p-2 custom-scrollbar">
+        <div className="flex flex-col gap-2">
+          {videos.map((video: VideoListItem) => {
             const isActive = currentVideoId === video.id;
+            const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
 
             return (
-              <li key={video.id}>
-                <button
-                  type="button"
-                  onClick={() => onVideoSelect(video)}
-                  // Each row aligns its text based on the precomputed title direction.
-                  dir={video.titleDir}
-                  aria-current={isActive ? 'true' : undefined}
-                  className={cn(
-                    'flex w-full items-start gap-3 px-4 py-3 text-start transition-colors',
-                    'hover:bg-accent/60 focus-visible:bg-accent/60 focus-visible:outline-none',
-                    isActive && 'bg-accent',
-                  )}
-                >
-                  {/* Thumbnail with duration badge and active overlay. */}
-                  <div className="bg-muted relative aspect-video w-28 shrink-0 overflow-hidden rounded-md">
-                    <Image
-                      src={video.small_poster}
-                      alt={video.title}
-                      fill
-                      sizes="112px"
-                      className="object-cover"
-                    />
-
-                    {/* Duration badge, bottom-end corner. */}
-                    <span className="absolute inset-e-1 bottom-1 rounded bg-black/75 px-1 py-0.5 text-[10px] font-medium text-white">
-                      {formatDuration(video.duration)}
-                    </span>
-
-                    {/* Play overlay shown only for the active video. */}
-                    {isActive && (
-                      <span className="absolute inset-0 flex items-center justify-center bg-black/40">
-                        <Play className="h-5 w-5 fill-white text-white" />
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Textual metadata: title, views, date. */}
-                  <div className="min-w-0 flex-1">
-                    <h3
-                      className={cn(
-                        'line-clamp-2 text-sm leading-snug',
-                        isActive
-                          ? 'text-foreground font-semibold'
-                          : 'text-foreground/90',
-                      )}
-                    >
-                      {video.title}
-                    </h3>
-
-                    <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs">
-                      {/* Localized view count. */}
-                      <span>
-                        {formatViews(video.visit_cnt)} {t('views')}
-                      </span>
-                      <span>
-                        <Eye className="size-4" />
-                      </span>
-                      <span aria-hidden>•</span>
-                      <Calendar className="size-3" />
-                      {formatDate(video.sdate)}
+              <div
+                key={video.id}
+                ref={isActive ? activeRef : null}
+                onClick={() => onVideoSelect(video)}
+                className={cn(
+                  "group relative flex cursor-pointer gap-3 rounded-lg p-2 transition-all hover:bg-muted/50",
+                  isActive &&
+                    "bg-primary/10 ring-1 ring-primary/20 hover:bg-primary/15",
+                )}
+              >
+                {/* Thumbnail */}
+                <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-md bg-muted">
+                  <img
+                    src={video.small_poster}
+                    alt={video.title}
+                    className="size-full object-cover"
+                    loading="lazy"
+                  />
+                  {isActive && (
+                    <div className="bg-primary/60 absolute inset-0 flex items-center justify-center backdrop-blur-[1px]">
+                      <PlayCircle className="size-8 text-white" />
                     </div>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div className="flex min-w-0 flex-1 flex-col justify-between py-0.5">
+                  <h4
+                    dir={video.titleDir}
+                    className={cn(
+                      "text-foreground line-clamp-2 text-sm font-medium leading-snug transition-colors",
+                      isActive && "text-primary",
+                    )}
+                  >
+                    {video.title}
+                  </h4>
+
+                  <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
+                    <span className="flex items-center gap-1">
+                      <Eye className="size-3" />
+                      {formatViews(video.visit_cnt)}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="size-3" />
+                      {timeAgo}
+                    </span>
                   </div>
-                </button>
-              </li>
+                </div>
+              </div>
             );
           })}
-        </ul>
-
-        {/* Footer area: Load More button while more pages exist. */}
-        {hasMore && (
-          <div className="p-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="w-full"
-              onClick={onLoadMore}
-              disabled={isLoadingMore}
-            >
-              {isLoadingMore ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" />
-                  {t('loadMore')}
-                </>
-              ) : (
-                t('loadMore')
-              )}
-            </Button>
-          </div>
-        )}
-
-        {/* Subtle hint when the background auto-loader is fetching but the
-            Load More button is hidden (e.g. last silent fill in progress). */}
-        {!hasMore && isLoadingMore && (
-          <div className="text-muted-foreground flex items-center justify-center gap-2 p-3 text-xs">
-            <Loader2 className="size-3.5 animate-spin" />
-            {t('loadMore')}
-          </div>
-        )}
-      </ScrollArea>
+        </div>
+      </div>
     </div>
   );
 }
-
-export default Playlist;

@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 
 /**
  * A single statistic item shown in the StatsSection.
@@ -14,4 +14,21 @@ export interface StatItem {
   suffix?: string;
   labelKey: string;
   icon?: LucideIcon;
+}
+export interface AparatChannel {
+  username: string;
+  name: string;
+  avatar: string;
+  followers: number;
+  videoCount: number;
+}
+
+export interface AparatVideo {
+  id: string;
+  title: string;
+  thumbnail: string;
+  duration: number;
+  views: number;
+  createdAt: string;
+  embedUrl: string;
 }

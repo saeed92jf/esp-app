@@ -1,22 +1,41 @@
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+// src/app/not-found.tsx
+// Root-level 404. This file is OUTSIDE the [locale] layout, so next-intl's
+// IntlProvider is NOT available here. We use plain static text.
+// Locale-aware 404s are handled by src/app/[locale]/not-found.tsx
 
-// Locale-aware 404. Rendered inside [locale]/layout, so no <html>/<body> here.
-export default function LocaleNotFound() {
-  const t = useTranslations('NotFound');
+import Link from "next/link";
 
+export default function NotFound() {
   return (
-    <div className="grid min-h-[60dvh] place-items-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold">404</h1>
-        <p className="text-muted-foreground mt-2">{t('description')}</p>
-        <Link
-          href="/"
-          className="text-primary mt-4 inline-block hover:underline"
+    <html>
+      <body>
+        <div
+          style={{
+            display: "grid",
+            minHeight: "100dvh",
+            placeItems: "center",
+            fontFamily: "system-ui, sans-serif",
+          }}
         >
-          {t('backHome')}
-        </Link>
-      </div>
-    </div>
+          <div style={{ textAlign: "center" }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 700 }}>404</h1>
+            <p style={{ color: "#6b7280", marginTop: "0.5rem" }}>
+              The page you are looking for could not be found.
+            </p>
+            <Link
+              href="/"
+              style={{
+                display: "inline-block",
+                marginTop: "1rem",
+                color: "#3b82f6",
+                textDecoration: "none",
+              }}
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </body>
+    </html>
   );
 }

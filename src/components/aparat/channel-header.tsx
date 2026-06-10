@@ -1,15 +1,15 @@
 // src/components/aparat/channel-header.tsx
-'use client';
+"use client";
 
-import * as React from 'react';
-import { Tv, Users } from 'lucide-react';
-import { useLocale, useTranslations } from 'next-intl';
+import * as React from "react";
+import { Tv, Users } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 
-import type { Profile, VideoListItem } from '@/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from '@/lib/utils';
-import { SlidingTabs, type SlidingTabItem } from './sliding-tabs';
-import { ChannelVideoSearch } from './channel-video-search';
+import type { Profile, VideoListItem } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { SlidingTabs, type SlidingTabItem } from "./sliding-tabs";
+import { ChannelVideoSearch } from "./channel-video-search";
 
 interface ChannelHeaderProps {
   /** Active channel profile; null while it is still loading. */
@@ -60,7 +60,7 @@ export function ChannelHeader({
   tabValue,
   className,
 }: ChannelHeaderProps) {
-  const t = useTranslations('Aparat');
+  const t = useTranslations("Aparat");
   const locale = useLocale();
 
   // Resolved identity fields with safe fallbacks during the loading window.
@@ -80,7 +80,7 @@ export function ChannelHeader({
     const io = new IntersectionObserver(
       ([entry]) => setStuck(!entry.isIntersecting),
       // rootMargin top -1px => fires the moment the sentinel crosses the edge.
-      { threshold: 0, rootMargin: '-1px 0px 0px 0px' },
+      { threshold: 0, rootMargin: "-1px 0px 0px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -90,11 +90,11 @@ export function ChannelHeader({
   // invalid locale tag can never crash the render.
   const followersLabel = React.useMemo(() => {
     try {
-      return new Intl.NumberFormat(locale, { notation: 'compact' }).format(
+      return new Intl.NumberFormat(locale, { notation: "compact" }).format(
         followers,
       );
     } catch {
-      return new Intl.NumberFormat('en-US', { notation: 'compact' }).format(
+      return new Intl.NumberFormat("en-US", { notation: "compact" }).format(
         followers,
       );
     }
@@ -104,10 +104,10 @@ export function ChannelHeader({
   const initials = React.useMemo(
     () =>
       name
-        .split(' ')
+        .split(" ")
         .slice(0, 2)
         .map((w) => w.charAt(0))
-        .join('')
+        .join("")
         .toUpperCase(),
     [name],
   );
@@ -120,14 +120,14 @@ export function ChannelHeader({
       <header
         className={cn(
           // ONLY sticky here. No relative/absolute => sticky stays intact.
-          'bg-background sticky top-0 z-60',
+          "bg-background sticky top-header z-sticky",
           // True full-bleed via width + negative margin (no position change).
-          'ml-[calc(50%-50vw)] w-screen',
+          "ml-[calc(50%-50vw)] w-screen",
           // Allow the search dropdown to overflow the header.
-          'overflow-visible border-b border-transparent',
+          "overflow-visible border-b border-transparent",
           // Animate ONLY shadow for a smooth stuck transition.
-          'transition-shadow duration-300 ease-out',
-          stuck && 'border-border/60 shadow-lg',
+          "transition-shadow duration-300 ease-out",
+          stuck && "border-border/60 shadow-lg",
           className,
         )}
       >
@@ -154,7 +154,7 @@ export function ChannelHeader({
               </span>
               <span className="text-muted-foreground mt-0.5 flex items-center gap-1 text-xs">
                 <Users className="size-3.5" />
-                {followersLabel} {t('stats.followers')}
+                {followersLabel} {t("stats.followers")}
               </span>
             </div>
           </div>

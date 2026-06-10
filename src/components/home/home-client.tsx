@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useMemo } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
-import { Mail, Rocket, CheckCircle2, type LucideIcon } from 'lucide-react';
-import { NAVIGATION } from '@/config/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
-import { Logo } from '@/components/brand/logo';
-import { StatsSection } from '@/components/sections/stats-section';
-import { STATS } from '@/data/stats';
-import { SiteSearch } from '@/components/features/search/site-search';
-import { FeatureCard } from '@/components/shared/feature-card';
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { Mail, Rocket, CheckCircle2, type LucideIcon } from "lucide-react";
+import { NAVIGATION } from "@/config/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/logo";
+import { StatsSection } from "@/components/sections/stats-section";
+import { STATS } from "@/data/stats";
+import { SiteSearch } from "@/components/features/search/site-search";
+import { FeatureCard } from "@/components/shared/feature-card";
 
 // ---------------------------------------------------------------------------
 // Local hook: reveal a section once it scrolls into the viewport (one-way).
@@ -56,54 +56,55 @@ function useReveal() {
 // tint, and a matching top-bar color consumed by FeatureCard.
 const FEATURE_COLORS = [
   {
-    icon: 'text-blue-500',
-    ring: 'group-hover:ring-blue-500/40',
-    bar: 'bg-blue-500',
+    icon: "text-blue-500",
+    ring: "group-hover:ring-blue-500/40",
+    bar: "bg-blue-500",
   },
   {
-    icon: 'text-emerald-500',
-    ring: 'group-hover:ring-emerald-500/40',
-    bar: 'bg-emerald-500',
+    icon: "text-emerald-500",
+    ring: "group-hover:ring-emerald-500/40",
+    bar: "bg-emerald-500",
   },
   {
-    icon: 'text-violet-500',
-    ring: 'group-hover:ring-violet-500/40',
-    bar: 'bg-violet-500',
+    icon: "text-violet-500",
+    ring: "group-hover:ring-violet-500/40",
+    bar: "bg-violet-500",
   },
   {
-    icon: 'text-amber-500',
-    ring: 'group-hover:ring-amber-500/40',
-    bar: 'bg-amber-500',
+    icon: "text-amber-500",
+    ring: "group-hover:ring-amber-500/40",
+    bar: "bg-amber-500",
   },
   {
-    icon: 'text-rose-500',
-    ring: 'group-hover:ring-rose-500/40',
-    bar: 'bg-rose-500',
+    icon: "text-rose-500",
+    ring: "group-hover:ring-rose-500/40",
+    bar: "bg-rose-500",
   },
   {
-    icon: 'text-cyan-500',
-    ring: 'group-hover:ring-cyan-500/40',
-    bar: 'bg-cyan-500',
+    icon: "text-cyan-500",
+    ring: "group-hover:ring-cyan-500/40",
+    bar: "bg-cyan-500",
   },
 ] as const;
 
 export function HomeClient() {
-  const t = useTranslations('Home'); // page-scoped translator
-  const tSections = useTranslations('Menu.sections'); // group labels
-  const tItems = useTranslations('Menu.items'); // item labels
-  const tDesc = useTranslations('Menu.descriptions'); // per-item descriptions
+  const t = useTranslations("Home"); // page-scoped translator
+  const tSections = useTranslations("Menu.sections"); // group labels
+  const tItems = useTranslations("Menu.items"); // item labels
+  const tDesc = useTranslations("Menu.descriptions"); // per-item descriptions
   const locale = useLocale();
-  const isRtl = locale === 'fa';
+  const isRtl = locale === "fa";
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const { register, isRevealed } = useReveal();
 
   // Active feature tab; "all" shows every navigation item.
-  const [activeTab, setActiveTab] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<string>("all");
 
   // Tabs = a synthetic "all" tab followed by every navigation group.
   const tabs = useMemo(
     () => [
-      { id: 'all', labelKey: '', icon: undefined as LucideIcon | undefined },
+      { id: "all", labelKey: "", icon: undefined as LucideIcon | undefined },
       ...NAVIGATION,
     ],
     [],
@@ -117,12 +118,12 @@ export function HomeClient() {
 
   // Items shown in the features grid for the currently active tab.
   const visibleFeatures = useMemo(() => {
-    if (activeTab === 'all') return NAVIGATION.flatMap((g) => g.items);
+    if (activeTab === "all") return NAVIGATION.flatMap((g) => g.items);
     return NAVIGATION.find((g) => g.id === activeTab)?.items ?? [];
   }, [activeTab]);
 
   // Newsletter form local state.
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   // Fake submit: show a success message for 3s, then reset.
@@ -130,7 +131,7 @@ export function HomeClient() {
     e.preventDefault();
     if (!email) return;
     setSubmitted(true);
-    setEmail('');
+    setEmail("");
     setTimeout(() => setSubmitted(false), 3000);
   };
 
@@ -139,34 +140,41 @@ export function HomeClient() {
       {/* ----------------------------- HERO ----------------------------- */}
       <section
         id="hero"
-        ref={register('hero')}
+        ref={register("hero")}
         className="relative flex min-h-[80vh] items-center justify-center"
       >
         <div className="container py-20 text-center">
-          {/* Brand logo — sits above the search box, scales down on mobile. */}
+          {/* Search wrapper — logo is absolutely positioned above it */}
           <div
             className={cn(
-              'mb-8 flex justify-center transition-all delay-100 duration-700',
-              isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
+              "relative mx-auto mt-10 max-w-xl transition-all delay-200 duration-700",
+              isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
             )}
           >
-            <Logo className="text-4xl md:text-6xl" />
+            {/* Logo — absolute, centered above the search box */}
+            <div
+              className={cn(
+                "absolute inset-x-0 flex justify-center transition-all delay-100 duration-700",
+                isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
+              )}
+              style={{
+                bottom: "calc(100% + 1.5rem)",
+                zIndex: isSearchOpen ? "var(--z-logo)" : "var(--z-base)",
+              }}
+            >
+              <Logo className="text-4xl md:text-6xl" />
+            </div>
+            <SiteSearch
+              className="mx-auto max-w-xl"
+              onOpenChange={setIsSearchOpen}
+            />
           </div>
 
+          {/* Quick access cards */}
           <div
             className={cn(
-              'relative mx-auto mt-10 max-w-xl transition-all delay-200 duration-700',
-              isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
-            )}
-          >
-            <SiteSearch className="mx-auto max-w-xl" />
-          </div>
-
-          {/* Quick access cards sourced from the navigation config. */}
-          <div
-            className={cn(
-              'mt-20 grid grid-cols-2 gap-4 transition-all delay-300 duration-700 md:grid-cols-3 lg:grid-cols-6',
-              isRevealed('hero') ? 'opacity-100' : 'translate-y-4 opacity-0',
+              "mt-20 grid grid-cols-2 gap-4 transition-all delay-300 duration-700 md:grid-cols-3 lg:grid-cols-6",
+              isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
             )}
           >
             {quickAccess.map((item) => (
@@ -176,6 +184,8 @@ export function HomeClient() {
                 icon={item.icon}
                 title={tItems(item.labelKey)}
                 isRtl={isRtl}
+                noBorder={true}
+                iconRounded="full"
               />
             ))}
           </div>
@@ -190,13 +200,13 @@ export function HomeClient() {
         <div className="container">
           <div className="mb-10 text-center">
             <span className="text-primary text-sm font-semibold tracking-wider uppercase">
-              {t('features.eyebrow')}
+              {t("features.eyebrow")}
             </span>
             <h2 className="mt-2 text-3xl font-bold md:text-4xl">
-              {t('features.title')}
+              {t("features.title")}
             </h2>
             <p className="text-muted-foreground mx-auto mt-2 max-w-2xl">
-              {t('features.subtitle')}
+              {t("features.subtitle")}
             </p>
           </div>
 
@@ -206,11 +216,11 @@ export function HomeClient() {
               const TabIcon = tab.icon;
               // "all" uses a Home-scoped label; groups use Menu.sections.
               const label =
-                tab.id === 'all' ? t('features.all') : tSections(tab.labelKey);
+                tab.id === "all" ? t("features.all") : tSections(tab.labelKey);
               return (
                 <Button
                   key={tab.id}
-                  variant={activeTab === tab.id ? 'default' : 'outline'}
+                  variant={activeTab === tab.id ? "default" : "outline"}
                   onClick={() => setActiveTab(tab.id)}
                   className="gap-2"
                 >
@@ -241,7 +251,7 @@ export function HomeClient() {
                       ? tDesc(feature.labelKey)
                       : undefined
                   }
-                  cta={t('features.explore')}
+                  cta={t("features.explore")}
                   iconClassName={color.icon}
                   barClassName={color.bar}
                   ringClassName={color.ring}
@@ -255,22 +265,22 @@ export function HomeClient() {
       </section>
 
       {/* --------------------------- NEWSLETTER ------------------------- */}
-      <section id="newsletter" ref={register('newsletter')} className="py-20">
+      <section id="newsletter" ref={register("newsletter")} className="py-20">
         <div className="container mx-auto max-w-2xl text-center">
           <div className="bg-primary/10 mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl">
             <Mail className="text-primary size-9" />
           </div>
           <h2 className="text-3xl font-bold md:text-4xl">
-            {t('newsletter.title')}
+            {t("newsletter.title")}
           </h2>
           <p className="text-muted-foreground mt-2">
-            {t('newsletter.subtitle')}
+            {t("newsletter.subtitle")}
           </p>
 
           {submitted ? (
             <div className="mt-8 flex items-center justify-center gap-2 rounded-2xl border border-green-300 bg-green-50 p-4 text-green-700 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400">
               <CheckCircle2 className="size-5" />
-              {t('newsletter.success')}
+              {t("newsletter.success")}
             </div>
           ) : (
             <form
@@ -282,17 +292,17 @@ export function HomeClient() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('newsletter.placeholder')}
+                placeholder={t("newsletter.placeholder")}
                 className="flex-1"
               />
               <Button type="submit" size="lg" className="gap-2">
-                {t('newsletter.subscribe')}
+                {t("newsletter.subscribe")}
                 <Rocket className="size-4" />
               </Button>
             </form>
           )}
           <p className="text-muted-foreground mt-4 text-sm">
-            {t('newsletter.disclaimer')}
+            {t("newsletter.disclaimer")}
           </p>
         </div>
       </section>

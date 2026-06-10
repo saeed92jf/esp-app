@@ -1,14 +1,14 @@
 // src/app/layout.tsx
-import type { ReactNode } from 'react';
-import { cookies } from 'next/headers';
-import { getLocale } from 'next-intl/server';
-import { ThemeProvider } from 'next-themes';
-
+import type { ReactNode } from "react";
+import { cookies } from "next/headers";
+import { getLocale } from "next-intl/server";
+import { ThemeProvider } from "next-themes";
+import { TimeProvider } from "@/providers/time-provider";
 import {
   DEFAULT_PRIMARY_COLOR,
   PRIMARY_COLOR_STORAGE_KEY,
-} from '@/config/settings';
-import './globals.css';
+} from "@/config/settings";
+import "./globals.css";
 
 export default async function RootLayout({
   children,
@@ -18,7 +18,7 @@ export default async function RootLayout({
   // Current request locale (set by next-intl middleware). Works in the root
   // layout too, so the initial SSR has the correct lang/dir.
   const locale = await getLocale();
-  const dir = locale === 'fa' ? 'rtl' : 'ltr';
+  const dir = locale === "fa" ? "rtl" : "ltr";
 
   // Primary color is read from the cookie on the server (single source of
   // truth). Applied as a class on <html> => no inline script, no FOUC.
@@ -47,7 +47,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TimeProvider>{children}</TimeProvider>
         </ThemeProvider>
       </body>
     </html>

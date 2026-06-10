@@ -1,13 +1,13 @@
 /* src/app/globals.css */
 
-@import 'tailwindcss';
-@import '../styles/font/fonts.css';
-@import '../styles/tokens/index.css';
-@import '../styles/themes/primary-colors.css';
-@import '../styles/themes/semantic.css';
-@import '../styles/themes/semantic-gradients.css';
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+@import "tailwindcss";
+@import "../styles/font/fonts.css";
+@import "../styles/tokens/index.css";
+@import "../styles/themes/primary-colors.css";
+@import "../styles/themes/semantic.css";
+@import "../styles/themes/semantic-gradients.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -102,31 +102,31 @@ body {
   }
 
   .persian-text,
-  [lang='fa'] {
-    font-family: 'Shabnam', 'Inter', sans-serif;
+  [lang="fa"] {
+    font-family: "Shabnam", "Inter", sans-serif;
     direction: rtl;
   }
 
   .english-text,
-  [lang='en'] {
-    font-family: 'Inter', 'Shabnam', sans-serif;
+  [lang="en"] {
+    font-family: "Inter", "Shabnam", sans-serif;
     direction: ltr;
   }
 
   .auto-font {
-    font-family: 'Inter', 'Shabnam', sans-serif;
+    font-family: "Inter", "Shabnam", sans-serif;
   }
 
   .numbers-text {
-    font-family: 'Inter', 'Shabnam', sans-serif;
-    font-feature-settings: 'tnum';
+    font-family: "Inter", "Shabnam", sans-serif;
+    font-feature-settings: "tnum";
     font-variant-numeric: tabular-nums;
   }
   * {
     @apply border-border outline-ring/50;
   }
   button:not(:disabled),
-  [role='button']:not(:disabled) {
+  [role="button"]:not(:disabled) {
     cursor: pointer;
   }
   html {
@@ -135,6 +135,9 @@ body {
 }
 
 @theme inline {
+  --spacing-header: 4rem; /* 64px — matches h-16 in Header */
+  --spacing-sidebar: 15rem; /* 240px */
+  --spacing-content-max: 80rem; /* 1280px */
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);

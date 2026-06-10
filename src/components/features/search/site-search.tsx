@@ -1,27 +1,34 @@
 // src/components/features/search/site-search.tsx
-'use client';
+"use client";
 
-import { useCallback, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useCallback, useMemo } from "react";
+import { useTranslations } from "next-intl";
 
 // IMPORTANT: use the next-intl localized router so the /[locale] prefix
 // is added automatically (NAVIGATION hrefs are locale-unprefixed).
 // Adjust this path to match your project's navigation helper.
-import { useRouter } from '@/i18n/navigation';
+import { useRouter } from "@/i18n/navigation";
 
-import { SearchPopup } from './search-popup';
-import { NavSearchResult } from './nav-search-result';
-import { NAV_SEARCH_SOURCE, type NavSearchItem } from '@/lib/navigation-search';
+import { SearchPopup } from "./search-popup";
+import { NavSearchResult } from "./nav-search-result";
+import { NAV_SEARCH_SOURCE, type NavSearchItem } from "@/lib/navigation-search";
 
 /**
  * Site-wide search wired to the real NAVIGATION tree.
  * Label keys are resolved to localized text before searching, so matching
  * runs against what the user actually sees (plus the href as a fallback term).
  */
-export function SiteSearch({ className }: { className?: string }) {
+// site-search.tsx
+export function SiteSearch({
+  className,
+  onOpenChange,
+}: {
+  className?: string;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const router = useRouter();
-  const tItems = useTranslations('Menu.items');
-  const tSections = useTranslations('Menu.sections');
+  const tItems = useTranslations("Menu.items");
+  const tSections = useTranslations("Menu.sections");
 
   // Resolve i18n labels once per locale change. Searching needs the
   // translated strings, not the raw "Menu.*" keys.
@@ -50,6 +57,7 @@ export function SiteSearch({ className }: { className?: string }) {
       getSearchableText={getSearchableText}
       renderItem={NavSearchResult}
       onSelect={(item) => router.push(item.href)}
+      onOpenChange={onOpenChange}
     />
   );
 }

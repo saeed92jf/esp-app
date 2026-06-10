@@ -1,12 +1,17 @@
 // src/components/aparat/video-card.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Image from 'next/image';
-import { Calendar, Eye, Play, VideoOff } from 'lucide-react';
-import type { VideoItem } from '@/types';
-import { cn } from '@/lib/utils';
-import { formatDuration, formatViews, formatDate } from '@/utils/aparatUtils';
+import { useState } from "react";
+import Image from "next/image";
+import { Calendar, Eye, Play, VideoOff } from "lucide-react";
+import type { VideoItem } from "@/types";
+import { cn } from "@/lib/utils";
+import {
+  formatDuration,
+  formatViews,
+  formatRelativeTime,
+} from "@/utils/aparatUtils";
+import { useTranslations } from "next-intl";
 
 interface VideoCardProps {
   video: VideoItem;
@@ -20,6 +25,8 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
   const [hasError, setHasError] = useState(false);
   const poster = video.small_poster || video.big_poster;
   const showImage = poster && !hasError;
+  const tr = useTranslations("Aparat.time");
+  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
 
   return (
     <button
@@ -27,10 +34,10 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
       onClick={onClick}
       aria-pressed={isActive}
       className={cn(
-        'group bg-card block w-full overflow-hidden rounded-lg border text-start transition-all duration-300',
+        "group bg-card block w-full overflow-hidden rounded-lg border text-start transition-all duration-300",
         isActive
-          ? 'ring-primary scale-[1.02] shadow-lg ring-2'
-          : 'hover:ring-primary/50 hover:scale-[1.02] hover:shadow-lg hover:ring-1',
+          ? "ring-primary scale-[1.02] shadow-lg ring-2"
+          : "hover:ring-primary/50 hover:scale-[1.02] hover:shadow-lg hover:ring-1",
       )}
     >
       <div className="bg-muted relative aspect-video overflow-hidden">
@@ -45,7 +52,6 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          // In-app fallback when no poster is available or the image fails.
           <div className="flex h-full w-full items-center justify-center">
             <VideoOff className="text-muted-foreground size-8" />
           </div>
@@ -77,7 +83,7 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
           <span>•</span>
           <span className="flex items-center gap-1">
             <Calendar className="size-3" />
-            {formatDate(video.sdate)}
+            {timeAgo}
           </span>
         </div>
       </div>

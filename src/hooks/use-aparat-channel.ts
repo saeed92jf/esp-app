@@ -1,65 +1,32 @@
-/* src/hook/use-aparat-channel.ts */
+"use client";
 
-'use client';
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { aparatApi } from "@/services/aparat-api";
+import type { Category, Profile, VideoListItem } from "@/types";
 
-import { aparatApi } from '@/services/aparat-api';
-import type { Category, ChannelInfo, Profile, VideoListItem } from '@/types';
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-// Number of videos sampled for the "random / suggested" rail.
 const RANDOM_COUNT = 12;
+const RESAMPLE_EVERY = 50; // ✅ correct value
 
-/**
- * Return a random sample of `count` items using a Fisher-Yates shuffle on a
- * shallow copy. The source array is never mutated.
- */
+// ─── Sample helper ───────────────────────────────────────────────────────────
+
 function sample<T>(source: readonly T[], count: number): T[] {
   const copy = source.slice();
-  for (let i = copy.length - 1; i > 0; i -= 1) {
+  const limit = Math.min(count, copy.length);
+
+  for (let i = copy.length - 1; i > copy.length - 1 - limit; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return copy.slice(0, Math.min(count, copy.length));
+
+  return copy.slice(copy.length - limit);
 }
 
-export interface UseAparatChannelResult {
-  /** Channel profile (avatar, name, ...) resolved from `getProfile`. */
-  channel: Profile | null;
-  /** All videos loaded so far across paginated stream pulls. */
-  videos: VideoListItem[];
-  /** Channel categories used to build the category tabs. */
-  categories: Category[];
-  /** A random subset of `videos` for the suggested rail. */
-  randomVideos: VideoListItem[];
-  /** Currently selected video for the player. */
-  selectedVideo: VideoListItem | null;
-  /** True once the first page is ready and content can be revealed. */
-  showContent: boolean;
-  /** True while a background "load more" pull is in flight. */
-  isLoadingMore: boolean;
-  /** False once the stream is exhausted. */
-  hasMore: boolean;
-  /** Last error message, if any. */
-  error: string | null;
-  /** Imperatively select a video for the player. */
-  selectVideo: (video: VideoListItem) => void;
-  /** Manually request the next page (e.g. on scroll / "load more"). */
-  loadMore: () => void;
-}
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
-/**
- * Loads and paginates an Aparat channel by username.
- *
- * Concurrency safety: the live iterator identity (`iteratorRef.current`) is
- * the single source of truth. Any page that resolves after the channel has
- * switched is discarded by comparing identities post-await.
- *
- * Purity note: de-duplication is computed *inside* the `setVideos` updater
- * from the current array (no external ref mutation), so the updater stays
- * pure and behaves correctly under React Strict Mode's double-invocation.
- */
-export function useAparatChannel(username: string): UseAparatChannelResult {
+export function useAparatChannel(username: string) {
   const [channel, setChannel] = useState<Profile | null>(null);
   const [videos, setVideos] = useState<VideoListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -72,113 +39,138 @@ export function useAparatChannel(username: string): UseAparatChannelResult {
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Active async generator for the current channel's video stream.
+  // ── Refs ────────────────────────────────────────────────────────────────
+
+  const abortRef = useRef<AbortController>(new AbortController());
   const iteratorRef = useRef<AsyncGenerator<VideoListItem[]> | null>(null);
-  // Cancellation flag passed into the stream; flipped true on cleanup.
-  const cancelledRef = useRef(false);
-  // Prevents overlapping pulls from the same stream.
   const inFlightRef = useRef(false);
 
-  /**
-   * Append a page of videos. De-duplication is derived from the current
-   * array on each call, keeping this updater pure (no external side effects),
-   * which is required for correct behavior under Strict Mode.
-   */
+  // ✅ id is string in our project
+  const seenIdsRef = useRef<Set<number>>(new Set());
+
+  const pendingPageRef = useRef<Promise<
+    IteratorResult<VideoListItem[]>
+  > | null>(null);
+
+  const lastSampleCountRef = useRef(0);
+
+  // ── Helpers ─────────────────────────────────────────────────────────────
+
   const appendVideos = useCallback((next: VideoListItem[]) => {
-    setVideos((current) => {
-      // Build the seen-set from the CURRENT list every time -> pure updater.
-      const seen = new Set<string | number>(current.map((v) => v.id));
-      const fresh: VideoListItem[] = [];
-      for (const video of next) {
-        if (seen.has(video.id)) continue;
-        seen.add(video.id);
-        fresh.push(video);
+    const fresh: VideoListItem[] = [];
+
+    for (const v of next) {
+      if (!seenIdsRef.current.has(v.id)) {
+        seenIdsRef.current.add(v.id);
+        fresh.push(v); // ✅ already normalized in API layer
       }
-      return fresh.length === 0 ? current : current.concat(fresh);
-    });
+    }
+
+    if (fresh.length === 0) return;
+
+    setVideos((prev) => prev.concat(fresh));
   }, []);
 
-  /**
-   * Pull exactly one page from the stream. Returns false when the stream is
-   * exhausted (or the page belongs to a stale channel) so callers know to
-   * stop.
-   */
+  const prefetchNextPage = useCallback(() => {
+    const iterator = iteratorRef.current;
+    const { signal } = abortRef.current;
+
+    if (!iterator || signal.aborted || pendingPageRef.current) return;
+
+    pendingPageRef.current = iterator.next();
+  }, []);
+
   const pullNextPage = useCallback(async (): Promise<boolean> => {
     const iterator = iteratorRef.current;
-    if (!iterator || inFlightRef.current || cancelledRef.current) return false;
+    const { signal } = abortRef.current;
+
+    if (!iterator || inFlightRef.current || signal.aborted) return false;
 
     inFlightRef.current = true;
-    try {
-      const { value, done } = await iterator.next();
 
-      // The channel may have switched while awaiting this page. The live
-      // iterator identity is the source of truth: if it no longer matches,
-      // this page belongs to a previous channel and MUST be discarded.
-      if (iteratorRef.current !== iterator) return false;
+    try {
+      const promise = pendingPageRef.current ?? iterator.next();
+      pendingPageRef.current = null;
+
+      const { value, done } = await promise;
+
+      if (iteratorRef.current !== iterator || signal.aborted) {
+        return false;
+      }
 
       if (done) {
         setHasMore(false);
         return false;
       }
-      if (value && value.length > 0) {
+
+      if (value?.length) {
         appendVideos(value);
+        prefetchNextPage();
       }
+
       return true;
     } finally {
-      // Only release the guard if we are still the active iterator; otherwise
-      // the new channel has already taken ownership of it.
       if (iteratorRef.current === iterator) {
         inFlightRef.current = false;
       }
     }
-  }, [appendVideos]);
+  }, [appendVideos, prefetchNextPage]);
 
-  /**
-   * Manual pagination trigger (scroll / "load more" button). Shows the
-   * loading indicator while the page is being pulled.
-   */
   const loadMore = useCallback(() => {
-    if (inFlightRef.current || !hasMore || cancelledRef.current) return;
+    const { signal } = abortRef.current;
+
+    if (inFlightRef.current || !hasMore || signal.aborted) return;
+
     setIsLoadingMore(true);
+
     void pullNextPage().finally(() => {
-      // Ignore the indicator update if the channel was switched mid-flight.
-      if (!cancelledRef.current) setIsLoadingMore(false);
+      if (!abortRef.current.signal.aborted) {
+        setIsLoadingMore(false);
+      }
     });
   }, [hasMore, pullNextPage]);
 
-  /** Imperatively select a video for the player. */
   const selectVideo = useCallback((video: VideoListItem) => {
     setSelectedVideo(video);
   }, []);
 
-  // Derive the suggested rail from the full, de-duplicated video list.
-  // Kept in a dedicated effect so the `setVideos` updater stays pure.
+  // ── Random rail (optimized) ────────────────────────────────────────────
+
   useEffect(() => {
-    setRandomVideos(sample(videos, RANDOM_COUNT));
+    if (videos.length === 0) return;
+
+    if (
+      lastSampleCountRef.current === 0 ||
+      videos.length - lastSampleCountRef.current >= RESAMPLE_EVERY
+    ) {
+      lastSampleCountRef.current = videos.length;
+      setRandomVideos(sample(videos, RANDOM_COUNT));
+    }
   }, [videos]);
 
-  // Default the player to the newest video (first item) once videos arrive,
-  // and only while nothing has been selected yet. Centralizing the default
-  // selection here prevents the client from racing the hook for ownership.
+  // ── Default selection ──────────────────────────────────────────────────
+
   useEffect(() => {
     setSelectedVideo((current) => current ?? videos[0] ?? null);
   }, [videos]);
 
-  // Load profile, categories, and the first video page whenever the channel
-  // changes. Fully resets all state so no data from the previous channel can
-  // bleed into the new one.
+  // ── Channel change ─────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!username) return;
 
-    cancelledRef.current = false;
-    const isCancelled = () => cancelledRef.current;
+    abortRef.current.abort();
+    abortRef.current = new AbortController();
 
-    // Take ownership of the in-flight guard for the new channel so a still
-    // pending pull from the previous channel cannot block the first page.
+    const { signal } = abortRef.current;
+
     inFlightRef.current = false;
-    iteratorRef.current = aparatApi.streamUserVideos(username, isCancelled);
+    seenIdsRef.current = new Set();
+    pendingPageRef.current = null;
+    lastSampleCountRef.current = 0;
 
-    // Reset all state when the channel changes.
+    iteratorRef.current = aparatApi.streamUserVideos(username, signal);
+
     setChannel(null);
     setVideos([]);
     setCategories([]);
@@ -189,31 +181,30 @@ export function useAparatChannel(username: string): UseAparatChannelResult {
     setHasMore(true);
     setError(null);
 
-    let active = true;
-
     const bootstrap = async () => {
       try {
-        // Fetch profile and categories in parallel; both require the username.
         const [profile, channelCategories] = await Promise.all([
-          aparatApi.getProfile(username),
-          aparatApi.getCategories(username),
+          aparatApi.getProfile(username, signal),
+          aparatApi.getCategories(username, signal),
         ]);
 
-        if (!active || cancelledRef.current) return;
+        if (signal.aborted) return;
+
         setChannel(profile);
         setCategories(channelCategories);
 
-        // Pull the first page so the UI has something to render immediately.
         await pullNextPage();
 
-        if (!active || cancelledRef.current) return;
-        setShowContent(true);
+        if (!signal.aborted) {
+          setShowContent(true);
+        }
       } catch (err) {
-        if (!active || cancelledRef.current) return;
+        if (signal.aborted) return;
+
         setError(
-          err instanceof Error ? err.message : 'خطا در بارگذاری کانال آپارات.',
+          err instanceof Error ? err.message : "خطا در بارگذاری کانال آپارات.",
         );
-        // Reveal content so the error state can be shown instead of a spinner.
+
         setShowContent(true);
       }
     };
@@ -221,12 +212,11 @@ export function useAparatChannel(username: string): UseAparatChannelResult {
     void bootstrap();
 
     return () => {
-      active = false;
-      // Signal the stream to stop. The real stale-page protection lives in
-      // the iterator-identity check inside pullNextPage.
-      cancelledRef.current = true;
+      abortRef.current.abort();
     };
   }, [username, pullNextPage]);
+
+  // ── Return ──────────────────────────────────────────────────────────────
 
   return {
     channel,
