@@ -38,7 +38,14 @@
       "subtitle": "Powerful tools to help you work smarter, not harder.",
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
     },
-    "quickAccess": { "loginRequired": "Login required" },
+    "quickAccess": {
+      "customize": "Customize",
+      "customizeLabel": "Customize Quick Access",
+      "customizeHint": "{selected} of {max} selected",
+      "capReached": "Maximum {max} items allowed",
+      "reset": "Reset to defaults",
+      "done": "Done"
+    },
     "stats": {
       "clients": "Happy Clients",
       "projects": "Successful Projects",

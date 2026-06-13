@@ -39,8 +39,14 @@
       "searchPlaceholder": "جستجو کنید: «CRM»، «پروژه‌ها»، «فاکتورها»..."
     },
     "quickAccess": {
-      "loginRequired": "نیازمند ورود"
+      "customize": "شخصی‌سازی",
+      "customizeLabel": "انتخاب دسترسی سریع",
+      "customizeHint": "{selected} از {max} آیتم انتخاب شده",
+      "capReached": "حداکثر {max} آیتم قابل انتخاب است",
+      "reset": "بازگشت به پیش‌فرض",
+      "done": "تأیید"
     },
+
     "stats": {
       "clients": "مشتری راضی",
       "projects": "پروژه موفق",

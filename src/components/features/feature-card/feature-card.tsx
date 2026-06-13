@@ -13,14 +13,12 @@ interface FeatureCardProps {
   cta?: string;
   badge?: string;
   iconClassName?: string;
+  iconBgClassName?: string;
+  cardBgClassName?: string;
   barClassName?: string;
-  ringClassName?: string;
+  borderClassName?: string; // ← جایگزین ringClassName
   isRtl?: boolean;
   className?: string;
-  /** Remove the card border when true. */
-  noBorder?: boolean;
-  /** Icon badge corner radius: 'xl' (default square-ish) or 'full' (circle). */
-  iconRounded?: "xl" | "full";
 }
 
 export function FeatureCard({
@@ -31,19 +29,23 @@ export function FeatureCard({
   cta,
   badge,
   iconClassName,
+  iconBgClassName,
+  cardBgClassName,
   barClassName,
-  ringClassName,
+  borderClassName,
   isRtl = false,
   className,
-  noBorder = false,
-  iconRounded = "xl",
 }: FeatureCardProps) {
   return (
     <Link href={href} className={cn("group block h-full", className)}>
       <Card
         className={cn(
-          "relative h-full overflow-hidden shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md motion-reduce:transform-none motion-reduce:transition-none",
-          noBorder ? "border-transparent" : "border-border/50",
+          "relative h-full overflow-hidden shadow-sm",
+          "border border-border/50 transition-[border-color,background-color,box-shadow,transform] duration-300 ease-out",
+          "hover:shadow-lg",
+          "motion-reduce:transform-none motion-reduce:transition-none",
+          cardBgClassName,
+          borderClassName,
         )}
       >
         {barClassName && (
@@ -60,31 +62,40 @@ export function FeatureCard({
           {Icon && (
             <span
               className={cn(
-                "bg-muted ring-border/50 flex size-12 items-center justify-center ring-1 transition-all duration-300 ease-out",
-                "group-hover:scale-105 group-hover:ring-2",
+                "flex size-12 items-center justify-center rounded-xl",
+                "ring-1 ring-border/50 transition-all duration-300 ease-out",
+                "group-hover:scale-105 group-hover:ring-0",
                 "motion-reduce:transform-none motion-reduce:transition-none",
-                iconRounded === "full" ? "rounded-full" : "rounded-xl",
-                ringClassName,
+                // bg: "bg-muted group-hover:bg-sky-500"
+                iconBgClassName ?? "bg-muted",
               )}
             >
-              <Icon className={cn("size-6", iconClassName)} strokeWidth={2} />
+              <Icon
+                className={cn(
+                  "size-6 transition-colors duration-300",
+                  // "text-sky-500 group-hover:text-white"
+                  iconClassName ?? "text-muted-foreground",
+                )}
+                strokeWidth={2}
+              />
             </span>
           )}
 
-          <h3 className="text-sm leading-tight font-semibold">{title}</h3>
+          <h3 className="text-lg font-semibold leading-tight">{title}</h3>
 
           {description && (
-            <p className="text-muted-foreground text-xs leading-relaxed">
+            <p className="text-sm leading-relaxed text-muted-foreground">
               {description}
             </p>
           )}
 
+          {/* badge */}
           {badge && (
-            <span className="text-muted-foreground text-xs">{badge}</span>
+            <span className="text-xs text-muted-foreground">{badge}</span>
           )}
 
           {cta && (
-            <span className="text-primary mt-1 inline-flex items-center gap-1 text-sm font-medium opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100">
+            <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100">
               {cta}
               <ArrowRight className={cn("size-4", isRtl && "rotate-180")} />
             </span>

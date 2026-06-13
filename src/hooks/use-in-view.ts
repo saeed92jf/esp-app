@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Configuration for the IntersectionObserver-based visibility hook.
@@ -22,8 +22,8 @@ export interface UseInViewOptions {
  */
 export function useInView<T extends HTMLElement = HTMLDivElement>(
   options: UseInViewOptions = {},
-): { ref: React.RefObject<T>; inView: boolean } {
-  const { threshold = 0, once = true, rootMargin = '0px' } = options;
+): { ref: React.RefObject<T | null>; inView: boolean } {
+  const { threshold = 0, once = true, rootMargin = "0px" } = options;
 
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(false);

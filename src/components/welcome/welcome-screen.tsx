@@ -1,10 +1,10 @@
 /* src/components/welcome/welcome-screen.tsx */
 
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { PUBLIC_WELCOME_ITEMS } from '@/config/navigation';
-import { FeatureCard } from '@/components/shared/feature-card';
+import { useTranslations } from "next-intl";
+import { PUBLIC_WELCOME_ITEMS } from "@/config/navigation";
+import { FeatureCard } from "@/components/features/feature-card/feature-card";
 
 /**
  * Public landing screen for unauthenticated visitors.
@@ -14,20 +14,20 @@ import { FeatureCard } from '@/components/shared/feature-card';
  * Named export `WelcomeScreen` to match the import in auth-gate.tsx
  * and to stay consistent with the rest of the components.
  */
-export function WelcomeScreen(): import('react/jsx-runtime').JSX.Element {
-  const tWelcome = useTranslations('Welcome');
-  const tItems = useTranslations('Menu.items');
-  const tDesc = useTranslations('Menu.descriptions');
+export function WelcomeScreen(): import("react/jsx-runtime").JSX.Element {
+  const tWelcome = useTranslations("Welcome");
+  const tItems = useTranslations("Menu.items");
+  const tDesc = useTranslations("Menu.descriptions");
 
   return (
     <section className="mx-auto w-full max-w-6xl px-4 py-16 sm:py-24">
       {/* Hero header */}
       <header className="mx-auto max-w-2xl text-center">
         <h1 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-          {tWelcome('title')}
+          {tWelcome("title")}
         </h1>
         <p className="text-muted-foreground mt-4 text-base sm:text-lg">
-          {tWelcome('subtitle')}
+          {tWelcome("subtitle")}
         </p>
       </header>
 

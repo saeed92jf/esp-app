@@ -25,6 +25,7 @@ function sample<T>(source: readonly T[], count: number): T[] {
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
+export type UseAparatChannelResult = ReturnType<typeof useAparatChannel>;
 
 export function useAparatChannel(username: string) {
   const [channel, setChannel] = useState<Profile | null>(null);

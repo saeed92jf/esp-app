@@ -1,6 +1,6 @@
 // src/app/[locale]/page.tsx
-import { AuthGate } from '@/components/auth/auth-gate';
-import { HomeClient } from '@/components/home/home-client';
+import { AuthGate } from "@/components/auth/auth-gate";
+import { HomeClient } from "@/components/home/home-client";
 
 /**
  * Home route. The actual content is gated: guests see the WelcomeScreen,
@@ -9,7 +9,7 @@ import { HomeClient } from '@/components/home/home-client';
 export default function HomePage() {
   return (
     <AuthGate>
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
+      <div className="mx-auto w-full max-w-full px-4 py-10">
         <HomeClient />
       </div>
     </AuthGate>
