@@ -359,6 +359,14 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         welcome: true,
       },
+      {
+        labelKey: "standards",
+        href: "/standards",
+        icon: Library,
+        color: "cyan",
+        public: true,
+        welcome: true,
+      },
     ],
   },
   {

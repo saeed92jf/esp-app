@@ -132,6 +132,30 @@ body {
   html {
     @apply font-sans;
   }
+
+  /* Hexagon shape for Non-API standard nodes */
+  .hexagon {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  }
+
+  /* Octagonal central hub shape similar to the reference diagram */
+  .web-core-node {
+    clip-path: polygon(14% 0%, 86% 0%, 100% 50%, 86% 100%, 14% 100%, 0% 50%);
+  }
+
+  /* Markmap custom styles */
+  .markmap-node circle {
+    cursor: pointer;
+  }
+
+  .markmap-node text {
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .markmap-node:hover circle {
+    opacity: 0.8;
+  }
 }
 
 @theme inline {
@@ -178,6 +202,8 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ========== clip-path ================== */
 }
 
 :root {

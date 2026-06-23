@@ -168,7 +168,8 @@
       "imageGallery": "Image Gallery",
       "videos": "Videos",
       "audio": "Audio",
-      "mediaLibrary": "Media Library"
+      "mediaLibrary": "Media Library",
+      "standards": "Standards"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -192,7 +193,8 @@
       "imageGallery": "Browse and manage images in a tidy gallery.",
       "videos": "Watch and organize your videos in one place.",
       "audio": "Access and manage your audio files.",
-      "mediaLibrary": "A unified library for all your media files."
+      "mediaLibrary": "A unified library for all your media files.",
+      "standards": "API Standards"
     }
   },
   "NotFound": {
