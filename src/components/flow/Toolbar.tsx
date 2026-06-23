@@ -1,13 +1,14 @@
-// Toolbar.tsx - Unified minimal toolbar with all controls
+// src/components/flow/Toolbar.tsx
+// Unified minimal toolbar with all controls.
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { Node, Edge } from "@xyflow/react";
 import {
-  Plus,
   Circle,
   Square,
   Hexagon,
+  Pentagon,
   Download,
   Upload,
   Save,
@@ -16,6 +17,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
+import { toast } from "sonner";
 import {
   exportFlowState,
   importFlowState,
@@ -35,6 +37,16 @@ interface UnifiedToolbarProps {
   canRedo: boolean;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const genId = () =>
+  `node-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+const randomPos = () => ({
+  x: Math.random() * 400 + 100,
+  y: Math.random() * 300 + 100,
+});
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export function UnifiedToolbar({
   onAddNode,
   nodes,
@@ -48,185 +60,173 @@ export function UnifiedToolbar({
   canRedo,
 }: UnifiedToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
 
-  // Generate unique ID for new nodes
-  const generateId = () =>
-    `node-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  // Add Hub node
+  // ── Add node helpers ────────────────────────────────────────────────────────
   const addHub = useCallback(() => {
-    const newNode: Node = {
-      id: generateId(),
+    onAddNode({
+      id: genId(),
       type: "hub",
-      position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
-      data: {
-        label: "New Hub",
-        description: "Hub description",
-      },
-    };
-    onAddNode(newNode);
+      position: randomPos(),
+      data: { label: "New Hub" },
+    });
   }, [onAddNode]);
 
-  // Add Category node
   const addCategory = useCallback(() => {
-    const newNode: Node = {
-      id: generateId(),
+    onAddNode({
+      id: genId(),
       type: "category",
-      position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
-      data: {
-        label: "New Category",
-        categoryLabel: "Category Group",
-      },
-    };
-    onAddNode(newNode);
+      position: randomPos(),
+      data: { label: "New Category", categoryLabel: "Category Group" },
+    });
   }, [onAddNode]);
 
-  // Add Standard node
+  const addSubcategory = useCallback(() => {
+    onAddNode({
+      id: genId(),
+      type: "subcategory",
+      position: randomPos(),
+      data: { label: "New Subcategory" },
+    });
+  }, [onAddNode]);
+
   const addStandard = useCallback(() => {
-    const newNode: Node = {
-      id: generateId(),
+    onAddNode({
+      id: genId(),
       type: "standard",
-      position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
+      position: randomPos(),
       data: {
         label: "NEW-STD",
+        standardType: "OTHER", // ← correct field name
+        standardNumber: "",
         fullName: "New Standard",
-        description: "Standard description",
-        type: "OTHER",
+        description: "",
         url: "",
       },
-    };
-    onAddNode(newNode);
+    });
   }, [onAddNode]);
 
-  // Handle export to JSON file
+  // ── File operations ─────────────────────────────────────────────────────────
   const handleExport = useCallback(() => {
     const filename = `equipment-diagram-${new Date().toISOString().slice(0, 10)}.json`;
     exportFlowState(nodes, edges, filename);
+    toast.success("دیاگرام صادر شد");
   }, [nodes, edges]);
 
-  // Handle import from JSON file
   const handleImport = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       try {
         const state = await importFlowState(file);
         onImport(state.nodes, state.edges);
-        alert("دیاگرام با موفقیت وارد شد!");
-      } catch (error) {
-        console.error("Import failed:", error);
-        alert("خطا در وارد کردن فایل. لطفاً فرمت فایل را بررسی کنید.");
+        toast.success("دیاگرام با موفقیت وارد شد");
+      } catch {
+        toast.error("خطا در وارد کردن فایل. لطفاً فرمت فایل را بررسی کنید.");
       }
-
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     },
     [onImport],
   );
 
-  // Trigger file input click
-  const triggerFileInput = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
+  const handleSave = useCallback(() => {
+    onSave();
+    toast.success("ذخیره در مرورگر انجام شد");
+  }, [onSave]);
 
-  // Handle reset with confirmation
   const handleReset = useCallback(() => {
-    if (
-      confirm(
-        "آیا مطمئن هستید که می‌خواهید دیاگرام را به حالت اولیه بازگردانید? تمام تغییرات از بین می‌رود.",
-      )
-    ) {
-      onReset();
-      clearFlowState();
+    if (!confirmReset) {
+      setConfirmReset(true);
+      setTimeout(() => setConfirmReset(false), 3000); // auto-cancel after 3 s
+      return;
     }
-  }, [onReset]);
+    onReset();
+    clearFlowState();
+    setConfirmReset(false);
+    toast.info("دیاگرام به حالت اولیه بازگشت");
+  }, [confirmReset, onReset]);
 
-  // Handle clear saved state
   const handleClearSaved = useCallback(() => {
-    if (confirm("پاک کردن دیاگرام ذخیره شده از مرورگر?")) {
-      clearFlowState();
-      alert("وضعیت ذخیره شده پاک شد!");
-    }
+    clearFlowState();
+    toast.info("وضعیت ذخیره‌شده پاک شد");
   }, []);
+
+  // ── Shared button class ─────────────────────────────────────────────────────
+  const iconBtn =
+    "rounded-md p-1.5 text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-30";
+  const labelBtn =
+    "flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted";
+  const divider = "mx-1 h-6 w-px bg-border";
 
   return (
-    <div className="flex h-12 w-full items-center justify-between border-b border-warm-border bg-surface-primary px-4 shadow-sm">
-      {/* Left section: Add nodes */}
-      <div className="flex items-center gap-1">
-        <button
-          onClick={addHub}
-          className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-warm-border/30"
-          title="افزودن Hub"
-        >
-          <Circle className="h-4 w-4" />
+    <div className="flex h-12 w-full items-center justify-between border-b border-border bg-card px-4 shadow-sm">
+      {/* ── Left: add nodes + undo/redo ────────────────────────────────────── */}
+      <div className="flex items-center gap-0.5">
+        <button onClick={addHub} className={labelBtn} title="افزودن Hub">
+          <Circle className="h-4 w-4 text-amber-500" />
           <span className="hidden sm:inline">Hub</span>
         </button>
-
         <button
           onClick={addCategory}
-          className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-warm-border/30"
+          className={labelBtn}
           title="افزودن Category"
         >
-          <Square className="h-4 w-4" />
+          <Square className="h-4 w-4 text-blue-500" />
           <span className="hidden sm:inline">Category</span>
         </button>
-
+        <button
+          onClick={addSubcategory}
+          className={labelBtn}
+          title="افزودن Subcategory"
+        >
+          <Pentagon className="h-4 w-4 text-violet-500" />
+          <span className="hidden sm:inline">Subcategory</span>
+        </button>
         <button
           onClick={addStandard}
-          className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-warm-border/30"
+          className={labelBtn}
           title="افزودن Standard"
         >
-          <Hexagon className="h-4 w-4" />
+          <Hexagon className="h-4 w-4 text-green-500" />
           <span className="hidden sm:inline">Standard</span>
         </button>
 
-        <div className="mx-2 h-6 w-px bg-warm-border" />
+        <div className={divider} />
 
-        {/* Undo/Redo */}
         <button
           onClick={undo}
           disabled={!canUndo}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30 disabled:cursor-not-allowed disabled:opacity-30"
+          className={iconBtn}
           title="Undo (Ctrl+Z)"
         >
           <Undo2 className="h-4 w-4" />
         </button>
-
         <button
           onClick={redo}
           disabled={!canRedo}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30 disabled:cursor-not-allowed disabled:opacity-30"
+          className={iconBtn}
           title="Redo (Ctrl+Y)"
         >
           <Redo2 className="h-4 w-4" />
         </button>
       </div>
 
-      {/* Right section: File operations */}
-      <div className="flex items-center gap-1">
+      {/* ── Right: file operations ──────────────────────────────────────────── */}
+      <div className="flex items-center gap-0.5">
         <button
-          onClick={onSave}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30"
+          onClick={handleSave}
+          className={iconBtn}
           title="ذخیره در مرورگر"
         >
           <Save className="h-4 w-4" />
         </button>
-
-        <button
-          onClick={handleExport}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30"
-          title="خروجی JSON"
-        >
+        <button onClick={handleExport} className={iconBtn} title="خروجی JSON">
           <Download className="h-4 w-4" />
         </button>
-
         <button
-          onClick={triggerFileInput}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30"
-          title="ورود JSON"
+          onClick={() => fileInputRef.current?.click()}
+          className={iconBtn}
+          title="ورودی JSON"
         >
           <Upload className="h-4 w-4" />
         </button>
@@ -238,19 +238,24 @@ export function UnifiedToolbar({
           className="hidden"
         />
 
-        <div className="mx-2 h-6 w-px bg-warm-border" />
+        <div className={divider} />
 
+        {/* Reset with inline confirm */}
         <button
           onClick={handleReset}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30"
-          title="بازگشت به حالت اولیه"
+          className={`${iconBtn} ${confirmReset ? "text-destructive ring-1 ring-destructive" : ""}`}
+          title={
+            confirmReset
+              ? "دوباره کلیک کنید تا تأیید شود"
+              : "بازگشت به حالت اولیه"
+          }
         >
           <RotateCcw className="h-4 w-4" />
         </button>
 
         <button
           onClick={handleClearSaved}
-          className="rounded-md p-1.5 text-ink transition-colors hover:bg-warm-border/30"
+          className={iconBtn}
           title="پاک کردن ذخیره"
         >
           <Trash2 className="h-4 w-4" />

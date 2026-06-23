@@ -1,3 +1,4 @@
+// src/components/flow/FlowEditor.tsx
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -13,12 +14,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-// Custom nodes
-import HubNode from "./nodes/HubNode";
-import CategoryNode from "./nodes/CategoryNode";
-import StandardNode from "./nodes/StandardNode";
-import SubcategoryNode from "./nodes/SubcategoryNode";
-import ButtonEdge from "./edges/ButtonEdge";
+// Node + edge registries
+import { nodeTypes } from "./nodes";
+import { edgeTypes } from "./edges";
+
+// Panels
+import DiagramLegend from "./DiagramLegend";
 import { EdgeOptionsPanel } from "./edges/EdgeOptionsPanel";
 import { UnifiedToolbar } from "./Toolbar";
 import { NodeEditPanel } from "./NodeEditPanel";
@@ -26,20 +27,20 @@ import { NodeEditPanel } from "./NodeEditPanel";
 // State management
 import { useFlowState } from "./useFlowState";
 
-// Initial data
+// Initial diagram data (built from equipmentDiagramData + positions)
 import { initialNodes, initialEdges } from "@/data/equipmentDiagramBuilder";
 
-const nodeTypes = {
-  hub: HubNode,
-  category: CategoryNode,
-  standard: StandardNode,
-  subcategory: SubcategoryNode,
+// ─── MiniMap colour helper ────────────────────────────────────────────────────
+const MINIMAP_COLORS: Record<string, string> = {
+  hub: "#d97706",
+  category: "#2563eb",
+  subcategory: "#7c3aed",
+  standard: "#22c55e",
 };
+const minimapNodeColor = (node: Node) =>
+  MINIMAP_COLORS[node.type ?? ""] ?? "#6b7280";
 
-const edgeTypes = {
-  buttonedge: ButtonEdge,
-};
-
+// ─── Inner component (has access to ReactFlow context) ───────────────────────
 function FlowEditorContent() {
   const {
     nodes,
@@ -90,25 +91,25 @@ function FlowEditorContent() {
     [setSelectedEdgeId],
   );
 
+  // Delete selected via keyboard
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (
-          document.activeElement?.tagName !== "INPUT" &&
-          document.activeElement?.tagName !== "TEXTAREA"
-        ) {
-          e.preventDefault();
-          deleteSelectedNodes();
-        }
+    const handler = (e: KeyboardEvent) => {
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        document.activeElement?.tagName !== "INPUT" &&
+        document.activeElement?.tagName !== "TEXTAREA" &&
+        document.activeElement?.tagName !== "SELECT"
+      ) {
+        e.preventDefault();
+        deleteSelectedNodes();
       }
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [deleteSelectedNodes]);
 
   const handleImport = useCallback(
-    (importedNodes: Node[], importedEdges: typeof edges) => {
+    (importedNodes: Node[], importedEdges: Edge[]) => {
       setNodes(importedNodes);
       setEdges(importedEdges);
     },
@@ -116,12 +117,11 @@ function FlowEditorContent() {
   );
 
   const selectedNode = selectedNodeId
-    ? nodes.find((n) => n.id === selectedNodeId) || null
+    ? (nodes.find((n) => n.id === selectedNodeId) ?? null)
     : null;
 
   return (
     <div className="flex h-[calc(100vh-4.5rem)] w-full flex-col">
-      {/* Unified Toolbar */}
       <UnifiedToolbar
         onAddNode={addNode}
         nodes={nodes}
@@ -135,7 +135,7 @@ function FlowEditorContent() {
         canRedo={canRedo}
       />
 
-      {/* Flow canvas */}
+      {/* Canvas */}
       <div className="relative flex-1">
         <ReactFlow
           nodes={nodes}
@@ -149,28 +149,18 @@ function FlowEditorContent() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView
-          className="bg-surface-secondary"
+          className="bg-muted/30"
         >
           <Background color="#94a3b8" gap={16} />
           <Controls />
           <MiniMap
-            nodeColor={(node) => {
-              switch (node.type) {
-                case "hub":
-                  return "#f59e0b";
-                case "category":
-                  return "#3b82f6";
-                case "standard":
-                  return "#10b981";
-                case "subcategory":
-                  return "#8b5cf6";
-                default:
-                  return "#6b7280";
-              }
-            }}
-            className="bg-surface-primary! border-warm-border!"
+            nodeColor={minimapNodeColor}
+            className="bg-card! border-border!"
           />
         </ReactFlow>
+
+        {/* Overlays */}
+        <DiagramLegend />
 
         {selectedEdgeId && (
           <EdgeOptionsPanel
@@ -190,6 +180,7 @@ function FlowEditorContent() {
   );
 }
 
+// ─── Public export (wraps provider) ─────────────────────────────────────────
 export function FlowEditor() {
   return (
     <ReactFlowProvider>

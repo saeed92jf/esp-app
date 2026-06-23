@@ -1,4 +1,5 @@
-// useFlowState.ts - Custom hook for flow state management with undo/redo
+// src/components/flow/useFlowState.ts
+// Custom hook for flow state management with undo/redo.
 import { useState, useCallback, useEffect, useRef } from "react";
 import type {
   Node,
@@ -17,85 +18,113 @@ interface HistoryState {
 
 const MAX_HISTORY = 50;
 
-export function useFlowState(initialNodes: Node[], initialEdges: Edge[]) {
-  // Try to load saved state, fallback to initial data
-  const savedState = loadFlowState();
+// ─── Lazy initialiser – safe on the server (localStorage guarded inside) ──────
+function loadOrFallback<T>(fallback: T[], storageKey: "nodes" | "edges"): T[] {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const saved = loadFlowState();
+    if (saved && Array.isArray(saved[storageKey])) {
+      return saved[storageKey] as T[];
+    }
+  } catch {
+    // ignore
+  }
+  return fallback;
+}
 
-  const [nodes, setNodes] = useState<Node[]>(savedState?.nodes || initialNodes);
-  const [edges, setEdges] = useState<Edge[]>(savedState?.edges || initialEdges);
+export function useFlowState(initialNodes: Node[], initialEdges: Edge[]) {
+  // ── State – lazy initialisers avoid SSR / localStorage access at module level
+  const [nodes, setNodes] = useState<Node[]>(() =>
+    loadOrFallback<Node>(initialNodes, "nodes"),
+  );
+  const [edges, setEdges] = useState<Edge[]>(() =>
+    loadOrFallback<Edge>(initialEdges, "edges"),
+  );
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  // History for undo/redo
-  const [history, setHistory] = useState<HistoryState[]>([{ nodes, edges }]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const isApplyingHistory = useRef(false);
+  // ── History ─────────────────────────────────────────────────────────────────
+  // Stored in refs to avoid dependency-array issues; derived UI state (canUndo /
+  // canRedo) is exposed as separate booleans that re-render only on change.
+  const historyRef = useRef<HistoryState[]>([{ nodes, edges }]);
+  const indexRef = useRef(0);
+  const skipRef = useRef(false); // true while applying undo/redo
 
-  // Add to history when nodes or edges change
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const updateCaps = useCallback(() => {
+    setCanUndo(indexRef.current > 0);
+    setCanRedo(indexRef.current < historyRef.current.length - 1);
+  }, []);
+
+  // Push a snapshot whenever nodes or edges change (but not during undo/redo).
   useEffect(() => {
-    if (isApplyingHistory.current) return;
-
-    const newState = { nodes, edges };
-    setHistory((prev) => {
-      const newHistory = prev.slice(0, historyIndex + 1);
-      newHistory.push(newState);
-      return newHistory.slice(-MAX_HISTORY);
-    });
-    setHistoryIndex((prev) => Math.min(prev + 1, MAX_HISTORY - 1));
-  }, [nodes, edges, historyIndex]);
-
-  // Undo/Redo handlers
-  const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      isApplyingHistory.current = true;
-      const prevState = history[historyIndex - 1];
-      setNodes(prevState.nodes);
-      setEdges(prevState.edges);
-      setHistoryIndex(historyIndex - 1);
-      setTimeout(() => {
-        isApplyingHistory.current = false;
-      }, 0);
+    if (skipRef.current) return;
+    const snap: HistoryState = { nodes, edges };
+    // Truncate future states then append
+    historyRef.current = historyRef.current.slice(0, indexRef.current + 1);
+    historyRef.current.push(snap);
+    if (historyRef.current.length > MAX_HISTORY) {
+      historyRef.current.shift();
+    } else {
+      indexRef.current += 1;
     }
-  }, [history, historyIndex]);
+    updateCaps();
+    // We intentionally exclude updateCaps from deps to avoid infinite loops.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nodes, edges]);
+
+  const undo = useCallback(() => {
+    if (indexRef.current <= 0) return;
+    skipRef.current = true;
+    indexRef.current -= 1;
+    const { nodes: n, edges: e } = historyRef.current[indexRef.current];
+    setNodes(n);
+    setEdges(e);
+    updateCaps();
+    // Allow next change to be tracked after React flushes
+    setTimeout(() => {
+      skipRef.current = false;
+    }, 0);
+  }, [updateCaps]);
 
   const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      isApplyingHistory.current = true;
-      const nextState = history[historyIndex + 1];
-      setNodes(nextState.nodes);
-      setEdges(nextState.edges);
-      setHistoryIndex(historyIndex + 1);
-      setTimeout(() => {
-        isApplyingHistory.current = false;
-      }, 0);
-    }
-  }, [history, historyIndex]);
+    if (indexRef.current >= historyRef.current.length - 1) return;
+    skipRef.current = true;
+    indexRef.current += 1;
+    const { nodes: n, edges: e } = historyRef.current[indexRef.current];
+    setNodes(n);
+    setEdges(e);
+    updateCaps();
+    setTimeout(() => {
+      skipRef.current = false;
+    }, 0);
+  }, [updateCaps]);
 
-  // Keyboard shortcuts
+  // ── Keyboard shortcuts ───────────────────────────────────────────────────────
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      if (!mod) return;
+      if (e.key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
-      } else if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "y" || (e.key === "z" && e.shiftKey))
-      ) {
+      }
+      if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
         e.preventDefault();
         redo();
       }
     };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
   }, [undo, redo]);
 
-  // Auto-save setup
+  // ── Auto-save ────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const cleanup = setupAutoSave(() => ({ nodes, edges }));
-    return cleanup;
+    return setupAutoSave(() => ({ nodes, edges }));
   }, [nodes, edges]);
 
-  // Standard ReactFlow handlers
+  // ── React Flow handlers ──────────────────────────────────────────────────────
   const onNodesChange: OnNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [],
@@ -112,49 +141,50 @@ export function useFlowState(initialNodes: Node[], initialEdges: Edge[]) {
     [],
   );
 
-  // Manual save
+  // ── Manual save ──────────────────────────────────────────────────────────────
   const saveState = useCallback(() => {
     saveFlowState(nodes, edges);
   }, [nodes, edges]);
 
-  // Reset to initial data
+  // ── Reset ────────────────────────────────────────────────────────────────────
   const resetState = useCallback(() => {
+    skipRef.current = true;
     setNodes(initialNodes);
     setEdges(initialEdges);
-    setHistory([{ nodes: initialNodes, edges: initialEdges }]);
-    setHistoryIndex(0);
+    historyRef.current = [{ nodes: initialNodes, edges: initialEdges }];
+    indexRef.current = 0;
+    setCanUndo(false);
+    setCanRedo(false);
+    setTimeout(() => {
+      skipRef.current = false;
+    }, 0);
   }, [initialNodes, initialEdges]);
 
-  // Delete selected nodes
+  // ── Delete selected ──────────────────────────────────────────────────────────
   const deleteSelectedNodes = useCallback(() => {
-    setNodes((nds) => nds.filter((node) => !node.selected));
-    setEdges((eds) =>
-      eds.filter((edge) => {
-        const sourceNode = nodes.find((n) => n.id === edge.source);
-        const targetNode = nodes.find((n) => n.id === edge.target);
-        return (
-          sourceNode &&
-          !sourceNode.selected &&
-          targetNode &&
-          !targetNode.selected
-        );
-      }),
-    );
-  }, [nodes]);
+    setNodes((nds) => {
+      const selectedIds = new Set(
+        nds.filter((n) => n.selected).map((n) => n.id),
+      );
+      setEdges((eds) =>
+        eds.filter(
+          (e) => !selectedIds.has(e.source) && !selectedIds.has(e.target),
+        ),
+      );
+      return nds.filter((n) => !n.selected);
+    });
+  }, []);
 
-  // Add new node
+  // ── Add / update ─────────────────────────────────────────────────────────────
   const addNode = useCallback((node: Node) => {
     setNodes((nds) => [...nds, node]);
   }, []);
 
-  // Update node data
   const updateNodeData = useCallback(
     (nodeId: string, data: Partial<Node["data"]>) => {
       setNodes((nds) =>
-        nds.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, ...data } }
-            : node,
+        nds.map((n) =>
+          n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n,
         ),
       );
     },
@@ -173,8 +203,8 @@ export function useFlowState(initialNodes: Node[], initialEdges: Edge[]) {
     resetState,
     undo,
     redo,
-    canUndo: historyIndex > 0,
-    canRedo: historyIndex < history.length - 1,
+    canUndo,
+    canRedo,
     deleteSelectedNodes,
     addNode,
     updateNodeData,

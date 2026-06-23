@@ -177,7 +177,8 @@ body {
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
+  --color-ring: var(--shape-ring);
+  --color-shape-ring: var(--shape-ring);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -213,6 +214,7 @@ body {
   --card-foreground: oklch(0.148 0.004 228.8);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.148 0.004 228.8);
+  --shape-ring: oklch(56.018% 0.0211 213.652 / 0.637);
 
   /* ---- DYNAMIC PRIMARY (light) ----
      The shadcn --primary token is driven by the HSL switcher defined in
@@ -262,6 +264,7 @@ body {
   --card-foreground: oklch(0.987 0.002 197.1);
   --popover: oklch(0.218 0.008 223.9);
   --popover-foreground: oklch(0.987 0.002 197.1);
+  --shape-ring: oklch(98.658% 0.00216 199.99 / 0.616);
 
   /* ---- DYNAMIC PRIMARY (dark) ----
      +10% lightness to match the dark-mode shift typically used in

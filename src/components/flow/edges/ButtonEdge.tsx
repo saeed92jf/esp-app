@@ -7,17 +7,6 @@ import {
   type Edge,
 } from "@xyflow/react";
 
-const buttonStyle = {
-  width: 20,
-  height: 20,
-  background: "#eee",
-  border: "1px solid #fff",
-  cursor: "pointer",
-  borderRadius: "50%",
-  fontSize: "12px",
-  lineHeight: 1,
-};
-
 type ButtonEdgeData = Record<string, never>;
 export type ButtonEdgeType = Edge<ButtonEdgeData>;
 
@@ -59,11 +48,7 @@ export default function ButtonEdge({
             pointerEvents: "all",
           }}
           className="nodrag nopan"
-        >
-          <button style={buttonStyle} onClick={onEdgeClick}>
-            ×
-          </button>
-        </div>
+        ></div>
       </EdgeLabelRenderer>
     </>
   );

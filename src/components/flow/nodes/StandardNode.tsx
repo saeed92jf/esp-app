@@ -1,103 +1,113 @@
+// src/components/flow/nodes/StandardNode.tsx
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
 import type { StandardNodeData } from "@/types/nodes";
+import { getStandardColor, getStandardHoverColor } from "@/types/nodes";
+import { HANDLE1 } from "./handle-style";
 
 interface StandardNodeProps {
   data: StandardNodeData;
   selected?: boolean;
 }
 
+const HEX_CLIP =
+  "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
+
 const StandardNode = memo(({ data, selected }: StandardNodeProps) => {
-  // Determine if this is an API standard or non-API standard
-  const isApiStandard = data.standardType === "API";
+  const stdType = data.standardType ?? "OTHER";
+  const isApi = stdType === "API";
+  const bg = getStandardColor(stdType);
+  const bgHover = getStandardHoverColor(stdType);
+  const shadow = selected
+    ? `0 0 0 3px ${bg}66, 0 4px 12px rgba(0,0,0,0.15)`
+    : "0 2px 8px rgba(0,0,0,0.1)";
+
+  const handles = (
+    <>
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right"
+        className={`${HANDLE1}`}
+      />
+    </>
+  );
 
   return (
-    <div className="relative">
-      {isApiStandard ? (
-        // API Standard: Circle with green color
+    <div className="relative group">
+      {isApi ? (
+        // ── API: circle ────────────────────────────────────────────────────
         <div
-          className="relative flex items-center justify-center rounded-full w-24 h-24 transition-all duration-200 bg-green-600 hover:bg-green-700"
+          className="relative flex items-center justify-center rounded-full w-18 h-18 transition-colors duration-200 cursor-default"
           style={{
-            boxShadow: selected
-              ? "0 0 0 3px rgba(34, 197, 94, 0.4), 0 4px 12px rgba(0,0,0,0.15)"
-              : "0 2px 8px rgba(0,0,0,0.1)",
+            backgroundColor: bg,
+            boxShadow: shadow,
+          }}
+          // CSS-only hover — avoids inline event handlers
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = bgHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = bg;
           }}
         >
-          {/* Inner border effect */}
           <div className="absolute inset-0 rounded-full opacity-20 pointer-events-none border-2 border-white/50" />
-
-          {/* Label text */}
           <div className="relative z-10 text-center text-white font-semibold text-xs leading-tight drop-shadow-sm px-2">
             {data.label}
           </div>
         </div>
       ) : (
-        // Non-API Standard (ASME, ASTM, NACE, NBIC, OTHER): Hexagon with gray color
+        // ── Non-API: hexagon ───────────────────────────────────────────────
         <div
-          className="relative flex items-center justify-center w-28 h-28 transition-all duration-200"
+          className="relative flex items-center justify-center w-18 h-18 transition-colors duration-200 cursor-default"
           style={{
-            clipPath:
-              "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            backgroundColor: "#6B7280", // gray-500
-            boxShadow: selected
-              ? "0 0 0 3px rgba(107, 114, 128, 0.4), 0 4px 12px rgba(0,0,0,0.15)"
-              : "0 2px 8px rgba(0,0,0,0.1)",
+            clipPath: HEX_CLIP,
+            backgroundColor: bg,
+            boxShadow: shadow,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#4B5563"; // gray-600 on hover
+            e.currentTarget.style.backgroundColor = bgHover;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#6B7280"; // gray-500
+            e.currentTarget.style.backgroundColor = bg;
           }}
         >
-          {/* Inner border effect for hexagon */}
           <div
             className="absolute inset-1 opacity-20 pointer-events-none border-2 border-white/50"
-            style={{
-              clipPath:
-                "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            }}
+            style={{ clipPath: HEX_CLIP }}
           />
-
-          {/* Label text */}
-          <div className="relative z-10 text-center text-white font-semibold text-xs leading-tight drop-shadow-sm px-3">
+          <div className="relative z-10 text-center text-white font-semibold text-[11px] leading-tight drop-shadow-sm px-3">
+            {/* Show stdType tag + label */}
+            <span className="block text-white/70 text-[9px] font-normal mb-0.5">
+              {stdType}
+            </span>
             {data.label}
           </div>
         </div>
       )}
 
-      {/* Target handles from parent subcategory - multiple directions */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="w-3! h-3! bg-white! border-2! border-gray-400!"
-      />
-
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left"
-        className="w-3! h-3! bg-white! border-2! border-gray-400!"
-      />
-
-      <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom"
-        className="w-3! h-3! bg-white! border-2! border-gray-400!"
-      />
-
-      <Handle
-        type="target"
-        position={Position.Right}
-        id="right"
-        className="w-3! h-3! bg-white! border-2! border-gray-400!"
-      />
+      {handles}
     </div>
   );
 });
 
 StandardNode.displayName = "StandardNode";
-
 export default StandardNode;
