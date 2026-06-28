@@ -48,6 +48,33 @@ const StandardNode = memo(({ data, selected }: StandardNodeProps) => {
         id="right"
         className={`${HANDLE1}`}
       />
+
+      {/* Source handles for children standards - multiple directions */}
+
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom"
+        className={`${HANDLE1}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right"
+        className={`${HANDLE1}`}
+      />
     </>
   );
 

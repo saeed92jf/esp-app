@@ -169,7 +169,8 @@
       "videos": "Videos",
       "audio": "Audio",
       "mediaLibrary": "Media Library",
-      "standards": "Standards"
+      "standards": "Standards",
+      "ESP-Flow": "ESP-Flow"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -194,7 +195,8 @@
       "videos": "Watch and organize your videos in one place.",
       "audio": "Access and manage your audio files.",
       "mediaLibrary": "A unified library for all your media files.",
-      "standards": "API Standards"
+      "standards": "API Standards",
+      "ESP-Flow": "ESP-Flow"
     }
   },
   "NotFound": {
