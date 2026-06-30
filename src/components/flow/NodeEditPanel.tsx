@@ -5,7 +5,7 @@
 import { useCallback } from "react";
 import type { Node } from "@xyflow/react";
 import { ExternalLink, X } from "lucide-react";
-import type { StandardNodeData, StandardType } from "@/types/nodes";
+import type { StandardNodeData, StandardType } from "@/components/flow/nodes";
 
 const ALL_STANDARD_TYPES: StandardType[] = [
   "API",

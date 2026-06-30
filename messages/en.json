@@ -10,8 +10,20 @@
     "login": "Login",
     "register": "Sign up",
     "loading": "Loading...",
-    "language": "Language"
+    "noResults": "No results found.",
+    "language": "Language",
+    "locale": {
+      "en": "EN",
+      "fa": "FA"
+    }
   },
+
+  "LocaleSwitcher": {
+    "placeholder": "Select language",
+    "search": "Search...",
+    "empty": "No language found."
+  },
+
   "Metadata": {
     "title": "Euroslot Pars WebApp.",
     "description": "Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.",
@@ -170,7 +182,8 @@
       "audio": "Audio",
       "mediaLibrary": "Media Library",
       "standards": "Standards",
-      "ESP-Flow": "ESP-Flow"
+      "ESP-Flow": "ESP-Flow",
+      "Claud-Flow": "Claude Flow"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -196,7 +209,8 @@
       "audio": "Access and manage your audio files.",
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
-      "ESP-Flow": "ESP-Flow"
+      "ESP-Flow": "ESP-Flow",
+      "Claud-Flow": "Claude Flow"
     }
   },
   "NotFound": {
@@ -332,5 +346,152 @@
     "unableToLoadVideo": "Unable to load video",
     "watchOnAparat": "Watch on Aparat",
     "views": ""
+  },
+  "Flow": {
+    "editor": {
+      "title": "Diagram Editor",
+      "untitled": "Untitled Diagram",
+      "newDiagram": "New Diagram",
+      "save": "Save",
+      "saved": "Saved",
+      "saving": "Saving…",
+      "export": "Export",
+      "import": "Import",
+      "share": "Share",
+      "settings": "Settings",
+      "openDiagrams": "My Diagrams",
+      "close": "Close"
+    },
+    "toolbar": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "copy": "Copy",
+      "paste": "Paste",
+      "cut": "Cut",
+      "delete": "Delete",
+      "selectAll": "Select All",
+      "fitView": "Fit View",
+      "zoomIn": "Zoom In",
+      "zoomOut": "Zoom Out",
+      "resetZoom": "Reset Zoom",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "addNode": "Add Node"
+    },
+    "nodes": {
+      "defaultNode": "Process",
+      "inputNode": "Start",
+      "outputNode": "End",
+      "circleNode": "Circle",
+      "diamondNode": "Decision",
+      "cylinderNode": "Database",
+      "parallelogramNode": "I/O",
+      "hexagonNode": "Hexagon",
+      "textNode": "Text",
+      "noteNode": "Note"
+    },
+    "palette": {
+      "search": "Search nodes…",
+      "basic": "Basic",
+      "flowchart": "Flowchart",
+      "shapes": "Shapes",
+      "dragToAdd": "Drag to canvas"
+    },
+    "settings": {
+      "label": "Label",
+      "description": "Description",
+      "backgroundColor": "Background",
+      "borderColor": "Border Color",
+      "textColor": "Text Color",
+      "fontSize": "Font Size",
+      "fontWeight": "Font Weight",
+      "borderWidth": "Border Width",
+      "borderStyle": "Border Style",
+      "borderRadius": "Corner Radius",
+      "edgeType": "Connection Type",
+      "edgeColor": "Edge Color",
+      "strokeWidth": "Stroke Width",
+      "animated": "Animated",
+      "nodeSettings": "Node Properties",
+      "edgeSettings": "Edge Properties",
+      "selectElement": "Select a node or edge to edit properties",
+      "weight_normal": "Normal",
+      "weight_semibold": "Medium",
+      "weight_bold": "Bold",
+      "style_solid": "Solid",
+      "style_dashed": "Dashed",
+      "style_dotted": "Dotted"
+    },
+    "editorSettings": {
+      "title": "Editor Settings",
+      "canvas": "Canvas",
+      "snapToGrid": "Snap to grid",
+      "showMiniMap": "Show minimap",
+      "showControls": "Show zoom controls",
+      "background": "Background pattern",
+      "bg_dots": "Dots",
+      "bg_lines": "Lines",
+      "bg_cross": "Cross",
+      "bg_none": "None",
+      "appearance": "Appearance",
+      "colorMode": "Color mode",
+      "mode_light": "Light",
+      "mode_dark": "Dark",
+      "behavior": "Behavior",
+      "defaultEdgeType": "Default connection style",
+      "edge_default": "Curved",
+      "edge_straight": "Straight",
+      "edge_smoothstep": "Step",
+      "edge_step": "Sharp step",
+      "autoSave": "Auto-save to library",
+      "shortcuts": "Keyboard shortcuts"
+    },
+    "shortcuts": {
+      "undo": "Undo",
+      "redo": "Redo",
+      "save": "Save diagram",
+      "copy": "Copy node",
+      "paste": "Paste",
+      "duplicate": "Duplicate node",
+      "delete": "Delete selection",
+      "fitView": "Fit view"
+    },
+    "dialogs": {
+      "newDiagram": "Create New Diagram",
+      "openDiagram": "Open Diagram",
+      "diagramName": "Name",
+      "diagramDesc": "Description (optional)",
+      "cancel": "Cancel",
+      "create": "Create",
+      "confirm": "Confirm",
+      "delete": "Delete",
+      "confirmDelete": "Delete this diagram permanently?",
+      "exportJSON": "Export as JSON",
+      "exportPNG": "Export as Image",
+      "importJSON": "Import JSON"
+    },
+    "messages": {
+      "savedSuccessfully": "Saved successfully",
+      "deletedSuccessfully": "Deleted",
+      "importedSuccessfully": "Imported successfully",
+      "copiedToClipboard": "Copied to clipboard",
+      "noDiagrams": "No saved diagrams yet",
+      "createFirst": "Create your first diagram to get started"
+    },
+    "contextMenu": {
+      "addNode": "Add Node",
+      "paste": "Paste",
+      "selectAll": "Select All",
+      "fitView": "Fit View",
+      "delete": "Delete",
+      "duplicate": "Duplicate"
+    },
+    "global": {
+      "search": "Search",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "loading": "Loading…",
+      "noResults": "No results"
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { SubcategoryNodeData } from "@/types/nodes";
+import type { SubcategoryNodeData } from "@/components/flow/nodes";
 
 interface SubcategoryNodeProps {
   data: SubcategoryNodeData;

@@ -2,19 +2,17 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useAuth } from '@/hooks/use-auth';
 import { WelcomeScreen } from '@/components/welcome/welcome-screen';
 
 /**
- * Wraps protected page content. While the session is being restored from
- * localStorage it shows a lightweight loader. When there is no user it
- * renders the public WelcomeScreen; otherwise it renders the children
- * (the real, post-login page content).
+ * Wraps protected page content. While the session is being restored it
+ * shows a lightweight loader. When there is no user it renders the public
+ * WelcomeScreen; otherwise it renders the children (real page content).
  */
 export function AuthGate({ children }: { children: ReactNode }) {
-  const { user, loading } = useSimpleAuth();
+  const { user, loading } = useAuth();
 
-  // Avoid a flash of the wrong screen during the initial restore
   if (loading) {
     return (
       <div className="flex min-h-[60dvh] items-center justify-center">
@@ -23,11 +21,9 @@ export function AuthGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Not authenticated: show the public landing screen
   if (!user) {
     return <WelcomeScreen />;
   }
 
-  // Authenticated: render the actual home content
   return <>{children}</>;
 }

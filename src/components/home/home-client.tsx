@@ -1,3 +1,5 @@
+// app/[locale]/page.tsx or components/pages/home-client.tsx
+
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -197,75 +199,63 @@ export function HomeClient() {
               isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
             )}
           >
-            <div className="flex justify-center">
-              <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7">
-                {/*
-                 * Pinned cards — render QuickAccessCard (flat, borderless).
-                 * Show skeleton placeholders while the hook is not yet hydrated
-                 * from localStorage to avoid layout shift.
-                 */}
-                {(hydrated
-                  ? quickAccessItems
-                  : Array(QUICK_ACCESS_MAX).fill(null)
-                ).map((item, i) =>
-                  item ? (
-                    <QuickAccessCard
-                      key={item.href}
-                      href={item.href}
-                      icon={item.icon}
-                      title={tItems(item.labelKey)}
-                      iconClassName={resolveIconClass(item.color)}
-                      iconBgClassName={resolveIconBgClass(item.color)}
-                      hoverBgClassName={resolveHoverBgClass(item.color)}
-                      className="h-40"
-                    />
-                  ) : (
-                    // Skeleton placeholder during SSR/hydration
+            <div className="flex flex-wrap justify-center gap-6">
+              {/*
+               * Pinned cards — render QuickAccessCard with color mapping.
+               * Show skeleton placeholders while the hook is not yet hydrated
+               * from localStorage to avoid layout shift.
+               */}
+              {(hydrated
+                ? quickAccessItems
+                : Array(QUICK_ACCESS_MAX).fill(null)
+              ).map((item, i) => {
+                if (!item) {
+                  return (
                     <div
                       key={i}
-                      className="bg-muted/50 h-40 w-full animate-pulse rounded-2xl"
+                      className="h-30 w-30 animate-pulse rounded-2xl bg-muted/50"
                     />
-                  ),
-                )}
+                  );
+                }
 
-                {/* Customize / Add button */}
-                <button
-                  onClick={() => setIsCustomizerOpen(true)}
-                  aria-label={t("quickAccess.customizeLabel")}
+                // Resolve the color mapping for this quick access item
+                const colorMap = resolveColorMap(item.color);
+
+                return (
+                  <QuickAccessCard
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    iconBgClassName={colorMap.iconBg}
+                    title={tItems(item.labelKey)}
+                  />
+                );
+              })}
+
+              {/* Customize / Add button */}
+              <button
+                onClick={() => setIsCustomizerOpen(true)}
+                aria-label={t("quickAccess.customizeLabel")}
+                className={cn(
+                  "group flex h-30 w-30 flex-col items-center justify-center gap-3.5",
+                  "rounded-2xl",
+                  "text-muted-foreground transition-all duration-200",
+                  "hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
+                  "cursor-pointer",
+                )}
+              >
+                <span
                   className={cn(
-                    "group flex h-40 w-full flex-col items-center justify-center gap-2",
-                    "rounded-2xl border-2 border-dashed border-border/50",
-                    "text-muted-foreground transition-all duration-200",
-                    "hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
-                    "cursor-pointer",
+                    "flex size-10 items-center justify-center rounded-full border border-dashed",
+                    "border-current transition-transform duration-200",
+                    "group-hover:scale-100",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "flex size-9 items-center justify-center rounded-full border-2 border-dashed",
-                      "border-current transition-transform duration-200",
-                      "group-hover:scale-110",
-                    )}
-                  >
-                    <Plus className="size-4" />
-                  </span>
-                  <span className="text-xs font-medium">
-                    {t("quickAccess.customize")}
-                  </span>
-                </button>
-              </div>
+                  <Plus className="size-5" />
+                </span>
+                <span className="text-sm font-normal"></span>
+              </button>
             </div>
-
-            {/* Customizer dialog */}
-            <QuickAccessCustomizer
-              isOpen={isCustomizerOpen}
-              onClose={() => setIsCustomizerOpen(false)}
-              isSelected={isSelected}
-              isFull={isFull}
-              onToggle={toggle}
-              onReset={reset}
-              selectedCount={selectedHrefs.length}
-            />
           </div>
         </div>
       </section>

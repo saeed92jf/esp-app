@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { useRouter } from '@/i18n/navigation';
-import { User, LayoutDashboard, Settings, UserCog, LogOut } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import * as React from "react";
+import { useRouter } from "@/i18n/navigation";
+import { User, LayoutDashboard, Settings, UserCog, LogOut } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 
-import { Link } from '@/i18n/navigation';
+import { Link } from "@/i18n/navigation";
 
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
   AvatarBadge,
-} from '@/components/ui/avatar';
+} from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,7 +22,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export interface UserMenuProps {
   isAuthenticated?: boolean;
@@ -30,7 +30,7 @@ export interface UserMenuProps {
   role?: string;
   email?: string;
   imageUrl?: string;
-  size?: 'sm' | 'default' | 'lg';
+  size?: "sm" | "default" | "lg";
   onLogout?: () => Promise<void> | void;
   className?: string;
 }
@@ -41,31 +41,33 @@ export function UserMenu({
   role,
   email,
   imageUrl,
-  size = 'default',
+  size = "default",
   onLogout,
   className,
 }: UserMenuProps) {
-  const t = useTranslations('Account');
+  const t = useTranslations("Account");
+  const locale = useLocale();
   const router = useRouter();
 
-  const displayName = name ?? t('guest');
+  const displayName = name ?? t("guest");
+  const isRTL = locale === "fa";
 
   async function handleLogout() {
     await onLogout?.();
 
     // redirect after logout
-    router.replace('/welcome');
+    router.replace("/welcome");
     router.refresh(); // ensures server components update
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu dir={isRTL ? "rtl" : "ltr"}>
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label={t('menuLabel')}
+          aria-label={t("menuLabel")}
           className={cn(
-            'focus-visible:ring-ring focus-visible:ring-offset-background rounded-full transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+            "focus-visible:ring-ring focus-visible:ring-offset-background rounded-full transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
             className,
           )}
         >
@@ -78,7 +80,7 @@ export function UserMenu({
 
             {isAuthenticated ? (
               <AvatarBadge
-                aria-label={t('online')}
+                aria-label={t("online")}
                 className="bg-emerald-500"
               />
             ) : null}
@@ -86,7 +88,11 @@ export function UserMenu({
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={8} className="w-60">
+      <DropdownMenuContent
+        align="end"
+        sideOffset={8}
+        className={cn("w-60", isRTL && "text-right")}
+      >
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col gap-0.5">
             <span className="text-foreground truncate text-sm font-medium">
@@ -111,23 +117,23 @@ export function UserMenu({
 
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
-            <Link href="/dashboard">
-              <LayoutDashboard className="size-4" />
-              <span>{t('dashboard')}</span>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <LayoutDashboard className="size-4 shrink-0" />
+              <span>{t("dashboard")}</span>
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
-            <Link href="/settings/account">
-              <UserCog className="size-4" />
-              <span>{t('account')}</span>
+            <Link href="/settings/account" className="flex items-center gap-2">
+              <UserCog className="size-4 shrink-0" />
+              <span>{t("account")}</span>
             </Link>
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
-            <Link href="/settings">
-              <Settings className="size-4" />
-              <span>{t('settings')}</span>
+            <Link href="/settings" className="flex items-center gap-2">
+              <Settings className="size-4 shrink-0" />
+              <span>{t("settings")}</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
@@ -140,9 +146,10 @@ export function UserMenu({
             e.preventDefault();
             await handleLogout();
           }}
+          className="flex items-center gap-2"
         >
-          <LogOut className="size-4" />
-          <span>{t('logout')}</span>
+          <LogOut className="size-4 shrink-0" />
+          <span>{t("logout")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

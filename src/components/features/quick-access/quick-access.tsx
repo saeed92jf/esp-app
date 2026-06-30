@@ -2,31 +2,20 @@
 
 "use client";
 
-import Link from "next/link";
 import { type LucideIcon } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 interface QuickAccessCardProps {
   href: string;
   icon?: LucideIcon;
   title: string;
-  /** Tailwind hover-bg class, e.g. "hover:bg-sky-500/10" from NAV_COLOR_MAP */
   hoverBgClassName?: string;
-  /** Tailwind icon color class, e.g. "text-sky-500" from NAV_COLOR_MAP */
   iconClassName?: string;
-  /** Tailwind icon bg class, e.g. "bg-sky-500/10" from NAV_COLOR_MAP */
   iconBgClassName?: string;
   className?: string;
 }
 
-/**
- * QuickAccessCard — flat, borderless card for the hero quick-access row.
- *
- * Visual spec:
- * - No border, no shadow by default
- * - Rounded icon with colored background
- * - Subtle full-card hover background tint
- */
 export function QuickAccessCard({
   href,
   icon: Icon,
@@ -40,9 +29,8 @@ export function QuickAccessCard({
     <Link
       href={href}
       className={cn(
-        "group flex flex-col items-center gap-3 rounded-2xl p-4 text-center",
+        "group flex flex-col items-center gap-3.5 rounded-2xl p-4 text-center w-30 h-30",
         "transition-colors duration-300 ease-out",
-        // Default hover tint; overridden by hoverBgClassName if provided
         hoverBgClassName ?? "hover:bg-muted",
         className,
       )}
@@ -50,21 +38,27 @@ export function QuickAccessCard({
       {Icon && (
         <span
           className={cn(
-            "flex size-12 items-center justify-center rounded-full",
+            "flex size-11 items-center justify-center rounded-full",
             "transition-transform duration-300 ease-out",
-            "group-hover:scale-110 motion-reduce:transform-none",
-            // Colored icon background from NAV_COLOR_MAP
+            "group-hover:scale-100 group-hover:hoverBgClassName motion-reduce:transform-none",
             iconBgClassName ?? "bg-muted",
           )}
         >
           <Icon
-            className={cn("size-6", iconClassName ?? "text-muted-foreground")}
-            strokeWidth={2}
+            className={cn(
+              "size-6",
+              iconClassName ?? "text-foreground",
+              "group-hover:text-white",
+            )}
+            strokeWidth={1.8}
+            aria-hidden="true"
           />
         </span>
       )}
 
-      <span className="text-sm font-semibold leading-tight">{title}</span>
+      <span className="text-sm text-foreground font-normal leading-tight  line-clamp-1">
+        {title}
+      </span>
     </Link>
   );
 }

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { HubNodeData } from "@/types/nodes";
+import type { HubNodeData } from "@/components/flow/nodes";
 import { HANDLE1 } from "./handle-style";
 
 interface HubNodeProps {

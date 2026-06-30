@@ -1,7 +1,7 @@
 // src/components/flow/DiagramLegend.tsx
 // Shows all standard-type colour indicators as an overlay legend.
 
-import { STANDARD_COLORS, type StandardType } from "@/types/nodes";
+import { STANDARD_COLORS, type StandardType } from "@/components/flow/nodes";
 
 const LEGEND_ITEMS: { type: StandardType; shape: "circle" | "hexagon" }[] = [
   { type: "API", shape: "circle" },

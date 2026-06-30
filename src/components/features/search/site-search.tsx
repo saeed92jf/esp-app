@@ -1,24 +1,27 @@
 // src/components/features/search/site-search.tsx
-"use client";
+'use client';
 
-import { useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
+import { API_MODE } from '@/services';
+import { useSiteSearchItems, useRemoteSearch } from '@/hooks/use-site-search';
 
-// IMPORTANT: use the next-intl localized router so the /[locale] prefix
-// is added automatically (NAVIGATION hrefs are locale-unprefixed).
-// Adjust this path to match your project's navigation helper.
-import { useRouter } from "@/i18n/navigation";
-
-import { SearchPopup } from "./search-popup";
-import { NavSearchResult } from "./nav-search-result";
-import { NAV_SEARCH_SOURCE, type NavSearchItem } from "@/lib/navigation-search";
+import { SearchPopup } from './search-popup';
+import { NavSearchResult } from './nav-search-result';
+import type { NavSearchItem } from '@/lib/navigation-search';
 
 /**
- * Site-wide search wired to the real NAVIGATION tree.
- * Label keys are resolved to localized text before searching, so matching
- * runs against what the user actually sees (plus the href as a fallback term).
+ * Site-wide search.
+ *
+ * در fake mode (پیش‌فرض فعلی): فیلتر کاملاً client-side و آنی روی
+ * NAVIGATION انجام می‌شود — همان رفتار قبلی، بدون لطمه به UX.
+ *
+ * در real mode: نتایج از api.search می‌آید (debounce شده در use-site-search)،
+ * که می‌تواند شامل صفحات، کاربران یا اسناد هم باشد — نه فقط منو.
+ *
+ * SearchPopup در هر دو حالت همان است؛ فقط منبع `items` فرق می‌کند.
  */
-// site-search.tsx
 export function SiteSearch({
   className,
   onOpenChange,
@@ -27,23 +30,25 @@ export function SiteSearch({
   onOpenChange?: (open: boolean) => void;
 }) {
   const router = useRouter();
-  const tItems = useTranslations("Menu.items");
-  const tSections = useTranslations("Menu.sections");
+  const { staticItems, isStatic } = useSiteSearchItems();
 
-  // Resolve i18n labels once per locale change. Searching needs the
-  // translated strings, not the raw "Menu.*" keys.
-  const items = useMemo<NavSearchItem[]>(
+  // فقط در real mode به‌کار می‌رود — در fake mode هزینه‌ای ندارد چون query خالی می‌ماند
+  const [liveQuery, setLiveQuery] = useState('');
+  const { results: remoteResults } = useRemoteSearch(isStatic ? '' : liveQuery);
+
+  const remoteItems = useMemo<NavSearchItem[]>(
     () =>
-      NAV_SEARCH_SOURCE.map((entry) => ({
-        href: entry.href,
-        title: tItems(entry.labelKey),
-        section: tSections(entry.sectionLabelKey),
-        icon: entry.icon,
+      remoteResults.map((r) => ({
+        href: r.href,
+        title: r.title,
+        section: r.section,
+        icon: r.icon,
       })),
-    [tItems, tSections],
+    [remoteResults],
   );
 
-  // Match against title + section + href (href lets users find by path/EN slug).
+  const items = isStatic ? staticItems : remoteItems;
+
   const getSearchableText = useCallback(
     (item: NavSearchItem) => [item.title, item.section, item.href],
     [],
@@ -58,6 +63,7 @@ export function SiteSearch({
       renderItem={NavSearchResult}
       onSelect={(item) => router.push(item.href)}
       onOpenChange={onOpenChange}
+      onQueryChange={isStatic ? undefined : setLiveQuery}
     />
   );
 }

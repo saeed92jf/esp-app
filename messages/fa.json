@@ -10,7 +10,18 @@
     "login": "ورود",
     "register": "ثبت‌نام",
     "loading": "در حال بارگذاری...",
-    "language": "زبان"
+    "noResults": "موردی یافت نشد.",
+    "language": "زبان",
+    "locale": {
+      "en": "انگلیسی",
+      "fa": "فارسی"
+    }
+  },
+
+  "LocaleSwitcher": {
+    "placeholder": "انتخاب زبان",
+    "search": "جستجو...",
+    "empty": "زبانی یافت نشد."
   },
   "Metadata": {
     "title": "وب اپلیکیشن یورواسلات پارس",
@@ -169,7 +180,10 @@
       "imageGallery": "گالری تصاویر",
       "videos": "ویدئوها",
       "audio": "صوت",
-      "mediaLibrary": "کتابخانه رسانه"
+      "mediaLibrary": "کتابخانه رسانه",
+      "standards": "استاندارد ها",
+      "ESP-Flow": "جریان داده",
+      "Claud-Flow": "جریان ابری"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",
@@ -193,7 +207,11 @@
       "imageGallery": "مرور و مدیریت تصاویر در یک گالری مرتب.",
       "videos": "تماشا و سازماندهی ویدئوها در یک مکان.",
       "audio": "دسترسی و مدیریت فایل‌های صوتی.",
-      "mediaLibrary": "کتابخانه‌ی یکپارچه برای تمام فایل‌های رسانه‌ای."
+      "mediaLibrary": "کتابخانه‌ی یکپارچه برای تمام فایل‌های رسانه‌ای.",
+      "mediaLibrary": "کتابخانه رسانه",
+      "standards": "استاندارد ها",
+      "ESP-Flow": "جریان داده",
+      "Claud-Flow": "جریان ابری"
     }
   },
   "NotFound": {
@@ -329,5 +347,153 @@
     "selectVideoToWatch": "یک ویدیو جهت پخش انتخاب کنید",
     "unableToLoadVideo": "ویدیو بارگذاری نمی شود",
     "watchOnAparat": "در آپارات تماشا کنید"
+  },
+
+  "Flow": {
+    "editor": {
+      "title": "ویرایشگر دیاگرام",
+      "untitled": "دیاگرام بدون عنوان",
+      "newDiagram": "دیاگرام جدید",
+      "save": "ذخیره",
+      "saved": "ذخیره شد",
+      "saving": "در حال ذخیره…",
+      "export": "خروجی",
+      "import": "ورودی",
+      "share": "اشتراک‌گذاری",
+      "settings": "تنظیمات",
+      "openDiagrams": "دیاگرام‌های من",
+      "close": "بستن"
+    },
+    "toolbar": {
+      "undo": "واگرد",
+      "redo": "انجام‌مجدد",
+      "copy": "کپی",
+      "paste": "چسباندن",
+      "cut": "برش",
+      "delete": "حذف",
+      "selectAll": "انتخاب همه",
+      "fitView": "تنظیم نما",
+      "zoomIn": "بزرگ‌نمایی",
+      "zoomOut": "کوچک‌نمایی",
+      "resetZoom": "بازنشانی نما",
+      "lock": "قفل",
+      "unlock": "آزاد",
+      "addNode": "افزودن گره"
+    },
+    "nodes": {
+      "defaultNode": "فرآیند",
+      "inputNode": "شروع",
+      "outputNode": "پایان",
+      "circleNode": "دایره",
+      "diamondNode": "تصمیم",
+      "cylinderNode": "پایگاه داده",
+      "parallelogramNode": "ورودی/خروجی",
+      "hexagonNode": "شش‌ضلعی",
+      "textNode": "متن",
+      "noteNode": "یادداشت"
+    },
+    "palette": {
+      "search": "جستجوی گره‌ها…",
+      "basic": "پایه",
+      "flowchart": "فلوچارت",
+      "shapes": "اشکال",
+      "dragToAdd": "بکشید به بوم"
+    },
+    "settings": {
+      "label": "برچسب",
+      "description": "توضیحات",
+      "backgroundColor": "رنگ پس‌زمینه",
+      "borderColor": "رنگ حاشیه",
+      "textColor": "رنگ متن",
+      "fontSize": "اندازه فونت",
+      "fontWeight": "وزن فونت",
+      "borderWidth": "ضخامت حاشیه",
+      "borderStyle": "سبک حاشیه",
+      "borderRadius": "شعاع گوشه",
+      "edgeType": "نوع اتصال",
+      "edgeColor": "رنگ لبه",
+      "strokeWidth": "ضخامت خط",
+      "animated": "متحرک",
+      "nodeSettings": "خصوصیات گره",
+      "edgeSettings": "خصوصیات لبه",
+      "selectElement": "یک گره یا لبه انتخاب کنید تا ویرایش کنید",
+      "weight_normal": "معمولی",
+      "weight_semibold": "متوسط",
+      "weight_bold": "ضخیم",
+      "style_solid": "ممتد",
+      "style_dashed": "خط‌چین",
+      "style_dotted": "نقطه‌چین"
+    },
+    "editorSettings": {
+      "title": "تنظیمات ادیتور",
+      "canvas": "بوم",
+      "snapToGrid": "چسبیدن به شبکه",
+      "showMiniMap": "نمایش مینی‌مپ",
+      "showControls": "نمایش کنترل بزرگ‌نمایی",
+      "background": "الگوی پس‌زمینه",
+      "bg_dots": "نقطه‌ای",
+      "bg_lines": "خطی",
+      "bg_cross": "صلیبی",
+      "bg_none": "بدون پس‌زمینه",
+      "appearance": "ظاهر",
+      "colorMode": "حالت رنگ",
+      "mode_light": "روشن",
+      "mode_dark": "تیره",
+      "behavior": "رفتار",
+      "defaultEdgeType": "سبک پیش‌فرض اتصال",
+      "edge_default": "منحنی",
+      "edge_straight": "مستقیم",
+      "edge_smoothstep": "پله‌ای",
+      "edge_step": "پله تیز",
+      "autoSave": "ذخیره خودکار در کتابخانه",
+      "shortcuts": "میانبرهای صفحه‌کلید"
+    },
+    "shortcuts": {
+      "undo": "واگرد",
+      "redo": "انجام‌مجدد",
+      "save": "ذخیره دیاگرام",
+      "copy": "کپی گره",
+      "paste": "چسباندن",
+      "duplicate": "تکثیر گره",
+      "delete": "حذف انتخاب‌شده",
+      "fitView": "تنظیم نما"
+    },
+    "dialogs": {
+      "newDiagram": "ایجاد دیاگرام جدید",
+      "openDiagram": "باز کردن دیاگرام",
+      "diagramName": "نام",
+      "diagramDesc": "توضیحات (اختیاری)",
+      "cancel": "انصراف",
+      "create": "ایجاد",
+      "confirm": "تأیید",
+      "delete": "حذف",
+      "confirmDelete": "این دیاگرام برای همیشه حذف شود؟",
+      "exportJSON": "خروجی JSON",
+      "exportPNG": "خروجی تصویر",
+      "importJSON": "ورودی JSON"
+    },
+    "messages": {
+      "savedSuccessfully": "با موفقیت ذخیره شد",
+      "deletedSuccessfully": "حذف شد",
+      "importedSuccessfully": "با موفقیت وارد شد",
+      "copiedToClipboard": "در کلیپ‌بورد کپی شد",
+      "noDiagrams": "هنوز دیاگرامی ذخیره نشده",
+      "createFirst": "اولین دیاگرام خود را بسازید"
+    },
+    "contextMenu": {
+      "addNode": "افزودن گره",
+      "paste": "چسباندن",
+      "selectAll": "انتخاب همه",
+      "fitView": "تنظیم نما",
+      "delete": "حذف",
+      "duplicate": "تکثیر"
+    },
+    "global": {
+      "search": "جستجو",
+      "cancel": "انصراف",
+      "confirm": "تأیید",
+      "loading": "در حال بارگذاری…",
+      "noResults": "نتیجه‌ای یافت نشد"
+    }
   }
 }

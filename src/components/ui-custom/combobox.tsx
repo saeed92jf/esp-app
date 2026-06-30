@@ -1,9 +1,9 @@
 // src/components/ui-custom/combobox.tsx
-'use client';
-import * as React from 'react';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+"use client";
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,12 +11,12 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 
 export interface ComboboxOption {
   value: string;
@@ -28,17 +28,18 @@ interface ComboboxProps {
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
+  searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
 }
 
-// Single-select combobox composed from Popover + Command (not shipped as a single shadcn file)
 export function Combobox({
   options,
   value,
   onChange,
-  placeholder = 'انتخاب کنید...',
-  emptyText = 'موردی یافت نشد.',
+  placeholder = "انتخاب کنید...",
+  searchPlaceholder = "جستجو...",
+  emptyText = "موردی یافت نشد.",
   className,
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false);
@@ -51,7 +52,7 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('w-full justify-between', className)}
+          className={cn("w-full justify-between", className)}
         >
           {selected ? selected.label : placeholder}
           <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" />
@@ -59,7 +60,7 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
-          <CommandInput placeholder="جستجو..." />
+          <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
@@ -68,14 +69,14 @@ export function Combobox({
                   key={opt.value}
                   value={opt.label}
                   onSelect={() => {
-                    onChange?.(opt.value === value ? '' : opt.value);
+                    onChange?.(opt.value === value ? "" : opt.value);
                     setOpen(false);
                   }}
                 >
                   <Check
                     className={cn(
-                      'me-2 size-4',
-                      value === opt.value ? 'opacity-100' : 'opacity-0',
+                      "me-2 size-4",
+                      value === opt.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {opt.label}

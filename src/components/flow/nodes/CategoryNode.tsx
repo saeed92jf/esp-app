@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { CategoryNodeData } from "@/types/nodes";
+import type { CategoryNodeData } from "@/components/flow/nodes";
 import { HANDLE1 } from "./handle-style";
 
 interface CategoryNodeProps {

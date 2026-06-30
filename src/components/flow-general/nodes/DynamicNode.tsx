@@ -1,13 +1,9 @@
 // src/components/flow-general/nodes/DynamicNode.tsx
+"use client";
 import React, { useMemo } from "react";
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import type { DynamicNodeData } from "../types";
 
-/**
- * Local type for style fields stored inside the node's data object.
- * DynamicNodeData extends Record<string, unknown>, so these fields are valid
- * at runtime — this interface just tells TypeScript what shapes to expect.
- */
 interface NodeStyleData {
   shape?: string;
   color?: string;
@@ -15,6 +11,8 @@ interface NodeStyleData {
   borderWidth?: number;
   textColor?: string;
   label?: string;
+  description?: string;
+  url?: string;
   width?: number;
   height?: number;
   handles?: Array<{
@@ -25,121 +23,171 @@ interface NodeStyleData {
   }>;
 }
 
-/**
- * Dynamic Node Component
- * Renders any node shape based on DynamicNodeData configuration.
- *
- * NOTE: `width` and `height` were removed from NodeProps in @xyflow/react v12.
- * They are now read from the node's `data` object instead.
- */
+function mapPos(pos: string): Position {
+  switch (pos) {
+    case "top":
+      return Position.Top;
+    case "right":
+      return Position.Right;
+    case "bottom":
+      return Position.Bottom;
+    default:
+      return Position.Left;
+  }
+}
+
+function buildPath(shape: string, w: number, h: number): string {
+  switch (shape) {
+    case "circle": {
+      const r = Math.min(w, h) / 2 - 1;
+      const [cx, cy] = [w / 2, h / 2];
+      return `M ${cx - r},${cy} A ${r},${r} 0 1,0 ${cx + r},${cy} A ${r},${r} 0 1,0 ${cx - r},${cy}`;
+    }
+    case "ellipse": {
+      const [rx, ry, cx, cy] = [w / 2 - 1, h / 2 - 1, w / 2, h / 2];
+      return `M ${cx - rx},${cy} A ${rx},${ry} 0 1,0 ${cx + rx},${cy} A ${rx},${ry} 0 1,0 ${cx - rx},${cy}`;
+    }
+    case "diamond":
+      return `M ${w / 2},1 L ${w - 1},${h / 2} L ${w / 2},${h - 1} L 1,${h / 2} Z`;
+    case "hexagon": {
+      const dx = w * 0.25;
+      return `M ${dx},1 L ${w - dx},1 L ${w - 1},${h / 2} L ${w - dx},${h - 1} L ${dx},${h - 1} L 1,${h / 2} Z`;
+    }
+    case "octagon": {
+      const [dx, dy] = [w * 0.3, h * 0.3];
+      return `M ${dx},1 L ${w - dx},1 L ${w - 1},${dy} L ${w - 1},${h - dy} L ${w - dx},${h - 1} L ${dx},${h - 1} L 1,${h - dy} L 1,${dy} Z`;
+    }
+    case "parallelogram": {
+      const sk = w * 0.15;
+      return `M ${sk},1 L ${w - 1},1 L ${w - sk},${h - 1} L 1,${h - 1} Z`;
+    }
+    case "rounded-rectangle": {
+      const r = Math.min(10, w / 4, h / 4);
+      return (
+        `M ${r},1 L ${w - r},1 Q ${w - 1},1 ${w - 1},${r} ` +
+        `L ${w - 1},${h - r} Q ${w - 1},${h - 1} ${w - r},${h - 1} ` +
+        `L ${r},${h - 1} Q 1,${h - 1} 1,${h - r} ` +
+        `L 1,${r} Q 1,1 ${r},1 Z`
+      );
+    }
+    default: // rectangle
+      return `M 1,1 L ${w - 1},1 L ${w - 1},${h - 1} L 1,${h - 1} Z`;
+  }
+}
+
 export const DynamicNode: React.FC<NodeProps<Node<DynamicNodeData>>> = ({
   data,
   selected,
 }) => {
-  // Cast data to NodeStyleData so TypeScript knows the shape of the style fields.
-  // This is safe: DynamicNodeData extends Record<string, unknown>, so any key is
-  // valid at runtime. The cast only affects compile-time type checking.
-  const styleData = (data ?? {}) as NodeStyleData;
-
+  const s = (data ?? {}) as NodeStyleData;
   const {
-    shape = "rectangle",
+    shape = "rounded-rectangle",
     color = "#f1f5f9",
     borderColor = "#cbd5e1",
     borderWidth = 1,
     textColor = "#334155",
-    label = "Node",
+    label = "",
+    url,
     width = 160,
     height = 80,
     handles = [],
-  } = styleData;
+  } = s;
 
-  // Build SVG path for various shapes
-  const shapePath = useMemo(() => {
-    switch (shape) {
-      case "circle":
-        return `M ${width / 2},0 A ${width / 2},${width / 2} 0 1,1 ${width / 2},${height} A ${width / 2},${height / 2} 0 1,1 ${width / 2},0 Z`;
-      case "hexagon": {
-        const w = width / 2;
-        const h = height / 2;
-        const inset = width * 0.25;
-        return `M ${inset},0 L ${w + inset},0 L ${width},${h} L ${w + inset},${height} L ${inset},${height} L 0,${h} Z`;
-      }
-      case "diamond": {
-        const w = width / 2;
-        const h = height / 2;
-        return `M ${w},0 L ${width},${h} L ${w},${height} L 0,${h} Z`;
-      }
-      case "ellipse":
-        return `M 0,${height / 2} A ${width / 2},${height / 2} 0 1,1 ${width},${height / 2} A ${width / 2},${height / 2} 0 1,1 0,${height / 2} Z`;
-      default:
-        return "M 0,0 L 0,0 L 0,0 L 0,0 Z";
-    }
-  }, [shape, width, height]);
+  const path = useMemo(
+    () => buildPath(shape, width, height),
+    [shape, width, height],
+  );
 
   return (
-    <>
-      {/* Target Handles */}
-      {handles.map(
-        (h) =>
-          h.type === "target" && (
-            <Handle
-              key={h.id}
-              id={h.id}
-              type="target"
-              position={
-                h.position === "top"
-                  ? Position.Top
-                  : h.position === "right"
-                    ? Position.Right
-                    : h.position === "bottom"
-                      ? Position.Bottom
-                      : Position.Left
-              }
-              style={{ background: "#5B8DEF" }}
-            />
-          ),
+    <div style={{ width, height, position: "relative" }}>
+      {handles.map((h) =>
+        h.type === "target" ? (
+          <Handle
+            key={h.id}
+            id={h.id}
+            type="target"
+            position={mapPos(h.position)}
+            className="w-2.5! h-2.5! border-2! border-white! bg-slate-400!"
+          />
+        ) : null,
       )}
 
-      {/* Main Node Body */}
+      {/* SVG shape */}
+      <svg
+        width={width}
+        height={height}
+        style={{ position: "absolute", inset: 0, overflow: "visible" }}
+      >
+        <path
+          d={path}
+          fill={color}
+          stroke={selected ? "#3b82f6" : (borderColor ?? "#94a3b8")}
+          strokeWidth={selected ? borderWidth + 1.5 : borderWidth}
+          filter={
+            selected ? "drop-shadow(0 0 6px rgba(59,130,246,0.4))" : undefined
+          }
+        />
+      </svg>
+
+      {/* Label */}
       <div
         style={{
-          width,
-          height,
-          backgroundColor: color,
-          borderColor,
-          borderWidth,
-          borderRadius: shape === "rounded-rectangle" ? 8 : 0,
+          position: "absolute",
+          inset: 0,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          borderStyle: "solid",
-          boxShadow: selected ? "0 0 0 2px #3b82f6" : "none",
+          color: textColor,
+          fontSize: 12,
+          fontWeight: 500,
+          padding: "6px 8px",
+          textAlign: "center",
+          wordBreak: "break-word",
+          pointerEvents: "none",
+          zIndex: 1,
+          lineHeight: 1.35,
         }}
       >
-        <span style={{ color: textColor }}>{label}</span>
+        {label}
       </div>
 
-      {/* Source Handles */}
-      {handles.map(
-        (h) =>
-          h.type === "source" && (
-            <Handle
-              key={h.id}
-              id={h.id}
-              type="source"
-              position={
-                h.position === "top"
-                  ? Position.Top
-                  : h.position === "right"
-                    ? Position.Right
-                    : h.position === "bottom"
-                      ? Position.Bottom
-                      : Position.Left
-              }
-              style={{ background: "#5B8DEF" }}
-            />
-          ),
+      {/* URL badge — visible when node has a link */}
+      {url && (
+        <div
+          style={{
+            position: "absolute",
+            top: 3,
+            right: 3,
+            width: 13,
+            height: 13,
+            borderRadius: "50%",
+            background: "rgba(59,130,246,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 7,
+            color: "#fff",
+            fontWeight: 700,
+            zIndex: 2,
+            pointerEvents: "none",
+            userSelect: "none",
+          }}
+        >
+          ↗
+        </div>
       )}
-    </>
+
+      {handles.map((h) =>
+        h.type === "source" ? (
+          <Handle
+            key={h.id}
+            id={h.id}
+            type="source"
+            position={mapPos(h.position)}
+            className="w-2.5! h-2.5! border-2! border-white! bg-blue-400!"
+          />
+        ) : null,
+      )}
+    </div>
   );
 };

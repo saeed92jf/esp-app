@@ -3,11 +3,11 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link, useRouter } from '@/i18n/navigation';
-import { useSimpleAuth } from '@/hooks/useSimpleAuth';
+import { useRouter } from '@/i18n/navigation';
+import { useAuth, getAuthErrorKey } from '@/hooks/use-auth';
 import { loginSchema } from '@/lib/validations/auth';
 import { ROLE_HOME } from '@/lib/auth/roles';
-import { DEMO_USERS } from '@/lib/fake-api';
+import { DEMO_USERS } from '@/services';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,7 @@ import { Label } from '@/components/ui/label';
 export default function LoginPage() {
   const t = useTranslations('Auth');
   const router = useRouter();
-  const { login, isLoggingIn } = useSimpleAuth();
+  const { login, isLoggingIn } = useAuth();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +25,6 @@ export default function LoginPage() {
     e.preventDefault();
     setFormError(null);
 
-    // Shape validation before hitting the fake API.
     const parsed = loginSchema.safeParse({ identifier, password });
     if (!parsed.success) {
       setFormError(t('errors.invalidForm'));
@@ -35,13 +34,11 @@ export default function LoginPage() {
     try {
       const loggedInUser = await login(identifier.trim(), password);
       router.replace(ROLE_HOME[loggedInUser.role] ?? '/');
-    } catch {
-      // fakeApi throws INVALID_CREDENTIALS for unknown accounts.
-      setFormError(t('errors.invalidCredentials'));
+    } catch (err) {
+      setFormError(t(`errors.${getAuthErrorKey(err)}`));
     }
   };
 
-  // One-click autofill for demo accounts (test only).
   const fillDemo = (email: string, pwd: string) => {
     setIdentifier(email);
     setPassword(pwd);
@@ -53,15 +50,10 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight">{t('login')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            {t('loginSubtitle')}
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">{t('loginSubtitle')}</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-card space-y-4 rounded-2xl border p-6 shadow-sm"
-        >
+        <form onSubmit={handleSubmit} className="bg-card space-y-4 rounded-2xl border p-6 shadow-sm">
           <div className="space-y-2">
             <Label htmlFor="identifier">{t('identifier')}</Label>
             <Input
@@ -87,11 +79,7 @@ export default function LoginPage() {
           </div>
 
           {formError && (
-            <p
-              role="alert"
-              aria-live="assertive"
-              className="text-destructive text-sm font-medium"
-            >
+            <p role="alert" aria-live="assertive" className="text-destructive text-sm font-medium">
               {formError}
             </p>
           )}
@@ -101,7 +89,9 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        {/* Test credentials card — demo only */}
+        {/* کارت حساب‌های تستی — فقط در fake mode معنا دارد؛
+            در real mode، DEMO_USERS از services/auth.service خالی export نمی‌شود
+            مگر صراحتاً نگه داشته شود. این بلاک را قبل از رفتن به production حذف کنید. */}
         <div className="bg-muted/40 rounded-2xl border border-dashed p-4">
           <p className="text-sm font-semibold">{t('demoTitle')}</p>
           <p className="text-muted-foreground mb-3 text-xs">{t('demoHint')}</p>
@@ -113,11 +103,9 @@ export default function LoginPage() {
                   onClick={() => fillDemo(c.email, c.password)}
                   className="bg-card hover:bg-accent flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-start text-xs transition-colors"
                 >
-                  <span className="text-foreground font-medium">
-                    {t(`roles.${c.user.role}`)}
-                  </span>
+                  <span className="text-foreground font-medium">{t(`roles.${c.user.role}`)}</span>
                   <span className="text-muted-foreground font-mono" dir="ltr">
-                    {c.email} · {c.mobile} · {c.password}
+                    {c.email} — {c.mobile} — {c.password}
                   </span>
                 </button>
               </li>

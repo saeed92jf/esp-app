@@ -375,6 +375,14 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         welcome: true,
       },
+      {
+        labelKey: "Claud-Flow",
+        href: "/cFlow",
+        icon: Library,
+        color: "cyan",
+        public: true,
+        welcome: true,
+      },
     ],
   },
   {

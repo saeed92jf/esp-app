@@ -1,6 +1,6 @@
 // src/data/equipmentDiagramBuilder.ts
 import { MarkerType } from "@xyflow/react";
-import type { DiagramNode, DiagramEdge } from "@/types/nodes";
+import type { DiagramNode, DiagramEdge } from "@/components/flow/nodes";
 import { equipmentData } from "./equipmentDiagramData";
 import type { HubDef, CategoryDef, StandardDef } from "./equipmentDiagramData";
 import { edgeSettings } from "./equipmentDiagramEdgeSettings";

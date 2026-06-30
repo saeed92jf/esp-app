@@ -67,7 +67,12 @@ export interface DynamicNodeData extends Record<string, unknown> {
 
 // ==================== Connection Type Definitions ====================
 
-export type EdgePathStyle = "default" | "smoothstep" | "step" | "straight";
+export type EdgePathStyle =
+  | "default"
+  | "bezier"
+  | "smoothstep"
+  | "step"
+  | "straight";
 
 export interface EdgeAnimation {
   enabled: boolean;

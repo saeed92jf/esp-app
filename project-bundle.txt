@@ -1,320 +1,890 @@
 ﻿================================================================================
-PROJECT BUNDLE - Generated: 2026-06-28 09:55:55
+PROJECT BUNDLE - Generated: 2026-06-30 16:26:55
 Project Root: D:\esp-app
 ================================================================================
 
 
 ################################################################################
-# TARGET FOLDER: src\components\flow-general
+# TARGET FOLDER: src\modules\claude-flow
 ################################################################################
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\components\ConnectionTypeManager.tsx
+FILE: src\modules\claude-flow\components\ContextMenu.tsx
 --------------------------------------------------------------------------------
-// src/components/flow-general/components/ConnectionTypeManager.tsx
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-import type { ConnectionType, ConnectionTypeConfig } from "../types";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Copy,
+  Trash2,
+  Maximize,
+  CheckSquare,
+  ClipboardPaste,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import { cn } from "@/lib/utils";
 
-/**
- * Context interface for managing connection types
- */
-interface ConnectionTypeContextValue {
-  // Registry of all connection type configurations
-  connectionTypes: Map<string, ConnectionTypeConfig>;
-
-  // Register a new connection type or update existing one
-  registerConnectionType: (config: ConnectionTypeConfig) => void;
-
-  // Unregister a connection type by its id
-  unregisterConnectionType: (id: string) => void;
-
-  // Get configuration for a specific connection type
-  getConnectionType: (id: string) => ConnectionTypeConfig | undefined;
-
-  // Get all registered connection types
-  getAllConnectionTypes: () => ConnectionTypeConfig[];
-
-  // Validate if a connection between two types is allowed
-  validateConnection: (sourceType: string, targetType: string) => boolean;
+export interface ContextMenuState {
+  x: number;
+  y: number;
+  target: "pane" | "node" | "edge";
 }
 
-/**
- * Context for connection type management
- */
-const ConnectionTypeContext = createContext<ConnectionTypeContextValue | null>(
-  null,
-);
+// Menu dimensions used for edge-clamping calculations
+const MENU_W = 176; // w-44 = 11rem = 176px
+const MENU_H = 160; // approximate max height (5 items Ã— ~32px)
 
 /**
- * Hook to access connection type context
+ * Clamps the menu position so it never overflows the viewport.
+ * Returns adjusted { x, y } coordinates.
  */
-export const useConnectionTypes = () => {
-  const context = useContext(ConnectionTypeContext);
-  if (!context) {
-    throw new Error(
-      "useConnectionTypes must be used within ConnectionTypeProvider",
-    );
-  }
-  return context;
-};
-
-/**
- * Props for ConnectionTypeProvider
- */
-interface ConnectionTypeProviderProps {
-  children: React.ReactNode;
-  initialTypes?: ConnectionTypeConfig[];
-}
-
-/**
- * Provider component that manages connection type registry
- * Handles validation of connections between different node types
- */
-export const ConnectionTypeProvider: React.FC<ConnectionTypeProviderProps> = ({
-  children,
-  initialTypes = [],
-}) => {
-  // Initialize connection types map from initial types
-  const [connectionTypes, setConnectionTypes] = useState<
-    Map<string, ConnectionTypeConfig>
-  >(() => new Map(initialTypes.map((type) => [type.id, type])));
-
-  /**
-   * Register or update a connection type configuration
-   */
-  const registerConnectionType = useCallback((config: ConnectionTypeConfig) => {
-    setConnectionTypes((prev) => {
-      const next = new Map(prev);
-      next.set(config.id, config);
-      return next;
-    });
-  }, []);
-
-  /**
-   * Remove a connection type from registry
-   */
-  const unregisterConnectionType = useCallback((id: string) => {
-    setConnectionTypes((prev) => {
-      const next = new Map(prev);
-      next.delete(id);
-      return next;
-    });
-  }, []);
-
-  /**
-   * Retrieve a specific connection type configuration
-   */
-  const getConnectionType = useCallback(
-    (id: string): ConnectionTypeConfig | undefined => {
-      return connectionTypes.get(id);
-    },
-    [connectionTypes],
-  );
-
-  /**
-   * Get array of all registered connection types
-   */
-  const getAllConnectionTypes = useCallback((): ConnectionTypeConfig[] => {
-    return Array.from(connectionTypes.values());
-  }, [connectionTypes]);
-
-  /**
-   * Validate if a connection is allowed between source and target types
-   * Checks the allowedConnections rules defined in source type config
-   */
-  const validateConnection = useCallback(
-    (sourceType: string, targetType: string): boolean => {
-      const sourceConfig = connectionTypes.get(sourceType);
-
-      // If source type not found, deny connection
-      if (!sourceConfig) return false;
-
-      // If no rules defined, allow all connections
-      if (!sourceConfig.allowedConnections) return true;
-
-      // Check if target type is in allowed list
-      return sourceConfig.allowedConnections.includes(targetType);
-    },
-    [connectionTypes],
-  );
-
-  const value: ConnectionTypeContextValue = {
-    connectionTypes,
-    registerConnectionType,
-    unregisterConnectionType,
-    getConnectionType,
-    getAllConnectionTypes,
-    validateConnection,
+function clampPosition(x: number, y: number): { x: number; y: number } {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return {
+    x: Math.min(x, vw - MENU_W - 8),
+    y: Math.min(y, vh - MENU_H - 8),
   };
-
-  return (
-    <ConnectionTypeContext.Provider value={value}>
-      {children}
-    </ConnectionTypeContext.Provider>
-  );
-};
-
-/**
- * HOC to wrap a component with connection type provider
- */
-export const withConnectionTypes = <P extends object>(
-  Component: React.ComponentType<P>,
-  initialTypes?: ConnectionTypeConfig[],
-) => {
-  return (props: P) => (
-    <ConnectionTypeProvider initialTypes={initialTypes}>
-      <Component {...props} />
-    </ConnectionTypeProvider>
-  );
-};
-
-
-
---------------------------------------------------------------------------------
-FILE: src\components\flow-general\components\NodeTypeManager.tsx
---------------------------------------------------------------------------------
-// src/components/flow-general/components/NodeTypeManager.tsx
-"use client";
-
-import React, { createContext, useContext, useMemo } from "react";
-// Using the new naming but keeping it compatible
-import type { CustomNodeType as NodeTypeConfig } from "../types";
-
-/**
- * Interface for the Node Type Context
- */
-interface NodeTypeContextType {
-  nodeTypes: NodeTypeConfig[];
-  /**
-   * Finds node type by ID or Type string
-   */
-  getNodeType: (typeOrId: string) => NodeTypeConfig | undefined;
 }
 
-const NodeTypeContext = createContext<NodeTypeContextType | undefined>(
-  undefined,
-);
+export function ContextMenu({
+  state,
+  onClose,
+  onDuplicate,
+  onDelete,
+  onFitView,
+  onSelectAll,
+  onPaste,
+  canPaste,
+}: {
+  state: ContextMenuState;
+  onClose: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  onFitView: () => void;
+  onSelectAll: () => void;
+  onPaste: () => void;
+  canPaste: boolean;
+}) {
+  const t = useTranslations("Flow");
+  const ref = useRef<HTMLDivElement>(null);
 
-export const NodeTypeProvider: React.FC<{
-  initialTypes: NodeTypeConfig[];
+  // Clamped position â€” recalculated whenever the menu appears at a new spot
+  const { x, y } = clampPosition(state.x, state.y);
+
+  // Tiny mount flag drives the entrance animation via opacity/scale transition
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    // Defer one frame so the CSS transition has a starting state to animate from
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  // Close on any outside click or right-click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    window.addEventListener("mousedown", handler);
+    window.addEventListener("contextmenu", handler);
+    return () => {
+      window.removeEventListener("mousedown", handler);
+      window.removeEventListener("contextmenu", handler);
+    };
+  }, [onClose]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  /**
+   * Renders a single menu item button.
+   * Calls onClick then immediately closes the menu.
+   */
+  const item = (
+    Icon: React.ComponentType<{ className?: string }>,
+    label: string,
+    onClick: () => void,
+    disabled = false,
+  ) => (
+    <button
+      key={label}
+      onClick={() => {
+        if (!disabled) {
+          onClick();
+          onClose();
+        }
+      }}
+      disabled={disabled}
+      className={cn(
+        "flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5",
+        "text-start text-xs text-slate-600",
+        "transition-colors hover:bg-slate-100 hover:text-slate-900",
+        "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-600",
+        // Focus ring for keyboard navigation
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+      )}
+    >
+      <Icon className="size-3.5 shrink-0" />
+      <span className="truncate">{label}</span>
+    </button>
+  );
+
+  // â”€â”€ Section: destructive actions (delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const hasDestructive = state.target === "node" || state.target === "edge";
+
+  // â”€â”€ Section: node-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const hasNodeActions = state.target === "node";
+
+  // â”€â”€ Section: pane-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const hasPaneActions = state.target === "pane";
+
+  return (
+    <div
+      ref={ref}
+      style={{ top: y, left: x }}
+      className={cn(
+        // Positioning
+        "fixed z-50 w-44",
+        // Visual shell
+        "rounded-lg border border-slate-200 bg-white p-1 shadow-lg",
+        // Entrance animation â€” starts at opacity-0 scale-95, transitions to full
+        "transition-[opacity,transform] duration-100",
+        visible ? "scale-100 opacity-100" : "scale-95 opacity-0",
+      )}
+      // Stop propagation so the outside-click handler doesn't immediately close
+      onMouseDown={(e) => e.stopPropagation()}
+    >
+      {/* â”€â”€ Node actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {hasNodeActions && (
+        <div className="space-y-0.5">
+          {item(Copy, t("contextMenu.duplicate"), onDuplicate)}
+        </div>
+      )}
+
+      {/* Separator between node actions and destructive section */}
+      {hasNodeActions && hasDestructive && (
+        <div className="my-1 border-t border-slate-100" />
+      )}
+
+      {/* â”€â”€ Destructive actions (node + edge) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {hasDestructive && (
+        <div className="space-y-0.5">
+          {item(Trash2, t("contextMenu.delete"), onDelete)}
+        </div>
+      )}
+
+      {/* â”€â”€ Pane actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {hasPaneActions && (
+        <div className="space-y-0.5">
+          {item(ClipboardPaste, t("contextMenu.paste"), onPaste, !canPaste)}
+          {item(CheckSquare, t("contextMenu.selectAll"), onSelectAll)}
+          <div className="my-1 border-t border-slate-100" />
+          {item(Maximize, t("contextMenu.fitView"), onFitView)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\DiagramCanvas.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React, { useCallback, useRef, useState } from "react";
+import {
+  ReactFlow,
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  Panel,
+  useReactFlow,
+  type Edge,
+  type Node,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { useTranslations } from "next-intl";
+
+import { useDiagramStore } from "../store";
+import { nodeTypes } from "./nodes/BaseNode";
+import { edgeTypes } from "./edges/CustomEdge";
+import { ContextMenu, type ContextMenuState } from "./ContextMenu";
+import type { DiagramNodeData, PaletteItem } from "../types";
+
+const BG_VARIANT_MAP: Record<string, BackgroundVariant | null> = {
+  dots: BackgroundVariant.Dots,
+  lines: BackgroundVariant.Lines,
+  cross: BackgroundVariant.Cross,
+  none: null,
+};
+
+let nodeIdCounter = 0;
+const generateNodeId = () => `node-${Date.now()}-${nodeIdCounter++}`;
+
+export function DiagramCanvas() {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("Flow");
+  const { screenToFlowPosition, fitView } = useReactFlow();
+
+  const nodes = useDiagramStore((s) => s.nodes);
+  const edges = useDiagramStore((s) => s.edges);
+  const onNodesChange = useDiagramStore((s) => s.onNodesChange);
+  const onEdgesChange = useDiagramStore((s) => s.onEdgesChange);
+  const onConnect = useDiagramStore((s) => s.onConnect);
+  const addNode = useDiagramStore((s) => s.addNode);
+  const setSelectedNode = useDiagramStore((s) => s.setSelectedNode);
+  const setSelectedEdge = useDiagramStore((s) => s.setSelectedEdge);
+  const deleteSelected = useDiagramStore((s) => s.deleteSelected);
+  const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
+  const undo = useDiagramStore((s) => s.undo);
+  const redo = useDiagramStore((s) => s.redo);
+  const copy = useDiagramStore((s) => s.copy);
+  const paste = useDiagramStore((s) => s.paste);
+  const clipboard = useDiagramStore((s) => s.clipboard);
+  const settings = useDiagramStore((s) => s.settings);
+
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
+
+  //â”€â”€ Drag & drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  }, []);
+
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      const raw = event.dataTransfer.getData("application/diagram-node");
+      if (!raw) return;
+
+      const item: PaletteItem = JSON.parse(raw);
+      const position = screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+
+      // next-intl throws on missing keys in dev; fall back gracefully
+      let label: string;
+      try {
+        label = t(`nodes.${item.labelKey}`);
+      } catch {
+        label = item.defaultData.label ?? "Node";
+      }
+
+      const newNode: Node<DiagramNodeData> = {
+        id: generateNodeId(),
+        type: item.type,
+        position,
+        data: { label, ...item.defaultData },
+      };
+
+      addNode(newNode);
+    },
+    [screenToFlowPosition, addNode, t],
+  );
+
+  // â”€â”€ Click handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => setSelectedNode(node.id),
+    [setSelectedNode],
+  );
+
+  const onEdgeClick = useCallback(
+    (_: React.MouseEvent, edge: Edge) => setSelectedEdge(edge.id),
+    [setSelectedEdge],
+  );
+
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setSelectedEdge(null);
+  }, [setSelectedNode, setSelectedEdge]);
+
+  // â”€â”€ Context menu handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const onNodeContextMenu = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      event.preventDefault();
+      setSelectedNode(node.id);
+      setContextMenu({ x: event.clientX, y: event.clientY, target: "node" });
+    },
+    [setSelectedNode],
+  );
+
+  const onEdgeContextMenu = useCallback(
+    (event: React.MouseEvent, edge: Edge) => {
+      event.preventDefault();
+      setSelectedEdge(edge.id);
+      setContextMenu({ x: event.clientX, y: event.clientY, target: "edge" });
+    },
+    [setSelectedEdge],
+  );
+
+  const onPaneContextMenu = useCallback(
+    (event: React.MouseEvent | MouseEvent) => {
+      event.preventDefault();
+      const { clientX, clientY } = event as MouseEvent;
+      setContextMenu({ x: clientX, y: clientY, target: "pane" });
+    },
+    [],
+  );
+
+  const closeContextMenu = useCallback(() => setContextMenu(null), []);
+
+  // â”€â”€ Select-all â€” proper useCallback, not inline setState â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const onSelectAll = useCallback(() => {
+    useDiagramStore.setState((s) => ({
+      nodes: s.nodes.map((n) => ({ ...n, selected: true })),
+    }));
+  }, []);
+
+  // â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+  const onKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      const mod = event.ctrlKey || event.metaKey;
+
+      if (mod && event.key.toLowerCase() === "z" && !event.shiftKey) {
+        event.preventDefault();
+        undo();
+      } else if (
+        mod &&
+        (event.key.toLowerCase() === "y" ||
+          (event.key.toLowerCase() === "z" && event.shiftKey))
+      ) {
+        event.preventDefault();
+        redo();
+      } else if (mod && event.key.toLowerCase() === "c") {
+        copy();
+      } else if (mod && event.key.toLowerCase() === "v") {
+        paste();
+      } else if (mod && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        duplicateSelected();
+      } else if (event.key === "Delete" || event.key === "Backspace") {
+        // Avoid deleting while typing in inputs
+        const tag = (event.target as HTMLElement).tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        deleteSelected();
+      }
+    },
+    [undo, redo, copy, paste, duplicateSelected, deleteSelected],
+  );
+
+  const bgVariant = BG_VARIANT_MAP[settings.backgroundVariant];
+
+  return (
+    // outline-none prevents the browser focus ring from showing on the canvas wrapper
+    <div
+      ref={wrapperRef}
+      className="relative h-full w-full outline-none"
+      onKeyDown={onKeyDown}
+      tabIndex={0}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        onDrop={onDrop}
+        onDragOver={onDragOver}
+        onNodeClick={onNodeClick}
+        onEdgeClick={onEdgeClick}
+        onPaneClick={onPaneClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
+        snapToGrid={settings.snapToGrid}
+        snapGrid={settings.snapGrid}
+        colorMode={settings.colorMode}
+        fitView
+        defaultEdgeOptions={{ type: settings.defaultEdgeType }}
+        deleteKeyCode={null}
+        proOptions={{ hideAttribution: true }}
+      >
+        {bgVariant !== null && (
+          <Background variant={bgVariant} gap={16} size={1.2} color="#e2e8f0" />
+        )}
+
+        {settings.showControls && (
+          <Controls position="bottom-right" showInteractive={false} />
+        )}
+
+        {settings.showMiniMap && (
+          <MiniMap
+            position="bottom-left"
+            pannable
+            zoomable
+            nodeColor={(n) =>
+              (n.data as DiagramNodeData)?.backgroundColor ?? "#cbd5e1"
+            }
+            maskColor="rgba(241, 245, 249, 0.6)"
+            className="border! border-slate-200! shadow-sm!"
+          />
+        )}
+
+        <Panel position="top-center">
+          {nodes.length === 0 && (
+            <p className="pointer-events-none rounded-full border border-slate-200 bg-white/90 px-4 py-1.5 text-xs text-slate-400 shadow-sm backdrop-blur">
+              {t("palette.dragToAdd")}
+            </p>
+          )}
+        </Panel>
+      </ReactFlow>
+
+      {contextMenu && (
+        <ContextMenu
+          state={contextMenu}
+          onClose={closeContextMenu}
+          onDuplicate={duplicateSelected}
+          onDelete={deleteSelected}
+          onFitView={() => fitView({ duration: 300 })}
+          onSelectAll={onSelectAll}
+          onPaste={paste}
+          canPaste={!!clipboard}
+        />
+      )}
+    </div>
+  );
+}
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\DiagramEditor.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React, { useCallback, useEffect, useState } from "react";
+import { ReactFlowProvider } from "@xyflow/react";
+import { useDiagramStore } from "../store";
+import { Toolbar } from "./Toolbar";
+import { NodePalette } from "./NodePalette";
+import { SettingsPanel } from "./SettingsPanel";
+import { DiagramCanvas } from "./DiagramCanvas";
+import { NewDiagramDialog, DiagramLibraryDialog } from "./Dialogs";
+import { EditorSettingsDialog } from "./EditorSettingsDialog";
+import { Check } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
+// â”€â”€ Transient save-confirmation toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Rendered at the bottom-center of the viewport; invisible when message is null.
+function Toast({ message }: { message: string | null }) {
+  if (!message) return null;
+  return (
+    // Use flex + justify-center on a full-width fixed strip to avoid
+    // manual translate hacks that break under RTL logical properties.
+    <div className="pointer-events-none fixed inset-x-0 bottom-5 z-60 flex justify-center">
+      <div className="flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-lg">
+        <Check className="size-3.5 text-emerald-400" />
+        {message}
+      </div>
+    </div>
+  );
+}
+
+// â”€â”€ Inner shell â€” must be a descendant of ReactFlowProvider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function EditorShell() {
+  const t = useTranslations("Flow");
+  const locale = useLocale();
+
+  const isPalettOpen = useDiagramStore((s) => s.isPalettOpen);
+  const isSettingsPanelOpen = useDiagramStore((s) => s.isSettingsPanelOpen);
+  const saveDiagram = useDiagramStore((s) => s.saveDiagram);
+  const autoSave = useDiagramStore((s) => s.settings.autoSave);
+  const nodes = useDiagramStore((s) => s.nodes);
+  const edges = useDiagramStore((s) => s.edges);
+  // NOTE: colorMode is consumed by DiagramCanvas via the store directly;
+  //       no need to read it here.
+
+  const [showNewDialog, setShowNewDialog] = useState(false);
+  const [showLibraryDialog, setShowLibraryDialog] = useState(false);
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Shared helper: save + show toast for2 seconds
+  const triggerSave = useCallback(() => {
+    saveDiagram();
+    setToast(t("messages.savedSuccessfully"));
+    setTimeout(() => setToast(null), 2000);
+  }, [saveDiagram, t]);
+
+  // Auto-save: debounced1.5 s after any node/edge mutation when enabled
+  useEffect(() => {
+    if (!autoSave || nodes.length === 0) return;
+    const id = setTimeout(() => saveDiagram(), 1500);
+    return () => clearTimeout(id);
+  }, [autoSave, nodes, edges, saveDiagram]);
+
+  // Global keyboard shortcut: Ctrl/Cmd+S â†’ manual save with toast
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        triggerSave();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [triggerSave]);
+
+  // dir is derived from next-intl locale â€” no local language state needed
+  const dir = locale === "fa" ? "rtl" : "ltr";
+
+  return (
+    <div
+      className="flex h-full w-full flex-col overflow-hidden bg-background"
+      dir={dir}
+    >
+      <Toolbar
+        onOpenLibrary={() => setShowLibraryDialog(true)}
+        onOpenNew={() => setShowNewDialog(true)}
+        onSave={triggerSave}
+        onOpenSettings={() => setShowSettingsDialog(true)}
+      />
+
+      <div className="flex flex-1 overflow-hidden">
+        {isPalettOpen && <NodePalette />}
+        <div className="relative flex-1">
+          <DiagramCanvas />
+        </div>
+        {isSettingsPanelOpen && <SettingsPanel />}
+      </div>
+
+      {showNewDialog && (
+        <NewDiagramDialog onClose={() => setShowNewDialog(false)} />
+      )}
+      {showLibraryDialog && (
+        <DiagramLibraryDialog onClose={() => setShowLibraryDialog(false)} />
+      )}
+      {showSettingsDialog && (
+        <EditorSettingsDialog onClose={() => setShowSettingsDialog(false)} />
+      )}
+
+      <Toast message={toast} />
+    </div>
+  );
+}
+
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// `defaultLanguage` is intentionally absent â€” locale is controlled entirely
+// by next-intl URL-routing middleware.
+export interface DiagramEditorProps {
+  className?: string;
+  height?: string | number;
+}
+
+export function DiagramEditor({
+  className = "",
+  height = "100vh",
+}: DiagramEditorProps) {
+  return (
+    <div className={className} style={{ height, width: "100%" }}>
+      {/* ReactFlowProvider must wrap EditorShell so useReactFlow() works inside */}
+      <ReactFlowProvider>
+        <EditorShell />
+      </ReactFlowProvider>
+    </div>
+  );
+}
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\Dialogs.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { X, FileText, Trash2, Clock } from "lucide-react";
+import { useDiagramStore } from "../store";
+import { useTranslations, useLocale } from "next-intl";
+
+// â”€â”€ Reusable accessible modal shell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Handles: backdrop click to close, Escape key, focus trap (first focusable el),
+// aria-modal + aria-labelledby for screen readers.
+function ModalShell({
+  onClose,
+  children,
+  titleId,
+}: {
+  onClose: () => void;
   children: React.ReactNode;
-}> = ({ initialTypes, children }) => {
-  const value = useMemo(
-    () => ({
-      nodeTypes: initialTypes,
-      getNodeType: (id: string) =>
-        initialTypes.find((t) => t.id === id || t.type === id),
-    }),
-    [initialTypes],
+  titleId: string;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Close on Escape key; keep focus inside the panel
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  // Move focus into the panel on mount so keyboard nav starts correctly
+  useEffect(() => {
+    const first = panelRef.current?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    first?.focus();
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
+      {/* stopPropagation prevents backdrop-click from firing inside the panel */}
+      <div
+        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border border-border bg-background shadow-2xl"
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// â”€â”€ NewDiagramDialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function NewDiagramDialog({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("Flow");
+  const newDiagram = useDiagramStore((s) => s.newDiagram);
+  const setDiagramName = useDiagramStore((s) => s.setDiagramName);
+  const [name, setName] = useState("");
+
+  const handleCreate = useCallback(() => {
+    newDiagram();
+    // Fall back to the translated "untitled" string when the input is blank
+    setDiagramName(name.trim() || t("editor.untitled"));
+    onClose();
+  }, [newDiagram, setDiagramName, name, t, onClose]);
+
+  return (
+    <ModalShell onClose={onClose} titleId="new-diagram-title">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <h2
+          id="new-diagram-title"
+          className="text-sm font-semibold text-foreground"
+        >
+          {t("dialogs.newDiagram")}
+        </h2>
+        <button
+          onClick={onClose}
+          aria-label={t("dialogs.cancel")}
+          className="rounded p-1 text-muted-foreground hover:bg-accent"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 py-4">
+        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+          {t("dialogs.diagramName")}
+        </label>
+        <input
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          placeholder={t("editor.untitled")}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+        />
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+        <button
+          onClick={onClose}
+          className="rounded-md px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent"
+        >
+          {t("dialogs.cancel")}
+        </button>
+        <button
+          onClick={handleCreate}
+          className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90"
+        >
+          {t("dialogs.create")}
+        </button>
+      </div>
+    </ModalShell>
+  );
+}
+
+// â”€â”€ DiagramLibraryDialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("Flow");
+  const locale = useLocale();
+
+  const savedDiagrams = useDiagramStore((s) => s.savedDiagrams);
+  const loadDiagram = useDiagramStore((s) => s.loadDiagram);
+  const deleteDiagram = useDiagramStore((s) => s.deleteDiagram);
+
+  // null  â†’ no pending delete; string â†’ id of diagram awaiting confirmation
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  // Format ISO date string according to the active locale
+  const formatDate = useCallback(
+    (iso: string) =>
+      new Date(iso).toLocaleDateString(locale === "fa" ? "fa-IR" : "en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    [locale],
+  );
+
+  // Delete and clear the pending-confirm state in one step
+  const handleDelete = useCallback(
+    (id: string) => {
+      deleteDiagram(id);
+      setConfirmId(null); // prevent stale confirmId if store updates list
+    },
+    [deleteDiagram],
   );
 
   return (
-    <NodeTypeContext.Provider value={value}>
-      {children}
-    </NodeTypeContext.Provider>
+    <ModalShell onClose={onClose} titleId="library-title">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <h2
+          id="library-title"
+          className="text-sm font-semibold text-foreground"
+        >
+          {t("editor.openDiagrams")}
+        </h2>
+        <button
+          onClick={onClose}
+          aria-label={t("dialogs.cancel")}
+          className="rounded p-1 text-muted-foreground hover:bg-accent"
+        >
+          <X className="size-4" />
+        </button>
+      </div>
+
+      {/* Diagram list */}
+      <div className="max-h-96 overflow-y-auto px-2 py-2">
+        {savedDiagrams.length === 0 ? (
+          // Empty state â€” shown when no diagrams have been saved yet
+          <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+            <FileText className="size-8 text-muted-foreground/40" />
+            <p className="text-sm font-medium text-muted-foreground">
+              {t("messages.noDiagrams")}
+            </p>
+            <p className="text-xs text-muted-foreground/60">
+              {t("messages.createFirst")}
+            </p>
+          </div>
+        ) : (
+          savedDiagrams.map((d) => (
+            <div
+              key={d.id}
+              className="group flex items-center justify-between rounded-lg px-3 py-2.5 hover:bg-accent"
+            >
+              {/* Load button covers the name + meta area */}
+              <button
+                onClick={() => {
+                  loadDiagram(d.id);
+                  onClose();
+                }}
+                className="flex flex-1 items-center gap-3 text-start"
+              >
+                <div className="flex size-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                  <FileText className="size-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {d.name}
+                  </p>
+                  <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Clock className="size-3" />
+                    {/* Date + node count separated by middle dot */}
+                    {formatDate(d.updatedAt)}
+                    {" Â· "}
+                    {t("messages.nodeCount", { count: d.nodes.length })}
+                  </p>
+                </div>
+              </button>
+
+              {/* Inline delete confirmation â€” replaces the trash icon on first click */}
+              {confirmId === d.id ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleDelete(d.id)}
+                    className="rounded-md bg-destructive px-2 py-1 text-[11px] font-medium text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {t("dialogs.confirm")}
+                  </button>
+                  <button
+                    onClick={() => setConfirmId(null)}
+                    className="rounded-md px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-accent"
+                  >
+                    {t("dialogs.cancel")}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmId(d.id)}
+                  className="rounded p-1.5 text-muted-foreground/40 opacity-0 transition-opacity hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+                  aria-label={t("dialogs.delete")}
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </ModalShell>
   );
-};
-
-export const useNodeTypes = (): NodeTypeContextType => {
-  const context = useContext(NodeTypeContext);
-  if (!context) {
-    throw new Error("useNodeTypes must be used within a NodeTypeProvider");
-  }
-  return context;
-};
+}
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\edges\DynamicEdge.tsx
+FILE: src\modules\claude-flow\components\edges\CustomEdge.tsx
 --------------------------------------------------------------------------------
-// src/components/flow-general/edges/DynamicEdge.tsx
-/**
- * Dynamic edge component that renders based on registered connection type definition.
- * Supports different path styles, colors, and animations.
- */
+"use client";
 
 import React from "react";
 import {
   BaseEdge,
-  type EdgeProps,
+  EdgeLabelRenderer,
+  getBezierPath,
   getSmoothStepPath,
   getStraightPath,
-  getBezierPath,
-  EdgeLabelRenderer,
-  type Edge,
+  type EdgeProps,
 } from "@xyflow/react";
-import type { DynamicEdgeData } from "../types";
-import { getConnectionType } from "../utils/registry";
+import { X } from "lucide-react";
+import { useDiagramStore } from "../../store";
+import type { DiagramEdgeData } from "../../types";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-// Parameters shared by all path functions
-interface PathParams {
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
-  sourcePosition?: import("@xyflow/react").Position;
-  targetPosition?: import("@xyflow/react").Position;
-}
-
-/**
- * Unified path resolver that returns [path, labelX, labelY].
- * Handles the different signatures of each path utility function.
- * Note: Some path functions return 5 elements, we only use the first 3.
- */
-const resolvePath = (
-  pathStyle: string,
-  params: PathParams,
-): [string, number, number] => {
-  const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } =
-    params;
-
-  switch (pathStyle) {
-    case "smoothstep":
-    case "step": {
-      // getSmoothStepPath returns [path, labelX, labelY, offsetX, offsetY]
-      const [path, labelX, labelY] = getSmoothStepPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition,
-        targetPosition,
-      });
-      return [path, labelX, labelY];
-    }
-    case "straight": {
-      const [path, labelX, labelY] = getStraightPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-      });
-      return [path, labelX, labelY];
-    }
-    case "bezier":
-    default: {
-      // getBezierPath returns [path, labelX, labelY, offsetX, offsetY]
-      const [path, labelX, labelY] = getBezierPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-        sourcePosition,
-        targetPosition,
-      });
-      return [path, labelX, labelY];
-    }
-  }
-};
-
-// Use the full Edge generic so React Flow resolves data correctly
-type DynamicEdgeProps = EdgeProps<Edge<DynamicEdgeData>>;
-
-export const DynamicEdge = ({
+export function CustomEdge({
   id,
   sourceX,
   sourceY,
@@ -323,1801 +893,2334 @@ export const DynamicEdge = ({
   sourcePosition,
   targetPosition,
   data,
+  selected,
   markerEnd,
-}: DynamicEdgeProps) => {
-  const connectionTypeId =
-    data && "connectionTypeId" in data ? (data.connectionTypeId as string) : "";
+}: EdgeProps & { data?: DiagramEdgeData }) {
+  const deleteSelected = useDiagramStore((s) => s.deleteSelected);
+  const edgeStyle = data?.edgeStyle ?? "smoothstep";
 
-  const connectionType = getConnectionType(connectionTypeId);
+  //â”€â”€ Path calculation based on edge style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  let path: string;
+  let labelX: number;
+  let labelY: number;
 
-  // Invalid connection type fallback
-  if (!connectionType) {
-    const [path] = getStraightPath({ sourceX, sourceY, targetX, targetY });
+  if (edgeStyle === "straight") {
+    [path, labelX, labelY] = getStraightPath({
+      sourceX,
+      sourceY,
+      targetX,
+      targetY,
+    });
+  } else if (edgeStyle === "step" || edgeStyle === "smoothstep") {
+    [path, labelX, labelY] = getSmoothStepPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+      // step = hard corners, smoothstep = 8px border-radius
+      borderRadius: edgeStyle === "step" ? 0 : 8,
+    });
+  } else {
+    // default fallback: bezier curve
+    [path, labelX, labelY] = getBezierPath({
+      sourceX,
+      sourceY,
+      sourcePosition,
+      targetX,
+      targetY,
+      targetPosition,
+    });
+  }
 
-    return (
+  const strokeColor = data?.color ?? "#94a3b8";
+  const strokeWidth = data?.strokeWidth ?? 2;
+
+  return (
+    <>
+      {/* SVG edge path â€” stroke color and width driven by selection state */}
       <BaseEdge
         id={id}
         path={path}
-        style={{ stroke: "#f00", strokeWidth: 2 }}
-      />
-    );
-  }
-
-  const {
-    color,
-    pathStyle,
-    strokeWidth = 2,
-    animation,
-    showArrow = true,
-    strokeDasharray,
-    allowLabel,
-  } = connectionType;
-
-  const [edgePath, labelX, labelY] = resolvePath(pathStyle, {
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-  });
-
-  // Build style object
-  const edgeStyle: React.CSSProperties = {
-    stroke: color,
-    strokeWidth,
-    strokeDasharray,
-  };
-
-  // Add animation if enabled
-  if (animation?.enabled) {
-    const duration = animation.duration ?? 2;
-    const direction = animation.direction === "reverse" ? "reverse" : "normal";
-
-    edgeStyle.animation = `dashdraw ${duration}s linear infinite`;
-    edgeStyle.animationDirection = direction;
-
-    if (!strokeDasharray) {
-      edgeStyle.strokeDasharray = `${strokeWidth * 5} ${strokeWidth * 5}`;
-    }
-  }
-
-  const edgeLabel =
-    data && "label" in data ? (data.label as string | undefined) : undefined;
-
-  return (
-    <>
-      <BaseEdge
-        id={id}
-        path={edgePath}
-        markerEnd={showArrow ? markerEnd : undefined}
-        style={edgeStyle}
+        markerEnd={markerEnd}
+        style={{
+          stroke: selected ? "#6366f1" : strokeColor,
+          strokeWidth: selected ? strokeWidth + 0.5 : strokeWidth,
+        }}
       />
 
-      {allowLabel && edgeLabel && (
-        <EdgeLabelRenderer>
-          <div
-            style={{
-              position: "absolute",
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              pointerEvents: "all",
-            }}
-            className="nodrag nopan bg-white px-2 py-1 rounded shadow-sm text-xs border border-gray-200"
-          >
-            {edgeLabel}
-          </div>
-        </EdgeLabelRenderer>
-      )}
+      {/* HTML overlay rendered via portal into the ReactFlow pane */}
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+          }}
+          className="nodrag nopan pointer-events-auto absolute"
+        >
+          {/* Edge label badge â€” only rendered when data.label is set */}
+          {data?.label && (
+            <Badge
+              variant="outline"
+              className="px-1.5 py-0.5 text-[11px] font-medium shadow-xs"
+            >
+              {data.label}
+            </Badge>
+          )}
+
+          {/* Delete button â€” visible only when edge is selected */}
+          {selected && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                deleteSelected();
+              }}
+              // -end-3 is RTL-aware logical equivalent of -right-3 / -left-3
+              className={cn(
+                "absolute -top-3 -inset-e-3 size-5 rounded-full shadow-xs",
+                "hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30",
+              )}
+              aria-label="Delete edge"
+            >
+              <X className="size-3" />
+            </Button>
+          )}
+        </div>
+      </EdgeLabelRenderer>
     </>
   );
+}
+
+// â”€â”€ Edge type registry â€” all styles map to the same CustomEdge component â”€â”€â”€â”€â”€
+// The actual path shape is determined by data.edgeStyle inside the component.
+export const edgeTypes = {
+  default: CustomEdge,
+  straight: CustomEdge,
+  step: CustomEdge,
+  smoothstep: CustomEdge,
 };
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\FlowEditor.tsx
+FILE: src\modules\claude-flow\components\EditorSettingsDialog.tsx
 --------------------------------------------------------------------------------
-// src/components/flow-general/FlowEditor.tsx
 "use client";
 
-import React, { useCallback, useMemo } from "react";
-import {
-  ReactFlow,
-  Background,
-  Controls,
-  MiniMap,
-  ReactFlowProvider,
-  ConnectionLineType,
-  type Connection,
-  type IsValidConnection,
-  type NodeTypes,
-  type EdgeTypes,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+import React from "react";
+import { X, Keyboard } from "lucide-react";
+import { useDiagramStore } from "../store";
+import { useTranslations } from "next-intl";
+import { ModalShell } from "../components/modal-shell";
+import type { DiagramEdgeType, EditorSettings } from "../types";
 
-import { DynamicNode } from "./nodes/DynamicNode";
-import { DynamicEdge } from "./edges/DynamicEdge";
-import { NodeTypeProvider } from "./components/NodeTypeManager";
-import { ConnectionTypeProvider } from "./components/ConnectionTypeManager";
-import { useConnectionTypes } from "./components/ConnectionTypeManager";
+//â”€â”€ Local sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-import type { FlowEditorProps, FlowNode, FlowEdge } from "./types";
-import { useFlowEditor } from "./hooks/useFlowEditor";
-
-/**
- * Internal flow canvas component with access to ReactFlow context
- */
-const FlowCanvas: React.FC<{
-  nodes: FlowNode[];
-  edges: FlowEdge[];
-  onNodesChange: any;
-  onEdgesChange: any;
-  onConnect: any;
-  className?: string;
-  showBackground?: boolean;
-  showControls?: boolean;
-  showMiniMap?: boolean;
-  connectionLineType?: ConnectionLineType;
-  fitView?: boolean;
-  snapToGrid?: boolean;
-  snapGrid?: [number, number];
-}> = ({
-  nodes,
-  edges,
-  onNodesChange,
-  onEdgesChange,
-  onConnect,
-  className = "",
-  showBackground = true,
-  showControls = true,
-  showMiniMap = false,
-  connectionLineType = ConnectionLineType.Bezier,
-  fitView = true,
-  snapToGrid = false,
-  snapGrid = [15, 15],
-}) => {
-  const { validateConnection } = useConnectionTypes();
-
-  /**
-   * Define node types - all nodes use DynamicNode component
-   */
-  const nodeTypes = useMemo<NodeTypes>(
-    () => ({
-      default: DynamicNode,
-    }),
-    [],
-  );
-
-  /**
-   * Define edge types - all edges use DynamicEdge component
-   */
-  const edgeTypes = useMemo<EdgeTypes>(
-    () => ({
-      default: DynamicEdge,
-    }),
-    [],
-  );
-
-  /**
-   * Validate connection based on registered connection type rules.
-   * In @xyflow/react v12 the callback receives FlowEdge | Connection
-   * (called for both new connections and reconnect attempts).
-   */
-  const isValidConnection: IsValidConnection<FlowEdge> = useCallback(
-    (connection) => {
-      if (!connection.source || !connection.target) return false;
-
-      const sourceNode = nodes.find((n) => n.id === connection.source);
-      const targetNode = nodes.find((n) => n.id === connection.target);
-
-      if (!sourceNode || !targetNode) return false;
-
-      return validateConnection(
-        sourceNode.type || "default",
-        targetNode.type || "default",
-      );
-    },
-    [nodes, validateConnection],
-  );
-
-  /**
-   * Handle connection creation â€” only proceeds when isValidConnection passes.
-   */
-  const handleConnect = useCallback(
-    (params: Connection) => {
-      if (isValidConnection(params)) {
-        onConnect(params);
-      }
-    },
-    [isValidConnection, onConnect],
-  );
-
+// Section heading: small caps, muted color â€” uses design token text-muted-foreground
+function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`w-full h-full ${className}`}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={handleConnect}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        connectionLineType={connectionLineType}
-        isValidConnection={isValidConnection}
-        fitView={fitView}
-        snapToGrid={snapToGrid}
-        snapGrid={snapGrid}
-        deleteKeyCode="Delete"
-        multiSelectionKeyCode="Shift"
-      >
-        {showBackground && (
-          <Background color="#e2e8f0" gap={snapGrid[0]} size={1} />
-        )}
-        {showControls && <Controls />}
-        {showMiniMap && <MiniMap nodeStrokeWidth={3} zoomable pannable />}
-      </ReactFlow>
+    <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {children}
+    </h3>
+  );
+}
+
+// Label + control row â€” label uses muted foreground to stay secondary to content
+function Row({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between py-2">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      {children}
     </div>
   );
-};
+}
 
-/**
- * Main Flow Editor Component (General Purpose)
- */
-export const FlowEditor: React.FC<FlowEditorProps> = ({
-  initialNodes = [],
-  initialEdges = [],
-  nodeTypeConfigs = [],
-  connectionTypeConfigs = [],
-  onSave,
-  onLoad,
-  autoSave = false,
-  autoSaveInterval = 30000,
-  storageKey = "flow-editor-state",
-  className = "",
-  showBackground = true,
-  showControls = true,
-  showMiniMap = false,
-  connectionLineType = ConnectionLineType.Bezier,
-  fitView = true,
-  snapToGrid = false,
-  snapGrid = [15, 15],
-  children,
-}) => {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
-    useFlowEditor({
-      initialNodes,
-      initialEdges,
-      onSave,
-      onLoad,
-      autoSave,
-      autoSaveInterval,
-      storageKey,
-    });
+// Accessible toggle switch.
+// Uses bg-primary when checked and bg-input when unchecked (respects dark mode via CSS vars).
+// RTL-aware: rtl:-translate-x-4 mirrors the thumb for right-to-left layouts.
+function Switch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(!checked)}
+      role="switch"
+      aria-checked={checked}
+      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+        checked ? "bg-primary" : "bg-input"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${
+          checked ? "translate-x-4rtl:-translate-x-4" : "translate-x-0.5"
+        }`}
+      />
+    </button>
+  );
+}
+
+// Generic type-safe select.
+// border-input / bg-background / text-foreground follow shadcn design tokens.
+function Select<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value as T)}
+      className="rounded-md border border-input bg-background px-2 py-1 text-xs text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
+          {opt.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+// Keyboard shortcuts â€” labelKey maps to Flow.shortcuts.* in translation files
+const SHORTCUT_KEYS = [
+  { labelKey: "undo", combo: "Ctrl/âŒ˜ + Z" },
+  { labelKey: "redo", combo: "Ctrl/âŒ˜ + Shift + Z" },
+  { labelKey: "save", combo: "Ctrl/âŒ˜ + S" },
+  { labelKey: "copy", combo: "Ctrl/âŒ˜ + C" },
+  { labelKey: "paste", combo: "Ctrl/âŒ˜ + V" },
+  { labelKey: "duplicate", combo: "Ctrl/âŒ˜ + D" },
+  { labelKey: "delete", combo: "Delete" },
+  { labelKey: "fitView", combo: "Right-click â†’ Fit view" },
+] as const;
+
+//â”€â”€ EditorSettingsDialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("Flow");
+  const settings = useDiagramStore((s) => s.settings);
+  const updateSettings = useDiagramStore((s) => s.updateSettings);
+
+  // Typed partial-update helper â€” avoids manual casting at each call site
+  const set = <K extends keyof EditorSettings>(
+    key: K,
+    value: EditorSettings[K],
+  ) => updateSettings({ [key]: value });
 
   return (
-    <NodeTypeProvider initialTypes={nodeTypeConfigs}>
-      <ConnectionTypeProvider initialTypes={connectionTypeConfigs}>
-        <ReactFlowProvider>
-          <FlowCanvas
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            className={className}
-            showBackground={showBackground}
-            showControls={showControls}
-            showMiniMap={showMiniMap}
-            connectionLineType={connectionLineType}
-            fitView={fitView}
-            snapToGrid={snapToGrid}
-            snapGrid={snapGrid}
-          />
-          {children}
-        </ReactFlowProvider>
-      </ConnectionTypeProvider>
-    </NodeTypeProvider>
+    // max-w-md panel; flex-col so the scrollable body doesn't overflow the viewport
+    <ModalShell
+      onClose={onClose}
+      titleId="editor-settings-title"
+      maxWidth="max-w-md"
+    >
+      <div className="flex max-h-[85vh] flex-col">
+        {/* â”€â”€ Header â”€â”€ */}
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h2
+            id="editor-settings-title"
+            className="text-sm font-semibold text-foreground"
+          >
+            {t("editorSettings.title")}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("dialogs.cancel")}
+            className="rounded p-1 text-muted-foreground hover:bg-accent"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* â”€â”€ Scrollable body â”€â”€ */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          {/* Canvas */}
+          <SectionTitle>{t("editorSettings.canvas")}</SectionTitle>
+          <Row label={t("editorSettings.snapToGrid")}>
+            <Switch
+              checked={settings.snapToGrid}
+              onChange={(v) => set("snapToGrid", v)}
+            />
+          </Row>
+          <Row label={t("editorSettings.showMiniMap")}>
+            <Switch
+              checked={settings.showMiniMap}
+              onChange={(v) => set("showMiniMap", v)}
+            />
+          </Row>
+          <Row label={t("editorSettings.showControls")}>
+            <Switch
+              checked={settings.showControls}
+              onChange={(v) => set("showControls", v)}
+            />
+          </Row>
+          <Row label={t("editorSettings.background")}>
+            <Select
+              value={settings.backgroundVariant}
+              onChange={(v) => set("backgroundVariant", v)}
+              options={[
+                { value: "dots", label: t("editorSettings.bg_dots") },
+                { value: "lines", label: t("editorSettings.bg_lines") },
+                { value: "cross", label: t("editorSettings.bg_cross") },
+                { value: "none", label: t("editorSettings.bg_none") },
+              ]}
+            />
+          </Row>
+
+          <div className="my-3 h-px bg-border" />
+
+          {/* Appearance */}
+          <SectionTitle>{t("editorSettings.appearance")}</SectionTitle>
+          <Row label={t("editorSettings.colorMode")}>
+            <Select
+              value={settings.colorMode}
+              onChange={(v) => set("colorMode", v)}
+              options={[
+                { value: "light", label: t("editorSettings.mode_light") },
+                { value: "dark", label: t("editorSettings.mode_dark") },
+              ]}
+            />
+          </Row>
+
+          <div className="my-3 h-px bg-border" />
+
+          {/* Behavior */}
+          <SectionTitle>{t("editorSettings.behavior")}</SectionTitle>
+          <Row label={t("editorSettings.defaultEdgeType")}>
+            <Select
+              value={settings.defaultEdgeType}
+              onChange={(v) => set("defaultEdgeType", v as DiagramEdgeType)}
+              options={[
+                { value: "default", label: t("editorSettings.edge_default") },
+                { value: "straight", label: t("editorSettings.edge_straight") },
+                {
+                  value: "smoothstep",
+                  label: t("editorSettings.edge_smoothstep"),
+                },
+                { value: "step", label: t("editorSettings.edge_step") },
+              ]}
+            />
+          </Row>
+          <Row label={t("editorSettings.autoSave")}>
+            <Switch
+              checked={settings.autoSave}
+              onChange={(v) => set("autoSave", v)}
+            />
+          </Row>
+
+          <div className="my-3 h-px bg-border" />
+
+          {/* Keyboard shortcuts */}
+          <SectionTitle>
+            <span className="flex items-center gap-1.5">
+              <Keyboard className="h-3 w-3" />
+              {t("editorSettings.shortcuts")}
+            </span>
+          </SectionTitle>
+          <div className="space-y-1.5">
+            {SHORTCUT_KEYS.map((shortcut) => (
+              <div
+                key={shortcut.labelKey}
+                className="flex items-center justify-between text-xs"
+              >
+                {/* Dynamic key lookup: Flow.shortcuts.<labelKey> */}
+                <span className="text-muted-foreground">
+                  {t(`shortcuts.${shortcut.labelKey}`)}
+                </span>
+                <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  {shortcut.combo}
+                </kbd>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </ModalShell>
   );
-};
-
-export default FlowEditor;
+}
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\hooks\useFlowEditor.ts
+FILE: src\modules\claude-flow\components\modal-shell.tsx
 --------------------------------------------------------------------------------
-// src/components/flow-general/hooks/useFlowEditor.ts
+// components/flow/ui/modal-shell.tsx
 "use client";
 
-import { useCallback, useState } from "react";
-import {
-  type Node,
-  type Edge,
-  addEdge,
-  applyNodeChanges,
-  applyEdgeChanges,
-  type Connection,
-  type NodeChange,
-  type EdgeChange,
-  type OnNodesChange,
-  type OnEdgesChange,
-  type OnConnect,
-} from "@xyflow/react";
-import type { DynamicNodeData, DynamicEdgeData, FlowState } from "../types";
+import React, { useEffect, useRef } from "react";
 
-// History stack entry type
-interface HistoryEntry {
-  nodes: Node<DynamicNodeData>[];
-  edges: Edge<DynamicEdgeData>[];
+interface ModalShellProps {
+  onClose: () => void;
+  children: React.ReactNode;
+  titleId: string;
+  /** Optional max-width override, defaults to max-w-md */
+  maxWidth?: string;
 }
 
-/**
- * Options for configuring the flow editor hook.
- */
-export interface UseFlowEditorOptions {
-  initialNodes?: Node<DynamicNodeData>[];
-  initialEdges?: Edge<DynamicEdgeData>[];
-  onSave?: (state: FlowState) => void;
-  onLoad?: () => FlowState | null | Promise<FlowState | null>;
-  autoSave?: boolean;
-  autoSaveInterval?: number;
-  storageKey?: string;
-}
+// Reusable accessible modal wrapper.
+// Handles: backdrop click, Escape key, initial focus, aria attributes.
+export function ModalShell({
+  onClose,
+  children,
+  titleId,
+  maxWidth = "max-w-md",
+}: ModalShellProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
 
-/**
- * Custom hook for managing React Flow editor state with undo/redo functionality.
- */
-export function useFlowEditor(options: UseFlowEditorOptions = {}) {
-  const { initialNodes = [], initialEdges = [] } = options;
+  // Close on Escape
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
 
-  // Current flow state
-  const [nodes, setNodes] = useState<Node<DynamicNodeData>[]>(initialNodes);
-  const [edges, setEdges] = useState<Edge<DynamicEdgeData>[]>(initialEdges);
-
-  // History management for undo/redo
-  const [history, setHistory] = useState<HistoryEntry[]>([
-    { nodes: initialNodes, edges: initialEdges },
-  ]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-
-  /**
-   * Save current state to history stack.
-   */
-  const saveToHistory = useCallback(
-    (newNodes: Node<DynamicNodeData>[], newEdges: Edge<DynamicEdgeData>[]) => {
-      const newHistory = history.slice(0, historyIndex + 1);
-      newHistory.push({ nodes: newNodes, edges: newEdges });
-      setHistory(newHistory);
-      setHistoryIndex(newHistory.length - 1);
-    },
-    [history, historyIndex],
-  );
-
-  /**
-   * Handle node changes from React Flow.
-   * applyNodeChanges returns NodeBase[] â€” cast back to Node<DynamicNodeData>[].
-   */
-  const onNodesChange: OnNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      setNodes((nds) => {
-        const updatedNodes = applyNodeChanges(
-          changes,
-          nds,
-        ) as Node<DynamicNodeData>[];
-        saveToHistory(updatedNodes, edges);
-        return updatedNodes;
-      });
-    },
-    [edges, saveToHistory],
-  );
-
-  /**
-   * Handle edge changes from React Flow.
-   * applyEdgeChanges returns EdgeBase[] â€” cast back to Edge<DynamicEdgeData>[].
-   */
-  const onEdgesChange: OnEdgesChange = useCallback(
-    (changes: EdgeChange[]) => {
-      setEdges((eds) => {
-        const updatedEdges = applyEdgeChanges(
-          changes,
-          eds,
-        ) as Edge<DynamicEdgeData>[];
-        saveToHistory(nodes, updatedEdges);
-        return updatedEdges;
-      });
-    },
-    [nodes, saveToHistory],
-  );
-
-  /**
-   * Handle new connections between nodes.
-   */
-  const onConnect: OnConnect = useCallback(
-    (connection: Connection) => {
-      setEdges((eds) => {
-        const updatedEdges = addEdge(
-          connection,
-          eds,
-        ) as Edge<DynamicEdgeData>[];
-        saveToHistory(nodes, updatedEdges);
-        return updatedEdges;
-      });
-    },
-    [nodes, saveToHistory],
-  );
-
-  /**
-   * Add a new node to the flow.
-   */
-  const addNode = useCallback(
-    (node: Node<DynamicNodeData>) => {
-      const newNodes = [...nodes, node];
-      setNodes(newNodes);
-      saveToHistory(newNodes, edges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Update an existing node.
-   */
-  const updateNode = useCallback(
-    (nodeId: string, updates: Partial<Node<DynamicNodeData>>) => {
-      const newNodes = nodes.map((node) =>
-        node.id === nodeId ? { ...node, ...updates } : node,
-      );
-      setNodes(newNodes);
-      saveToHistory(newNodes, edges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Delete a node by ID.
-   */
-  const deleteNode = useCallback(
-    (nodeId: string) => {
-      const newNodes = nodes.filter((node) => node.id !== nodeId);
-      const newEdges = edges.filter(
-        (edge) => edge.source !== nodeId && edge.target !== nodeId,
-      );
-      setNodes(newNodes);
-      setEdges(newEdges);
-      saveToHistory(newNodes, newEdges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Add a new edge to the flow.
-   */
-  const addEdgeManual = useCallback(
-    (edge: Edge<DynamicEdgeData>) => {
-      const newEdges = [...edges, edge];
-      setEdges(newEdges);
-      saveToHistory(nodes, newEdges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Update an existing edge.
-   */
-  const updateEdge = useCallback(
-    (edgeId: string, updates: Partial<Edge<DynamicEdgeData>>) => {
-      const newEdges = edges.map((edge) =>
-        edge.id === edgeId ? { ...edge, ...updates } : edge,
-      );
-      setEdges(newEdges);
-      saveToHistory(nodes, newEdges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Delete an edge by ID.
-   */
-  const deleteEdge = useCallback(
-    (edgeId: string) => {
-      const newEdges = edges.filter((edge) => edge.id !== edgeId);
-      setEdges(newEdges);
-      saveToHistory(nodes, newEdges);
-    },
-    [nodes, edges, saveToHistory],
-  );
-
-  /**
-   * Undo last change.
-   */
-  const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      const previousState = history[newIndex];
-      setNodes(previousState.nodes);
-      setEdges(previousState.edges);
-      setHistoryIndex(newIndex);
-    }
-  }, [history, historyIndex]);
-
-  /**
-   * Redo previously undone change.
-   */
-  const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      const nextState = history[newIndex];
-      setNodes(nextState.nodes);
-      setEdges(nextState.edges);
-      setHistoryIndex(newIndex);
-    }
-  }, [history, historyIndex]);
-
-  const canUndo = historyIndex > 0;
-  const canRedo = historyIndex < history.length - 1;
-
-  /**
-   * Reset flow to initial empty state.
-   */
-  const reset = useCallback(() => {
-    setNodes([]);
-    setEdges([]);
-    setHistory([{ nodes: [], edges: [] }]);
-    setHistoryIndex(0);
+  // Focus first focusable element on mount
+  useEffect(() => {
+    const first = panelRef.current?.querySelector<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    first?.focus();
   }, []);
-
-  /**
-   * Export current flow state.
-   */
-  const exportState = useCallback((): FlowState => {
-    return { nodes, edges };
-  }, [nodes, edges]);
-
-  /**
-   * Import flow state â€” supports both sync and async onLoad callbacks.
-   */
-  const importState = useCallback((state: FlowState) => {
-    setNodes(state.nodes);
-    setEdges(state.edges);
-    setHistory([{ nodes: state.nodes, edges: state.edges }]);
-    setHistoryIndex(0);
-  }, []);
-
-  return {
-    nodes,
-    edges,
-    onNodesChange,
-    onEdgesChange,
-    onConnect,
-    addNode,
-    updateNode,
-    deleteNode,
-    addEdge: addEdgeManual,
-    updateEdge,
-    deleteEdge,
-    undo,
-    redo,
-    canUndo,
-    canRedo,
-    reset,
-    exportState,
-    importState,
-  };
-}
-
-
-
---------------------------------------------------------------------------------
-FILE: src\components\flow-general\nodes\DynamicNode.tsx
---------------------------------------------------------------------------------
-// src/components/flow-general/nodes/DynamicNode.tsx
-import React, { useMemo } from "react";
-import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
-import type { DynamicNodeData } from "../types";
-
-/**
- * Local type for style fields stored inside the node's data object.
- * DynamicNodeData extends Record<string, unknown>, so these fields are valid
- * at runtime â€” this interface just tells TypeScript what shapes to expect.
- */
-interface NodeStyleData {
-  shape?: string;
-  color?: string;
-  borderColor?: string;
-  borderWidth?: number;
-  textColor?: string;
-  label?: string;
-  width?: number;
-  height?: number;
-  handles?: Array<{
-    id: string;
-    type: string;
-    position: string;
-    label?: string;
-  }>;
-}
-
-/**
- * Dynamic Node Component
- * Renders any node shape based on DynamicNodeData configuration.
- *
- * NOTE: `width` and `height` were removed from NodeProps in @xyflow/react v12.
- * They are now read from the node's `data` object instead.
- */
-export const DynamicNode: React.FC<NodeProps<Node<DynamicNodeData>>> = ({
-  data,
-  selected,
-}) => {
-  // Cast data to NodeStyleData so TypeScript knows the shape of the style fields.
-  // This is safe: DynamicNodeData extends Record<string, unknown>, so any key is
-  // valid at runtime. The cast only affects compile-time type checking.
-  const styleData = (data ?? {}) as NodeStyleData;
-
-  const {
-    shape = "rectangle",
-    color = "#f1f5f9",
-    borderColor = "#cbd5e1",
-    borderWidth = 1,
-    textColor = "#334155",
-    label = "Node",
-    width = 160,
-    height = 80,
-    handles = [],
-  } = styleData;
-
-  // Build SVG path for various shapes
-  const shapePath = useMemo(() => {
-    switch (shape) {
-      case "circle":
-        return `M ${width / 2},0 A ${width / 2},${width / 2} 0 1,1 ${width / 2},${height} A ${width / 2},${height / 2} 0 1,1 ${width / 2},0 Z`;
-      case "hexagon": {
-        const w = width / 2;
-        const h = height / 2;
-        const inset = width * 0.25;
-        return `M ${inset},0 L ${w + inset},0 L ${width},${h} L ${w + inset},${height} L ${inset},${height} L 0,${h} Z`;
-      }
-      case "diamond": {
-        const w = width / 2;
-        const h = height / 2;
-        return `M ${w},0 L ${width},${h} L ${w},${height} L 0,${h} Z`;
-      }
-      case "ellipse":
-        return `M 0,${height / 2} A ${width / 2},${height / 2} 0 1,1 ${width},${height / 2} A ${width / 2},${height / 2} 0 1,1 0,${height / 2} Z`;
-      default:
-        return "M 0,0 L 0,0 L 0,0 L 0,0 Z";
-    }
-  }, [shape, width, height]);
 
   return (
-    <>
-      {/* Target Handles */}
-      {handles.map(
-        (h) =>
-          h.type === "target" && (
-            <Handle
-              key={h.id}
-              id={h.id}
-              type="target"
-              position={
-                h.position === "top"
-                  ? Position.Top
-                  : h.position === "right"
-                    ? Position.Right
-                    : h.position === "bottom"
-                      ? Position.Bottom
-                      : Position.Left
-              }
-              style={{ background: "#5B8DEF" }}
-            />
-          ),
-      )}
-
-      {/* Main Node Body */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       <div
-        style={{
-          width,
-          height,
-          backgroundColor: color,
-          borderColor,
-          borderWidth,
-          borderRadius: shape === "rounded-rectangle" ? 8 : 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderStyle: "solid",
-          boxShadow: selected ? "0 0 0 2px #3b82f6" : "none",
-        }}
+        ref={panelRef}
+        onClick={(e) => e.stopPropagation()}
+        className={`w-full ${maxWidth} rounded-xl border border-border bg-background shadow-2xl`}
       >
-        <span style={{ color: textColor }}>{label}</span>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\NodePalette.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React, { useMemo, useState } from "react";
+import type { DragEvent } from "react";
+import {
+  Square,
+  Circle,
+  Diamond,
+  Database,
+  Type,
+  StickyNote,
+  ArrowRightCircle,
+  Octagon,
+  Hexagon,
+  Search,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useDiagramStore } from "../store";
+import type { PaletteItem } from "../types";
+import { cn } from "@/lib/utils";
+
+// â”€â”€ Static palette definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// defaultData values are merged into node data on drop; colors use Tailwind-safe hex values
+const PALETTE_ITEMS: PaletteItem[] = [
+  {
+    type: "defaultNode",
+    labelKey: "defaultNode",
+    icon: "square",
+    category: "basic",
+    defaultData: { label: "Process" },
+  },
+  {
+    type: "inputNode",
+    labelKey: "inputNode",
+    icon: "arrowRight",
+    category: "flowchart",
+    defaultData: {
+      label: "Start",
+      backgroundColor: "#dcfce7",
+      borderColor: "#22c55e",
+    },
+  },
+  {
+    type: "outputNode",
+    labelKey: "outputNode",
+    icon: "octagon",
+    category: "flowchart",
+    defaultData: {
+      label: "End",
+      backgroundColor: "#fee2e2",
+      borderColor: "#ef4444",
+    },
+  },
+  {
+    type: "diamondNode",
+    labelKey: "diamondNode",
+    icon: "diamond",
+    category: "flowchart",
+    defaultData: {
+      label: "Decision",
+      backgroundColor: "#fef9c3",
+      borderColor: "#eab308",
+    },
+  },
+  {
+    type: "cylinderNode",
+    labelKey: "cylinderNode",
+    icon: "database",
+    category: "flowchart",
+    defaultData: { label: "Database" },
+  },
+  {
+    type: "parallelogramNode",
+    labelKey: "parallelogramNode",
+    icon: "square",
+    category: "flowchart",
+    defaultData: { label: "I/O" },
+  },
+  {
+    type: "circleNode",
+    labelKey: "circleNode",
+    icon: "circle",
+    category: "shapes",
+    defaultData: { label: "Circle" },
+  },
+  {
+    type: "hexagonNode",
+    labelKey: "hexagonNode",
+    icon: "hexagon",
+    category: "shapes",
+    defaultData: { label: "Hexagon" },
+  },
+  {
+    type: "textNode",
+    labelKey: "textNode",
+    icon: "type",
+    category: "basic",
+    defaultData: {
+      label: "Text",
+      backgroundColor: "transparent",
+      borderWidth: 0,
+    },
+  },
+  {
+    type: "noteNode",
+    labelKey: "noteNode",
+    icon: "note",
+    category: "basic",
+    defaultData: { label: "Note textâ€¦" },
+  },
+];
+
+// Map icon string keys to Lucide components; Square is the fallback
+const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  square: Square,
+  circle: Circle,
+  diamond: Diamond,
+  database: Database,
+  type: Type,
+  note: StickyNote,
+  arrowRight: ArrowRightCircle,
+  octagon: Octagon,
+  hexagon: Hexagon,
+};
+
+// Category order determines render order in the palette sidebar
+const CATEGORIES = ["basic", "flowchart", "shapes"] as const;
+
+// â”€â”€ NodePalette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function NodePalette() {
+  // next-intl: all keys live under the "Flow" namespace
+  const t = useTranslations("Flow");
+  const [query, setQuery] = useState("");
+
+  // Filter items by translated label, then group by category.
+  // Re-runs only when query or locale changes (t is stable per render).
+  const grouped = useMemo(() => {
+    const q = query.toLowerCase();
+    const filtered = PALETTE_ITEMS.filter((item) =>
+      t(`nodes.${item.labelKey}`).toLowerCase().includes(q),
+    );
+    return CATEGORIES.map((cat) => ({
+      cat,
+      items: filtered.filter((i) => i.category === cat),
+    })).filter((g) => g.items.length > 0);
+  }, [query, t]);
+
+  // Encode the full PaletteItem into the drag event so the canvas drop handler
+  // can reconstruct the node without a separate lookup.
+  const onDragStart = (event: DragEvent<HTMLDivElement>, item: PaletteItem) => {
+    event.dataTransfer.setData(
+      "application/diagram-node",
+      JSON.stringify(item),
+    );
+    event.dataTransfer.effectAllowed = "move";
+  };
+
+  return (
+    <aside className="flex h-full w-64 flex-col border-e border-border bg-background">
+      {/* â”€â”€ Search bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="border-b border-border p-3">
+        <div className="relative">
+          {/* start-2.5 is the Tailwind v4 logical-property equivalent of left-2.5 */}
+          <Search className="absolute inset-s-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("palette.search")}
+            className={cn(
+              "w-full rounded-md border border-input bg-background py-1.5 ps-8 pe-2 text-xs",
+              "text-foreground placeholder:text-muted-foreground",
+              "outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+            )}
+          />
+        </div>
       </div>
 
-      {/* Source Handles */}
-      {handles.map(
-        (h) =>
-          h.type === "source" && (
-            <Handle
-              key={h.id}
-              id={h.id}
-              type="source"
-              position={
-                h.position === "top"
-                  ? Position.Top
-                  : h.position === "right"
-                    ? Position.Right
-                    : h.position === "bottom"
-                      ? Position.Bottom
-                      : Position.Left
-              }
-              style={{ background: "#5B8DEF" }}
-            />
-          ),
-      )}
-    </>
+      {/* â”€â”€ Grouped node list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex-1 overflow-y-auto p-3">
+        {grouped.map(({ cat, items }) => (
+          <div key={cat} className="mb-4">
+            {/* Dynamic category heading: Flow.palette.<cat> */}
+            <h3 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {t(`palette.${cat}`)}
+            </h3>
+
+            <div className="grid grid-cols-2 gap-2">
+              {items.map((item) => {
+                const Icon = ICONS[item.icon] ?? Square;
+                return (
+                  <div
+                    key={item.type}
+                    draggable
+                    onDragStart={(e) => onDragStart(e, item)}
+                    title={t("palette.dragToAdd")}
+                    className={cn(
+                      // Base layout
+                      "flex cursor-grab flex-col items-center gap-1.5 rounded-lg",
+                      "border border-border px-2 py-3 text-center",
+                      // Interaction: subtle bg lift on hover, shadow on active drag
+                      "transition-colors hover:bg-accent hover:border-primary/40",
+                      "active:cursor-grabbing active:shadow-xs",
+                    )}
+                  >
+                    {/* Icon: muted-foreground keeps it secondary; primary on hover via group */}
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+
+                    {/* Dynamic node label: Flow.nodes.<labelKey> */}
+                    <span className="text-[11px] font-medium leading-tight text-foreground">
+                      {t(`nodes.${item.labelKey}`)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Empty state â€” shown when search query matches nothing */}
+        {grouped.length === 0 && (
+          <p className="px-1 py-6 text-center text-xs text-muted-foreground">
+            {t("global.noResults")}
+          </p>
+        )}
+      </div>
+    </aside>
   );
+}
+
+export { PALETTE_ITEMS };
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\nodes\BaseNode.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React from "react";
+import {
+  Handle,
+  Position,
+  NodeResizer,
+  type NodeProps,
+  type Node,
+} from "@xyflow/react";
+import type { DiagramNodeData, DiagramNodeType } from "../../types";
+
+// â”€â”€â”€ Font weight lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+const FONT_WEIGHT_MAP: Record<string, number> = {
+  normal: 400,
+  semibold: 600,
+  bold: 700,
 };
 
+// â”€â”€â”€ Typed node alias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ReactFlow v12+ requires Node<TData, TType> â€” not just the data shape.
+// All wrapper components receive this full node object via NodeProps.
 
+type DiagramNodeObject = Node<DiagramNodeData, DiagramNodeType>;
 
---------------------------------------------------------------------------------
-FILE: src\components\flow-general\types.ts
---------------------------------------------------------------------------------
-// src/components/flow-general/types.ts
-/**
- * Type definitions for the general-purpose flow editor.
- */
+// NodeProps from @xyflow/react v12 is NodeProps<TNode extends Node> â€”
+// so we pass the full node type, not just the data type.
+type DiagramNodeProps = NodeProps<DiagramNodeObject>;
 
-import type { Node, Edge, ConnectionLineType } from "@xyflow/react";
-import type React from "react";
+// â”€â”€â”€ Style helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// ==================== Shape Definitions ====================
-
-export type ShapeType =
-  | "circle"
-  | "rectangle"
-  | "rounded-rectangle"
-  | "hexagon"
-  | "octagon"
-  | "diamond"
-  | "ellipse"
-  | "parallelogram"
-  | "trapezoid";
-
-// ==================== Handle Definitions ====================
-
-export type HandlePosition = "top" | "right" | "bottom" | "left";
-
-export type HandleType = "source" | "target";
-
-export interface HandleDefinition {
-  id: string;
-  type: HandleType;
-  position: HandlePosition;
-  label?: string;
-}
-
-// ==================== Node Type Definitions ====================
-
-/**
- * User-defined node type configuration.
- */
-export interface CustomNodeType {
-  id: string;
-  label: string;
-  shape: ShapeType;
-  color: string;
-  borderColor?: string;
-  borderWidth?: number;
-  textColor?: string;
-  handles: HandleDefinition[];
-  width?: number;
-  height?: number;
-  icon?: string;
-  allowResize?: boolean;
-  metadata?: Record<string, any>;
-  /** For compatibility with older components */
-  type?: string;
-}
-
-/**
- * Runtime data stored in each node instance.
- * Satisfies React Flow's Record<string, unknown> constraint.
- */
-export interface DynamicNodeData extends Record<string, unknown> {
-  nodeTypeId: string;
-  label: string;
-  customFields?: Record<string, any>;
-}
-
-// ==================== Connection Type Definitions ====================
-
-export type EdgePathStyle = "default" | "smoothstep" | "step" | "straight";
-
-export interface EdgeAnimation {
-  enabled: boolean;
-  duration?: number;
-  direction?: "forward" | "reverse";
-}
-
-/**
- * User-defined connection type configuration.
- */
-export interface CustomConnectionType {
-  id: string;
-  label: string;
-  pathStyle: EdgePathStyle;
-  color: string;
-  strokeWidth: number;
-  strokeDasharray?: string;
-  animation?: EdgeAnimation;
-  showArrow: boolean;
-  allowLabel: boolean;
-  allowedConnections?: string[];
-}
-
-/**
- * Runtime data stored in each edge instance.
- */
-export interface DynamicEdgeData extends Record<string, unknown> {
-  connectionTypeId: string;
-  label?: string;
-  customFields?: Record<string, any>;
-}
-
-// ==================== Diagram Definition ====================
-
-export interface DiagramDefinition {
-  version: string;
-  customNodeTypes: CustomNodeType[];
-  customConnectionTypes: CustomConnectionType[];
-  nodes: Node<DynamicNodeData>[];
-  edges: Edge<DynamicEdgeData>[];
-  metadata?: {
-    title?: string;
-    description?: string;
-    createdAt?: string;
-    updatedAt?: string;
+export function getNodeStyle(data: DiagramNodeData): React.CSSProperties {
+  return {
+    backgroundColor: data.backgroundColor ?? "#ffffff",
+    borderColor: data.borderColor ?? "#cbd5e1",
+    color: data.textColor ?? "#0f172a",
+    fontSize: data.fontSize ?? 13,
+    fontWeight: FONT_WEIGHT_MAP[data.fontWeight ?? "normal"] ?? 400,
+    borderWidth: data.borderWidth ?? 1.5,
+    borderStyle: data.borderStyle ?? "solid",
+    borderRadius: data.borderRadius ?? 8,
   };
 }
 
-// ==================== Registry State ====================
+// â”€â”€â”€ BaseNodeShell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Internal shell â€” never registered directly as a nodeType.
+// Wrapper components call this with data.label as children.
 
-export interface RegistryState {
-  nodeTypes: Map<string, CustomNodeType>;
-  connectionTypes: Map<string, CustomConnectionType>;
+interface BaseNodeShellProps {
+  selected?: boolean;
+  data: DiagramNodeData;
+  children: React.ReactNode;
+  shapeClassName?: string;
+  showHandles?: boolean;
+  resizable?: boolean;
+  minWidth?: number;
+  minHeight?: number;
+  style?: React.CSSProperties;
 }
 
-// ==================== Flow Editor Specific Types ====================
+export function BaseNodeShell({
+  selected,
+  data,
+  children,
+  shapeClassName = "",
+  showHandles = true,
+  resizable = false,
+  minWidth = 120,
+  minHeight = 44,
+  style,
+}: BaseNodeShellProps) {
+  const baseStyle = getNodeStyle(data);
 
-export type FlowNode = Node<DynamicNodeData>;
-export type FlowEdge = Edge<DynamicEdgeData>;
+  return (
+    <div
+      className={[
+        "group relative flex min-h-11 min-w-30 items-center justify-center",
+        "px-4 py-2.5 text-center shadow-sm transition-shadow",
+        selected ? "shadow-md ring-2 ring-offset-2" : "hover:shadow-md",
+        shapeClassName,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={
+        {
+          ...baseStyle,
+          ...style,
+          ...(selected ? { "--tw-ring-color": "#6366f1" } : {}),
+        } as React.CSSProperties
+      }
+    >
+      {resizable && (
+        <NodeResizer
+          isVisible={selected}
+          minWidth={minWidth}
+          minHeight={minHeight}
+          lineClassName="border-indigo-500!"
+          handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
+        />
+      )}
 
-export interface FlowState {
-  nodes: FlowNode[];
-  edges: FlowEdge[];
+      {showHandles && (
+        <>
+          {/* Connection handles on all four sides */}
+          <Handle
+            type="target"
+            position={Position.Top}
+            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400!"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400!"
+          />
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="left"
+            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400!"
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="right"
+            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400!"
+          />
+        </>
+      )}
+
+      <span className="pointer-events-none w-full truncate">{children}</span>
+    </div>
+  );
 }
 
-export interface FlowEditorProps {
-  initialNodes?: FlowNode[];
-  initialEdges?: FlowEdge[];
-  nodeTypeConfigs?: CustomNodeType[];
-  connectionTypeConfigs?: CustomConnectionType[];
-  onSave?: (state: FlowState) => void;
-  onLoad?: () => FlowState | null | Promise<FlowState | null>;
-  autoSave?: boolean;
-  autoSaveInterval?: number;
-  storageKey?: string;
-  className?: string;
-  showBackground?: boolean;
-  showControls?: boolean;
-  showMiniMap?: boolean;
-  connectionLineType?: ConnectionLineType;
-  fitView?: boolean;
-  snapToGrid?: boolean;
-  snapGrid?: [number, number];
-  children?: React.ReactNode;
+// â”€â”€â”€ Node wrapper components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Each component receives NodeProps<DiagramNodeObject> from ReactFlow.
+// `selected` and `data` are destructured from the full node props.
+
+function DefaultNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell selected={selected} data={data} resizable>
+      {data.label}
+    </BaseNodeShell>
+  );
 }
 
-// ==================== Backward Compatibility Aliases ====================
+function InputNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(8%_0%,100%_0%,92%_100%,0%_100%)]"
+      resizable
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
 
-export type NodeTypeConfig = CustomNodeType;
-export type ConnectionTypeConfig = CustomConnectionType;
-export type NodeType = CustomNodeType;
-export type ConnectionType = CustomConnectionType;
+function OutputNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(0%_0%,92%_0%,100%_100%,8%_100%)]"
+      resizable
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function CircleNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="rounded-full aspect-square"
+      resizable
+      minWidth={80}
+      minHeight={80}
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function DiamondNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(50%_0%,100%_50%,50%_100%,0%_50%)]"
+      resizable
+      minWidth={100}
+      minHeight={100}
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function CylinderNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="rounded-[40%/15%]"
+      resizable
+      minWidth={100}
+      minHeight={70}
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function ParallelogramNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(10%_0%,100%_0%,90%_100%,0%_100%)]"
+      resizable
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function HexagonNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(25%_0%,75%_0%,100%_50%,75%_100%,25%_100%,0%_50%)]"
+      resizable
+      minWidth={100}
+      minHeight={80}
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function TextNode({ selected, data }: DiagramNodeProps) {
+  // Text nodes are transparent â€” no border, no background, no handles
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      showHandles={false}
+      style={{ background: "transparent", border: "none", boxShadow: "none" }}
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+function NoteNode({ selected, data }: DiagramNodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data}
+      shapeClassName="[clip-path:polygon(0%_0%,85%_0%,100%_15%,100%_100%,0%_100%)]"
+      resizable
+    >
+      {data.label}
+    </BaseNodeShell>
+  );
+}
+
+// â”€â”€â”€ nodeTypes registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Keys match DiagramNodeType exactly.
+// satisfies validates the shape without widening to NodeTypes.
+
+export const nodeTypes = {
+  defaultNode: DefaultNode,
+  inputNode: InputNode,
+  outputNode: OutputNode,
+  circleNode: CircleNode,
+  diamondNode: DiamondNode,
+  cylinderNode: CylinderNode,
+  parallelogramNode: ParallelogramNode,
+  hexagonNode: HexagonNode,
+  textNode: TextNode,
+  noteNode: NoteNode,
+} satisfies Record<DiagramNodeType, React.ComponentType<DiagramNodeProps>>;
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\utils\flowStorage.ts
+FILE: src\modules\claude-flow\components\nodes\ShapeNodes.tsx
 --------------------------------------------------------------------------------
-// src/components/flow-general/utils/flowStorage.ts
+"use client";
 
-import type { FlowNode, FlowEdge, FlowState } from "../types";
+import React from "react";
+import { Handle, Position, NodeResizer, type NodeProps } from "@xyflow/react";
+import type { DiagramNodeData } from "../../types";
+import { cn } from "@/lib/utils";
 
-/**
- * Storage interface for flow state persistence
- */
-export interface FlowStorageAdapter {
-  save: (key: string, state: FlowState) => Promise<void> | void;
-  load: (key: string) => Promise<FlowState | null> | FlowState | null;
-  clear: (key: string) => Promise<void> | void;
-  export: (state: FlowState) => string;
-  import: (data: string) => FlowState;
+interface BaseNodeShellProps {
+  selected?: boolean;
+  data: DiagramNodeData;
+  children: React.ReactNode;
+  shapeClassName?: string;
+  showHandles?: boolean;
+  resizable?: boolean;
+  minWidth?: number;
+  minHeight?: number;
+  style?: React.CSSProperties;
+}
+
+// Maps semantic font-weight names to numeric CSS values
+const FONT_WEIGHT_MAP: Record<string, number> = {
+  normal: 400,
+  semibold: 600,
+  bold: 700,
+};
+
+// All dynamic node styling is applied via inline style to avoid Tailwind specificity conflicts.
+// border-style especially must be inline since Tailwind v4 preflight defaults to "solid".
+export function getNodeStyle(data: DiagramNodeData): React.CSSProperties {
+  return {
+    backgroundColor: data.backgroundColor ?? "#ffffff",
+    borderColor: data.borderColor ?? "#cbd5e1",
+    color: data.textColor ?? "#0f172a",
+    fontSize: data.fontSize ?? 13,
+    fontWeight: FONT_WEIGHT_MAP[data.fontWeight ?? "normal"],
+    borderWidth: data.borderWidth ?? 1.5,
+    borderStyle: data.borderStyle ?? "solid",
+    borderRadius: data.borderRadius ?? 8,
+  };
+}
+
+// Shared class string for all four ReactFlow connection handles.
+// In Tailwind v4, important modifier moves to suffix: `h-2.5!` instead of `!h-2.5`.
+const HANDLE_CLS = "size-2.5! border-2! border-white! bg-slate-400!";
+
+// NodeResizer overrides â€” lineClassName targets the resize border line,
+// handleClassName targets the corner/edge drag handles.
+const RESIZER_LINE_CLS = "border-indigo-500!";
+const RESIZER_HANDLE_CLS =
+  "size-2.5! rounded-sm! border! border-indigo-500! bg-white!";
+
+export function BaseNodeShell({
+  selected,
+  data,
+  children,
+  shapeClassName = "",
+  showHandles = true,
+  resizable = false,
+  minWidth = 120,
+  minHeight = 44,
+  style,
+}: BaseNodeShellProps) {
+  const nodeStyle = getNodeStyle(data);
+
+  return (
+    <div
+      className={cn(
+        // layout â€” min-h-11 = 44px, min-w-30 = 120px (Tailwind v4 scale)
+        "group relative flex min-h-11 min-w-30 items-center justify-center px-4 py-2.5 text-center",
+        // base shadow + smooth transition on state changes
+        "shadow-xs transition-shadow",
+        // selection ring â€” ring-indigo-500 replaces the old --tw-ring-color CSS var (v3 internals)
+        selected
+          ? "shadow-md ring-2 ring-indigo-500 ring-offset-2"
+          : "hover:shadow-md",
+        shapeClassName,
+      )}
+      // All dynamic values (color, border-style, radiusâ€¦) go through inline style
+      // to guarantee specificity over any Tailwind utility.
+      style={{ ...nodeStyle, ...style }}
+    >
+      {/* Resize handles â€” only mounted when resizable=true, visible only when selected */}
+      {resizable && (
+        <NodeResizer
+          isVisible={selected}
+          minWidth={minWidth}
+          minHeight={minHeight}
+          lineClassName={RESIZER_LINE_CLS}
+          handleClassName={RESIZER_HANDLE_CLS}
+        />
+      )}
+
+      {/* Four directional connection handles (target top/left, source bottom/right) */}
+      {showHandles && (
+        <>
+          <Handle
+            type="target"
+            position={Position.Top}
+            className={HANDLE_CLS}
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            className={HANDLE_CLS}
+          />
+          <Handle
+            type="target"
+            position={Position.Left}
+            id="left"
+            className={HANDLE_CLS}
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            id="right"
+            className={HANDLE_CLS}
+          />
+        </>
+      )}
+
+      {/* Node label â€” pointer-events-none prevents drag interference */}
+      <span className="pointer-events-none w-full truncate">{children}</span>
+    </div>
+  );
+}
+
+export type DiagramNodeProps = NodeProps & { data: DiagramNodeData };
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\SettingsPanel.tsx
+--------------------------------------------------------------------------------
+"use client";
+
+import React from "react";
+import { useTranslations } from "next-intl";
+import { useDiagramStore } from "../store";
+import { Trash2, Copy } from "lucide-react";
+import type { DiagramEdgeType } from "../types";
+import { cn } from "@/lib/utils";
+
+// â”€â”€ Color palette swatches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// These are node fill / background colors shown in the color picker rows
+const COLOR_SWATCHES = [
+  "#ffffff",
+  "#f1f5f9",
+  "#fee2e2",
+  "#fef9c3",
+  "#dcfce7",
+  "#dbeafe",
+  "#ede9fe",
+  "#fce7f3",
+];
+
+// Stroke / border color swatches shared between node border and edge color pickers
+const BORDER_SWATCHES = [
+  "#cbd5e1",
+  "#ef4444",
+  "#eab308",
+  "#22c55e",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#0f172a",
+];
+
+// â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/** Labeled wrapper for every settings row */
+function Field({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-3">
+      <label className="mb-1.5 block text-[11px] font-medium text-muted-foreground">
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/** Row of color swatches + native color picker fallback */
+function ColorRow({
+  value,
+  onChange,
+  swatches,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  swatches: string[];
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      {swatches.map((c) => (
+        <button
+          key={c}
+          onClick={() => onChange(c)}
+          className="h-5 w-5 rounded-full border border-border transition-transform hover:scale-110"
+          style={{
+            backgroundColor: c,
+            // Selected swatch gets a primary-colored ring
+            outline: value === c ? "2px solid hsl(var(--primary))" : undefined,
+            outlineOffset: 1,
+          }}
+        />
+      ))}
+      {/* Native color picker for custom colors beyond the swatches */}
+      <input
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-5 w-7 cursor-pointer rounded border border-border bg-transparent p-0"
+      />
+    </div>
+  );
 }
 
 /**
- * LocalStorage implementation of flow storage
+ * 3-option segmented control.
+ * Active segment uses bg-background (card surface) over bg-muted track,
+ * matching shadcn/ui Tabs pattern without importing the full component.
  */
-export class LocalStorageAdapter implements FlowStorageAdapter {
-  /**
-   * Save flow state to localStorage
-   */
-  save(key: string, state: FlowState): void {
-    try {
-      const serialized = JSON.stringify(state);
-      localStorage.setItem(key, serialized);
-    } catch (error) {
-      console.error("Failed to save flow state:", error);
-      throw new Error("Failed to save flow state to localStorage");
-    }
-  }
-
-  /**
-   * Load flow state from localStorage
-   */
-  load(key: string): FlowState | null {
-    try {
-      const serialized = localStorage.getItem(key);
-      if (!serialized) return null;
-
-      const state = JSON.parse(serialized) as FlowState;
-      return state;
-    } catch (error) {
-      console.error("Failed to load flow state:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Clear flow state from localStorage
-   */
-  clear(key: string): void {
-    try {
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.error("Failed to clear flow state:", error);
-    }
-  }
-
-  /**
-   * Export flow state to JSON string
-   */
-  export(state: FlowState): string {
-    try {
-      return JSON.stringify(state, null, 2);
-    } catch (error) {
-      console.error("Failed to export flow state:", error);
-      throw new Error("Failed to export flow state");
-    }
-  }
-
-  /**
-   * Import flow state from JSON string
-   */
-  import(data: string): FlowState {
-    try {
-      const state = JSON.parse(data) as FlowState;
-
-      // Validate state structure
-      if (!state.nodes || !Array.isArray(state.nodes)) {
-        throw new Error("Invalid state: missing or invalid nodes array");
-      }
-      if (!state.edges || !Array.isArray(state.edges)) {
-        throw new Error("Invalid state: missing or invalid edges array");
-      }
-
-      return state;
-    } catch (error) {
-      console.error("Failed to import flow state:", error);
-      throw new Error(
-        "Failed to import flow state: " + (error as Error).message,
-      );
-    }
-  }
+function SegmentedControl<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="grid grid-cols-3 gap-1 rounded-md bg-muted p-0.5">
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "rounded px-2 py-1 text-[11px] font-medium transition-colors",
+            opt.value === value
+              ? "bg-background text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
 }
 
-/**
- * Default storage adapter instance
- */
-export const defaultStorageAdapter = new LocalStorageAdapter();
+// â”€â”€ Shared header action button styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const ACTION_BTN = "rounded p-1 transition-colors text-muted-foreground";
+const DUPE_BTN = cn(ACTION_BTN, "hover:bg-accent hover:text-foreground");
+const DEL_BTN = cn(
+  ACTION_BTN,
+  "hover:bg-destructive/10 hover:text-destructive",
+);
 
-/**
- * Auto-save manager for flow editor
- */
-export class AutoSaveManager {
-  private intervalId: NodeJS.Timeout | null = null;
-  private storageAdapter: FlowStorageAdapter;
-  private storageKey: string;
-  private getState: () => FlowState;
+// â”€â”€ Shared input style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const INPUT_CLS = cn(
+  "w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs",
+  "text-foreground placeholder:text-muted-foreground",
+  "outline-none focus:border-primary focus:ring-1 focus:ring-primary",
+);
 
-  constructor(
-    storageAdapter: FlowStorageAdapter,
-    storageKey: string,
-    getState: () => FlowState,
-  ) {
-    this.storageAdapter = storageAdapter;
-    this.storageKey = storageKey;
-    this.getState = getState;
+// â”€â”€ SettingsPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function SettingsPanel() {
+  // next-intl: all keys scoped under the "Flow" namespace
+  const t = useTranslations("Flow");
+
+  const nodes = useDiagramStore((s) => s.nodes);
+  const edges = useDiagramStore((s) => s.edges);
+  const selectedNodeId = useDiagramStore((s) => s.selectedNodeId);
+  const selectedEdgeId = useDiagramStore((s) => s.selectedEdgeId);
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const updateEdgeData = useDiagramStore((s) => s.updateEdgeData);
+  const deleteSelected = useDiagramStore((s) => s.deleteSelected);
+  const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
+
+  const selectedNode = nodes.find((n) => n.id === selectedNodeId);
+  const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
+
+  // â”€â”€ Shared aside wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const Shell = ({ children }: { children: React.ReactNode }) => (
+    <aside className="flex h-full w-72 flex-col overflow-y-auto border-s border-border bg-background">
+      {children}
+    </aside>
+  );
+
+  // â”€â”€ Shared panel header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const PanelHeader = ({
+    title,
+    showDuplicate = false,
+  }: {
+    title: string;
+    showDuplicate?: boolean;
+  }) => (
+    <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </h3>
+      <div className="flex gap-1">
+        {showDuplicate && (
+          <button
+            onClick={duplicateSelected}
+            className={DUPE_BTN}
+            title={t("contextMenu.duplicate")}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
+        )}
+        <button
+          onClick={deleteSelected}
+          className={DEL_BTN}
+          title={t("toolbar.delete")}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+
+  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  if (!selectedNode && !selectedEdge) {
+    return (
+      <Shell>
+        <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
+          {t("settings.selectElement")}
+        </div>
+      </Shell>
+    );
   }
 
-  /**
-   * Start auto-save with specified interval
-   */
-  start(intervalMs: number): void {
-    this.stop(); // Clear any existing interval
+  // â”€â”€ Node settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  if (selectedNode) {
+    const data = selectedNode.data;
+    return (
+      <Shell>
+        <PanelHeader title={t("settings.nodeSettings")} showDuplicate />
+        <div className="p-4">
+          <Field label={t("settings.label")}>
+            <input
+              value={data.label}
+              onChange={(e) =>
+                updateNodeData(selectedNode.id, { label: e.target.value })
+              }
+              className={INPUT_CLS}
+            />
+          </Field>
 
-    this.intervalId = setInterval(() => {
-      try {
-        const state = this.getState();
-        this.storageAdapter.save(this.storageKey, state);
-      } catch (error) {
-        console.error("Auto-save failed:", error);
-      }
-    }, intervalMs);
+          <Field label={t("settings.backgroundColor")}>
+            <ColorRow
+              value={data.backgroundColor ?? "#ffffff"}
+              onChange={(v) =>
+                updateNodeData(selectedNode.id, { backgroundColor: v })
+              }
+              swatches={COLOR_SWATCHES}
+            />
+          </Field>
+
+          <Field label={t("settings.borderColor")}>
+            <ColorRow
+              value={data.borderColor ?? "#cbd5e1"}
+              onChange={(v) =>
+                updateNodeData(selectedNode.id, { borderColor: v })
+              }
+              swatches={BORDER_SWATCHES}
+            />
+          </Field>
+
+          <Field label={t("settings.textColor")}>
+            <ColorRow
+              value={data.textColor ?? "#0f172a"}
+              onChange={(v) =>
+                updateNodeData(selectedNode.id, { textColor: v })
+              }
+              swatches={[
+                "#0f172a",
+                "#475569",
+                "#ffffff",
+                "#ef4444",
+                "#3b82f6",
+                "#22c55e",
+              ]}
+            />
+          </Field>
+
+          {/* Font size: current value interpolated inline; t() used only for the label key */}
+          <Field label={`${t("settings.fontSize")}: ${data.fontSize ?? 13}px`}>
+            <input
+              type="range"
+              min={10}
+              max={28}
+              value={data.fontSize ?? 13}
+              onChange={(e) =>
+                updateNodeData(selectedNode.id, {
+                  fontSize: Number(e.target.value),
+                })
+              }
+              className="w-full accent-primary"
+            />
+          </Field>
+
+          <Field label={t("settings.fontWeight")}>
+            <SegmentedControl
+              value={data.fontWeight ?? "normal"}
+              onChange={(v) =>
+                updateNodeData(selectedNode.id, { fontWeight: v })
+              }
+              options={[
+                { value: "normal", label: t("settings.weight_normal") },
+                { value: "semibold", label: t("settings.weight_semibold") },
+                { value: "bold", label: t("settings.weight_bold") },
+              ]}
+            />
+          </Field>
+
+          <Field
+            label={`${t("settings.borderWidth")}: ${data.borderWidth ?? 1.5}px`}
+          >
+            <input
+              type="range"
+              min={0}
+              max={6}
+              step={0.5}
+              value={data.borderWidth ?? 1.5}
+              onChange={(e) =>
+                updateNodeData(selectedNode.id, {
+                  borderWidth: Number(e.target.value),
+                })
+              }
+              className="w-full accent-primary"
+            />
+          </Field>
+
+          <Field label={t("settings.borderStyle")}>
+            <SegmentedControl
+              value={data.borderStyle ?? "solid"}
+              onChange={(v) =>
+                updateNodeData(selectedNode.id, { borderStyle: v })
+              }
+              options={[
+                { value: "solid", label: t("settings.style_solid") },
+                { value: "dashed", label: t("settings.style_dashed") },
+                { value: "dotted", label: t("settings.style_dotted") },
+              ]}
+            />
+          </Field>
+
+          <Field
+            label={`${t("settings.borderRadius")}: ${data.borderRadius ?? 8}px`}
+          >
+            <input
+              type="range"
+              min={0}
+              max={32}
+              value={data.borderRadius ?? 8}
+              onChange={(e) =>
+                updateNodeData(selectedNode.id, {
+                  borderRadius: Number(e.target.value),
+                })
+              }
+              className="w-full accent-primary"
+            />
+          </Field>
+        </div>
+      </Shell>
+    );
   }
 
-  /**
-   * Stop auto-save
-   */
-  stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
+  // â”€â”€ Edge settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  if (selectedEdge) {
+    const data = selectedEdge.data ?? {};
+    return (
+      <Shell>
+        <PanelHeader title={t("settings.edgeSettings")} />
+        <div className="p-4">
+          <Field label={t("settings.label")}>
+            <input
+              value={data.label ?? ""}
+              onChange={(e) =>
+                updateEdgeData(selectedEdge.id, { label: e.target.value })
+              }
+              placeholder="â€”"
+              className={INPUT_CLS}
+            />
+          </Field>
+
+          <Field label={t("settings.edgeType")}>
+            <SegmentedControl
+              value={(data.edgeStyle ?? "smoothstep") as DiagramEdgeType}
+              onChange={(v) =>
+                updateEdgeData(selectedEdge.id, { edgeStyle: v })
+              }
+              options={[
+                { value: "default", label: "Curve" },
+                { value: "straight", label: "Line" },
+                { value: "smoothstep", label: "Step" },
+              ]}
+            />
+          </Field>
+
+          <Field label={t("settings.edgeColor")}>
+            <ColorRow
+              value={data.color ?? "#94a3b8"}
+              onChange={(v) => updateEdgeData(selectedEdge.id, { color: v })}
+              swatches={BORDER_SWATCHES}
+            />
+          </Field>
+
+          <Field
+            label={`${t("settings.strokeWidth")}: ${data.strokeWidth ?? 2}px`}
+          >
+            <input
+              type="range"
+              min={1}
+              max={6}
+              value={data.strokeWidth ?? 2}
+              onChange={(e) =>
+                updateEdgeData(selectedEdge.id, {
+                  strokeWidth: Number(e.target.value),
+                })
+              }
+              className="w-full accent-primary"
+            />
+          </Field>
+
+          {/* Toggle switch for edge animation â€” uses primary/muted tokens */}
+          <Field label={t("settings.animated")}>
+            <button
+              onClick={() =>
+                updateEdgeData(selectedEdge.id, { animated: !data.animated })
+              }
+              role="switch"
+              aria-checked={!!data.animated}
+              className={cn(
+                "relative h-5 w-9 rounded-full transition-colors",
+                data.animated ? "bg-primary" : "bg-muted",
+              )}
+            >
+              <span
+                className={cn(
+                  "absolute top-0.5 h-4 w-4 rounded-full bg-background shadow-xs transition-transform",
+                  // RTL-aware: use positive translate for LTR, negative for RTL
+                  data.animated
+                    ? "translate-x-4 rtl:-translate-x-4"
+                    : "translate-x-0.5",
+                )}
+              />
+            </button>
+          </Field>
+        </div>
+      </Shell>
+    );
   }
 
-  /**
-   * Save immediately
-   */
-  saveNow(): void {
-    try {
-      const state = this.getState();
-      this.storageAdapter.save(this.storageKey, state);
-    } catch (error) {
-      console.error("Manual save failed:", error);
-      throw error;
-    }
-  }
+  return null;
 }
 
-/**
- * Helper functions for flow storage operations
- */
 
-/**
- * Save flow state using adapter
- */
-export const saveFlowState = (
-  key: string,
-  nodes: FlowNode[],
-  edges: FlowEdge[],
-  adapter: FlowStorageAdapter = defaultStorageAdapter,
-): void => {
-  const state: FlowState = { nodes, edges };
-  adapter.save(key, state);
-};
 
-/**
- * Load flow state using adapter
- */
-export const loadFlowState = (
-  key: string,
-  adapter: FlowStorageAdapter = defaultStorageAdapter,
-): FlowState | null => {
-  return adapter.load(key);
-};
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\components\Toolbar.tsx
+--------------------------------------------------------------------------------
+"use client";
 
-/**
- * Clear flow state using adapter
- */
-export const clearFlowState = (
-  key: string,
-  adapter: FlowStorageAdapter = defaultStorageAdapter,
-): void => {
-  adapter.clear(key);
-};
+import React, { useRef, useState } from "react";
+import { useReactFlow } from "@xyflow/react";
+import {
+  Undo2,
+  Redo2,
+  ZoomIn,
+  ZoomOut,
+  Maximize,
+  Save,
+  FolderOpen,
+  FilePlus2,
+  Download,
+  Upload,
+  Settings2,
+  PanelLeftClose,
+  PanelLeft,
+  PanelRightClose,
+  PanelRight,
+  Globe,
+  Check,
+} from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
+import { useDiagramStore } from "../store";
+import { cn } from "@/lib/utils";
 
-/**
- * Export flow state to downloadable JSON file
- */
-export const exportFlowStateToFile = (
-  state: FlowState,
-  filename: string = "flow-state.json",
-  adapter: FlowStorageAdapter = defaultStorageAdapter,
-): void => {
-  try {
-    const json = adapter.export(state);
+// â”€â”€ Supported locales â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const LOCALES = [
+  { code: "en", label: "English" },
+  { code: "fa", label: "ÙØ§Ø±Ø³ÛŒ" },
+] as const;
+
+type SupportedLocale = (typeof LOCALES)[number]["code"];
+
+// â”€â”€ Reusable toolbar button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Uses semantic design tokens so it adapts to light/dark mode automatically.
+function ToolbarButton({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+  active,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  active?: boolean;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      className={cn(
+        "flex size-8 items-center justify-center rounded-md transition-colors",
+        "text-muted-foreground hover:bg-accent hover:text-foreground",
+        "disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent",
+        // Active state uses a subtle primary tint
+        active && "bg-primary/10 text-primary hover:bg-primary/20",
+      )}
+    >
+      <Icon className="size-4" />
+    </button>
+  );
+}
+
+// â”€â”€ Visual separator between toolbar groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function Divider() {
+  return <div className="mx-1 h-5 w-px bg-border" />;
+}
+
+// â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+export function Toolbar({
+  onOpenLibrary,
+  onOpenNew,
+  onSave,
+  onOpenSettings,
+}: {
+  onOpenLibrary: () => void;
+  onOpenNew: () => void;
+  onSave: () => void;
+  onOpenSettings: () => void;
+}) {
+  const t = useTranslations("Flow");
+  const locale = useLocale() as SupportedLocale;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const [langMenuOpen, setLangMenuOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { zoomIn, zoomOut, fitView } = useReactFlow();
+
+  const diagramName = useDiagramStore((s) => s.diagramName);
+  const setDiagramName = useDiagramStore((s) => s.setDiagramName);
+  const undo = useDiagramStore((s) => s.undo);
+  const redo = useDiagramStore((s) => s.redo);
+  const canUndo = useDiagramStore((s) => s.canUndo());
+  const canRedo = useDiagramStore((s) => s.canRedo());
+  const isPalettOpen = useDiagramStore((s) => s.isPalettOpen);
+  const togglePalette = useDiagramStore((s) => s.togglePalette);
+  const isSettingsPanelOpen = useDiagramStore((s) => s.isSettingsPanelOpen);
+  const toggleSettingsPanel = useDiagramStore((s) => s.toggleSettingsPanel);
+  const exportJSON = useDiagramStore((s) => s.exportJSON);
+  const importJSON = useDiagramStore((s) => s.importJSON);
+  const isSaving = useDiagramStore((s) => s.isSaving);
+
+  // â”€â”€ Export diagram as downloadable JSON file â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const handleExport = () => {
+    const json = exportJSON();
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${diagramName || "diagram"}.json`;
+    a.click();
     URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error("Failed to export to file:", error);
-    throw error;
-  }
-};
+  };
 
-/**
- * Import flow state from file
- */
-export const importFlowStateFromFile = (
-  file: File,
-  adapter: FlowStorageAdapter = defaultStorageAdapter,
-): Promise<FlowState> => {
-  return new Promise((resolve, reject) => {
+  const handleImportClick = () => fileInputRef.current?.click();
+
+  // â”€â”€ Read selected JSON file and load into store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     const reader = new FileReader();
-
-    reader.onload = (event) => {
+    reader.onload = () => {
       try {
-        const data = event.target?.result as string;
-        const state = adapter.import(data);
-        resolve(state);
-      } catch (error) {
-        reject(error);
+        importJSON(reader.result as string);
+      } catch {
+        // Silently swallow invalid JSON â€” user will see unchanged canvas
       }
     };
-
-    reader.onerror = () => {
-      reject(new Error("Failed to read file"));
-    };
-
     reader.readAsText(file);
-  });
-};
+    // Reset input so the same file can be re-imported if needed
+    e.target.value = "";
+  };
+
+  // â”€â”€ Switch locale by replacing the locale segment in the current URL â”€â”€â”€â”€â”€â”€
+  // Pathname starts with "/<locale>/...", so segments[1] is the locale code.
+  const handleLocaleChange = (newLocale: SupportedLocale) => {
+    const segments = pathname.split("/");
+    segments[1] = newLocale;
+    router.push(segments.join("/"));
+    setLangMenuOpen(false);
+  };
+
+  return (
+    <div className="flex h-12 items-center gap-1 border-b border-border bg-background px-2">
+      {/* Toggle left palette panel */}
+      <ToolbarButton
+        icon={isPalettOpen ? PanelLeftClose : PanelLeft}
+        label={t("palette.basic")}
+        onClick={togglePalette}
+      />
+      <Divider />
+
+      {/* Editable diagram name */}
+      <input
+        value={diagramName}
+        onChange={(e) => setDiagramName(e.target.value)}
+        className={cn(
+          "w-44 rounded-md border border-transparent bg-transparent px-2 py-1",
+          "text-sm font-medium text-foreground outline-none",
+          "hover:border-input hover:bg-muted",
+          "focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary",
+        )}
+      />
+      <Divider />
+
+      {/* File operations */}
+      <ToolbarButton
+        icon={FilePlus2}
+        label={t("editor.newDiagram")}
+        onClick={onOpenNew}
+      />
+      <ToolbarButton
+        icon={FolderOpen}
+        label={t("editor.openDiagrams")}
+        onClick={onOpenLibrary}
+      />
+      <ToolbarButton icon={Save} label={t("editor.save")} onClick={onSave} />
+      <Divider />
+
+      {/* History */}
+      <ToolbarButton
+        icon={Undo2}
+        label={t("toolbar.undo")}
+        onClick={undo}
+        disabled={!canUndo}
+      />
+      <ToolbarButton
+        icon={Redo2}
+        label={t("toolbar.redo")}
+        onClick={redo}
+        disabled={!canRedo}
+      />
+      <Divider />
+
+      {/* Viewport controls */}
+      <ToolbarButton
+        icon={ZoomIn}
+        label={t("toolbar.zoomIn")}
+        onClick={() => zoomIn()}
+      />
+      <ToolbarButton
+        icon={ZoomOut}
+        label={t("toolbar.zoomOut")}
+        onClick={() => zoomOut()}
+      />
+      <ToolbarButton
+        icon={Maximize}
+        label={t("toolbar.fitView")}
+        onClick={() => fitView({ duration: 300 })}
+      />
+      <Divider />
+
+      {/* Import / Export */}
+      <ToolbarButton
+        icon={Download}
+        label={t("dialogs.exportJSON")}
+        onClick={handleExport}
+      />
+      <ToolbarButton
+        icon={Upload}
+        label={t("dialogs.importJSON")}
+        onClick={handleImportClick}
+      />
+      {/* Hidden file input â€” triggered programmatically by handleImportClick */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* â”€â”€ Right-side controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="ms-auto flex items-center gap-1">
+        {/* Auto-save indicator â€” shown only while save is in progress */}
+        {isSaving && (
+          <span className="me-1 text-xs text-muted-foreground">
+            {t("editor.saving")}
+          </span>
+        )}
+
+        {/* Language switcher dropdown */}
+        <div className="relative">
+          {langMenuOpen && (
+            <div
+              // end-0 is a logical property: left-0 in RTL, right-0 in LTR
+              className="absolute top-9 inset-
+               z-20 w-32 rounded-md border border-border bg-popover py-1 shadow-md"
+              onMouseLeave={() => setLangMenuOpen(false)}
+            >
+              {LOCALES.map(({ code, label }) => (
+                <button
+                  key={code}
+                  onClick={() => handleLocaleChange(code)}
+                  className="flex w-full items-center justify-between px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+                >
+                  {label}
+                  {/* Checkmark for the currently active locale */}
+                  {locale === code && <Check className="size-3 text-primary" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Editor global settings dialog */}
+        <ToolbarButton
+          icon={Settings2}
+          label={t("editorSettings.title")}
+          onClick={onOpenSettings}
+        />
+
+        {/* Toggle right settings panel */}
+        <ToolbarButton
+          icon={isSettingsPanelOpen ? PanelRightClose : PanelRight}
+          label={t("editor.settings")}
+          onClick={toggleSettingsPanel}
+        />
+      </div>
+    </div>
+  );
+}
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\utils\import-export.ts
+FILE: src\modules\claude-flow\index.ts
 --------------------------------------------------------------------------------
-// src/components/flow-general/utils/import-export.ts
-/**
- * Utilities for importing and exporting diagram definitions as JSON.
- * Handles validation and registry synchronization.
- */
+export { DiagramEditor } from "./components/DiagramEditor";
+export type { DiagramEditorProps } from "./components/DiagramEditor";
 
-import type { DiagramDefinition } from "../types";
+export { useDiagramStore } from "./store";
+
+export type {
+  DiagramNodeType,
+  DiagramEdgeType,
+  DiagramNodeData,
+  DiagramEdgeData,
+  SavedDiagram,
+  EditorSettings,
+  Language,
+} from "./types";
+
+
+
+--------------------------------------------------------------------------------
+FILE: src\modules\claude-flow\store\index.ts
+--------------------------------------------------------------------------------
+'use client';
+
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import {
-  clearRegistry,
-  registerNodeTypes,
-  registerConnectionTypes,
-  validateNodeReferences,
-  validateConnectionReferences,
-} from "./registry";
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+  type Node,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
+  type Connection,
+  type Viewport,
+} from '@xyflow/react';
+import type { DiagramNodeData, DiagramEdgeData, SavedDiagram, EditorSettings, HistoryEntry } from '../types';
 
-/**
- * Current schema version for diagram definitions.
- */
-export const CURRENT_SCHEMA_VERSION = "1.0.0";
-
-/**
- * Result of an import operation.
- */
-export interface ImportResult {
-  success: boolean;
-  errors?: string[];
-  warnings?: string[];
-  definition?: DiagramDefinition;
-}
-
-/**
- * Export the current diagram to a JSON string.
- */
-export function exportDiagram(definition: DiagramDefinition): string {
-  const exportData: DiagramDefinition = {
-    ...definition,
-    version: CURRENT_SCHEMA_VERSION,
-    metadata: {
-      ...definition.metadata,
-      updatedAt: new Date().toISOString(),
-    },
-  };
-
-  return JSON.stringify(exportData, null, 2);
-}
-
-/**
- * Export the current diagram and trigger a download.
- */
-export function downloadDiagram(
-  definition: DiagramDefinition,
-  filename: string = "flow-diagram.json",
-): void {
-  const jsonString = exportDiagram(definition);
-  const blob = new Blob([jsonString], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  URL.revokeObjectURL(url);
-}
-
-/**
- * Validate a diagram definition structure.
- */
-function validateDiagramStructure(data: any): {
-  valid: boolean;
-  errors: string[];
-} {
-  const errors: string[] = [];
-
-  // Check required top-level fields
-  if (!data.version) errors.push("Missing required field: version");
-  if (!Array.isArray(data.customNodeTypes))
-    errors.push("Missing or invalid field: customNodeTypes (must be array)");
-  if (!Array.isArray(data.customConnectionTypes))
-    errors.push(
-      "Missing or invalid field: customConnectionTypes (must be array)",
-    );
-  if (!Array.isArray(data.nodes))
-    errors.push("Missing or invalid field: nodes (must be array)");
-  if (!Array.isArray(data.edges))
-    errors.push("Missing or invalid field: edges (must be array)");
-
-  // Validate node types structure
-  if (Array.isArray(data.customNodeTypes)) {
-    data.customNodeTypes.forEach((nt: any, idx: number) => {
-      if (!nt.id) errors.push(`Node type at index ${idx} missing id`);
-      if (!nt.label) errors.push(`Node type at index ${idx} missing label`);
-      if (!nt.shape) errors.push(`Node type at index ${idx} missing shape`);
-      if (!nt.color) errors.push(`Node type at index ${idx} missing color`);
-      if (!Array.isArray(nt.handles))
-        errors.push(`Node type at index ${idx} missing handles array`);
-    });
-  }
-
-  // Validate connection types structure
-  if (Array.isArray(data.customConnectionTypes)) {
-    data.customConnectionTypes.forEach((ct: any, idx: number) => {
-      if (!ct.id) errors.push(`Connection type at index ${idx} missing id`);
-      if (!ct.label)
-        errors.push(`Connection type at index ${idx} missing label`);
-      if (!ct.pathStyle)
-        errors.push(`Connection type at index ${idx} missing pathStyle`);
-      if (!ct.color)
-        errors.push(`Connection type at index ${idx} missing color`);
-    });
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
-}
-
-/**
- * Import a diagram from a JSON string.
- * Validates structure and registers types in the registry.
- */
-export function importDiagram(
-  jsonString: string,
-  clearExisting: boolean = true,
-): ImportResult {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  try {
-    // Parse JSON
-    const data = JSON.parse(jsonString);
-
-    // Validate structure
-    const validation = validateDiagramStructure(data);
-    if (!validation.valid) {
-      return {
-        success: false,
-        errors: validation.errors,
-      };
-    }
-
-    // Version check
-    if (data.version !== CURRENT_SCHEMA_VERSION) {
-      warnings.push(
-        `Schema version mismatch: expected ${CURRENT_SCHEMA_VERSION}, got ${data.version}`,
-      );
-    }
-
-    // Clear existing registry if requested
-    if (clearExisting) {
-      clearRegistry();
-    }
-
-    // Register node types
-    try {
-      registerNodeTypes(data.customNodeTypes);
-    } catch (error) {
-      errors.push(
-        `Failed to register node types: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-
-    // Register connection types
-    try {
-      registerConnectionTypes(data.customConnectionTypes);
-    } catch (error) {
-      errors.push(
-        `Failed to register connection types: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-
-    // Validate node references
-    const nodeTypeIds = data.nodes.map((n: any) => n.data?.nodeTypeId);
-    const nodeValidation = validateNodeReferences(nodeTypeIds);
-    if (!nodeValidation.valid) {
-      errors.push(
-        `Invalid node type references: ${nodeValidation.missing.join(", ")}`,
-      );
-    }
-
-    // Validate connection references
-    const connectionTypeIds = data.edges.map(
-      (e: any) => e.data?.connectionTypeId,
-    );
-    const connectionValidation =
-      validateConnectionReferences(connectionTypeIds);
-    if (!connectionValidation.valid) {
-      errors.push(
-        `Invalid connection type references: ${connectionValidation.missing.join(", ")}`,
-      );
-    }
-
-    if (errors.length > 0) {
-      return {
-        success: false,
-        errors,
-        warnings: warnings.length > 0 ? warnings : undefined,
-      };
-    }
-
-    return {
-      success: true,
-      definition: data as DiagramDefinition,
-      warnings: warnings.length > 0 ? warnings : undefined,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      errors: [
-        `Failed to parse JSON: ${error instanceof Error ? error.message : String(error)}`,
-      ],
-    };
-  }
-}
-
-/**
- * Import a diagram from a File object (e.g., from file input).
- */
-export async function importDiagramFromFile(
-  file: File,
-  clearExisting: boolean = true,
-): Promise<ImportResult> {
-  try {
-    const text = await file.text();
-    return importDiagram(text, clearExisting);
-  } catch (error) {
-    return {
-      success: false,
-      errors: [
-        `Failed to read file: ${error instanceof Error ? error.message : String(error)}`,
-      ],
-    };
-  }
-}
-
-
-
---------------------------------------------------------------------------------
-FILE: src\components\flow-general\utils\registry.ts
---------------------------------------------------------------------------------
-// src/components/flow-general/utils/registry.ts
-/**
- * Dynamic registry for managing custom node types and connection types.
- * This allows runtime registration and retrieval of user-defined types.
- */
-
-import type {
-  CustomNodeType,
-  CustomConnectionType,
-  RegistryState,
-} from "../types";
-
-/**
- * Global registry state.
- * In a production app, this should be managed by a state management solution.
- */
-let registryState: RegistryState = {
-  nodeTypes: new Map(),
-  connectionTypes: new Map(),
+const DEFAULT_SETTINGS: EditorSettings = {
+  snapToGrid: false,
+  snapGrid: [15, 15],
+  showMiniMap: true,
+  showControls: true,
+  backgroundVariant: 'dots',
+  colorMode: 'light',
+  defaultEdgeType: 'smoothstep',
+  autoSave: true,
 };
 
-// ==================== Node Type Registry ====================
+const MAX_HISTORY = 50;
 
-/**
- * Register a custom node type.
- * Throws if a type with the same ID already exists.
- */
-export function registerNodeType(nodeType: CustomNodeType): void {
-  if (registryState.nodeTypes.has(nodeType.id)) {
-    throw new Error(`Node type with id "${nodeType.id}" already exists`);
-  }
-  registryState.nodeTypes.set(nodeType.id, nodeType);
+interface DiagramStore {
+  // Current diagram
+  currentDiagramId: string | null;
+  diagramName: string;
+  nodes: Node<DiagramNodeData>[];
+  edges: Edge<DiagramEdgeData>[];
+  viewport: Viewport;
+
+  // Selection
+  selectedNodeId: string | null;
+  selectedEdgeId: string | null;
+
+  // History (undo/redo)
+  history: HistoryEntry[];
+  historyIndex: number;
+
+  // Clipboard
+  clipboard: { nodes: Node<DiagramNodeData>[]; edges: Edge<DiagramEdgeData>[] } | null;
+
+  // Saved diagrams
+  savedDiagrams: SavedDiagram[];
+
+  // Settings
+  settings: EditorSettings;
+
+  // UI state
+  isPalettOpen: boolean;
+  isSettingsPanelOpen: boolean;
+  isSaving: boolean;
+
+  // Actions
+  setDiagramName: (name: string) => void;
+  onNodesChange: (changes: NodeChange<Node<DiagramNodeData>>[]) => void;
+  onEdgesChange: (changes: EdgeChange<Edge<DiagramEdgeData>>[]) => void;
+  onConnect: (connection: Connection) => void;
+  setNodes: (nodes: Node<DiagramNodeData>[]) => void;
+  setEdges: (edges: Edge<DiagramEdgeData>[]) => void;
+  setViewport: (viewport: Viewport) => void;
+
+  addNode: (node: Node<DiagramNodeData>) => void;
+  updateNodeData: (nodeId: string, data: Partial<DiagramNodeData>) => void;
+  updateEdgeData: (edgeId: string, data: Partial<DiagramEdgeData>) => void;
+  deleteSelected: () => void;
+  duplicateSelected: () => void;
+
+  setSelectedNode: (id: string | null) => void;
+  setSelectedEdge: (id: string | null) => void;
+
+  // History
+  pushHistory: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+
+  // Clipboard
+  copy: () => void;
+  paste: () => void;
+
+  // Diagram management
+  newDiagram: () => void;
+  saveDiagram: () => void;
+  loadDiagram: (id: string) => void;
+  deleteDiagram: (id: string) => void;
+  exportJSON: () => string;
+  importJSON: (json: string) => void;
+
+  // Settings
+  updateSettings: (s: Partial<EditorSettings>) => void;
+
+  // UI
+  togglePalette: () => void;
+  toggleSettingsPanel: () => void;
 }
 
-/**
- * Register multiple node types at once.
- */
-export function registerNodeTypes(nodeTypes: CustomNodeType[]): void {
-  nodeTypes.forEach(registerNodeType);
-}
+let historyTimeout: ReturnType<typeof setTimeout> | null = null;
 
-/**
- * Update an existing node type.
- * Throws if the type doesn't exist.
- */
-export function updateNodeType(nodeType: CustomNodeType): void {
-  if (!registryState.nodeTypes.has(nodeType.id)) {
-    throw new Error(`Node type with id "${nodeType.id}" does not exist`);
-  }
-  registryState.nodeTypes.set(nodeType.id, nodeType);
-}
+export const useDiagramStore = create<DiagramStore>()(
+  persist(
+    (set, get) => ({
+      currentDiagramId: null,
+      diagramName: 'Untitled Diagram',
+      nodes: [],
+      edges: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+      selectedNodeId: null,
+      selectedEdgeId: null,
+      history: [],
+      historyIndex: -1,
+      clipboard: null,
+      savedDiagrams: [],
+      settings: DEFAULT_SETTINGS,
+      isPalettOpen: true,
+      isSettingsPanelOpen: true,
+      isSaving: false,
 
-/**
- * Unregister a node type by ID.
- */
-export function unregisterNodeType(nodeTypeId: string): boolean {
-  return registryState.nodeTypes.delete(nodeTypeId);
-}
+      setDiagramName: (name) => set({ diagramName: name }),
 
-/**
- * Get a node type by ID.
- * Returns undefined if not found.
- */
-export function getNodeType(nodeTypeId: string): CustomNodeType | undefined {
-  return registryState.nodeTypes.get(nodeTypeId);
-}
+      onNodesChange: (changes) => {
+        const hasPositionChange = changes.some((c) => c.type === 'position' && c.dragging === false);
+        const hasRemove = changes.some((c) => c.type === 'remove');
+        const hasSelect = changes.some((c) => c.type === 'select');
 
-/**
- * Get all registered node types.
- */
-export function getAllNodeTypes(): CustomNodeType[] {
-  return Array.from(registryState.nodeTypes.values());
-}
+        set((state) => {
+          const selectChanges = changes.filter(
+            (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
+          );
+          const selected = selectChanges.find((c) => c.selected);
+          const deselected = selectChanges.find((c) => !c.selected && c.id === state.selectedNodeId);
 
-/**
- * Check if a node type exists.
- */
-export function hasNodeType(nodeTypeId: string): boolean {
-  return registryState.nodeTypes.has(nodeTypeId);
-}
+          return {
+            nodes: applyNodeChanges(changes, state.nodes) as Node<DiagramNodeData>[],
+            selectedNodeId: selected ? selected.id : deselected ? null : state.selectedNodeId,
+            selectedEdgeId: hasSelect ? null : state.selectedEdgeId,
+          };
+        });
 
-// ==================== Connection Type Registry ====================
+        if (hasPositionChange || hasRemove) {
+          if (historyTimeout) clearTimeout(historyTimeout);
+          historyTimeout = setTimeout(() => get().pushHistory(), 300);
+        }
+      },
 
-/**
- * Register a custom connection type.
- * Throws if a type with the same ID already exists.
- */
-export function registerConnectionType(
-  connectionType: CustomConnectionType,
-): void {
-  if (registryState.connectionTypes.has(connectionType.id)) {
-    throw new Error(
-      `Connection type with id "${connectionType.id}" already exists`,
-    );
-  }
-  registryState.connectionTypes.set(connectionType.id, connectionType);
-}
+      onEdgesChange: (changes) => {
+        const hasRemove = changes.some((c) => c.type === 'remove');
+        const hasSelect = changes.some((c) => c.type === 'select');
 
-/**
- * Register multiple connection types at once.
- */
-export function registerConnectionTypes(
-  connectionTypes: CustomConnectionType[],
-): void {
-  connectionTypes.forEach(registerConnectionType);
-}
+        set((state) => {
+          const selectChanges = changes.filter(
+            (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
+          );
+          const selected = selectChanges.find((c) => c.selected);
+          const deselected = selectChanges.find((c) => !c.selected && c.id === state.selectedEdgeId);
 
-/**
- * Update an existing connection type.
- * Throws if the type doesn't exist.
- */
-export function updateConnectionType(
-  connectionType: CustomConnectionType,
-): void {
-  if (!registryState.connectionTypes.has(connectionType.id)) {
-    throw new Error(
-      `Connection type with id "${connectionType.id}" does not exist`,
-    );
-  }
-  registryState.connectionTypes.set(connectionType.id, connectionType);
-}
+          return {
+            edges: applyEdgeChanges(changes, state.edges) as Edge<DiagramEdgeData>[],
+            selectedEdgeId: selected ? selected.id : deselected ? null : state.selectedEdgeId,
+            selectedNodeId: hasSelect ? null : state.selectedNodeId,
+          };
+        });
 
-/**
- * Unregister a connection type by ID.
- */
-export function unregisterConnectionType(connectionTypeId: string): boolean {
-  return registryState.connectionTypes.delete(connectionTypeId);
-}
+        if (hasRemove) get().pushHistory();
+      },
 
-/**
- * Get a connection type by ID.
- * Returns undefined if not found.
- */
-export function getConnectionType(
-  connectionTypeId: string,
-): CustomConnectionType | undefined {
-  return registryState.connectionTypes.get(connectionTypeId);
-}
+      onConnect: (connection) => {
+        const { settings } = get();
+        set((state) => ({
+          edges: addEdge(
+            {
+              ...connection,
+              type: settings.defaultEdgeType,
+              animated: false,
+              data: { edgeStyle: settings.defaultEdgeType, strokeWidth: 2, color: '#94a3b8' },
+            },
+            state.edges,
+          ) as Edge<DiagramEdgeData>[],
+        }));
+        get().pushHistory();
+      },
 
-/**
- * Get all registered connection types.
- */
-export function getAllConnectionTypes(): CustomConnectionType[] {
-  return Array.from(registryState.connectionTypes.values());
-}
+      setNodes: (nodes) => set({ nodes }),
+      setEdges: (edges) => set({ edges }),
+      setViewport: (viewport) => set({ viewport }),
 
-/**
- * Check if a connection type exists.
- */
-export function hasConnectionType(connectionTypeId: string): boolean {
-  return registryState.connectionTypes.has(connectionTypeId);
-}
+      addNode: (node) => {
+        set((state) => ({ nodes: [...state.nodes, node] }));
+        get().pushHistory();
+      },
 
-// ==================== Registry Management ====================
+      updateNodeData: (nodeId, data) => {
+        set((state) => ({
+          nodes: state.nodes.map((n) =>
+            n.id === nodeId ? { ...n, data: { ...n.data, ...data } } : n,
+          ),
+        }));
+        if (historyTimeout) clearTimeout(historyTimeout);
+        historyTimeout = setTimeout(() => get().pushHistory(), 500);
+      },
 
-/**
- * Clear all registered types (useful for testing or reset).
- */
-export function clearRegistry(): void {
-  registryState.nodeTypes.clear();
-  registryState.connectionTypes.clear();
-}
+      updateEdgeData: (edgeId, data) => {
+        set((state) => ({
+          edges: state.edges.map((e) => {
+            if (e.id !== edgeId) return e;
+            const newData = { ...e.data, ...data } as DiagramEdgeData;
+            return {
+              ...e,
+              type: newData.edgeStyle ?? e.type,
+              animated: newData.animated ?? e.animated,
+              data: newData,
+            };
+          }),
+        }));
+        if (historyTimeout) clearTimeout(historyTimeout);
+        historyTimeout = setTimeout(() => get().pushHistory(), 500);
+      },
 
-/**
- * Get the current registry state (for debugging or serialization).
- */
-export function getRegistryState(): RegistryState {
-  return {
-    nodeTypes: new Map(registryState.nodeTypes),
-    connectionTypes: new Map(registryState.connectionTypes),
-  };
-}
+      deleteSelected: () => {
+        const { selectedNodeId, selectedEdgeId } = get();
+        set((state) => ({
+          nodes: selectedNodeId ? state.nodes.filter((n) => n.id !== selectedNodeId) : state.nodes,
+          edges: selectedEdgeId
+            ? state.edges.filter((e) => e.id !== selectedEdgeId)
+            : selectedNodeId
+            ? state.edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId)
+            : state.edges,
+          selectedNodeId: null,
+          selectedEdgeId: null,
+        }));
+        get().pushHistory();
+      },
 
-/**
- * Restore registry state from a previous snapshot.
- */
-export function restoreRegistryState(state: RegistryState): void {
-  registryState = {
-    nodeTypes: new Map(state.nodeTypes),
-    connectionTypes: new Map(state.connectionTypes),
-  };
-}
+      duplicateSelected: () => {
+        const { selectedNodeId, nodes } = get();
+        if (!selectedNodeId) return;
+        const node = nodes.find((n) => n.id === selectedNodeId);
+        if (!node) return;
+        const newNode: Node<DiagramNodeData> = {
+          ...node,
+          id: `node-${Date.now()}`,
+          position: { x: node.position.x + 30, y: node.position.y + 30 },
+          selected: false,
+        };
+        set((state) => ({ nodes: [...state.nodes, newNode] }));
+        get().pushHistory();
+      },
 
-/**
- * Validate that all node instances reference valid node types.
- */
-export function validateNodeReferences(nodeTypeIds: string[]): {
-  valid: boolean;
-  missing: string[];
-} {
-  const missing = nodeTypeIds.filter((id) => !hasNodeType(id));
-  return {
-    valid: missing.length === 0,
-    missing,
-  };
-}
+      setSelectedNode: (id) => set({ selectedNodeId: id, selectedEdgeId: id ? null : undefined }),
+      setSelectedEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: id ? null : undefined }),
 
-/**
- * Validate that all edge instances reference valid connection types.
- */
-export function validateConnectionReferences(connectionTypeIds: string[]): {
-  valid: boolean;
-  missing: string[];
-} {
-  const missing = connectionTypeIds.filter((id) => !hasConnectionType(id));
-  return {
-    valid: missing.length === 0,
-    missing,
-  };
-}
+      pushHistory: () => {
+        const { nodes, edges, history, historyIndex } = get();
+        const entry: HistoryEntry = {
+          nodes: JSON.parse(JSON.stringify(nodes)),
+          edges: JSON.parse(JSON.stringify(edges)),
+        };
+        const newHistory = history.slice(0, historyIndex + 1);
+        newHistory.push(entry);
+        if (newHistory.length > MAX_HISTORY) newHistory.shift();
+        set({ history: newHistory, historyIndex: newHistory.length - 1 });
+      },
+
+      undo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex <= 0) return;
+        const prev = history[historyIndex - 1];
+        set({ nodes: prev.nodes, edges: prev.edges, historyIndex: historyIndex - 1 });
+      },
+
+      redo: () => {
+        const { history, historyIndex } = get();
+        if (historyIndex >= history.length - 1) return;
+        const next = history[historyIndex + 1];
+        set({ nodes: next.nodes, edges: next.edges, historyIndex: historyIndex + 1 });
+      },
+
+      canUndo: () => get().historyIndex > 0,
+      canRedo: () => get().historyIndex < get().history.length - 1,
+
+      copy: () => {
+        const { selectedNodeId, nodes, edges } = get();
+        if (!selectedNodeId) return;
+        const node = nodes.find((n) => n.id === selectedNodeId);
+        if (!node) return;
+        const relatedEdges = edges.filter((e) => e.source === selectedNodeId || e.target === selectedNodeId);
+        set({ clipboard: { nodes: [node], edges: relatedEdges } });
+      },
+
+      paste: () => {
+        const { clipboard } = get();
+        if (!clipboard || clipboard.nodes.length === 0) return;
+        const idMap: Record<string, string> = {};
+        const newNodes = clipboard.nodes.map((n) => {
+          const newId = `node-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+          idMap[n.id] = newId;
+          return { ...n, id: newId, position: { x: n.position.x + 40, y: n.position.y + 40 }, selected: false };
+        });
+        set((state) => ({ nodes: [...state.nodes, ...newNodes] }));
+        get().pushHistory();
+      },
+
+      newDiagram: () => {
+        set({
+          currentDiagramId: null,
+          diagramName: 'Untitled Diagram',
+          nodes: [],
+          edges: [],
+          viewport: { x: 0, y: 0, zoom: 1 },
+          selectedNodeId: null,
+          selectedEdgeId: null,
+          history: [],
+          historyIndex: -1,
+        });
+      },
+
+      saveDiagram: () => {
+        const { currentDiagramId, diagramName, nodes, edges, viewport, savedDiagrams } = get();
+        set({ isSaving: true });
+        const id = currentDiagramId ?? `diagram-${Date.now()}`;
+        const now = new Date().toISOString();
+        const existing = savedDiagrams.find((d) => d.id === id);
+        const diagram: SavedDiagram = {
+          id,
+          name: diagramName,
+          createdAt: existing?.createdAt ?? now,
+          updatedAt: now,
+          nodes: JSON.parse(JSON.stringify(nodes)),
+          edges: JSON.parse(JSON.stringify(edges)),
+          viewport,
+        };
+        const others = savedDiagrams.filter((d) => d.id !== id);
+        set({ savedDiagrams: [diagram, ...others], currentDiagramId: id, isSaving: false });
+      },
+
+      loadDiagram: (id) => {
+        const { savedDiagrams } = get();
+        const diagram = savedDiagrams.find((d) => d.id === id);
+        if (!diagram) return;
+        set({
+          currentDiagramId: diagram.id,
+          diagramName: diagram.name,
+          nodes: diagram.nodes,
+          edges: diagram.edges,
+          viewport: diagram.viewport,
+          selectedNodeId: null,
+          selectedEdgeId: null,
+          history: [],
+          historyIndex: -1,
+        });
+      },
+
+      deleteDiagram: (id) => {
+        set((state) => ({
+          savedDiagrams: state.savedDiagrams.filter((d) => d.id !== id),
+          currentDiagramId: state.currentDiagramId === id ? null : state.currentDiagramId,
+        }));
+      },
+
+      exportJSON: () => {
+        const { diagramName, nodes, edges, viewport } = get();
+        return JSON.stringify({ name: diagramName, nodes, edges, viewport }, null, 2);
+      },
+
+      importJSON: (json) => {
+        try {
+          const data = JSON.parse(json);
+          set({
+            diagramName: data.name ?? 'Imported Diagram',
+            nodes: data.nodes ?? [],
+            edges: data.edges ?? [],
+            viewport: data.viewport ?? { x: 0, y: 0, zoom: 1 },
+            currentDiagramId: null,
+            history: [],
+            historyIndex: -1,
+          });
+          get().pushHistory();
+        } catch {
+          throw new Error('Invalid JSON');
+        }
+      },
+
+      updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } })),
+
+      togglePalette: () => set((state) => ({ isPalettOpen: !state.isPalettOpen })),
+      toggleSettingsPanel: () => set((state) => ({ isSettingsPanelOpen: !state.isSettingsPanelOpen })),
+    }),
+    {
+      name: 'diagram-editor-store',
+      partialize: (state) => ({ savedDiagrams: state.savedDiagrams, settings: state.settings, diagramName: state.diagramName }),
+    },
+  ),
+);
 
 
 
 --------------------------------------------------------------------------------
-FILE: src\components\flow-general\utils\shapes.ts
+FILE: src\modules\claude-flow\types\index.ts
 --------------------------------------------------------------------------------
-// src/components/flow-general/utils/shapes.ts
-/**
- * SVG path generators for different node shapes.
- * Each function returns a path string for the given dimensions.
- */
+import type { Node, Edge, Viewport } from '@xyflow/react';
 
-import type { ShapeType } from "../types";
+export type DiagramNodeType =
+  | 'defaultNode'
+  | 'inputNode'
+  | 'outputNode'
+  | 'circleNode'
+  | 'diamondNode'
+  | 'cylinderNode'
+  | 'parallelogramNode'
+  | 'hexagonNode'
+  | 'textNode'
+  | 'noteNode';
 
-/**
- * Generate SVG path for a circle.
- */
-export function circlePath(width: number, height: number): string {
-  const cx = width / 2;
-  const cy = height / 2;
-  const r = Math.min(width, height) / 2;
-  return `M ${cx - r},${cy} A ${r},${r} 0 1,0 ${cx + r},${cy} A ${r},${r} 0 1,0 ${cx - r},${cy}`;
+export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep';
+
+export interface DiagramNodeData extends Record<string, unknown> {
+  label: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  textColor?: string;
+  fontSize?: number;
+  fontWeight?: 'normal' | 'semibold' | 'bold';
+  borderWidth?: number;
+  borderStyle?: 'solid' | 'dashed' | 'dotted';
+  borderRadius?: number;
+  description?: string;
 }
 
-/**
- * Generate SVG path for a rectangle.
- */
-export function rectanglePath(width: number, height: number): string {
-  return `M 0,0 L ${width},0 L ${width},${height} L 0,${height} Z`;
+export interface DiagramEdgeData extends Record<string, unknown> {
+  label?: string;
+  animated?: boolean;
+  color?: string;
+  strokeWidth?: number;
+  edgeStyle?: DiagramEdgeType;
 }
 
-/**
- * Generate SVG path for a rounded rectangle.
- */
-export function roundedRectanglePath(
-  width: number,
-  height: number,
-  radius: number = 12,
-): string {
-  const r = Math.min(radius, width / 2, height / 2);
-  return `
-    M ${r},0
-    L ${width - r},0
-    Q ${width},0 ${width},${r}
-    L ${width},${height - r}
-    Q ${width},${height} ${width - r},${height}
-    L ${r},${height}
-    Q 0,${height} 0,${height - r}
-    L 0,${r}
-    Q 0,0 ${r},0
-    Z
-  `;
+export interface SavedDiagram {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  nodes: Node<DiagramNodeData>[];
+  edges: Edge<DiagramEdgeData>[];
+  viewport: Viewport;
 }
 
-/**
- * Generate SVG path for a hexagon (flat top).
- */
-export function hexagonPath(width: number, height: number): string {
-  const w = width;
-  const h = height;
-  const dx = w * 0.25; // Horizontal offset for angled sides
-  return `
-    M ${dx},0
-    L ${w - dx},0
-    L ${w},${h / 2}
-    L ${w - dx},${h}
-    L ${dx},${h}
-    L 0,${h / 2}
-    Z
-  `;
+export interface HistoryEntry {
+  nodes: Node<DiagramNodeData>[];
+  edges: Edge<DiagramEdgeData>[];
 }
 
-/**
- * Generate SVG path for an octagon.
- */
-export function octagonPath(width: number, height: number): string {
-  const w = width;
-  const h = height;
-  const dx = w * 0.3; // Corner cut size
-  const dy = h * 0.3;
-  return `
-    M ${dx},0
-    L ${w - dx},0
-    L ${w},${dy}
-    L ${w},${h - dy}
-    L ${w - dx},${h}
-    L ${dx},${h}
-    L 0,${h - dy}
-    L 0,${dy}
-    Z
-  `;
+export interface EditorSettings {
+  snapToGrid: boolean;
+  snapGrid: [number, number];
+  showMiniMap: boolean;
+  showControls: boolean;
+  backgroundVariant: 'dots' | 'lines' | 'cross' | 'none';
+  colorMode: 'light' | 'dark';
+  defaultEdgeType: DiagramEdgeType;
+  autoSave: boolean;
 }
 
-/**
- * Generate SVG path for a diamond.
- */
-export function diamondPath(width: number, height: number): string {
-  const cx = width / 2;
-  const cy = height / 2;
-  return `M ${cx},0 L ${width},${cy} L ${cx},${height} L 0,${cy} Z`;
-}
+export type Language = 'en' | 'fa';
 
-/**
- * Generate SVG path for an ellipse.
- */
-export function ellipsePath(width: number, height: number): string {
-  const cx = width / 2;
-  const cy = height / 2;
-  const rx = width / 2;
-  const ry = height / 2;
-  return `M ${cx - rx},${cy} A ${rx},${ry} 0 1,0 ${cx + rx},${cy} A ${rx},${ry} 0 1,0 ${cx - rx},${cy}`;
-}
-
-/**
- * Get path generator function for a shape type.
- */
-export function getShapePath(
-  shape: ShapeType,
-  width: number,
-  height: number,
-): string {
-  switch (shape) {
-    case "circle":
-      return circlePath(width, height);
-    case "rectangle":
-      return rectanglePath(width, height);
-    case "rounded-rectangle":
-      return roundedRectanglePath(width, height);
-    case "hexagon":
-      return hexagonPath(width, height);
-    case "octagon":
-      return octagonPath(width, height);
-    case "diamond":
-      return diamondPath(width, height);
-    case "ellipse":
-      return ellipsePath(width, height);
-    default:
-      return rectanglePath(width, height);
-  }
-}
-
-/**
- * Calculate handle position coordinates based on shape and handle definition.
- * Returns { x, y } in local node coordinates.
- */
-export function calculateHandlePosition(
-  shape: ShapeType,
-  position: "top" | "right" | "bottom" | "left",
-  width: number,
-  height: number,
-  index: number = 0,
-  total: number = 1,
-): { x: number; y: number } {
-  const cx = width / 2;
-  const cy = height / 2;
-
-  // For shapes like hexagon and octagon, adjust positions to match angled edges
-  switch (position) {
-    case "top":
-      return {
-        x: cx + ((index - (total - 1) / 2) * width) / (total + 1),
-        y: 0,
-      };
-    case "bottom":
-      return {
-        x: cx + ((index - (total - 1) / 2) * width) / (total + 1),
-        y: height,
-      };
-    case "left":
-      return {
-        x: 0,
-        y: cy + ((index - (total - 1) / 2) * height) / (total + 1),
-      };
-    case "right":
-      return {
-        x: width,
-        y: cy + ((index - (total - 1) / 2) * height) / (total + 1),
-      };
-  }
+export interface PaletteItem {
+  type: DiagramNodeType;
+  labelKey: string;
+  icon: string;
+  defaultData: Partial<DiagramNodeData>;
+  category: 'basic' | 'flowchart' | 'shapes';
 }
 
 

@@ -1,59 +1,67 @@
-'use client';
+// src/components/LocaleSwitcher.tsx
+"use client";
 
-import { useTransition } from 'react';
-import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from '@/i18n/navigation';
-import { type Locale } from '@/i18n/routing';
-import { Globe } from 'lucide-react';
+import { useTransition } from "react";
+import { Globe } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { type Locale } from "@/i18n/routing";
 
-import { Switch } from '@/components/ui/switch';
+import { Combobox, type ComboboxOption } from "@/components/ui-custom/combobox";
+import { cn } from "@/lib/utils";
+
+/**
+ * Supported locales mapped to ComboboxOption format.
+ */
+const LOCALE_OPTIONS: ComboboxOption[] = [
+  { label: "English", value: "en" },
+  { label: "فارسی", value: "fa" },
+];
 
 type Props = {
+  /**
+   * Optional callback fired after locale changes.
+   */
   onLocaleChange?: () => void;
+  /**
+   * Optional className to apply to the combobox button.
+   */
+  className?: string;
 };
 
-export function LocaleSwitcher({ onLocaleChange }: Props) {
+export function LocaleSwitcher({ onLocaleChange, className }: Props) {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+  const t = useTranslations("LocaleSwitcher");
 
   const [isPending, startTransition] = useTransition();
 
-  const checked = locale === 'fa';
+  /**
+   * Change locale and navigate to the same pathname with the new locale.
+   */
+  function handleLocaleChange(nextLocale: string) {
+    if (!nextLocale || nextLocale === locale) return;
 
-  function changeLocale(next: Locale) {
     onLocaleChange?.();
 
     startTransition(() => {
-      router.replace(pathname, { locale: next });
+      router.replace(pathname, { locale: nextLocale as Locale });
     });
   }
 
-  function handleToggle(value: boolean) {
-    const nextLocale: Locale = value ? 'fa' : 'en';
-    if (nextLocale === locale) return;
-
-    changeLocale(nextLocale);
-  }
-
   return (
-    <div className="flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 text-sm">
-        <Globe className="size-4" />
-        <span>Language</span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <span className="text-muted-foreground text-xs">EN</span>
-
-        <Switch
-          checked={checked}
-          onCheckedChange={handleToggle}
-          disabled={isPending}
-        />
-
-        <span className="text-muted-foreground text-xs">FA</span>
-      </div>
+    <div className={cn("flex items-center gap-2", className)}>
+      <Globe className="size-4 text-muted-foreground" aria-hidden="true" />
+      <Combobox
+        options={LOCALE_OPTIONS}
+        value={locale}
+        onChange={handleLocaleChange}
+        placeholder={t("placeholder")}
+        searchPlaceholder={t("search")}
+        emptyText={t("empty")}
+        className="w-35"
+      />
     </div>
   );
 }

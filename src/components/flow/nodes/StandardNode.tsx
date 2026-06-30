@@ -1,8 +1,11 @@
 // src/components/flow/nodes/StandardNode.tsx
 import { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import type { StandardNodeData } from "@/types/nodes";
-import { getStandardColor, getStandardHoverColor } from "@/types/nodes";
+import type { StandardNodeData } from "@/components/flow/nodes";
+import {
+  getStandardColor,
+  getStandardHoverColor,
+} from "@/components/flow/nodes";
 import { HANDLE1 } from "./handle-style";
 
 interface StandardNodeProps {
