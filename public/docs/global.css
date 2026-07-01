@@ -1,0 +1,646 @@
+/* src/app/globals.css */
+/* ============================================
+   IMPORTS
+   ============================================ */
+@import "tailwindcss";
+@import "../styles/font/fonts.css";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* ============================================
+   CUSTOM VARIANTS
+   ============================================ */
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   THEME CONFIGURATION
+   ============================================ */
+@theme {
+  /* ===== Spacing Tokens ===== */
+  /* Custom spacing for layout components */
+  --spacing-header: 64px;
+  --spacing-sidebar: 280px;
+  --spacing-content-max: 1400px;
+
+  /* ===== Font Families ===== */
+  /* Multi-language font stacks with Persian and English support */
+  --font-sans: "Inter", "Shabnam", system-ui, -apple-system, sans-serif;
+  --font-serif: "Times New Roman", Georgia, serif;
+  --font-mono: "SF Mono", "Fira Code", monospace;
+  --font-persian: "Shabnam", "Inter", sans-serif;
+  --font-english: "Inter", "Shabnam", sans-serif;
+  --font-shabnam: "Shabnam", "Inter", sans-serif;
+  --font-inter: "Inter", "Shabnam", sans-serif;
+  --font-poppins: "Poppins", "Shabnam", sans-serif;
+  --font-heading: var(--font-english);
+
+  /* ===== Radius Tokens ===== */
+  /* Border radius utilities matching design system */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
+
+  /* ===== Slate Scale (Neutral) ===== */
+  /* Neutral grays for backgrounds, borders, and text */
+  --color-slate-50: oklch(0.985 0.002 247.8);
+  --color-slate-100: oklch(0.97 0.003 247.8);
+  --color-slate-200: oklch(0.93 0.006 247.8);
+  --color-slate-300: oklch(0.87 0.01 247.8);
+  --color-slate-400: oklch(0.68 0.015 247.8);
+  --color-slate-500: oklch(0.53 0.02 247.8);
+  --color-slate-600: oklch(0.41 0.02 247.8);
+  --color-slate-700: oklch(0.33 0.018 247.8);
+  --color-slate-800: oklch(0.23 0.015 247.8);
+  --color-slate-900: oklch(0.15 0.01 247.8);
+  --color-slate-950: oklch(0.08 0.005 247.8);
+
+  /* ===== Blue Scale ===== */
+  /* Informational states and secondary branding */
+  --color-blue-50: oklch(0.97 0.013 239.7);
+  --color-blue-100: oklch(0.93 0.024 239.7);
+  --color-blue-200: oklch(0.88 0.042 239.7);
+  --color-blue-300: oklch(0.8 0.077 239.7);
+  --color-blue-400: oklch(0.7 0.12 239.7);
+  --color-blue-500: oklch(0.6 0.15 239.7);
+  --color-blue-600: oklch(0.5 0.16 239.7);
+  --color-blue-700: oklch(0.43 0.15 239.7);
+  --color-blue-800: oklch(0.37 0.12 239.7);
+  --color-blue-900: oklch(0.33 0.09 239.7);
+  --color-blue-950: oklch(0.24 0.06 239.7);
+
+  /* ===== Green Scale ===== */
+  /* Success states, positive feedback, confirmations */
+  --color-green-50: oklch(0.98 0.04 150);
+  --color-green-100: oklch(0.96 0.08 150);
+  --color-green-200: oklch(0.93 0.13 150);
+  --color-green-300: oklch(0.88 0.18 150);
+  --color-green-400: oklch(0.8 0.2 150);
+  --color-green-500: oklch(0.7 0.19 150);
+  --color-green-600: oklch(0.58 0.16 150);
+  --color-green-700: oklch(0.48 0.14 150);
+  --color-green-800: oklch(0.4 0.12 150);
+  --color-green-900: oklch(0.35 0.1 150);
+  --color-green-950: oklch(0.22 0.06 150);
+
+  /* ===== Red Scale ===== */
+  /* Error states, destructive actions, alerts */
+  --color-red-50: oklch(0.98 0.02 15);
+  --color-red-100: oklch(0.95 0.05 15);
+  --color-red-200: oklch(0.91 0.09 15);
+  --color-red-300: oklch(0.85 0.14 15);
+  --color-red-400: oklch(0.76 0.18 15);
+  --color-red-500: oklch(0.64 0.2 15);
+  --color-red-600: oklch(0.55 0.21 15);
+  --color-red-700: oklch(0.46 0.19 15);
+  --color-red-800: oklch(0.41 0.16 15);
+  --color-red-900: oklch(0.37 0.14 15);
+  --color-red-950: oklch(0.23 0.09 15);
+
+  /* ===== Orange Scale ===== */
+  /* Warning states, attention-grabbing elements */
+  --color-orange-50: oklch(0.98 0.02 60);
+  --color-orange-100: oklch(0.96 0.05 60);
+  --color-orange-200: oklch(0.92 0.1 60);
+  --color-orange-300: oklch(0.86 0.15 60);
+  --color-orange-400: oklch(0.77 0.18 60);
+  --color-orange-500: oklch(0.69 0.19 60);
+  --color-orange-600: oklch(0.61 0.18 60);
+  --color-orange-700: oklch(0.5 0.16 60);
+  --color-orange-800: oklch(0.43 0.14 60);
+  --color-orange-900: oklch(0.38 0.12 60);
+  --color-orange-950: oklch(0.24 0.08 60);
+
+  /* ===== Purple Scale ===== */
+  /* Premium features, special highlights, creative elements */
+  --color-purple-50: oklch(0.98 0.02 295);
+  --color-purple-100: oklch(0.95 0.05 295);
+  --color-purple-200: oklch(0.91 0.09 295);
+  --color-purple-300: oklch(0.84 0.14 295);
+  --color-purple-400: oklch(0.73 0.19 295);
+  --color-purple-500: oklch(0.62 0.22 295);
+  --color-purple-600: oklch(0.53 0.23 295);
+  --color-purple-700: oklch(0.45 0.21 295);
+  --color-purple-800: oklch(0.39 0.18 295);
+  --color-purple-900: oklch(0.34 0.15 295);
+  --color-purple-950: oklch(0.24 0.11 295);
+
+  /* ===== Default Primary Color (Blue) ===== */
+  /* These tokens are overridden by .primary-color-* classes on :root */
+  --color-primary-50: var(--color-blue-50);
+  --color-primary-100: var(--color-blue-100);
+  --color-primary-200: var(--color-blue-200);
+  --color-primary-300: var(--color-blue-300);
+  --color-primary-400: var(--color-blue-400);
+  --color-primary-500: var(--color-blue-500);
+  --color-primary-600: var(--color-blue-600);
+  --color-primary-700: var(--color-blue-700);
+  --color-primary-800: var(--color-blue-800);
+  --color-primary-900: var(--color-blue-900);
+  --color-primary-950: var(--color-blue-950);
+}
+
+/* ============================================
+   DYNAMIC PRIMARY COLOR MAPPING
+   Maps --color-primary-* tokens to selected color palette
+   Must be OUTSIDE @theme block for Tailwind v4 compatibility
+   ============================================ */
+
+/* Blue as Primary */
+:root.primary-color-blue {
+  --color-primary-50: var(--color-blue-50);
+  --color-primary-100: var(--color-blue-100);
+  --color-primary-200: var(--color-blue-200);
+  --color-primary-300: var(--color-blue-300);
+  --color-primary-400: var(--color-blue-400);
+  --color-primary-500: var(--color-blue-500);
+  --color-primary-600: var(--color-blue-600);
+  --color-primary-700: var(--color-blue-700);
+  --color-primary-800: var(--color-blue-800);
+  --color-primary-900: var(--color-blue-900);
+  --color-primary-950: var(--color-blue-950);
+}
+
+/* Green as Primary */
+:root.primary-color-green {
+  --color-primary-50: var(--color-green-50);
+  --color-primary-100: var(--color-green-100);
+  --color-primary-200: var(--color-green-200);
+  --color-primary-300: var(--color-green-300);
+  --color-primary-400: var(--color-green-400);
+  --color-primary-500: var(--color-green-500);
+  --color-primary-600: var(--color-green-600);
+  --color-primary-700: var(--color-green-700);
+  --color-primary-800: var(--color-green-800);
+  --color-primary-900: var(--color-green-900);
+  --color-primary-950: var(--color-green-950);
+}
+
+/* Red as Primary */
+:root.primary-color-red {
+  --color-primary-50: var(--color-red-50);
+  --color-primary-100: var(--color-red-100);
+  --color-primary-200: var(--color-red-200);
+  --color-primary-300: var(--color-red-300);
+  --color-primary-400: var(--color-red-400);
+  --color-primary-500: var(--color-red-500);
+  --color-primary-600: var(--color-red-600);
+  --color-primary-700: var(--color-red-700);
+  --color-primary-800: var(--color-red-800);
+  --color-primary-900: var(--color-red-900);
+  --color-primary-950: var(--color-red-950);
+}
+
+/* Orange as Primary */
+:root.primary-color-orange {
+  --color-primary-50: var(--color-orange-50);
+  --color-primary-100: var(--color-orange-100);
+  --color-primary-200: var(--color-orange-200);
+  --color-primary-300: var(--color-orange-300);
+  --color-primary-400: var(--color-orange-400);
+  --color-primary-500: var(--color-orange-500);
+  --color-primary-600: var(--color-orange-600);
+  --color-primary-700: var(--color-orange-700);
+  --color-primary-800: var(--color-orange-800);
+  --color-primary-900: var(--color-orange-900);
+  --color-primary-950: var(--color-orange-950);
+}
+
+/* Purple as Primary */
+:root.primary-color-purple {
+  --color-primary-50: var(--color-purple-50);
+  --color-primary-100: var(--color-purple-100);
+  --color-primary-200: var(--color-purple-200);
+  --color-primary-300: var(--color-purple-300);
+  --color-primary-400: var(--color-purple-400);
+  --color-primary-500: var(--color-purple-500);
+  --color-primary-600: var(--color-purple-600);
+  --color-primary-700: var(--color-purple-700);
+  --color-primary-800: var(--color-purple-800);
+  --color-primary-900: var(--color-purple-900);
+  --color-primary-950: var(--color-purple-950);
+}
+
+/* ============================================
+   GRADIENT TOKENS
+   ============================================ */
+@theme inline {
+  /* ===== Page Gradients ===== */
+  /* Background gradients for full-page layouts */
+  --gradient-page-primary: linear-gradient(
+    135deg,
+    var(--color-primary-50) 0%,
+    var(--color-primary-100) 100%
+  );
+  --gradient-page-general: linear-gradient(
+    180deg,
+    var(--color-slate-50) 0%,
+    var(--color-slate-100) 100%
+  );
+
+  /* ===== Component Gradients ===== */
+  /* Reusable gradients for UI components */
+  --gradient-hero: linear-gradient(
+    135deg,
+    var(--color-primary-500) 0%,
+    var(--color-purple-600) 100%
+  );
+  --gradient-card: linear-gradient(
+    145deg,
+    var(--color-slate-50) 0%,
+    var(--color-slate-100) 100%
+  );
+  --gradient-cta: linear-gradient(
+    90deg,
+    var(--color-primary-600) 0%,
+    var(--color-primary-500) 100%
+  );
+  --gradient-logo: linear-gradient(
+    135deg,
+    var(--color-primary-600) 0%,
+    var(--color-blue-500) 100%
+  );
+
+  /* ===== Button Gradients ===== */
+  /* Gradient backgrounds for interactive buttons */
+  --gradient-btn-primary: linear-gradient(
+    135deg,
+    var(--color-primary-600) 0%,
+    var(--color-primary-500) 100%
+  );
+  --gradient-btn-danger: linear-gradient(
+    135deg,
+    var(--color-red-600) 0%,
+    var(--color-red-500) 100%
+  );
+
+  /* ===== Color Gradients ===== */
+  /* Single-color gradients for various use cases */
+  --gradient-blue: linear-gradient(
+    135deg,
+    var(--color-blue-500) 0%,
+    var(--color-blue-700) 100%
+  );
+  --gradient-green: linear-gradient(
+    135deg,
+    var(--color-green-500) 0%,
+    var(--color-green-700) 100%
+  );
+  --gradient-red: linear-gradient(
+    135deg,
+    var(--color-red-500) 0%,
+    var(--color-red-700) 100%
+  );
+  --gradient-orange: linear-gradient(
+    135deg,
+    var(--color-orange-500) 0%,
+    var(--color-orange-700) 100%
+  );
+  --gradient-purple: linear-gradient(
+    135deg,
+    var(--color-purple-500) 0%,
+    var(--color-purple-700) 100%
+  );
+}
+
+/* ============================================
+   BASE LAYER - SEMANTIC COLOR TOKENS
+   ============================================ */
+@layer base {
+  /* ===== Root Light Theme ===== */
+  /* Semantic color tokens that reference primary scale */
+  :root {
+    /* Shadcn/UI Semantic Colors - tied to primary */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Primary color for buttons, links, focus rings */
+    --primary: var(--color-primary-600);
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary UI elements */
+    --secondary: var(--color-slate-100);
+    --secondary-foreground: var(--color-slate-900);
+
+    /* Muted backgrounds and disabled states */
+    --muted: var(--color-slate-100);
+    --muted-foreground: var(--color-slate-500);
+
+    /* Accent for highlights and hover states */
+    --accent: var(--color-primary-100);
+    --accent-foreground: var(--color-primary-900);
+
+    /* Destructive actions (delete, remove) */
+    --destructive: var(--color-red-600);
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders and inputs */
+    --border: var(--color-slate-200);
+    --input: var(--color-slate-200);
+
+    /* Focus ring color - follows primary */
+    --ring: var(--color-primary-600);
+    --radius: 0.5rem;
+
+    /* Chart Colors */
+    --chart-1: var(--color-orange-500);
+    --chart-2: var(--color-green-600);
+    --chart-3: var(--color-blue-700);
+    --chart-4: var(--color-orange-400);
+    --chart-5: var(--color-orange-600);
+
+    /* Sidebar Tokens - using primary for active states */
+    --sidebar-background: var(--color-slate-50);
+    --sidebar-foreground: var(--color-slate-700);
+    --sidebar-primary: var(--color-primary-600);
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: var(--color-slate-100);
+    --sidebar-accent-foreground: var(--color-slate-900);
+    --sidebar-border: var(--color-slate-200);
+    --sidebar-ring: var(--color-primary-600);
+
+    /* Custom Semantic Tokens */
+    --bg-primary: 0 0% 100%;
+    --bg-secondary: var(--color-slate-50);
+    --surface-primary: 0 0% 100%;
+    --surface-secondary: var(--color-slate-100);
+    --text-primary: var(--color-slate-900);
+    --text-secondary: var(--color-slate-500);
+    --text-tertiary: var(--color-slate-400);
+  }
+
+  /* ===== Dark Theme ===== */
+  /* Dark mode semantic tokens */
+  .dark {
+    /* Shadcn/UI Semantic Colors */
+    --background: var(--color-slate-950);
+    --foreground: var(--color-slate-50);
+    --card: var(--color-slate-900);
+    --card-foreground: var(--color-slate-50);
+    --popover: var(--color-slate-900);
+    --popover-foreground: var(--color-slate-50);
+
+    /* Primary color for buttons, links, focus rings */
+    --primary: var(--color-primary-500);
+    --primary-foreground: var(--color-slate-950);
+
+    /* Secondary UI elements */
+    --secondary: var(--color-slate-800);
+    --secondary-foreground: var(--color-slate-50);
+
+    /* Muted backgrounds and disabled states */
+    --muted: var(--color-slate-800);
+    --muted-foreground: var(--color-slate-400);
+
+    /* Accent for highlights and hover states */
+    --accent: var(--color-primary-900);
+    --accent-foreground: var(--color-primary-100);
+
+    /* Destructive actions (delete, remove) */
+    --destructive: var(--color-red-700);
+    --destructive-foreground: var(--color-slate-50);
+
+    /* Borders and inputs */
+    --border: var(--color-slate-800);
+    --input: var(--color-slate-800);
+
+    /* Focus ring color - follows primary */
+    --ring: var(--color-primary-500);
+
+    /* Chart Colors */
+    --chart-1: var(--color-blue-600);
+    --chart-2: var(--color-green-500);
+    --chart-3: var(--color-orange-500);
+    --chart-4: var(--color-purple-500);
+    --chart-5: var(--color-red-500);
+
+    /* Sidebar Tokens - using primary for active states */
+    --sidebar-background: var(--color-slate-950);
+    --sidebar-foreground: var(--color-slate-100);
+    --sidebar-primary: var(--color-primary-500);
+    --sidebar-primary-foreground: var(--color-slate-950);
+    --sidebar-accent: var(--color-slate-800);
+    --sidebar-accent-foreground: var(--color-slate-50);
+    --sidebar-border: var(--color-slate-800);
+    --sidebar-ring: var(--color-primary-500);
+
+    /* Custom Semantic Tokens */
+    --bg-primary: var(--color-slate-950);
+    --bg-secondary: var(--color-slate-900);
+    --surface-primary: var(--color-slate-950);
+    --surface-secondary: var(--color-slate-900);
+    --text-primary: var(--color-slate-50);
+    --text-secondary: var(--color-slate-400);
+    --text-tertiary: var(--color-slate-500);
+  }
+
+  /* ============================================
+     BASE STYLES
+     ============================================ */
+  /* Global transition behavior for smooth interactions */
+  * {
+    transition-property:
+      color, background-color, border-color, text-decoration-color, fill,
+      stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+    color-scheme: light dark;
+    font-family: var(--font-english);
+    direction: auto;
+  }
+
+  html {
+    min-width: 320px;
+    overflow-x: hidden;
+    direction: rtl;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    min-width: 320px;
+    overflow-x: hidden;
+    direction: rtl;
+  }
+
+  /* ============================================
+     TYPOGRAPHY
+     ============================================ */
+  /* Heading styles with consistent scaling */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.2;
+    color: hsl(var(--foreground));
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.75rem;
+  }
+
+  h4 {
+    font-size: 1.5rem;
+  }
+
+  h5 {
+    font-size: 1.25rem;
+  }
+
+  h6 {
+    font-size: 1rem;
+  }
+
+  p {
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+
+  /* Links use primary color with hover effect */
+  a {
+    color: var(--color-primary-600);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--color-primary-700);
+    text-decoration: underline;
+  }
+
+  /* ============================================
+     SELECTION & FOCUS
+     ============================================ */
+  /* Selection uses primary color for brand consistency */
+  ::selection {
+    background-color: var(--color-primary-200);
+    color: hsl(var(--foreground));
+  }
+
+  /* Focus ring uses primary color */
+  *:focus-visible {
+    outline: 2px solid var(--color-primary-600);
+    outline-offset: 2px;
+  }
+
+  /* ============================================
+     INTERACTIVE STATES
+     ============================================ */
+  /* Cursor behavior for interactive elements */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [role="button"]:disabled,
+  [disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Hover states for buttons use primary scale */
+  button:hover:not(:disabled),
+  [role="button"]:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Active states for buttons use darker primary */
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  /* ============================================
+     UTILITY CLASSES
+     ============================================ */
+  /* Language-specific text styling */
+  .persian-text {
+    font-family: var(--font-persian);
+    direction: rtl;
+  }
+
+  .english-text {
+    font-family: var(--font-english);
+    direction: ltr;
+  }
+
+  .auto-font {
+    font-family: var(--font-persian), var(--font-english);
+    direction: auto;
+  }
+
+  /* Numeric display with tabular figures */
+  .numbers-text {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-english);
+  }
+
+  .auto-direction {
+    direction: auto;
+  }
+
+  /* Gradient utility classes using primary color */
+  .gradient-primary {
+    background: var(--gradient-btn-primary);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+}
+
+/* ============================================
+   CONTAINER UTILITY
+   ============================================ */
+/* Responsive container matching design system breakpoints */
+@utility container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+
+  @media (min-width: 640px) {
+    max-width: 640px;
+  }
+
+  @media (min-width: 768px) {
+    max-width: 768px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 1024px;
+  }
+
+  @media (min-width: 1280px) {
+    max-width: 1280px;
+  }
+
+  @media (min-width: 1536px) {
+    max-width: 1536px;
+  }
+}

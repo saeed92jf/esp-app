@@ -1,0 +1,35 @@
+. "C:\Users\S.Jalili\Documents\WindowsPowerShell\Get-ProjectBundle.ps1"
+
+Get-Command Get-ProjectBundle
+
+# باندل کل پروژه (فرض: داخل روت پروژه هستی)
+Get-ProjectBundle
+
+# باندل فقط پوشه src
+Get-ProjectBundle -OnlyTargetFolder
+
+# باندل فقط یک پوشه خاص
+Get-ProjectBundle -TargetFolder "src\modules\claude-flow" -OnlyTargetFolder
+
+
+# باندل یک پوشه خاص به‌همراه فایل‌های روت
+Get-ProjectBundle -TargetFolder "src\components" -IncludeRootFiles
+
+# باندل یک پوشه خاص به‌همراه messages
+Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludeMessages
+
+# باندل کل پوشه app
+Get-ProjectBundle -TargetFolder "src\app" -OnlyTargetFolder
+
+# خروجی با نام دلخواه
+Get-ProjectBundle -TargetFolder "src\modules\claude-flow" -OnlyTargetFolder -OutputPath claude-flow-bundle.txt"
+
+# حذف پوشه‌های اضافی
+Get-ProjectBundle -ExtraExcludeDirs @("tests", "__mocks__", "coverage")
+
+# حذف پسوندهای اضافی
+Get-ProjectBundle -ExtraExcludeExtensions @(".log", ".bak")
+
+# حالت کامل با تنظیمات بیشتر
+Get-ProjectBundle -TargetFolder "src\components" -OnlyTargetFolder -ExtraExcludeDirs @("tests") -ExtraExcludeExtensions @(".log") -OutputPath "components.txt"
+src\app" -OnlyTargetFolder
