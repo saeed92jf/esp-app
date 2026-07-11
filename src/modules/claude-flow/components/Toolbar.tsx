@@ -8,6 +8,10 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize,
+  Maximize2,
+  Minimize2,
+  Lock,
+  Unlock,
   Save,
   FolderOpen,
   FilePlus2,
@@ -18,8 +22,6 @@ import {
   PanelLeft,
   PanelRightClose,
   PanelRight,
-  Globe,
-  Check,
   Layers,
   MousePointer2,
   Square,
@@ -30,23 +32,14 @@ import {
   Eraser,
   LibraryBig,
 } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useDiagramStore } from "../store";
 import { layoutWithDagre, layoutWithElk, type LayoutDirection } from "../utils/layout";
 import { cn } from "@/lib/utils";
 import { Combobox, type ComboboxOption } from "@/components/ui-custom/combobox";
 
-// â”€â”€ Supported locales â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const LOCALES = [
-  { code: "en", label: "English" },
-  { code: "fa", label: "ÙØ§Ø±Ø³ÛŒ" },
-] as const;
-
-type SupportedLocale = (typeof LOCALES)[number]["code"];
-
-// â”€â”€ Reusable toolbar button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Reusable toolbar button ───────────────────────────────────────────────
 // Uses semantic design tokens so it adapts to light/dark mode automatically.
 function ToolbarButton({
   icon: Icon,
@@ -79,12 +72,12 @@ function ToolbarButton({
   );
 }
 
-// â”€â”€ Visual separator between toolbar groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Visual separator between toolbar groups ───────────────────────────────
 function Divider() {
   return <div className="mx-1 h-5 w-px bg-border" />;
 }
 
-// â”€â”€ Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Toolbar ────────────────────────────────────────────────────────────
 export function Toolbar({
   onOpenLibrary,
   onOpenNew,
@@ -97,18 +90,14 @@ export function Toolbar({
   onOpenSettings: () => void;
 }) {
   const t = useTranslations("Flow");
-  const locale = useLocale() as SupportedLocale;
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
   const [clearMenuOpen, setClearMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // â”€â”€ Diagram templates, listed from public/diagrams (see the API route at
-  //     src/app/api/diagrams/route.ts, which walks that folder recursively â€”
-  //     any .json saved anywhere under public/diagrams shows up here). â”€â”€â”€â”€â”€â”€
+  // ── Diagram templates, listed from public/diagrams (see the API route at
+  //     src/app/api/diagrams/route.ts, which walks that folder recursively —
+  //     any .json saved anywhere under public/diagrams shows up here). ──────
   const [templateOptions, setTemplateOptions] = useState<ComboboxOption[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
@@ -165,8 +154,12 @@ export function Toolbar({
   const lassoMode = useDiagramStore((s) => s.lassoMode);
   const setLassoMode = useDiagramStore((s) => s.setLassoMode);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
+  const toggleCanvasLock = useDiagramStore((s) => s.toggleCanvasLock);
+  const isCanvasFullscreen = useDiagramStore((s) => s.isCanvasFullscreen);
+  const canvasFullscreenToggle = useDiagramStore((s) => s.canvasFullscreenToggle);
 
-  // â”€â”€ Export diagram as downloadable JSON file (save & restore) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Export diagram as downloadable JSON file (save & restore) ────────────
   const handleExport = () => {
     const json = exportJSON();
     const blob = new Blob([json], { type: "application/json" });
@@ -180,7 +173,7 @@ export function Toolbar({
 
   const handleImportClick = () => fileInputRef.current?.click();
 
-  // â”€â”€ Read selected JSON file and load into store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Read selected JSON file and load into store ──────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -189,7 +182,7 @@ export function Toolbar({
       try {
         importJSON(reader.result as string);
       } catch {
-        // Silently swallow invalid JSON â€” user will see unchanged canvas
+        // Silently swallow invalid JSON — user will see unchanged canvas
       }
     };
     reader.readAsText(file);
@@ -197,19 +190,10 @@ export function Toolbar({
     e.target.value = "";
   };
 
-  // â”€â”€ Switch locale by replacing the locale segment in the current URL â”€â”€â”€â”€â”€
-  // Pathname starts with "/<locale>/...", so segments[1] is the locale code.
-  const handleLocaleChange = (newLocale: SupportedLocale) => {
-    const segments = pathname.split("/");
-    segments[1] = newLocale;
-    router.push(segments.join("/"));
-    setLangMenuOpen(false);
-  };
-
-  // â”€â”€ Auto-layout (https://reactflow.dev/examples/layout/dagre,
-  //     /layout/elkjs, /layout/horizontal) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Auto-layout (https://reactflow.dev/examples/layout/dagre,
+  //     /layout/elkjs, /layout/horizontal) ─────────────────────────────────
   // NEW DEPENDENCIES REQUIRED: `npm install dagre elkjs` (+ `@types/dagre` for
-  // TypeScript). Only top-level nodes are repositioned â€” nodes inside a
+  // TypeScript). Only top-level nodes are repositioned — nodes inside a
   // sub-flow keep their position relative to their group (see utils/layout.ts).
   const runDagreLayout = (direction: LayoutDirection) => {
     const { nodes, edges, setNodes, pushHistory } = useDiagramStore.getState();
@@ -228,7 +212,7 @@ export function Toolbar({
     requestAnimationFrame(() => fitView({ duration: 300 }));
   };
 
-  // â”€â”€ Destructive bulk actions â€” each guarded by a plain browser confirm() â”€â”€
+  // ── Destructive bulk actions — each guarded by a plain browser confirm() ──
   const handleClearCanvas = () => {
     setClearMenuOpen(false);
     if (window.confirm("Clear the entire canvas? This removes every node and connection.")) {
@@ -250,7 +234,7 @@ export function Toolbar({
     }
   };
 
-  // â”€â”€ Download as image (https://reactflow.dev/examples/misc/download-image) â”€â”€
+  // ── Download as image (https://reactflow.dev/examples/misc/download-image) ──
   // NEW DEPENDENCY REQUIRED: `npm install html-to-image`.
   const handleDownloadImage = async () => {
     const { nodes } = useDiagramStore.getState();
@@ -306,7 +290,7 @@ export function Toolbar({
       <ToolbarButton icon={Save} label={t("editor.save")} onClick={onSave} />
       <Divider />
 
-      {/* Diagram templates â€” loaded from public/diagrams (any subfolder, any
+      {/* Diagram templates — loaded from public/diagrams (any subfolder, any
           .json file) via the /api/diagrams route. */}
       <div className="flex items-center gap-1">
         <LibraryBig className="size-4 shrink-0 text-muted-foreground" />
@@ -338,7 +322,7 @@ export function Toolbar({
       <ToolbarButton icon={MousePointer2} label="Pointer (pan)" active={selectionTool === "pointer"} onClick={() => setSelectionTool("pointer")} />
       <ToolbarButton icon={Square} label="Box select" active={selectionTool === "box"} onClick={() => setSelectionTool("box")} />
       <ToolbarButton icon={Lasso} label="Lasso select" active={selectionTool === "lasso"} onClick={() => setSelectionTool("lasso")} />
-      {/* Lasso hit-test mode â€” only relevant once lasso is the active tool.
+      {/* Lasso hit-test mode — only relevant once lasso is the active tool.
           Partial: selects anything the lasso touches. Full: only nodes it fully encloses. */}
       {selectionTool === "lasso" && (
         <div className="ms-1 flex items-center rounded-md bg-muted p-0.5 text-[11px]">
@@ -367,7 +351,7 @@ export function Toolbar({
       <Divider />
 
       {/* Sub-flow: wraps the current multi-selection (shift/box/lasso-select) in a
-          resizable, collapsible group container â€” Ctrl/Cmd+G. */}
+          resizable, collapsible group container — Ctrl/Cmd+G. */}
       <ToolbarButton icon={Layers} label="Group into sub-flow (Ctrl+G)" onClick={groupSelectedNodes} />
 
       {/* Auto-layout (Dagre / ELK, vertical / horizontal) */}
@@ -390,17 +374,17 @@ export function Toolbar({
           >
             <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Dagre</p>
             <button onClick={() => runDagreLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Vertical (top â†’ bottom)
+              Vertical (top → bottom)
             </button>
             <button onClick={() => runDagreLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Horizontal (left â†’ right)
+              Horizontal (left → right)
             </button>
             <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">ELK</p>
             <button onClick={() => runElkLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Vertical (top â†’ bottom)
+              Vertical (top → bottom)
             </button>
             <button onClick={() => runElkLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Horizontal (left â†’ right)
+              Horizontal (left → right)
             </button>
           </div>
         )}
@@ -411,11 +395,11 @@ export function Toolbar({
       <ToolbarButton icon={Download} label={t("dialogs.exportJSON")} onClick={handleExport} />
       <ToolbarButton icon={Upload} label={t("dialogs.importJSON")} onClick={handleImportClick} />
       <ToolbarButton icon={ImageDown} label="Download as image" onClick={handleDownloadImage} />
-      {/* Hidden file input â€” triggered programmatically by handleImportClick */}
+      {/* Hidden file input — triggered programmatically by handleImportClick */}
       <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
       <Divider />
 
-      {/* Destructive bulk actions â€” each confirms before acting */}
+      {/* Destructive bulk actions — each confirms before acting */}
       <div className="relative">
         <button
           onClick={() => setClearMenuOpen((o) => !o)}
@@ -452,34 +436,28 @@ export function Toolbar({
         )}
       </div>
 
-      {/* â”€â”€ Right-side controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Right-side controls ─────────────────────────────────────────── */}
       <div className="ms-auto flex items-center gap-1">
-        {/* Auto-save indicator â€” shown only while save is in progress */}
+        {/* Auto-save indicator — shown only while save is in progress */}
         {isSaving && <span className="me-1 text-xs text-muted-foreground">{t("editor.saving")}</span>}
 
-        {/* Language switcher dropdown */}
-        <div className="relative">
-          <ToolbarButton icon={Globe} label="Language" onClick={() => setLangMenuOpen((o) => !o)} />
-          {langMenuOpen && (
-            // end-0 is a logical property: left-0 in RTL, right-0 in LTR
-            <div
-              className="absolute top-9 end-0 z-20 w-32 rounded-md border border-border bg-popover py-1 shadow-md"
-              onMouseLeave={() => setLangMenuOpen(false)}
-            >
-              {LOCALES.map(({ code, label }) => (
-                <button
-                  key={code}
-                  onClick={() => handleLocaleChange(code)}
-                  className="flex w-full items-center justify-between px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-                >
-                  {label}
-                  {/* Checkmark for the currently active locale */}
-                  {locale === code && <Check className="size-3 text-primary" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Real Fullscreen API on the canvas wrapper only (not the toolbar/
+            side panels) — see the effect registering this in DiagramCanvas.tsx */}
+        <ToolbarButton
+          icon={isCanvasFullscreen ? Minimize2 : Maximize2}
+          label={isCanvasFullscreen ? "Exit fullscreen" : "Fullscreen canvas"}
+          active={isCanvasFullscreen}
+          onClick={() => canvasFullscreenToggle?.()}
+        />
+
+        {/* View-only lock: dragging/connecting/selecting nodes is disabled,
+            panning and zooming still work. */}
+        <ToolbarButton
+          icon={isCanvasLocked ? Lock : Unlock}
+          label={isCanvasLocked ? "Unlock canvas" : "Lock canvas"}
+          active={isCanvasLocked}
+          onClick={toggleCanvasLock}
+        />
 
         {/* Editor global settings dialog */}
         <ToolbarButton icon={Settings2} label={t("editorSettings.title")} onClick={onOpenSettings} />
@@ -490,5 +468,3 @@ export function Toolbar({
     </div>
   );
 }
-
-

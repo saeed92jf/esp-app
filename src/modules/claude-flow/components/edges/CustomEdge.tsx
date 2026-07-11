@@ -39,12 +39,12 @@ export function CustomEdge({
   const edgeStyle = data?.edgeStyle ?? "smoothstep";
 
   // Floating edges recompute their own attach points off the live node
-  // rectangles instead of the fixed handle passed in by React Flow â€” see
+  // rectangles instead of the fixed handle passed in by React Flow — see
   // https://reactflow.dev/examples/edges/floating-edges
   const sourceNode = useInternalNode(source);
   const targetNode = useInternalNode(target);
 
-  // â”€â”€ Path calculation based on edge style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Path calculation based on edge style ──────────────────────────────
   let path: string;
   let labelX: number;
   let labelY: number;
@@ -58,6 +58,16 @@ export function CustomEdge({
       targetX: params.tx,
       targetY: params.ty,
       targetPosition: params.targetPos,
+    });
+  } else if (edgeStyle === "floating-straight" && sourceNode && targetNode) {
+    // Same live-recomputed attach points as "floating", but a straight line
+    // between them instead of a bezier curve.
+    const params = getFloatingEdgeParams(sourceNode, targetNode);
+    [path, labelX, labelY] = getStraightPath({
+      sourceX: params.sx,
+      sourceY: params.sy,
+      targetX: params.tx,
+      targetY: params.ty,
     });
   } else if (edgeStyle === "straight") {
     [path, labelX, labelY] = getStraightPath({
@@ -91,7 +101,7 @@ export function CustomEdge({
 
   // Resolves the fixed light/dark color-token palette, falling back to any
   // legacy raw hex the edge already carries (see utils/colors.ts). NOTE: the
-  // stroke color is used AS-IS regardless of selection â€” selection used to
+  // stroke color is used AS-IS regardless of selection — selection used to
   // override it with a fixed indigo, which meant changing an edge's color
   // while it was selected produced no visible change. Selection is now shown
   // with a separate halo (below) so the real color is always what's on screen.
@@ -106,9 +116,9 @@ export function CustomEdge({
 
   return (
     <>
-      {/* Selection halo â€” a soft, wider duplicate of the path (+ duplicated,
+      {/* Selection halo — a soft, wider duplicate of the path (+ duplicated,
           oversized arrowheads) drawn BEHIND the real edge. This makes the
-          selected state obvious â€” including on the arrowheads themselves â€”
+          selected state obvious — including on the arrowheads themselves —
           without ever touching the edge's actual stroke/marker color, so a
           color change is visible immediately even while the edge stays selected. */}
       {selected && (
@@ -154,7 +164,7 @@ export function CustomEdge({
         </>
       )}
 
-      {/* The real edge path â€” color/width always reflect the actual data, selected or not */}
+      {/* The real edge path — color/width always reflect the actual data, selected or not */}
       <BaseEdge
         id={id}
         path={path}
@@ -166,7 +176,7 @@ export function CustomEdge({
         }}
       />
 
-      {/* Animated flow indicator â€” a small dot travelling along the path,
+      {/* Animated flow indicator — a small dot travelling along the path,
           shown only when data.animated is on (see reactflow "animating edges"). */}
       {data?.animated && (
         <circle r={Math.max(3, strokeWidth + 1.5)} fill={strokeColor}>
@@ -182,7 +192,7 @@ export function CustomEdge({
           }}
           className="nodrag nopan pointer-events-auto absolute"
         >
-          {/* Edge label badge â€” only rendered when data.label is set */}
+          {/* Edge label badge — only rendered when data.label is set */}
           {data?.label && (
             <Badge
               variant="outline"
@@ -192,7 +202,7 @@ export function CustomEdge({
             </Badge>
           )}
 
-          {/* Delete button â€” visible only when edge is selected */}
+          {/* Delete button — visible only when edge is selected */}
           {selected && (
             <Button
               variant="outline"
@@ -217,7 +227,7 @@ export function CustomEdge({
   );
 }
 
-// â”€â”€ Edge type registry â€” all styles map to the same CustomEdge component â”€â”€
+// ── Edge type registry — all styles map to the same CustomEdge component ──
 // The actual path shape is determined by data.edgeStyle inside the component.
 export const edgeTypes = {
   default: CustomEdge,
@@ -225,6 +235,5 @@ export const edgeTypes = {
   step: CustomEdge,
   smoothstep: CustomEdge,
   floating: CustomEdge,
+  "floating-straight": CustomEdge,
 };
-
-

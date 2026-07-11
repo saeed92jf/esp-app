@@ -3,22 +3,25 @@
 import React, { useRef } from "react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
-import { Trash2, Copy, ExternalLink, Smile } from "lucide-react";
+import { Trash2, Copy, ExternalLink, Smile, RotateCcw } from "lucide-react";
 import type { DiagramEdgeType } from "../types";
 import { COLOR_TOKEN_ORDER, NODE_COLOR_TOKENS, EDGE_COLOR_TOKENS, type ColorToken } from "../utils/colors";
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Combobox } from "@/components/ui-custom/combobox";
 
-// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Sub-components ─────────────────────────────────────────────────────
 // IMPORTANT: every component used below is declared at MODULE scope (outside
 // SettingsPanel). Declaring components *inside* a render function gives them
 // a brand-new identity on every render, which makes React unmount + remount
-// their whole subtree â€” that was the bug behind "input loses focus after
+// their whole subtree — that was the bug behind "input loses focus after
 // every keystroke" (the <input> DOM node itself got destroyed and recreated
 // on each render because its wrapper, Shell/PanelHeader, was a new function
 // every time). Keeping them here fixes that permanently.
@@ -43,25 +46,36 @@ const ACTION_BTN = "text-muted-foreground";
 const DUPE_BTN = cn(ACTION_BTN, "hover:text-foreground");
 const DEL_BTN = cn(ACTION_BTN, "hover:text-destructive");
 
+const RESET_BTN = cn(ACTION_BTN, "hover:text-primary");
+
 function PanelHeader({
   title,
   showDuplicate,
   onDuplicate,
   onDelete,
+  onReset,
   duplicateLabel,
   deleteLabel,
+  resetLabel = "Reset to default",
 }: {
   title: string;
   showDuplicate: boolean;
   onDuplicate: () => void;
   onDelete: () => void;
+  onReset?: () => void;
   duplicateLabel: string;
   deleteLabel: string;
+  resetLabel?: string;
 }) {
   return (
     <div className="flex items-center justify-between border-b border-border px-4 py-3">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
       <div className="flex gap-1">
+        {onReset && (
+          <Button variant="ghost" size="icon-sm" onClick={onReset} className={RESET_BTN} title={resetLabel}>
+            <RotateCcw className="h-3.5 w-3.5" />
+          </Button>
+        )}
         {showDuplicate && (
           <Button variant="ghost" size="icon-sm" onClick={onDuplicate} className={DUPE_BTN} title={duplicateLabel}>
             <Copy className="h-3.5 w-3.5" />
@@ -76,7 +90,7 @@ function PanelHeader({
 }
 
 /**
- * Fixed 8-swatch token picker for NODE colors â€” each swatch shows the token's
+ * Fixed 8-swatch token picker for NODE colors — each swatch shows the token's
  * background+border pre-tuned for the active light/dark colorMode. Picking one
  * sets data.colorToken and the node/edge automatically stays correct if the
  * user later flips light/dark mode.
@@ -148,10 +162,9 @@ function EdgeColorTokenRow({
 }
 
 /**
- * Segmented control — thin wrapper around the project's own shadcn
- * ToggleGroup/ToggleGroupItem, kept as a small typed helper so every call
- * site below can just pass `options`/`value`/`onChange` without repeating
- * the ToggleGroup boilerplate five times.
+ * Segmented control. Active segment uses bg-background (card surface) over
+ * bg-muted track, matching shadcn/ui Tabs pattern without importing it.
+ * Uses an inline grid-template so it works cleanly with any option count.
  */
 function SegmentedControl<T extends string>({
   value,
@@ -168,11 +181,10 @@ function SegmentedControl<T extends string>({
       variant="outline"
       value={value}
       onValueChange={(v) => v && onChange(v as T)}
-      className="grid w-full gap-1 bg-muted p-0.5"
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      className="flex w-full flex-wrap gap-1 bg-muted p-0.5"
     >
       {options.map((opt) => (
-        <ToggleGroupItem key={opt.value} value={opt.value} className="h-7 text-[11px] font-medium">
+        <ToggleGroupItem key={opt.value} value={opt.value} className="h-7 flex-1 text-[11px] font-medium">
           {opt.label}
         </ToggleGroupItem>
       ))}
@@ -181,12 +193,12 @@ function SegmentedControl<T extends string>({
 }
 
 // A small, deliberately short set of symbols that come up constantly in
-// flowchart / diagram labels (direction, status, emphasis) â€” click one to
+// flowchart / diagram labels (direction, status, emphasis) — click one to
 // insert it at the cursor position in the label field next to it.
-const LABEL_SYMBOLS = ["â†’", "â†", "â†‘", "â†“", "â‡’", "âœ“", "âœ—", "â˜…", "â€¢", "âš ", "Â±", "â‰ˆ", "âˆž", "â€¦"];
+const LABEL_SYMBOLS = ["→", "←", "↑", "↓", "⇒", "✓", "✗", "★", "•", "⚠", "±", "≈", "∞", "…"];
 
 /**
- * Special-symbol inserter for label fields â€” was previously an always-visible
+ * Special-symbol inserter for label fields — was previously an always-visible
  * row of ~14 buttons taking up permanent space under every label field; now
  * it's a single compact trigger button that opens the same grid inside a
  * Popover (project's own Popover component), only while actually needed.
@@ -196,7 +208,7 @@ function SymbolPickerPopover({
   value,
   onChange,
 }: {
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: React.RefObject<HTMLInputElement | HTMLTextAreaElement | null>;
   value: string;
   onChange: (v: string) => void;
 }) {
@@ -211,7 +223,7 @@ function SymbolPickerPopover({
     const end = el.selectionEnd ?? current.length;
     const next = current.slice(0, start) + sym + current.slice(end);
     onChange(next);
-    // Restore focus + caret position right after the inserted symbol â€” the
+    // Restore focus + caret position right after the inserted symbol — the
     // value update above happens through the store, so we wait a frame for
     // the controlled input to reflect it before moving the caret.
     requestAnimationFrame(() => {
@@ -253,6 +265,15 @@ function SymbolPickerPopover({
   );
 }
 
+const EDGE_TYPE_OPTIONS: { value: DiagramEdgeType; label: string }[] = [
+  { value: "default", label: "Curve" },
+  { value: "straight", label: "Straight" },
+  { value: "step", label: "Sharp step" },
+  { value: "smoothstep", label: "Smooth step" },
+  { value: "floating", label: "Floating" },
+  { value: "floating-straight", label: "Floating straight" },
+];
+
 /** Opens a node's link in a new tab; bare hosts get "https://" prefixed. */
 function openLink(url: string | undefined) {
   if (!url?.trim()) return;
@@ -260,7 +281,7 @@ function openLink(url: string | undefined) {
   window.open(href, "_blank", "noopener,noreferrer");
 }
 
-// â”€â”€â”€ SettingsPanel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SettingsPanel ────────────────────────────────────────────────────────
 export function SettingsPanel() {
   // next-intl: all keys scoped under the "Flow" namespace
   const t = useTranslations("Flow");
@@ -274,12 +295,14 @@ export function SettingsPanel() {
   const updateEdgeData = useDiagramStore((s) => s.updateEdgeData);
   const deleteSelected = useDiagramStore((s) => s.deleteSelected);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
+  const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);
+  const resetEdgeToDefault = useDiagramStore((s) => s.resetEdgeToDefault);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
 
-  const nodeLabelRef = useRef<HTMLInputElement>(null);
+  const nodeLabelRef = useRef<HTMLTextAreaElement>(null);
   const edgeLabelRef = useRef<HTMLInputElement>(null);
 
-  // Multiple nodes selected at once (box/lasso/shift-click) â€” group style
+  // Multiple nodes selected at once (box/lasso/shift-click) — group style
   // editing panel takes priority over the single-node panel below. Edges are
   // never part of a multi-select (see onEdgesChange in the store).
   const multiSelectedNodes = nodes.filter((n) => n.selected);
@@ -288,7 +311,7 @@ export function SettingsPanel() {
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
 
-  // â”€â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Empty state ──────────────────────────────────────────────────────
   if (!isMultiSelect && !selectedNode && !selectedEdge) {
     return (
       <Shell>
@@ -299,7 +322,7 @@ export function SettingsPanel() {
     );
   }
 
-  // â”€â”€â”€ Multi-node settings (group style editing) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Multi-node settings (group style editing) ───────────────────────
   if (isMultiSelect) {
     const ids = multiSelectedNodes.map((n) => n.id);
     const first = multiSelectedNodes[0].data;
@@ -309,9 +332,20 @@ export function SettingsPanel() {
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             {multiSelectedNodes.length} nodes selected
           </h3>
-          <Button variant="ghost" size="icon-sm" onClick={deleteSelected} className={DEL_BTN} title={t("toolbar.delete")}>
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => resetNodesToDefault(ids)}
+              className={cn(ACTION_BTN, "hover:text-primary")}
+              title="Reset all to default"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon-sm" onClick={deleteSelected} className={DEL_BTN} title={t("toolbar.delete")}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
         <div className="p-4">
           <Field label={t("settings.backgroundColor")}>
@@ -385,11 +419,11 @@ export function SettingsPanel() {
     );
   }
 
-  // â”€â”€â”€ Node settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Node settings ────────────────────────────────────────────────────
   if (selectedNode) {
     const data = selectedNode.data;
     const isGroup = selectedNode.type === "groupNode";
-    // Types rendered with their own custom UI (not ShapeCanvas/SVG) â€” font
+    // Types rendered with their own custom UI (not ShapeCanvas/SVG) — font
     // size/weight and border width/style/radius controls don't apply to them.
     const isNonShape = [
       "groupNode",
@@ -412,17 +446,19 @@ export function SettingsPanel() {
           showDuplicate={!isGroup}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
+          onReset={() => resetNodesToDefault([selectedNode.id])}
           duplicateLabel={t("contextMenu.duplicate")}
           deleteLabel={t("toolbar.delete")}
         />
         <div className="p-4">
           <Field label={isGroup ? "Sub-flow name" : t("settings.label")}>
-            <div className="flex items-center gap-1.5">
-              <Input
+            <div className="flex items-start gap-1.5">
+              <Textarea
                 ref={nodeLabelRef}
                 value={data.label}
                 onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
-                className="flex-1"
+                rows={isGroup ? 1 : 3}
+                className="min-h-16 flex-1 text-xs"
               />
               <SymbolPickerPopover
                 inputRef={nodeLabelRef}
@@ -430,9 +466,18 @@ export function SettingsPanel() {
                 onChange={(v) => updateNodeData(selectedNode.id, { label: v })}
               />
             </div>
+            {!isGroup && (
+              <label className="mt-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Checkbox
+                  checked={!!data.isRichText}
+                  onCheckedChange={(v) => updateNodeData(selectedNode.id, { isRichText: !!v })}
+                />
+                Render label as HTML (rich text)
+              </label>
+            )}
           </Field>
 
-          {/* Link â€” opens on click of the badge shown on the node, or on
+          {/* Link — opens on click of the badge shown on the node, or on
               double-clicking the node itself (see components/nodes/BaseNode.tsx) */}
           {!isNonShape && (
             <Field label={t("settings.link")}>
@@ -459,7 +504,7 @@ export function SettingsPanel() {
             </Field>
           )}
 
-          {/* Single coordinated color token â€” sets fill + border + text together,
+          {/* Single coordinated color token — sets fill + border + text together,
               pre-tuned so it stays legible in both light and dark mode. */}
           <Field label={t("settings.backgroundColor")}>
             <NodeColorTokenRow
@@ -540,7 +585,7 @@ export function SettingsPanel() {
     );
   }
 
-  // â”€â”€â”€ Edge settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Edge settings ────────────────────────────────────────────────────
   if (selectedEdge) {
     const data = selectedEdge.data ?? {};
     return (
@@ -550,6 +595,7 @@ export function SettingsPanel() {
           showDuplicate={false}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
+          onReset={() => resetEdgeToDefault(selectedEdge.id)}
           duplicateLabel={t("contextMenu.duplicate")}
           deleteLabel={t("toolbar.delete")}
         />
@@ -572,15 +618,11 @@ export function SettingsPanel() {
           </Field>
 
           <Field label={t("settings.edgeType")}>
-            <SegmentedControl
-              value={(data.edgeStyle ?? "smoothstep") as DiagramEdgeType}
-              onChange={(v) => updateEdgeData(selectedEdge.id, { edgeStyle: v })}
-              options={[
-                { value: "default", label: "Curve" },
-                { value: "straight", label: "Line" },
-                { value: "smoothstep", label: "Step" },
-                { value: "floating", label: "Float" },
-              ]}
+            <Combobox
+              options={EDGE_TYPE_OPTIONS}
+              value={(data.edgeStyle ?? "smoothstep") as string}
+              onChange={(v) => updateEdgeData(selectedEdge.id, { edgeStyle: v as DiagramEdgeType })}
+              placeholder="Connection type..."
             />
           </Field>
 
@@ -602,7 +644,7 @@ export function SettingsPanel() {
             />
           </Field>
 
-          {/* Arrowheads â€” toggle start/end markers independently.
+          {/* Arrowheads — toggle start/end markers independently.
               Uses the project's existing shadcn Toggle component. */}
           <Field label="Arrowheads">
             <div className="flex gap-2">
@@ -625,7 +667,7 @@ export function SettingsPanel() {
             </div>
           </Field>
 
-          {/* Animated flow indicator â€” also the project's Toggle component now,
+          {/* Animated flow indicator — also the project's Toggle component now,
               replacing the previously custom-built sliding switch. */}
           <Field label={t("settings.animated")}>
             <Toggle
@@ -644,5 +686,3 @@ export function SettingsPanel() {
 
   return null;
 }
-
-

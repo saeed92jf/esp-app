@@ -13,7 +13,7 @@ import { Check } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Transient save-confirmation toast Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// â”€â”€ Transient save-confirmation toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Rendered at the bottom-center of the viewport; invisible when message is null.
 function Toast({ message }: { message: string | null }) {
   if (!message) return null;
@@ -29,7 +29,7 @@ function Toast({ message }: { message: string | null }) {
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Inner shell Ã¢â‚¬â€ must be a descendant of ReactFlowProvider Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// â”€â”€ Inner shell â€” must be a descendant of ReactFlowProvider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function EditorShell() {
   const t = useTranslations("Flow");
   const locale = useLocale();
@@ -76,17 +76,17 @@ function EditorShell() {
 
   // Settings panel opens automatically the moment something is selected
   // (a node, an edge, or a multi-node box/lasso selection) and closes again
-  // the moment the selection is cleared â€” no manual toggling needed.
+  // the moment the selection is cleared — no manual toggling needed.
   const hasSelection = selectedNodeId !== null || selectedEdgeId !== null || nodes.some((n) => n.selected);
   useEffect(() => {
     useDiagramStore.setState({ isSettingsPanelOpen: hasSelection });
   }, [hasSelection]);
 
   // Theme sync: colorMode now FOLLOWS the site's own global dark/light
-  // setting instead of being a separate manual toggle â€” same principle as
+  // setting instead of being a separate manual toggle — same principle as
   // any other themed component in the app. Tailwind dark mode almost always
   // works by toggling a `dark` class on <html> (or sometimes <body>), so we
-  // watch that directly via MutationObserver â€” this works regardless of
+  // watch that directly via MutationObserver — this works regardless of
   // *which* theme-switcher mechanism (next-themes, a custom store, etc.) the
   // rest of the site uses to flip that class, no extra dependency needed.
   // prefers-color-scheme is kept as a fallback for the (rarer) case where the
@@ -117,7 +117,7 @@ function EditorShell() {
     };
   }, []);
 
-  // Global keyboard shortcut: Ctrl/Cmd+S Ã¢â€ â€™ manual save with toast
+  // Global keyboard shortcut: Ctrl/Cmd+S â†’ manual save with toast
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
@@ -129,7 +129,7 @@ function EditorShell() {
     return () => window.removeEventListener("keydown", handler);
   }, [triggerSave]);
 
-  // dir is derived from next-intl locale Ã¢â‚¬â€ no local language state needed
+  // dir is derived from next-intl locale â€” no local language state needed
   const dir = locale === "fa" ? "rtl" : "ltr";
 
   return (
@@ -150,12 +150,12 @@ function EditorShell() {
           <DiagramCanvas />
         </div>
         {/* Settings panel slides in/out from the end edge (right in LTR, left in
-            RTL). Always mounted â€” width+translate are what animate, not
-            mount/unmount â€” so internal state (scroll position, refs) survives
+            RTL). Always mounted — width+translate are what animate, not
+            mount/unmount — so internal state (scroll position, refs) survives
             open/close and the slide has something to actually transition.
             min-w-0 is required here: flex items default to min-width:auto,
             which means this container couldn't actually shrink below the
-            fixed w-72 child's intrinsic width even while animating to w-0 â€”
+            fixed w-72 child's intrinsic width even while animating to w-0 —
             that's what left a stray fixed-width container behind visually. */}
         <div
           className={cn(
@@ -189,8 +189,8 @@ function EditorShell() {
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬ Public API Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-// `defaultLanguage` is intentionally absent Ã¢â‚¬â€ locale is controlled entirely
+// â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// `defaultLanguage` is intentionally absent â€” locale is controlled entirely
 // by next-intl URL-routing middleware.
 export interface DiagramEditorProps {
   className?: string;
@@ -210,8 +210,6 @@ export function DiagramEditor({
     </div>
   );
 }
-
-
 
 
 

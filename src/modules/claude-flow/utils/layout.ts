@@ -1,5 +1,5 @@
 // src/modules/claude-flow/utils/layout.ts
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 // Auto-layout for the "Layout" toolbar menu. Two engines, matching the
 // official examples:
 //   https://reactflow.dev/examples/layout/dagre
@@ -7,15 +7,15 @@
 //   https://reactflow.dev/examples/layout/horizontal   (direction: LR)
 //
 // NOTE ON DEPENDENCIES: this file imports `dagre` and, lazily, `elkjs`.
-// Neither ships with this module â€” add them to package.json:
+// Neither ships with this module — add them to package.json:
 //   npm install dagre elkjs
 //   npm install -D @types/dagre
 //
 // v1 scope: only top-level nodes (no parentId) are repositioned. Nodes
-// inside a sub-flow/group keep their position relative to their group â€”
+// inside a sub-flow/group keep their position relative to their group —
 // laying out inside a group is a reasonable v2 addition but out of scope
 // here since group sizes would also need to be recomputed.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 import dagre from "dagre";
 import type { Node, Edge } from "@xyflow/react";
@@ -29,7 +29,7 @@ function dims(n: Node<DiagramNodeData>) {
   return { width: n.data?.width ?? fallback.width, height: n.data?.height ?? fallback.height };
 }
 
-/** Synchronous Dagre layered layout â€” fast, good default. */
+/** Synchronous Dagre layered layout — fast, good default. */
 export function layoutWithDagre(
   nodes: Node<DiagramNodeData>[],
   edges: Edge<DiagramEdgeData>[],
@@ -59,7 +59,7 @@ export function layoutWithDagre(
     topLevel.map((n) => {
       const { width, height } = dims(n);
       const gNode = g.node(n.id);
-      // dagre positions nodes by CENTER â€” React Flow positions by top-left.
+      // dagre positions nodes by CENTER — React Flow positions by top-left.
       return [n.id, { x: gNode.x - width / 2, y: gNode.y - height / 2 }] as const;
     }),
   );
@@ -67,7 +67,7 @@ export function layoutWithDagre(
   return nodes.map((n) => (positioned.has(n.id) ? { ...n, position: positioned.get(n.id)! } : n));
 }
 
-/** Async ELK layered layout â€” a second engine option with different aesthetics/tuning. */
+/** Async ELK layered layout — a second engine option with different aesthetics/tuning. */
 export async function layoutWithElk(
   nodes: Node<DiagramNodeData>[],
   edges: Edge<DiagramEdgeData>[],
@@ -103,5 +103,3 @@ export async function layoutWithElk(
 
   return nodes.map((n) => (positioned.has(n.id) ? { ...n, position: positioned.get(n.id)! } : n));
 }
-
-

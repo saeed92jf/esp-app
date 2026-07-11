@@ -1,8 +1,8 @@
 // src/modules/claude-flow/utils/geometry.ts
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 // Formulas backing the two calculator nodes (geometryCalcNode, beamCalcNode).
 // Pure functions, no React/store dependency, so they're easy to unit test.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 export type GeometryShape =
   | "rectangle"
@@ -18,7 +18,7 @@ export type GeometryMode = "perimeter" | "area" | "volume";
 
 /** Which numeric inputs each shape needs, in display order. Keys match the ones read in computeGeometry.
  *  NOTE: rectangle/triangle/hollowCircle/iBeam intentionally share the exact same field keys as
- *  BEAM_SHAPE_FIELDS below â€” this is what lets a single shapeNode feed either calculator
+ *  BEAM_SHAPE_FIELDS below — this is what lets a single shapeNode feed either calculator
  *  without any field-name translation (see components/nodes/BaseNode.tsx's ShapeNode). */
 export const GEOMETRY_SHAPE_FIELDS: Record<GeometryShape, { key: string; label: string }[]> = {
   rectangle: [
@@ -148,9 +148,9 @@ export function computeGeometry(shape: GeometryShape, mode: GeometryMode, inputs
   }
 }
 
-// â”€â”€ Second moment of area (moment of inertia) for beam cross-sections â”€â”€â”€â”€â”€â”€
-// Ix is about the horizontal centroidal axis â€” the standard value used for
-// bending-stiffness calculations (I in the beam-bending formula Ïƒ = MÂ·y/I).
+// ── Second moment of area (moment of inertia) for beam cross-sections ──────
+// Ix is about the horizontal centroidal axis — the standard value used for
+// bending-stiffness calculations (I in the beam-bending formula σ = M·y/I).
 
 export type BeamShape = "rectangle" | "circle" | "hollowCircle" | "triangle" | "iBeam";
 
@@ -219,11 +219,9 @@ export function isBeamCompatible(shape: GeometryShape): shape is BeamShape {
 }
 
 /** Converts a shapeNode's {shapeKind, shapeInputs} into the field set computeSecondMomentOfArea
- *  expects. Only "circle" needs translation (radius â†’ diameter) â€” every other shared shape
+ *  expects. Only "circle" needs translation (radius → diameter) — every other shared shape
  *  (rectangle/triangle/hollowCircle/iBeam) already uses identical field keys in both catalogs. */
 export function toBeamInputs(shape: GeometryShape, inputs: Record<string, number>): Record<string, number> {
   if (shape === "circle") return { diameter: 2 * (inputs.radius ?? 0) };
   return inputs;
 }
-
-

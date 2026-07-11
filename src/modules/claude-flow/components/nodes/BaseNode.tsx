@@ -22,6 +22,7 @@ import type { DiagramNodeData, DiagramNodeType, ArithmeticOperation } from "../.
 import { getShapeGeometry, SHAPE_DEFAULT_SIZE } from "../../utils/shapes";
 import { resolveNodeColors } from "../../utils/colors";
 import { OPERATOR_ARITY, OPERATOR_SYMBOL, OPERATOR_LABEL } from "../../utils/operators";
+import { UNIT_OPTIONS, unitWithPower, geometryModePower } from "../../utils/units";
 import { ShapeSchematic } from "./ShapeSchematic";
 import {
   GEOMETRY_SHAPE_FIELDS,
@@ -36,7 +37,7 @@ import {
   type BeamShape,
 } from "../../utils/geometry";
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Font weight lookup Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// â”€â”€â”€ Font weight lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const FONT_WEIGHT_MAP: Record<string, number> = {
   normal: 400,
@@ -44,8 +45,8 @@ const FONT_WEIGHT_MAP: Record<string, number> = {
   bold: 700,
 };
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Typed node alias Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
-// ReactFlow v12+ requires Node<TData, TType> Ã¢â‚¬â€ not just the data shape.
+// â”€â”€â”€ Typed node alias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ReactFlow v12+ requires Node<TData, TType> â€” not just the data shape.
 type DiagramNodeObject = Node<DiagramNodeData, DiagramNodeType>;
 type DiagramNodeProps = NodeProps<DiagramNodeObject>;
 
@@ -61,7 +62,7 @@ function openNodeLink(url: string | undefined) {
  * GeometryCalcNode, BeamCalcNode). Built on the project's own `Input`
  * component instead of a bare `<input>`, for two reasons:
  *  1. Digits are always left-aligned + LTR, regardless of the app's active
- *     RTL/Persian locale â€” numbers reading right-to-left inside a formula
+ *     RTL/Persian locale — numbers reading right-to-left inside a formula
  *     field is confusing no matter what language the UI is in.
  *  2. `style={{ colorScheme }}` is set explicitly from the diagram's own
  *     light/dark toggle (`settings.colorMode`) rather than inheriting the
@@ -98,17 +99,17 @@ function NumberField({
 
 // "Precise-border easy connect" (https://reactflow.dev/examples/nodes/easy-connect):
 // the visible dot stays tiny/exact, but every handle also gets an invisible
-// ::after box extended 8px past its own edges on all sides â€” roughly tripling
+// ::after box extended 8px past its own edges on all sides — roughly tripling
 // the real clickable/draggable hit-area without changing how the handle looks,
 // so starting a connection is far more forgiving while the node's border stays crisp.
 const HANDLE_CLS = "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
 
 /**
- * "Any handle connects to any handle" (per user request â€” ordinary diagram
+ * "Any handle connects to any handle" (per user request — ordinary diagram
  * shapes have no logical reason to restrict which side a connection starts
  * or ends on). Instead of one ambiguous handle per side that has to serve
  * as both a source AND a target (which is what caused the top handle to
- * sometimes visually behave like the bottom one â€” React Flow's connection
+ * sometimes visually behave like the bottom one — React Flow's connection
  * line preview could resolve to the wrong handle when a single id had to
  * answer both "where do drags from here start" and "can drops land here"),
  * every side gets a real target handle UNDERNEATH (a pure, unambiguous drop
@@ -119,12 +120,12 @@ const HANDLE_CLS = "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative
 function FreeConnectHandles() {
   return (
     <>
-      {/* Target handles â€” pure drop targets, rendered first (underneath) */}
+      {/* Target handles — pure drop targets, rendered first (underneath) */}
       <Handle type="target" position={Position.Top} id="top-in" className={HANDLE_CLS} />
       <Handle type="target" position={Position.Bottom} id="bottom-in" className={HANDLE_CLS} />
       <Handle type="target" position={Position.Left} id="left-in" className={HANDLE_CLS} />
       <Handle type="target" position={Position.Right} id="right-in" className={HANDLE_CLS} />
-      {/* Source handles â€” where new connections start from, rendered last (on top) */}
+      {/* Source handles — where new connections start from, rendered last (on top) */}
       <Handle type="source" position={Position.Top} id="top" className={HANDLE_CLS} />
       <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_CLS} />
       <Handle type="source" position={Position.Left} id="left" className={HANDLE_CLS} />
@@ -133,18 +134,18 @@ function FreeConnectHandles() {
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ ShapeCanvas Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// â”€â”€â”€ ShapeCanvas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Shared renderer used by every node wrapper below. Draws the shape as real
 // SVG (see utils/shapes.ts), keeps its pixel size on node.data so resizing
 // persists, and shows a link badge when data.url is set.
 
-/** Start terminator: only ONE outgoing handle â€” nothing should ever flow
+/** Start terminator: only ONE outgoing handle — nothing should ever flow
  *  INTO a "Start" node, so no target handle is rendered at all. */
 function SingleSourceHandle() {
   return <Handle type="source" position={Position.Bottom} id="out" className={HANDLE_CLS} />;
 }
 
-/** End terminator: only ONE incoming handle â€” nothing should ever flow OUT
+/** End terminator: only ONE incoming handle — nothing should ever flow OUT
  *  of an "End" node (which also naturally keeps it from triggering
  *  add-node-on-edge-drop, since that only fires from a source handle). */
 function SingleTargetHandle() {
@@ -164,7 +165,7 @@ interface ShapeCanvasProps {
    *  - "targetOnly": a single incoming handle (End/outputNode) */
   handleMode?: "full" | "sourceOnly" | "targetOnly";
   /** Whether to render the resize handles. Independent from connection
-   *  handles â€” e.g. textNode has no connection handles but IS resizable. */
+   *  handles — e.g. textNode has no connection handles but IS resizable. */
   showResizer?: boolean;
   /** Enables the drag-to-rotate handle (currently only textNode uses this). */
   rotatable?: boolean;
@@ -212,7 +213,7 @@ function ShapeCanvas({
 
   // Label wrapping: instead of always forcing a single truncated line, work
   // out how many lines actually fit the node's current height and clamp to
-  // that â€” small nodes get one truncated line, taller ones wrap to several
+  // that — small nodes get one truncated line, taller ones wrap to several
   // lines before cutting off with an ellipsis.
   const fontSize = data.fontSize ?? 13;
   const lineHeightPx = fontSize * 1.3;
@@ -249,7 +250,7 @@ function ShapeCanvas({
 
       {/* Rotation (https://reactflow.dev/examples/nodes/rotatable-node):
           the shape + label live inside this rotated wrapper, and so does the
-          handle when rotatable â€” that's what makes the handle move/rotate
+          handle when rotatable — that's what makes the handle move/rotate
           along with the node rather than staying fixed on screen. NodeResizer
           and connection handles stay OUTSIDE (unrotated) on purpose: resize
           corners and connection points are much easier to use fixed to the
@@ -325,18 +326,35 @@ function ShapeCanvas({
           lineHeight: 1.3,
         }}
       >
-        <span
-          className="w-full"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: maxLines,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-            wordBreak: "break-word",
-          }}
-        >
-          {showLabel ? data.label : ""}
-        </span>
+        {data.isRichText ? (
+          <span
+            className="w-full"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: maxLines,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              wordBreak: "break-word",
+            }}
+            // Rich-text labels (toggled via the "Render as HTML" checkbox in
+            // SettingsPanel) — this is the user's own diagram content, typed
+            // by themselves, not remote/untrusted input.
+            dangerouslySetInnerHTML={{ __html: showLabel ? data.label : "" }}
+          />
+        ) : (
+          <span
+            className="w-full"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: maxLines,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              wordBreak: "break-word",
+            }}
+          >
+            {showLabel ? data.label : ""}
+          </span>
+        )}
         {showDescription && (
           <span className="w-full truncate text-[11px] opacity-70">{data.description}</span>
         )}
@@ -351,7 +369,7 @@ function ShapeCanvas({
       )}
       </div>
 
-      {/* Link badge Ã¢â‚¬â€ visible when the node carries a URL; click opens it directly. */}
+      {/* Link badge â€” visible when the node carries a URL; click opens it directly. */}
       {hasLink && (
         <button
           type="button"
@@ -373,7 +391,7 @@ function ShapeCanvas({
   );
 }
 
-// Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Node wrapper components (one per DiagramNodeType) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+// â”€â”€â”€ Node wrapper components (one per DiagramNodeType) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Kept as separate functions (rather than deriving the shape from props.type)
 // so the `nodeTypes` registry below stays explicit and each node type is
 // trivially greppable.
@@ -440,7 +458,7 @@ function DelayNode({ id, selected, data }: DiagramNodeProps) {
 
 // GroupNode (subflow container): a resizable box other nodes can be dropped/dragged
 // into (see reparentNode in ../../store and onNodeDragStop in DiagramCanvas.tsx).
-// Draggable ONLY by its header (the ".subflow-drag-handle" element below) â€” the
+// Draggable ONLY by its header (the ".subflow-drag-handle" element below) — the
 // node instance sets `dragHandle: '.subflow-drag-handle'` at creation time so
 // dragging the body doesn't fight with dragging the children inside it.
 function GroupNode({ id, selected, data }: DiagramNodeProps) {
@@ -504,7 +522,7 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// â”€â”€ Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) â”€â”€
+// ── Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) ──
 // Two small interactive nodes: a literal NUMBER you type into, and an
 // OPERATOR that combines whatever values flow into it and republishes the
 // result (data.result) for the next node downstream. The actual computation
@@ -530,22 +548,31 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || "Number"}
       </span>
-      <NumberField
-        value={data.value ?? 0}
-        onChange={(v) => updateNodeData(id, { value: v })}
-        colorMode={colorMode}
-        className="w-full text-sm font-semibold"
-        style={{ color: resolved.text }}
-      />
+      <div className="nodrag flex items-center gap-1">
+        <NumberField
+          value={data.value ?? 0}
+          onChange={(v) => updateNodeData(id, { value: v })}
+          colorMode={colorMode}
+          className="flex-1 text-sm font-semibold"
+          style={{ color: resolved.text }}
+        />
+        <Combobox
+          options={UNIT_OPTIONS}
+          value={data.unit ?? ""}
+          onChange={(v) => updateNodeData(id, { unit: v })}
+          placeholder="unit"
+          className="w-16 shrink-0"
+        />
+      </div>
       <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
     </div>
   );
 }
 
 /**
- * OperatorNode's handles depend on the chosen operation's real arity â€” sqrt
+ * OperatorNode's handles depend on the chosen operation's real arity — sqrt
  * only makes sense with ONE input, divide/subtract/power need exactly TWO
- * in a specific order (aÃ·b â‰  bÃ·a), so those get individually labeled "a"/"b"
+ * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
  * handles instead of one shared unlimited handle. See utils/operators.ts for
  * the single source of truth this mirrors in the store's recompute logic.
  */
@@ -561,7 +588,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   const operation = data.operation ?? "add";
   const arity = OPERATOR_ARITY[operation];
 
-  // React Flow caches each node's handle bounds â€” when the SET of handles
+  // React Flow caches each node's handle bounds — when the SET of handles
   // changes (switching arity swaps how many handles exist), it must be told
   // to re-measure, or edges connected to now-stale handle positions won't
   // follow correctly.
@@ -578,7 +605,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
       className="relative flex flex-col gap-1 rounded-lg px-3 py-2 shadow-sm"
       style={{
         width,
-        height,
+        minHeight: height,
         backgroundColor: resolved.background,
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
@@ -596,16 +623,26 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
         <Combobox
           options={(Object.keys(OPERATOR_LABEL) as ArithmeticOperation[]).map((op) => ({ value: op, label: OPERATOR_LABEL[op] }))}
           value={operation}
-          onValueChange={(v) => handleOperationChange(v as ArithmeticOperation)}
+          onChange={(v) => handleOperationChange(v as ArithmeticOperation)}
           placeholder="Operation..."
         />
       </div>
 
-      <div
-        className="rounded border border-black/10 bg-white/70 px-2 py-1 text-center text-sm font-semibold dark:bg-black/20"
-        style={{ color: resolved.text }}
-      >
-        {data.result !== undefined ? Number(data.result.toFixed(3)) : "â€”"}
+      <div className="nodrag flex items-center gap-1">
+        <div
+          className="flex-1 rounded border border-black/10 bg-white/70 px-2 py-1 text-center text-sm font-semibold dark:bg-black/20"
+          style={{ color: resolved.text }}
+        >
+          {data.result !== undefined ? Number(data.result.toFixed(3)) : "—"}
+          {data.result !== undefined && data.unit ? <span className="ms-1 text-xs font-normal opacity-70">{data.unit}</span> : null}
+        </div>
+        <Combobox
+          options={UNIT_OPTIONS}
+          value={data.unit ?? ""}
+          onChange={(v) => updateNodeData(id, { unit: v })}
+          placeholder="unit"
+          className="w-16 shrink-0"
+        />
       </div>
 
       {arity === "nary" && (
@@ -656,8 +693,8 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// â”€â”€ Standalone calculators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// Unlike numberNode/operatorNode, these don't need any incoming edges â€” all
+// ── Standalone calculators ──────────────────────────────────────────────
+// Unlike numberNode/operatorNode, these don't need any incoming edges — all
 // their inputs live on the node itself, so the result is just computed
 // directly in the component (utils/geometry.ts) on every render.
 
@@ -681,7 +718,7 @@ const GEOMETRY_MODE_LABELS: Record<GeometryMode, string> = {
 
 /** Finds the upstream shapeNode feeding a calculator's input handle, if any.
  *  When connected, the calculator uses THIS node's shape/inputs instead of
- *  its own standalone fields â€” see components/nodes/BaseNode.tsx's ShapeNode. */
+ *  its own standalone fields — see components/nodes/BaseNode.tsx's ShapeNode. */
 function useUpstreamShapeNode(id: string): Node<DiagramNodeData> | undefined {
   const edges = useDiagramStore((s) => s.edges);
   const nodes = useDiagramStore((s) => s.nodes);
@@ -692,7 +729,7 @@ function useUpstreamShapeNode(id: string): Node<DiagramNodeData> | undefined {
 
 /** Rounds to 3 decimals for display so results never overflow the node box (per user request). */
 function formatCalcResult(value: number | null): string {
-  if (value === null || !Number.isFinite(value)) return "â€”";
+  if (value === null || !Number.isFinite(value)) return "—";
   return Number(value.toFixed(3)).toLocaleString(undefined, { maximumFractionDigits: 3 });
 }
 
@@ -706,8 +743,8 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
   const height = data.height ?? fallback.height;
 
   // If a shapeNode is connected to our input handle, use ITS shape/inputs
-  // (read-only here â€” edit them on the shapeNode itself) instead of our own
-  // standalone dropdown+fields. Lets you build Shape â†’ Calculator pipelines.
+  // (read-only here — edit them on the shapeNode itself) instead of our own
+  // standalone dropdown+fields. Lets you build Shape → Calculator pipelines.
   const upstream = useUpstreamShapeNode(id);
   const shape = (upstream ? upstream.data.shapeKind : data.calcShape) ?? "rectangle";
   const inputs = (upstream ? upstream.data.shapeInputs : data.calcInputs) ?? {};
@@ -715,6 +752,7 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
   const mode = availableModes.includes(data.calcMode ?? "area") ? data.calcMode ?? "area" : availableModes[0];
   const fields = GEOMETRY_SHAPE_FIELDS[shape];
   const result = computeGeometry(shape, mode, inputs);
+  const unit = upstream ? upstream.data.unit : data.unit;
 
   const handleResize = useCallback<OnResize>(
     (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
@@ -756,6 +794,21 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         </div>
       )}
 
+      <div className="nodrag flex items-center gap-1.5">
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        {upstream ? (
+          <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "—"}</span>
+        ) : (
+          <Combobox
+            options={UNIT_OPTIONS}
+            value={data.unit ?? ""}
+            onChange={(v) => updateNodeData(id, { unit: v })}
+            placeholder="unit"
+            className="w-16 shrink-0"
+          />
+        )}
+      </div>
+
       <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
@@ -778,7 +831,7 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         <div className="flex flex-col gap-1">
           {fields.map((f) => (
             <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
-              <span className="opacity-70">{f.label}</span>
+              <span className="opacity-70">{f.label}{unit ? ` (${unit})` : ""}</span>
               <NumberField
                 value={inputs[f.key] ?? ""}
                 onChange={(v) => updateNodeData(id, { calcInputs: { ...inputs, [f.key]: v } })}
@@ -796,13 +849,14 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         </div>
         <div className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
           {formatCalcResult(result)}
+          {result !== null && unit ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, geometryModePower(mode))}</span> : null}
         </div>
       </div>
     </div>
   );
 }
 
-// Second moment of area (Ix) for common beam cross-sections â€” used in
+// Second moment of area (Ix) for common beam cross-sections — used in
 // bending-stress/deflection calculations. See utils/geometry.ts for formulas.
 const BEAM_SHAPE_LABELS: Record<BeamShape, string> = {
   rectangle: "Rectangle",
@@ -829,6 +883,7 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
   const inputs = upstream && upstreamCompatible ? toBeamInputs(upstreamShape!, upstream.data.shapeInputs ?? {}) : (data.beamInputs ?? {});
   const fields = BEAM_SHAPE_FIELDS[shape];
   const result = upstream && !upstreamCompatible ? null : computeSecondMomentOfArea(shape, inputs);
+  const unit = (upstream ? upstream.data.unit : data.unit) || "mm";
 
   const handleResize = useCallback<OnResize>(
     (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
@@ -872,6 +927,21 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         </div>
       )}
 
+      <div className="nodrag flex items-center gap-1.5">
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        {upstream ? (
+          <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "mm"}</span>
+        ) : (
+          <Combobox
+            options={UNIT_OPTIONS}
+            value={data.unit ?? ""}
+            onChange={(v) => updateNodeData(id, { unit: v })}
+            placeholder="mm"
+            className="w-16 shrink-0"
+          />
+        )}
+      </div>
+
       <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
@@ -880,7 +950,7 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         <div className="flex flex-col gap-1">
           {fields.map((f) => (
             <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
-              <span className="opacity-70">{f.label}</span>
+              <span className="opacity-70">{f.label}{unit ? ` (${unit})` : ""}</span>
               <NumberField
                 value={inputs[f.key] ?? ""}
                 onChange={(v) => updateNodeData(id, { beamInputs: { ...inputs, [f.key]: v } })}
@@ -897,14 +967,15 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
           Ix (second moment of area)
         </div>
         <div className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
-          {formatCalcResult(result)} {result !== null ? "mmâ´" : ""}
+          {formatCalcResult(result)}
+          {result !== null ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, 4)}</span> : null}
         </div>
       </div>
     </div>
   );
 }
 
-// Pipeable shape definition â€” place one, pick a shape + dimensions, then
+// Pipeable shape definition — place one, pick a shape + dimensions, then
 // connect its output handle into a geometryCalcNode's or beamCalcNode's
 // input handle. Purely a data source: no computation happens here.
 function ShapeNode({ id, selected, data }: DiagramNodeProps) {
@@ -953,6 +1024,17 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         />
       </div>
 
+      <div className="nodrag flex items-center gap-1.5">
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        <Combobox
+          options={UNIT_OPTIONS}
+          value={data.unit ?? ""}
+          onChange={(v) => updateNodeData(id, { unit: v })}
+          placeholder="unit"
+          className="w-16 shrink-0"
+        />
+      </div>
+
       <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
@@ -960,7 +1042,7 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
       <div className="flex flex-col gap-1">
         {fields.map((f) => (
           <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
-            <span className="opacity-70">{f.label}</span>
+            <span className="opacity-70">{f.label}{data.unit ? ` (${data.unit})` : ""}</span>
             <NumberField
               value={inputs[f.key] ?? ""}
               onChange={(v) => updateNodeData(id, { shapeInputs: { ...inputs, [f.key]: v } })}
@@ -978,7 +1060,7 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// Image node â€” paste a URL or upload a local file (stored as a data-URL).
+// Image node — paste a URL or upload a local file (stored as a data-URL).
 // Resizable; its border width/style/radius/color come from the normal
 // node-settings panel, same as any shape, so it doubles as a simple frame.
 function ImageNode({ id, selected, data }: DiagramNodeProps) {
@@ -1008,7 +1090,7 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
 
   return (
     // NOTE: no border/frame here (per request) and, importantly, no
-    // overflow-hidden on THIS element either â€” that used to sit on the same
+    // overflow-hidden on THIS element either — that used to sit on the same
     // div as the Handles, which clipped off half of each handle dot since
     // React Flow positions them slightly outside the node's own box. The
     // rounded-corner image clipping now happens on the INNER wrapper only,
@@ -1067,7 +1149,7 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// SVG node â€” same idea as ImageNode (upload â†’ data-URL â†’ <img>), kept as a
+// SVG node — same idea as ImageNode (upload → data-URL → <img>), kept as a
 // distinct type mainly for labeling/organizational clarity in the palette;
 // SVG data-URLs render fine directly in an <img> so no separate renderer is needed.
 function SvgNode({ id, selected, data }: DiagramNodeProps) {
@@ -1129,7 +1211,7 @@ function SvgNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// Shared component for dwgNode/dxfNode â€” CAD drawings can't be rendered in a
+// Shared component for dwgNode/dxfNode — CAD drawings can't be rendered in a
 // browser without a heavy specialized engine, so these behave as file
 // attachments: keep the original file (as a data-URL) for re-download, show
 // its name/size, and let the node live in the diagram as a reference to it.
@@ -1188,7 +1270,7 @@ function CadFileNode({ id, selected, data, kind }: DiagramNodeProps & { kind: "d
             {data.cadFileName || `${kind.toUpperCase()} file`}
           </p>
           <p className="text-[10px] opacity-60" style={{ color: resolved.text }}>
-            {kind.toUpperCase()} {sizeLabel ? `Â· ${sizeLabel}` : "Â· no file attached"}
+            {kind.toUpperCase()} {sizeLabel ? `· ${sizeLabel}` : "· no file attached"}
           </p>
         </div>
       </div>
@@ -1233,7 +1315,7 @@ function DxfNode(props: DiagramNodeProps) {
   return <CadFileNode {...props} kind="dxf" />;
 }
 
-// â”€â”€â”€ nodeTypes registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── nodeTypes registry ─────────────────────────────────────────────────────
 // Keys match DiagramNodeType exactly; `satisfies` validates the shape without
 // widening to React Flow's generic NodeTypes.
 
@@ -1269,8 +1351,6 @@ export const nodeTypes = {
 export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   groupNode: ".subflow-drag-handle",
 };
-
-
 
 
 

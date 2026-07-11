@@ -19,7 +19,7 @@ export interface ContextMenuState {
   target: "pane" | "node" | "edge";
 }
 
-/** Minimal shape needed to render a quick-add item â€” matches DiagramCanvas's QUICK_ADD_ITEMS. */
+/** Minimal shape needed to render a quick-add item — matches DiagramCanvas's QUICK_ADD_ITEMS. */
 export interface QuickAddItem {
   type: DiagramNodeType;
   icon: React.ComponentType<{ className?: string }>;
@@ -28,7 +28,7 @@ export interface QuickAddItem {
 
 // Menu dimensions used for edge-clamping calculations
 const MENU_W = 176; // w-44 = 11rem = 176px
-const MENU_H = 160; // approximate max height (5 items Ãƒâ€” ~32px)
+const MENU_H = 160; // approximate max height (5 items Ã— ~32px)
 
 /**
  * Clamps the menu position so it never overflows the viewport.
@@ -80,7 +80,7 @@ export function ContextMenu({
   const t = useTranslations("Flow");
   const ref = useRef<HTMLDivElement>(null);
 
-  // Clamped position Ã¢â‚¬â€ recalculated whenever the menu appears at a new spot
+  // Clamped position â€” recalculated whenever the menu appears at a new spot
   const { x, y } = clampPosition(state.x, state.y);
 
   // Tiny mount flag drives the entrance animation via opacity/scale transition
@@ -146,13 +146,13 @@ export function ContextMenu({
     </button>
   );
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: destructive actions (delete) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // â”€â”€ Section: destructive actions (delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hasDestructive = state.target === "node" || state.target === "edge";
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: node-only actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // â”€â”€ Section: node-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hasNodeActions = state.target === "node";
 
-  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: pane-only actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
+  // â”€â”€ Section: pane-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const hasPaneActions = state.target === "pane";
 
   return (
@@ -164,14 +164,14 @@ export function ContextMenu({
         "fixed z-50 w-44",
         // Visual shell
         "rounded-lg border border-slate-200 bg-white p-1 shadow-lg",
-        // Entrance animation Ã¢â‚¬â€ starts at opacity-0 scale-95, transitions to full
+        // Entrance animation â€” starts at opacity-0 scale-95, transitions to full
         "transition-[opacity,transform] duration-100",
         visible ? "scale-100 opacity-100" : "scale-95 opacity-0",
       )}
       // Stop propagation so the outside-click handler doesn't immediately close
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* â”€â”€ Node actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Node actions ─────────────────────────────────────────────── */}
       {hasNodeActions && (
         <div className="space-y-0.5">
           {item(Copy, t("contextMenu.duplicate"), onDuplicate)}
@@ -186,14 +186,14 @@ export function ContextMenu({
         <div className="my-1 border-t border-slate-100" />
       )}
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Destructive actions (node + edge) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* â”€â”€ Destructive actions (node + edge) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {hasDestructive && (
         <div className="space-y-0.5">
           {item(Trash2, t("contextMenu.delete"), onDelete)}
         </div>
       )}
 
-      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Pane actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
+      {/* â”€â”€ Pane actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {hasPaneActions && (
         <div className="space-y-0.5">
           {item(ClipboardPaste, t("contextMenu.paste"), onPaste, !canPaste)}
@@ -212,8 +212,6 @@ export function ContextMenu({
     </div>
   );
 }
-
-
 
 
 

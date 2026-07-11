@@ -3,12 +3,12 @@
 import React from "react";
 import type { GeometryShape } from "../../utils/geometry";
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 // Small, fixed illustrative diagrams (NOT numerically scaled to the actual
-// entered dimensions â€” just clear enough to show which input maps to which
-// part of the shape). One consistent 140Ã—100 viewBox, one stroke color that
+// entered dimensions — just clear enough to show which input maps to which
+// part of the shape). One consistent 140×100 viewBox, one stroke color that
 // follows currentColor so it automatically matches each node's text color.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 const STROKE = "currentColor";
 
@@ -176,5 +176,3 @@ export function ShapeSchematic({ shape }: { shape: GeometryShape }) {
       return null;
   }
 }
-
-

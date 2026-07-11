@@ -348,9 +348,9 @@
     "views": ""
   },
   "Flow": {
-        "loadTemplate": "load Template",
-            "searchTemplate": "search Template",
-                "noTemplate": "no Template",
+    "loadTemplate": "load Template",
+    "searchTemplate": "search Template",
+    "noTemplate": "no Template",
     "editor": {
       "title": "Diagram Editor",
       "untitled": "Untitled Diagram",
@@ -380,7 +380,7 @@
       "lock": "Lock",
       "unlock": "Unlock",
       "addNode": "Add Node",
-          "loadTemplate": "Load Template...",
+      "loadTemplate": "Load Template...",
       "searchTemplate": "Search template",
       "noTemplate": "No template found"
     },
@@ -396,24 +396,23 @@
       "textNode": "Text",
       "noteNode": "Note",
       "triangleNode": "Triangle",
-"cloudNode": "Cloud",
-"documentNode": "Document",
-"predefinedProcessNode": "Subroutine",
-"delayNode": "Delay",
-"groupNode": "Sub-flow",
-"numberNode": "Number",
-"operatorNode": "Operator",
-"shapeNode": "shape Node",
-"beamCalcNode": "beam Calc",
-"geometryCalcNode": "geometry Calc",
-"imageNode": "image",
-"svgNode": "SVG",
-"dwgNode": "DWG",
-"dxfNode": "DXF",
-"starNode": "Star",
-"pentagonNode": "Pentagon",
-"multiDocumentNode": "Multi Doc"
-
+      "cloudNode": "Cloud",
+      "documentNode": "Document",
+      "predefinedProcessNode": "Subroutine",
+      "delayNode": "Delay",
+      "groupNode": "Sub-flow",
+      "numberNode": "Number",
+      "operatorNode": "Operator",
+      "shapeNode": "shape Node",
+      "beamCalcNode": "beam Calc",
+      "geometryCalcNode": "geometry Calc",
+      "imageNode": "image",
+      "svgNode": "SVG",
+      "dwgNode": "DWG",
+      "dxfNode": "DXF",
+      "starNode": "Star",
+      "pentagonNode": "Pentagon",
+      "multiDocumentNode": "Multi Doc"
     },
     "palette": {
       "search": "Search nodes…",
@@ -473,7 +472,8 @@
       "edge_step": "Sharp step",
       "autoSave": "Auto-save to library",
       "shortcuts": "Keyboard shortcuts",
-      "edge_floating": "Floating"
+      "edge_floating": "Floating",
+      "edge_floating_straight": "Floating straight"
     },
     "shortcuts": {
       "undo": "Undo",
@@ -529,7 +529,5 @@
     "placeholder": "Select...",
     "searchPlaceholder": "Search...",
     "emptyText": "No results found."
-  
-}
-
+  }
 }

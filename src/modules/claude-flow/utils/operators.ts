@@ -1,11 +1,11 @@
 // src/modules/claude-flow/utils/operators.ts
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// operatorNode's operations have real, different arities â€” sqrt only makes
+// ─────────────────────────────────────────────────────────────────────────
+// operatorNode's operations have real, different arities — sqrt only makes
 // sense with one input, divide/subtract/power need exactly two IN A SPECIFIC
-// ORDER (aÃ·b, not bÃ·a). This is the single source of truth for that, shared
+// ORDER (a÷b, not b÷a). This is the single source of truth for that, shared
 // by the component (which handles to render) and the store (how to combine
 // the values arriving on those handles).
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 import type { ArithmeticOperation, OperatorArity } from '../types';
 
@@ -24,31 +24,31 @@ export const OPERATOR_ARITY: Record<ArithmeticOperation, OperatorArity> = {
 
 export const OPERATOR_SYMBOL: Record<ArithmeticOperation, string> = {
   add: '+',
-  multiply: 'Ã—',
+  multiply: '×',
   average: 'avg',
-  subtract: 'a âˆ’ b',
-  divide: 'a Ã· b',
+  subtract: 'a − b',
+  divide: 'a ÷ b',
   power: 'a ^ b',
-  sqrt: 'âˆšx',
-  square: 'xÂ²',
+  sqrt: '√x',
+  square: 'x²',
   abs: '|x|',
-  negate: 'âˆ’x',
+  negate: '−x',
 };
 
 export const OPERATOR_LABEL: Record<ArithmeticOperation, string> = {
   add: 'Add (sum all inputs)',
   multiply: 'Multiply (product of all inputs)',
   average: 'Average',
-  subtract: 'Subtract (a âˆ’ b)',
-  divide: 'Divide (a Ã· b)',
+  subtract: 'Subtract (a − b)',
+  divide: 'Divide (a ÷ b)',
   power: 'Power (a ^ b)',
-  sqrt: 'Square root (âˆšx)',
-  square: 'Square (xÂ²)',
+  sqrt: 'Square root (√x)',
+  square: 'Square (x²)',
   abs: 'Absolute value (|x|)',
-  negate: 'Negate (âˆ’x)',
+  negate: 'Negate (−x)',
 };
 
-/** Given the resolved input value(s), computes an operator's result â€” used
+/** Given the resolved input value(s), computes an operator's result — used
  *  identically by the store (numeric recompute) so behavior never drifts
  *  from what the node visually implies. */
 export function evaluateOperator(op: ArithmeticOperation, values: number[]): number | undefined {
@@ -80,5 +80,3 @@ export function evaluateOperator(op: ArithmeticOperation, values: number[]): num
   if (op === 'average') return values.reduce((a, b) => a + b, 0) / values.length;
   return undefined;
 }
-
-

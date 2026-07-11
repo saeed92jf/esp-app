@@ -92,7 +92,7 @@ function isFullyInLasso(node: Node<DiagramNodeData>, allNodes: Node<DiagramNodeD
   return nodeCorners(node, allNodes).every((c) => pointInPolygon(c, polygon));
 }
 
-// Small set of node types offered by the "add node on edge drop" quick menu â€”
+// Small set of node types offered by the "add node on edge drop" quick menu —
 // kept short on purpose so the popup stays scannable.
 const QUICK_ADD_ITEMS: { type: DiagramNodeType; icon: React.ComponentType<{ className?: string }>; label: string; defaultData: Partial<DiagramNodeData> }[] = [
   { type: "defaultNode", icon: Square, label: "Process", defaultData: { label: "Process" } },
@@ -109,7 +109,7 @@ interface QuickAddState {
 }
 
 /** Popup shown when a connection is dragged from a handle and dropped on empty canvas
- *  (reactflow "Add Node On Edge Drop" pattern) â€” pick a type to create + auto-connect it. */
+ *  (reactflow "Add Node On Edge Drop" pattern) — pick a type to create + auto-connect it. */
 function QuickAddMenu({ state, onPick, onClose }: { state: QuickAddState; onPick: (item: (typeof QUICK_ADD_ITEMS)[number]) => void; onClose: () => void }) {
   return (
     <div
@@ -138,7 +138,7 @@ function QuickAddMenu({ state, onPick, onClose }: { state: QuickAddState; onPick
   );
 }
 
-// â”€â”€â”€ Theming (https://reactflow.dev/learn/customization/theming) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Theming (https://reactflow.dev/learn/customization/theming) ───────────
 // A handful of targeted overrides on top of React Flow's own colorMode
 // theme: our indigo selection accent, and green/red handle feedback while
 // dragging a connection (https://reactflow.dev/examples/interaction/validation).
@@ -191,14 +191,42 @@ export function DiagramCanvas() {
   const groupSelectedNodes = useDiagramStore((s) => s.groupSelectedNodes);
   const selectedNodeId = useDiagramStore((s) => s.selectedNodeId);
   const selectionTool = useDiagramStore((s) => s.selectionTool);
+  const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
+  const setIsCanvasFullscreen = useDiagramStore((s) => s.setIsCanvasFullscreen);
+  const setCanvasFullscreenToggle = useDiagramStore((s) => s.setCanvasFullscreenToggle);
+
+  // Real Fullscreen API on THIS wrapper only (canvas area, not the toolbar or
+  // side panels) — the Toolbar can't reach `wrapperRef` directly since it's a
+  // sibling, not a descendant, so it registers a callback into the store
+  // instead and the Toolbar's button just calls that.
+  useEffect(() => {
+    const toggle = () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        wrapperRef.current?.requestFullscreen().catch(() => {});
+      }
+    };
+    setCanvasFullscreenToggle(toggle);
+
+    const onFullscreenChange = () => {
+      setIsCanvasFullscreen(document.fullscreenElement === wrapperRef.current);
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+
+    return () => {
+      setCanvasFullscreenToggle(null);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+    };
+  }, [setCanvasFullscreenToggle, setIsCanvasFullscreen]);
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
   const [quickAdd, setQuickAdd] = useState<QuickAddState | null>(null);
-  // Which group node the currently-dragged node is hovering over â€” drives the
+  // Which group node the currently-dragged node is hovering over — drives the
   // "drop here" highlight without touching the store on every mousemove.
   const [hoverGroupId, setHoverGroupId] = useState<string | null>(null);
 
-  //â”€â”€ Drag & drop from the palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  //── Drag & drop from the palette ─────────────────────────────────────────
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -238,7 +266,7 @@ export function DiagramCanvas() {
     [screenToFlowPosition, addNode, t],
   );
 
-  // â”€â”€ Subflow: drop a node onto/off a group to reparent it â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Subflow: drop a node onto/off a group to reparent it ────────────────
 
   const onNodeDrag = useCallback<OnNodeDrag>((_event, draggedNode) => {
     if (draggedNode.type === "groupNode") {
@@ -261,7 +289,7 @@ export function DiagramCanvas() {
     // Node collisions (https://reactflow.dev/examples/layout/node-collisions):
     // shove any top-level sibling the dragged node overlaps out of the way,
     // along whichever axis has the smaller overlap (a standard minimum-
-    // translation-vector resolution â€” feels like the nodes are physically
+    // translation-vector resolution — feels like the nodes are physically
     // bumping into each other rather than passing through).
     if (useDiagramStore.getState().settings.collisionAvoidance) {
       const dLeft = abs.x;
@@ -330,7 +358,7 @@ export function DiagramCanvas() {
     [reparentNode],
   );
 
-  // â”€â”€ Click handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Click handlers ────────────────────────────────────────────────────
 
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
@@ -352,7 +380,7 @@ export function DiagramCanvas() {
     setSelectedEdge(null);
     setQuickAdd(null);
     // Explicitly clear any lingering multi-select flags too. Don't rely on
-    // React Flow's own pane-click deselection alone â€” this is what caused
+    // React Flow's own pane-click deselection alone — this is what caused
     // the settings panel to sometimes fail to auto-close: selectedNodeId
     // went back to null, but a still-`selected: true` node from a previous
     // box/lasso selection kept hasSelection() true in DiagramEditor.
@@ -361,7 +389,7 @@ export function DiagramCanvas() {
     );
   }, [setSelectedNode, setSelectedEdge]);
 
-  // â”€â”€ Context menu handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Context menu handlers ─────────────────────────────────────────────
 
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: Node) => {
@@ -390,7 +418,7 @@ export function DiagramCanvas() {
   const closeContextMenu = useCallback(() => setContextMenu(null), []);
 
   // Quick-add popup: dismiss on ANY click outside it (not just clicks React
-  // Flow itself reports, like onPaneClick â€” this also covers clicking the
+  // Flow itself reports, like onPaneClick — this also covers clicking the
   // toolbar, palette, or settings panel while the popup is open).
   useEffect(() => {
     if (!quickAdd) return;
@@ -403,14 +431,14 @@ export function DiagramCanvas() {
     return () => document.removeEventListener("mousedown", handleOutsideClick, true);
   }, [quickAdd]);
 
-  // â”€â”€ Select-all â€” proper useCallback, not inline setState â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Select-all — proper useCallback, not inline setState ─────────────────
 
   const onSelectAll = useCallback(() => {
     useDiagramStore.setState((s) => ({ nodes: s.nodes.map((n) => ({ ...n, selected: true })) }));
   }, []);
 
-  // â”€â”€ Connection validation (https://reactflow.dev/examples/interaction/validation
-  //     + https://reactflow.dev/examples/nodes/connection-limit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Connection validation (https://reactflow.dev/examples/interaction/validation
+  //     + https://reactflow.dev/examples/nodes/connection-limit) ───────────
   // No self-loops, no exact duplicate edges, and a 1-connection cap per
   // target handle. React Flow shows this live via .valid/.invalid classes on
   // the handle being targeted while dragging (styled in THEME_CSS above).
@@ -419,7 +447,7 @@ export function DiagramCanvas() {
     [],
   );
 
-  // â”€â”€ Add-node-on-edge-drop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Add-node-on-edge-drop ─────────────────────────────────────────────
   // Track which handle a connection started from; if it's released over empty
   // canvas (the pane), offer a quick menu to create + auto-connect a node there.
 
@@ -436,7 +464,7 @@ export function DiagramCanvas() {
 
     // Only offer the quick-add menu when the drag genuinely did NOT land on a
     // valid handle/node (connectionState.isValid is React Flow's own source of
-    // truth here â€” far more reliable than checking event.target's DOM class,
+    // truth here — far more reliable than checking event.target's DOM class,
     // which can be wrong with connectionRadius/"easy connect" loose mode).
     if (connectionState?.isValid) return;
 
@@ -473,17 +501,17 @@ export function DiagramCanvas() {
     [quickAdd, screenToFlowPosition, addNode],
   );
 
-  // â”€â”€ Lasso selection (https://reactflow.dev/examples/whiteboard/lasso-selection) â”€â”€
+  // ── Lasso selection (https://reactflow.dev/examples/whiteboard/lasso-selection) ──
   // A freeform alternative to React Flow's built-in rectangle marquee (used
   // when selectionTool === "box", wired further down via <ReactFlow> props).
   //
   // IMPLEMENTATION NOTE: this used to try to intercept mouse events via
-  // capture-phase listeners on an ancestor wrapper div â€” unreliable, because
+  // capture-phase listeners on an ancestor wrapper div — unreliable, because
   // it depends on winning a race against React Flow's own internal pan/zoom
   // event handling, which isn't guaranteed. The robust fix is a plain,
   // ordinary <div> rendered ON TOP of the ReactFlow canvas (higher z-index)
   // that becomes pointer-events:auto only while the lasso tool is active. A
-  // topmost element always receives the browser's hit-test first â€” no
+  // topmost element always receives the browser's hit-test first — no
   // capture-phase races, no stopPropagation guessing.
   const [lassoScreenPoints, setLassoScreenPoints] = useState<{ x: number; y: number }[] | null>(null);
   const lassoActive = useRef(false);
@@ -545,7 +573,7 @@ export function DiagramCanvas() {
       setLassoScreenPoints(null);
 
       // Always include the final release point, even if mousemove fired
-      // sparsely (e.g. a fast, short drag) â€” guarantees a valid polygon.
+      // sparsely (e.g. a fast, short drag) — guarantees a valid polygon.
       const finalPts = pts ? [...pts, { x: event.clientX - rect.left, y: event.clientY - rect.top }] : pts;
       if (!finalPts || finalPts.length < 3) return;
 
@@ -554,15 +582,15 @@ export function DiagramCanvas() {
       const test = lassoMode === "full" ? isFullyInLasso : isPartiallyInLasso;
       const selectedIds = new Set(allNodes.filter((n) => test(n, allNodes, flowPolygon)).map((n) => n.id));
 
-      // Plain side-effect call, outside any React state updater â€” safe.
+      // Plain side-effect call, outside any React state updater — safe.
       useDiagramStore.setState((s) => ({ nodes: s.nodes.map((n) => ({ ...n, selected: selectedIds.has(n.id) })) }));
     },
     [screenToFlowPosition, lassoMode],
   );
 
-  // â”€â”€ Drag-box for lasso-selected nodes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Drag-box for lasso-selected nodes ────────────────────────────────
   // React Flow's native box-select automatically shows a bounding rect you
-  // can drag to move every selected node together â€” since our lasso bypasses
+  // can drag to move every selected node together — since our lasso bypasses
   // React Flow's own selection mechanism, that affordance doesn't come for
   // free, so it's rebuilt here: once 2+ nodes are lasso-selected, a matching
   // draggable frame appears around them.
@@ -614,7 +642,7 @@ export function DiagramCanvas() {
     };
   }, []);
 
-  // â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Keyboard shortcuts ────────────────────────────────────────────────
 
   const onKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -647,6 +675,12 @@ export function DiagramCanvas() {
   );
 
   const bgVariant = BG_VARIANT_MAP[settings.backgroundVariant];
+  // xyflow's Background `size` prop means different things per variant: for
+  // Dots/Lines, 1.2 is a fine dot radius / line thickness. For Cross, `size`
+  // is the arm-length of the "+" glyph — at 1.2px it was essentially a few
+  // invisible pixels, which is why the "Cross" background option looked like
+  // it "didn't work". Matches xyflow's own documented default (6) for Cross.
+  const bgSize = settings.backgroundVariant === "cross" ? 6 : 1.2;
 
   // Highlight whichever group node the user is currently dragging a node over.
   const displayNodes = hoverGroupId
@@ -654,7 +688,7 @@ export function DiagramCanvas() {
     : nodes;
 
   // Box-select and lasso both reserve the left mouse button on empty canvas
-  // for selecting instead of panning â€” middle/right-drag still pans either way.
+  // for selecting instead of panning — middle/right-drag still pans either way.
   const reservedForSelection = selectionTool !== "pointer";
 
   return (
@@ -693,15 +727,20 @@ export function DiagramCanvas() {
         colorMode={settings.colorMode}
         // "Easy connect": loosen connection targeting so a drag can land on
         // any handle (not just matching source/target types) and widen the
-        // hit-radius around each handle â€” see reactflow "Easy Connect" example.
+        // hit-radius around each handle — see reactflow "Easy Connect" example.
         connectionMode={ConnectionMode.Loose}
         connectionRadius={24}
         // Selection tool (https://reactflow.dev/examples/whiteboard/rectangle):
         // when box or lasso mode is active, the left mouse button is reserved
-        // for selecting on empty canvas â€” pan with the middle/right button instead.
+        // for selecting on empty canvas — pan with the middle/right button instead.
         selectionOnDrag={selectionTool === "box"}
         selectionMode={SelectionMode.Partial}
         panOnDrag={reservedForSelection ? [1, 2] : true}
+        // Lock button (Toolbar): view-only — dragging/connecting/selecting
+        // nodes is disabled, but panning and zooming the canvas still work.
+        nodesDraggable={!isCanvasLocked}
+        nodesConnectable={!isCanvasLocked}
+        elementsSelectable={!isCanvasLocked}
         fitView
         // Wide zoom range so large diagrams (many nodes) can be zoomed far
         // enough out to see everything at once, and the minimap stays useful.
@@ -711,7 +750,7 @@ export function DiagramCanvas() {
         deleteKeyCode={null}
         proOptions={{ hideAttribution: true }}
       >
-        {bgVariant !== null && <Background variant={bgVariant} gap={16} size={1.2} color="#e2e8f0" />}
+        {bgVariant !== null && <Background variant={bgVariant} gap={16} size={bgSize} color="#e2e8f0" />}
 
         {settings.showControls && <Controls position="bottom-right" showInteractive={false} />}
 
@@ -735,7 +774,7 @@ export function DiagramCanvas() {
         </Panel>
       </ReactFlow>
 
-      {/* Lasso capture layer â€” sits ON TOP of the canvas so it always gets the
+      {/* Lasso capture layer — sits ON TOP of the canvas so it always gets the
           browser's hit-test first, no event-race with React Flow's own
           panning/zooming. Only interactive while the lasso tool is selected;
           otherwise pointer-events:none lets everything pass straight through. */}
@@ -763,7 +802,7 @@ export function DiagramCanvas() {
           </svg>
         )}
 
-        {/* Draggable frame around a lasso-made multi-selection â€” move every
+        {/* Draggable frame around a lasso-made multi-selection — move every
             selected node together, the same affordance native box-select gives you. */}
         {dragBoxRect && (
           <div
@@ -812,5 +851,3 @@ export function DiagramCanvas() {
     </div>
   );
 }
-
-

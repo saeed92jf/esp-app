@@ -43,7 +43,7 @@ const DEFAULT_SETTINGS: EditorSettings = {
 
 const MAX_HISTORY = 50;
 
-// â”€â”€ Subflow helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Subflow helpers ─────────────────────────────────────────────────────
 // React Flow requires that a parent node appears before its children in the
 // nodes array. This topological sort keeps everything else in its original
 // relative order and is safe to call repeatedly (idempotent).
@@ -98,10 +98,20 @@ interface DiagramStore {
   isPalettOpen: boolean;
   isSettingsPanelOpen: boolean;
   isSaving: boolean;
-  /** Pointer behavior when dragging on empty canvas â€” see Toolbar's selection-tool toggle. */
+  /** Pointer behavior when dragging on empty canvas — see Toolbar's selection-tool toggle. */
   selectionTool: SelectionTool;
   /** partial = select anything the lasso touches; full = only fully-enclosed nodes. */
   lassoMode: LassoMode;
+  /** View-only lock: while true, nodes can't be dragged/connected/selected —
+   *  panning and zooming still work. Toggled from the Toolbar's lock button. */
+  isCanvasLocked: boolean;
+  /** Mirrors the browser's actual `document.fullscreenElement` state for the
+   *  canvas wrapper, so the Toolbar's fullscreen button can show the right icon. */
+  isCanvasFullscreen: boolean;
+  /** The canvas itself owns the DOM ref needed to call requestFullscreen(), so
+   *  it registers its own toggle function here on mount — the Toolbar (a
+   *  sibling component, not a descendant) calls this instead of needing the ref. */
+  canvasFullscreenToggle: (() => void) | null;
 
   // Actions
   setDiagramName: (name: string) => void;
@@ -114,15 +124,25 @@ interface DiagramStore {
 
   addNode: (node: Node<DiagramNodeData>) => void;
   updateNodeData: (nodeId: string, data: Partial<DiagramNodeData>) => void;
-  /** Applies the same partial data to many nodes at once â€” used by the
+  /** Applies the same partial data to many nodes at once — used by the
    *  multi-select "group style editing" panel in SettingsPanel. */
   updateNodesData: (nodeIds: string[], data: Partial<DiagramNodeData>) => void;
   updateEdgeData: (edgeId: string, data: Partial<DiagramEdgeData>) => void;
+  /** Clears style-only fields (color, borders, font, size, rotation, ...) back
+   *  to "unset" so each node falls back to its component's own built-in
+   *  default — works the same whether nodeIds has one id (single) or many
+   *  (group / multi-select). Label, position, connections and any
+   *  computed/structural data (value, operation, shapeKind, url, ...) are
+   *  left untouched. */
+  resetNodesToDefault: (nodeIds: string[]) => void;
+  /** Same idea for a single edge: style fields reset, edgeStyle falls back to
+   *  the app-wide default edge type (Editor Settings), label/connections kept. */
+  resetEdgeToDefault: (edgeId: string) => void;
   deleteSelected: () => void;
   duplicateSelected: () => void;
-  /** Removes every node AND edge â€” a blank diagram, same name/id kept. */
+  /** Removes every node AND edge — a blank diagram, same name/id kept. */
   clearCanvas: () => void;
-  /** Removes every node (and, necessarily, every edge â€” they'd be dangling otherwise). */
+  /** Removes every node (and, necessarily, every edge — they'd be dangling otherwise). */
   deleteAllNodes: () => void;
   /** Removes every edge, keeping all nodes in place. */
   deleteAllEdges: () => void;
@@ -161,8 +181,11 @@ interface DiagramStore {
   toggleSettingsPanel: () => void;
   setSelectionTool: (tool: SelectionTool) => void;
   setLassoMode: (mode: LassoMode) => void;
+  toggleCanvasLock: () => void;
+  setIsCanvasFullscreen: (v: boolean) => void;
+  setCanvasFullscreenToggle: (fn: (() => void) | null) => void;
 
-  // Computing flows (numberNode / operatorNode) â€” see
+  // Computing flows (numberNode / operatorNode) — see
   // https://reactflow.dev/learn/advanced-use/computing-flows
   recomputeValues: () => void;
 }
@@ -189,6 +212,9 @@ export const useDiagramStore = create<DiagramStore>()(
       isSaving: false,
       selectionTool: 'pointer',
       lassoMode: 'partial',
+      isCanvasLocked: false,
+      isCanvasFullscreen: false,
+      canvasFullscreenToggle: null,
 
       setDiagramName: (name) => set({ diagramName: name }),
 
@@ -224,7 +250,7 @@ export const useDiagramStore = create<DiagramStore>()(
         // Box/lasso multi-select must only ever apply to NODES. A marquee drag
         // fires many 'select' changes in the same call; a deliberate click on
         // a single edge fires exactly one. So: more than one select change at
-        // once means it came from a drag-select gesture â€” drop those (edges
+        // once means it came from a drag-select gesture — drop those (edges
         // stay whatever they were), but let everything else through untouched.
         const filteredChanges = selectChanges.length > 1 ? changes.filter((c) => c.type !== 'select') : changes;
 
@@ -321,6 +347,62 @@ export const useDiagramStore = create<DiagramStore>()(
         historyTimeout = setTimeout(() => get().pushHistory(), 500);
       },
 
+      // ── Reset to default ──────────────────────────────────────────────
+      // "Default" = whatever each field's own fallback already is throughout
+      // BaseNode/CustomEdge (e.g. `data.fontSize ?? 13`) — so resetting just
+      // means clearing the override back to `undefined`. Only cosmetic
+      // fields are touched; label text, position, links, connections and any
+      // structural/computed data (value, operation, shapeKind, url, ...)
+      // are left exactly as they were.
+      resetNodesToDefault: (nodeIds) => {
+        const ids = new Set(nodeIds);
+        const STYLE_RESET = {
+          colorToken: undefined,
+          backgroundColor: undefined,
+          borderColor: undefined,
+          textColor: undefined,
+          fontSize: undefined,
+          fontWeight: undefined,
+          borderWidth: undefined,
+          borderStyle: undefined,
+          borderRadius: undefined,
+          rotation: undefined,
+        } as const;
+        set((state) => ({
+          nodes: state.nodes.map((n) => (ids.has(n.id) ? { ...n, data: { ...n.data, ...STYLE_RESET } } : n)),
+        }));
+        get().pushHistory();
+      },
+
+      resetEdgeToDefault: (edgeId) => {
+        const defaultEdgeType = get().settings.defaultEdgeType;
+        const colorMode = get().settings.colorMode;
+        set((state) => ({
+          edges: state.edges.map((e) => {
+            if (e.id !== edgeId) return e;
+            const newData: DiagramEdgeData = {
+              ...e.data,
+              colorToken: undefined,
+              strokeWidth: undefined,
+              edgeStyle: defaultEdgeType,
+              arrowStart: undefined,
+              arrowEnd: undefined,
+              animated: undefined,
+            };
+            const strokeColor = resolveEdgeColor(newData, colorMode);
+            return {
+              ...e,
+              type: defaultEdgeType,
+              animated: false,
+              data: newData,
+              markerEnd: { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 },
+              markerStart: undefined,
+            };
+          }),
+        }));
+        get().pushHistory();
+      },
+
       deleteSelected: () => {
         const { selectedNodeId, selectedEdgeId, nodes } = get();
         const multiSelected = nodes.filter((n) => n.selected);
@@ -402,7 +484,7 @@ export const useDiagramStore = create<DiagramStore>()(
           position: { x: node.position.x + 30, y: node.position.y + 30 },
           selected: false,
         };
-        // A duplicated group's children are NOT duplicated with it (v1) â€” only
+        // A duplicated group's children are NOT duplicated with it (v1) — only
         // the container. Keep ordering valid regardless.
         set((state) => ({ nodes: sortNodesParentFirst([...state.nodes, newNode]) }));
         get().pushHistory();
@@ -418,7 +500,7 @@ export const useDiagramStore = create<DiagramStore>()(
 
       deleteAllNodes: () => {
         // Edges can't dangle without their nodes, so this necessarily clears
-        // edges too â€” kept as a separate action from clearCanvas mainly so
+        // edges too — kept as a separate action from clearCanvas mainly so
         // the Toolbar can offer it with its own distinct confirmation copy.
         set({ nodes: [], edges: [], selectedNodeId: null, selectedEdgeId: null });
         get().pushHistory();
@@ -429,7 +511,7 @@ export const useDiagramStore = create<DiagramStore>()(
         get().pushHistory();
       },
 
-      // â”€â”€ Subflow / grouping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Subflow / grouping ────────────────────────────────────────────
 
       reparentNode: (nodeId, parentId) => {
         set((state) => {
@@ -643,8 +725,11 @@ export const useDiagramStore = create<DiagramStore>()(
       toggleSettingsPanel: () => set((state) => ({ isSettingsPanelOpen: !state.isSettingsPanelOpen })),
       setSelectionTool: (tool) => set({ selectionTool: tool }),
       setLassoMode: (mode) => set({ lassoMode: mode }),
+      toggleCanvasLock: () => set((state) => ({ isCanvasLocked: !state.isCanvasLocked })),
+      setIsCanvasFullscreen: (v) => set({ isCanvasFullscreen: v }),
+      setCanvasFullscreenToggle: (fn) => set({ canvasFullscreenToggle: fn }),
 
-      // â”€â”€ Computing flows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Computing flows ────────────────────────────────────────────────
       // Walks the graph from each numberNode's literal value through any
       // chain of operatorNodes, memoizing as it goes (with a cycle guard so a
       // loop just resolves to `undefined`/no-op instead of hanging), and
@@ -655,7 +740,7 @@ export const useDiagramStore = create<DiagramStore>()(
       recomputeValues: () => {
         const { nodes, edges } = get();
         const byId = new Map(nodes.map((n) => [n.id, n]));
-        // Tracks WHICH handle each incoming edge targets â€” required now that
+        // Tracks WHICH handle each incoming edge targets — required now that
         // operatorNode's handles carry meaning (a vs b vs x vs unlimited),
         // not just "some value arrived".
         const incomingByHandle = new Map<string, { source: string; targetHandle: string | null }[]>();
@@ -716,9 +801,9 @@ export const useDiagramStore = create<DiagramStore>()(
 
           // Calculator nodes (perimeter/area/volume, or beam Ix) act as value
           // producers too, so their output can feed straight into an
-          // operatorNode: shapeNode â†’ geometryCalcNode/beamCalcNode â†’ operatorNode.
+          // operatorNode: shapeNode → geometryCalcNode/beamCalcNode → operatorNode.
           // Mirrors the "connected to a shapeNode" logic in BaseNode.tsx's
-          // GeometryCalcNode/BeamCalcNode â€” falls back to the node's own
+          // GeometryCalcNode/BeamCalcNode — falls back to the node's own
           // standalone calcShape/beamShape fields when nothing is connected.
           if (node.type === 'geometryCalcNode') {
             const data = node.data as DiagramNodeData;
@@ -789,5 +874,3 @@ export const useDiagramStore = create<DiagramStore>()(
     },
   ),
 );
-
-

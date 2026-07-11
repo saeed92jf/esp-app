@@ -1,5 +1,5 @@
 // src/modules/claude-flow/utils/floatingEdge.ts
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 // Geometry for "floating" edges: instead of leaving from a fixed handle,
 // the edge leaves from whichever point on the node's actual VISIBLE outline
 // is closest to the other node, and follows it as nodes move.
@@ -11,9 +11,9 @@
 // parallelogram, stadium-shaped start/end nodes, ...) since their visible
 // outline sits inside the bounding box. Here we approximate each node's
 // outline as a polygon that matches its actual rendered shape (see
-// nodePolygon below) and intersect a ray against THAT instead â€” this is
+// nodePolygon below) and intersect a ray against THAT instead — this is
 // what makes the edge actually touch the shape you see, not its box.
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 import { Position, type InternalNode } from "@xyflow/react";
 
@@ -38,7 +38,7 @@ function nodePolygon(type: string | undefined, w: number, h: number): Point[] {
     case "circleNode":
       return ellipsePoints(w, h, 32);
 
-    // Stadium/pill shapes â€” fully rounded ends. An ellipse is a much closer
+    // Stadium/pill shapes — fully rounded ends. An ellipse is a much closer
     // match than the raw rectangle for these (they're mostly rounded).
     case "inputNode":
     case "outputNode":
@@ -82,7 +82,7 @@ function nodePolygon(type: string | undefined, w: number, h: number): Point[] {
       ];
 
     case "delayNode": {
-      // "D" shape â€” flat left edge, rounded right edge; approximate the
+      // "D" shape — flat left edge, rounded right edge; approximate the
       // round end with an arc of points instead of squaring it off.
       const r = h / 2;
       const pts: Point[] = [
@@ -118,7 +118,7 @@ function nodePolygon(type: string | undefined, w: number, h: number): Point[] {
   }
 }
 
-/** Ray (from c toward t, both in absolute coords) vs. one polygon edge segment (aâ†’b). */
+/** Ray (from c toward t, both in absolute coords) vs. one polygon edge segment (a→b). */
 function raySegmentIntersection(c: Point, t: Point, a: Point, b: Point): (Point & { t: number }) | null {
   const rdx = t.x - c.x;
   const rdy = t.y - c.y;
@@ -161,7 +161,7 @@ function getNodeIntersection(intersectionNode: InternalNode, targetNode: Interna
   const targetOrigin = targetNode.internals.positionAbsolute;
   const targetCenter: Point = { x: targetOrigin.x + tw / 2, y: targetOrigin.y + th / 2 };
 
-  if (w === 0 || h === 0) return center; // not measured yet â€” fall back gracefully
+  if (w === 0 || h === 0) return center; // not measured yet — fall back gracefully
 
   const localPolygon = nodePolygon(intersectionNode.type, w, h);
   const absPolygon = localPolygon.map((p) => ({ x: p.x + origin.x, y: p.y + origin.y }));
@@ -169,7 +169,7 @@ function getNodeIntersection(intersectionNode: InternalNode, targetNode: Interna
   return polygonRayIntersection(absPolygon, center, targetCenter);
 }
 
-/** Determines which side (Top/Right/Bottom/Left) of `node`'s bounding box the point sits nearest to â€” used only to pick a sensible bezier curve direction, not for the actual attach point. */
+/** Determines which side (Top/Right/Bottom/Left) of `node`'s bounding box the point sits nearest to — used only to pick a sensible bezier curve direction, not for the actual attach point. */
 function getEdgePosition(node: InternalNode, intersectionPoint: Point) {
   const nx = node.internals.positionAbsolute.x;
   const ny = node.internals.positionAbsolute.y;
@@ -187,7 +187,7 @@ function getEdgePosition(node: InternalNode, intersectionPoint: Point) {
   return dy > 0 ? Position.Bottom : Position.Top;
 }
 
-/** Full floating-edge params for a source/target pair â€” feed straight into getBezierPath / getSmoothStepPath. */
+/** Full floating-edge params for a source/target pair — feed straight into getBezierPath / getSmoothStepPath. */
 export function getFloatingEdgeParams(source: InternalNode, target: InternalNode) {
   const sourceIntersection = getNodeIntersection(source, target);
   const targetIntersection = getNodeIntersection(target, source);
@@ -201,5 +201,3 @@ export function getFloatingEdgeParams(source: InternalNode, target: InternalNode
     targetPos: getEdgePosition(target, targetIntersection),
   };
 }
-
-

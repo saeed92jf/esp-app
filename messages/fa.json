@@ -350,9 +350,9 @@
   },
 
   "Flow": {
-        "loadTemplate": "بارگذاری الگو...",
-            "searchTemplate": "یافتن الگو",
-                "noTemplate": "بدون الگو",
+    "loadTemplate": "بارگذاری الگو...",
+    "searchTemplate": "یافتن الگو",
+    "noTemplate": "بدون الگو",
     "editor": {
       "title": "ویرایشگر دیاگرام",
       "untitled": "دیاگرام بدون عنوان",
@@ -382,7 +382,7 @@
       "lock": "قفل",
       "unlock": "آزاد",
       "addNode": "افزودن گره",
-         "loadTemplate": "بارگذاری الگو...",
+      "loadTemplate": "بارگذاری الگو...",
       "searchTemplate": "جستجوی الگو",
       "noTemplate": "الگویی یافت نشد"
     },
@@ -398,23 +398,23 @@
       "textNode": "متن",
       "noteNode": "یادداشت",
       "cloudNode": "ابری",
-        "triangleNode": "مثلث",
-"documentNode": "سند",
-"predefinedProcessNode": "زیر سیستم",
-"delayNode": "تاخیر",
-"groupNode": "گروه",
-"numberNode": "مقدار عددی",
-"operatorNode": "عملگر ریاضی",
-"shapeNode": " اشکال هندسی",
-"beamCalcNode": "محاسبه گر ممان اینرسی",
-"geometryCalcNode": "محاسبه گر هندسی",
-"imageNode": "عکس",
-"svgNode": "SVG",
-"dwgNode": "DWG",
-"dxfNode": "DXF",
-"starNode": "ستاره",
-"pentagonNode": "پنج ضلعی",
-"multiDocumentNode": "ترکیبی"
+      "triangleNode": "مثلث",
+      "documentNode": "سند",
+      "predefinedProcessNode": "زیر سیستم",
+      "delayNode": "تاخیر",
+      "groupNode": "گروه",
+      "numberNode": "مقدار عددی",
+      "operatorNode": "عملگر ریاضی",
+      "shapeNode": " اشکال هندسی",
+      "beamCalcNode": "محاسبه گر ممان اینرسی",
+      "geometryCalcNode": "محاسبه گر هندسی",
+      "imageNode": "عکس",
+      "svgNode": "SVG",
+      "dwgNode": "DWG",
+      "dxfNode": "DXF",
+      "starNode": "ستاره",
+      "pentagonNode": "پنج ضلعی",
+      "multiDocumentNode": "ترکیبی"
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
@@ -422,8 +422,8 @@
       "flowchart": "فلوچارت",
       "shapes": "اشکال",
       "dragToAdd": "بکشید به بوم",
-       "containers": "نگهدارنده",
-          "compute": "محاسبه"
+      "containers": "نگهدارنده",
+      "compute": "محاسبه"
     },
     "settings": {
       "label": "برچسب",
@@ -474,7 +474,8 @@
       "edge_step": "پله تیز",
       "autoSave": "ذخیره خودکار در کتابخانه",
       "shortcuts": "میانبرهای صفحه‌کلید",
-       "edge_floating": "شناور"
+      "edge_floating": "شناور",
+      "edge_floating_straight": "شناور مستقیم"
     },
     "shortcuts": {
       "undo": "واگرد",
@@ -530,7 +531,5 @@
     "placeholder": "انتخاب کنید...",
     "searchPlaceholder": "جستجو...",
     "emptyText": "موردی یافت نشد."
-  
-}
-
+  }
 }

@@ -13,51 +13,51 @@ export type DiagramNodeType =
   | 'hexagonNode'
   | 'textNode'
   | 'noteNode'
-  // â”€â”€ New shape nodes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── New shape nodes ──────────────────────────────────────────────
   | 'triangleNode'
   | 'cloudNode'
   | 'documentNode'
   | 'predefinedProcessNode'
   | 'delayNode'
-  // â”€â”€ Subflow / container node â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Subflow / container node ─────────────────────────────────────
   | 'groupNode'
-  // â”€â”€ Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) â”€â”€
+  // ── Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) ──
   | 'numberNode'
   | 'operatorNode'
-  // â”€â”€ Standalone geometry calculators â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Standalone geometry calculators ──────────────────────────────
   | 'geometryCalcNode'
   | 'beamCalcNode'
-  // â”€â”€ Pipeable shape definition â€” connect to a calculator's input handle â”€â”€
+  // ── Pipeable shape definition — connect to a calculator's input handle ──
   | 'shapeNode'
-  // â”€â”€ Image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Image ─────────────────────────────────────────────────────────────
   | 'imageNode'
-  // â”€â”€ Vector / CAD file attachments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Vector / CAD file attachments ────────────────────────────────────
   | 'svgNode'
   | 'dwgNode'
   | 'dxfNode';
 
-export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'floating';
+export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'floating' | 'floating-straight';
 
 export type ArithmeticOperation =
   // n-ary (1+ unordered inputs on one handle)
   | 'add'
   | 'multiply'
   | 'average'
-  // binary (exactly 2 inputs, ORDER matters â€” handles "a" and "b")
+  // binary (exactly 2 inputs, ORDER matters — handles "a" and "b")
   | 'subtract'
   | 'divide'
   | 'power'
-  // unary (exactly 1 input â€” handle "x")
+  // unary (exactly 1 input — handle "x")
   | 'sqrt'
   | 'square'
   | 'abs'
   | 'negate';
 
-/** How many inputs an operation needs, and whether their order matters â€”
+/** How many inputs an operation needs, and whether their order matters —
  *  drives which handles operatorNode renders. See components/nodes/BaseNode.tsx. */
 export type OperatorArity = 'nary' | 'binary' | 'unary';
 
-/** Which pointer interaction dragging on empty canvas performs â€” see Toolbar's selection-tool toggle. */
+/** Which pointer interaction dragging on empty canvas performs — see Toolbar's selection-tool toggle. */
 export type SelectionTool = 'pointer' | 'box' | 'lasso';
 
 /** Lasso hit-test: "partial" selects any node the lasso touches at all,
@@ -67,6 +67,14 @@ export type LassoMode = 'partial' | 'full';
 
 export interface DiagramNodeData extends Record<string, unknown> {
   label: string;
+  /** When true, `label` is rendered as raw HTML (dangerouslySetInnerHTML)
+   *  instead of plain text — lets Label/Text/Note nodes hold rich content
+   *  (bold, links, line breaks via <br>, etc). Off by default: plain text. */
+  isRichText?: boolean;
+  /** Display-only unit tag for calculator nodes (NumberNode, OperatorNode,
+   *  GeometryCalcNode, BeamCalcNode, ShapeNode) — e.g. "mm", "cm". Purely a
+   *  label; doesn't rescale any numbers. See utils/units.ts. */
+  unit?: string;
   /** Token from a small fixed palette (utils/colors.ts), pre-tuned for light & dark.
    *  Takes priority over the raw hex fields below when set. */
   colorToken?: ColorToken;
@@ -88,40 +96,40 @@ export interface DiagramNodeData extends Record<string, unknown> {
   width?: number;
   height?: number;
 
-  // â”€â”€ Computing flows (numberNode / operatorNode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Computing flows (numberNode / operatorNode) ──────────────────────
   /** numberNode: the user-entered input value. */
   value?: number;
   /** operatorNode: which arithmetic operation to apply to its incoming values. */
   operation?: ArithmeticOperation;
   /** operatorNode: live result, recomputed by the store whenever the graph or
    *  an upstream value changes (see store's recomputeValues). Read-only from
-   *  the UI's point of view â€” always derived, never edited directly. */
+   *  the UI's point of view — always derived, never edited directly. */
   result?: number;
 
-  // â”€â”€ Geometry calculator (perimeter / area / volume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Geometry calculator (perimeter / area / volume) ──────────────────
   calcShape?: GeometryShape;
   calcMode?: GeometryMode;
   calcInputs?: Record<string, number>;
 
-  // â”€â”€ Beam second-moment-of-area calculator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Beam second-moment-of-area calculator ────────────────────────────
   beamShape?: BeamShape;
   beamInputs?: Record<string, number>;
 
-  // â”€â”€ Pipeable shape definition (shapeNode) â€” feeds geometryCalcNode /
+  // ── Pipeable shape definition (shapeNode) — feeds geometryCalcNode /
   // beamCalcNode via an edge into their input handle. When a calculator is
   // connected to one of these, it uses this shape instead of its own
   // standalone calcShape/beamShape+inputs.
   shapeKind?: GeometryShape;
   shapeInputs?: Record<string, number>;
 
-  // â”€â”€ Image node â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Image node ────────────────────────────────────────────────────────
   /** Data-URL (uploaded file) or external URL. */
   imageUrl?: string;
 
-  // â”€â”€ SVG node â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── SVG node ──────────────────────────────────────────────────────────
   svgContent?: string;
 
-  // â”€â”€ CAD file node (dwg/dxf) â€” can't render the drawing itself in-browser,
+  // ── CAD file node (dwg/dxf) — can't render the drawing itself in-browser,
   // so this behaves as an attachment: keeps the original file (as a data-URL)
   // for re-download, plus its name/size for display.
   cadFileName?: string;
@@ -129,7 +137,7 @@ export interface DiagramNodeData extends Record<string, unknown> {
   cadFileDataUrl?: string;
   cadFileSize?: number;
 
-  // â”€â”€ Rotation (imageNode + textNode) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Rotation (imageNode + textNode) ──────────────────────────────────
   /** Degrees, 0-360. See components/nodes/RotateHandle.tsx. */
   rotation?: number;
 }
@@ -142,7 +150,7 @@ export interface DiagramEdgeData extends Record<string, unknown> {
   color?: string;
   strokeWidth?: number;
   edgeStyle?: DiagramEdgeType;
-  /** Arrowhead toggles â€” rendered via the edge's top-level markerStart/markerEnd. */
+  /** Arrowhead toggles — rendered via the edge's top-level markerStart/markerEnd. */
   arrowStart?: boolean;
   arrowEnd?: boolean;
 }
@@ -188,5 +196,3 @@ export interface PaletteItem {
 }
 
 export type { ColorToken } from '../utils/colors';
-
-

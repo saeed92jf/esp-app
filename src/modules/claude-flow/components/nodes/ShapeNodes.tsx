@@ -43,7 +43,7 @@ export function getNodeStyle(data: DiagramNodeData): React.CSSProperties {
 // In Tailwind v4, important modifier moves to suffix: `h-2.5!` instead of `!h-2.5`.
 const HANDLE_CLS = "size-2.5! border-2! border-white! bg-slate-400!";
 
-// NodeResizer overrides Ã¢â‚¬â€ lineClassName targets the resize border line,
+// NodeResizer overrides â€” lineClassName targets the resize border line,
 // handleClassName targets the corner/edge drag handles.
 const RESIZER_LINE_CLS = "border-indigo-500!";
 const RESIZER_HANDLE_CLS =
@@ -65,21 +65,21 @@ export function BaseNodeShell({
   return (
     <div
       className={cn(
-        // layout Ã¢â‚¬â€ min-h-11 = 44px, min-w-30 = 120px (Tailwind v4 scale)
+        // layout â€” min-h-11 = 44px, min-w-30 = 120px (Tailwind v4 scale)
         "group relative flex min-h-11 min-w-30 items-center justify-center px-4 py-2.5 text-center",
         // base shadow + smooth transition on state changes
         "shadow-xs transition-shadow",
-        // selection ring Ã¢â‚¬â€ ring-indigo-500 replaces the old --tw-ring-color CSS var (v3 internals)
+        // selection ring â€” ring-indigo-500 replaces the old --tw-ring-color CSS var (v3 internals)
         selected
           ? "shadow-md ring-2 ring-indigo-500 ring-offset-2"
           : "hover:shadow-md",
         shapeClassName,
       )}
-      // All dynamic values (color, border-style, radiusÃ¢â‚¬Â¦) go through inline style
+      // All dynamic values (color, border-style, radiusâ€¦) go through inline style
       // to guarantee specificity over any Tailwind utility.
       style={{ ...nodeStyle, ...style }}
     >
-      {/* Resize handles Ã¢â‚¬â€ only mounted when resizable=true, visible only when selected */}
+      {/* Resize handles â€” only mounted when resizable=true, visible only when selected */}
       {resizable && (
         <NodeResizer
           isVisible={selected}
@@ -118,15 +118,13 @@ export function BaseNodeShell({
         </>
       )}
 
-      {/* Node label Ã¢â‚¬â€ pointer-events-none prevents drag interference */}
+      {/* Node label â€” pointer-events-none prevents drag interference */}
       <span className="pointer-events-none w-full truncate">{children}</span>
     </div>
   );
 }
 
 export type DiagramNodeProps = NodeProps & { data: DiagramNodeData };
-
-
 
 
 

@@ -1,14 +1,14 @@
 // src/modules/claude-flow/utils/colors.ts
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 // A deliberately SMALL, curated set of colors ("tokens") for nodes & edges.
 // Each token carries a matched light-mode and dark-mode value so the whole
 // diagram stays legible and coherent when the user flips settings.colorMode,
 // instead of exposing an unrestricted color wheel.
 //
 // Backward compatible: existing diagrams that already stored raw hex values
-// in data.backgroundColor / borderColor / textColor / color keep working â€”
+// in data.backgroundColor / borderColor / textColor / color keep working —
 // a token simply takes priority over those when present (see resolve* below).
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────
 
 export type ColorMode = 'light' | 'dark';
 
@@ -44,7 +44,7 @@ interface NodeTokenModes {
   dark: NodeTokenColors;
 }
 
-/** Node fill / border / text triplets â€” chosen so text stays readable on bg in both modes. */
+/** Node fill / border / text triplets — chosen so text stays readable on bg in both modes. */
 export const NODE_COLOR_TOKENS: Record<ColorToken, NodeTokenModes> = {
   neutral: {
     light: { bg: '#f8fafc', border: '#94a3b8', text: '#0f172a' },
@@ -80,7 +80,7 @@ export const NODE_COLOR_TOKENS: Record<ColorToken, NodeTokenModes> = {
   },
 };
 
-/** Edge stroke colors â€” same hue family as the node tokens for a unified look. */
+/** Edge stroke colors — same hue family as the node tokens for a unified look. */
 export const EDGE_COLOR_TOKENS: Record<ColorToken, { light: string; dark: string }> = {
   neutral: { light: '#94a3b8', dark: '#94a3b8' },
   red: { light: '#ef4444', dark: '#f87171' },
@@ -127,5 +127,3 @@ export function resolveEdgeColor(data: ResolvableEdgeData | undefined, mode: Col
   if (token && EDGE_COLOR_TOKENS[token]) return EDGE_COLOR_TOKENS[token][mode];
   return data?.color ?? (mode === 'dark' ? '#64748b' : '#94a3b8');
 }
-
-

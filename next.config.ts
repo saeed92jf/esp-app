@@ -32,17 +32,12 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  allowedDevOrigins: ["localhost", "192.168.109.97"],
+  allowedDevOrigins: ["localhost", "192.168.0.71"],
 
   experimental: {
     serverActions: { allowedOrigins: ["*"] },
   },
 
-  // ─── Rewrites ────────────────────────────────────────────────────────────
-  // توضیح: rewrite قبلی برای /api/aparat/:path* حذف شد.
-  // حالا یک route handler واقعی در src/app/api/aparat/[...path]/route.ts
-  // این درخواست‌ها را مدیریت می‌کند و Next.js Data Cache روی آن اعمال می‌شود.
-  // rewrite ساده از Data Cache عبور می‌کرد و هیچ caching ای نداشت.
   async rewrites() {
     return [];
   },
