@@ -1,0 +1,4817 @@
+{
+  "name": "Figure A.1 — Example Fixed Equipment Codes, Standards, and Useful Documents Web Diagram",
+  "nodes": [
+    {
+      "id": "node-1783453498590-group",
+      "type": "groupNode",
+      "position": {
+        "x": -75,
+        "y": 1095
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Heater/Boiler",
+        "colorToken": "neutral",
+        "width": 492,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 492,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783453452827-group",
+      "type": "groupNode",
+      "position": {
+        "x": 15,
+        "y": 1320
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Pressure Vessel",
+        "colorToken": "neutral",
+        "width": 375,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 375,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783453406704-group",
+      "type": "groupNode",
+      "position": {
+        "x": 480,
+        "y": 1470
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Aboveground Storage Tanks",
+        "colorToken": "neutral",
+        "width": 477,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 477,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783453343125-group",
+      "type": "groupNode",
+      "position": {
+        "x": 990,
+        "y": 1470
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Piping / Pipelines",
+        "colorToken": "neutral",
+        "width": 570,
+        "height": 295
+      },
+      "selected": false,
+      "measured": {
+        "width": 570,
+        "height": 295
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783450472056-group",
+      "type": "groupNode",
+      "position": {
+        "x": 0,
+        "y": 870
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Welding",
+        "colorToken": "neutral",
+        "width": 402,
+        "height": 178
+      },
+      "selected": false,
+      "measured": {
+        "width": 402,
+        "height": 178
+      },
+      "dragging": false,
+      "width": 402,
+      "height": 178,
+      "resizing": false
+    },
+    {
+      "id": "node-1783450435745-group",
+      "type": "groupNode",
+      "position": {
+        "x": 390,
+        "y": 645
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Fired Heaters",
+        "colorToken": "neutral",
+        "width": 162,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 162,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783450383510-group",
+      "type": "groupNode",
+      "position": {
+        "x": 615,
+        "y": 750
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Quality Control",
+        "colorToken": "neutral",
+        "width": 275,
+        "height": 150
+      },
+      "selected": false,
+      "measured": {
+        "width": 275,
+        "height": 150
+      },
+      "width": 275,
+      "height": 150,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "node-1783450327039-group",
+      "type": "groupNode",
+      "position": {
+        "x": 930,
+        "y": 720
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Repair",
+        "colorToken": "neutral",
+        "width": 405,
+        "height": 173
+      },
+      "selected": false,
+      "measured": {
+        "width": 405,
+        "height": 173
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783448138997-group",
+      "type": "groupNode",
+      "position": {
+        "x": -150,
+        "y": 435
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "FRP Asset",
+        "colorToken": "neutral",
+        "width": 427,
+        "height": 365
+      },
+      "selected": false,
+      "measured": {
+        "width": 427,
+        "height": 365
+      },
+      "dragging": false,
+      "width": 427,
+      "height": 365,
+      "resizing": false
+    },
+    {
+      "id": "node-1783444076103-group",
+      "type": "groupNode",
+      "position": {
+        "x": -165,
+        "y": 60
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "PRDs",
+        "colorToken": "neutral",
+        "width": 372,
+        "height": 295
+      },
+      "selected": false,
+      "measured": {
+        "width": 372,
+        "height": 295
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783444010224-group",
+      "type": "groupNode",
+      "position": {
+        "x": 240,
+        "y": -75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Pressure Vessel",
+        "colorToken": "neutral",
+        "width": 312,
+        "height": 295
+      },
+      "selected": false,
+      "measured": {
+        "width": 312,
+        "height": 295
+      },
+      "dragging": false,
+      "width": 312,
+      "height": 295,
+      "resizing": false
+    },
+    {
+      "id": "node-1783443960448-group",
+      "type": "groupNode",
+      "position": {
+        "x": 585,
+        "y": -75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Piping",
+        "colorToken": "neutral",
+        "width": 162,
+        "height": 295
+      },
+      "selected": false,
+      "measured": {
+        "width": 162,
+        "height": 295
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783443920371-group",
+      "type": "groupNode",
+      "position": {
+        "x": 780,
+        "y": -60
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Aboveground Storage Tank",
+        "colorToken": "neutral",
+        "width": 297,
+        "height": 293
+      },
+      "selected": false,
+      "measured": {
+        "width": 297,
+        "height": 293
+      },
+      "dragging": false,
+      "width": 297,
+      "height": 293,
+      "resizing": false
+    },
+    {
+      "id": "node-1783443639656-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1185,
+        "y": -75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "NDE",
+        "colorToken": "neutral",
+        "width": 372,
+        "height": 308
+      },
+      "selected": false,
+      "measured": {
+        "width": 372,
+        "height": 308
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783443132082-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1680,
+        "y": 1365
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Heat Exchangers",
+        "colorToken": "neutral",
+        "width": 402,
+        "height": 282
+      },
+      "selected": false,
+      "measured": {
+        "width": 402,
+        "height": 282
+      },
+      "dragging": false,
+      "width": 402,
+      "height": 282,
+      "resizing": false
+    },
+    {
+      "id": "node-1783443054833-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1770,
+        "y": 1200
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Flare",
+        "colorToken": "neutral",
+        "width": 200,
+        "height": 145
+      },
+      "selected": false,
+      "measured": {
+        "width": 200,
+        "height": 145
+      },
+      "dragging": false,
+      "width": 200,
+      "height": 145,
+      "resizing": false
+    },
+    {
+      "id": "node-1783439506307-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1680,
+        "y": 975
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Materials",
+        "colorToken": "neutral",
+        "width": 472,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 472,
+        "height": 190
+      },
+      "dragging": false,
+      "width": 472,
+      "height": 190,
+      "resizing": false
+    },
+    {
+      "id": "node-1783439436435-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1800,
+        "y": 765
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "PRDs",
+        "colorToken": "neutral",
+        "width": 347,
+        "height": 175
+      },
+      "selected": false,
+      "measured": {
+        "width": 347,
+        "height": 175
+      },
+      "width": 347,
+      "height": 175,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "node-1783439345948-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2505,
+        "y": 1290
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Injection / Process Mix Points",
+        "colorToken": "neutral",
+        "width": 232,
+        "height": 170
+      },
+      "selected": false,
+      "measured": {
+        "width": 232,
+        "height": 170
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783438768316-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1710,
+        "y": 570
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Fitness For Service",
+        "colorToken": "neutral",
+        "width": 337,
+        "height": 162
+      },
+      "selected": false,
+      "measured": {
+        "width": 337,
+        "height": 162
+      },
+      "width": 337,
+      "height": 162,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "node-1783438676700-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1545,
+        "y": 390
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Risk Based Inspection",
+        "colorToken": "neutral",
+        "width": 522,
+        "height": 153
+      },
+      "selected": false,
+      "measured": {
+        "width": 522,
+        "height": 153
+      },
+      "dragging": false,
+      "width": 522,
+      "height": 153,
+      "resizing": false
+    },
+    {
+      "id": "node-1783438508917-group",
+      "type": "groupNode",
+      "position": {
+        "x": 1635,
+        "y": 15
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Pipeline",
+        "colorToken": "neutral",
+        "width": 387,
+        "height": 245
+      },
+      "selected": false,
+      "measured": {
+        "width": 387,
+        "height": 245
+      },
+      "dragging": false,
+      "width": 387,
+      "height": 245,
+      "resizing": false
+    },
+    {
+      "id": "node-1783438366955-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2220,
+        "y": 75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Incident Investigation",
+        "colorToken": "neutral",
+        "width": 162,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 162,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783438362005-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2415,
+        "y": 75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "HF Alkylation",
+        "colorToken": "neutral",
+        "width": 162,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 162,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783438351844-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2625,
+        "y": 75
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "KPI",
+        "colorToken": "neutral",
+        "width": 162,
+        "height": 190
+      },
+      "selected": false,
+      "measured": {
+        "width": 162,
+        "height": 190
+      },
+      "dragging": false
+    },
+    {
+      "id": "node-1783438086784-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2385,
+        "y": 690
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Corrosion Under Insulation/Fireproofing",
+        "colorToken": "neutral",
+        "width": 367,
+        "height": 255
+      },
+      "selected": false,
+      "measured": {
+        "width": 367,
+        "height": 255
+      },
+      "dragging": false,
+      "width": 367,
+      "height": 255,
+      "resizing": false
+    },
+    {
+      "id": "node-1783435281486-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2940,
+        "y": 1155
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Corrosion Control",
+        "colorToken": "neutral",
+        "width": 452,
+        "height": 275
+      },
+      "selected": false,
+      "measured": {
+        "width": 452,
+        "height": 275
+      },
+      "dragging": false,
+      "width": 452,
+      "height": 275,
+      "resizing": false
+    },
+    {
+      "id": "node-1783435242862-group",
+      "type": "groupNode",
+      "position": {
+        "x": 2985,
+        "y": 540
+      },
+      "dragHandle": ".subflow-drag-handle",
+      "data": {
+        "label": "Damage Mechanism",
+        "colorToken": "neutral",
+        "width": 477,
+        "height": 455
+      },
+      "selected": false,
+      "measured": {
+        "width": 477,
+        "height": 455
+      },
+      "dragging": false,
+      "width": 477,
+      "height": 455,
+      "resizing": false
+    },
+    {
+      "id": "center-in-service-inspection",
+      "type": "hexagonNode",
+      "position": {
+        "x": 825,
+        "y": 435
+      },
+      "data": {
+        "label": "In-Service Inspection",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#bfbfbf",
+        "textColor": "#222222",
+        "width": 340,
+        "height": 130,
+        "fontSize": 28,
+        "colorToken": "amber",
+        "fontWeight": "bold",
+        "borderWidth": 2
+      },
+      "style": {
+        "width": 220,
+        "height": 100
+      },
+      "measured": {
+        "width": 340,
+        "height": 130
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 340,
+      "height": 130,
+      "resizing": false
+    },
+    {
+      "id": "center-mi-engineering-process-safety",
+      "type": "hexagonNode",
+      "position": {
+        "x": 2370,
+        "y": 435
+      },
+      "data": {
+        "label": "MI Engineering / Process Safety",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#bfbfbf",
+        "textColor": "#222222",
+        "fontSize": 28,
+        "fontWeight": "bold",
+        "width": 300,
+        "height": 130,
+        "colorToken": "amber",
+        "borderWidth": 2
+      },
+      "style": {
+        "width": 240,
+        "height": 100
+      },
+      "measured": {
+        "width": 300,
+        "height": 130
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 300,
+      "height": 130,
+      "resizing": false
+    },
+    {
+      "id": "center-design-repair",
+      "type": "hexagonNode",
+      "position": {
+        "x": 825,
+        "y": 1050
+      },
+      "data": {
+        "label": "Design & Repair",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#bfbfbf",
+        "textColor": "#222222",
+        "width": 325,
+        "height": 115,
+        "fontSize": 28,
+        "fontWeight": "bold",
+        "borderWidth": 2,
+        "colorToken": "amber"
+      },
+      "style": {
+        "width": 220,
+        "height": 100
+      },
+      "measured": {
+        "width": 325,
+        "height": 115
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 325,
+      "height": 115,
+      "resizing": false
+    },
+    {
+      "id": "center-corrosion",
+      "type": "hexagonNode",
+      "position": {
+        "x": 2430,
+        "y": 1050
+      },
+      "data": {
+        "label": "Corrosion",
+        "backgroundColor": "#ffffff",
+        "borderColor": "#bfbfbf",
+        "textColor": "#222222",
+        "fontSize": 28,
+        "fontWeight": "bold",
+        "width": 215,
+        "height": 115,
+        "colorToken": "amber",
+        "borderWidth": 2
+      },
+      "style": {
+        "width": 200,
+        "height": 100
+      },
+      "measured": {
+        "width": 215,
+        "height": 115
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 215,
+      "height": 115,
+      "resizing": false
+    },
+    {
+      "id": "n-api-rp-572",
+      "type": "circleNode",
+      "position": {
+        "x": 195,
+        "y": 60
+      },
+      "parentId": "node-1783444010224-group",
+      "extent": "parent",
+      "data": {
+        "label": "API RP 572",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-510-isi-pv",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 60
+      },
+      "parentId": "node-1783444010224-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 510",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-nbic-part-2",
+      "type": "hexagonNode",
+      "position": {
+        "x": 105,
+        "y": 165
+      },
+      "parentId": "node-1783444010224-group",
+      "extent": "parent",
+      "data": {
+        "label": "NBIC Part 2",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 95,
+        "height": 90,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 80,
+        "height": 60
+      },
+      "measured": {
+        "width": 95,
+        "height": 90
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 95,
+      "height": 90,
+      "resizing": false
+    },
+    {
+      "id": "n-api-574",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 45
+      },
+      "parentId": "node-1783443960448-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 574",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-570-isi",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 180
+      },
+      "parentId": "node-1783443960448-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 570",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-575",
+      "type": "circleNode",
+      "position": {
+        "x": 165,
+        "y": 45
+      },
+      "parentId": "node-1783443920371-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 12R1",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-sti-sp001",
+      "type": "hexagonNode",
+      "position": {
+        "x": 165,
+        "y": 180
+      },
+      "parentId": "node-1783443920371-group",
+      "extent": "parent",
+      "data": {
+        "label": "STI SP001",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-653-isi-tank",
+      "type": "circleNode",
+      "position": {
+        "x": 45,
+        "y": 180
+      },
+      "parentId": "node-1783443920371-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 653",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-586",
+      "type": "circleNode",
+      "position": {
+        "x": 141,
+        "y": 64
+      },
+      "parentId": "node-1783443639656-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 586",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asnt-tc-1a",
+      "type": "hexagonNode",
+      "position": {
+        "x": 216,
+        "y": 184
+      },
+      "parentId": "node-1783443639656-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASNT TC-1A",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-qute",
+      "type": "circleNode",
+      "position": {
+        "x": 246,
+        "y": 64
+      },
+      "parentId": "node-1783443639656-group",
+      "extent": "parent",
+      "data": {
+        "label": "API QUTE",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-587",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783443639656-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 587",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-v",
+      "type": "hexagonNode",
+      "position": {
+        "x": 96,
+        "y": 184
+      },
+      "parentId": "node-1783443639656-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME V",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 102,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 72,
+        "height": 58
+      },
+      "measured": {
+        "width": 102,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 102,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-576",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783444076103-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 576",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-527",
+      "type": "circleNode",
+      "position": {
+        "x": 141,
+        "y": 64
+      },
+      "parentId": "node-1783444076103-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 527",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-nbic-part-4",
+      "type": "hexagonNode",
+      "position": {
+        "x": 186,
+        "y": 169
+      },
+      "parentId": "node-1783444076103-group",
+      "extent": "parent",
+      "data": {
+        "label": "NBIC Part 4",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 100,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 100,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 100,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-510-isi-prds",
+      "type": "circleNode",
+      "position": {
+        "x": 81,
+        "y": 169
+      },
+      "parentId": "node-1783444076103-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 510",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-570-isi-prds",
+      "type": "circleNode",
+      "position": {
+        "x": 246,
+        "y": 64
+      },
+      "parentId": "node-1783444076103-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 570",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-mti-129-99",
+      "type": "hexagonNode",
+      "position": {
+        "x": 165,
+        "y": 45
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "MTI 129-99",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 114,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 84,
+        "height": 58
+      },
+      "measured": {
+        "width": 114,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 114,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-ftv-2007-1",
+      "type": "hexagonNode",
+      "position": {
+        "x": 300,
+        "y": 45
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "FT&V 2007-1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 114,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 84,
+        "height": 58
+      },
+      "measured": {
+        "width": 114,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 114,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-frpi-sp1010-sp1020",
+      "type": "hexagonNode",
+      "position": {
+        "x": 30,
+        "y": 45
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "FRPI SP1010 / SP1020",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 110,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 95,
+        "height": 58
+      },
+      "measured": {
+        "width": 110,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 110,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-frpi-sp8310",
+      "type": "hexagonNode",
+      "position": {
+        "x": 300,
+        "y": 150
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "FRPI SP8310",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 112,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 82,
+        "height": 58
+      },
+      "measured": {
+        "width": 112,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 112,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-frpi-sp1030",
+      "type": "hexagonNode",
+      "position": {
+        "x": 30,
+        "y": 150
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "FRPI SP1030",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 112,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 82,
+        "height": 58
+      },
+      "measured": {
+        "width": 112,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 112,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-frpi-sp1040",
+      "type": "hexagonNode",
+      "position": {
+        "x": 165,
+        "y": 150
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "FRPI SP1040",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 112,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 82,
+        "height": 58
+      },
+      "measured": {
+        "width": 112,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 112,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-ppfa",
+      "type": "hexagonNode",
+      "position": {
+        "x": 165,
+        "y": 255
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "PPFA",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 115,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 115,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 115,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-ppi",
+      "type": "hexagonNode",
+      "position": {
+        "x": 300,
+        "y": 255
+      },
+      "parentId": "node-1783448138997-group",
+      "extent": "parent",
+      "data": {
+        "label": "PPI",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 115,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 115,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 115,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-573-isi",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783450435745-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 573",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-588",
+      "type": "circleNode",
+      "position": {
+        "x": 45,
+        "y": 45
+      },
+      "parentId": "node-1783450383510-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 588",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-578",
+      "type": "circleNode",
+      "position": {
+        "x": 150,
+        "y": 45
+      },
+      "parentId": "node-1783450383510-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 578",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-pcc-1-repair",
+      "type": "hexagonNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783450327039-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME PCC-1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nbic-part-3",
+      "type": "hexagonNode",
+      "position": {
+        "x": 276,
+        "y": 64
+      },
+      "parentId": "node-1783450327039-group",
+      "extent": "parent",
+      "data": {
+        "label": "NBIC Part 3",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-pcc-2",
+      "type": "hexagonNode",
+      "position": {
+        "x": 156,
+        "y": 64
+      },
+      "parentId": "node-1783450327039-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME PCC-2",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-api-577",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 60
+      },
+      "parentId": "node-1783450472056-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 577",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-ix",
+      "type": "hexagonNode",
+      "position": {
+        "x": 270,
+        "y": 60
+      },
+      "parentId": "node-1783450472056-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME IX",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 100,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 100,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 100,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-582",
+      "type": "circleNode",
+      "position": {
+        "x": 150,
+        "y": 60
+      },
+      "parentId": "node-1783450472056-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 582",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1104",
+      "type": "circleNode",
+      "position": {
+        "x": 15,
+        "y": 45
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1104",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1110",
+      "type": "circleNode",
+      "position": {
+        "x": 120,
+        "y": 45
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1110",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1188",
+      "type": "circleNode",
+      "position": {
+        "x": 225,
+        "y": 45
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1188",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1163",
+      "type": "circleNode",
+      "position": {
+        "x": 75,
+        "y": 135
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1163",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1173",
+      "type": "circleNode",
+      "position": {
+        "x": 180,
+        "y": 135
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1173",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-1176",
+      "type": "circleNode",
+      "position": {
+        "x": 285,
+        "y": 135
+      },
+      "parentId": "node-1783438508917-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 1176",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-585",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783438366955-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 585",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-751",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783438362005-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 751",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-754",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783438351844-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 754",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-581",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 45
+      },
+      "parentId": "node-1783438676700-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 581",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-pcc-3",
+      "type": "hexagonNode",
+      "position": {
+        "x": 375,
+        "y": 45
+      },
+      "parentId": "node-1783438676700-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME PCC-3",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 106,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 106,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 106,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-580",
+      "type": "circleNode",
+      "position": {
+        "x": 135,
+        "y": 45
+      },
+      "parentId": "node-1783438676700-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 580",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-691",
+      "type": "circleNode",
+      "position": {
+        "x": 255,
+        "y": 45
+      },
+      "parentId": "node-1783438676700-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 691",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-579-2",
+      "type": "circleNode",
+      "position": {
+        "x": 225,
+        "y": 45
+      },
+      "parentId": "node-1783438768316-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 579-2",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-571-dm",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 45
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 571",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-938-a",
+      "type": "circleNode",
+      "position": {
+        "x": 135,
+        "y": 45
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 938 A",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-939-b",
+      "type": "circleNode",
+      "position": {
+        "x": 240,
+        "y": 45
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 939 B",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-939-c",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 150
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 939 C",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-939-e",
+      "type": "circleNode",
+      "position": {
+        "x": 135,
+        "y": 150
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 939 E",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-941-dm",
+      "type": "circleNode",
+      "position": {
+        "x": 345,
+        "y": 45
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 941",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-945",
+      "type": "circleNode",
+      "position": {
+        "x": 240,
+        "y": 150
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 945",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-932-a-b",
+      "type": "circleNode",
+      "position": {
+        "x": 345,
+        "y": 150
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 932 A & B",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 70,
+        "height": 70
+      },
+      "measured": {
+        "width": 70,
+        "height": 70
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-nace-mr0103",
+      "type": "hexagonNode",
+      "position": {
+        "x": 345,
+        "y": 270
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE MR0103",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0170",
+      "type": "hexagonNode",
+      "position": {
+        "x": 45,
+        "y": 360
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0170",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0296",
+      "type": "hexagonNode",
+      "position": {
+        "x": 165,
+        "y": 270
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0296",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0403",
+      "type": "hexagonNode",
+      "position": {
+        "x": 255,
+        "y": 270
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0403",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0472",
+      "type": "hexagonNode",
+      "position": {
+        "x": 75,
+        "y": 270
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0472",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0205",
+      "type": "hexagonNode",
+      "position": {
+        "x": 150,
+        "y": 360
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0205",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0590",
+      "type": "hexagonNode",
+      "position": {
+        "x": 255,
+        "y": 360
+      },
+      "parentId": "node-1783435242862-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0590",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-api-583",
+      "type": "circleNode",
+      "position": {
+        "x": 135,
+        "y": 45
+      },
+      "parentId": "node-1783438086784-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 583",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-ampp-sp0198",
+      "type": "hexagonNode",
+      "position": {
+        "x": 180,
+        "y": 150
+      },
+      "parentId": "node-1783438086784-group",
+      "extent": "parent",
+      "data": {
+        "label": "AMPP SP0198",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 95,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 95,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 95,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-ampp-tm21549",
+      "type": "hexagonNode",
+      "position": {
+        "x": 75,
+        "y": 150
+      },
+      "parentId": "node-1783438086784-group",
+      "extent": "parent",
+      "data": {
+        "label": "AMPP TM21549",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 86,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 86,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 86,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-api-530",
+      "type": "circleNode",
+      "position": {
+        "x": 156,
+        "y": 64
+      },
+      "parentId": "node-1783453498590-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 530",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-538",
+      "type": "circleNode",
+      "position": {
+        "x": 261,
+        "y": 64
+      },
+      "parentId": "node-1783453498590-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 538",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-560",
+      "type": "circleNode",
+      "position": {
+        "x": 366,
+        "y": 64
+      },
+      "parentId": "node-1783453498590-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 560",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-i",
+      "type": "hexagonNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783453498590-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME I",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 100,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 100,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 100,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-510-dr-pv",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783453452827-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 510",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-viii-1",
+      "type": "hexagonNode",
+      "position": {
+        "x": 141,
+        "y": 64
+      },
+      "parentId": "node-1783453452827-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME VIII-1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-viii-2",
+      "type": "hexagonNode",
+      "position": {
+        "x": 246,
+        "y": 64
+      },
+      "parentId": "node-1783453452827-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME VIII-2",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 93,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 93,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 93,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-650",
+      "type": "circleNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "data": {
+        "label": "API 650",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false,
+      "parentId": "node-1783453406704-group",
+      "extent": "parent"
+    },
+    {
+      "id": "n-api-620",
+      "type": "circleNode",
+      "position": {
+        "x": 141,
+        "y": 64
+      },
+      "data": {
+        "label": "API 620",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false,
+      "parentId": "node-1783453406704-group",
+      "extent": "parent"
+    },
+    {
+      "id": "n-api-12-series",
+      "type": "circleNode",
+      "position": {
+        "x": 246,
+        "y": 64
+      },
+      "data": {
+        "label": "API 12 Series",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false,
+      "parentId": "node-1783453406704-group",
+      "extent": "parent"
+    },
+    {
+      "id": "n-api-653-dr-tanks",
+      "type": "circleNode",
+      "position": {
+        "x": 351,
+        "y": 64
+      },
+      "data": {
+        "label": "API 653",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false,
+      "parentId": "node-1783453406704-group",
+      "extent": "parent"
+    },
+    {
+      "id": "n-api-570-dr",
+      "type": "circleNode",
+      "position": {
+        "x": 246,
+        "y": 169
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 570",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-b31-1",
+      "type": "hexagonNode",
+      "position": {
+        "x": 36,
+        "y": 64
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME B31.1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-b31-3",
+      "type": "hexagonNode",
+      "position": {
+        "x": 171,
+        "y": 64
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME B31.3",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-b31-4",
+      "type": "hexagonNode",
+      "position": {
+        "x": 426,
+        "y": 64
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME B31.4",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-b31-8",
+      "type": "hexagonNode",
+      "position": {
+        "x": 366,
+        "y": 169
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME B31.8",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-b31-12",
+      "type": "hexagonNode",
+      "position": {
+        "x": 306,
+        "y": 64
+      },
+      "parentId": "node-1783453343125-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME B31.12",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 99,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 84,
+        "height": 58
+      },
+      "measured": {
+        "width": 99,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 99,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-2000",
+      "type": "circleNode",
+      "position": {
+        "x": 21,
+        "y": 49
+      },
+      "parentId": "node-1783439436435-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 2000",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-521",
+      "type": "circleNode",
+      "position": {
+        "x": 126,
+        "y": 49
+      },
+      "parentId": "node-1783439436435-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 521",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-520",
+      "type": "circleNode",
+      "position": {
+        "x": 231,
+        "y": 49
+      },
+      "parentId": "node-1783439436435-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 520",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-astm",
+      "type": "hexagonNode",
+      "position": {
+        "x": 150,
+        "y": 60
+      },
+      "parentId": "node-1783439506307-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASTM",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 95,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 95,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 95,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-5l",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 60
+      },
+      "parentId": "node-1783439506307-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 5L",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-asme-ii",
+      "type": "hexagonNode",
+      "position": {
+        "x": 255,
+        "y": 60
+      },
+      "parentId": "node-1783439506307-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME II",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 95,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 95,
+        "height": 88
+      },
+      "selected": false,
+      "width": 95,
+      "height": 88,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "n-mss-sp",
+      "type": "hexagonNode",
+      "position": {
+        "x": 360,
+        "y": 60
+      },
+      "parentId": "node-1783439506307-group",
+      "extent": "parent",
+      "data": {
+        "label": "MSS-SP",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 95,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 95,
+        "height": 88
+      },
+      "selected": false,
+      "width": 95,
+      "height": 88,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-537",
+      "type": "circleNode",
+      "position": {
+        "x": 60,
+        "y": 45
+      },
+      "parentId": "node-1783443054833-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 537",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-661",
+      "type": "circleNode",
+      "position": {
+        "x": 45,
+        "y": 45
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 661",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-660",
+      "type": "circleNode",
+      "position": {
+        "x": 150,
+        "y": 45
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 660",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-668",
+      "type": "circleNode",
+      "position": {
+        "x": 255,
+        "y": 45
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 668",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-tema",
+      "type": "hexagonNode",
+      "position": {
+        "x": 15,
+        "y": 165
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "TEMA",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 115,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 70,
+        "height": 58
+      },
+      "measured": {
+        "width": 115,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 115,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-alpema",
+      "type": "hexagonNode",
+      "position": {
+        "x": 150,
+        "y": 165
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "ALPEMA",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-asme-viii-1-hx",
+      "type": "hexagonNode",
+      "position": {
+        "x": 270,
+        "y": 165
+      },
+      "parentId": "node-1783443132082-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME VIII-1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 108,
+        "height": 88,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 78,
+        "height": 58
+      },
+      "measured": {
+        "width": 108,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 108,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "n-api-584",
+      "type": "circleNode",
+      "position": {
+        "x": 15,
+        "y": 45
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 584",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-651",
+      "type": "circleNode",
+      "position": {
+        "x": 120,
+        "y": 45
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 651",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-652",
+      "type": "circleNode",
+      "position": {
+        "x": 225,
+        "y": 45
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 652",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-api-970",
+      "type": "circleNode",
+      "position": {
+        "x": 330,
+        "y": 45
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 970",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "n-nace-sp0169",
+      "type": "hexagonNode",
+      "position": {
+        "x": 30,
+        "y": 165
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0169",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0472-cc",
+      "type": "hexagonNode",
+      "position": {
+        "x": 135,
+        "y": 165
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0472",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 86,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-iso-15589-1",
+      "type": "hexagonNode",
+      "position": {
+        "x": 240,
+        "y": 165
+      },
+      "parentId": "node-1783435281486-group",
+      "extent": "parent",
+      "data": {
+        "label": "ISO 15589-1",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "width": 80,
+        "height": 73,
+        "colorToken": "neutral"
+      },
+      "style": {
+        "width": 100,
+        "height": 58
+      },
+      "measured": {
+        "width": 80,
+        "height": 73
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 80,
+      "height": 73,
+      "resizing": false
+    },
+    {
+      "id": "n-nace-sp0114",
+      "type": "hexagonNode",
+      "position": {
+        "x": 60,
+        "y": 45
+      },
+      "parentId": "node-1783439345948-group",
+      "extent": "parent",
+      "data": {
+        "label": "NACE SP0114",
+        "backgroundColor": "#5e5e5e",
+        "textColor": "#ffffff",
+        "borderColor": "#5e5e5e",
+        "colorToken": "neutral",
+        "width": 105,
+        "height": 88
+      },
+      "style": {
+        "width": 90,
+        "height": 58
+      },
+      "measured": {
+        "width": 105,
+        "height": 88
+      },
+      "selected": false,
+      "dragging": false,
+      "width": 105,
+      "height": 88,
+      "resizing": false
+    },
+    {
+      "id": "node-1783443885906",
+      "type": "circleNode",
+      "position": {
+        "x": 45,
+        "y": 45
+      },
+      "parentId": "node-1783443920371-group",
+      "extent": "parent",
+      "data": {
+        "label": "API 575",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    },
+    {
+      "id": "node-1783455118730-65",
+      "type": "textNode",
+      "position": {
+        "x": 735,
+        "y": 1860
+      },
+      "data": {
+        "label": "Example Fixed Equipment Codes, Standards, and Useful Documents Web Diagram - API Bulletin 592 (Page 42)",
+        "backgroundColor": "transparent",
+        "borderWidth": 0,
+        "fontSize": 28,
+        "width": 1580,
+        "height": 73,
+        "fontWeight": "bold"
+      },
+      "measured": {
+        "width": 1580,
+        "height": 73
+      },
+      "selected": false,
+      "width": 1580,
+      "height": 73,
+      "resizing": false,
+      "dragging": false
+    },
+    {
+      "id": "node-1783458292795",
+      "type": "circleNode",
+      "position": {
+        "x": 30,
+        "y": 45
+      },
+      "parentId": "node-1783438768316-group",
+      "extent": "parent",
+      "data": {
+        "label": "ASME FFS-1 / API 579-1",
+        "backgroundColor": "#69be4b",
+        "textColor": "#ffffff",
+        "colorToken": "green"
+      },
+      "style": {
+        "width": 56,
+        "height": 56
+      },
+      "measured": {
+        "width": 56,
+        "height": 56
+      },
+      "selected": false,
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "type": "smoothstep",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "right",
+      "target": "node-1783435242862-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetyright-node-1783435242862-groupleft",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-corrosion",
+      "sourceHandle": "right",
+      "target": "node-1783435281486-group",
+      "targetHandle": "left-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-corrosionright-node-1783435281486-groupleft-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-corrosion",
+      "sourceHandle": "top",
+      "target": "node-1783438086784-group",
+      "targetHandle": "bottom",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-corrosiontop-node-1783438086784-groupbottom",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "bottom",
+      "target": "node-1783438086784-group",
+      "targetHandle": "top-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetybottom-node-1783438086784-grouptop-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "top",
+      "target": "node-1783438351844-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetytop-node-1783438351844-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "top",
+      "target": "node-1783438362005-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetytop-node-1783438362005-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "top",
+      "target": "node-1783438366955-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetytop-node-1783438366955-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "left",
+      "target": "node-1783438508917-group",
+      "targetHandle": "bottom",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetyleft-node-1783438508917-groupbottom",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-corrosion",
+      "sourceHandle": "bottom",
+      "target": "node-1783439345948-group",
+      "targetHandle": "top-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-corrosionbottom-node-1783439345948-grouptop-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-corrosion",
+      "sourceHandle": "left",
+      "target": "node-1783439506307-group",
+      "targetHandle": "right",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-corrosionleft-node-1783439506307-groupright",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "top",
+      "target": "node-1783443639656-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectiontop-node-1783443639656-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "top",
+      "target": "node-1783443920371-group",
+      "targetHandle": "bottom",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectiontop-node-1783443920371-groupbottom",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "top",
+      "target": "node-1783443960448-group",
+      "targetHandle": "bottom",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectiontop-node-1783443960448-groupbottom",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "top",
+      "target": "node-1783444010224-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectiontop-node-1783444010224-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "right",
+      "target": "node-1783443132082-group",
+      "targetHandle": "left-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairright-node-1783443132082-groupleft-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "right",
+      "target": "node-1783443054833-group",
+      "targetHandle": "left-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairright-node-1783443054833-groupleft-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "right",
+      "target": "node-1783439506307-group",
+      "targetHandle": "left-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairright-node-1783439506307-groupleft-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "right",
+      "target": "node-1783439436435-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairright-node-1783439436435-groupleft",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "top",
+      "target": "node-1783450327039-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairtop-node-1783450327039-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "top",
+      "target": "node-1783450383510-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairtop-node-1783450383510-groupbottom-in"
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "left",
+      "target": "node-1783450472056-group",
+      "targetHandle": "right",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairleft-node-1783450472056-groupright"
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "left",
+      "target": "node-1783453498590-group",
+      "targetHandle": "right-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairleft-node-1783453498590-groupright-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "left",
+      "target": "node-1783453452827-group",
+      "targetHandle": "right-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairleft-node-1783453452827-groupright-in"
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "bottom",
+      "target": "node-1783453406704-group",
+      "targetHandle": "top-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairbottom-node-1783453406704-grouptop-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-design-repair",
+      "sourceHandle": "bottom",
+      "target": "node-1783453343125-group",
+      "targetHandle": "top-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairbottom-node-1783453343125-grouptop-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "bottom",
+      "target": "node-1783450327039-group",
+      "targetHandle": "top",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionbottom-node-1783450327039-grouptop",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "bottom",
+      "target": "node-1783450383510-group",
+      "targetHandle": "top-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionbottom-node-1783450383510-grouptop-in"
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "bottom",
+      "target": "node-1783450435745-group",
+      "targetHandle": "right",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionbottom-node-1783450435745-groupright"
+    },
+    {
+      "type": "smoothstep",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "left",
+      "target": "node-1783448138997-group",
+      "targetHandle": "right-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionleft-node-1783448138997-groupright-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "left",
+      "target": "node-1783444076103-group",
+      "targetHandle": "bottom",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionleft-node-1783444076103-groupbottom",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "right",
+      "target": "node-1783438768316-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionright-node-1783438768316-groupleft"
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "right",
+      "target": "node-1783438676700-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionright-node-1783438676700-groupleft",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-in-service-inspection",
+      "sourceHandle": "right",
+      "target": "node-1783438508917-group",
+      "targetHandle": "bottom-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-in-service-inspectionright-node-1783438508917-groupbottom-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-design-repair",
+      "sourceHandle": "right",
+      "target": "node-1783438768316-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-design-repairright-node-1783438768316-groupleft",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "left",
+      "target": "node-1783438676700-group",
+      "targetHandle": "right",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetyleft-node-1783438676700-groupright"
+    },
+    {
+      "type": "straight",
+      "source": "center-mi-engineering-process-safety",
+      "sourceHandle": "left",
+      "target": "node-1783438768316-group",
+      "targetHandle": "right-in",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-mi-engineering-process-safetyleft-node-1783438768316-groupright-in",
+      "selected": false
+    },
+    {
+      "type": "straight",
+      "source": "center-corrosion",
+      "sourceHandle": "right",
+      "target": "node-1783435242862-group",
+      "targetHandle": "left",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#94a3b8",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "straight",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "animated": true
+      },
+      "id": "xy-edge__center-corrosionright-node-1783435242862-groupleft",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "n-api-653-isi-tank",
+      "sourceHandle": "top",
+      "target": "node-1783443885906",
+      "targetHandle": "bottom",
+      "animated": false,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#ef4444",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "colorToken": "red"
+      },
+      "id": "xy-edge__n-api-653-isi-tanktop-node-1783443885906bottom",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "n-api-570-isi",
+      "sourceHandle": "top",
+      "target": "n-api-574",
+      "targetHandle": "bottom-in",
+      "animated": false,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#ef4444",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "colorToken": "red"
+      },
+      "id": "xy-edge__n-api-570-isitop-n-api-574bottom-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "n-api-510-isi-pv",
+      "sourceHandle": "right",
+      "target": "n-api-rp-572",
+      "targetHandle": "left-in",
+      "animated": false,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#ef4444",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "colorToken": "red"
+      },
+      "id": "xy-edge__n-api-510-isi-pvright-n-api-rp-572left-in",
+      "selected": false
+    },
+    {
+      "type": "smoothstep",
+      "source": "node-1783458292795",
+      "sourceHandle": "right",
+      "target": "n-api-579-2",
+      "targetHandle": "left",
+      "animated": false,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#ef4444",
+        "width": 18,
+        "height": 18
+      },
+      "data": {
+        "edgeStyle": "smoothstep",
+        "strokeWidth": 2,
+        "arrowEnd": true,
+        "arrowStart": false,
+        "colorToken": "red"
+      },
+      "id": "xy-edge__node-1783458292795right-n-api-579-2left",
+      "selected": false
+    }
+  ],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 0.5
+  }
+}

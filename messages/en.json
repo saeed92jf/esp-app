@@ -348,6 +348,9 @@
     "views": ""
   },
   "Flow": {
+        "loadTemplate": "load Template",
+            "searchTemplate": "search Template",
+                "noTemplate": "no Template",
     "editor": {
       "title": "Diagram Editor",
       "untitled": "Untitled Diagram",
@@ -376,7 +379,10 @@
       "resetZoom": "Reset Zoom",
       "lock": "Lock",
       "unlock": "Unlock",
-      "addNode": "Add Node"
+      "addNode": "Add Node",
+          "loadTemplate": "Load Template...",
+      "searchTemplate": "Search template",
+      "noTemplate": "No template found"
     },
     "nodes": {
       "defaultNode": "Process",
@@ -388,14 +394,35 @@
       "parallelogramNode": "I/O",
       "hexagonNode": "Hexagon",
       "textNode": "Text",
-      "noteNode": "Note"
+      "noteNode": "Note",
+      "triangleNode": "Triangle",
+"cloudNode": "Cloud",
+"documentNode": "Document",
+"predefinedProcessNode": "Subroutine",
+"delayNode": "Delay",
+"groupNode": "Sub-flow",
+"numberNode": "Number",
+"operatorNode": "Operator",
+"shapeNode": "shape Node",
+"beamCalcNode": "beam Calc",
+"geometryCalcNode": "geometry Calc",
+"imageNode": "image",
+"svgNode": "SVG",
+"dwgNode": "DWG",
+"dxfNode": "DXF",
+"starNode": "Star",
+"pentagonNode": "Pentagon",
+"multiDocumentNode": "Multi Doc"
+
     },
     "palette": {
       "search": "Search nodes…",
       "basic": "Basic",
       "flowchart": "Flowchart",
       "shapes": "Shapes",
-      "dragToAdd": "Drag to canvas"
+      "dragToAdd": "Drag to canvas",
+      "containers": "Containers",
+      "compute": "Computation"
     },
     "settings": {
       "label": "Label",
@@ -420,7 +447,8 @@
       "weight_bold": "Bold",
       "style_solid": "Solid",
       "style_dashed": "Dashed",
-      "style_dotted": "Dotted"
+      "style_dotted": "Dotted",
+      "link": "Link"
     },
     "editorSettings": {
       "title": "Editor Settings",
@@ -444,7 +472,8 @@
       "edge_smoothstep": "Step",
       "edge_step": "Sharp step",
       "autoSave": "Auto-save to library",
-      "shortcuts": "Keyboard shortcuts"
+      "shortcuts": "Keyboard shortcuts",
+      "edge_floating": "Floating"
     },
     "shortcuts": {
       "undo": "Undo",
@@ -476,7 +505,8 @@
       "importedSuccessfully": "Imported successfully",
       "copiedToClipboard": "Copied to clipboard",
       "noDiagrams": "No saved diagrams yet",
-      "createFirst": "Create your first diagram to get started"
+      "createFirst": "Create your first diagram to get started",
+      "nodeCount": "{count, plural, one {# node} other {# nodes}}"
     },
     "contextMenu": {
       "addNode": "Add Node",
@@ -493,5 +523,13 @@
       "loading": "Loading…",
       "noResults": "No results"
     }
-  }
+  },
+
+  "Combobox": {
+    "placeholder": "Select...",
+    "searchPlaceholder": "Search...",
+    "emptyText": "No results found."
+  
+}
+
 }

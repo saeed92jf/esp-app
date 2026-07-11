@@ -6,6 +6,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
   addEdge,
+  MarkerType,
   type Node,
   type Edge,
   type NodeChange,
@@ -13,7 +14,20 @@ import {
   type Connection,
   type Viewport,
 } from '@xyflow/react';
-import type { DiagramNodeData, DiagramEdgeData, SavedDiagram, EditorSettings, HistoryEntry } from '../types';
+import type {
+  DiagramNodeData,
+  DiagramEdgeData,
+  DiagramNodeType,
+  SavedDiagram,
+  EditorSettings,
+  HistoryEntry,
+  SelectionTool,
+  LassoMode,
+} from '../types';
+import { resolveEdgeColor } from '../utils/colors';
+import { SHAPE_DEFAULT_SIZE } from '../utils/shapes';
+import { computeGeometry, computeSecondMomentOfArea, isBeamCompatible, toBeamInputs, GEOMETRY_SHAPE_MODES } from '../utils/geometry';
+import { OPERATOR_ARITY, evaluateOperator } from '../utils/operators';
 
 const DEFAULT_SETTINGS: EditorSettings = {
   snapToGrid: false,
@@ -24,9 +38,36 @@ const DEFAULT_SETTINGS: EditorSettings = {
   colorMode: 'light',
   defaultEdgeType: 'smoothstep',
   autoSave: true,
+  collisionAvoidance: true,
 };
 
 const MAX_HISTORY = 50;
+
+// â”€â”€ Subflow helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// React Flow requires that a parent node appears before its children in the
+// nodes array. This topological sort keeps everything else in its original
+// relative order and is safe to call repeatedly (idempotent).
+function sortNodesParentFirst<T extends Node>(nodes: T[]): T[] {
+  const byId = new Map(nodes.map((n) => [n.id, n]));
+  const visited = new Set<string>();
+  const result: T[] = [];
+  const visit = (n: T) => {
+    if (visited.has(n.id)) return;
+    if (n.parentId && byId.has(n.parentId)) visit(byId.get(n.parentId) as T);
+    visited.add(n.id);
+    result.push(n);
+  };
+  nodes.forEach(visit);
+  return result;
+}
+
+function nodeSize(n: Node<DiagramNodeData>): { width: number; height: number } {
+  const fallback = SHAPE_DEFAULT_SIZE[(n.type ?? 'defaultNode') as DiagramNodeType] ?? SHAPE_DEFAULT_SIZE.defaultNode;
+  return {
+    width: n.data?.width ?? fallback.width,
+    height: n.data?.height ?? fallback.height,
+  };
+}
 
 interface DiagramStore {
   // Current diagram
@@ -57,6 +98,10 @@ interface DiagramStore {
   isPalettOpen: boolean;
   isSettingsPanelOpen: boolean;
   isSaving: boolean;
+  /** Pointer behavior when dragging on empty canvas â€” see Toolbar's selection-tool toggle. */
+  selectionTool: SelectionTool;
+  /** partial = select anything the lasso touches; full = only fully-enclosed nodes. */
+  lassoMode: LassoMode;
 
   // Actions
   setDiagramName: (name: string) => void;
@@ -69,12 +114,25 @@ interface DiagramStore {
 
   addNode: (node: Node<DiagramNodeData>) => void;
   updateNodeData: (nodeId: string, data: Partial<DiagramNodeData>) => void;
+  /** Applies the same partial data to many nodes at once â€” used by the
+   *  multi-select "group style editing" panel in SettingsPanel. */
+  updateNodesData: (nodeIds: string[], data: Partial<DiagramNodeData>) => void;
   updateEdgeData: (edgeId: string, data: Partial<DiagramEdgeData>) => void;
   deleteSelected: () => void;
   duplicateSelected: () => void;
+  /** Removes every node AND edge â€” a blank diagram, same name/id kept. */
+  clearCanvas: () => void;
+  /** Removes every node (and, necessarily, every edge â€” they'd be dangling otherwise). */
+  deleteAllNodes: () => void;
+  /** Removes every edge, keeping all nodes in place. */
+  deleteAllEdges: () => void;
 
   setSelectedNode: (id: string | null) => void;
   setSelectedEdge: (id: string | null) => void;
+
+  // Subflow / grouping
+  reparentNode: (nodeId: string, parentId: string | null) => void;
+  groupSelectedNodes: () => void;
 
   // History
   pushHistory: () => void;
@@ -101,6 +159,12 @@ interface DiagramStore {
   // UI
   togglePalette: () => void;
   toggleSettingsPanel: () => void;
+  setSelectionTool: (tool: SelectionTool) => void;
+  setLassoMode: (mode: LassoMode) => void;
+
+  // Computing flows (numberNode / operatorNode) â€” see
+  // https://reactflow.dev/learn/advanced-use/computing-flows
+  recomputeValues: () => void;
 }
 
 let historyTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -123,6 +187,8 @@ export const useDiagramStore = create<DiagramStore>()(
       isPalettOpen: true,
       isSettingsPanelOpen: true,
       isSaving: false,
+      selectionTool: 'pointer',
+      lassoMode: 'partial',
 
       setDiagramName: (name) => set({ diagramName: name }),
 
@@ -152,18 +218,28 @@ export const useDiagramStore = create<DiagramStore>()(
       },
 
       onEdgesChange: (changes) => {
-        const hasRemove = changes.some((c) => c.type === 'remove');
-        const hasSelect = changes.some((c) => c.type === 'select');
+        const selectChanges = changes.filter(
+          (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
+        );
+        // Box/lasso multi-select must only ever apply to NODES. A marquee drag
+        // fires many 'select' changes in the same call; a deliberate click on
+        // a single edge fires exactly one. So: more than one select change at
+        // once means it came from a drag-select gesture â€” drop those (edges
+        // stay whatever they were), but let everything else through untouched.
+        const filteredChanges = selectChanges.length > 1 ? changes.filter((c) => c.type !== 'select') : changes;
+
+        const hasRemove = filteredChanges.some((c) => c.type === 'remove');
+        const hasSelect = filteredChanges.some((c) => c.type === 'select');
 
         set((state) => {
-          const selectChanges = changes.filter(
+          const applicableSelectChanges = filteredChanges.filter(
             (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
           );
-          const selected = selectChanges.find((c) => c.selected);
-          const deselected = selectChanges.find((c) => !c.selected && c.id === state.selectedEdgeId);
+          const selected = applicableSelectChanges.find((c) => c.selected);
+          const deselected = applicableSelectChanges.find((c) => !c.selected && c.id === state.selectedEdgeId);
 
           return {
-            edges: applyEdgeChanges(changes, state.edges) as Edge<DiagramEdgeData>[],
+            edges: applyEdgeChanges(filteredChanges, state.edges) as Edge<DiagramEdgeData>[],
             selectedEdgeId: selected ? selected.id : deselected ? null : state.selectedEdgeId,
             selectedNodeId: hasSelect ? null : state.selectedNodeId,
           };
@@ -174,13 +250,15 @@ export const useDiagramStore = create<DiagramStore>()(
 
       onConnect: (connection) => {
         const { settings } = get();
+        const strokeColor = resolveEdgeColor(undefined, settings.colorMode);
         set((state) => ({
           edges: addEdge(
             {
               ...connection,
               type: settings.defaultEdgeType,
               animated: false,
-              data: { edgeStyle: settings.defaultEdgeType, strokeWidth: 2, color: '#94a3b8' },
+              markerEnd: { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 },
+              data: { edgeStyle: settings.defaultEdgeType, strokeWidth: 2, arrowEnd: true, arrowStart: false },
             },
             state.edges,
           ) as Edge<DiagramEdgeData>[],
@@ -188,7 +266,7 @@ export const useDiagramStore = create<DiagramStore>()(
         get().pushHistory();
       },
 
-      setNodes: (nodes) => set({ nodes }),
+      setNodes: (nodes) => set({ nodes: sortNodesParentFirst(nodes) }),
       setEdges: (edges) => set({ edges }),
       setViewport: (viewport) => set({ viewport }),
 
@@ -207,16 +285,35 @@ export const useDiagramStore = create<DiagramStore>()(
         historyTimeout = setTimeout(() => get().pushHistory(), 500);
       },
 
+      updateNodesData: (nodeIds, data) => {
+        const ids = new Set(nodeIds);
+        set((state) => ({
+          nodes: state.nodes.map((n) => (ids.has(n.id) ? { ...n, data: { ...n.data, ...data } } : n)),
+        }));
+        if (historyTimeout) clearTimeout(historyTimeout);
+        historyTimeout = setTimeout(() => get().pushHistory(), 500);
+      },
+
       updateEdgeData: (edgeId, data) => {
+        const colorMode = get().settings.colorMode;
         set((state) => ({
           edges: state.edges.map((e) => {
             if (e.id !== edgeId) return e;
             const newData = { ...e.data, ...data } as DiagramEdgeData;
+            const strokeColor = resolveEdgeColor(newData, colorMode);
+            const arrowEnd = newData.arrowEnd ?? true;
+            const arrowStart = newData.arrowStart ?? false;
             return {
               ...e,
               type: newData.edgeStyle ?? e.type,
               animated: newData.animated ?? e.animated,
               data: newData,
+              markerEnd: arrowEnd
+                ? { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 }
+                : undefined,
+              markerStart: arrowStart
+                ? { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 }
+                : undefined,
             };
           }),
         }));
@@ -225,17 +322,72 @@ export const useDiagramStore = create<DiagramStore>()(
       },
 
       deleteSelected: () => {
-        const { selectedNodeId, selectedEdgeId } = get();
-        set((state) => ({
-          nodes: selectedNodeId ? state.nodes.filter((n) => n.id !== selectedNodeId) : state.nodes,
-          edges: selectedEdgeId
-            ? state.edges.filter((e) => e.id !== selectedEdgeId)
-            : selectedNodeId
-            ? state.edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId)
-            : state.edges,
-          selectedNodeId: null,
-          selectedEdgeId: null,
-        }));
+        const { selectedNodeId, selectedEdgeId, nodes } = get();
+        const multiSelected = nodes.filter((n) => n.selected);
+        const deletingGroup = selectedNodeId
+          ? nodes.find((n) => n.id === selectedNodeId && n.type === 'groupNode')
+          : null;
+
+        set((state) => {
+          let nextNodes = state.nodes;
+          let nextEdges = state.edges;
+
+          if (multiSelected.length > 1) {
+            // Multi-node delete (box/lasso select): ungroup any selected group
+            // nodes (promote their children instead of destroying them, same
+            // rule as the single-group case below) and remove every other
+            // selected node, plus any edge touching a removed node.
+            const idsToRemove = new Set(multiSelected.map((n) => n.id));
+            const groupsBeingRemoved = new Map(multiSelected.filter((n) => n.type === 'groupNode').map((n) => [n.id, n]));
+
+            nextNodes = state.nodes
+              .filter((n) => !idsToRemove.has(n.id))
+              .map((n) => {
+                const parent = n.parentId ? groupsBeingRemoved.get(n.parentId) : undefined;
+                if (!parent) return n;
+                return {
+                  ...n,
+                  parentId: undefined,
+                  extent: undefined,
+                  position: { x: n.position.x + parent.position.x, y: n.position.y + parent.position.y },
+                };
+              });
+            nextEdges = state.edges.filter((e) => !idsToRemove.has(e.source) && !idsToRemove.has(e.target));
+          } else if (deletingGroup) {
+            // Deleting a subflow ungroups its children (promotes them back to
+            // absolute coordinates) instead of destroying them.
+            nextNodes = state.nodes
+              .filter((n) => n.id !== selectedNodeId)
+              .map((n) =>
+                n.parentId === selectedNodeId
+                  ? {
+                      ...n,
+                      parentId: undefined,
+                      extent: undefined,
+                      position: {
+                        x: n.position.x + deletingGroup.position.x,
+                        y: n.position.y + deletingGroup.position.y,
+                      },
+                    }
+                  : n,
+              );
+            nextEdges = state.edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId);
+          } else if (selectedNodeId) {
+            nextNodes = state.nodes.filter((n) => n.id !== selectedNodeId);
+            nextEdges = state.edges.filter((e) => e.source !== selectedNodeId && e.target !== selectedNodeId);
+          }
+
+          if (selectedEdgeId) {
+            nextEdges = nextEdges.filter((e) => e.id !== selectedEdgeId);
+          }
+
+          return {
+            nodes: sortNodesParentFirst(nextNodes),
+            edges: nextEdges,
+            selectedNodeId: null,
+            selectedEdgeId: null,
+          };
+        });
         get().pushHistory();
       },
 
@@ -250,12 +402,106 @@ export const useDiagramStore = create<DiagramStore>()(
           position: { x: node.position.x + 30, y: node.position.y + 30 },
           selected: false,
         };
-        set((state) => ({ nodes: [...state.nodes, newNode] }));
+        // A duplicated group's children are NOT duplicated with it (v1) â€” only
+        // the container. Keep ordering valid regardless.
+        set((state) => ({ nodes: sortNodesParentFirst([...state.nodes, newNode]) }));
         get().pushHistory();
       },
 
       setSelectedNode: (id) => set({ selectedNodeId: id, selectedEdgeId: id ? null : undefined }),
       setSelectedEdge: (id) => set({ selectedEdgeId: id, selectedNodeId: id ? null : undefined }),
+
+      clearCanvas: () => {
+        set({ nodes: [], edges: [], selectedNodeId: null, selectedEdgeId: null });
+        get().pushHistory();
+      },
+
+      deleteAllNodes: () => {
+        // Edges can't dangle without their nodes, so this necessarily clears
+        // edges too â€” kept as a separate action from clearCanvas mainly so
+        // the Toolbar can offer it with its own distinct confirmation copy.
+        set({ nodes: [], edges: [], selectedNodeId: null, selectedEdgeId: null });
+        get().pushHistory();
+      },
+
+      deleteAllEdges: () => {
+        set({ edges: [], selectedEdgeId: null });
+        get().pushHistory();
+      },
+
+      // â”€â”€ Subflow / grouping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+      reparentNode: (nodeId, parentId) => {
+        set((state) => {
+          const node = state.nodes.find((n) => n.id === nodeId);
+          // v1 keeps subflows a single level deep: group nodes can't be nested.
+          if (!node || node.type === 'groupNode') return state;
+          if (parentId === (node.parentId ?? null)) return state;
+
+          let nodes = state.nodes;
+
+          if (parentId) {
+            const parent = state.nodes.find((n) => n.id === parentId);
+            if (!parent || parent.id === nodeId) return state;
+            const prevParent = node.parentId ? state.nodes.find((n) => n.id === node.parentId) : null;
+            const absX = prevParent ? node.position.x + prevParent.position.x : node.position.x;
+            const absY = prevParent ? node.position.y + prevParent.position.y : node.position.y;
+            const relPos = { x: absX - parent.position.x, y: absY - parent.position.y };
+            nodes = state.nodes.map((n) =>
+              n.id === nodeId ? { ...n, parentId, extent: 'parent' as const, position: relPos } : n,
+            );
+          } else {
+            const prevParent = node.parentId ? state.nodes.find((n) => n.id === node.parentId) : null;
+            const absPos = prevParent
+              ? { x: node.position.x + prevParent.position.x, y: node.position.y + prevParent.position.y }
+              : node.position;
+            nodes = state.nodes.map((n) =>
+              n.id === nodeId ? { ...n, parentId: undefined, extent: undefined, position: absPos } : n,
+            );
+          }
+
+          return { nodes: sortNodesParentFirst(nodes) };
+        });
+        get().pushHistory();
+      },
+
+      groupSelectedNodes: () => {
+        const { nodes } = get();
+        const selected = nodes.filter((n) => n.selected && n.type !== 'groupNode' && !n.parentId);
+        if (selected.length === 0) return;
+
+        const PAD = 36;
+        const HEADER = 28;
+        const minX = Math.min(...selected.map((n) => n.position.x)) - PAD;
+        const minY = Math.min(...selected.map((n) => n.position.y)) - PAD - HEADER;
+        const maxX = Math.max(...selected.map((n) => n.position.x + nodeSize(n).width)) + PAD;
+        const maxY = Math.max(...selected.map((n) => n.position.y + nodeSize(n).height)) + PAD;
+
+        const groupId = `node-${Date.now()}-group`;
+        const groupNode: Node<DiagramNodeData> = {
+          id: groupId,
+          type: 'groupNode',
+          position: { x: minX, y: minY },
+          dragHandle: '.subflow-drag-handle',
+          data: { label: 'Sub-flow', colorToken: 'neutral', width: maxX - minX, height: maxY - minY },
+          selected: false,
+        };
+
+        const selectedIds = new Set(selected.map((n) => n.id));
+        const updatedNodes = nodes.map((n) => {
+          if (!selectedIds.has(n.id)) return n;
+          return {
+            ...n,
+            parentId: groupId,
+            extent: 'parent' as const,
+            position: { x: n.position.x - minX, y: n.position.y - minY },
+            selected: false,
+          };
+        });
+
+        set({ nodes: sortNodesParentFirst([groupNode, ...updatedNodes]) });
+        get().pushHistory();
+      },
 
       pushHistory: () => {
         const { nodes, edges, history, historyIndex } = get();
@@ -302,9 +548,12 @@ export const useDiagramStore = create<DiagramStore>()(
         const newNodes = clipboard.nodes.map((n) => {
           const newId = `node-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
           idMap[n.id] = newId;
-          return { ...n, id: newId, position: { x: n.position.x + 40, y: n.position.y + 40 }, selected: false };
+          // Pasted nodes are always dropped at top level, regardless of the
+          // original's parentId, to avoid pasting into a group that may no
+          // longer exist (or exist at all) in this diagram.
+          return { ...n, id: newId, parentId: undefined, extent: undefined, position: { x: n.position.x + 40, y: n.position.y + 40 }, selected: false };
         });
-        set((state) => ({ nodes: [...state.nodes, ...newNodes] }));
+        set((state) => ({ nodes: sortNodesParentFirst([...state.nodes, ...newNodes]) }));
         get().pushHistory();
       },
 
@@ -348,7 +597,7 @@ export const useDiagramStore = create<DiagramStore>()(
         set({
           currentDiagramId: diagram.id,
           diagramName: diagram.name,
-          nodes: diagram.nodes,
+          nodes: sortNodesParentFirst(diagram.nodes),
           edges: diagram.edges,
           viewport: diagram.viewport,
           selectedNodeId: null,
@@ -375,7 +624,7 @@ export const useDiagramStore = create<DiagramStore>()(
           const data = JSON.parse(json);
           set({
             diagramName: data.name ?? 'Imported Diagram',
-            nodes: data.nodes ?? [],
+            nodes: sortNodesParentFirst(data.nodes ?? []),
             edges: data.edges ?? [],
             viewport: data.viewport ?? { x: 0, y: 0, zoom: 1 },
             currentDiagramId: null,
@@ -392,10 +641,153 @@ export const useDiagramStore = create<DiagramStore>()(
 
       togglePalette: () => set((state) => ({ isPalettOpen: !state.isPalettOpen })),
       toggleSettingsPanel: () => set((state) => ({ isSettingsPanelOpen: !state.isSettingsPanelOpen })),
+      setSelectionTool: (tool) => set({ selectionTool: tool }),
+      setLassoMode: (mode) => set({ lassoMode: mode }),
+
+      // â”€â”€ Computing flows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // Walks the graph from each numberNode's literal value through any
+      // chain of operatorNodes, memoizing as it goes (with a cycle guard so a
+      // loop just resolves to `undefined`/no-op instead of hanging), and
+      // writes the result onto each operatorNode's data.result. Only actually
+      // touches state if a result truly changed, so this is safe to call
+      // liberally (e.g. from an effect on every nodes/edges change) without
+      // causing a render loop.
+      recomputeValues: () => {
+        const { nodes, edges } = get();
+        const byId = new Map(nodes.map((n) => [n.id, n]));
+        // Tracks WHICH handle each incoming edge targets â€” required now that
+        // operatorNode's handles carry meaning (a vs b vs x vs unlimited),
+        // not just "some value arrived".
+        const incomingByHandle = new Map<string, { source: string; targetHandle: string | null }[]>();
+        edges.forEach((e) => {
+          const arr = incomingByHandle.get(e.target) ?? [];
+          arr.push({ source: e.source, targetHandle: e.targetHandle ?? null });
+          incomingByHandle.set(e.target, arr);
+        });
+        // First-source-only view, for nodes with a single unnamed input handle
+        // (geometryCalcNode/beamCalcNode's "shape-in").
+        const firstIncomingSource = (nodeId: string) => incomingByHandle.get(nodeId)?.[0]?.source;
+
+        const memo = new Map<string, number | undefined>();
+        const visiting = new Set<string>();
+
+        const valueOf = (nodeId: string): number | undefined => {
+          if (memo.has(nodeId)) return memo.get(nodeId);
+          const node = byId.get(nodeId);
+          if (!node) return undefined;
+
+          if (node.type === 'numberNode') {
+            const v = (node.data as DiagramNodeData).value;
+            memo.set(nodeId, v);
+            return v;
+          }
+
+          if (node.type === 'operatorNode') {
+            if (visiting.has(nodeId)) {
+              memo.set(nodeId, undefined);
+              return undefined;
+            }
+            visiting.add(nodeId);
+
+            const op = (node.data as DiagramNodeData).operation ?? 'add';
+            const arity = OPERATOR_ARITY[op];
+            const conns = incomingByHandle.get(nodeId) ?? [];
+
+            let values: number[];
+            if (arity === 'unary') {
+              const c = conns.find((c) => c.targetHandle === 'x');
+              const v = c ? valueOf(c.source) : undefined;
+              values = typeof v === 'number' ? [v] : [];
+            } else if (arity === 'binary') {
+              const a = conns.find((c) => c.targetHandle === 'a');
+              const b = conns.find((c) => c.targetHandle === 'b');
+              const av = a ? valueOf(a.source) : undefined;
+              const bv = b ? valueOf(b.source) : undefined;
+              values = typeof av === 'number' && typeof bv === 'number' ? [av, bv] : [];
+            } else {
+              values = conns.map((c) => valueOf(c.source)).filter((v): v is number => typeof v === 'number');
+            }
+
+            visiting.delete(nodeId);
+            const result = evaluateOperator(op, values);
+            memo.set(nodeId, result);
+            return result;
+          }
+
+          // Calculator nodes (perimeter/area/volume, or beam Ix) act as value
+          // producers too, so their output can feed straight into an
+          // operatorNode: shapeNode â†’ geometryCalcNode/beamCalcNode â†’ operatorNode.
+          // Mirrors the "connected to a shapeNode" logic in BaseNode.tsx's
+          // GeometryCalcNode/BeamCalcNode â€” falls back to the node's own
+          // standalone calcShape/beamShape fields when nothing is connected.
+          if (node.type === 'geometryCalcNode') {
+            const data = node.data as DiagramNodeData;
+            const sourceId = firstIncomingSource(nodeId);
+            const sourceNode = sourceId ? byId.get(sourceId) : undefined;
+            const upstream = sourceNode?.type === 'shapeNode' ? (sourceNode.data as DiagramNodeData) : undefined;
+            const shape = (upstream ? upstream.shapeKind : data.calcShape) ?? 'rectangle';
+            const inputs = (upstream ? upstream.shapeInputs : data.calcInputs) ?? {};
+            const availableModes = GEOMETRY_SHAPE_MODES[shape];
+            const mode = availableModes.includes(data.calcMode ?? 'area') ? (data.calcMode ?? 'area') : availableModes[0];
+            const result = computeGeometry(shape, mode, inputs);
+            const value = result ?? undefined;
+            memo.set(nodeId, value);
+            return value;
+          }
+
+          if (node.type === 'beamCalcNode') {
+            const data = node.data as DiagramNodeData;
+            const sourceId = firstIncomingSource(nodeId);
+            const sourceNode = sourceId ? byId.get(sourceId) : undefined;
+            const upstream = sourceNode?.type === 'shapeNode' ? (sourceNode.data as DiagramNodeData) : undefined;
+            let value: number | undefined;
+            if (upstream) {
+              const upstreamShape = upstream.shapeKind;
+              if (upstreamShape && isBeamCompatible(upstreamShape)) {
+                const result = computeSecondMomentOfArea(upstreamShape, toBeamInputs(upstreamShape, upstream.shapeInputs ?? {}));
+                value = result ?? undefined;
+              }
+            } else {
+              const shape = data.beamShape ?? 'rectangle';
+              const result = computeSecondMomentOfArea(shape, data.beamInputs ?? {});
+              value = result ?? undefined;
+            }
+            memo.set(nodeId, value);
+            return value;
+          }
+
+          return undefined;
+        };
+
+        let changed = false;
+        const nextNodes = nodes.map((n) => {
+          if (n.type !== 'operatorNode') return n;
+          const result = valueOf(n.id);
+          if ((n.data as DiagramNodeData).result === result) return n;
+          changed = true;
+          return { ...n, data: { ...n.data, result } };
+        });
+
+        if (changed) set({ nodes: nextNodes });
+      },
     }),
     {
       name: 'diagram-editor-store',
-      partialize: (state) => ({ savedDiagrams: state.savedDiagrams, settings: state.settings, diagramName: state.diagramName }),
+      // Persist the saved-diagram library AND the current working draft, so a
+      // page refresh keeps whatever the user was editing (not just named
+      // saves). currentDiagramId is included so a post-refresh Ctrl+S / Save
+      // updates the same library entry instead of creating a duplicate.
+      partialize: (state) => ({
+        savedDiagrams: state.savedDiagrams,
+        settings: state.settings,
+        diagramName: state.diagramName,
+        currentDiagramId: state.currentDiagramId,
+        nodes: state.nodes,
+        edges: state.edges,
+        viewport: state.viewport,
+      }),
     },
   ),
 );
+
+

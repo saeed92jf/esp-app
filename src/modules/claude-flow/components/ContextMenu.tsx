@@ -7,9 +7,11 @@ import {
   Maximize,
   CheckSquare,
   ClipboardPaste,
+  Layers,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import type { DiagramNodeType } from "../types";
 
 export interface ContextMenuState {
   x: number;
@@ -17,9 +19,16 @@ export interface ContextMenuState {
   target: "pane" | "node" | "edge";
 }
 
+/** Minimal shape needed to render a quick-add item â€” matches DiagramCanvas's QUICK_ADD_ITEMS. */
+export interface QuickAddItem {
+  type: DiagramNodeType;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}
+
 // Menu dimensions used for edge-clamping calculations
 const MENU_W = 176; // w-44 = 11rem = 176px
-const MENU_H = 160; // approximate max height (5 items × ~32px)
+const MENU_H = 160; // approximate max height (5 items Ãƒâ€” ~32px)
 
 /**
  * Clamps the menu position so it never overflows the viewport.
@@ -43,6 +52,11 @@ export function ContextMenu({
   onSelectAll,
   onPaste,
   canPaste,
+  onGroup,
+  onUngroup,
+  isGroupNode,
+  onAddNode,
+  quickAddItems,
 }: {
   state: ContextMenuState;
   onClose: () => void;
@@ -52,11 +66,21 @@ export function ContextMenu({
   onSelectAll: () => void;
   onPaste: () => void;
   canPaste: boolean;
+  /** Wraps the current multi-selection in a new sub-flow container. */
+  onGroup?: () => void;
+  /** Ungroups the right-clicked sub-flow, promoting its children back out. */
+  onUngroup?: () => void;
+  /** Whether the right-clicked node is itself a sub-flow/group node. */
+  isGroupNode?: boolean;
+  /** Creates a node of the given type at the right-clicked position. */
+  onAddNode?: (type: DiagramNodeType) => void;
+  /** Short list of node types offered under "Add node here" on the pane menu. */
+  quickAddItems?: QuickAddItem[];
 }) {
   const t = useTranslations("Flow");
   const ref = useRef<HTMLDivElement>(null);
 
-  // Clamped position — recalculated whenever the menu appears at a new spot
+  // Clamped position Ã¢â‚¬â€ recalculated whenever the menu appears at a new spot
   const { x, y } = clampPosition(state.x, state.y);
 
   // Tiny mount flag drives the entrance animation via opacity/scale transition
@@ -122,13 +146,13 @@ export function ContextMenu({
     </button>
   );
 
-  // ── Section: destructive actions (delete) ──────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: destructive actions (delete) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const hasDestructive = state.target === "node" || state.target === "edge";
 
-  // ── Section: node-only actions ─────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: node-only actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const hasNodeActions = state.target === "node";
 
-  // ── Section: pane-only actions ─────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬ Section: pane-only actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   const hasPaneActions = state.target === "pane";
 
   return (
@@ -140,17 +164,20 @@ export function ContextMenu({
         "fixed z-50 w-44",
         // Visual shell
         "rounded-lg border border-slate-200 bg-white p-1 shadow-lg",
-        // Entrance animation — starts at opacity-0 scale-95, transitions to full
+        // Entrance animation Ã¢â‚¬â€ starts at opacity-0 scale-95, transitions to full
         "transition-[opacity,transform] duration-100",
         visible ? "scale-100 opacity-100" : "scale-95 opacity-0",
       )}
       // Stop propagation so the outside-click handler doesn't immediately close
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* ── Node actions ──────────────────────────────────────────────────── */}
+      {/* â”€â”€ Node actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {hasNodeActions && (
         <div className="space-y-0.5">
           {item(Copy, t("contextMenu.duplicate"), onDuplicate)}
+          {isGroupNode
+            ? onUngroup && item(Layers, "Ungroup", onUngroup)
+            : onGroup && item(Layers, "Group into sub-flow", onGroup)}
         </div>
       )}
 
@@ -159,22 +186,34 @@ export function ContextMenu({
         <div className="my-1 border-t border-slate-100" />
       )}
 
-      {/* ── Destructive actions (node + edge) ─────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Destructive actions (node + edge) Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       {hasDestructive && (
         <div className="space-y-0.5">
           {item(Trash2, t("contextMenu.delete"), onDelete)}
         </div>
       )}
 
-      {/* ── Pane actions ──────────────────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Pane actions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       {hasPaneActions && (
         <div className="space-y-0.5">
           {item(ClipboardPaste, t("contextMenu.paste"), onPaste, !canPaste)}
           {item(CheckSquare, t("contextMenu.selectAll"), onSelectAll)}
           <div className="my-1 border-t border-slate-100" />
           {item(Maximize, t("contextMenu.fitView"), onFitView)}
+          {onAddNode && quickAddItems && quickAddItems.length > 0 && (
+            <>
+              <div className="my-1 border-t border-slate-100" />
+              <p className="px-2.5 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Add node here</p>
+              {quickAddItems.map((qi) => item(qi.icon, qi.label, () => onAddNode(qi.type)))}
+            </>
+          )}
         </div>
       )}
     </div>
   );
 }
+
+
+
+
+

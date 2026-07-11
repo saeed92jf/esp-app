@@ -1,35 +1,361 @@
-. "C:\Users\S.Jalili\Documents\WindowsPowerShell\Get-ProjectBundle.ps1"
+Get-ProjectBundle - Examples
 
-Get-Command Get-ProjectBundle
+Overview
+--------------------------------------------------
+This function creates a single text bundle from a project and now includes:
 
-# باندل کل پروژه (فرض: داخل روت پروژه هستی)
+1) Project tree at the beginning of the bundle
+2) Root configuration files
+3) messages folder
+4) public folder
+5) src folder or a custom target folder
+
+Default behavior:
+- Builds a project tree first
+- Includes root files
+- Includes messages
+- Includes public
+- Includes src
+
+Excluded by default:
+- node_modules
+- .next
+- .git
+- dist
+- build
+- out
+- .cache
+
+Common excluded extensions:
+- images, fonts, media, archives, documents
+- unless you customize the exclusion lists
+
+
+1) Create full project bundle with default settings
+--------------------------------------------------
 Get-ProjectBundle
 
-# باندل فقط پوشه src
-Get-ProjectBundle -OnlyTargetFolder
+Description:
+- Output file: project-bundle.txt
+- Uses current directory as ProjectRoot
+- Adds project tree at the top
+- Includes root files
+- Includes messages
+- Includes public
+- Includes src
 
-# باندل فقط یک پوشه خاص
-Get-ProjectBundle -TargetFolder "src\modules\claude-flow" -OnlyTargetFolder
+
+2) Set custom output file name
+--------------------------------------------------
+Get-ProjectBundle -OutputPath "bundle.txt"
+
+Description:
+- Saves output into bundle.txt
+- Includes project tree first
 
 
-# باندل یک پوشه خاص به‌همراه فایل‌های روت
-Get-ProjectBundle -TargetFolder "src\components" -IncludeRootFiles
+3) Set full output path
+--------------------------------------------------
+Get-ProjectBundle -OutputPath "C:\Temp\project-bundle.txt"
 
-# باندل یک پوشه خاص به‌همراه messages
+Description:
+- Writes the bundle to the specified absolute path
+
+
+4) Set project root explicitly
+--------------------------------------------------
+Get-ProjectBundle -ProjectRoot "C:\Projects\my-next-app"
+
+Description:
+- Uses the specified folder as project root
+- Builds tree and bundle from that project
+
+
+5) Bundle a specific folder instead of full src
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\components"
+
+Description:
+- Adds project tree first
+- Includes root files
+- Includes messages
+- Includes public
+- Bundles only src\components instead of full src
+
+
+6) Bundle only the target folder
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder
+
+Description:
+- Adds project tree first
+- Bundles only the target folder
+- Does not include root files
+- Does not include messages
+- Does not include public
+
+
+7) Only target folder + root files
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludeRootFiles
+
+Description:
+- Adds project tree first
+- Bundles target folder
+- Includes root files
+- Does not include messages
+- Does not include public
+
+
+8) Only target folder + messages
+--------------------------------------------------
 Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludeMessages
 
-# باندل کل پوشه app
+Description:
+- Adds project tree first
+- Bundles target folder
+- Includes messages
+- Does not include root files
+- Does not include public
+
+
+9) Only target folder + public
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludePublic
+
+Description:
+- Adds project tree first
+- Bundles target folder
+- Includes public
+- Does not include root files
+- Does not include messages
+
+
+10) Only target folder + root + messages + public
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludeRootFiles -IncludeMessages -IncludePublic
+
+Description:
+- Adds project tree first
+- Bundles target folder
+- Includes root files
+- Includes messages
+- Includes public
+
+
+11) Add more excluded directories
+--------------------------------------------------
+Get-ProjectBundle -ExtraExcludeDirs @("coverage", "storybook-static", "tmp")
+
+Description:
+- These folders will also be excluded from:
+  - project tree
+  - file collection
+  - final bundle
+
+
+12) Add more excluded extensions
+--------------------------------------------------
+Get-ProjectBundle -ExtraExcludeExtensions @(".log", ".bak", ".map")
+
+Description:
+- These extensions will also be ignored when collecting files
+
+
+13) Combine multiple options together
+--------------------------------------------------
+Get-ProjectBundle `
+  -ProjectRoot "C:\Projects\my-next-app" `
+  -OutputPath "C:\Temp\bundle.txt" `
+  -ExtraExcludeDirs @("coverage", "tmp") `
+  -ExtraExcludeExtensions @(".log", ".map")
+
+Description:
+- Uses the specified project root
+- Saves bundle to the specified path
+- Adds project tree first
+- Excludes extra folders and extensions
+
+
+14) Bundle only public plus optional sections
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "public" -OnlyTargetFolder -IncludeRootFiles -IncludeMessages
+
+Description:
+- Adds project tree first
+- Bundles only public as the target folder
+- Also includes root files
+- Also includes messages
+
+
+15) Bundle a subfolder inside public
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "public\locales" -OnlyTargetFolder
+
+Description:
+- Adds project tree first
+- Bundles only public\locales
+
+
+16) Bundle messages folder directly
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "messages" -OnlyTargetFolder
+
+Description:
+- Adds project tree first
+- Bundles only messages folder as target
+
+
+17) Bundle a specific part of src with custom output
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\lib" -OutputPath "src-lib-bundle.txt"
+
+Description:
+- Adds project tree first
+- Bundles src\lib as target
+- Since OnlyTargetFolder is not enabled, root/messages/public are also included
+
+
+18) Full project bundle for code review
+--------------------------------------------------
+Get-ProjectBundle -OutputPath "review-bundle.txt"
+
+Description:
+- Adds project tree first
+- Good for sharing project structure and important files for review
+
+
+19) Example for a Next.js project
+--------------------------------------------------
+Get-ProjectBundle `
+  -ProjectRoot "C:\Projects\next-app" `
+  -OutputPath "next-project-bundle.txt" `
+  -ExtraExcludeDirs @("coverage") `
+  -ExtraExcludeExtensions @(".map")
+
+Description:
+- Adds project tree first
+- Includes root files
+- Includes messages
+- Includes public
+- Includes src
+- Useful for sending a full readable project snapshot
+
+
+20) Minimal example for one feature only
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\features\auth" -OnlyTargetFolder
+
+Description:
+- Adds project tree first
+- Bundles only files related to the auth feature
+
+
+21) Target folder + include everything explicitly
+--------------------------------------------------
+Get-ProjectBundle `
+  -TargetFolder "src\components\ui" `
+  -OnlyTargetFolder `
+  -IncludeRootFiles `
+  -IncludeMessages `
+  -IncludePublic `
+  -OutputPath "ui-bundle.txt"
+
+Description:
+- Adds project tree first
+- Bundles only src\components\ui
+- Also includes root files, messages, and public
+- Saves output in ui-bundle.txt
+
+
+22) Bundle with extra exclusions for large projects
+--------------------------------------------------
+Get-ProjectBundle `
+  -ExtraExcludeDirs @("coverage", ".turbo", "storybook-static", "tmp") `
+  -ExtraExcludeExtensions @(".log", ".map", ".tmp", ".cache")
+
+Description:
+- Adds project tree first
+- Useful when the project contains many generated files
+
+
+23) Use another working folder but keep relative output
+--------------------------------------------------
+Get-ProjectBundle `
+  -ProjectRoot "D:\Work\client-app" `
+  -OutputPath "artifacts\bundle.txt"
+
+Description:
+- Output path is relative to ProjectRoot
+- Final output becomes:
+  D:\Work\client-app\artifacts\bundle.txt
+
+
+24) Bundle only app router files
+--------------------------------------------------
 Get-ProjectBundle -TargetFolder "src\app" -OnlyTargetFolder
 
-# خروجی با نام دلخواه
-Get-ProjectBundle -TargetFolder "src\modules\claude-flow" -OnlyTargetFolder -OutputPath claude-flow-bundle.txt"
+Description:
+- Adds project tree first
+- Bundles only src\app
 
-# حذف پوشه‌های اضافی
-Get-ProjectBundle -ExtraExcludeDirs @("tests", "__mocks__", "coverage")
 
-# حذف پسوندهای اضافی
-Get-ProjectBundle -ExtraExcludeExtensions @(".log", ".bak")
+25) Bundle only components folder while still keeping project context
+--------------------------------------------------
+Get-ProjectBundle -TargetFolder "src\components"
 
-# حالت کامل با تنظیمات بیشتر
-Get-ProjectBundle -TargetFolder "src\components" -OnlyTargetFolder -ExtraExcludeDirs @("tests") -ExtraExcludeExtensions @(".log") -OutputPath "components.txt"
-src\app" -OnlyTargetFolder
+Description:
+- Adds project tree first
+- Bundles only src\components
+- Also includes root files, messages, and public
+- Useful when you want component code plus global project context
+
+
+Parameter Quick Reference
+--------------------------------------------------
+-OutputPath
+Path of the output file
+
+-ProjectRoot
+Root path of the project
+
+-TargetFolder
+Specific folder to bundle instead of full src
+
+-OnlyTargetFolder
+Bundle only the target folder; do not include root/messages/public unless explicitly enabled
+
+-IncludeRootFiles
+Include root configuration files
+
+-IncludeMessages
+Include messages folder
+
+-IncludePublic
+Include public folder
+
+-ExtraExcludeDirs
+Additional directories to exclude
+
+-ExtraExcludeExtensions
+Additional file extensions to exclude
+
+
+Bundle Order
+--------------------------------------------------
+The generated bundle follows this order:
+
+1) Project tree
+2) Root configuration files
+3) messages folder
+4) public folder
+5) src folder or target folder
+
+
+Notes
+--------------------------------------------------
+- Project tree is always added at the beginning of the bundle
+- Excluded directories are removed from both tree and file collection
+- Excluded extensions are skipped when reading file content
+- If TargetFolder is used without OnlyTargetFolder, root/messages/public are still included
+- If a file cannot be read, an error message is written into the bundle instead of stopping the entire process

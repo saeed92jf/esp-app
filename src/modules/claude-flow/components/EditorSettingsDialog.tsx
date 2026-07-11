@@ -7,9 +7,9 @@ import { useTranslations } from "next-intl";
 import { ModalShell } from "../components/modal-shell";
 import type { DiagramEdgeType, EditorSettings } from "../types";
 
-//── Local sub-components ──────────────────────────────────────────────────────
+//Ã¢â€â‚¬Ã¢â€â‚¬ Local sub-components Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
-// Section heading: small caps, muted color — uses design token text-muted-foreground
+// Section heading: small caps, muted color Ã¢â‚¬â€ uses design token text-muted-foreground
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h3 className="mb-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -18,7 +18,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Label + control row — label uses muted foreground to stay secondary to content
+// Label + control row Ã¢â‚¬â€ label uses muted foreground to stay secondary to content
 function Row({
   label,
   children,
@@ -89,25 +89,25 @@ function Select<T extends string>({
   );
 }
 
-// Keyboard shortcuts — labelKey maps to Flow.shortcuts.* in translation files
+// Keyboard shortcuts Ã¢â‚¬â€ labelKey maps to Flow.shortcuts.* in translation files
 const SHORTCUT_KEYS = [
-  { labelKey: "undo", combo: "Ctrl/⌘ + Z" },
-  { labelKey: "redo", combo: "Ctrl/⌘ + Shift + Z" },
-  { labelKey: "save", combo: "Ctrl/⌘ + S" },
-  { labelKey: "copy", combo: "Ctrl/⌘ + C" },
-  { labelKey: "paste", combo: "Ctrl/⌘ + V" },
-  { labelKey: "duplicate", combo: "Ctrl/⌘ + D" },
+  { labelKey: "undo", combo: "Ctrl/Ã¢Å’Ëœ + Z" },
+  { labelKey: "redo", combo: "Ctrl/Ã¢Å’Ëœ + Shift + Z" },
+  { labelKey: "save", combo: "Ctrl/Ã¢Å’Ëœ + S" },
+  { labelKey: "copy", combo: "Ctrl/Ã¢Å’Ëœ + C" },
+  { labelKey: "paste", combo: "Ctrl/Ã¢Å’Ëœ + V" },
+  { labelKey: "duplicate", combo: "Ctrl/Ã¢Å’Ëœ + D" },
   { labelKey: "delete", combo: "Delete" },
-  { labelKey: "fitView", combo: "Right-click → Fit view" },
+  { labelKey: "fitView", combo: "Right-click Ã¢â€ â€™ Fit view" },
 ] as const;
 
-//── EditorSettingsDialog ──────────────────────────────────────────────────────
+//Ã¢â€â‚¬Ã¢â€â‚¬ EditorSettingsDialog Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const settings = useDiagramStore((s) => s.settings);
   const updateSettings = useDiagramStore((s) => s.updateSettings);
 
-  // Typed partial-update helper — avoids manual casting at each call site
+  // Typed partial-update helper Ã¢â‚¬â€ avoids manual casting at each call site
   const set = <K extends keyof EditorSettings>(
     key: K,
     value: EditorSettings[K],
@@ -121,7 +121,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
       maxWidth="max-w-md"
     >
       <div className="flex max-h-[85vh] flex-col">
-        {/* ── Header ── */}
+        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Header Ã¢â€â‚¬Ã¢â€â‚¬ */}
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2
             id="editor-settings-title"
@@ -139,7 +139,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        {/* ── Scrollable body ── */}
+        {/* Ã¢â€â‚¬Ã¢â€â‚¬ Scrollable body Ã¢â€â‚¬Ã¢â€â‚¬ */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {/* Canvas */}
           <SectionTitle>{t("editorSettings.canvas")}</SectionTitle>
@@ -179,14 +179,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
           {/* Appearance */}
           <SectionTitle>{t("editorSettings.appearance")}</SectionTitle>
           <Row label={t("editorSettings.colorMode")}>
-            <Select
-              value={settings.colorMode}
-              onChange={(v) => set("colorMode", v)}
-              options={[
-                { value: "light", label: t("editorSettings.mode_light") },
-                { value: "dark", label: t("editorSettings.mode_dark") },
-              ]}
-            />
+            <span className="text-xs text-muted-foreground">
+              {settings.colorMode === "dark" ? t("editorSettings.mode_dark") : t("editorSettings.mode_light")}
+              {" â€” "}
+              {/* No longer a manual choice: the diagram now follows the site's
+                  own dark/light setting automatically (see DiagramEditor.tsx's
+                  theme-sync effect), the same way any other themed component would. */}
+              synced with the site theme
+            </span>
           </Row>
 
           <div className="my-3 h-px bg-border" />
@@ -205,6 +205,16 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                   label: t("editorSettings.edge_smoothstep"),
                 },
                 { value: "step", label: t("editorSettings.edge_step") },
+                {
+                  value: "floating",
+                  label: (() => {
+                    try {
+                      return t("editorSettings.edge_floating");
+                    } catch {
+                      return "Floating";
+                    }
+                  })(),
+                },
               ]}
             />
           </Row>
@@ -212,6 +222,12 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             <Switch
               checked={settings.autoSave}
               onChange={(v) => set("autoSave", v)}
+            />
+          </Row>
+          <Row label="Push nodes apart while dragging">
+            <Switch
+              checked={settings.collisionAvoidance}
+              onChange={(v) => set("collisionAvoidance", v)}
             />
           </Row>
 
@@ -245,3 +261,8 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
     </ModalShell>
   );
 }
+
+
+
+
+

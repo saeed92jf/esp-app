@@ -5,7 +5,7 @@ import { X, FileText, Trash2, Clock } from "lucide-react";
 import { useDiagramStore } from "../store";
 import { useTranslations, useLocale } from "next-intl";
 
-// ── Reusable accessible modal shell ──────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ Reusable accessible modal shell Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // Handles: backdrop click to close, Escape key, focus trap (first focusable el),
 // aria-modal + aria-labelledby for screen readers.
 function ModalShell({
@@ -56,7 +56,7 @@ function ModalShell({
   );
 }
 
-// ── NewDiagramDialog ──────────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ NewDiagramDialog Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export function NewDiagramDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const newDiagram = useDiagramStore((s) => s.newDiagram);
@@ -123,7 +123,7 @@ export function NewDiagramDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-// ── DiagramLibraryDialog ──────────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ DiagramLibraryDialog Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const locale = useLocale();
@@ -132,7 +132,7 @@ export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
   const loadDiagram = useDiagramStore((s) => s.loadDiagram);
   const deleteDiagram = useDiagramStore((s) => s.deleteDiagram);
 
-  // null  → no pending delete; string → id of diagram awaiting confirmation
+  // null  Ã¢â€ â€™ no pending delete; string Ã¢â€ â€™ id of diagram awaiting confirmation
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   // Format ISO date string according to the active locale
@@ -177,7 +177,7 @@ export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
       {/* Diagram list */}
       <div className="max-h-96 overflow-y-auto px-2 py-2">
         {savedDiagrams.length === 0 ? (
-          // Empty state — shown when no diagrams have been saved yet
+          // Empty state Ã¢â‚¬â€ shown when no diagrams have been saved yet
           <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
             <FileText className="size-8 text-muted-foreground/40" />
             <p className="text-sm font-medium text-muted-foreground">
@@ -212,13 +212,13 @@ export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
                     <Clock className="size-3" />
                     {/* Date + node count separated by middle dot */}
                     {formatDate(d.updatedAt)}
-                    {" · "}
+                    {" Ã‚Â· "}
                     {t("messages.nodeCount", { count: d.nodes.length })}
                   </p>
                 </div>
               </button>
 
-              {/* Inline delete confirmation — replaces the trash icon on first click */}
+              {/* Inline delete confirmation Ã¢â‚¬â€ replaces the trash icon on first click */}
               {confirmId === d.id ? (
                 <div className="flex items-center gap-1">
                   <button
@@ -250,3 +250,8 @@ export function DiagramLibraryDialog({ onClose }: { onClose: () => void }) {
     </ModalShell>
   );
 }
+
+
+
+
+

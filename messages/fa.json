@@ -350,6 +350,9 @@
   },
 
   "Flow": {
+        "loadTemplate": "بارگذاری الگو...",
+            "searchTemplate": "یافتن الگو",
+                "noTemplate": "بدون الگو",
     "editor": {
       "title": "ویرایشگر دیاگرام",
       "untitled": "دیاگرام بدون عنوان",
@@ -359,26 +362,29 @@
       "saving": "در حال ذخیره…",
       "export": "خروجی",
       "import": "ورودی",
-      "share": "اشتراک‌گذاری",
+      "share": "اشتراک‌ گذاری",
       "settings": "تنظیمات",
       "openDiagrams": "دیاگرام‌های من",
       "close": "بستن"
     },
     "toolbar": {
       "undo": "واگرد",
-      "redo": "انجام‌مجدد",
+      "redo": "انجام‌ مجدد",
       "copy": "کپی",
       "paste": "چسباندن",
       "cut": "برش",
       "delete": "حذف",
       "selectAll": "انتخاب همه",
       "fitView": "تنظیم نما",
-      "zoomIn": "بزرگ‌نمایی",
-      "zoomOut": "کوچک‌نمایی",
+      "zoomIn": "بزرگ‌ نمایی",
+      "zoomOut": "کوچک‌ نمایی",
       "resetZoom": "بازنشانی نما",
       "lock": "قفل",
       "unlock": "آزاد",
-      "addNode": "افزودن گره"
+      "addNode": "افزودن گره",
+         "loadTemplate": "بارگذاری الگو...",
+      "searchTemplate": "جستجوی الگو",
+      "noTemplate": "الگویی یافت نشد"
     },
     "nodes": {
       "defaultNode": "فرآیند",
@@ -388,21 +394,41 @@
       "diamondNode": "تصمیم",
       "cylinderNode": "پایگاه داده",
       "parallelogramNode": "ورودی/خروجی",
-      "hexagonNode": "شش‌ضلعی",
+      "hexagonNode": "شش‌ ضلعی",
       "textNode": "متن",
-      "noteNode": "یادداشت"
+      "noteNode": "یادداشت",
+      "cloudNode": "ابری",
+        "triangleNode": "مثلث",
+"documentNode": "سند",
+"predefinedProcessNode": "زیر سیستم",
+"delayNode": "تاخیر",
+"groupNode": "گروه",
+"numberNode": "مقدار عددی",
+"operatorNode": "عملگر ریاضی",
+"shapeNode": " اشکال هندسی",
+"beamCalcNode": "محاسبه گر ممان اینرسی",
+"geometryCalcNode": "محاسبه گر هندسی",
+"imageNode": "عکس",
+"svgNode": "SVG",
+"dwgNode": "DWG",
+"dxfNode": "DXF",
+"starNode": "ستاره",
+"pentagonNode": "پنج ضلعی",
+"multiDocumentNode": "ترکیبی"
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
       "basic": "پایه",
       "flowchart": "فلوچارت",
       "shapes": "اشکال",
-      "dragToAdd": "بکشید به بوم"
+      "dragToAdd": "بکشید به بوم",
+       "containers": "نگهدارنده",
+          "compute": "محاسبه"
     },
     "settings": {
       "label": "برچسب",
       "description": "توضیحات",
-      "backgroundColor": "رنگ پس‌زمینه",
+      "backgroundColor": "رنگ پس‌ زمینه",
       "borderColor": "رنگ حاشیه",
       "textColor": "رنگ متن",
       "fontSize": "اندازه فونت",
@@ -422,7 +448,8 @@
       "weight_bold": "ضخیم",
       "style_solid": "ممتد",
       "style_dashed": "خط‌چین",
-      "style_dotted": "نقطه‌چین"
+      "style_dotted": "نقطه‌چین",
+      "link": "لینک"
     },
     "editorSettings": {
       "title": "تنظیمات ادیتور",
@@ -446,7 +473,8 @@
       "edge_smoothstep": "پله‌ای",
       "edge_step": "پله تیز",
       "autoSave": "ذخیره خودکار در کتابخانه",
-      "shortcuts": "میانبرهای صفحه‌کلید"
+      "shortcuts": "میانبرهای صفحه‌کلید",
+       "edge_floating": "شناور"
     },
     "shortcuts": {
       "undo": "واگرد",
@@ -478,7 +506,8 @@
       "importedSuccessfully": "با موفقیت وارد شد",
       "copiedToClipboard": "در کلیپ‌بورد کپی شد",
       "noDiagrams": "هنوز دیاگرامی ذخیره نشده",
-      "createFirst": "اولین دیاگرام خود را بسازید"
+      "createFirst": "اولین دیاگرام خود را بسازید",
+      "nodeCount": "{count} گره"
     },
     "contextMenu": {
       "addNode": "افزودن گره",
@@ -495,5 +524,13 @@
       "loading": "در حال بارگذاری…",
       "noResults": "نتیجه‌ای یافت نشد"
     }
-  }
+  },
+
+  "Combobox": {
+    "placeholder": "انتخاب کنید...",
+    "searchPlaceholder": "جستجو...",
+    "emptyText": "موردی یافت نشد."
+  
+}
+
 }

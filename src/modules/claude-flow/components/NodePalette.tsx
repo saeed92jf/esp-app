@@ -10,16 +10,31 @@ import {
   Type,
   StickyNote,
   ArrowRightCircle,
-  Octagon,
+  Flag,
   Hexagon,
   Search,
+  Triangle,
+  Cloud,
+  FileText,
+  Columns3,
+  Timer,
+  Layers,
+  Hash,
+  Sigma,
+  Ruler,
+  RectangleHorizontal,
+  Shapes,
+  Image as ImageIconLucide,
+  FileCode,
+  FileArchive,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
 import type { PaletteItem } from "../types";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
-// ── Static palette definitions ────────────────────────────────────────────────
+// Ã¢â€â‚¬Ã¢â€â‚¬ Static palette definitions Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 // defaultData values are merged into node data on drop; colors use Tailwind-safe hex values
 const PALETTE_ITEMS: PaletteItem[] = [
   {
@@ -36,19 +51,17 @@ const PALETTE_ITEMS: PaletteItem[] = [
     category: "flowchart",
     defaultData: {
       label: "Start",
-      backgroundColor: "#dcfce7",
-      borderColor: "#22c55e",
+      colorToken: "green",
     },
   },
   {
     type: "outputNode",
     labelKey: "outputNode",
-    icon: "octagon",
+    icon: "flag",
     category: "flowchart",
     defaultData: {
       label: "End",
-      backgroundColor: "#fee2e2",
-      borderColor: "#ef4444",
+      colorToken: "red",
     },
   },
   {
@@ -58,8 +71,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     category: "flowchart",
     defaultData: {
       label: "Decision",
-      backgroundColor: "#fef9c3",
-      borderColor: "#eab308",
+      colorToken: "amber",
     },
   },
   {
@@ -106,7 +118,112 @@ const PALETTE_ITEMS: PaletteItem[] = [
     labelKey: "noteNode",
     icon: "note",
     category: "basic",
-    defaultData: { label: "Note text…" },
+    defaultData: { label: "Note textâ€¦" },
+  },
+  {
+    type: "imageNode",
+    labelKey: "imageNode",
+    icon: "image",
+    category: "basic",
+    defaultData: { label: "Image" },
+  },
+  {
+    type: "svgNode",
+    labelKey: "svgNode",
+    icon: "svg",
+    category: "basic",
+    defaultData: { label: "SVG" },
+  },
+  {
+    type: "dwgNode",
+    labelKey: "dwgNode",
+    icon: "cad",
+    category: "basic",
+    defaultData: { label: "DWG file", colorToken: "neutral" },
+  },
+  {
+    type: "dxfNode",
+    labelKey: "dxfNode",
+    icon: "cad",
+    category: "basic",
+    defaultData: { label: "DXF file", colorToken: "neutral" },
+  },
+  {
+    type: "triangleNode",
+    labelKey: "triangleNode",
+    icon: "triangle",
+    category: "shapes",
+    defaultData: { label: "Triangle" },
+  },
+  {
+    type: "cloudNode",
+    labelKey: "cloudNode",
+    icon: "cloud",
+    category: "shapes",
+    defaultData: { label: "Cloud", colorToken: "blue" },
+  },
+  {
+    type: "documentNode",
+    labelKey: "documentNode",
+    icon: "document",
+    category: "flowchart",
+    defaultData: { label: "Document" },
+  },
+  {
+    type: "predefinedProcessNode",
+    labelKey: "predefinedProcessNode",
+    icon: "predefinedProcess",
+    category: "flowchart",
+    defaultData: { label: "Subroutine" },
+  },
+  {
+    type: "delayNode",
+    labelKey: "delayNode",
+    icon: "delay",
+    category: "flowchart",
+    defaultData: { label: "Delay", colorToken: "amber" },
+  },
+  {
+    type: "groupNode",
+    labelKey: "groupNode",
+    icon: "group",
+    category: "containers",
+    defaultData: { label: "Sub-flow", colorToken: "neutral" },
+  },
+  {
+    type: "numberNode",
+    labelKey: "numberNode",
+    icon: "number",
+    category: "compute",
+    defaultData: { label: "Number", value: 0 },
+  },
+  {
+    type: "operatorNode",
+    labelKey: "operatorNode",
+    icon: "operator",
+    category: "compute",
+    defaultData: { label: "Operator", operation: "add", colorToken: "violet" },
+  },
+  {
+    type: "shapeNode",
+    labelKey: "shapeNode",
+    icon: "shape",
+    category: "compute",
+    defaultData: { label: "Shape", shapeKind: "rectangle", colorToken: "amber" },
+  },
+  {
+    type: "geometryCalcNode",
+    labelKey: "geometryCalcNode",
+    icon: "geometryCalc",
+    category: "compute",
+    defaultData: { label: "Geometry calculator", calcShape: "rectangle", calcMode: "area", colorToken: "teal" },
+  },
+  {
+    type: "beamCalcNode",
+    labelKey: "beamCalcNode",
+    icon: "beamCalc",
+    category: "compute",
+    defaultData: { label: "Beam section (Ix)", beamShape: "rectangle", colorToken: "blue" },
   },
 ];
 
@@ -119,30 +236,80 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   type: Type,
   note: StickyNote,
   arrowRight: ArrowRightCircle,
-  octagon: Octagon,
+  flag: Flag,
   hexagon: Hexagon,
+  triangle: Triangle,
+  cloud: Cloud,
+  document: FileText,
+  predefinedProcess: Columns3,
+  delay: Timer,
+  group: Layers,
+  number: Hash,
+  operator: Sigma,
+  geometryCalc: Ruler,
+  beamCalc: RectangleHorizontal,
+  shape: Shapes,
+  image: ImageIconLucide,
+  svg: FileCode,
+  cad: FileArchive,
 };
 
 // Category order determines render order in the palette sidebar
-const CATEGORIES = ["basic", "flowchart", "shapes"] as const;
+const CATEGORIES = ["basic", "flowchart", "shapes", "containers", "compute"] as const;
 
-// ── NodePalette ───────────────────────────────────────────────────────────────
+// English fallbacks for the newly-added keys, used if the project's message
+// files haven't been updated yet (next-intl throws on missing keys in dev).
+// Add `nodes.<labelKey>` / `palette.containers` to your translation files to
+// fully localize these; until then the UI keeps working with this fallback.
+const LABEL_FALLBACKS: Record<string, string> = {
+  triangleNode: "Triangle",
+  cloudNode: "Cloud",
+  documentNode: "Document",
+  predefinedProcessNode: "Subroutine",
+  delayNode: "Delay",
+  groupNode: "Sub-flow",
+  numberNode: "Number",
+  operatorNode: "Operator",
+  geometryCalcNode: "Geometry calculator",
+  beamCalcNode: "Beam section (Ix)",
+  shapeNode: "Shape",
+  imageNode: "Image",
+  svgNode: "SVG",
+  dwgNode: "DWG file",
+  dxfNode: "DXF file",
+};
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  containers: "Containers",
+  compute: "Computation",
+};
+
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
+
+// Ã¢â€â‚¬Ã¢â€â‚¬ NodePalette Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 export function NodePalette() {
   // next-intl: all keys live under the "Flow" namespace
   const t = useTranslations("Flow");
   const [query, setQuery] = useState("");
 
+  const label = (item: PaletteItem) =>
+    safeT(t, `nodes.${item.labelKey}`, LABEL_FALLBACKS[item.labelKey] ?? item.defaultData.label ?? item.type);
+
   // Filter items by translated label, then group by category.
   // Re-runs only when query or locale changes (t is stable per render).
   const grouped = useMemo(() => {
     const q = query.toLowerCase();
-    const filtered = PALETTE_ITEMS.filter((item) =>
-      t(`nodes.${item.labelKey}`).toLowerCase().includes(q),
-    );
+    const filtered = PALETTE_ITEMS.filter((item) => label(item).toLowerCase().includes(q));
     return CATEGORIES.map((cat) => ({
       cat,
       items: filtered.filter((i) => i.category === cat),
     })).filter((g) => g.items.length > 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, t]);
 
   // Encode the full PaletteItem into the drag event so the canvas drop handler
@@ -157,31 +324,27 @@ export function NodePalette() {
 
   return (
     <aside className="flex h-full w-64 flex-col border-e border-border bg-background">
-      {/* ── Search bar ─────────────────────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Search bar Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <div className="border-b border-border p-3">
         <div className="relative">
           {/* start-2.5 is the Tailwind v4 logical-property equivalent of left-2.5 */}
           <Search className="absolute inset-s-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("palette.search")}
-            className={cn(
-              "w-full rounded-md border border-input bg-background py-1.5 ps-8 pe-2 text-xs",
-              "text-foreground placeholder:text-muted-foreground",
-              "outline-none focus:border-primary focus:ring-1 focus:ring-primary",
-            )}
+            className="ps-8 pe-2 text-xs"
           />
         </div>
       </div>
 
-      {/* ── Grouped node list ───────────────────────────────────────────────── */}
+      {/* Ã¢â€â‚¬Ã¢â€â‚¬ Grouped node list Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ */}
       <div className="flex-1 overflow-y-auto p-3">
         {grouped.map(({ cat, items }) => (
           <div key={cat} className="mb-4">
             {/* Dynamic category heading: Flow.palette.<cat> */}
             <h3 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              {t(`palette.${cat}`)}
+              {safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat] ?? cat)}
             </h3>
 
             <div className="grid grid-cols-2 gap-2">
@@ -207,7 +370,7 @@ export function NodePalette() {
 
                     {/* Dynamic node label: Flow.nodes.<labelKey> */}
                     <span className="text-[11px] font-medium leading-tight text-foreground">
-                      {t(`nodes.${item.labelKey}`)}
+                      {label(item)}
                     </span>
                   </div>
                 );
@@ -216,7 +379,7 @@ export function NodePalette() {
           </div>
         ))}
 
-        {/* Empty state — shown when search query matches nothing */}
+        {/* Empty state Ã¢â‚¬â€ shown when search query matches nothing */}
         {grouped.length === 0 && (
           <p className="px-1 py-6 text-center text-xs text-muted-foreground">
             {t("global.noResults")}
@@ -228,3 +391,8 @@ export function NodePalette() {
 }
 
 export { PALETTE_ITEMS };
+
+
+
+
+

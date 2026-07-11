@@ -644,3 +644,23 @@
     max-width: 1536px;
   }
 }
+@layer base {
+  .dark {
+    color-scheme: dark;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 5px;
+  }
+}
+@layer base {
+  :root { color-scheme: light dark; }
+  * { scrollbar-color: hsl(var(--border)) hsl(var(--background)); }
+}
