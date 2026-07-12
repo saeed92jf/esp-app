@@ -27,6 +27,7 @@ import {
   Image as ImageIconLucide,
   FileCode,
   FileArchive,
+  Pi,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
@@ -205,6 +206,13 @@ const PALETTE_ITEMS: PaletteItem[] = [
     defaultData: { label: "Operator", operation: "add", colorToken: "violet" },
   },
   {
+    type: "constantNode",
+    labelKey: "constantNode",
+    icon: "constant",
+    category: "compute",
+    defaultData: { label: "Constant", constantKey: "pi", colorToken: "green" },
+  },
+  {
     type: "shapeNode",
     labelKey: "shapeNode",
     icon: "shape",
@@ -246,6 +254,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   group: Layers,
   number: Hash,
   operator: Sigma,
+  constant: Pi,
   geometryCalc: Ruler,
   beamCalc: RectangleHorizontal,
   shape: Shapes,
@@ -270,6 +279,7 @@ const LABEL_FALLBACKS: Record<string, string> = {
   groupNode: "Sub-flow",
   numberNode: "Number",
   operatorNode: "Operator",
+  constantNode: "Constant",
   geometryCalcNode: "Geometry calculator",
   beamCalcNode: "Beam section (Ix)",
   shapeNode: "Shape",

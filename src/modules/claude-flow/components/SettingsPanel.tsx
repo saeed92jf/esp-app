@@ -622,7 +622,7 @@ export function SettingsPanel() {
               options={EDGE_TYPE_OPTIONS}
               value={(data.edgeStyle ?? "smoothstep") as string}
               onChange={(v) => updateEdgeData(selectedEdge.id, { edgeStyle: v as DiagramEdgeType })}
-              placeholder="Connection type..."
+              placeholder={t("settings.edgeType")}
             />
           </Field>
 

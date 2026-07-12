@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Handle,
   Position,
@@ -23,6 +24,7 @@ import { getShapeGeometry, SHAPE_DEFAULT_SIZE } from "../../utils/shapes";
 import { resolveNodeColors } from "../../utils/colors";
 import { OPERATOR_ARITY, OPERATOR_SYMBOL, OPERATOR_LABEL } from "../../utils/operators";
 import { UNIT_OPTIONS, unitWithPower, geometryModePower } from "../../utils/units";
+import { MATH_CONSTANTS, MATH_CONSTANT_BY_KEY, MATH_CONSTANT_OPTIONS } from "../../utils/constants";
 import { ShapeSchematic } from "./ShapeSchematic";
 import {
   GEOMETRY_SHAPE_FIELDS,
@@ -31,6 +33,9 @@ import {
   BEAM_SHAPE_FIELDS,
   computeSecondMomentOfArea,
   isBeamCompatible,
+  isVolumetricShape,
+  validateBeamInputs,
+  BEAM_VALIDATION_FALLBACKS,
   toBeamInputs,
   type GeometryShape,
   type GeometryMode,
@@ -49,6 +54,18 @@ const FONT_WEIGHT_MAP: Record<string, number> = {
 // ReactFlow v12+ requires Node<TData, TType> â€” not just the data shape.
 type DiagramNodeObject = Node<DiagramNodeData, DiagramNodeType>;
 type DiagramNodeProps = NodeProps<DiagramNodeObject>;
+
+/** Falls back to plain English if a `Flow.<key>` translation is missing —
+ *  next-intl throws on missing keys, so every string this file introduces
+ *  goes through this instead of a bare t(). Same pattern as NodePalette.tsx
+ *  and EditorSettingsDialog.tsx's local safeT helpers. */
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
 
 /** Opens a node's link in a new tab. Bare hosts ("example.com") get "https://" prefixed. */
 function openNodeLink(url: string | undefined) {
@@ -531,6 +548,7 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
 function NumberNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const fallback = SHAPE_DEFAULT_SIZE.numberNode;
@@ -546,31 +564,74 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
       }}
     >
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
-        {data.label || "Number"}
+        {data.label || safeT(t, "nodes.numberNode", "Number")}
       </span>
-      <div className="nodrag flex items-center gap-1">
-        <NumberField
-          value={data.value ?? 0}
-          onChange={(v) => updateNodeData(id, { value: v })}
-          colorMode={colorMode}
-          className="flex-1 text-sm font-semibold"
-          style={{ color: resolved.text }}
-        />
-        <Combobox
-          options={UNIT_OPTIONS}
-          value={data.unit ?? ""}
-          onChange={(v) => updateNodeData(id, { unit: v })}
-          placeholder="unit"
-          className="w-16 shrink-0"
-        />
-      </div>
+      <NumberField
+        value={data.value ?? 0}
+        onChange={(v) => updateNodeData(id, { value: v })}
+        colorMode={colorMode}
+        className="w-full text-sm font-semibold"
+        style={{ color: resolved.text }}
+      />
       <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
     </div>
   );
 }
 
 /**
- * OperatorNode's handles depend on the chosen operation's real arity — sqrt
+ * A picklist of common dimensionless mathematical constants (π, e, φ, ...)
+ * with a short description for each — a library, not a free-typed number.
+ * Outputs its selected value through a single source handle, so it can feed
+ * an OperatorNode exactly like NumberNode does (see utils/constants.ts).
+ */
+function ConstantNode({ id, selected, data }: DiagramNodeProps) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
+  const resolved = resolveNodeColors(data, colorMode);
+  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
+  const fallback = SHAPE_DEFAULT_SIZE.constantNode;
+  const width = data.width ?? fallback.width;
+
+  const constant = MATH_CONSTANT_BY_KEY[data.constantKey ?? "pi"] ?? MATH_CONSTANTS[0];
+
+  return (
+    <div
+      className="flex flex-col gap-1.5 rounded-lg px-3 py-2 shadow-sm"
+      style={{
+        width,
+        backgroundColor: resolved.background,
+        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
+      }}
+    >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
+        {data.label || safeT(t, "nodes.constantNode", "Constant")}
+      </span>
+
+      <div className="nodrag">
+        <Combobox
+          options={MATH_CONSTANT_OPTIONS}
+          value={constant.key}
+          onChange={(v) => updateNodeData(id, { constantKey: v })}
+          placeholder={safeT(t, "settings.constant", "Constant...")}
+        />
+      </div>
+
+      <div className="nodrag flex items-baseline justify-between gap-2 rounded border border-black/10 bg-white/70 px-2 py-1 dark:bg-black/20">
+        <span className="text-base font-bold" style={{ color: resolved.text }}>{constant.symbol}</span>
+        <span className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
+          {Number(constant.value.toFixed(6))}
+        </span>
+      </div>
+
+      <p className="text-[10px] leading-snug opacity-70" style={{ color: resolved.text }}>
+        {constant.description}
+      </p>
+
+      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+    </div>
+  );
+}
  * only makes sense with ONE input, divide/subtract/power need exactly TWO
  * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
  * handles instead of one shared unlimited handle. See utils/operators.ts for
@@ -579,6 +640,7 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
 function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
   const updateNodeInternals = useUpdateNodeInternals();
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
@@ -612,7 +674,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
     >
       <div className="flex items-center justify-between gap-1">
         <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
-          {data.label || "Operator"}
+          {data.label || safeT(t, "nodes.operatorNode", "Operator")}
         </span>
         <span className="text-xs font-bold" style={{ color: resolved.text }}>
           {OPERATOR_SYMBOL[operation]}
@@ -624,25 +686,15 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
           options={(Object.keys(OPERATOR_LABEL) as ArithmeticOperation[]).map((op) => ({ value: op, label: OPERATOR_LABEL[op] }))}
           value={operation}
           onChange={(v) => handleOperationChange(v as ArithmeticOperation)}
-          placeholder="Operation..."
+          placeholder={safeT(t, "settings.operation", "Operation...")}
         />
       </div>
 
-      <div className="nodrag flex items-center gap-1">
-        <div
-          className="flex-1 rounded border border-black/10 bg-white/70 px-2 py-1 text-center text-sm font-semibold dark:bg-black/20"
-          style={{ color: resolved.text }}
-        >
-          {data.result !== undefined ? Number(data.result.toFixed(3)) : "—"}
-          {data.result !== undefined && data.unit ? <span className="ms-1 text-xs font-normal opacity-70">{data.unit}</span> : null}
-        </div>
-        <Combobox
-          options={UNIT_OPTIONS}
-          value={data.unit ?? ""}
-          onChange={(v) => updateNodeData(id, { unit: v })}
-          placeholder="unit"
-          className="w-16 shrink-0"
-        />
+      <div
+        className="nodrag rounded border border-black/10 bg-white/70 px-2 py-1 text-center text-sm font-semibold dark:bg-black/20"
+        style={{ color: resolved.text }}
+      >
+        {data.result !== undefined ? Number(data.result.toFixed(3)) : "—"}
       </div>
 
       {arity === "nary" && (
@@ -736,6 +788,7 @@ function formatCalcResult(value: number | null): string {
 function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const fallback = SHAPE_DEFAULT_SIZE.geometryCalcNode;
@@ -776,12 +829,12 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
       <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
-        {data.label || "Geometry calculator"}
+        {data.label || safeT(t, "nodes.geometryCalcNode", "Geometry calculator")}
       </span>
 
       {upstream ? (
         <p className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70" style={{ color: resolved.text }}>
-          Shape: {GEOMETRY_SHAPE_LABELS[shape]} (from &ldquo;{upstream.data.label}&rdquo;)
+          {safeT(t, "settings.shapeFrom", "Shape")}: {GEOMETRY_SHAPE_LABELS[shape]} (&ldquo;{upstream.data.label}&rdquo;)
         </p>
       ) : (
         <div className="nodrag">
@@ -789,13 +842,13 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
             options={(Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]).map((s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }))}
             value={shape}
             onChange={(v) => updateNodeData(id, { calcShape: v as GeometryShape, calcInputs: {} })}
-            placeholder="Shape..."
+            placeholder={safeT(t, "settings.shape", "Shape...")}
           />
         </div>
       )}
 
       <div className="nodrag flex items-center gap-1.5">
-        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         {upstream ? (
           <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "—"}</span>
         ) : (
@@ -803,13 +856,13 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
             options={UNIT_OPTIONS}
             value={data.unit ?? ""}
             onChange={(v) => updateNodeData(id, { unit: v })}
-            placeholder="unit"
-            className="w-16 shrink-0"
+            placeholder={safeT(t, "settings.unit", "Unit")}
+            className="flex-1"
           />
         )}
       </div>
 
-      <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
@@ -869,6 +922,7 @@ const BEAM_SHAPE_LABELS: Record<BeamShape, string> = {
 function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const fallback = SHAPE_DEFAULT_SIZE.beamCalcNode;
@@ -884,6 +938,7 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
   const fields = BEAM_SHAPE_FIELDS[shape];
   const result = upstream && !upstreamCompatible ? null : computeSecondMomentOfArea(shape, inputs);
   const unit = (upstream ? upstream.data.unit : data.unit) || "mm";
+  const validationError = upstream && !upstreamCompatible ? null : validateBeamInputs(shape, inputs);
 
   const handleResize = useCallback<OnResize>(
     (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
@@ -907,14 +962,16 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
       <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
-        {data.label || "Beam section (Ix)"}
+        {data.label || safeT(t, "nodes.beamCalcNode", "Beam section (Ix)")}
       </span>
 
       {upstream ? (
         <p className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70" style={{ color: resolved.text }}>
           {upstreamCompatible
-            ? `Shape: ${BEAM_SHAPE_LABELS[shape]} (from "${upstream.data.label}")`
-            : `"${upstream.data.label}" has no Ix formula defined`}
+            ? `${safeT(t, "settings.shapeFrom", "Shape")}: ${BEAM_SHAPE_LABELS[shape]} ("${upstream.data.label}")`
+            : upstreamShape && isVolumetricShape(upstreamShape)
+              ? safeT(t, "settings.beamVolumetricWarning", `"${upstream.data.label}" is a 3D/volumetric shape (${upstreamShape}) — bending Ix only applies to a 2D cross-section, not a solid.`)
+              : safeT(t, "settings.beamNoFormula", `"${upstream.data.label}" has no Ix formula defined.`)}
         </p>
       ) : (
         <div className="nodrag">
@@ -922,13 +979,13 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
             options={(Object.keys(BEAM_SHAPE_FIELDS) as BeamShape[]).map((s) => ({ value: s, label: BEAM_SHAPE_LABELS[s] }))}
             value={shape}
             onChange={(v) => updateNodeData(id, { beamShape: v as BeamShape, beamInputs: {} })}
-            placeholder="Shape..."
+            placeholder={safeT(t, "settings.shape", "Shape...")}
           />
         </div>
       )}
 
       <div className="nodrag flex items-center gap-1.5">
-        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         {upstream ? (
           <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "mm"}</span>
         ) : (
@@ -937,12 +994,12 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
             value={data.unit ?? ""}
             onChange={(v) => updateNodeData(id, { unit: v })}
             placeholder="mm"
-            className="w-16 shrink-0"
+            className="flex-1"
           />
         )}
       </div>
 
-      <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
@@ -962,13 +1019,19 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         </div>
       )}
 
+      {validationError && (
+        <p className="nodrag rounded border border-amber-400/60 bg-amber-400/10 px-2 py-1 text-[11px] leading-snug text-amber-700 dark:text-amber-400">
+          ⚠ {safeT(t, `beamValidation.${validationError}`, BEAM_VALIDATION_FALLBACKS[validationError])}
+        </p>
+      )}
+
       <div className="mt-auto rounded border border-black/10 bg-white/70 px-2 py-1.5 text-center dark:bg-black/20">
         <div className="text-[10px] opacity-70" style={{ color: resolved.text }}>
-          Ix (second moment of area)
+          {safeT(t, "settings.ixCaption", "Ix (second moment of area)")}
         </div>
         <div className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
-          {formatCalcResult(result)}
-          {result !== null ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, 4)}</span> : null}
+          {validationError ? "—" : formatCalcResult(result)}
+          {!validationError && result !== null ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, 4)}</span> : null}
         </div>
       </div>
     </div>
@@ -981,6 +1044,7 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
 function ShapeNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const fallback = SHAPE_DEFAULT_SIZE.shapeNode;
@@ -1012,7 +1076,7 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
       <Handle type="source" position={Position.Right} id="shape-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
-        {data.label || "Shape"}
+        {data.label || safeT(t, "nodes.shapeNode", "Shape")}
       </span>
 
       <div className="nodrag">
@@ -1020,22 +1084,22 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
           options={(Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]).map((s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }))}
           value={shape}
           onChange={(v) => updateNodeData(id, { shapeKind: v as GeometryShape, shapeInputs: {} })}
-          placeholder="Shape..."
+          placeholder={safeT(t, "settings.shape", "Shape...")}
         />
       </div>
 
       <div className="nodrag flex items-center gap-1.5">
-        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>Unit</span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         <Combobox
           options={UNIT_OPTIONS}
           value={data.unit ?? ""}
           onChange={(v) => updateNodeData(id, { unit: v })}
-          placeholder="unit"
-          className="w-16 shrink-0"
+          placeholder={safeT(t, "settings.unit", "Unit")}
+          className="flex-1"
         />
       </div>
 
-      <div className="h-24 shrink-0 rounded border border-black/10 bg-white/40 p-1 dark:bg-black/10" style={{ color: resolved.text }}>
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
@@ -1338,6 +1402,7 @@ export const nodeTypes = {
   groupNode: GroupNode,
   numberNode: NumberNode,
   operatorNode: OperatorNode,
+  constantNode: ConstantNode,
   geometryCalcNode: GeometryCalcNode,
   beamCalcNode: BeamCalcNode,
   shapeNode: ShapeNode,

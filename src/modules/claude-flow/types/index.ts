@@ -24,6 +24,7 @@ export type DiagramNodeType =
   // ── Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) ──
   | 'numberNode'
   | 'operatorNode'
+  | 'constantNode'
   // ── Standalone geometry calculators ──────────────────────────────
   | 'geometryCalcNode'
   | 'beamCalcNode'
@@ -105,6 +106,9 @@ export interface DiagramNodeData extends Record<string, unknown> {
    *  an upstream value changes (see store's recomputeValues). Read-only from
    *  the UI's point of view — always derived, never edited directly. */
   result?: number;
+  /** constantNode: which dimensionless constant (π, e, φ, ...) it outputs.
+   *  See utils/constants.ts for the full list. Defaults to "pi". */
+  constantKey?: string;
 
   // ── Geometry calculator (perimeter / area / volume) ──────────────────
   calcShape?: GeometryShape;

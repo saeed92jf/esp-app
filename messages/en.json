@@ -17,13 +17,11 @@
       "fa": "FA"
     }
   },
-
   "LocaleSwitcher": {
     "placeholder": "Select language",
     "search": "Search...",
     "empty": "No language found."
   },
-
   "Metadata": {
     "title": "Euroslot Pars WebApp.",
     "description": "Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.",
@@ -313,7 +311,7 @@
       "title": "Video list",
       "count": "{count, plural, one {# video} other {# videos}}",
       "progress": "{loaded} of {total} videos",
-      "loadMore": "Loading more…",
+      "loadMore": "Loading moreâ€¦",
       "empty": "empty",
       "locale": "locale",
       "views": ""
@@ -357,7 +355,7 @@
       "newDiagram": "New Diagram",
       "save": "Save",
       "saved": "Saved",
-      "saving": "Saving…",
+      "saving": "Savingâ€¦",
       "export": "Export",
       "import": "Import",
       "share": "Share",
@@ -382,7 +380,10 @@
       "addNode": "Add Node",
       "loadTemplate": "Load Template...",
       "searchTemplate": "Search template",
-      "noTemplate": "No template found"
+      "noTemplate": "No template found",
+      "noTemplatesInFolder": "No diagrams found in public/diagrams.",
+      "templateLoaded": "Loaded",
+      "templateLoadFailed": "Could not load"
     },
     "nodes": {
       "defaultNode": "Process",
@@ -412,10 +413,11 @@
       "dxfNode": "DXF",
       "starNode": "Star",
       "pentagonNode": "Pentagon",
-      "multiDocumentNode": "Multi Doc"
+      "multiDocumentNode": "Multi Doc",
+      "constantNode": "Constant"
     },
     "palette": {
-      "search": "Search nodes…",
+      "search": "Search nodesâ€¦",
       "basic": "Basic",
       "flowchart": "Flowchart",
       "shapes": "Shapes",
@@ -447,7 +449,15 @@
       "style_solid": "Solid",
       "style_dashed": "Dashed",
       "style_dotted": "Dotted",
-      "link": "Link"
+      "link": "Link",
+      "constant": "Constant...",
+      "operation": "Operation...",
+      "shape": "Shape...",
+      "shapeFrom": "Shape",
+      "unit": "Unit",
+      "ixCaption": "Ix (second moment of area)",
+      "beamVolumetricWarning": "This is a 3D/volumetric shape — bending Ix only applies to a 2D cross-section, not a solid.",
+      "beamNoFormula": "This shape has no Ix formula defined."
     },
     "editorSettings": {
       "title": "Editor Settings",
@@ -473,7 +483,9 @@
       "autoSave": "Auto-save to library",
       "shortcuts": "Keyboard shortcuts",
       "edge_floating": "Floating",
-      "edge_floating_straight": "Floating straight"
+      "edge_floating_straight": "Floating straight",
+      "collisionAvoidance": "Push nodes apart while dragging",
+      "colorModeNote": "synced with the site theme"
     },
     "shortcuts": {
       "undo": "Undo",
@@ -520,11 +532,21 @@
       "search": "Search",
       "cancel": "Cancel",
       "confirm": "Confirm",
-      "loading": "Loading…",
+      "loading": "Loadingâ€¦",
       "noResults": "No results"
+    },
+    "beamValidation": {
+      "positiveDims": "Width and height must both be greater than zero.",
+      "positiveDiameter": "Diameter must be greater than zero.",
+      "positiveOuterDiameter": "Outer diameter must be greater than zero.",
+      "negativeInnerDiameter": "Inner diameter can't be negative.",
+      "innerNotSmallerThanOuter": "Inner diameter must be smaller than the outer diameter.",
+      "positiveBaseHeight": "Base and height must both be greater than zero.",
+      "positiveIBeamDims": "All four dimensions must be greater than zero.",
+      "webWiderThanFlange": "Web thickness can't be larger than the flange width.",
+      "flangeTooThick": "Flange thickness is too large for this total height."
     }
   },
-
   "Combobox": {
     "placeholder": "Select...",
     "searchPlaceholder": "Search...",

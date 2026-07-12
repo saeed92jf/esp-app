@@ -36,33 +36,36 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-2">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
-      {children}
+    <div className="flex items-center justify-between gap-3 py-2">
+      <Label className="min-w-0 flex-1 text-xs font-medium text-muted-foreground">{label}</Label>
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }
 
+// Falls back to a plain-English string if a translation key hasn't been
+// added to messages/*.json yet — next-intl throws on missing keys, so every
+// newly-introduced string in this dialog goes through this instead of a bare t().
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
+
 // Every connection style the app supports, kept in exactly one place so the
 // Editor Settings dialog and the per-edge SettingsPanel control never drift
-// apart again. Labels fall back to plain English if a translation key is
-// missing yet (e.g. right after adding "floating-straight").
+// apart again.
 function useEdgeTypeOptions(): { value: DiagramEdgeType; label: string }[] {
   const t = useTranslations("Flow");
-  const tt = (key: string, fallback: string) => {
-    try {
-      return t(key);
-    } catch {
-      return fallback;
-    }
-  };
   return [
-    { value: "default", label: tt("editorSettings.edge_default", "Curve") },
-    { value: "straight", label: tt("editorSettings.edge_straight", "Straight") },
-    { value: "step", label: tt("editorSettings.edge_step", "Sharp step") },
-    { value: "smoothstep", label: tt("editorSettings.edge_smoothstep", "Smooth step") },
-    { value: "floating", label: tt("editorSettings.edge_floating", "Floating curve") },
-    { value: "floating-straight", label: tt("editorSettings.edge_floating_straight", "Floating straight") },
+    { value: "default", label: safeT(t, "editorSettings.edge_default", "Curve") },
+    { value: "straight", label: safeT(t, "editorSettings.edge_straight", "Straight") },
+    { value: "step", label: safeT(t, "editorSettings.edge_step", "Sharp step") },
+    { value: "smoothstep", label: safeT(t, "editorSettings.edge_smoothstep", "Smooth step") },
+    { value: "floating", label: safeT(t, "editorSettings.edge_floating", "Floating curve") },
+    { value: "floating-straight", label: safeT(t, "editorSettings.edge_floating_straight", "Floating straight") },
   ];
 }
 
@@ -113,7 +116,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             </Row>
             <Row label={t("editorSettings.background")}>
               <Select value={settings.backgroundVariant} onValueChange={(v: any) => set("backgroundVariant", v)}>
-                <SelectTrigger className="w-[130px]"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="dots">{t("editorSettings.bg_dots")}</SelectItem>
                   <SelectItem value="lines">{t("editorSettings.bg_lines")}</SelectItem>
@@ -131,7 +134,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
               <span className="text-xs text-muted-foreground">
                 {settings.colorMode === "dark" ? t("editorSettings.mode_dark") : t("editorSettings.mode_light")}
                 {" — "}
-                synced with the site theme
+                {safeT(t, "editorSettings.colorModeNote", "synced with the site theme")}
               </span>
             </Row>
 
@@ -144,14 +147,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                 options={edgeTypeOptions}
                 value={settings.defaultEdgeType}
                 onChange={(v) => set("defaultEdgeType", v as DiagramEdgeType)}
-                placeholder="Connection type..."
-                className="w-[170px]"
+                placeholder={t("settings.edgeType")}
+                className="w-56"
               />
             </Row>
             <Row label={t("editorSettings.autoSave")}>
               <Switch checked={settings.autoSave} onCheckedChange={(v) => set("autoSave", v)} />
             </Row>
-            <Row label="Push nodes apart while dragging">
+            <Row label={safeT(t, "editorSettings.collisionAvoidance", "Push nodes apart while dragging")}>
               <Switch checked={settings.collisionAvoidance} onCheckedChange={(v) => set("collisionAvoidance", v)} />
             </Row>
 

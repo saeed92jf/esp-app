@@ -39,8 +39,12 @@ function VDim({ y1, y2, x, label }: { y1: number; y2: number; x: number; label: 
 }
 
 function Wrap({ children }: { children: React.ReactNode }) {
+  // Extra margin on every side beyond the shapes' own 20–120/15–85 drawing
+  // area — several dimension labels (e.g. VDim's text) sit right at the old
+  // edge and were getting clipped by the SVG's own viewBox boundary, not
+  // just by the outer container being small.
   return (
-    <svg viewBox="0 0 140 100" className="h-full w-full" fill="none">
+    <svg viewBox="-6 -6 162 118" className="h-full w-full" fill="none">
       {children}
     </svg>
   );

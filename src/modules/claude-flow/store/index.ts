@@ -26,7 +26,8 @@ import type {
 } from '../types';
 import { resolveEdgeColor } from '../utils/colors';
 import { SHAPE_DEFAULT_SIZE } from '../utils/shapes';
-import { computeGeometry, computeSecondMomentOfArea, isBeamCompatible, toBeamInputs, GEOMETRY_SHAPE_MODES } from '../utils/geometry';
+import { computeGeometry, computeSecondMomentOfArea, isBeamCompatible, validateBeamInputs, toBeamInputs, GEOMETRY_SHAPE_MODES } from '../utils/geometry';
+import { MATH_CONSTANTS, MATH_CONSTANT_BY_KEY } from '../utils/constants';
 import { OPERATOR_ARITY, evaluateOperator } from '../utils/operators';
 
 const DEFAULT_SETTINGS: EditorSettings = {
@@ -767,6 +768,13 @@ export const useDiagramStore = create<DiagramStore>()(
             return v;
           }
 
+          if (node.type === 'constantNode') {
+            const key = (node.data as DiagramNodeData).constantKey ?? 'pi';
+            const v = MATH_CONSTANT_BY_KEY[key]?.value ?? MATH_CONSTANTS[0].value;
+            memo.set(nodeId, v);
+            return v;
+          }
+
           if (node.type === 'operatorNode') {
             if (visiting.has(nodeId)) {
               memo.set(nodeId, undefined);
@@ -829,13 +837,19 @@ export const useDiagramStore = create<DiagramStore>()(
             if (upstream) {
               const upstreamShape = upstream.shapeKind;
               if (upstreamShape && isBeamCompatible(upstreamShape)) {
-                const result = computeSecondMomentOfArea(upstreamShape, toBeamInputs(upstreamShape, upstream.shapeInputs ?? {}));
-                value = result ?? undefined;
+                const beamInputs = toBeamInputs(upstreamShape, upstream.shapeInputs ?? {});
+                if (!validateBeamInputs(upstreamShape, beamInputs)) {
+                  const result = computeSecondMomentOfArea(upstreamShape, beamInputs);
+                  value = result ?? undefined;
+                }
               }
             } else {
               const shape = data.beamShape ?? 'rectangle';
-              const result = computeSecondMomentOfArea(shape, data.beamInputs ?? {});
-              value = result ?? undefined;
+              const beamInputs = data.beamInputs ?? {};
+              if (!validateBeamInputs(shape, beamInputs)) {
+                const result = computeSecondMomentOfArea(shape, beamInputs);
+                value = result ?? undefined;
+              }
             }
             memo.set(nodeId, value);
             return value;

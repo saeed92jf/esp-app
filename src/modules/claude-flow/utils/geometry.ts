@@ -218,6 +218,86 @@ export function isBeamCompatible(shape: GeometryShape): shape is BeamShape {
   return shape in BEAM_SHAPE_FIELDS;
 }
 
+/** Shapes that describe a 3D solid rather than a 2D cross-section — these
+ *  never have a bending Ix, called out explicitly so the "unsupported shape"
+ *  message can say *why* instead of just "no formula defined". */
+const VOLUMETRIC_SHAPES: GeometryShape[] = ["cylinder", "sphere", "cuboid"];
+export function isVolumetricShape(shape: GeometryShape): boolean {
+  return VOLUMETRIC_SHAPES.includes(shape);
+}
+
+/** Short, stable keys — translated in BeamCalcNode via Flow.beamValidation.<key>.
+ *  BEAM_VALIDATION_FALLBACKS below is the English text if that key is missing. */
+export type BeamValidationKey =
+  | "positiveDims"
+  | "positiveDiameter"
+  | "positiveOuterDiameter"
+  | "negativeInnerDiameter"
+  | "innerNotSmallerThanOuter"
+  | "positiveBaseHeight"
+  | "positiveIBeamDims"
+  | "webWiderThanFlange"
+  | "flangeTooThick";
+
+export const BEAM_VALIDATION_FALLBACKS: Record<BeamValidationKey, string> = {
+  positiveDims: "Width and height must both be greater than zero.",
+  positiveDiameter: "Diameter must be greater than zero.",
+  positiveOuterDiameter: "Outer diameter must be greater than zero.",
+  negativeInnerDiameter: "Inner diameter can't be negative.",
+  innerNotSmallerThanOuter: "Inner diameter must be smaller than the outer diameter.",
+  positiveBaseHeight: "Base and height must both be greater than zero.",
+  positiveIBeamDims: "All four dimensions must be greater than zero.",
+  webWiderThanFlange: "Web thickness can't be larger than the flange width.",
+  flangeTooThick: "Flange thickness is too large for this total height.",
+};
+
+/**
+ * Physical sanity check on beam/Ix inputs — computeSecondMomentOfArea will
+ * happily return a negative or nonsensical number for garbage input (e.g. an
+ * inner diameter bigger than the outer one), so this catches the common
+ * "technically a number, but not a real cross-section" cases. Returns a
+ * short translation key (see BeamValidationKey) instead of literal text, so
+ * the message can be localized; null means the inputs are fine.
+ */
+export function validateBeamInputs(shape: BeamShape, inputs: Record<string, number>): BeamValidationKey | null {
+  const n = (key: string) => inputs[key] ?? 0;
+
+  switch (shape) {
+    case "rectangle": {
+      if (n("width") <= 0 || n("height") <= 0) return "positiveDims";
+      return null;
+    }
+    case "circle": {
+      if (n("diameter") <= 0) return "positiveDiameter";
+      return null;
+    }
+    case "hollowCircle": {
+      const D = n("outerDiameter");
+      const d = n("innerDiameter");
+      if (D <= 0) return "positiveOuterDiameter";
+      if (d < 0) return "negativeInnerDiameter";
+      if (d >= D) return "innerNotSmallerThanOuter";
+      return null;
+    }
+    case "triangle": {
+      if (n("base") <= 0 || n("height") <= 0) return "positiveBaseHeight";
+      return null;
+    }
+    case "iBeam": {
+      const B = n("flangeWidth");
+      const H = n("totalHeight");
+      const tf = n("flangeThickness");
+      const tw = n("webThickness");
+      if (B <= 0 || H <= 0 || tf <= 0 || tw <= 0) return "positiveIBeamDims";
+      if (tw > B) return "webWiderThanFlange";
+      if (2 * tf >= H) return "flangeTooThick";
+      return null;
+    }
+    default:
+      return null;
+  }
+}
+
 /** Converts a shapeNode's {shapeKind, shapeInputs} into the field set computeSecondMomentOfArea
  *  expects. Only "circle" needs translation (radius → diameter) — every other shared shape
  *  (rectangle/triangle/hollowCircle/iBeam) already uses identical field keys in both catalogs. */

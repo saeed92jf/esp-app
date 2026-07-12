@@ -77,6 +77,15 @@ function Divider() {
   return <div className="mx-1 h-5 w-px bg-border" />;
 }
 
+/** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
+
 // ── Toolbar ────────────────────────────────────────────────────────────
 export function Toolbar({
   onOpenLibrary,
@@ -123,9 +132,9 @@ export function Toolbar({
       importJSON(text);
       setDiagramName(relPath.replace(/\.json$/i, "").split("/").pop() ?? relPath);
       setSelectedTemplate(relPath);
-      toast.success(`Loaded "${relPath}"`);
+      toast.success(`${safeT(t, "toolbar.templateLoaded", "Loaded")} "${relPath}"`);
     } catch (err) {
-      toast.error(`Could not load "${relPath}"`);
+      toast.error(`${safeT(t, "toolbar.templateLoadFailed", "Could not load")} "${relPath}"`);
       console.error(err);
     }
   };
@@ -298,9 +307,9 @@ export function Toolbar({
           options={templateOptions}
           value={selectedTemplate}
           onChange={handleLoadTemplate}
-          placeholder={templateOptions.length ? "Templates..." : "No templates found"}
-          searchPlaceholder="Search templates..."
-          emptyText="No diagrams found in public/diagrams."
+          placeholder={templateOptions.length ? safeT(t, "toolbar.loadTemplate", "Load Template...") : safeT(t, "toolbar.noTemplate", "No template found")}
+          searchPlaceholder={safeT(t, "toolbar.searchTemplate", "Search template")}
+          emptyText={safeT(t, "toolbar.noTemplatesInFolder", "No diagrams found in public/diagrams.")}
           className="w-44"
         />
       </div>
