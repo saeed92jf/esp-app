@@ -32,7 +32,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  allowedDevOrigins: ["localhost", "192.168.0.71"],
+  allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.0.71"],
 
   experimental: {
     serverActions: { allowedOrigins: ["*"] },
