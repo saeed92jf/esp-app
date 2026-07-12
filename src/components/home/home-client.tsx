@@ -23,6 +23,7 @@ import { FeatureCard } from "@/components/features/feature-card/feature-card";
 import { QuickAccessCard } from "@/components/features/quick-access/quick-access";
 import { useQuickAccess, QUICK_ACCESS_MAX } from "@/hooks/use-quick-access";
 import { QuickAccessCustomizer } from "@/components/features/quick-access/quick-access-customizer";
+import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
 
 // ---------------------------------------------------------------------------
 // Local hook: reveal a section once it scrolls into the viewport (one-way).
@@ -162,13 +163,16 @@ export function HomeClient() {
       <section
         id="hero"
         ref={register("hero")}
-        className="relative flex min-h-[80vh] items-center justify-center"
+        className="relative flex min-h-screen items-start justify-center"
       >
         <div className="container py-20 text-center">
+          <div className="h-162.5 w-full overflow-hidden">
+            <HeroFlow />
+          </div>
           {/* Search wrapper — Logo is absolutely positioned above it */}
           <div
             className={cn(
-              "relative mx-auto mt-10 max-w-xl transition-all delay-200 duration-700",
+              "relative mx-auto mt-40 max-w-xl transition-all delay-200 duration-700",
               isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
             )}
           >

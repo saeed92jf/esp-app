@@ -311,7 +311,7 @@
       "title": "Video list",
       "count": "{count, plural, one {# video} other {# videos}}",
       "progress": "{loaded} of {total} videos",
-      "loadMore": "Loading moreâ€¦",
+      "loadMore": "Loading more…",
       "empty": "empty",
       "locale": "locale",
       "views": ""
@@ -355,7 +355,7 @@
       "newDiagram": "New Diagram",
       "save": "Save",
       "saved": "Saved",
-      "saving": "Savingâ€¦",
+      "saving": "Saving…",
       "export": "Export",
       "import": "Import",
       "share": "Share",
@@ -417,7 +417,7 @@
       "constantNode": "Constant"
     },
     "palette": {
-      "search": "Search nodesâ€¦",
+      "search": "Search nodes…",
       "basic": "Basic",
       "flowchart": "Flowchart",
       "shapes": "Shapes",
@@ -532,7 +532,7 @@
       "search": "Search",
       "cancel": "Cancel",
       "confirm": "Confirm",
-      "loading": "Loadingâ€¦",
+      "loading": "Loading…",
       "noResults": "No results"
     },
     "beamValidation": {
