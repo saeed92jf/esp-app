@@ -64,6 +64,7 @@ export const SHAPE_DEFAULT_SIZE: Record<
   numberNode: { width: 140, height: 56 },
   operatorNode: { width: 160, height: 104 },
   constantNode: { width: 190, height: 150 },
+  tableNode: { width: 280, height: 150 },
   geometryCalcNode: { width: 220, height: 370 },
   beamCalcNode: { width: 240, height: 390 },
   shapeNode: { width: 200, height: 330 },
@@ -238,7 +239,8 @@ export function getShapeGeometry(
     case "numberNode":
     case "operatorNode":
     case "constantNode":
-      // Rendered by their own components (NumberNode/OperatorNode/ConstantNode), not through ShapeCanvas/SVG.
+    case "tableNode":
+      // Rendered by their own components (NumberNode/OperatorNode/ConstantNode/TableNode), not through ShapeCanvas/SVG.
       return { kind: "none" };
 
     case "geometryCalcNode":

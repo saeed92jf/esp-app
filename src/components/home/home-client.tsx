@@ -1,5 +1,3 @@
-// app/[locale]/page.tsx or components/pages/home-client.tsx
-
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -22,23 +20,16 @@ import { SiteSearch } from "@/components/features/search/site-search";
 import { FeatureCard } from "@/components/features/feature-card/feature-card";
 import { QuickAccessCard } from "@/components/features/quick-access/quick-access";
 import { useQuickAccess, QUICK_ACCESS_MAX } from "@/hooks/use-quick-access";
-import { QuickAccessCustomizer } from "@/components/features/quick-access/quick-access-customizer";
+import { FullWidth, Container } from "@/components/layout/container";
 import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
 
-// ---------------------------------------------------------------------------
-// Local hook: reveal a section once it scrolls into the viewport (one-way).
-// A single IntersectionObserver is shared across all registered sections.
-// ---------------------------------------------------------------------------
 function useReveal() {
-  // IDs of sections that have entered the viewport at least once.
   const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  // Map of section id -> DOM element, populated via the `register` callback.
   const refs = useRef<Map<string, HTMLElement>>(new Map());
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        // Mark every intersecting section as revealed (never reverts).
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setRevealed((prev) => new Set(prev).add(entry.target.id));
@@ -52,69 +43,60 @@ function useReveal() {
     return () => observer.disconnect();
   }, []);
 
-  // Callback ref factory: stores the element under the given id.
   const register = (id: string) => (el: HTMLElement | null) => {
     if (el) refs.current.set(id, el);
   };
 
-  // Whether a given section has been revealed yet.
   const isRevealed = (id: string) => revealed.has(id);
 
   return { register, isRevealed };
 }
 
-// ---------------------------------------------------------------------------
-// Helpers: resolve color classes from NAV_COLOR_MAP for a given NavColor token.
-// Falls back to "slate" if the item carries no color.
-// ---------------------------------------------------------------------------
-
-/** Returns icon text-color class for a nav item color token. */
 function resolveIconClass(color?: NavColor): string {
-  return NAV_COLOR_MAP[color ?? "slate"].icon;
+  return NAV_COLOR_MAP[color ?? "slate"]?.icon ?? NAV_COLOR_MAP.slate.icon;
 }
 
-/** Returns icon background class for a nav item color token. */
 function resolveIconBgClass(color?: NavColor): string {
-  return NAV_COLOR_MAP[color ?? "slate"].bg;
+  return NAV_COLOR_MAP[color ?? "slate"]?.iconBg ?? NAV_COLOR_MAP.slate.iconBg;
 }
 
-/** Returns card background tint class for a nav item color token. */
 function resolveCardBgClass(color?: NavColor): string {
-  // Re-use the same bg token; the card tint is intentionally subtle.
-  return NAV_COLOR_MAP[color ?? "slate"].bg;
+  return NAV_COLOR_MAP[color ?? "slate"]?.bg ?? NAV_COLOR_MAP.slate.bg;
 }
 
-/** Returns hover-ring class for a nav item color token. */
 function resolveRingClass(color?: NavColor): string {
-  return NAV_COLOR_MAP[color ?? "slate"].ring;
+  return NAV_COLOR_MAP[color ?? "slate"]?.ring ?? NAV_COLOR_MAP.slate.ring;
 }
 
-/** Returns hover-bg class for a nav item color token (QuickAccessCard). */
 function resolveHoverBgClass(color?: NavColor): string {
-  return NAV_COLOR_MAP[color ?? "slate"].hover;
+  return (
+    NAV_COLOR_MAP[color ?? "slate"]?.iconHover ?? NAV_COLOR_MAP.slate.iconHover
+  );
 }
 
 function resolveColorMap(color?: NavColor) {
-  return NAV_COLOR_MAP[color ?? "slate"] ?? NAV_COLOR_MAP["slate"];
+  return {
+    icon: resolveIconClass(color),
+    iconBg: resolveIconBgClass(color),
+    bg: resolveCardBgClass(color),
+    ring: resolveRingClass(color),
+    iconHover: resolveHoverBgClass(color),
+  };
 }
 
-// ---------------------------------------------------------------------------
-
 export function HomeClient() {
-  const t = useTranslations("Home"); // page-scoped translator
-  const tSections = useTranslations("Menu.sections"); // group labels
-  const tItems = useTranslations("Menu.items"); // item labels
-  const tDesc = useTranslations("Menu.descriptions"); // per-item descriptions
+  const t = useTranslations("Home");
+  const tSections = useTranslations("Menu.sections");
+  const tItems = useTranslations("Menu.items");
+  const tDesc = useTranslations("Menu.descriptions");
   const locale = useLocale();
   const isRtl = locale === "fa";
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { register, isRevealed } = useReveal();
 
-  // Active feature tab; "all" shows every navigation item.
   const [activeTab, setActiveTab] = useState<string>("all");
 
-  // Tabs = a synthetic "all" entry followed by every navigation group.
   const tabs = useMemo(
     () => [
       { id: "all", labelKey: "", icon: undefined as LucideIcon | undefined },
@@ -123,33 +105,20 @@ export function HomeClient() {
     [],
   );
 
-  // Quick access hook: persisted, user-editable set of pinned nav items.
-  const {
-    items: quickAccessItems,
-    selectedHrefs,
-    toggle,
-    reset,
-    isFull,
-    isSelected,
-    hydrated,
-  } = useQuickAccess();
+  const { items: quickAccessItems, hydrated } = useQuickAccess();
 
-  const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
-
-  // Items shown in the features grid for the currently active tab.
   const visibleFeatures = useMemo(() => {
     if (activeTab === "all") return NAVIGATION.flatMap((g) => g.items);
     return NAVIGATION.find((g) => g.id === activeTab)?.items ?? [];
   }, [activeTab]);
 
-  // Newsletter form local state.
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  // Fake submit: show a success message for 3s, then reset.
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+
     setSubmitted(true);
     setEmail("");
     setTimeout(() => setSubmitted(false), 3000);
@@ -157,118 +126,105 @@ export function HomeClient() {
 
   return (
     <>
-      {/* ------------------------------------------------------------------ */}
-      {/* HERO                                                                 */}
-      {/* ------------------------------------------------------------------ */}
       <section
         id="hero"
         ref={register("hero")}
-        className="relative flex min-h-screen items-start justify-center"
+        className="relative flex min-h-screen w-full flex-col bg-background"
       >
-        <div className="container py-20 text-center">
-          <div className="h-162.5 w-full overflow-hidden">
-            <HeroFlow />
-          </div>
-          {/* Search wrapper — Logo is absolutely positioned above it */}
-          <div
-            className={cn(
-              "relative mx-auto mt-40 max-w-xl transition-all delay-200 duration-700",
-              isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
-            )}
-          >
-            {/* Logo — centered above the search box */}
+        <div className="w-full py-20 text-center">
+          <Container>
             <div
               className={cn(
-                "absolute inset-x-0 flex justify-center transition-all delay-100 duration-700",
+                "relative mx-auto mt-40 max-w-xl transition-all delay-200 duration-700",
                 isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
               )}
-              style={{
-                bottom: "calc(100% + 1.5rem)",
-                zIndex: isSearchOpen ? "var(--z-logo)" : "var(--z-base)",
-              }}
             >
-              <Logo className="text-4xl md:text-6xl" />
+              <div
+                className={cn(
+                  "absolute inset-x-0 flex justify-center transition-all delay-100 duration-700",
+                  isRevealed("hero")
+                    ? "opacity-100"
+                    : "translate-y-4 opacity-0",
+                )}
+                style={{
+                  bottom: "calc(100% + 1.5rem)",
+                  zIndex: isSearchOpen ? "var(--z-logo)" : "var(--z-base)",
+                }}
+              >
+                <Logo className="text-4xl md:text-6xl" />
+              </div>
+
+              <SiteSearch
+                className="mx-auto max-w-xl"
+                onOpenChange={setIsSearchOpen}
+              />
             </div>
 
-            <SiteSearch
-              className="mx-auto max-w-xl"
-              onOpenChange={setIsSearchOpen}
-            />
-          </div>
+            <div
+              className={cn(
+                "mt-20 transition-all delay-300 duration-700",
+                isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
+              )}
+            >
+              <div className="flex flex-wrap justify-center gap-6">
+                {(hydrated
+                  ? quickAccessItems
+                  : Array(QUICK_ACCESS_MAX).fill(null)
+                ).map((item, i) => {
+                  if (!item) {
+                    return (
+                      <div
+                        key={i}
+                        className="h-30 w-30 animate-pulse rounded-2xl bg-muted/50"
+                      />
+                    );
+                  }
 
-          {/* ---- Quick Access row ---------------------------------------- */}
-          <div
-            className={cn(
-              "mt-20 transition-all delay-300 duration-700",
-              isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
-            )}
-          >
-            <div className="flex flex-wrap justify-center gap-6">
-              {/*
-               * Pinned cards — render QuickAccessCard with color mapping.
-               * Show skeleton placeholders while the hook is not yet hydrated
-               * from localStorage to avoid layout shift.
-               */}
-              {(hydrated
-                ? quickAccessItems
-                : Array(QUICK_ACCESS_MAX).fill(null)
-              ).map((item, i) => {
-                if (!item) {
+                  const colorMap = resolveColorMap(item.color);
+
                   return (
-                    <div
-                      key={i}
-                      className="h-30 w-30 animate-pulse rounded-2xl bg-muted/50"
+                    <QuickAccessCard
+                      key={item.href}
+                      href={item.href}
+                      icon={item.icon}
+                      iconBgClassName={colorMap.iconBg}
+                      iconClassName={cn(colorMap.icon, colorMap.iconHover)}
+                      cardBgClassName={colorMap.bg}
+                      borderClassName={colorMap.ring}
+                      title={tItems(item.labelKey)}
                     />
                   );
-                }
+                })}
 
-                // Resolve the color mapping for this quick access item
-                const colorMap = resolveColorMap(item.color);
-
-                return (
-                  <QuickAccessCard
-                    key={item.href}
-                    href={item.href}
-                    icon={item.icon}
-                    iconBgClassName={colorMap.iconBg}
-                    title={tItems(item.labelKey)}
-                  />
-                );
-              })}
-
-              {/* Customize / Add button */}
-              <button
-                onClick={() => setIsCustomizerOpen(true)}
-                aria-label={t("quickAccess.customizeLabel")}
-                className={cn(
-                  "group flex h-30 w-30 flex-col items-center justify-center gap-3.5",
-                  "rounded-2xl",
-                  "text-muted-foreground transition-all duration-200",
-                  "hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
-                  "cursor-pointer",
-                )}
-              >
-                <span
+                <button
+                  onClick={() => {}}
+                  aria-label={t("quickAccess.customizeLabel")}
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-full border border-dashed",
-                    "border-current transition-transform duration-200",
-                    "group-hover:scale-100",
+                    "group flex h-30 w-30 cursor-pointer flex-col items-center justify-center gap-3.5 rounded-2xl text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
                   )}
                 >
-                  <Plus className="size-5" />
-                </span>
-                <span className="text-sm font-normal"></span>
-              </button>
+                  <span
+                    className={cn(
+                      "flex size-10 items-center justify-center rounded-full border border-dashed border-current transition-transform duration-200 group-hover:scale-100",
+                    )}
+                  >
+                    <Plus className="size-5" />
+                  </span>
+                  <span className="text-sm font-normal"></span>
+                </button>
+              </div>
             </div>
-          </div>
+          </Container>
+          <FullWidth>
+            <div className="h-162.5 w-full overflow-hidden">
+              <HeroFlow />
+            </div>
+          </FullWidth>
         </div>
       </section>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* FEATURES                                                             */}
-      {/* ------------------------------------------------------------------ */}
-      <section className="bg-muted/50 relative py-20">
-        <div className="container">
+      <section className="relative bg-muted/50 py-20">
+        <Container>
           <div className="mb-10 text-center">
             <span className="text-primary text-sm font-semibold tracking-wider uppercase">
               {t("features.eyebrow")}
@@ -281,13 +237,12 @@ export function HomeClient() {
             </p>
           </div>
 
-          {/* Category filter tabs */}
           <div className="mb-10 flex flex-wrap justify-center gap-2">
             {tabs.map((tab) => {
               const TabIcon = tab.icon;
-              // "all" uses a Home-scoped label; groups use Menu.sections.
               const label =
                 tab.id === "all" ? t("features.all") : tSections(tab.labelKey);
+
               return (
                 <Button
                   key={tab.id}
@@ -302,31 +257,18 @@ export function HomeClient() {
             })}
           </div>
 
-          {/*
-           * Features grid:
-           * flex + justify-center keeps an incomplete last row centered
-           * instead of left-aligning leftovers like CSS grid would.
-           * Item widths mirror a 1/2/3/4 column breakpoint layout with
-           * gap-6 (1.5rem) subtracted via calc to keep spacing consistent.
-           *
-           * Color classes are resolved from NAV_COLOR_MAP using the item's
-           * own color token, falling back to the group's color if absent.
-           */}
           <div className="flex flex-wrap justify-center gap-6">
             {visibleFeatures.map((feature) => {
-              // Resolve effective color: item-level > group-level > "slate"
               const group = NAVIGATION.find((g) =>
                 g.items.some((item) => item.href === feature.href),
               );
 
-              // Safely resolve color — never falls outside NAV_COLOR_MAP keys
               const effectiveColor: NavColor = (feature.color ??
                 group?.color ??
                 "slate") as NavColor;
+
               const colorMap = resolveColorMap(effectiveColor);
 
-              // Safe description resolution — tDesc.has() does NOT exist in next-intl.
-              // Use try/catch instead to handle missing keys gracefully.
               let description: string | undefined;
               try {
                 description = tDesc(feature.labelKey);
@@ -352,25 +294,21 @@ export function HomeClient() {
               );
             })}
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* ------------------------------------------------------------------ */}
-      {/* STATS                                                                */}
-      {/* ------------------------------------------------------------------ */}
       <StatsSection stats={STATS} />
 
-      {/* ------------------------------------------------------------------ */}
-      {/* NEWSLETTER                                                           */}
-      {/* ------------------------------------------------------------------ */}
       <section id="newsletter" ref={register("newsletter")} className="py-20">
-        <div className="container mx-auto max-w-2xl text-center">
+        <Container size="narrow" className="text-center">
           <div className="bg-primary/10 mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl">
             <Mail className="text-primary size-9" />
           </div>
+
           <h2 className="text-3xl font-bold md:text-4xl">
             {t("newsletter.title")}
           </h2>
+
           <p className="text-muted-foreground mt-2">
             {t("newsletter.subtitle")}
           </p>
@@ -403,7 +341,7 @@ export function HomeClient() {
           <p className="text-muted-foreground mt-4 text-sm">
             {t("newsletter.disclaimer")}
           </p>
-        </div>
+        </Container>
       </section>
     </>
   );

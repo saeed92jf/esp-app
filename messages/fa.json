@@ -383,7 +383,9 @@
       "noTemplate": "الگویی یافت نشد",
       "noTemplatesInFolder": "دیاگرامی در پوشه public/diagrams یافت نشد.",
       "templateLoaded": "بارگذاری شد",
-      "templateLoadFailed": "بارگذاری نشد"
+      "templateLoadFailed": "بارگذاری نشد",
+      "confirmLoadTemplate": "این الگو بارگذاری شود؟ کانواس فعلی جایگزین می‌شود.",
+      "confirmImport": "این فایل وارد شود؟ کانواس فعلی جایگزین می‌شود."
     },
     "nodes": {
       "defaultNode": "فرآیند",
@@ -414,7 +416,8 @@
       "starNode": "ستاره",
       "pentagonNode": "پنج ضلعی",
       "multiDocumentNode": "ترکیبی",
-      "constantNode": "ثابت"
+      "constantNode": "ثابت",
+      "tableNode": "جدول"
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
@@ -457,7 +460,12 @@
       "unit": "واحد",
       "ixCaption": "Ix (ممان دوم سطح)",
       "beamVolumetricWarning": "این یک شکل سه‌بعدی/حجمی است — ممان اینرسی خمشی فقط برای مقطع دوبعدی معنا دارد، نه یک جسم توپر.",
-      "beamNoFormula": "این شکل فرمول ممان اینرسی ندارد."
+      "beamNoFormula": "این شکل فرمول ممان اینرسی ندارد.",
+      "addRow": "افزودن ردیف",
+      "removeRow": "حذف ردیف",
+      "addColumn": "افزودن ستون",
+      "removeColumn": "حذف ستون",
+      "toggleHeaderRow": "ردیف سرستون"
     },
     "editorSettings": {
       "title": "تنظیمات ادیتور",
@@ -509,7 +517,8 @@
       "confirmDelete": "این دیاگرام برای همیشه حذف شود؟",
       "exportJSON": "خروجی JSON",
       "exportPNG": "خروجی تصویر",
-      "importJSON": "ورودی JSON"
+      "importJSON": "ورودی JSON",
+      "confirmNewDiagram": "یک دیاگرام جدید شروع شود؟ کانواس فعلی جایگزین می‌شود."
     },
     "messages": {
       "savedSuccessfully": "با موفقیت ذخیره شد",

@@ -28,6 +28,7 @@ import {
   FileCode,
   FileArchive,
   Pi,
+  Table,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
@@ -150,6 +151,22 @@ const PALETTE_ITEMS: PaletteItem[] = [
     defaultData: { label: "DXF file", colorToken: "neutral" },
   },
   {
+    type: "tableNode",
+    labelKey: "tableNode",
+    icon: "table",
+    category: "basic",
+    defaultData: {
+      label: "Table",
+      colorToken: "neutral",
+      tableHasHeader: true,
+      tableRows: [
+        ["Column 1", "Column 2", "Column 3"],
+        ["", "", ""],
+        ["", "", ""],
+      ],
+    },
+  },
+  {
     type: "triangleNode",
     labelKey: "triangleNode",
     icon: "triangle",
@@ -261,6 +278,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   image: ImageIconLucide,
   svg: FileCode,
   cad: FileArchive,
+  table: Table,
 };
 
 // Category order determines render order in the palette sidebar
@@ -280,6 +298,7 @@ const LABEL_FALLBACKS: Record<string, string> = {
   numberNode: "Number",
   operatorNode: "Operator",
   constantNode: "Constant",
+  tableNode: "Table",
   geometryCalcNode: "Geometry calculator",
   beamCalcNode: "Beam section (Ix)",
   shapeNode: "Shape",

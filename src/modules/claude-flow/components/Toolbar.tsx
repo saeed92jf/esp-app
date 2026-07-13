@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import {
-  useReactFlow,
-  getNodesBounds,
-  getViewportForBounds,
-} from "@xyflow/react";
+import { useReactFlow, getNodesBounds, getViewportForBounds } from "@xyflow/react";
 import {
   Undo2,
   Redo2,
@@ -39,11 +35,7 @@ import {
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useDiagramStore } from "../store";
-import {
-  layoutWithDagre,
-  layoutWithElk,
-  type LayoutDirection,
-} from "../utils/layout";
+import { layoutWithDagre, layoutWithElk, type LayoutDirection } from "../utils/layout";
 import { cn } from "@/lib/utils";
 import { Combobox, type ComboboxOption } from "@/components/ui-custom/combobox";
 
@@ -86,11 +78,7 @@ function Divider() {
 }
 
 /** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
-function safeT(
-  t: ReturnType<typeof useTranslations>,
-  key: string,
-  fallback: string,
-): string {
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
   try {
     return t(key);
   } catch {
@@ -121,6 +109,15 @@ export function Toolbar({
   //     any .json saved anywhere under public/diagrams shows up here). ──────
   const [templateOptions, setTemplateOptions] = useState<ComboboxOption[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  // The shared Combobox component toggles OFF (calls onChange("")) when you
+  // click the item that's already selected, instead of re-firing with the
+  // same value — so re-picking the same template to reload it needs this to
+  // remember what was actually loaded last.
+  const lastLoadedTemplateRef = useRef("");
+  // Set right before our own importJSON() call, so the very next nodes/edges
+  // change (which is that same load taking effect) doesn't get mistaken for
+  // a user edit and immediately clear the just-set selection.
+  const skipNextCanvasChangeRef = useRef(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -129,39 +126,52 @@ export function Toolbar({
       .then((data: { files?: string[] }) => {
         if (cancelled) return;
         const files = data.files ?? [];
-        setTemplateOptions(
-          files.map((f) => ({ value: f, label: f.replace(/\.json$/i, "") })),
-        );
+        setTemplateOptions(files.map((f) => ({ value: f, label: f.replace(/\.json$/i, "") })));
       })
-      .catch(() => {
-        if (!cancelled) setTemplateOptions([]);
-      });
-    return () => {
-      cancelled = true;
-    };
+      .catch(() => { if (!cancelled) setTemplateOptions([]); });
+    return () => { cancelled = true; };
   }, []);
 
+  // Once a template is loaded, editing the canvas at all (drag a node, type
+  // a label, delete something, ...) clears the combobox back to its
+  // placeholder — the canvas no longer matches that template, so it
+  // shouldn't still look "selected". This also naturally lets re-picking the
+  // same template from a blank combobox state work as a normal selection.
+  const canvasNodes = useDiagramStore((s) => s.nodes);
+  const canvasEdges = useDiagramStore((s) => s.edges);
+  React.useEffect(() => {
+    if (skipNextCanvasChangeRef.current) {
+      skipNextCanvasChangeRef.current = false;
+      return;
+    }
+    setSelectedTemplate((current) => (current ? "" : current));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canvasNodes, canvasEdges]);
+
   const handleLoadTemplate = async (relPath: string) => {
-    if (!relPath) return;
+    // Empty string arrives when the Combobox's own toggle-off behavior fires
+    // (re-clicking the item that's already selected) — treat that the same
+    // as re-picking it, and reset+reload that same template.
+    const target = relPath || lastLoadedTemplateRef.current;
+    if (!target) return;
+    if (
+      (canvasNodes.length > 0 || canvasEdges.length > 0) &&
+      !window.confirm(safeT(t, "toolbar.confirmLoadTemplate", "Load this template? Your current canvas will be replaced."))
+    ) {
+      return;
+    }
     try {
-      const res = await fetch(`/diagrams/${relPath}`);
+      const res = await fetch(`/diagrams/${target}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
+      skipNextCanvasChangeRef.current = true;
       importJSON(text);
-      setDiagramName(
-        relPath
-          .replace(/\.json$/i, "")
-          .split("/")
-          .pop() ?? relPath,
-      );
-      setSelectedTemplate(relPath);
-      toast.success(
-        `${safeT(t, "toolbar.templateLoaded", "Loaded")} "${relPath}"`,
-      );
+      lastLoadedTemplateRef.current = target;
+      setDiagramName(target.replace(/\.json$/i, "").split("/").pop() ?? target);
+      setSelectedTemplate(target);
+      toast.success(`${safeT(t, "toolbar.templateLoaded", "Loaded")} "${target}"`);
     } catch (err) {
-      toast.error(
-        `${safeT(t, "toolbar.templateLoadFailed", "Could not load")} "${relPath}"`,
-      );
+      toast.error(`${safeT(t, "toolbar.templateLoadFailed", "Could not load")} "${target}"`);
       console.error(err);
     }
   };
@@ -193,9 +203,7 @@ export function Toolbar({
   const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
   const toggleCanvasLock = useDiagramStore((s) => s.toggleCanvasLock);
   const isCanvasFullscreen = useDiagramStore((s) => s.isCanvasFullscreen);
-  const canvasFullscreenToggle = useDiagramStore(
-    (s) => s.canvasFullscreenToggle,
-  );
+  const canvasFullscreenToggle = useDiagramStore((s) => s.canvasFullscreenToggle);
 
   // ── Export diagram as downloadable JSON file (save & restore) ────────────
   const handleExport = () => {
@@ -215,6 +223,14 @@ export function Toolbar({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const { nodes, edges } = useDiagramStore.getState();
+    if (
+      (nodes.length > 0 || edges.length > 0) &&
+      !window.confirm(safeT(t, "toolbar.confirmImport", "Import this file? Your current canvas will be replaced."))
+    ) {
+      e.target.value = "";
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -253,20 +269,14 @@ export function Toolbar({
   // ── Destructive bulk actions — each guarded by a plain browser confirm() ──
   const handleClearCanvas = () => {
     setClearMenuOpen(false);
-    if (
-      window.confirm(
-        "Clear the entire canvas? This removes every node and connection.",
-      )
-    ) {
+    if (window.confirm("Clear the entire canvas? This removes every node and connection.")) {
       clearCanvas();
     }
   };
 
   const handleDeleteAllNodes = () => {
     setClearMenuOpen(false);
-    if (
-      window.confirm("Delete all nodes? Their connections will be removed too.")
-    ) {
+    if (window.confirm("Delete all nodes? Their connections will be removed too.")) {
       deleteAllNodes();
     }
   };
@@ -283,23 +293,14 @@ export function Toolbar({
   const handleDownloadImage = async () => {
     const { nodes } = useDiagramStore.getState();
     if (nodes.length === 0) return;
-    const viewportEl = document.querySelector(
-      ".react-flow__viewport",
-    ) as HTMLElement | null;
+    const viewportEl = document.querySelector(".react-flow__viewport") as HTMLElement | null;
     if (!viewportEl) return;
 
     const { toPng } = await import("html-to-image");
     const imageWidth = 1600;
     const imageHeight = 1200;
     const bounds = getNodesBounds(nodes);
-    const viewport = getViewportForBounds(
-      bounds,
-      imageWidth,
-      imageHeight,
-      0.2,
-      2,
-      0.1,
-    );
+    const viewport = getViewportForBounds(bounds, imageWidth, imageHeight, 0.2, 2, 0.1);
 
     const dataUrl = await toPng(viewportEl, {
       backgroundColor: colorMode === "dark" ? "#0f172a" : "#ffffff",
@@ -321,11 +322,7 @@ export function Toolbar({
   return (
     <div className="flex h-12 items-center gap-1 border-b border-border bg-background px-2">
       {/* Toggle left palette panel */}
-      <ToolbarButton
-        icon={isPalettOpen ? PanelLeftClose : PanelLeft}
-        label={t("palette.basic")}
-        onClick={togglePalette}
-      />
+      <ToolbarButton icon={isPalettOpen ? PanelLeftClose : PanelLeft} label={t("palette.basic")} onClick={togglePalette} />
       <Divider />
 
       {/* Editable diagram name */}
@@ -342,16 +339,8 @@ export function Toolbar({
       <Divider />
 
       {/* File operations */}
-      <ToolbarButton
-        icon={FilePlus2}
-        label={t("editor.newDiagram")}
-        onClick={onOpenNew}
-      />
-      <ToolbarButton
-        icon={FolderOpen}
-        label={t("editor.openDiagrams")}
-        onClick={onOpenLibrary}
-      />
+      <ToolbarButton icon={FilePlus2} label={t("editor.newDiagram")} onClick={onOpenNew} />
+      <ToolbarButton icon={FolderOpen} label={t("editor.openDiagrams")} onClick={onOpenLibrary} />
       <ToolbarButton icon={Save} label={t("editor.save")} onClick={onSave} />
       <Divider />
 
@@ -363,79 +352,30 @@ export function Toolbar({
           options={templateOptions}
           value={selectedTemplate}
           onChange={handleLoadTemplate}
-          placeholder={
-            templateOptions.length
-              ? safeT(t, "toolbar.loadTemplate", "Load Template...")
-              : safeT(t, "toolbar.noTemplate", "No template found")
-          }
-          searchPlaceholder={safeT(
-            t,
-            "toolbar.searchTemplate",
-            "Search template",
-          )}
-          emptyText={safeT(
-            t,
-            "toolbar.noTemplatesInFolder",
-            "No diagrams found in public/diagrams.",
-          )}
+          placeholder={templateOptions.length ? safeT(t, "toolbar.loadTemplate", "Load Template...") : safeT(t, "toolbar.noTemplate", "No template found")}
+          searchPlaceholder={safeT(t, "toolbar.searchTemplate", "Search template")}
+          emptyText={safeT(t, "toolbar.noTemplatesInFolder", "No diagrams found in public/diagrams.")}
           className="w-44"
         />
       </div>
       <Divider />
 
       {/* History */}
-      <ToolbarButton
-        icon={Undo2}
-        label={t("toolbar.undo")}
-        onClick={undo}
-        disabled={!canUndo}
-      />
-      <ToolbarButton
-        icon={Redo2}
-        label={t("toolbar.redo")}
-        onClick={redo}
-        disabled={!canRedo}
-      />
+      <ToolbarButton icon={Undo2} label={t("toolbar.undo")} onClick={undo} disabled={!canUndo} />
+      <ToolbarButton icon={Redo2} label={t("toolbar.redo")} onClick={redo} disabled={!canRedo} />
       <Divider />
 
       {/* Viewport controls */}
-      <ToolbarButton
-        icon={ZoomIn}
-        label={t("toolbar.zoomIn")}
-        onClick={() => zoomIn()}
-      />
-      <ToolbarButton
-        icon={ZoomOut}
-        label={t("toolbar.zoomOut")}
-        onClick={() => zoomOut()}
-      />
-      <ToolbarButton
-        icon={Maximize}
-        label={t("toolbar.fitView")}
-        onClick={() => fitView({ duration: 300 })}
-      />
+      <ToolbarButton icon={ZoomIn} label={t("toolbar.zoomIn")} onClick={() => zoomIn()} />
+      <ToolbarButton icon={ZoomOut} label={t("toolbar.zoomOut")} onClick={() => zoomOut()} />
+      <ToolbarButton icon={Maximize} label={t("toolbar.fitView")} onClick={() => fitView({ duration: 300 })} />
       <Divider />
 
       {/* Selection tool (https://reactflow.dev/examples/whiteboard/rectangle,
           /whiteboard/lasso-selection): left mouse button behavior on empty canvas */}
-      <ToolbarButton
-        icon={MousePointer2}
-        label="Pointer (pan)"
-        active={selectionTool === "pointer"}
-        onClick={() => setSelectionTool("pointer")}
-      />
-      <ToolbarButton
-        icon={Square}
-        label="Box select"
-        active={selectionTool === "box"}
-        onClick={() => setSelectionTool("box")}
-      />
-      <ToolbarButton
-        icon={Lasso}
-        label="Lasso select"
-        active={selectionTool === "lasso"}
-        onClick={() => setSelectionTool("lasso")}
-      />
+      <ToolbarButton icon={MousePointer2} label="Pointer (pan)" active={selectionTool === "pointer"} onClick={() => setSelectionTool("pointer")} />
+      <ToolbarButton icon={Square} label="Box select" active={selectionTool === "box"} onClick={() => setSelectionTool("box")} />
+      <ToolbarButton icon={Lasso} label="Lasso select" active={selectionTool === "lasso"} onClick={() => setSelectionTool("lasso")} />
       {/* Lasso hit-test mode — only relevant once lasso is the active tool.
           Partial: selects anything the lasso touches. Full: only nodes it fully encloses. */}
       {selectionTool === "lasso" && (
@@ -444,9 +384,7 @@ export function Toolbar({
             onClick={() => setLassoMode("partial")}
             className={cn(
               "rounded px-2 py-1 font-medium transition-colors",
-              lassoMode === "partial"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
+              lassoMode === "partial" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
             )}
             title="Select anything the lasso touches"
           >
@@ -456,9 +394,7 @@ export function Toolbar({
             onClick={() => setLassoMode("full")}
             className={cn(
               "rounded px-2 py-1 font-medium transition-colors",
-              lassoMode === "full"
-                ? "bg-background text-foreground shadow-xs"
-                : "text-muted-foreground hover:text-foreground",
+              lassoMode === "full" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
             )}
             title="Only select nodes fully inside the lasso"
           >
@@ -470,11 +406,7 @@ export function Toolbar({
 
       {/* Sub-flow: wraps the current multi-selection (shift/box/lasso-select) in a
           resizable, collapsible group container — Ctrl/Cmd+G. */}
-      <ToolbarButton
-        icon={Layers}
-        label="Group into sub-flow (Ctrl+G)"
-        onClick={groupSelectedNodes}
-      />
+      <ToolbarButton icon={Layers} label="Group into sub-flow (Ctrl+G)" onClick={groupSelectedNodes} />
 
       {/* Auto-layout (Dagre / ELK, vertical / horizontal) */}
       <div className="relative">
@@ -491,37 +423,21 @@ export function Toolbar({
         </button>
         {layoutMenuOpen && (
           <div
-            className="absolute top-9 inset-s-0 z-20 w-48 rounded-md border border-border bg-popover py-1 shadow-md"
+            className="absolute top-9 start-0 z-20 w-48 rounded-md border border-border bg-popover py-1 shadow-md"
             onMouseLeave={() => setLayoutMenuOpen(false)}
           >
-            <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Dagre
-            </p>
-            <button
-              onClick={() => runDagreLayout("TB")}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
+            <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Dagre</p>
+            <button onClick={() => runDagreLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
               Vertical (top → bottom)
             </button>
-            <button
-              onClick={() => runDagreLayout("LR")}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
+            <button onClick={() => runDagreLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
               Horizontal (left → right)
             </button>
-            <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              ELK
-            </p>
-            <button
-              onClick={() => runElkLayout("TB")}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
+            <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">ELK</p>
+            <button onClick={() => runElkLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
               Vertical (top → bottom)
             </button>
-            <button
-              onClick={() => runElkLayout("LR")}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
+            <button onClick={() => runElkLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
               Horizontal (left → right)
             </button>
           </div>
@@ -530,29 +446,11 @@ export function Toolbar({
       <Divider />
 
       {/* Import / Export */}
-      <ToolbarButton
-        icon={Download}
-        label={t("dialogs.exportJSON")}
-        onClick={handleExport}
-      />
-      <ToolbarButton
-        icon={Upload}
-        label={t("dialogs.importJSON")}
-        onClick={handleImportClick}
-      />
-      <ToolbarButton
-        icon={ImageDown}
-        label="Download as image"
-        onClick={handleDownloadImage}
-      />
+      <ToolbarButton icon={Download} label={t("dialogs.exportJSON")} onClick={handleExport} />
+      <ToolbarButton icon={Upload} label={t("dialogs.importJSON")} onClick={handleImportClick} />
+      <ToolbarButton icon={ImageDown} label="Download as image" onClick={handleDownloadImage} />
       {/* Hidden file input — triggered programmatically by handleImportClick */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/json"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
       <Divider />
 
       {/* Destructive bulk actions — each confirms before acting */}
@@ -567,7 +465,7 @@ export function Toolbar({
         </button>
         {clearMenuOpen && (
           <div
-            className="absolute top-9 inset-s-0 z-20 w-52 rounded-md border border-border bg-popover py-1 shadow-md"
+            className="absolute top-9 start-0 z-20 w-52 rounded-md border border-border bg-popover py-1 shadow-md"
             onMouseLeave={() => setClearMenuOpen(false)}
           >
             <button
@@ -595,11 +493,7 @@ export function Toolbar({
       {/* ── Right-side controls ─────────────────────────────────────────── */}
       <div className="ms-auto flex items-center gap-1">
         {/* Auto-save indicator — shown only while save is in progress */}
-        {isSaving && (
-          <span className="me-1 text-xs text-muted-foreground">
-            {t("editor.saving")}
-          </span>
-        )}
+        {isSaving && <span className="me-1 text-xs text-muted-foreground">{t("editor.saving")}</span>}
 
         {/* Real Fullscreen API on the canvas wrapper only (not the toolbar/
             side panels) — see the effect registering this in DiagramCanvas.tsx */}
@@ -620,18 +514,10 @@ export function Toolbar({
         />
 
         {/* Editor global settings dialog */}
-        <ToolbarButton
-          icon={Settings2}
-          label={t("editorSettings.title")}
-          onClick={onOpenSettings}
-        />
+        <ToolbarButton icon={Settings2} label={t("editorSettings.title")} onClick={onOpenSettings} />
 
         {/* Toggle right settings panel */}
-        <ToolbarButton
-          icon={isSettingsPanelOpen ? PanelRightClose : PanelRight}
-          label={t("editor.settings")}
-          onClick={toggleSettingsPanel}
-        />
+        <ToolbarButton icon={isSettingsPanelOpen ? PanelRightClose : PanelRight} label={t("editor.settings")} onClick={toggleSettingsPanel} />
       </div>
     </div>
   );

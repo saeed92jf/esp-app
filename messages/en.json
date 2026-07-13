@@ -383,7 +383,9 @@
       "noTemplate": "No template found",
       "noTemplatesInFolder": "No diagrams found in public/diagrams.",
       "templateLoaded": "Loaded",
-      "templateLoadFailed": "Could not load"
+      "templateLoadFailed": "Could not load",
+      "confirmLoadTemplate": "Load this template? Your current canvas will be replaced.",
+      "confirmImport": "Import this file? Your current canvas will be replaced."
     },
     "nodes": {
       "defaultNode": "Process",
@@ -414,7 +416,8 @@
       "starNode": "Star",
       "pentagonNode": "Pentagon",
       "multiDocumentNode": "Multi Doc",
-      "constantNode": "Constant"
+      "constantNode": "Constant",
+      "tableNode": "Table"
     },
     "palette": {
       "search": "Search nodes…",
@@ -457,7 +460,12 @@
       "unit": "Unit",
       "ixCaption": "Ix (second moment of area)",
       "beamVolumetricWarning": "This is a 3D/volumetric shape — bending Ix only applies to a 2D cross-section, not a solid.",
-      "beamNoFormula": "This shape has no Ix formula defined."
+      "beamNoFormula": "This shape has no Ix formula defined.",
+      "addRow": "Add row",
+      "removeRow": "Remove row",
+      "addColumn": "Add column",
+      "removeColumn": "Remove column",
+      "toggleHeaderRow": "Toggle header row"
     },
     "editorSettings": {
       "title": "Editor Settings",
@@ -509,7 +517,8 @@
       "confirmDelete": "Delete this diagram permanently?",
       "exportJSON": "Export as JSON",
       "exportPNG": "Export as Image",
-      "importJSON": "Import JSON"
+      "importJSON": "Import JSON",
+      "confirmNewDiagram": "Start a new diagram? Your current canvas will be replaced."
     },
     "messages": {
       "savedSuccessfully": "Saved successfully",

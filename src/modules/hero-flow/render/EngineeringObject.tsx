@@ -1,95 +1,68 @@
 "use client";
+import { useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import {
-  Float,
-  OrbitControls,
-  Environment,
-  ContactShadows,
-} from "@react-three/drei";
+import { Float, OrbitControls, Environment } from "@react-three/drei";
 import type { ShapeType } from "../types";
 
+const getSphericalPositions = (count: number, radius: number) => {
+  const positions: [number, number, number][] = [];
+  const rotations: [number, number, number][] = [];
+  const phi = Math.PI * (3 - Math.sqrt(5));
+
+  for (let i = 0; i < count; i++) {
+    const y = 1 - (i / (count - 1)) * 2;
+    const r = Math.sqrt(1 - y * y);
+    const theta = phi * i;
+
+    const x = Math.cos(theta) * r;
+    const z = Math.sin(theta) * r;
+
+    positions.push([x * radius, y * radius, z * radius]);
+    rotations.push([
+      Math.random() * Math.PI,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI,
+    ]);
+  }
+  return { positions, rotations };
+};
+
 const CuboidsGroup = ({ color }: { color: string }) => {
-  const materialProps = { color, metalness: 0.2, roughness: 0.1, clearcoat: 1 };
-  const size: [number, number, number] = [0.5, 0.5, 0.5];
+  // استفاده از متریال استاندارد با خشونت بالا (ماتِ مات بدون براقیت)
+  const materialProps = { color, roughness: 1, metalness: 0 };
+  const { positions, rotations } = useMemo(
+    () => getSphericalPositions(30, 1.8),
+    [],
+  );
+
   return (
     <group>
-      <mesh position={[0, 0, 0]} rotation={[0.1, 0.2, 0.3]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.8, 0.6, 0.2]} rotation={[0.4, 0.1, 0.5]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[-0.7, -0.6, 0.4]} rotation={[0.2, 0.7, 0.1]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.4, -0.8, -0.6]} rotation={[0.8, 0.3, 0.2]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[-0.8, 0.7, -0.4]} rotation={[0.3, 0.9, 0.4]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[1.0, -0.4, -0.3]} rotation={[0.6, 0.2, 0.8]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[-0.9, 0.1, 0.8]} rotation={[0.1, 0.5, 0.9]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.2, 1.0, 0.7]} rotation={[0.5, 0.4, 0.1]} castShadow>
-        <boxGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
+      {positions.map((pos, i) => (
+        <mesh key={i} position={pos} rotation={rotations[i]} castShadow>
+          <boxGeometry args={[0.5, 0.5, 0.5]} />
+          <meshStandardMaterial {...materialProps} />
+        </mesh>
+      ))}
     </group>
   );
 };
 
 const PyramidsGroup = ({ color }: { color: string }) => {
-  const materialProps = { color, metalness: 0.2, roughness: 0.1, clearcoat: 1 };
-  const size: [number, number, number] = [0.4, 0.6, 4];
+  // استفاده از متریال استاندارد مات
+  const materialProps = { color, roughness: 1, metalness: 0 };
+  const { positions, rotations } = useMemo(
+    () => getSphericalPositions(30, 1.8),
+    [],
+  );
+
   return (
     <group>
-      <mesh position={[0, 0, 0]} rotation={[0.2, 0, 0.1]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.8, 0.5, 0.2]} rotation={[0.5, 0.4, -0.2]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[-0.7, -0.5, 0.4]} rotation={[-0.4, 0.2, 0.5]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.4, -0.8, -0.5]} rotation={[0.1, -0.6, 0.3]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh
-        position={[-0.8, 0.6, -0.4]}
-        rotation={[-0.3, 0.5, -0.4]}
-        castShadow
-      >
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.9, -0.4, -0.3]} rotation={[0.6, -0.2, 0.1]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[-0.9, 0.1, 0.7]} rotation={[-0.1, 0.8, 0.6]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
-      <mesh position={[0.1, 1.0, 0.5]} rotation={[0.4, 0.1, -0.5]} castShadow>
-        <coneGeometry args={size} />
-        <meshPhysicalMaterial {...materialProps} />
-      </mesh>
+      {positions.map((pos, i) => (
+        <mesh key={i} position={pos} rotation={rotations[i]} castShadow>
+          <coneGeometry args={[0.45, 0.8, 4]} />
+          <meshStandardMaterial {...materialProps} />
+        </mesh>
+      ))}
     </group>
   );
 };
@@ -103,18 +76,30 @@ export function EngineeringObject({
   shape: ShapeType;
   zoom: number;
 }) {
-  // تبدیل کردن ضریب زوم به یک آرایه برای جلوگیری از باگ‌های scale در Three.js
-  const s = 0.5 + ((zoom || 50) / 100) * 0.8;
+  const s = 0.4 + ((zoom || 50) / 100) * 0.6;
   const safeScale: [number, number, number] = [s, s, s];
 
   return (
-    <div className="absolute inset-0 h-full w-full">
-      <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
-        <ambientLight intensity={0.5} />
+    <div className="absolute inset-0 flex items-center justify-center">
+      <Canvas
+        camera={{ position: [0, 0, 5], fov: 30 }}
+        dpr={[1, 2]}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: "high-performance",
+        }}
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "block",
+          outline: "none",
+        }}
+      >
+        <ambientLight intensity={0.8} />
         <Environment preset="city" />
 
-        <Float speed={2} rotationIntensity={1} floatIntensity={1.5}>
-          {/* اعمال اسکیل امن به گروه */}
+        <Float speed={1.5} rotationIntensity={1.2} floatIntensity={1}>
           <group scale={safeScale}>
             {shape === "cuboids" ? (
               <CuboidsGroup color={color} />
@@ -124,15 +109,12 @@ export function EngineeringObject({
           </group>
         </Float>
 
-        <ContactShadows
-          position={[0, -2, 0]}
-          opacity={0.6}
-          scale={10}
-          blur={2.5}
-          far={4}
-          color="#000000"
+        <OrbitControls
+          enableZoom={false}
+          autoRotate
+          autoRotateSpeed={2}
+          target={[0, 0, 0]}
         />
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
       </Canvas>
     </div>
   );

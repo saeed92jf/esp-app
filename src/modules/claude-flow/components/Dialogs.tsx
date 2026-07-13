@@ -61,14 +61,27 @@ export function NewDiagramDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const newDiagram = useDiagramStore((s) => s.newDiagram);
   const setDiagramName = useDiagramStore((s) => s.setDiagramName);
+  const hasExistingContent = useDiagramStore((s) => s.nodes.length > 0 || s.edges.length > 0);
   const [name, setName] = useState("");
 
   const handleCreate = useCallback(() => {
+    if (hasExistingContent) {
+      const ok = window.confirm(
+        (() => {
+          try {
+            return t("dialogs.confirmNewDiagram");
+          } catch {
+            return "Start a new diagram? Your current canvas will be replaced.";
+          }
+        })(),
+      );
+      if (!ok) return;
+    }
     newDiagram();
     // Fall back to the translated "untitled" string when the input is blank
     setDiagramName(name.trim() || t("editor.untitled"));
     onClose();
-  }, [newDiagram, setDiagramName, name, t, onClose]);
+  }, [hasExistingContent, newDiagram, setDiagramName, name, t, onClose]);
 
   return (
     <ModalShell onClose={onClose} titleId="new-diagram-title">

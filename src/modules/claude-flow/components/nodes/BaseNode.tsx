@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import {
   Handle,
   Position,
-  NodeResizer,
+  NodeResizeControl,
+  ResizeControlVariant,
   useStore,
   useUpdateNodeInternals,
   type NodeProps,
@@ -20,7 +21,13 @@ import {
   FileCode,
   FileArchive,
   Download,
+  Plus,
+  Minus,
+  GripHorizontal,
+  Rows3,
+  Columns3,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { RotateHandle } from "./RotateHandle";
 import { cn } from "@/lib/utils";
 import { Combobox } from "@/components/ui-custom/combobox";
@@ -150,6 +157,104 @@ function NumberField({
 const HANDLE_CLS =
   "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
 
+const RESIZE_LINE_CLS = "border-indigo-500!";
+const RESIZE_DOT_CLS =
+  "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!";
+
+/**
+ * Every shape/calculator node also has a connection dot sitting at each of
+ * the 4 edge MIDPOINTS (top/bottom/left/right — see FreeConnectHandles
+ * above). Plain <NodeResizer> auto-generates handles at all 4 corners *and*
+ * all 4 edge midpoints, which land exactly on top of those connection dots —
+ * the resize handle and the connection dot fight for the same pixel, which
+ * is what made the resize frame look like its handles were "in the wrong
+ * place". Built from individual <NodeResizeControl> pieces instead: resize
+ * DOTS only at the 4 corners (nothing there to collide with), plus the 4
+ * edge LINES for the drag-frame outline and edge-resizing — lines don't
+ * visually clash with a small dot handle the way another dot would.
+ */
+function CornerResizer({
+  isVisible,
+  minWidth,
+  minHeight,
+  onResize,
+}: {
+  isVisible: boolean;
+  minWidth: number;
+  minHeight: number;
+  onResize: OnResize;
+}) {
+  if (!isVisible) return null;
+  return (
+    <>
+      <NodeResizeControl
+        position="top"
+        variant={ResizeControlVariant.Line}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_LINE_CLS}
+      />
+      <NodeResizeControl
+        position="bottom"
+        variant={ResizeControlVariant.Line}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_LINE_CLS}
+      />
+      <NodeResizeControl
+        position="left"
+        variant={ResizeControlVariant.Line}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_LINE_CLS}
+      />
+      <NodeResizeControl
+        position="right"
+        variant={ResizeControlVariant.Line}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_LINE_CLS}
+      />
+      <NodeResizeControl
+        position="top-left"
+        variant={ResizeControlVariant.Handle}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_DOT_CLS}
+      />
+      <NodeResizeControl
+        position="top-right"
+        variant={ResizeControlVariant.Handle}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_DOT_CLS}
+      />
+      <NodeResizeControl
+        position="bottom-left"
+        variant={ResizeControlVariant.Handle}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_DOT_CLS}
+      />
+      <NodeResizeControl
+        position="bottom-right"
+        variant={ResizeControlVariant.Handle}
+        minWidth={minWidth}
+        minHeight={minHeight}
+        onResize={onResize}
+        className={RESIZE_DOT_CLS}
+      />
+    </>
+  );
+}
+
 /**
  * "Any handle connects to any handle" (per user request — ordinary diagram
  * shapes have no logical reason to restrict which side a connection starts
@@ -275,7 +380,7 @@ function ShapeCanvas({
   id,
   shape,
   data,
-  selected,
+  selected = false,
   showConnectionHandles = true,
   handleMode = "full",
   showResizer = true,
@@ -353,13 +458,11 @@ function ShapeCanvas({
       title={hasLink ? data.url : undefined}
     >
       {showResizer && (
-        <NodeResizer
+        <CornerResizer
           isVisible={selected}
           minWidth={Math.max(36, Math.round(fallback.width * 0.5))}
           minHeight={Math.max(28, Math.round(fallback.height * 0.5))}
           onResize={handleResize}
-          lineClassName="border-indigo-500!"
-          handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
         />
       )}
 
@@ -714,13 +817,11 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
 
   return (
     <div className="relative" style={{ width, height }}>
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={200}
         minHeight={140}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
 
       <div
@@ -873,7 +974,11 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
     </div>
   );
 }
-
+/* only makes sense with ONE input, divide/subtract/power need exactly TWO
+ * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
+ * handles instead of one shared unlimited handle. See utils/operators.ts for
+ * the single source of truth this mirrors in the store's recompute logic.
+ */
 function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
@@ -1096,13 +1201,11 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
     >
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={180}
         minHeight={200}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
       <Handle
         type="target"
@@ -1188,11 +1291,11 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         variant="outline"
         value={mode}
         onValueChange={(v) => {
-          const nextMode = availableModes.includes(v as GeometryMode)
-            ? (v as GeometryMode)
-            : undefined;
-          if (nextMode) {
-            updateNodeData(id, { calcMode: nextMode });
+          if (
+            v &&
+            (availableModes as GeometryMode[]).includes(v as GeometryMode)
+          ) {
+            updateNodeData(id, { calcMode: v as GeometryMode });
           }
         }}
         className="nodrag grid w-full grid-cols-3 gap-1"
@@ -1314,13 +1417,11 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
     >
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={200}
         minHeight={220}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
       <Handle
         type="target"
@@ -1503,13 +1604,11 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
     >
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={170}
         minHeight={160}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
       <Handle
         type="source"
@@ -1638,13 +1737,11 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
     // rounded-corner image clipping now happens on the INNER wrapper only,
     // which has no handles inside it to cut off.
     <div ref={outerRef} className="relative" style={{ width, height }}>
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={80}
         minHeight={60}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
       <Handle
         type="target"
@@ -1748,13 +1845,11 @@ function SvgNode({ id, selected, data }: DiagramNodeProps) {
 
   return (
     <div className="relative" style={{ width, height }}>
-      <NodeResizer
+      <CornerResizer
         isVisible={selected}
         minWidth={60}
         minHeight={60}
         onResize={handleResize}
-        lineClassName="border-indigo-500!"
-        handleClassName="h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!"
       />
       <Handle
         type="target"
@@ -1940,6 +2035,195 @@ function DxfNode(props: DiagramNodeProps) {
   return <CadFileNode {...props} kind="dxf" />;
 }
 
+const DEFAULT_TABLE_ROWS: string[][] = [
+  ["Column 1", "Column 2", "Column 3"],
+  ["", "", ""],
+  ["", "", ""],
+];
+
+/**
+ * A real editable table — a grid of cells (each its own input, so clicking
+ * to edit is instant, no separate "edit mode"), with controls to add/remove
+ * rows and columns and to toggle a styled header row. Drags via its own
+ * header strip (like groupNode's `.subflow-drag-handle`) since the rest of
+ * the node is wall-to-wall input fields.
+ */
+function TableNode({ id, selected, data }: DiagramNodeProps) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
+  const resolved = resolveNodeColors(data, colorMode);
+  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
+  const fallback = SHAPE_DEFAULT_SIZE.tableNode;
+  const width = data.width ?? fallback.width;
+  const height = data.height ?? fallback.height;
+
+  const rows =
+    data.tableRows && data.tableRows.length > 0
+      ? data.tableRows
+      : DEFAULT_TABLE_ROWS;
+  const hasHeader = data.tableHasHeader ?? true;
+  const colCount = rows[0]?.length ?? 0;
+
+  const setCell = (r: number, c: number, value: string) => {
+    const next = rows.map((row) => [...row]);
+    next[r][c] = value;
+    updateNodeData(id, { tableRows: next });
+  };
+
+  const addRow = () => {
+    updateNodeData(id, {
+      tableRows: [...rows.map((row) => [...row]), Array(colCount).fill("")],
+    });
+  };
+
+  const removeRow = () => {
+    if (rows.length <= 1) return;
+    updateNodeData(id, { tableRows: rows.slice(0, -1).map((row) => [...row]) });
+  };
+
+  const addColumn = () => {
+    updateNodeData(id, { tableRows: rows.map((row) => [...row, ""]) });
+  };
+
+  const removeColumn = () => {
+    if (colCount <= 1) return;
+    updateNodeData(id, { tableRows: rows.map((row) => row.slice(0, -1)) });
+  };
+
+  const handleResize = useCallback<OnResize>(
+    (_event, params) => {
+      updateNodeData(id, {
+        width: Math.round(params.width),
+        height: Math.round(params.height),
+      });
+    },
+    [id, updateNodeData],
+  );
+
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-lg shadow-sm"
+      style={{
+        width,
+        minHeight: height,
+        backgroundColor: resolved.background,
+        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
+      }}
+    >
+      <CornerResizer
+        isVisible={!!selected}
+        minWidth={200}
+        minHeight={100}
+        onResize={handleResize}
+      />
+      <FreeConnectHandles />
+
+      {/* Drag handle + row/column controls — only shown while selected, like the resize frame */}
+      <div
+        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
+        style={{ borderColor: resolved.border }}
+      >
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          <GripHorizontal
+            className="size-3.5 shrink-0 opacity-50"
+            style={{ color: resolved.text }}
+          />
+          <span
+            className="truncate text-[11px] font-medium opacity-80"
+            style={{ color: resolved.text }}
+          >
+            {data.label || safeT(t, "nodes.tableNode", "Table")}
+          </span>
+        </div>
+        {selected && (
+          <div className="nodrag flex shrink-0 items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addRow", "Add row")}
+              onClick={addRow}
+            >
+              <Rows3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeRow", "Remove row")}
+              onClick={removeRow}
+              disabled={rows.length <= 1}
+            >
+              <Rows3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addColumn", "Add column")}
+              onClick={addColumn}
+            >
+              <Columns3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeColumn", "Remove column")}
+              onClick={removeColumn}
+              disabled={colCount <= 1}
+            >
+              <Columns3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant={hasHeader ? "secondary" : "ghost"}
+              size="icon-sm"
+              className="size-6 text-[9px] font-bold"
+              title={safeT(t, "settings.toggleHeaderRow", "Toggle header row")}
+              onClick={() => updateNodeData(id, { tableHasHeader: !hasHeader })}
+            >
+              H
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* The grid itself — CSS grid so every column stays the same width
+          across every row without any manual layout math. */}
+      <div
+        className="nodrag grid flex-1 overflow-auto"
+        style={{
+          gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))`,
+        }}
+      >
+        {rows.map((row, r) =>
+          row.map((cell, c) => (
+            <input
+              key={`${r}-${c}`}
+              value={cell}
+              onChange={(e) => setCell(r, c, e.target.value)}
+              className={cn(
+                "min-w-0 border-b border-e px-2 py-1.5 text-xs outline-none focus:bg-primary/5",
+                r === rows.length - 1 && "border-b-0",
+                c === colCount - 1 && "border-e-0",
+                hasHeader &&
+                  r === 0 &&
+                  "bg-black/5 font-semibold dark:bg-white/10",
+              )}
+              style={{ borderColor: resolved.border, color: resolved.text }}
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── nodeTypes registry ─────────────────────────────────────────────────────
 // Keys match DiagramNodeType exactly; `satisfies` validates the shape without
 // widening to React Flow's generic NodeTypes.
@@ -1964,6 +2248,7 @@ export const nodeTypes = {
   numberNode: NumberNode,
   operatorNode: OperatorNode,
   constantNode: ConstantNode,
+  tableNode: TableNode,
   geometryCalcNode: GeometryCalcNode,
   beamCalcNode: BeamCalcNode,
   shapeNode: ShapeNode,
@@ -1976,4 +2261,5 @@ export const nodeTypes = {
 /** Node types that should only be draggable by a header/handle, not the whole body. */
 export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   groupNode: ".subflow-drag-handle",
+  tableNode: ".table-drag-handle",
 };

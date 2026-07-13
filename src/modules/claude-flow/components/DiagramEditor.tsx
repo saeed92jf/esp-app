@@ -77,7 +77,10 @@ function EditorShell() {
   // Settings panel opens automatically the moment something is selected
   // (a node, an edge, or a multi-node box/lasso selection) and closes again
   // the moment the selection is cleared — no manual toggling needed.
-  const hasSelection = selectedNodeId !== null || selectedEdgeId !== null || nodes.some((n) => n.selected);
+  const hasSelection =
+    selectedNodeId !== null ||
+    selectedEdgeId !== null ||
+    nodes.some((n) => n.selected);
   useEffect(() => {
     useDiagramStore.setState({ isSettingsPanelOpen: hasSelection });
   }, [hasSelection]);
@@ -96,7 +99,13 @@ function EditorShell() {
 
     const syncFromDom = () => {
       const isDark = root.classList.contains("dark");
-      useDiagramStore.setState((s) => (s.settings.colorMode === (isDark ? "dark" : "light") ? s : { settings: { ...s.settings, colorMode: isDark ? "dark" : "light" } }));
+      useDiagramStore.setState((s) =>
+        s.settings.colorMode === (isDark ? "dark" : "light")
+          ? s
+          : {
+              settings: { ...s.settings, colorMode: isDark ? "dark" : "light" },
+            },
+      );
     };
 
     syncFromDom();
@@ -107,7 +116,8 @@ function EditorShell() {
     // Fallback for sites that rely purely on the OS preference with no class toggle at all.
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onMediaChange = () => {
-      if (!root.classList.contains("dark") && !root.classList.contains("light")) syncFromDom();
+      if (!root.classList.contains("dark") && !root.classList.contains("light"))
+        syncFromDom();
     };
     media.addEventListener("change", onMediaChange);
 
@@ -166,7 +176,9 @@ function EditorShell() {
           <div
             className={cn(
               "h-full w-72 transition-transform duration-300 ease-in-out",
-              isSettingsPanelOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full",
+              isSettingsPanelOpen
+                ? "translate-x-0"
+                : "translate-x-full rtl:-translate-x-full",
             )}
           >
             <SettingsPanel />
@@ -199,10 +211,13 @@ export interface DiagramEditorProps {
 
 export function DiagramEditor({
   className = "",
-  height = "100vh",
+  height = "calc(100dvh - var(--spacing-header))",
 }: DiagramEditorProps) {
   return (
-    <div className={className} style={{ height, width: "100%" }}>
+    <div
+      className={cn("w-full overflow-hidden", className)}
+      style={{ height, width: "100%" }}
+    >
       {/* ReactFlowProvider must wrap EditorShell so useReactFlow() works inside */}
       <ReactFlowProvider>
         <EditorShell />
@@ -210,6 +225,3 @@ export function DiagramEditor({
     </div>
   );
 }
-
-
-

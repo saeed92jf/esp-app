@@ -25,6 +25,7 @@ export type DiagramNodeType =
   | 'numberNode'
   | 'operatorNode'
   | 'constantNode'
+  | 'tableNode'
   // ── Standalone geometry calculators ──────────────────────────────
   | 'geometryCalcNode'
   | 'beamCalcNode'
@@ -109,6 +110,14 @@ export interface DiagramNodeData extends Record<string, unknown> {
   /** constantNode: which dimensionless constant (π, e, φ, ...) it outputs.
    *  See utils/constants.ts for the full list. Defaults to "pi". */
   constantKey?: string;
+
+  // ── Table node ─────────────────────────────────────────────────────
+  /** tableNode: the grid itself — tableRows[r][c] is that cell's text.
+   *  All rows are kept the same length (padded/trimmed together whenever a
+   *  column is added/removed) so indexing never goes out of bounds. */
+  tableRows?: string[][];
+  /** tableNode: whether the first row renders as a styled header. */
+  tableHasHeader?: boolean;
 
   // ── Geometry calculator (perimeter / area / volume) ──────────────────
   calcShape?: GeometryShape;

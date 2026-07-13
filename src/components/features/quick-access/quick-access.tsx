@@ -13,6 +13,8 @@ interface QuickAccessCardProps {
   hoverBgClassName?: string;
   iconClassName?: string;
   iconBgClassName?: string;
+  cardBgClassName?: string;
+  borderClassName?: string;
   className?: string;
 }
 
@@ -23,6 +25,8 @@ export function QuickAccessCard({
   hoverBgClassName,
   iconClassName,
   iconBgClassName,
+  cardBgClassName,
+  borderClassName,
   className,
 }: QuickAccessCardProps) {
   return (
@@ -31,6 +35,8 @@ export function QuickAccessCard({
       className={cn(
         "group flex flex-col items-center gap-3.5 rounded-2xl p-4 text-center w-30 h-30",
         "transition-colors duration-300 ease-out",
+        cardBgClassName,
+        borderClassName,
         hoverBgClassName ?? "hover:bg-muted",
         className,
       )}

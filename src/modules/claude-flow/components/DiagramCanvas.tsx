@@ -382,11 +382,19 @@ export function DiagramCanvas() {
     // Explicitly clear any lingering multi-select flags too. Don't rely on
     // React Flow's own pane-click deselection alone — this is what caused
     // the settings panel to sometimes fail to auto-close: selectedNodeId
-    // went back to null, but a still-`selected: true` node from a previous
-    // box/lasso selection kept hasSelection() true in DiagramEditor.
-    useDiagramStore.setState((s) =>
-      s.nodes.some((n) => n.selected) ? { nodes: s.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)) } : s,
-    );
+    // went back to null, but a still-`selected: true` node (or edge) from a
+    // previous box/lasso selection kept hasSelection() true in DiagramEditor,
+    // and group-selected edges specifically stayed highlighted forever since
+    // only nodes were being cleared here.
+    useDiagramStore.setState((s) => {
+      const hasSelectedNode = s.nodes.some((n) => n.selected);
+      const hasSelectedEdge = s.edges.some((e) => e.selected);
+      if (!hasSelectedNode && !hasSelectedEdge) return s;
+      return {
+        nodes: hasSelectedNode ? s.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)) : s.nodes,
+        edges: hasSelectedEdge ? s.edges.map((e) => (e.selected ? { ...e, selected: false } : e)) : s.edges,
+      };
+    });
   }, [setSelectedNode, setSelectedEdge]);
 
   // ── Context menu handlers ─────────────────────────────────────────────
