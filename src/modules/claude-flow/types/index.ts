@@ -26,6 +26,9 @@ export type DiagramNodeType =
   | 'operatorNode'
   | 'constantNode'
   | 'tableNode'
+  | 'excelNode'
+  | 'matrixNode'
+  | 'chartNode'
   // ── Standalone geometry calculators ──────────────────────────────
   | 'geometryCalcNode'
   | 'beamCalcNode'
@@ -118,6 +121,20 @@ export interface DiagramNodeData extends Record<string, unknown> {
   tableRows?: string[][];
   /** tableNode: whether the first row renders as a styled header. */
   tableHasHeader?: boolean;
+
+  // ── Matrix node ────────────────────────────────────────────────────
+  /** matrixNode: a strictly-numeric grid (paste from Excel coerces text to
+   *  numbers via utils/tabularData's toNumberCell). Same row-major shape as
+   *  tableRows, kept separate since it's numbers, not free text. */
+  matrixRows?: number[][];
+
+  // ── Chart node ─────────────────────────────────────────────────────
+  /** chartNode: its own data when not fed by an upstream Table/Excel/Matrix
+   *  node — first row = series names (column headers), first cell of every
+   *  other row = that row's category label. */
+  chartRows?: string[][];
+  /** chartNode: bar or line rendering (via recharts). */
+  chartType?: 'bar' | 'line';
 
   // ── Geometry calculator (perimeter / area / volume) ──────────────────
   calcShape?: GeometryShape;

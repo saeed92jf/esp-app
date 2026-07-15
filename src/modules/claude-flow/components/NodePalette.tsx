@@ -29,6 +29,12 @@ import {
   FileArchive,
   Pi,
   Table,
+  LayoutGrid,
+  Workflow,
+  Boxes,
+  FileSpreadsheet,
+  Grid3x3,
+  BarChart3,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
@@ -167,6 +173,54 @@ const PALETTE_ITEMS: PaletteItem[] = [
     },
   },
   {
+    type: "excelNode",
+    labelKey: "excelNode",
+    icon: "excel",
+    category: "compute",
+    defaultData: {
+      label: "Excel",
+      colorToken: "green",
+      tableHasHeader: true,
+      tableRows: [
+        ["Item", "Q1", "Q2"],
+        ["", "", ""],
+        ["", "", ""],
+      ],
+    },
+  },
+  {
+    type: "matrixNode",
+    labelKey: "matrixNode",
+    icon: "matrix",
+    category: "compute",
+    defaultData: {
+      label: "Matrix",
+      colorToken: "violet",
+      matrixRows: [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1],
+      ],
+    },
+  },
+  {
+    type: "chartNode",
+    labelKey: "chartNode",
+    icon: "chart",
+    category: "compute",
+    defaultData: {
+      label: "Chart",
+      colorToken: "blue",
+      chartType: "bar",
+      chartRows: [
+        ["", "Series A", "Series B"],
+        ["Jan", "10", "18"],
+        ["Feb", "14", "12"],
+        ["Mar", "9", "20"],
+      ],
+    },
+  },
+  {
     type: "triangleNode",
     labelKey: "triangleNode",
     icon: "triangle",
@@ -279,10 +333,20 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   svg: FileCode,
   cad: FileArchive,
   table: Table,
+  excel: FileSpreadsheet,
+  matrix: Grid3x3,
+  chart: BarChart3,
 };
 
 // Category order determines render order in the palette sidebar
 const CATEGORIES = ["basic", "flowchart", "shapes", "containers", "compute"] as const;
+const CATEGORY_ICONS: Record<(typeof CATEGORIES)[number], typeof Square> = {
+  basic: LayoutGrid,
+  flowchart: Workflow,
+  shapes: Shapes,
+  containers: Layers,
+  compute: Sigma,
+};
 
 // English fallbacks for the newly-added keys, used if the project's message
 // files haven't been updated yet (next-intl throws on missing keys in dev).
@@ -299,6 +363,9 @@ const LABEL_FALLBACKS: Record<string, string> = {
   operatorNode: "Operator",
   constantNode: "Constant",
   tableNode: "Table",
+  excelNode: "Excel",
+  matrixNode: "Matrix",
+  chartNode: "Chart",
   geometryCalcNode: "Geometry calculator",
   beamCalcNode: "Beam section (Ix)",
   shapeNode: "Shape",
@@ -325,21 +392,23 @@ export function NodePalette() {
   // next-intl: all keys live under the "Flow" namespace
   const t = useTranslations("Flow");
   const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState<"all" | (typeof CATEGORIES)[number]>("all");
 
   const label = (item: PaletteItem) =>
     safeT(t, `nodes.${item.labelKey}`, LABEL_FALLBACKS[item.labelKey] ?? item.defaultData.label ?? item.type);
 
-  // Filter items by translated label, then group by category.
-  // Re-runs only when query or locale changes (t is stable per render).
+  // Filter items by translated label + active category tab, then group by category.
+  // Re-runs only when query, category, or locale changes (t is stable per render).
   const grouped = useMemo(() => {
     const q = query.toLowerCase();
     const filtered = PALETTE_ITEMS.filter((item) => label(item).toLowerCase().includes(q));
-    return CATEGORIES.map((cat) => ({
+    const categoriesToShow = activeCategory === "all" ? CATEGORIES : [activeCategory];
+    return categoriesToShow.map((cat) => ({
       cat,
       items: filtered.filter((i) => i.category === cat),
     })).filter((g) => g.items.length > 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, t]);
+  }, [query, activeCategory, t]);
 
   // Encode the full PaletteItem into the drag event so the canvas drop handler
   // can reconstruct the node without a separate lookup.
@@ -364,6 +433,37 @@ export function NodePalette() {
             placeholder={t("palette.search")}
             className="ps-8 pe-2 text-xs"
           />
+        </div>
+
+        {/* Category quick-filter tabs — clicking one shows only that
+            category's nodes; "All" (Boxes icon) shows everything again. */}
+        <div className="mt-2 flex flex-wrap gap-1">
+          <button
+            onClick={() => setActiveCategory("all")}
+            title={safeT(t, "global.all", "All")}
+            className={cn(
+              "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+              activeCategory === "all" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
+          >
+            <Boxes className="size-3.5" />
+          </button>
+          {CATEGORIES.map((cat) => {
+            const Icon = CATEGORY_ICONS[cat];
+            return (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                title={safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat] ?? cat)}
+                className={cn(
+                  "flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-medium transition-colors",
+                  activeCategory === cat ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                )}
+              >
+                <Icon className="size-3.5" />
+              </button>
+            );
+          })}
         </div>
       </div>
 

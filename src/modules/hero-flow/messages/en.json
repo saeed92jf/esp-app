@@ -1,0 +1,14 @@
+{
+  "Hero-Flow": {
+    "colorPicker": "Color Picker",
+    "preview": "PREVIEW",
+    "geometry": "Geometry",
+    "cubesGrid": "Cubes Grid",
+    "pyramids": "Pyramids",
+    "scale": "Scale",
+    "title": "ESP-Flow",
+    "version": "V26",
+    "description": "The next generation of visual engineering for oil and gas infrastructure.",
+    "tryNow": "Try it now"
+  }
+}

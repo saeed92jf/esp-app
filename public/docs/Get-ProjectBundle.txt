@@ -85,8 +85,8 @@ Description:
 
 6) Bundle only the target folder
 --------------------------------------------------
-Get-ProjectBundle -TargetFolder "src\modules\hero-flow" -OnlyTargetFolder
 
+Get-ProjectBundle -TargetFolder "src\modules\hero-flow" -OnlyTargetFolder
 Description:
 - Adds project tree first
 - Bundles only the target folder

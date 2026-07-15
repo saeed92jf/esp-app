@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
-import { Trash2, Copy, ExternalLink, Smile, RotateCcw } from "lucide-react";
+import { Trash2, Copy, ExternalLink, Smile, RotateCcw, FileText, Palette } from "lucide-react";
 import type { DiagramEdgeType } from "../types";
 import { COLOR_TOKEN_ORDER, NODE_COLOR_TOKENS, EDGE_COLOR_TOKENS, type ColorToken } from "../utils/colors";
 import { cn } from "@/lib/utils";
@@ -47,6 +47,15 @@ const DUPE_BTN = cn(ACTION_BTN, "hover:text-foreground");
 const DEL_BTN = cn(ACTION_BTN, "hover:text-destructive");
 
 const RESET_BTN = cn(ACTION_BTN, "hover:text-primary");
+
+/** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
 
 function PanelHeader({
   title,
@@ -293,26 +302,32 @@ export function SettingsPanel() {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const updateNodesData = useDiagramStore((s) => s.updateNodesData);
   const updateEdgeData = useDiagramStore((s) => s.updateEdgeData);
+  const updateEdgesData = useDiagramStore((s) => s.updateEdgesData);
   const deleteSelected = useDiagramStore((s) => s.deleteSelected);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
   const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);
   const resetEdgeToDefault = useDiagramStore((s) => s.resetEdgeToDefault);
+  const resetEdgesToDefault = useDiagramStore((s) => s.resetEdgesToDefault);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
 
   const nodeLabelRef = useRef<HTMLTextAreaElement>(null);
   const edgeLabelRef = useRef<HTMLInputElement>(null);
+  const [nodeSettingsTab, setNodeSettingsTab] = useState<"content" | "style">("content");
 
   // Multiple nodes selected at once (box/lasso/shift-click) — group style
-  // editing panel takes priority over the single-node panel below. Edges are
-  // never part of a multi-select (see onEdgesChange in the store).
+  // editing panel takes priority over the single-node panel below. Multiple
+  // edges can now be selected the same way (marquee/ctrl-click) and get their
+  // own group-editing panel too — see the edge branch further down.
   const multiSelectedNodes = nodes.filter((n) => n.selected);
   const isMultiSelect = multiSelectedNodes.length > 1;
+  const multiSelectedEdges = edges.filter((e) => e.selected);
+  const isMultiEdgeSelect = multiSelectedEdges.length > 1;
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
 
   // ─── Empty state ──────────────────────────────────────────────────────
-  if (!isMultiSelect && !selectedNode && !selectedEdge) {
+  if (!isMultiSelect && !isMultiEdgeSelect && !selectedNode && !selectedEdge) {
     return (
       <Shell>
         <div className="flex h-full items-center justify-center px-6 text-center text-xs text-muted-foreground">
@@ -419,6 +434,99 @@ export function SettingsPanel() {
     );
   }
 
+  // ─── Multi-edge settings (group style editing) ───────────────────────
+  if (isMultiEdgeSelect) {
+    const ids = multiSelectedEdges.map((e) => e.id);
+    const first = multiSelectedEdges[0].data ?? {};
+    return (
+      <Shell>
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {multiSelectedEdges.length} edges selected
+          </h3>
+          <div className="flex gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => resetEdgesToDefault(ids)}
+              className={cn(ACTION_BTN, "hover:text-primary")}
+              title="Reset all to default"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon-sm" onClick={deleteSelected} className={DEL_BTN} title={t("toolbar.delete")}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+        <div className="p-4">
+          <Field label={t("settings.edgeType")}>
+            <Combobox
+              options={EDGE_TYPE_OPTIONS}
+              value={(first.edgeStyle ?? "smoothstep") as string}
+              onChange={(v) => updateEdgesData(ids, { edgeStyle: v as DiagramEdgeType })}
+              placeholder={t("settings.edgeType")}
+            />
+          </Field>
+
+          <Field label={t("settings.edgeColor")}>
+            <EdgeColorTokenRow
+              value={multiSelectedEdges.every((e) => e.data?.colorToken === first.colorToken) ? first.colorToken : undefined}
+              onChange={(tok) => updateEdgesData(ids, { colorToken: tok })}
+              colorMode={colorMode}
+            />
+          </Field>
+
+          <Field label={`${t("settings.strokeWidth")}: ${first.strokeWidth ?? 2}px`}>
+            <Slider
+              min={1}
+              max={6}
+              value={[first.strokeWidth ?? 2]}
+              onValueChange={(v) => updateEdgesData(ids, { strokeWidth: v[0] })}
+              className="w-full"
+            />
+          </Field>
+
+          <Field label="Arrowheads">
+            <div className="flex gap-2">
+              <Toggle
+                size="sm"
+                variant="outline"
+                pressed={first.arrowStart ?? false}
+                onPressedChange={(v) => updateEdgesData(ids, { arrowStart: v })}
+              >
+                Start
+              </Toggle>
+              <Toggle
+                size="sm"
+                variant="outline"
+                pressed={first.arrowEnd ?? true}
+                onPressedChange={(v) => updateEdgesData(ids, { arrowEnd: v })}
+              >
+                End
+              </Toggle>
+            </div>
+          </Field>
+
+          <Field label={t("settings.animated")}>
+            <Toggle
+              size="sm"
+              variant="outline"
+              pressed={first.animated ?? false}
+              onPressedChange={(v) => updateEdgesData(ids, { animated: v })}
+            >
+              {first.animated ? "On" : "Off"}
+            </Toggle>
+          </Field>
+
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+            Style changes above apply to all {multiSelectedEdges.length} selected edges at once.
+          </p>
+        </div>
+      </Shell>
+    );
+  }
+
   // ─── Node settings ────────────────────────────────────────────────────
   if (selectedNode) {
     const data = selectedNode.data;
@@ -450,7 +558,37 @@ export function SettingsPanel() {
           duplicateLabel={t("contextMenu.duplicate")}
           deleteLabel={t("toolbar.delete")}
         />
+
+        {/* Category tabs — pick which group of settings to show, instead of
+            one long scrolling list of every field at once. */}
+        {!isGroup && !isNonShape && (
+          <div className="flex gap-1 border-b border-border px-4 pt-2">
+            {(
+              [
+                { key: "content", icon: FileText, label: safeT(t, "settings.tabContent", "Content") },
+                { key: "style", icon: Palette, label: safeT(t, "settings.tabStyle", "Style") },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setNodeSettingsTab(tab.key)}
+                title={tab.label}
+                className={cn(
+                  "flex items-center gap-1.5 border-b-2 px-2 pb-2 text-xs font-medium transition-colors",
+                  nodeSettingsTab === tab.key
+                    ? "border-primary text-primary"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <tab.icon className="size-3.5" />
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="p-4">
+          {(isGroup || isNonShape || nodeSettingsTab === "content") && (
           <Field label={isGroup ? "Sub-flow name" : t("settings.label")}>
             <div className="flex items-start gap-1.5">
               <Textarea
@@ -476,10 +614,11 @@ export function SettingsPanel() {
               </label>
             )}
           </Field>
+          )}
 
           {/* Link — opens on click of the badge shown on the node, or on
               double-clicking the node itself (see components/nodes/BaseNode.tsx) */}
-          {!isNonShape && (
+          {!isNonShape && nodeSettingsTab === "content" && (
             <Field label={t("settings.link")}>
               <div className="flex items-center gap-1.5">
                 <Input
@@ -504,8 +643,7 @@ export function SettingsPanel() {
             </Field>
           )}
 
-          {/* Single coordinated color token — sets fill + border + text together,
-              pre-tuned so it stays legible in both light and dark mode. */}
+          {(isGroup || isNonShape || nodeSettingsTab === "style") && (
           <Field label={t("settings.backgroundColor")}>
             <NodeColorTokenRow
               value={data.colorToken}
@@ -513,8 +651,9 @@ export function SettingsPanel() {
               colorMode={colorMode}
             />
           </Field>
+          )}
 
-          {!isNonShape && (
+          {!isNonShape && nodeSettingsTab === "style" && (
             <>
               <Field label={`${t("settings.fontSize")}: ${data.fontSize ?? 13}px`}>
                 <Slider

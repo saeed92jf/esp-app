@@ -31,6 +31,11 @@ import {
   ChevronDown,
   Eraser,
   LibraryBig,
+  MousePointerClick,
+  Spline,
+  Group,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -102,6 +107,7 @@ export function Toolbar({
 
   const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
   const [clearMenuOpen, setClearMenuOpen] = useState(false);
+  const [selectMenuOpen, setSelectMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Diagram templates, listed from public/diagrams (see the API route at
@@ -192,6 +198,11 @@ export function Toolbar({
   const importJSON = useDiagramStore((s) => s.importJSON);
   const isSaving = useDiagramStore((s) => s.isSaving);
   const groupSelectedNodes = useDiagramStore((s) => s.groupSelectedNodes);
+  const selectAllNodes = useDiagramStore((s) => s.selectAllNodes);
+  const selectAllEdges = useDiagramStore((s) => s.selectAllEdges);
+  const selectAllGroups = useDiagramStore((s) => s.selectAllGroups);
+  const globalHideHandles = useDiagramStore((s) => s.globalHideHandles);
+  const toggleGlobalHandles = useDiagramStore((s) => s.toggleGlobalHandles);
   const clearCanvas = useDiagramStore((s) => s.clearCanvas);
   const deleteAllNodes = useDiagramStore((s) => s.deleteAllNodes);
   const deleteAllEdges = useDiagramStore((s) => s.deleteAllEdges);
@@ -402,6 +413,59 @@ export function Toolbar({
           </button>
         </div>
       )}
+      <Divider />
+
+      {/* Select-all — each option selects only its own kind (see the store's
+          selectAllNodes/selectAllEdges/selectAllGroups: picking one clears
+          any other selection so they never mix). */}
+      <div className="relative">
+        <button
+          onClick={() => setSelectMenuOpen((o) => !o)}
+          title="Select all..."
+          className={cn(
+            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
+            "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+        >
+          <MousePointerClick className="size-4" />
+          <ChevronDown className="size-3" />
+        </button>
+        {selectMenuOpen && (
+          <div
+            className="absolute top-9 start-0 z-20 w-44 rounded-md border border-border bg-popover py-1 shadow-md"
+            onMouseLeave={() => setSelectMenuOpen(false)}
+          >
+            <button
+              onClick={() => { selectAllNodes(); setSelectMenuOpen(false); }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <Square className="size-3.5" /> All nodes
+            </button>
+            <button
+              onClick={() => { selectAllEdges(); setSelectMenuOpen(false); }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <Spline className="size-3.5" /> All connections
+            </button>
+            <button
+              onClick={() => { selectAllGroups(); setSelectMenuOpen(false); }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <Group className="size-3.5" /> All sub-flows
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Hide/show every connection handle at once (a single global CSS
+          switch — see the "hide-all-handles" class in DiagramCanvas.tsx). */}
+      <ToolbarButton
+        icon={globalHideHandles ? EyeOff : Eye}
+        label={globalHideHandles ? "Show all handles" : "Hide all handles"}
+        active={globalHideHandles}
+        onClick={toggleGlobalHandles}
+      />
+
       <Divider />
 
       {/* Sub-flow: wraps the current multi-selection (shift/box/lasso-select) in a

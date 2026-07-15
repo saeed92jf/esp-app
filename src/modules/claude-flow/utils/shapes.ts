@@ -65,6 +65,9 @@ export const SHAPE_DEFAULT_SIZE: Record<
   operatorNode: { width: 160, height: 104 },
   constantNode: { width: 190, height: 150 },
   tableNode: { width: 280, height: 150 },
+  excelNode: { width: 300, height: 180 },
+  matrixNode: { width: 240, height: 160 },
+  chartNode: { width: 340, height: 260 },
   geometryCalcNode: { width: 220, height: 370 },
   beamCalcNode: { width: 240, height: 390 },
   shapeNode: { width: 200, height: 330 },
@@ -160,7 +163,14 @@ export function getShapeGeometry(
         `A ${rx},${ry} 0 0 0 ${w - inset},${bottom} ` +
         `L ${w - inset},${top} ` +
         `A ${rx},${ry} 0 0 0 ${inset},${top} Z`;
-      return { kind: "cylinder", bodyPath, capCx: w / 2, capCy: top, capRx: rx, capRy: ry };
+      return {
+        kind: "cylinder",
+        bodyPath,
+        capCx: w / 2,
+        capCy: top,
+        capRx: rx,
+        capRy: ry,
+      };
     }
 
     case "noteNode": {
@@ -240,7 +250,10 @@ export function getShapeGeometry(
     case "operatorNode":
     case "constantNode":
     case "tableNode":
-      // Rendered by their own components (NumberNode/OperatorNode/ConstantNode/TableNode), not through ShapeCanvas/SVG.
+    case "excelNode":
+    case "matrixNode":
+    case "chartNode":
+      // Rendered by their own components, not through ShapeCanvas/SVG.
       return { kind: "none" };
 
     case "geometryCalcNode":
@@ -267,5 +280,3 @@ export function getShapeGeometry(
       return { kind: "path", path: roundedRect(w, h, borderRadius, inset) };
   }
 }
-
-

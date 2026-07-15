@@ -1,18 +1,20 @@
 "use client";
+
 import { useMemo } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Float, OrbitControls, Environment } from "@react-three/drei";
+import { Environment, Float, OrbitControls } from "@react-three/drei";
 import type { ShapeType } from "../types";
 
+// Generates uniform positions across a sphere using the Golden Spiral algorithm
 const getSphericalPositions = (count: number, radius: number) => {
   const positions: [number, number, number][] = [];
   const rotations: [number, number, number][] = [];
   const phi = Math.PI * (3 - Math.sqrt(5));
 
-  for (let i = 0; i < count; i++) {
-    const y = 1 - (i / (count - 1)) * 2;
+  for (let index = 0; index < count; index += 1) {
+    const y = 1 - (index / (count - 1)) * 2;
     const r = Math.sqrt(1 - y * y);
-    const theta = phi * i;
+    const theta = phi * index;
 
     const x = Math.cos(theta) * r;
     const z = Math.sin(theta) * r;
@@ -24,11 +26,11 @@ const getSphericalPositions = (count: number, radius: number) => {
       Math.random() * Math.PI,
     ]);
   }
+
   return { positions, rotations };
 };
 
 const CuboidsGroup = ({ color }: { color: string }) => {
-  // استفاده از متریال استاندارد با خشونت بالا (ماتِ مات بدون براقیت)
   const materialProps = { color, roughness: 1, metalness: 0 };
   const { positions, rotations } = useMemo(
     () => getSphericalPositions(30, 1.8),
@@ -37,8 +39,13 @@ const CuboidsGroup = ({ color }: { color: string }) => {
 
   return (
     <group>
-      {positions.map((pos, i) => (
-        <mesh key={i} position={pos} rotation={rotations[i]} castShadow>
+      {positions.map((position, index) => (
+        <mesh
+          key={index}
+          position={position}
+          rotation={rotations[index]}
+          castShadow
+        >
           <boxGeometry args={[0.5, 0.5, 0.5]} />
           <meshStandardMaterial {...materialProps} />
         </mesh>
@@ -48,7 +55,6 @@ const CuboidsGroup = ({ color }: { color: string }) => {
 };
 
 const PyramidsGroup = ({ color }: { color: string }) => {
-  // استفاده از متریال استاندارد مات
   const materialProps = { color, roughness: 1, metalness: 0 };
   const { positions, rotations } = useMemo(
     () => getSphericalPositions(30, 1.8),
@@ -57,8 +63,13 @@ const PyramidsGroup = ({ color }: { color: string }) => {
 
   return (
     <group>
-      {positions.map((pos, i) => (
-        <mesh key={i} position={pos} rotation={rotations[i]} castShadow>
+      {positions.map((position, index) => (
+        <mesh
+          key={index}
+          position={position}
+          rotation={rotations[index]}
+          castShadow
+        >
           <coneGeometry args={[0.45, 0.8, 4]} />
           <meshStandardMaterial {...materialProps} />
         </mesh>
@@ -76,8 +87,12 @@ export function EngineeringObject({
   shape: ShapeType;
   zoom: number;
 }) {
-  const s = 0.4 + ((zoom || 50) / 100) * 0.6;
-  const safeScale: [number, number, number] = [s, s, s];
+  const scaleValue = 0.4 + ((zoom || 50) / 100) * 0.6;
+  const safeScale: [number, number, number] = [
+    scaleValue,
+    scaleValue,
+    scaleValue,
+  ];
 
   return (
     <div className="absolute inset-0 flex items-center justify-center">

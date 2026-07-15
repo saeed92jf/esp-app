@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ReactFlow,
   Background,
@@ -11,16 +11,18 @@ import {
   useEdgesState,
   useNodesState,
   BackgroundVariant,
-  useReactFlow,
   ReactFlowProvider,
+  useReactFlow,
+  Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { useLocale, useTranslations } from "next-intl";
 
 import { ColorNode } from "./nodes/ColorNode";
 import { ShapeNode } from "./nodes/ShapeNode";
 import { ZoomNode } from "./nodes/ZoomNode";
 import { OutputNode } from "./nodes/OutputNode";
-import { FLOW_THEME } from "./types";
+import { FLOW_THEME, type ShapeType } from "./types";
 
 const nodeTypes = {
   colorNode: ColorNode,
@@ -29,41 +31,112 @@ const nodeTypes = {
   outputNode: OutputNode,
 };
 
-// Initial nodes and edges (保持之前定义的逻辑)
-const initialNodes: Node[] = [
-  {
-    id: "anchor",
-    position: { x: -200, y: 0 },
-    data: {},
-    style: { width: 1, height: 1, opacity: 0, pointerEvents: "none" },
-  },
-  {
-    id: "c",
-    type: "colorNode",
-    position: { x: 40, y: 30 },
-    data: { color: "#ff0071" },
-  },
-  {
-    id: "s",
-    type: "shapeNode",
-    position: { x: 20, y: 100 },
-    data: { shape: "cuboids" },
-  },
-  {
-    id: "z",
-    type: "zoomNode",
-    position: { x: 35, y: 200 },
-    data: { zoom: 50 },
-  },
-  {
-    id: "out",
-    type: "outputNode",
-    position: { x: 210, y: 40 },
-    data: { color: "#ff0071", shape: "cuboids", zoom: 50 },
-  },
-];
+type HeroFlowNodeData = {
+  label?: string;
+  previewLabel?: string;
+  color?: string;
+  shape?: ShapeType;
+  zoom?: number;
+  options?: Array<{ value: ShapeType; label: string }>;
+  isRtl?: boolean;
+};
 
-const initialEdges: Edge[] = [
+const FALLBACK_PRIMARY = "#ff0071";
+
+function rgbToHex(color: string) {
+  const parts = color.match(/\d+/g);
+  if (!parts || parts.length < 3) return FALLBACK_PRIMARY;
+
+  const [r, g, b] = parts.slice(0, 3).map(Number);
+  const toHex = (value: number) => value.toString(16).padStart(2, "0");
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function resolveThemeColor(cssValue: string) {
+  if (typeof window === "undefined") return FALLBACK_PRIMARY;
+
+  const probe = document.createElement("div");
+  probe.style.color = cssValue;
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.pointerEvents = "none";
+
+  document.body.appendChild(probe);
+  const computedColor = window.getComputedStyle(probe).color;
+  document.body.removeChild(probe);
+
+  return rgbToHex(computedColor);
+}
+
+function buildNodes(
+  t: ReturnType<typeof useTranslations>,
+  isRtl: boolean,
+  initialColor: string,
+): Node<HeroFlowNodeData>[] {
+  const sourceHandlePosition = isRtl ? Position.Left : Position.Right;
+  const targetHandlePosition = isRtl ? Position.Right : Position.Left;
+
+  const positions = {
+    c: isRtl ? { x: -200, y: 30 } : { x: 40, y: 30 },
+    s: isRtl ? { x: -210, y: 100 } : { x: 20, y: 100 },
+    z: isRtl ? { x: -250, y: 200 } : { x: 35, y: 200 },
+    out: isRtl ? { x: -500, y: 40 } : { x: 210, y: 40 },
+  };
+
+  return [
+    {
+      id: "anchor",
+      position: { x: -200, y: 0 },
+      data: { isRtl },
+      style: { width: 1, height: 1, opacity: 0, pointerEvents: "none" },
+    },
+    {
+      id: "c",
+      type: "colorNode",
+      position: positions.c,
+      sourcePosition: sourceHandlePosition,
+      data: { color: initialColor, label: t("colorPicker"), isRtl },
+    },
+    {
+      id: "s",
+      type: "shapeNode",
+      position: positions.s,
+      sourcePosition: sourceHandlePosition,
+      data: {
+        shape: "cuboids",
+        label: t("geometry"),
+        options: [
+          { value: "cuboids", label: t("cubesGrid") },
+          { value: "pyramids", label: t("pyramids") },
+        ],
+        isRtl,
+      },
+    },
+    {
+      id: "z",
+      type: "zoomNode",
+      position: positions.z,
+      sourcePosition: sourceHandlePosition,
+      data: { zoom: 50, label: t("scale"), isRtl },
+    },
+    {
+      id: "out",
+      type: "outputNode",
+      position: positions.out,
+      targetPosition: targetHandlePosition,
+      data: {
+        color: initialColor,
+        shape: "cuboids",
+        zoom: 50,
+        previewLabel: t("preview"),
+        isRtl,
+      },
+    },
+  ];
+}
+
+const buildInitialEdges = (): Edge[] => [
   {
     id: "e-color",
     source: "c",
@@ -93,25 +166,39 @@ const initialEdges: Edge[] = [
   },
 ];
 
-/**
- * Internal component to access useReactFlow hooks
- */
-function FlowInner() {
+function FlowInner({
+  isRtl,
+  initialColor,
+}: {
+  isRtl: boolean;
+  initialColor: string;
+}) {
+  const t = useTranslations("Hero-Flow");
+  const initialNodes = useMemo(
+    () => buildNodes(t, isRtl, initialColor),
+    [t, isRtl, initialColor],
+  );
+  const initialEdges = useMemo(() => buildInitialEdges(), []);
+
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { fitView } = useReactFlow();
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Function to center the view with a small debounce
+  useEffect(() => {
+    setNodes(buildNodes(t, isRtl, initialColor));
+    setEdges(buildInitialEdges());
+  }, [t, isRtl, initialColor, setNodes, setEdges]);
+
   const handleResize = useCallback(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
+
     timerRef.current = setTimeout(() => {
       fitView({ duration: 800, padding: 0.2 });
     }, 200);
   }, [fitView]);
 
   useEffect(() => {
-    // Add event listener for window resize
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -120,15 +207,15 @@ function FlowInner() {
   }, [handleResize]);
 
   const onConnect = useCallback(
-    (p: Connection) =>
-      setEdges((eds) =>
+    (params: Connection) =>
+      setEdges((currentEdges) =>
         addEdge(
           {
-            ...p,
+            ...params,
             animated: true,
             style: { stroke: FLOW_THEME.color, strokeWidth: 1.5 },
           },
-          eds,
+          currentEdges,
         ),
       ),
     [setEdges],
@@ -149,8 +236,7 @@ function FlowInner() {
       zoomOnDoubleClick={false}
       panOnScroll={false}
       preventScrolling={false}
-      // Enable auto pan when dragging near edges
-      autoPanOnNodeDrag={true}
+      autoPanOnNodeDrag
       className="bg-transparent"
     >
       <Background
@@ -163,13 +249,19 @@ function FlowInner() {
   );
 }
 
-/**
- * Main HeroFlow Component
- * Wrapped in ReactFlowProvider to enable fitView and other hooks
- */
 export function HeroFlow() {
+  const t = useTranslations("Hero-Flow");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const [initialColor, setInitialColor] = useState(FALLBACK_PRIMARY);
+
+  useEffect(() => {
+    setInitialColor(resolveThemeColor(FLOW_THEME.color));
+  }, []);
+
   return (
     <div
+      dir={isRtl ? "rtl" : "ltr"}
       className="relative h-full w-full overflow-hidden bg-transparent"
       style={
         {
@@ -178,30 +270,32 @@ export function HeroFlow() {
         } as React.CSSProperties
       }
     >
-      {/* 
-        Layer 1: Text Overlay (Purely Visual)
-        Uses logical positioning (inset-inline-start) for RTL/LTR compatibility
-      */}
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center">
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex max-w-xs flex-col items-start gap-4 rounded-3xl bg-white/5 p-5 backdrop-blur-md md:max-w-sm dark:bg-black/10">
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
-              ESP-Flow <span className="text-(--theme)">V26</span>
+              {t("title")}{" "}
+              <span className="text-(--theme)">{t("version")}</span>
             </h1>
+
             <p className="text-sm font-medium text-muted-foreground md:text-base">
-              The next generation of visual engineering for oil and gas
-              infrastructure.
+              {t("description")}
             </p>
+
             <div className="pointer-events-auto mt-2">
               <a
                 href="/ESP-Flow"
                 className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-(--theme) px-6 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-500 hover:brightness-110 hover:shadow-[0_0_20px_var(--theme)]"
               >
                 <span className="absolute left-0 top-0 h-full w-full translate-x-[150%] bg-linear-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-[-150%]"></span>
-                Try it now
+                {t("tryNow")}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 rotate-180"
+                  className={`h-4 w-4 transform transition-transform duration-300 ${
+                    isRtl
+                      ? "rotate-180 group-hover:-translate-x-1"
+                      : "group-hover:translate-x-1"
+                  }`}
                   viewBox="0 0 20 20"
                   fill="currentColor"
                 >
@@ -217,20 +311,9 @@ export function HeroFlow() {
         </div>
       </div>
 
-      {/* 
-        Layer 2: React Flow Canvas
-      */}
-      <div
-        className="absolute inset-0 z-10 h-full w-full"
-        style={{
-          maskImage:
-            "radial-gradient(ellipse at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)",
-          WebkitMaskImage:
-            "radial-gradient(ellipse at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)",
-        }}
-      >
+      <div className="absolute inset-0 z-10">
         <ReactFlowProvider>
-          <FlowInner />
+          <FlowInner isRtl={isRtl} initialColor={initialColor} />
         </ReactFlowProvider>
       </div>
     </div>

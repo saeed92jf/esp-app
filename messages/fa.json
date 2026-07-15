@@ -417,7 +417,10 @@
       "pentagonNode": "پنج ضلعی",
       "multiDocumentNode": "ترکیبی",
       "constantNode": "ثابت",
-      "tableNode": "جدول"
+      "tableNode": "جدول",
+      "excelNode": "اکسل",
+      "matrixNode": "ماتریس",
+      "chartNode": "نمودار"
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
@@ -465,7 +468,10 @@
       "removeRow": "حذف ردیف",
       "addColumn": "افزودن ستون",
       "removeColumn": "حذف ستون",
-      "toggleHeaderRow": "ردیف سرستون"
+      "toggleHeaderRow": "ردیف سرستون",
+      "tabContent": "محتوا",
+      "tabStyle": "ظاهر",
+      "importCsv": "وارد کردن فایل CSV/TSV"
     },
     "editorSettings": {
       "title": "تنظیمات ادیتور",
@@ -542,7 +548,8 @@
       "cancel": "انصراف",
       "confirm": "تأیید",
       "loading": "در حال بارگذاری…",
-      "noResults": "نتیجه‌ای یافت نشد"
+      "noResults": "نتیجه‌ای یافت نشد",
+      "all": "همه"
     },
     "beamValidation": {
       "positiveDims": "عرض و ارتفاع باید هر دو بزرگ‌تر از صفر باشند.",

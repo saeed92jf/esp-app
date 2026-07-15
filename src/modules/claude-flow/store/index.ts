@@ -129,6 +129,9 @@ interface DiagramStore {
    *  multi-select "group style editing" panel in SettingsPanel. */
   updateNodesData: (nodeIds: string[], data: Partial<DiagramNodeData>) => void;
   updateEdgeData: (edgeId: string, data: Partial<DiagramEdgeData>) => void;
+  /** Applies the same partial data to many edges at once — used by the
+   *  multi-select "group style editing" panel for edges in SettingsPanel. */
+  updateEdgesData: (edgeIds: string[], data: Partial<DiagramEdgeData>) => void;
   /** Clears style-only fields (color, borders, font, size, rotation, ...) back
    *  to "unset" so each node falls back to its component's own built-in
    *  default — works the same whether nodeIds has one id (single) or many
@@ -139,6 +142,8 @@ interface DiagramStore {
   /** Same idea for a single edge: style fields reset, edgeStyle falls back to
    *  the app-wide default edge type (Editor Settings), label/connections kept. */
   resetEdgeToDefault: (edgeId: string) => void;
+  /** Same as resetEdgeToDefault, applied to many edges at once (group reset). */
+  resetEdgesToDefault: (edgeIds: string[]) => void;
   deleteSelected: () => void;
   duplicateSelected: () => void;
   /** Removes every node AND edge — a blank diagram, same name/id kept. */
@@ -151,9 +156,23 @@ interface DiagramStore {
   setSelectedNode: (id: string | null) => void;
   setSelectedEdge: (id: string | null) => void;
 
+  // Select-all (Toolbar) — each selects only its own kind and clears the rest,
+  // so e.g. "select all edges" doesn't leave some stray node also selected.
+  selectAllNodes: () => void;
+  selectAllEdges: () => void;
+  /** Selects every sub-flow (groupNode) container, not its children. */
+  selectAllGroups: () => void;
+
   // Subflow / grouping
   reparentNode: (nodeId: string, parentId: string | null) => void;
   groupSelectedNodes: () => void;
+
+  // Connection-handle visibility (Toolbar's "hide/show all handles" toggle) —
+  // a single global flag, applied via a CSS class on the canvas wrapper
+  // rather than touched per-node, so it's instant and never falls out of
+  // sync with any individual node's own data.
+  globalHideHandles: boolean;
+  toggleGlobalHandles: () => void;
 
   // History
   pushHistory: () => void;
@@ -216,6 +235,7 @@ export const useDiagramStore = create<DiagramStore>()(
       isCanvasLocked: false,
       isCanvasFullscreen: false,
       canvasFullscreenToggle: null,
+      globalHideHandles: false,
 
       setDiagramName: (name) => set({ diagramName: name }),
 
@@ -245,28 +265,18 @@ export const useDiagramStore = create<DiagramStore>()(
       },
 
       onEdgesChange: (changes) => {
-        const selectChanges = changes.filter(
-          (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
-        );
-        // Box/lasso multi-select must only ever apply to NODES. A marquee drag
-        // fires many 'select' changes in the same call; a deliberate click on
-        // a single edge fires exactly one. So: more than one select change at
-        // once means it came from a drag-select gesture — drop those (edges
-        // stay whatever they were), but let everything else through untouched.
-        const filteredChanges = selectChanges.length > 1 ? changes.filter((c) => c.type !== 'select') : changes;
-
-        const hasRemove = filteredChanges.some((c) => c.type === 'remove');
-        const hasSelect = filteredChanges.some((c) => c.type === 'select');
+        const hasRemove = changes.some((c) => c.type === 'remove');
+        const hasSelect = changes.some((c) => c.type === 'select');
 
         set((state) => {
-          const applicableSelectChanges = filteredChanges.filter(
+          const selectChanges = changes.filter(
             (c): c is Extract<typeof c, { type: 'select' }> => c.type === 'select',
           );
-          const selected = applicableSelectChanges.find((c) => c.selected);
-          const deselected = applicableSelectChanges.find((c) => !c.selected && c.id === state.selectedEdgeId);
+          const selected = selectChanges.find((c) => c.selected);
+          const deselected = selectChanges.find((c) => !c.selected && c.id === state.selectedEdgeId);
 
           return {
-            edges: applyEdgeChanges(filteredChanges, state.edges) as Edge<DiagramEdgeData>[],
+            edges: applyEdgeChanges(changes, state.edges) as Edge<DiagramEdgeData>[],
             selectedEdgeId: selected ? selected.id : deselected ? null : state.selectedEdgeId,
             selectedNodeId: hasSelect ? null : state.selectedNodeId,
           };
@@ -348,6 +358,34 @@ export const useDiagramStore = create<DiagramStore>()(
         historyTimeout = setTimeout(() => get().pushHistory(), 500);
       },
 
+      updateEdgesData: (edgeIds, data) => {
+        const ids = new Set(edgeIds);
+        const colorMode = get().settings.colorMode;
+        set((state) => ({
+          edges: state.edges.map((e) => {
+            if (!ids.has(e.id)) return e;
+            const newData = { ...e.data, ...data } as DiagramEdgeData;
+            const strokeColor = resolveEdgeColor(newData, colorMode);
+            const arrowEnd = newData.arrowEnd ?? true;
+            const arrowStart = newData.arrowStart ?? false;
+            return {
+              ...e,
+              type: newData.edgeStyle ?? e.type,
+              animated: newData.animated ?? e.animated,
+              data: newData,
+              markerEnd: arrowEnd
+                ? { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 }
+                : undefined,
+              markerStart: arrowStart
+                ? { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 }
+                : undefined,
+            };
+          }),
+        }));
+        if (historyTimeout) clearTimeout(historyTimeout);
+        historyTimeout = setTimeout(() => get().pushHistory(), 500);
+      },
+
       // ── Reset to default ──────────────────────────────────────────────
       // "Default" = whatever each field's own fallback already is throughout
       // BaseNode/CustomEdge (e.g. `data.fontSize ?? 13`) — so resetting just
@@ -381,6 +419,36 @@ export const useDiagramStore = create<DiagramStore>()(
         set((state) => ({
           edges: state.edges.map((e) => {
             if (e.id !== edgeId) return e;
+            const newData: DiagramEdgeData = {
+              ...e.data,
+              colorToken: undefined,
+              strokeWidth: undefined,
+              edgeStyle: defaultEdgeType,
+              arrowStart: undefined,
+              arrowEnd: undefined,
+              animated: undefined,
+            };
+            const strokeColor = resolveEdgeColor(newData, colorMode);
+            return {
+              ...e,
+              type: defaultEdgeType,
+              animated: false,
+              data: newData,
+              markerEnd: { type: MarkerType.ArrowClosed, color: strokeColor, width: 18, height: 18 },
+              markerStart: undefined,
+            };
+          }),
+        }));
+        get().pushHistory();
+      },
+
+      resetEdgesToDefault: (edgeIds) => {
+        const ids = new Set(edgeIds);
+        const defaultEdgeType = get().settings.defaultEdgeType;
+        const colorMode = get().settings.colorMode;
+        set((state) => ({
+          edges: state.edges.map((e) => {
+            if (!ids.has(e.id)) return e;
             const newData: DiagramEdgeData = {
               ...e.data,
               colorToken: undefined,
@@ -586,6 +654,37 @@ export const useDiagramStore = create<DiagramStore>()(
         get().pushHistory();
       },
 
+      // ── Select-all (Toolbar) ────────────────────────────────────────────
+      // Each of these selects only its own kind and explicitly clears
+      // everything else, so "select all edges" can't leave some previously
+      // selected node still marked selected too.
+      selectAllNodes: () => {
+        set((state) => ({
+          nodes: state.nodes.map((n) => ({ ...n, selected: true })),
+          edges: state.edges.map((e) => ({ ...e, selected: false })),
+          selectedNodeId: null,
+          selectedEdgeId: null,
+        }));
+      },
+
+      selectAllEdges: () => {
+        set((state) => ({
+          edges: state.edges.map((e) => ({ ...e, selected: true })),
+          nodes: state.nodes.map((n) => ({ ...n, selected: false })),
+          selectedNodeId: null,
+          selectedEdgeId: null,
+        }));
+      },
+
+      selectAllGroups: () => {
+        set((state) => ({
+          nodes: state.nodes.map((n) => ({ ...n, selected: n.type === 'groupNode' })),
+          edges: state.edges.map((e) => ({ ...e, selected: false })),
+          selectedNodeId: null,
+          selectedEdgeId: null,
+        }));
+      },
+
       pushHistory: () => {
         const { nodes, edges, history, historyIndex } = get();
         const entry: HistoryEntry = {
@@ -723,6 +822,7 @@ export const useDiagramStore = create<DiagramStore>()(
       updateSettings: (s) => set((state) => ({ settings: { ...state.settings, ...s } })),
 
       togglePalette: () => set((state) => ({ isPalettOpen: !state.isPalettOpen })),
+      toggleGlobalHandles: () => set((state) => ({ globalHideHandles: !state.globalHideHandles })),
       toggleSettingsPanel: () => set((state) => ({ isSettingsPanelOpen: !state.isSettingsPanelOpen })),
       setSelectionTool: (tool) => set({ selectionTool: tool }),
       setLassoMode: (mode) => set({ lassoMode: mode }),

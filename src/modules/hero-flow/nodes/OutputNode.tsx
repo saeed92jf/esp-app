@@ -1,16 +1,24 @@
 "use client";
+
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
 import { EngineeringObject } from "../render/EngineeringObject";
 import type { HeroFlowData } from "../types";
 
+type OutputNodeData = HeroFlowData & {
+  previewLabel?: string;
+  isRtl?: boolean;
+};
+
 export const OutputNode = memo(({ data }: NodeProps) => {
-  const typedData = data as HeroFlowData;
+  const typedData = data as OutputNodeData;
+  const targetPosition = typedData.isRtl ? Position.Right : Position.Left;
+
   return (
     <div className="relative h-50 w-50">
       <Handle
         type="target"
-        position={Position.Left}
+        position={targetPosition}
         id="color"
         style={{
           top: "35%",
@@ -20,9 +28,10 @@ export const OutputNode = memo(({ data }: NodeProps) => {
           border: "none",
         }}
       />
+
       <Handle
         type="target"
-        position={Position.Left}
+        position={targetPosition}
         id="shape"
         style={{
           top: "50%",
@@ -32,9 +41,10 @@ export const OutputNode = memo(({ data }: NodeProps) => {
           border: "none",
         }}
       />
+
       <Handle
         type="target"
-        position={Position.Left}
+        position={targetPosition}
         id="zoom"
         style={{
           top: "65%",
@@ -45,14 +55,13 @@ export const OutputNode = memo(({ data }: NodeProps) => {
         }}
       />
 
-      <div className="h-full w-full flex flex-col rounded-lg shadow-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-        <div className="bg-slate-50 dark:bg-slate-900 px-2 py-1 font-mono text-[7px] font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between z-10 shrink-0">
-          <span>PREVIEW</span>
-          <span className="flex h-1 w-1 rounded-full bg-green-500 animate-pulse"></span>
+      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+        <div className="z-10 flex shrink-0 items-center justify-between border-b border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[7px] font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+          <span>{typedData.previewLabel ?? "PREVIEW"}</span>
+          <span className="flex h-1 w-1 animate-pulse rounded-full bg-green-500" />
         </div>
 
-        {/* اضافه شدن overflow-hidden برای ایزوله کردن دقیق کانویس در این بخش */}
-        <div className="relative w-full flex-1 bg-slate-50/30 dark:bg-slate-900/30 overflow-hidden">
+        <div className="relative w-full flex-1 overflow-hidden bg-slate-50/30 dark:bg-slate-900/30">
           <EngineeringObject
             color={typedData.color}
             shape={typedData.shape}
@@ -63,3 +72,5 @@ export const OutputNode = memo(({ data }: NodeProps) => {
     </div>
   );
 });
+
+OutputNode.displayName = "OutputNode";

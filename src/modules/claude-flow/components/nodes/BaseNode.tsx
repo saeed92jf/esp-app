@@ -56,6 +56,22 @@ import {
   MATH_CONSTANT_BY_KEY,
   MATH_CONSTANT_OPTIONS,
 } from "../../utils/constants";
+import {
+  parseDelimitedText,
+  pasteIntoGrid,
+  toNumberCell,
+} from "../../utils/tabularData";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { ShapeSchematic } from "./ShapeSchematic";
 import {
   GEOMETRY_SHAPE_FIELDS,
@@ -157,9 +173,45 @@ function NumberField({
 const HANDLE_CLS =
   "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
 
-const RESIZE_LINE_CLS = "border-indigo-500!";
+const RESIZE_LINE_CLS = "border-indigo-500! border-dashed!";
 const RESIZE_DOT_CLS =
-  "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-white!";
+  "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-indigo-500!";
+
+// Slight outward offset so the dashed frame reads as its own outline instead
+// of sitting flush on the node's own border — same offset applied to both
+// the lines and the corner dots so a dot's center always lands exactly on
+// where its two adjoining dashed lines actually meet.
+const RESIZE_OFFSET = 5;
+const LINE_OFFSET_STYLE: Record<
+  "top" | "bottom" | "left" | "right",
+  React.CSSProperties
+> = {
+  top: { transform: `translateY(-${RESIZE_OFFSET}px)` },
+  bottom: { transform: `translateY(${RESIZE_OFFSET}px)` },
+  left: { transform: `translateX(-${RESIZE_OFFSET}px)` },
+  right: { transform: `translateX(${RESIZE_OFFSET}px)` },
+};
+const CORNER_OFFSET_STYLE: Record<
+  "top-left" | "top-right" | "bottom-left" | "bottom-right",
+  React.CSSProperties
+> = {
+  "top-left": {
+    transform: `translate(-${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`,
+    cursor: "nwse-resize",
+  },
+  "top-right": {
+    transform: `translate(${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`,
+    cursor: "nesw-resize",
+  },
+  "bottom-left": {
+    transform: `translate(-${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`,
+    cursor: "nesw-resize",
+  },
+  "bottom-right": {
+    transform: `translate(${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`,
+    cursor: "nwse-resize",
+  },
+};
 
 /**
  * Every shape/calculator node also has a connection dot sitting at each of
@@ -194,6 +246,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_LINE_CLS}
+        style={LINE_OFFSET_STYLE.top}
       />
       <NodeResizeControl
         position="bottom"
@@ -202,6 +255,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_LINE_CLS}
+        style={LINE_OFFSET_STYLE.bottom}
       />
       <NodeResizeControl
         position="left"
@@ -210,6 +264,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_LINE_CLS}
+        style={LINE_OFFSET_STYLE.left}
       />
       <NodeResizeControl
         position="right"
@@ -218,6 +273,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_LINE_CLS}
+        style={LINE_OFFSET_STYLE.right}
       />
       <NodeResizeControl
         position="top-left"
@@ -226,6 +282,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_DOT_CLS}
+        style={CORNER_OFFSET_STYLE["top-left"]}
       />
       <NodeResizeControl
         position="top-right"
@@ -234,6 +291,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_DOT_CLS}
+        style={CORNER_OFFSET_STYLE["top-right"]}
       />
       <NodeResizeControl
         position="bottom-left"
@@ -242,6 +300,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_DOT_CLS}
+        style={CORNER_OFFSET_STYLE["bottom-left"]}
       />
       <NodeResizeControl
         position="bottom-right"
@@ -250,6 +309,7 @@ function CornerResizer({
         minHeight={minHeight}
         onResize={onResize}
         className={RESIZE_DOT_CLS}
+        style={CORNER_OFFSET_STYLE["bottom-right"]}
       />
     </>
   );
@@ -380,7 +440,7 @@ function ShapeCanvas({
   id,
   shape,
   data,
-  selected = false,
+  selected,
   showConnectionHandles = true,
   handleMode = "full",
   showResizer = true,
@@ -459,7 +519,7 @@ function ShapeCanvas({
     >
       {showResizer && (
         <CornerResizer
-          isVisible={selected}
+          isVisible={!!selected}
           minWidth={Math.max(36, Math.round(fallback.width * 0.5))}
           minHeight={Math.max(28, Math.round(fallback.height * 0.5))}
           onResize={handleResize}
@@ -818,7 +878,7 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
   return (
     <div className="relative" style={{ width, height }}>
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={200}
         minHeight={140}
         onResize={handleResize}
@@ -974,11 +1034,7 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
     </div>
   );
 }
-/* only makes sense with ONE input, divide/subtract/power need exactly TWO
- * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
- * handles instead of one shared unlimited handle. See utils/operators.ts for
- * the single source of truth this mirrors in the store's recompute logic.
- */
+
 function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
@@ -1052,7 +1108,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             id="left"
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             +
           </span>
         </>
@@ -1068,7 +1124,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
           <span
-            className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
+            className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
             style={{ top: "35%" }}
           >
             a
@@ -1081,7 +1137,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
           <span
-            className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
+            className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
             style={{ top: "70%" }}
           >
             b
@@ -1097,7 +1153,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             id="x"
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             x
           </span>
         </>
@@ -1202,7 +1258,7 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
       }}
     >
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={180}
         minHeight={200}
         onResize={handleResize}
@@ -1290,14 +1346,9 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         type="single"
         variant="outline"
         value={mode}
-        onValueChange={(v) => {
-          if (
-            v &&
-            (availableModes as GeometryMode[]).includes(v as GeometryMode)
-          ) {
-            updateNodeData(id, { calcMode: v as GeometryMode });
-          }
-        }}
+        onValueChange={(v) =>
+          v && updateNodeData(id, { calcMode: v as GeometryMode })
+        }
         className="nodrag grid w-full grid-cols-3 gap-1"
       >
         {availableModes.map((m) => (
@@ -1418,7 +1469,7 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
       }}
     >
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={200}
         minHeight={220}
         onResize={handleResize}
@@ -1605,7 +1656,7 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
       }}
     >
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={170}
         minHeight={160}
         onResize={handleResize}
@@ -1738,7 +1789,7 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
     // which has no handles inside it to cut off.
     <div ref={outerRef} className="relative" style={{ width, height }}>
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={80}
         minHeight={60}
         onResize={handleResize}
@@ -1846,7 +1897,7 @@ function SvgNode({ id, selected, data }: DiagramNodeProps) {
   return (
     <div className="relative" style={{ width, height }}>
       <CornerResizer
-        isVisible={selected}
+        isVisible={!!selected}
         minWidth={60}
         minHeight={60}
         onResize={handleResize}
@@ -2064,11 +2115,38 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
       : DEFAULT_TABLE_ROWS;
   const hasHeader = data.tableHasHeader ?? true;
   const colCount = rows[0]?.length ?? 0;
+  const activeCellRef = React.useRef({ r: 0, c: 0 });
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+      updateNodeData(id, { tableRows: parseDelimitedText(text) });
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const setCell = (r: number, c: number, value: string) => {
     const next = rows.map((row) => [...row]);
     next[r][c] = value;
     updateNodeData(id, { tableRows: next });
+  };
+
+  // Pasting a range copied from Excel/Sheets (tab-separated) or a .csv
+  // snippet (comma-separated) lands starting at whichever cell was last
+  // focused, growing the grid as needed — same behavior as pasting into an
+  // actual spreadsheet past its current edge.
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = e.clipboardData.getData("text");
+    if (!text) return;
+    e.preventDefault();
+    const incoming = parseDelimitedText(text);
+    const { r, c } = activeCellRef.current;
+    updateNodeData(id, { tableRows: pasteIntoGrid(rows, incoming, r, c) });
   };
 
   const addRow = () => {
@@ -2189,17 +2267,35 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
             >
               H
             </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.importCsv", "Import CSV/TSV file")}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="size-3" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.tsv,.txt"
+              className="hidden"
+              onChange={handleFileImport}
+            />
           </div>
         )}
       </div>
 
       {/* The grid itself — CSS grid so every column stays the same width
-          across every row without any manual layout math. */}
+          across every row without any manual layout math. Paste a range
+          copied from Excel/Sheets anywhere in here (see handlePaste). */}
       <div
         className="nodrag grid flex-1 overflow-auto"
         style={{
           gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))`,
         }}
+        onPaste={handlePaste}
       >
         {rows.map((row, r) =>
           row.map((cell, c) => (
@@ -2207,6 +2303,9 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
               key={`${r}-${c}`}
               value={cell}
               onChange={(e) => setCell(r, c, e.target.value)}
+              onFocus={() => {
+                activeCellRef.current = { r, c };
+              }}
               className={cn(
                 "min-w-0 border-b border-e px-2 py-1.5 text-xs outline-none focus:bg-primary/5",
                 r === rows.length - 1 && "border-b-0",
@@ -2218,6 +2317,642 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
               style={{ borderColor: resolved.border, color: resolved.text }}
             />
           )),
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Finds an upstream Table/Excel/Matrix node feeding this node's input handle. */
+function useUpstreamTabularNode(id: string): Node<DiagramNodeData> | undefined {
+  const edges = useDiagramStore((s) => s.edges);
+  const nodes = useDiagramStore((s) => s.nodes);
+  const incoming = edges.find((e) => e.target === id);
+  const source = incoming
+    ? nodes.find((n) => n.id === incoming.source)
+    : undefined;
+  return source &&
+    ["tableNode", "excelNode", "matrixNode"].includes(source.type ?? "")
+    ? source
+    : undefined;
+}
+
+/** Grid of strings out of ANY of Table/Excel/Matrix's own data shape, so
+ *  downstream nodes (Matrix, Chart) can treat all three as interchangeable
+ *  data sources. */
+function tabularGridOf(
+  node: Node<DiagramNodeData> | undefined,
+): string[][] | undefined {
+  if (!node) return undefined;
+  if (node.type === "matrixNode")
+    return node.data.matrixRows?.map((row) => row.map((n) => String(n)));
+  return node.data.tableRows;
+}
+
+const DEFAULT_EXCEL_ROWS: string[][] = [
+  ["Item", "Q1", "Q2"],
+  ["", "", ""],
+  ["", "", ""],
+];
+
+/**
+ * Same editable grid as TableNode (paste-from-Excel, CSV/TSV file import,
+ * add/remove row/col), framed as a dedicated data-source node: the file
+ * import button is front-and-center instead of tucked into the controls
+ * row, since this node's whole point is usually "bring in a spreadsheet",
+ * not free-form note-taking. Feeds Matrix/Chart nodes the exact same way a
+ * Table node does (see useUpstreamTabularNode/tabularGridOf above).
+ */
+function ExcelNode({ id, selected, data }: DiagramNodeProps) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
+  const resolved = resolveNodeColors(data, colorMode);
+  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
+  const fallback = SHAPE_DEFAULT_SIZE.excelNode;
+  const width = data.width ?? fallback.width;
+  const height = data.height ?? fallback.height;
+
+  const rows =
+    data.tableRows && data.tableRows.length > 0
+      ? data.tableRows
+      : DEFAULT_EXCEL_ROWS;
+  const hasHeader = data.tableHasHeader ?? true;
+  const colCount = rows[0]?.length ?? 0;
+  const activeCellRef = React.useRef({ r: 0, c: 0 });
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const setCell = (r: number, c: number, value: string) => {
+    const next = rows.map((row) => [...row]);
+    next[r][c] = value;
+    updateNodeData(id, { tableRows: next });
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = e.clipboardData.getData("text");
+    if (!text) return;
+    e.preventDefault();
+    const incoming = parseDelimitedText(text);
+    const { r, c } = activeCellRef.current;
+    updateNodeData(id, { tableRows: pasteIntoGrid(rows, incoming, r, c) });
+  };
+
+  const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () =>
+      updateNodeData(id, {
+        tableRows: parseDelimitedText(String(reader.result ?? "")),
+      });
+    reader.readAsText(file);
+    e.target.value = "";
+  };
+
+  const addRow = () =>
+    updateNodeData(id, {
+      tableRows: [...rows.map((r) => [...r]), Array(colCount).fill("")],
+    });
+  const removeRow = () =>
+    rows.length > 1 &&
+    updateNodeData(id, { tableRows: rows.slice(0, -1).map((r) => [...r]) });
+  const addColumn = () =>
+    updateNodeData(id, { tableRows: rows.map((r) => [...r, ""]) });
+  const removeColumn = () =>
+    colCount > 1 &&
+    updateNodeData(id, { tableRows: rows.map((r) => r.slice(0, -1)) });
+
+  const handleResize = useCallback<OnResize>(
+    (_e, params) =>
+      updateNodeData(id, {
+        width: Math.round(params.width),
+        height: Math.round(params.height),
+      }),
+    [id, updateNodeData],
+  );
+
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-lg shadow-sm"
+      style={{
+        width,
+        minHeight: height,
+        backgroundColor: resolved.background,
+        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
+      }}
+    >
+      <CornerResizer
+        isVisible={!!selected}
+        minWidth={220}
+        minHeight={120}
+        onResize={handleResize}
+      />
+      <FreeConnectHandles />
+
+      <div
+        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
+        style={{ borderColor: resolved.border }}
+      >
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          <FileArchive
+            className="size-3.5 shrink-0 opacity-50"
+            style={{ color: resolved.text }}
+          />
+          <span
+            className="truncate text-[11px] font-medium opacity-80"
+            style={{ color: resolved.text }}
+          >
+            {data.label || safeT(t, "nodes.excelNode", "Excel")}
+          </span>
+        </div>
+        {selected && (
+          <div className="nodrag flex shrink-0 items-center gap-0.5">
+            <Button
+              variant="secondary"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.importCsv", "Import CSV/TSV file")}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="size-3" />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,.tsv,.txt"
+              className="hidden"
+              onChange={handleFileImport}
+            />
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addRow", "Add row")}
+              onClick={addRow}
+            >
+              <Rows3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeRow", "Remove row")}
+              onClick={removeRow}
+              disabled={rows.length <= 1}
+            >
+              <Rows3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addColumn", "Add column")}
+              onClick={addColumn}
+            >
+              <Columns3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeColumn", "Remove column")}
+              onClick={removeColumn}
+              disabled={colCount <= 1}
+            >
+              <Columns3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant={hasHeader ? "secondary" : "ghost"}
+              size="icon-sm"
+              className="size-6 text-[9px] font-bold"
+              title={safeT(t, "settings.toggleHeaderRow", "Toggle header row")}
+              onClick={() => updateNodeData(id, { tableHasHeader: !hasHeader })}
+            >
+              H
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="nodrag grid flex-1 overflow-auto"
+        style={{
+          gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))`,
+        }}
+        onPaste={handlePaste}
+      >
+        {rows.map((row, r) =>
+          row.map((cell, c) => (
+            <input
+              key={`${r}-${c}`}
+              value={cell}
+              onChange={(e) => setCell(r, c, e.target.value)}
+              onFocus={() => {
+                activeCellRef.current = { r, c };
+              }}
+              className={cn(
+                "min-w-0 border-b border-e px-2 py-1.5 text-xs outline-none focus:bg-primary/5",
+                r === rows.length - 1 && "border-b-0",
+                c === colCount - 1 && "border-e-0",
+                hasHeader &&
+                  r === 0 &&
+                  "bg-black/5 font-semibold dark:bg-white/10",
+              )}
+              style={{ borderColor: resolved.border, color: resolved.text }}
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_MATRIX_ROWS: number[][] = [
+  [1, 0, 0],
+  [0, 1, 0],
+  [0, 0, 1],
+];
+
+/**
+ * Strictly-numeric grid (paste from Excel coerces every cell through
+ * toNumberCell). Can also just mirror an upstream Table/Excel node's data —
+ * same "connect for live values, otherwise edit your own" pattern used by
+ * GeometryCalcNode/BeamCalcNode with an upstream ShapeNode.
+ */
+function MatrixNode({ id, selected, data }: DiagramNodeProps) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
+  const resolved = resolveNodeColors(data, colorMode);
+  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
+  const fallback = SHAPE_DEFAULT_SIZE.matrixNode;
+  const width = data.width ?? fallback.width;
+  const height = data.height ?? fallback.height;
+
+  const upstream = useUpstreamTabularNode(id);
+  const upstreamGrid = tabularGridOf(upstream);
+  const ownRows =
+    data.matrixRows && data.matrixRows.length > 0
+      ? data.matrixRows
+      : DEFAULT_MATRIX_ROWS;
+  // When mirroring an upstream node, skip its header row (if it has one) —
+  // a matrix is all numbers, a header row of column names isn't one.
+  const rows: (string | number)[][] = upstream
+    ? upstream.data.tableHasHeader
+      ? (upstreamGrid ?? []).slice(1)
+      : (upstreamGrid ?? [])
+    : ownRows;
+  const colCount = rows[0]?.length ?? 0;
+  const activeCellRef = React.useRef({ r: 0, c: 0 });
+
+  const setCell = (r: number, c: number, value: number) => {
+    const next = ownRows.map((row) => [...row]);
+    next[r][c] = value;
+    updateNodeData(id, { matrixRows: next });
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    if (upstream) return;
+    const text = e.clipboardData.getData("text");
+    if (!text) return;
+    e.preventDefault();
+    const incoming = parseDelimitedText(text).map((row) =>
+      row.map(toNumberCell),
+    );
+    const { r, c } = activeCellRef.current;
+    updateNodeData(id, {
+      matrixRows: pasteIntoGrid(
+        ownRows.map((row) => row.map(String)),
+        incoming.map((row) => row.map(String)),
+        r,
+        c,
+      ).map((row) => row.map(toNumberCell)),
+    });
+  };
+
+  const addRow = () =>
+    !upstream &&
+    updateNodeData(id, {
+      matrixRows: [...ownRows.map((r) => [...r]), Array(colCount || 1).fill(0)],
+    });
+  const removeRow = () =>
+    !upstream &&
+    ownRows.length > 1 &&
+    updateNodeData(id, { matrixRows: ownRows.slice(0, -1).map((r) => [...r]) });
+  const addColumn = () =>
+    !upstream &&
+    updateNodeData(id, { matrixRows: ownRows.map((r) => [...r, 0]) });
+  const removeColumn = () =>
+    !upstream &&
+    colCount > 1 &&
+    updateNodeData(id, { matrixRows: ownRows.map((r) => r.slice(0, -1)) });
+
+  const handleResize = useCallback<OnResize>(
+    (_e, params) =>
+      updateNodeData(id, {
+        width: Math.round(params.width),
+        height: Math.round(params.height),
+      }),
+    [id, updateNodeData],
+  );
+
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-lg shadow-sm"
+      style={{
+        width,
+        minHeight: height,
+        backgroundColor: resolved.background,
+        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
+      }}
+    >
+      <CornerResizer
+        isVisible={!!selected}
+        minWidth={160}
+        minHeight={120}
+        onResize={handleResize}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="table-in"
+        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="matrix-out"
+        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
+      />
+
+      <div
+        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
+        style={{ borderColor: resolved.border }}
+      >
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          <GripHorizontal
+            className="size-3.5 shrink-0 opacity-50"
+            style={{ color: resolved.text }}
+          />
+          <span
+            className="truncate text-[11px] font-medium opacity-80"
+            style={{ color: resolved.text }}
+          >
+            {data.label || safeT(t, "nodes.matrixNode", "Matrix")} (
+            {rows.length}×{colCount})
+          </span>
+        </div>
+        {selected && !upstream && (
+          <div className="nodrag flex shrink-0 items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addRow", "Add row")}
+              onClick={addRow}
+            >
+              <Rows3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeRow", "Remove row")}
+              onClick={removeRow}
+              disabled={ownRows.length <= 1}
+            >
+              <Rows3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.addColumn", "Add column")}
+              onClick={addColumn}
+            >
+              <Columns3 className="size-3" />
+              <Plus className="-ms-1 size-2.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-6"
+              title={safeT(t, "settings.removeColumn", "Remove column")}
+              onClick={removeColumn}
+              disabled={colCount <= 1}
+            >
+              <Columns3 className="size-3" />
+              <Minus className="-ms-1 size-2.5" />
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {upstream && (
+        <p
+          className="nodrag border-b px-2 py-1 text-[10px] opacity-70"
+          style={{ borderColor: resolved.border, color: resolved.text }}
+        >
+          Mirroring &ldquo;{upstream.data.label}&rdquo;
+        </p>
+      )}
+
+      <div
+        className="nodrag grid flex-1 overflow-auto"
+        style={{
+          gridTemplateColumns: `repeat(${colCount}, minmax(48px, 1fr))`,
+        }}
+        onPaste={handlePaste}
+      >
+        {rows.map((row, r) =>
+          row.map((cell, c) => (
+            <input
+              key={`${r}-${c}`}
+              value={cell}
+              readOnly={!!upstream}
+              onChange={(e) => setCell(r, c, toNumberCell(e.target.value))}
+              onFocus={() => {
+                activeCellRef.current = { r, c };
+              }}
+              dir="ltr"
+              className={cn(
+                "min-w-0 border-b border-e px-2 py-1.5 text-center text-xs outline-none focus:bg-primary/5",
+                r === rows.length - 1 && "border-b-0",
+                c === colCount - 1 && "border-e-0",
+              )}
+              style={{ borderColor: resolved.border, color: resolved.text }}
+            />
+          )),
+        )}
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_CHART_ROWS: string[][] = [
+  ["", "Series A", "Series B"],
+  ["Jan", "10", "18"],
+  ["Feb", "14", "12"],
+  ["Mar", "9", "20"],
+];
+
+/**
+ * Renders a bar/line chart (via recharts) from either its own small editable
+ * data grid, or — far more usefully — whatever's fed in from an upstream
+ * Table/Excel/Matrix node, so editing the source data updates the chart live.
+ */
+function ChartNode({ id, selected, data }: DiagramNodeProps) {
+  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const colorMode = useDiagramStore((s) => s.settings.colorMode);
+  const t = useTranslations("Flow");
+  const resolved = resolveNodeColors(data, colorMode);
+  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
+  const fallback = SHAPE_DEFAULT_SIZE.chartNode;
+  const width = data.width ?? fallback.width;
+  const height = data.height ?? fallback.height;
+  const chartType = data.chartType ?? "bar";
+
+  const upstream = useUpstreamTabularNode(id);
+  const upstreamGrid = tabularGridOf(upstream);
+  const rows = upstream
+    ? (upstreamGrid ?? DEFAULT_CHART_ROWS)
+    : data.chartRows && data.chartRows.length > 1
+      ? data.chartRows
+      : DEFAULT_CHART_ROWS;
+
+  // First row = series names (skipping the empty corner cell); every row
+  // after that = one category (its first cell) plus one number per series.
+  const seriesNames = rows[0]?.slice(1) ?? [];
+  const chartData = rows.slice(1).map((row) => {
+    const point: Record<string, string | number> = { name: row[0] ?? "" };
+    seriesNames.forEach((series, i) => {
+      point[series] = toNumberCell(row[i + 1] ?? "0");
+    });
+    return point;
+  });
+  const seriesColors = ["#6366f1", "#f59e0b", "#22c55e", "#ec4899", "#06b6d4"];
+
+  const handleResize = useCallback<OnResize>(
+    (_e, params) =>
+      updateNodeData(id, {
+        width: Math.round(params.width),
+        height: Math.round(params.height),
+      }),
+    [id, updateNodeData],
+  );
+
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-lg shadow-sm"
+      style={{
+        width,
+        minHeight: height,
+        backgroundColor: resolved.background,
+        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
+      }}
+    >
+      <CornerResizer
+        isVisible={!!selected}
+        minWidth={240}
+        minHeight={180}
+        onResize={handleResize}
+      />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="table-in"
+        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
+      />
+
+      <div
+        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
+        style={{ borderColor: resolved.border }}
+      >
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          <GripHorizontal
+            className="size-3.5 shrink-0 opacity-50"
+            style={{ color: resolved.text }}
+          />
+          <span
+            className="truncate text-[11px] font-medium opacity-80"
+            style={{ color: resolved.text }}
+          >
+            {data.label || safeT(t, "nodes.chartNode", "Chart")}
+          </span>
+        </div>
+        {selected && (
+          <div className="nodrag flex shrink-0 items-center gap-0.5">
+            <Button
+              variant={chartType === "bar" ? "secondary" : "ghost"}
+              size="icon-sm"
+              className="size-6 text-[10px]"
+              onClick={() => updateNodeData(id, { chartType: "bar" })}
+            >
+              Bar
+            </Button>
+            <Button
+              variant={chartType === "line" ? "secondary" : "ghost"}
+              size="icon-sm"
+              className="size-6 text-[10px]"
+              onClick={() => updateNodeData(id, { chartType: "line" })}
+            >
+              Line
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="nodrag min-h-0 flex-1 p-2">
+        {chartData.length === 0 || seriesNames.length === 0 ? (
+          <p
+            className="flex h-full items-center justify-center text-center text-xs opacity-60"
+            style={{ color: resolved.text }}
+          >
+            Connect a Table/Excel/Matrix node, or add data with at least one
+            series column.
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === "bar" ? (
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <RechartsTooltip />
+                {seriesNames.map((series, i) => (
+                  <Bar
+                    key={series}
+                    dataKey={series}
+                    fill={seriesColors[i % seriesColors.length]}
+                    radius={[3, 3, 0, 0]}
+                  />
+                ))}
+              </BarChart>
+            ) : (
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <RechartsTooltip />
+                {seriesNames.map((series, i) => (
+                  <Line
+                    key={series}
+                    type="monotone"
+                    dataKey={series}
+                    stroke={seriesColors[i % seriesColors.length]}
+                    strokeWidth={2}
+                    dot={{ r: 2 }}
+                  />
+                ))}
+              </LineChart>
+            )}
+          </ResponsiveContainer>
         )}
       </div>
     </div>
@@ -2249,6 +2984,9 @@ export const nodeTypes = {
   operatorNode: OperatorNode,
   constantNode: ConstantNode,
   tableNode: TableNode,
+  excelNode: ExcelNode,
+  matrixNode: MatrixNode,
+  chartNode: ChartNode,
   geometryCalcNode: GeometryCalcNode,
   beamCalcNode: BeamCalcNode,
   shapeNode: ShapeNode,
@@ -2262,4 +3000,7 @@ export const nodeTypes = {
 export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   groupNode: ".subflow-drag-handle",
   tableNode: ".table-drag-handle",
+  excelNode: ".table-drag-handle",
+  matrixNode: ".table-drag-handle",
+  chartNode: ".table-drag-handle",
 };

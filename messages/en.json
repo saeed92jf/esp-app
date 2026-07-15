@@ -417,7 +417,10 @@
       "pentagonNode": "Pentagon",
       "multiDocumentNode": "Multi Doc",
       "constantNode": "Constant",
-      "tableNode": "Table"
+      "tableNode": "Table",
+      "excelNode": "Excel",
+      "matrixNode": "Matrix",
+      "chartNode": "Chart"
     },
     "palette": {
       "search": "Search nodes…",
@@ -465,7 +468,10 @@
       "removeRow": "Remove row",
       "addColumn": "Add column",
       "removeColumn": "Remove column",
-      "toggleHeaderRow": "Toggle header row"
+      "toggleHeaderRow": "Toggle header row",
+      "tabContent": "Content",
+      "tabStyle": "Style",
+      "importCsv": "Import CSV/TSV file"
     },
     "editorSettings": {
       "title": "Editor Settings",
@@ -542,7 +548,8 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "loading": "Loading…",
-      "noResults": "No results"
+      "noResults": "No results",
+      "all": "All"
     },
     "beamValidation": {
       "positiveDims": "Width and height must both be greater than zero.",

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   ReactFlow,
   Background,
@@ -153,6 +154,12 @@ const THEME_CSS = `
 .cf-theme .react-flow.dark {
   --xy-connectionline-stroke-default: #818cf8;
 }
+/* Toolbar's "hide/show all handles" toggle — one global CSS switch instead of
+   touching every node's own data, so it's instant and can't fall out of sync. */
+.cf-theme.hide-all-handles .react-flow__handle {
+  opacity: 0;
+  pointer-events: none;
+}
 .cf-theme .react-flow__handle.valid {
   background-color: #22c55e !important;
   border-color: #16a34a !important;
@@ -192,6 +199,7 @@ export function DiagramCanvas() {
   const selectedNodeId = useDiagramStore((s) => s.selectedNodeId);
   const selectionTool = useDiagramStore((s) => s.selectionTool);
   const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
+  const globalHideHandles = useDiagramStore((s) => s.globalHideHandles);
   const setIsCanvasFullscreen = useDiagramStore((s) => s.setIsCanvasFullscreen);
   const setCanvasFullscreenToggle = useDiagramStore((s) => s.setCanvasFullscreenToggle);
 
@@ -703,7 +711,7 @@ export function DiagramCanvas() {
     // outline-none prevents the browser focus ring from showing on the canvas wrapper
     <div
       ref={wrapperRef}
-      className="cf-theme relative h-full w-full outline-none"
+      className={cn("cf-theme relative h-full w-full outline-none", globalHideHandles && "hide-all-handles")}
       onKeyDown={onKeyDown}
       tabIndex={0}
     >
