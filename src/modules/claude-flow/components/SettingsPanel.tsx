@@ -537,18 +537,21 @@ export function SettingsPanel() {
       "groupNode",
       "numberNode",
       "operatorNode",
+      "constantNode",
       "geometryCalcNode",
       "beamCalcNode",
       "shapeNode",
       "imageNode",
       "svgNode",
-      "dwgNode",
-      "dxfNode",
+      "tableNode",
+      "excelNode",
+      "matrixNode",
+      "chartNode",
     ].includes(
       selectedNode.type ?? "",
     );
     return (
-      <Shell>
+      <aside className="flex h-full w-72 flex-col overflow-hidden border-s border-border bg-background">
         <PanelHeader
           title={isGroup ? "Sub-flow settings" : t("settings.nodeSettings")}
           showDuplicate={!isGroup}
@@ -559,35 +562,35 @@ export function SettingsPanel() {
           deleteLabel={t("toolbar.delete")}
         />
 
-        {/* Category tabs — pick which group of settings to show, instead of
-            one long scrolling list of every field at once. */}
-        {!isGroup && !isNonShape && (
-          <div className="flex gap-1 border-b border-border px-4 pt-2">
-            {(
-              [
-                { key: "content", icon: FileText, label: safeT(t, "settings.tabContent", "Content") },
-                { key: "style", icon: Palette, label: safeT(t, "settings.tabStyle", "Style") },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setNodeSettingsTab(tab.key)}
-                title={tab.label}
-                className={cn(
-                  "flex items-center gap-1.5 border-b-2 px-2 pb-2 text-xs font-medium transition-colors",
-                  nodeSettingsTab === tab.key
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <tab.icon className="size-3.5" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Category rail — vertical, alongside the fields column (not a
+              horizontal tab row above them). */}
+          {!isGroup && !isNonShape && (
+            <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-e border-border bg-muted/30 py-3">
+              {(
+                [
+                  { key: "content", icon: FileText, label: safeT(t, "settings.tabContent", "Content") },
+                  { key: "style", icon: Palette, label: safeT(t, "settings.tabStyle", "Style") },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setNodeSettingsTab(tab.key)}
+                  title={tab.label}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-md transition-colors",
+                    nodeSettingsTab === tab.key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <tab.icon className="size-4" />
+                </button>
+              ))}
+            </div>
+          )}
 
-        <div className="p-4">
+          <div className="flex-1 overflow-y-auto p-4">
           {(isGroup || isNonShape || nodeSettingsTab === "content") && (
           <Field label={isGroup ? "Sub-flow name" : t("settings.label")}>
             <div className="flex items-start gap-1.5">
@@ -719,8 +722,9 @@ export function SettingsPanel() {
               its contents instead of removing them.
             </p>
           )}
+          </div>
         </div>
-      </Shell>
+      </aside>
     );
   }
 

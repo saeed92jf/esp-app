@@ -260,9 +260,12 @@ export function Toolbar({
   // NEW DEPENDENCIES REQUIRED: `npm install dagre elkjs` (+ `@types/dagre` for
   // TypeScript). Only top-level nodes are repositioned — nodes inside a
   // sub-flow keep their position relative to their group (see utils/layout.ts).
+  // If anything is selected, only the selected nodes get rearranged (everything
+  // else stays put); with nothing selected, it lays out the whole diagram.
   const runDagreLayout = (direction: LayoutDirection) => {
     const { nodes, edges, setNodes, pushHistory } = useDiagramStore.getState();
-    setNodes(layoutWithDagre(nodes, edges, direction));
+    const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
+    setNodes(layoutWithDagre(nodes, edges, direction, selectedIds));
     pushHistory();
     requestAnimationFrame(() => fitView({ duration: 300 }));
     setLayoutMenuOpen(false);
@@ -270,8 +273,9 @@ export function Toolbar({
 
   const runElkLayout = async (direction: LayoutDirection) => {
     const { nodes, edges, setNodes, pushHistory } = useDiagramStore.getState();
+    const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
     setLayoutMenuOpen(false);
-    const laidOut = await layoutWithElk(nodes, edges, direction);
+    const laidOut = await layoutWithElk(nodes, edges, direction, selectedIds);
     setNodes(laidOut);
     pushHistory();
     requestAnimationFrame(() => fitView({ duration: 300 }));

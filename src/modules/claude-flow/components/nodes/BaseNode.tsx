@@ -13,54 +13,23 @@ import {
   type Node,
   type OnResize,
 } from "@xyflow/react";
-import {
-  ExternalLink,
-  Layers,
-  ImageIcon,
-  Upload,
-  FileCode,
-  FileArchive,
-  Download,
-  Plus,
-  Minus,
-  GripHorizontal,
-  Rows3,
-  Columns3,
-} from "lucide-react";
+import { ExternalLink, Layers, ImageIcon, Upload, FileArchive, Plus, Minus, GripHorizontal, Rows3, Columns3, HelpCircle, Table } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { RotateHandle } from "./RotateHandle";
 import { cn } from "@/lib/utils";
 import { Combobox } from "@/components/ui-custom/combobox";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useDiagramStore } from "../../store";
-import type {
-  DiagramNodeData,
-  DiagramNodeType,
-  ArithmeticOperation,
-} from "../../types";
+import type { DiagramNodeData, DiagramNodeType, ArithmeticOperation } from "../../types";
 import { getShapeGeometry, SHAPE_DEFAULT_SIZE } from "../../utils/shapes";
 import { resolveNodeColors } from "../../utils/colors";
-import {
-  OPERATOR_ARITY,
-  OPERATOR_SYMBOL,
-  OPERATOR_LABEL,
-} from "../../utils/operators";
-import {
-  UNIT_OPTIONS,
-  unitWithPower,
-  geometryModePower,
-} from "../../utils/units";
-import {
-  MATH_CONSTANTS,
-  MATH_CONSTANT_BY_KEY,
-  MATH_CONSTANT_OPTIONS,
-} from "../../utils/constants";
-import {
-  parseDelimitedText,
-  pasteIntoGrid,
-  toNumberCell,
-} from "../../utils/tabularData";
+import { OPERATOR_ARITY, OPERATOR_SYMBOL, OPERATOR_LABEL } from "../../utils/operators";
+import { UNIT_OPTIONS, unitWithPower, geometryModePower } from "../../utils/units";
+import { MATH_CONSTANTS, MATH_CONSTANT_BY_KEY, MATH_CONSTANT_OPTIONS } from "../../utils/constants";
+import { parseDelimitedText, pasteIntoGrid, toNumberCell, parseSpreadsheetFile } from "../../utils/tabularData";
 import {
   BarChart,
   Bar,
@@ -70,7 +39,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
-  ResponsiveContainer,
 } from "recharts";
 import { ShapeSchematic } from "./ShapeSchematic";
 import {
@@ -106,11 +74,7 @@ type DiagramNodeProps = NodeProps<DiagramNodeObject>;
  *  next-intl throws on missing keys, so every string this file introduces
  *  goes through this instead of a bare t(). Same pattern as NodePalette.tsx
  *  and EditorSettingsDialog.tsx's local safeT helpers. */
-function safeT(
-  t: ReturnType<typeof useTranslations>,
-  key: string,
-  fallback: string,
-): string {
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
   try {
     return t(key);
   } catch {
@@ -170,47 +134,27 @@ function NumberField({
 // ::after box extended 8px past its own edges on all sides — roughly tripling
 // the real clickable/draggable hit-area without changing how the handle looks,
 // so starting a connection is far more forgiving while the node's border stays crisp.
-const HANDLE_CLS =
-  "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
+const HANDLE_CLS = "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
 
 const RESIZE_LINE_CLS = "border-indigo-500! border-dashed!";
-const RESIZE_DOT_CLS =
-  "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-indigo-500!";
+const RESIZE_DOT_CLS = "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-indigo-500!";
 
 // Slight outward offset so the dashed frame reads as its own outline instead
 // of sitting flush on the node's own border — same offset applied to both
 // the lines and the corner dots so a dot's center always lands exactly on
 // where its two adjoining dashed lines actually meet.
 const RESIZE_OFFSET = 5;
-const LINE_OFFSET_STYLE: Record<
-  "top" | "bottom" | "left" | "right",
-  React.CSSProperties
-> = {
+const LINE_OFFSET_STYLE: Record<"top" | "bottom" | "left" | "right", React.CSSProperties> = {
   top: { transform: `translateY(-${RESIZE_OFFSET}px)` },
   bottom: { transform: `translateY(${RESIZE_OFFSET}px)` },
   left: { transform: `translateX(-${RESIZE_OFFSET}px)` },
   right: { transform: `translateX(${RESIZE_OFFSET}px)` },
 };
-const CORNER_OFFSET_STYLE: Record<
-  "top-left" | "top-right" | "bottom-left" | "bottom-right",
-  React.CSSProperties
-> = {
-  "top-left": {
-    transform: `translate(-${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`,
-    cursor: "nwse-resize",
-  },
-  "top-right": {
-    transform: `translate(${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`,
-    cursor: "nesw-resize",
-  },
-  "bottom-left": {
-    transform: `translate(-${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`,
-    cursor: "nesw-resize",
-  },
-  "bottom-right": {
-    transform: `translate(${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`,
-    cursor: "nwse-resize",
-  },
+const CORNER_OFFSET_STYLE: Record<"top-left" | "top-right" | "bottom-left" | "bottom-right", React.CSSProperties> = {
+  "top-left": { transform: `translate(-${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`, cursor: "nwse-resize" },
+  "top-right": { transform: `translate(${RESIZE_OFFSET}px, -${RESIZE_OFFSET}px)`, cursor: "nesw-resize" },
+  "bottom-left": { transform: `translate(-${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`, cursor: "nesw-resize" },
+  "bottom-right": { transform: `translate(${RESIZE_OFFSET}px, ${RESIZE_OFFSET}px)`, cursor: "nwse-resize" },
 };
 
 /**
@@ -239,78 +183,14 @@ function CornerResizer({
   if (!isVisible) return null;
   return (
     <>
-      <NodeResizeControl
-        position="top"
-        variant={ResizeControlVariant.Line}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_LINE_CLS}
-        style={LINE_OFFSET_STYLE.top}
-      />
-      <NodeResizeControl
-        position="bottom"
-        variant={ResizeControlVariant.Line}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_LINE_CLS}
-        style={LINE_OFFSET_STYLE.bottom}
-      />
-      <NodeResizeControl
-        position="left"
-        variant={ResizeControlVariant.Line}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_LINE_CLS}
-        style={LINE_OFFSET_STYLE.left}
-      />
-      <NodeResizeControl
-        position="right"
-        variant={ResizeControlVariant.Line}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_LINE_CLS}
-        style={LINE_OFFSET_STYLE.right}
-      />
-      <NodeResizeControl
-        position="top-left"
-        variant={ResizeControlVariant.Handle}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_DOT_CLS}
-        style={CORNER_OFFSET_STYLE["top-left"]}
-      />
-      <NodeResizeControl
-        position="top-right"
-        variant={ResizeControlVariant.Handle}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_DOT_CLS}
-        style={CORNER_OFFSET_STYLE["top-right"]}
-      />
-      <NodeResizeControl
-        position="bottom-left"
-        variant={ResizeControlVariant.Handle}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_DOT_CLS}
-        style={CORNER_OFFSET_STYLE["bottom-left"]}
-      />
-      <NodeResizeControl
-        position="bottom-right"
-        variant={ResizeControlVariant.Handle}
-        minWidth={minWidth}
-        minHeight={minHeight}
-        onResize={onResize}
-        className={RESIZE_DOT_CLS}
-        style={CORNER_OFFSET_STYLE["bottom-right"]}
-      />
+      <NodeResizeControl position="top" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.top} />
+      <NodeResizeControl position="bottom" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.bottom} />
+      <NodeResizeControl position="left" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.left} />
+      <NodeResizeControl position="right" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.right} />
+      <NodeResizeControl position="top-left" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-left"]} />
+      <NodeResizeControl position="top-right" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-right"]} />
+      <NodeResizeControl position="bottom-left" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-left"]} />
+      <NodeResizeControl position="bottom-right" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-right"]} />
     </>
   );
 }
@@ -332,55 +212,15 @@ function FreeConnectHandles() {
   return (
     <>
       {/* Target handles — pure drop targets, rendered first (underneath) */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top-in"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="target"
-        position={Position.Bottom}
-        id="bottom-in"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="left-in"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="target"
-        position={Position.Right}
-        id="right-in"
-        className={HANDLE_CLS}
-      />
+      <Handle type="target" position={Position.Top} id="top-in" className={HANDLE_CLS} />
+      <Handle type="target" position={Position.Bottom} id="bottom-in" className={HANDLE_CLS} />
+      <Handle type="target" position={Position.Left} id="left-in" className={HANDLE_CLS} />
+      <Handle type="target" position={Position.Right} id="right-in" className={HANDLE_CLS} />
       {/* Source handles — where new connections start from, rendered last (on top) */}
-      <Handle
-        type="source"
-        position={Position.Top}
-        id="top"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="source"
-        position={Position.Left}
-        id="left"
-        className={HANDLE_CLS}
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className={HANDLE_CLS}
-      />
+      <Handle type="source" position={Position.Top} id="top" className={HANDLE_CLS} />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_CLS} />
+      <Handle type="source" position={Position.Left} id="left" className={HANDLE_CLS} />
+      <Handle type="source" position={Position.Right} id="right" className={HANDLE_CLS} />
     </>
   );
 }
@@ -393,28 +233,14 @@ function FreeConnectHandles() {
 /** Start terminator: only ONE outgoing handle — nothing should ever flow
  *  INTO a "Start" node, so no target handle is rendered at all. */
 function SingleSourceHandle() {
-  return (
-    <Handle
-      type="source"
-      position={Position.Bottom}
-      id="out"
-      className={HANDLE_CLS}
-    />
-  );
+  return <Handle type="source" position={Position.Bottom} id="out" className={HANDLE_CLS} />;
 }
 
 /** End terminator: only ONE incoming handle — nothing should ever flow OUT
  *  of an "End" node (which also naturally keeps it from triggering
  *  add-node-on-edge-drop, since that only fires from a source handle). */
 function SingleTargetHandle() {
-  return (
-    <Handle
-      type="target"
-      position={Position.Top}
-      id="in"
-      className={HANDLE_CLS}
-    />
-  );
+  return <Handle type="target" position={Position.Top} id="in" className={HANDLE_CLS} />;
 }
 
 interface ShapeCanvasProps {
@@ -467,22 +293,13 @@ function ShapeCanvas({
   const baseStroke = resolved.border;
   const baseStrokeWidth = data.borderWidth ?? 1.5;
   const strokeDasharray =
-    data.borderStyle === "dashed"
-      ? "6 4"
-      : data.borderStyle === "dotted"
-        ? "1.5 3.5"
-        : undefined;
+    data.borderStyle === "dashed" ? "6 4" : data.borderStyle === "dotted" ? "1.5 3.5" : undefined;
 
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const stroke = selected ? selectedStroke : baseStroke;
   const strokeWidth = selected ? baseStrokeWidth + 1 : baseStrokeWidth;
 
-  const geometry = getShapeGeometry(
-    shape,
-    width,
-    height,
-    data.borderRadius ?? 8,
-  );
+  const geometry = getShapeGeometry(shape, width, height, data.borderRadius ?? 8);
   const hasLink = !!data.url?.trim();
 
   // Label wrapping: instead of always forcing a single truncated line, work
@@ -493,35 +310,36 @@ function ShapeCanvas({
   const lineHeightPx = fontSize * 1.3;
   const descriptionReserve = showDescription ? lineHeightPx * 0.85 : 0;
   const verticalPadding = 16;
-  const availableHeight = Math.max(
-    height - verticalPadding - descriptionReserve,
-    lineHeightPx,
-  );
+  const availableHeight = Math.max(height - verticalPadding - descriptionReserve, lineHeightPx);
   const maxLines = Math.max(1, Math.floor(availableHeight / lineHeightPx));
 
   const handleResize = useCallback<OnResize>(
     (_event, params) => {
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      });
+      updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) });
     },
     [id, updateNodeData],
   );
+
+  // Computed once and reused for BOTH the resizer's own constraint AND the
+  // node's actual CSS floor (minWidth/minHeight below) — previously these
+  // were two independent numbers, so at small sizes the dashed resize frame
+  // could show a size the node itself refused to actually shrink to.
+  const minShapeWidth = Math.max(36, Math.round(fallback.width * 0.5));
+  const minShapeHeight = Math.max(28, Math.round(fallback.height * 0.5));
 
   return (
     <div
       ref={outerRef}
       className="group relative"
-      style={{ width, height }}
+      style={{ width, height, minWidth: minShapeWidth, minHeight: minShapeHeight }}
       onDoubleClick={() => openNodeLink(data.url)}
       title={hasLink ? data.url : undefined}
     >
       {showResizer && (
         <CornerResizer
           isVisible={!!selected}
-          minWidth={Math.max(36, Math.round(fallback.width * 0.5))}
-          minHeight={Math.max(28, Math.round(fallback.height * 0.5))}
+          minWidth={minShapeWidth}
+          minHeight={minShapeHeight}
           onResize={handleResize}
         />
       )}
@@ -533,170 +351,118 @@ function ShapeCanvas({
           and connection handles stay OUTSIDE (unrotated) on purpose: resize
           corners and connection points are much easier to use fixed to the
           screen axes regardless of the shape's current rotation. */}
-      <div
-        className="relative h-full w-full"
-        style={
-          rotatable
-            ? { transform: `rotate(${data.rotation ?? 0}deg)` }
-            : undefined
-        }
-      >
+      <div className="relative h-full w-full" style={rotatable ? { transform: `rotate(${data.rotation ?? 0}deg)` } : undefined}>
         <svg
           width={width}
           height={height}
           viewBox={`0 0 ${width} ${height}`}
           className="block overflow-visible"
-          style={{
-            filter: selected
-              ? "drop-shadow(0 2px 6px rgba(99,102,241,0.35))"
-              : "drop-shadow(0 1px 2px rgba(0,0,0,0.08))",
-          }}
-        >
-          {geometry.kind === "path" && (
-            <path
-              d={geometry.path}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={strokeWidth}
-              strokeDasharray={strokeDasharray}
-            />
-          )}
+        style={{
+          filter: selected
+            ? "drop-shadow(0 2px 6px rgba(99,102,241,0.35))"
+            : "drop-shadow(0 1px 2px rgba(0,0,0,0.08))",
+        }}
+      >
+        {geometry.kind === "path" && (
+          <path d={geometry.path} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} />
+        )}
 
-          {geometry.kind === "ellipse" && (
-            <ellipse
-              cx={geometry.cx}
-              cy={geometry.cy}
-              rx={geometry.rx}
-              ry={geometry.ry}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={strokeWidth}
-              strokeDasharray={strokeDasharray}
-            />
-          )}
-
-          {geometry.kind === "cylinder" && (
-            <>
-              <path
-                d={geometry.bodyPath}
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-                strokeDasharray={strokeDasharray}
-              />
-              <ellipse
-                cx={geometry.capCx}
-                cy={geometry.capCy}
-                rx={geometry.capRx}
-                ry={geometry.capRy}
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-                strokeDasharray={strokeDasharray}
-              />
-            </>
-          )}
-
-          {geometry.kind === "note" && (
-            <>
-              <path
-                d={geometry.outline}
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-                strokeDasharray={strokeDasharray}
-              />
-              <path
-                d={geometry.fold}
-                fill="none"
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-              />
-            </>
-          )}
-
-          {geometry.kind === "predefinedProcess" && (
-            <>
-              <path
-                d={geometry.outer}
-                fill={fill}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-                strokeDasharray={strokeDasharray}
-              />
-              <line
-                x1={geometry.barX1}
-                x2={geometry.barX1}
-                y1={geometry.barTop}
-                y2={geometry.barBottom}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-              />
-              <line
-                x1={geometry.barX2}
-                x2={geometry.barX2}
-                y1={geometry.barTop}
-                y2={geometry.barBottom}
-                stroke={stroke}
-                strokeWidth={strokeWidth}
-              />
-            </>
-          )}
-        </svg>
-
-        {/* Label + optional description, overlaid on top of the SVG shape */}
-        <div
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-3 text-center"
-          style={{
-            color: resolved.text,
-            fontSize: data.fontSize ?? 13,
-            fontWeight: FONT_WEIGHT_MAP[data.fontWeight ?? "normal"] ?? 400,
-            lineHeight: 1.3,
-          }}
-        >
-          {data.isRichText ? (
-            <span
-              className="w-full"
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: maxLines,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                wordBreak: "break-word",
-              }}
-              // Rich-text labels (toggled via the "Render as HTML" checkbox in
-              // SettingsPanel) — this is the user's own diagram content, typed
-              // by themselves, not remote/untrusted input.
-              dangerouslySetInnerHTML={{ __html: showLabel ? data.label : "" }}
-            />
-          ) : (
-            <span
-              className="w-full"
-              style={{
-                display: "-webkit-box",
-                WebkitLineClamp: maxLines,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                wordBreak: "break-word",
-              }}
-            >
-              {showLabel ? data.label : ""}
-            </span>
-          )}
-          {showDescription && (
-            <span className="w-full truncate text-[11px] opacity-70">
-              {data.description}
-            </span>
-          )}
-        </div>
-
-        {rotatable && selected && (
-          <RotateHandle
-            nodeRef={outerRef}
-            rotation={data.rotation ?? 0}
-            onRotate={(deg) => updateNodeData(id, { rotation: deg })}
+        {geometry.kind === "ellipse" && (
+          <ellipse
+            cx={geometry.cx}
+            cy={geometry.cy}
+            rx={geometry.rx}
+            ry={geometry.ry}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeDasharray={strokeDasharray}
           />
         )}
+
+        {geometry.kind === "cylinder" && (
+          <>
+            <path d={geometry.bodyPath} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} />
+            <ellipse
+              cx={geometry.capCx}
+              cy={geometry.capCy}
+              rx={geometry.capRx}
+              ry={geometry.capRy}
+              fill={fill}
+              stroke={stroke}
+              strokeWidth={strokeWidth}
+              strokeDasharray={strokeDasharray}
+            />
+          </>
+        )}
+
+        {geometry.kind === "note" && (
+          <>
+            <path d={geometry.outline} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} />
+            <path d={geometry.fold} fill="none" stroke={stroke} strokeWidth={strokeWidth} />
+          </>
+        )}
+
+        {geometry.kind === "predefinedProcess" && (
+          <>
+            <path d={geometry.outer} fill={fill} stroke={stroke} strokeWidth={strokeWidth} strokeDasharray={strokeDasharray} />
+            <line x1={geometry.barX1} x2={geometry.barX1} y1={geometry.barTop} y2={geometry.barBottom} stroke={stroke} strokeWidth={strokeWidth} />
+            <line x1={geometry.barX2} x2={geometry.barX2} y1={geometry.barTop} y2={geometry.barBottom} stroke={stroke} strokeWidth={strokeWidth} />
+          </>
+        )}
+      </svg>
+
+      {/* Label + optional description, overlaid on top of the SVG shape */}
+      <div
+        className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 px-3 text-center"
+        style={{
+          color: resolved.text,
+          fontSize: data.fontSize ?? 13,
+          fontWeight: FONT_WEIGHT_MAP[data.fontWeight ?? "normal"] ?? 400,
+          lineHeight: 1.3,
+        }}
+      >
+        {data.isRichText ? (
+          <span
+            className="w-full"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: maxLines,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              wordBreak: "break-word",
+            }}
+            // Rich-text labels (toggled via the "Render as HTML" checkbox in
+            // SettingsPanel) — this is the user's own diagram content, typed
+            // by themselves, not remote/untrusted input.
+            dangerouslySetInnerHTML={{ __html: showLabel ? data.label : "" }}
+          />
+        ) : (
+          <span
+            className="w-full"
+            style={{
+              display: "-webkit-box",
+              WebkitLineClamp: maxLines,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+              wordBreak: "break-word",
+            }}
+          >
+            {showLabel ? data.label : ""}
+          </span>
+        )}
+        {showDescription && (
+          <span className="w-full truncate text-[11px] opacity-70">{data.description}</span>
+        )}
+      </div>
+
+      {rotatable && selected && (
+        <RotateHandle
+          nodeRef={outerRef}
+          rotation={data.rotation ?? 0}
+          onRotate={(deg) => updateNodeData(id, { rotation: deg })}
+        />
+      )}
       </div>
 
       {/* Link badge â€” visible when the node carries a URL; click opens it directly. */}
@@ -715,12 +481,8 @@ function ShapeCanvas({
       )}
 
       {showConnectionHandles && handleMode === "full" && <FreeConnectHandles />}
-      {showConnectionHandles && handleMode === "sourceOnly" && (
-        <SingleSourceHandle />
-      )}
-      {showConnectionHandles && handleMode === "targetOnly" && (
-        <SingleTargetHandle />
-      )}
+      {showConnectionHandles && handleMode === "sourceOnly" && <SingleSourceHandle />}
+      {showConnectionHandles && handleMode === "targetOnly" && <SingleTargetHandle />}
     </div>
   );
 }
@@ -731,122 +493,63 @@ function ShapeCanvas({
 // trivially greppable.
 
 function DefaultNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="defaultNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="defaultNode" data={data} selected={selected} />;
 }
 
 function InputNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas
-      id={id}
-      shape="inputNode"
-      data={data}
-      selected={selected}
-      handleMode="sourceOnly"
-    />
-  );
+  return <ShapeCanvas id={id} shape="inputNode" data={data} selected={selected} handleMode="sourceOnly" />;
 }
 
 function OutputNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas
-      id={id}
-      shape="outputNode"
-      data={data}
-      selected={selected}
-      handleMode="targetOnly"
-    />
-  );
+  return <ShapeCanvas id={id} shape="outputNode" data={data} selected={selected} handleMode="targetOnly" />;
 }
 
 function CircleNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="circleNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="circleNode" data={data} selected={selected} />;
 }
 
 function DiamondNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="diamondNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="diamondNode" data={data} selected={selected} />;
 }
 
 function CylinderNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="cylinderNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="cylinderNode" data={data} selected={selected} />;
 }
 
 function ParallelogramNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas
-      id={id}
-      shape="parallelogramNode"
-      data={data}
-      selected={selected}
-    />
-  );
+  return <ShapeCanvas id={id} shape="parallelogramNode" data={data} selected={selected} />;
 }
 
 function HexagonNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="hexagonNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="hexagonNode" data={data} selected={selected} />;
 }
 
 function TextNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas
-      id={id}
-      shape="textNode"
-      data={data}
-      selected={selected}
-      showConnectionHandles={false}
-      rotatable
-    />
-  );
+  return <ShapeCanvas id={id} shape="textNode" data={data} selected={selected} showConnectionHandles={false} rotatable />;
 }
 
 function NoteNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="noteNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="noteNode" data={data} selected={selected} />;
 }
 
 function TriangleNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="triangleNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="triangleNode" data={data} selected={selected} />;
 }
 
 function CloudNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="cloudNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="cloudNode" data={data} selected={selected} />;
 }
 
 function DocumentNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="documentNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="documentNode" data={data} selected={selected} />;
 }
 
 function PredefinedProcessNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas
-      id={id}
-      shape="predefinedProcessNode"
-      data={data}
-      selected={selected}
-    />
-  );
+  return <ShapeCanvas id={id} shape="predefinedProcessNode" data={data} selected={selected} />;
 }
 
 function DelayNode({ id, selected, data }: DiagramNodeProps) {
-  return (
-    <ShapeCanvas id={id} shape="delayNode" data={data} selected={selected} />
-  );
+  return <ShapeCanvas id={id} shape="delayNode" data={data} selected={selected} />;
 }
 
 // GroupNode (subflow container): a resizable box other nodes can be dropped/dragged
@@ -867,16 +570,13 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
 
   const handleResize = useCallback<OnResize>(
     (_event, params) => {
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      });
+      updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) });
     },
     [id, updateNodeData],
   );
 
   return (
-    <div className="relative" style={{ width, height }}>
+    <div className="relative" style={{ width, height, minWidth: 200, minHeight: 140 }}>
       <CornerResizer
         isVisible={!!selected}
         minWidth={200}
@@ -940,10 +640,7 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
     >
-      <span
-        className="text-[10px] font-medium uppercase tracking-wide"
-        style={{ color: resolved.text, opacity: 0.7 }}
-      >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.numberNode", "Number")}
       </span>
       <NumberField
@@ -953,12 +650,7 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
         className="w-full text-sm font-semibold"
         style={{ color: resolved.text }}
       />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
     </div>
   );
 }
@@ -978,8 +670,7 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
   const fallback = SHAPE_DEFAULT_SIZE.constantNode;
   const width = data.width ?? fallback.width;
 
-  const constant =
-    MATH_CONSTANT_BY_KEY[data.constantKey ?? "pi"] ?? MATH_CONSTANTS[0];
+  const constant = MATH_CONSTANT_BY_KEY[data.constantKey ?? "pi"] ?? MATH_CONSTANTS[0];
 
   return (
     <div
@@ -990,10 +681,7 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
         border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
       }}
     >
-      <span
-        className="text-[10px] font-medium uppercase tracking-wide"
-        style={{ color: resolved.text, opacity: 0.7 }}
-      >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.constantNode", "Constant")}
       </span>
 
@@ -1007,34 +695,25 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
       </div>
 
       <div className="nodrag flex items-baseline justify-between gap-2 rounded border border-black/10 bg-white/70 px-2 py-1 dark:bg-black/20">
-        <span className="text-base font-bold" style={{ color: resolved.text }}>
-          {constant.symbol}
-        </span>
-        <span
-          className="truncate text-sm font-semibold"
-          style={{ color: resolved.text }}
-        >
+        <span className="text-base font-bold" style={{ color: resolved.text }}>{constant.symbol}</span>
+        <span className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
           {Number(constant.value.toFixed(6))}
         </span>
       </div>
 
-      <p
-        className="text-[10px] leading-snug opacity-70"
-        style={{ color: resolved.text }}
-      >
+      <p className="text-[10px] leading-snug opacity-70" style={{ color: resolved.text }}>
         {constant.description}
       </p>
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
     </div>
   );
 }
-
+ /* only makes sense with ONE input, divide/subtract/power need exactly TWO
+ * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
+ * handles instead of one shared unlimited handle. See utils/operators.ts for
+ * the single source of truth this mirrors in the store's recompute logic.
+ */
 function OperatorNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
@@ -1071,10 +750,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
       }}
     >
       <div className="flex items-center justify-between gap-1">
-        <span
-          className="text-[10px] font-medium uppercase tracking-wide"
-          style={{ color: resolved.text, opacity: 0.7 }}
-        >
+        <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
           {data.label || safeT(t, "nodes.operatorNode", "Operator")}
         </span>
         <span className="text-xs font-bold" style={{ color: resolved.text }}>
@@ -1084,9 +760,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
 
       <div className="nodrag">
         <Combobox
-          options={(Object.keys(OPERATOR_LABEL) as ArithmeticOperation[]).map(
-            (op) => ({ value: op, label: OPERATOR_LABEL[op] }),
-          )}
+          options={(Object.keys(OPERATOR_LABEL) as ArithmeticOperation[]).map((op) => ({ value: op, label: OPERATOR_LABEL[op] }))}
           value={operation}
           onChange={(v) => handleOperationChange(v as ArithmeticOperation)}
           placeholder={safeT(t, "settings.operation", "Operation...")}
@@ -1102,13 +776,8 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
 
       {arity === "nary" && (
         <>
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="left"
-            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-          />
-          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <Handle type="target" position={Position.Left} id="left" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             +
           </span>
         </>
@@ -1123,10 +792,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             style={{ top: "35%" }}
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span
-            className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
-            style={{ top: "35%" }}
-          >
+          <span className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "35%" }}>
             a
           </span>
           <Handle
@@ -1136,10 +802,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             style={{ top: "70%" }}
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span
-            className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3"
-            style={{ top: "70%" }}
-          >
+          <span className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "70%" }}>
             b
           </span>
         </>
@@ -1147,24 +810,14 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
 
       {arity === "unary" && (
         <>
-          <Handle
-            type="target"
-            position={Position.Left}
-            id="x"
-            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-          />
-          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <Handle type="target" position={Position.Left} id="x" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             x
           </span>
         </>
       )}
 
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="right"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
     </div>
   );
 }
@@ -1199,18 +852,14 @@ function useUpstreamShapeNode(id: string): Node<DiagramNodeData> | undefined {
   const edges = useDiagramStore((s) => s.edges);
   const nodes = useDiagramStore((s) => s.nodes);
   const incoming = edges.find((e) => e.target === id);
-  const source = incoming
-    ? nodes.find((n) => n.id === incoming.source)
-    : undefined;
+  const source = incoming ? nodes.find((n) => n.id === incoming.source) : undefined;
   return source?.type === "shapeNode" ? source : undefined;
 }
 
 /** Rounds to 3 decimals for display so results never overflow the node box (per user request). */
 function formatCalcResult(value: number | null): string {
   if (value === null || !Number.isFinite(value)) return "—";
-  return Number(value.toFixed(3)).toLocaleString(undefined, {
-    maximumFractionDigits: 3,
-  });
+  return Number(value.toFixed(3)).toLocaleString(undefined, { maximumFractionDigits: 3 });
 }
 
 function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
@@ -1227,35 +876,23 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
   // (read-only here — edit them on the shapeNode itself) instead of our own
   // standalone dropdown+fields. Lets you build Shape → Calculator pipelines.
   const upstream = useUpstreamShapeNode(id);
-  const shape =
-    (upstream ? upstream.data.shapeKind : data.calcShape) ?? "rectangle";
+  const shape = (upstream ? upstream.data.shapeKind : data.calcShape) ?? "rectangle";
   const inputs = (upstream ? upstream.data.shapeInputs : data.calcInputs) ?? {};
   const availableModes = GEOMETRY_SHAPE_MODES[shape];
-  const mode = availableModes.includes(data.calcMode ?? "area")
-    ? (data.calcMode ?? "area")
-    : availableModes[0];
+  const mode = availableModes.includes(data.calcMode ?? "area") ? data.calcMode ?? "area" : availableModes[0];
   const fields = GEOMETRY_SHAPE_FIELDS[shape];
   const result = computeGeometry(shape, mode, inputs);
   const unit = upstream ? upstream.data.unit : data.unit;
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
   return (
     <div
       className="flex flex-col gap-1.5 rounded-lg p-3 shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 180, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
       <CornerResizer
         isVisible={!!selected}
@@ -1263,67 +900,32 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         minHeight={200}
         onResize={handleResize}
       />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="shape-in"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="value-out"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="target" position={Position.Left} id="shape-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
-      <span
-        className="text-[10px] font-medium uppercase tracking-wide"
-        style={{ color: resolved.text, opacity: 0.7 }}
-      >
-        {data.label ||
-          safeT(t, "nodes.geometryCalcNode", "Geometry calculator")}
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
+        {data.label || safeT(t, "nodes.geometryCalcNode", "Geometry calculator")}
       </span>
 
       {upstream ? (
-        <p
-          className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70"
-          style={{ color: resolved.text }}
-        >
-          {safeT(t, "settings.shapeFrom", "Shape")}:{" "}
-          {GEOMETRY_SHAPE_LABELS[shape]} (&ldquo;{upstream.data.label}&rdquo;)
+        <p className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70" style={{ color: resolved.text }}>
+          {safeT(t, "settings.shapeFrom", "Shape")}: {GEOMETRY_SHAPE_LABELS[shape]} (&ldquo;{upstream.data.label}&rdquo;)
         </p>
       ) : (
         <div className="nodrag">
           <Combobox
-            options={(
-              Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]
-            ).map((s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }))}
+            options={(Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]).map((s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }))}
             value={shape}
-            onChange={(v) =>
-              updateNodeData(id, {
-                calcShape: v as GeometryShape,
-                calcInputs: {},
-              })
-            }
+            onChange={(v) => updateNodeData(id, { calcShape: v as GeometryShape, calcInputs: {} })}
             placeholder={safeT(t, "settings.shape", "Shape...")}
           />
         </div>
       )}
 
       <div className="nodrag flex items-center gap-1.5">
-        <span
-          className="shrink-0 text-[10px] opacity-70"
-          style={{ color: resolved.text }}
-        >
-          {safeT(t, "settings.unit", "Unit")}
-        </span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         {upstream ? (
-          <span
-            className="truncate text-[11px] font-medium"
-            style={{ color: resolved.text }}
-          >
-            {upstream.data.unit || "—"}
-          </span>
+          <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "—"}</span>
         ) : (
           <Combobox
             options={UNIT_OPTIONS}
@@ -1335,10 +937,7 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         )}
       </div>
 
-      <div
-        className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10"
-        style={{ color: resolved.text }}
-      >
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
@@ -1346,9 +945,7 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         type="single"
         variant="outline"
         value={mode}
-        onValueChange={(v) =>
-          v && updateNodeData(id, { calcMode: v as GeometryMode })
-        }
+        onValueChange={(v) => v && updateNodeData(id, { calcMode: v as GeometryMode })}
         className="nodrag grid w-full grid-cols-3 gap-1"
       >
         {availableModes.map((m) => (
@@ -1361,20 +958,11 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
       {!upstream && (
         <div className="flex flex-col gap-1">
           {fields.map((f) => (
-            <label
-              key={f.key}
-              className="flex items-center justify-between gap-2 text-[11px]"
-              style={{ color: resolved.text }}
-            >
-              <span className="opacity-70">
-                {f.label}
-                {unit ? ` (${unit})` : ""}
-              </span>
+            <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
+              <span className="opacity-70">{f.label}{unit ? ` (${unit})` : ""}</span>
               <NumberField
                 value={inputs[f.key] ?? ""}
-                onChange={(v) =>
-                  updateNodeData(id, { calcInputs: { ...inputs, [f.key]: v } })
-                }
+                onChange={(v) => updateNodeData(id, { calcInputs: { ...inputs, [f.key]: v } })}
                 colorMode={colorMode}
                 style={{ color: resolved.text }}
               />
@@ -1384,22 +972,12 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
       )}
 
       <div className="mt-auto rounded border border-black/10 bg-white/70 px-2 py-1.5 text-center dark:bg-black/20">
-        <div
-          className="text-[10px] opacity-70"
-          style={{ color: resolved.text }}
-        >
+        <div className="text-[10px] opacity-70" style={{ color: resolved.text }}>
           {GEOMETRY_MODE_LABELS[mode]}
         </div>
-        <div
-          className="truncate text-sm font-semibold"
-          style={{ color: resolved.text }}
-        >
+        <div className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
           {formatCalcResult(result)}
-          {result !== null && unit ? (
-            <span className="ms-1 text-xs font-normal opacity-70">
-              {unitWithPower(unit, geometryModePower(mode))}
-            </span>
-          ) : null}
+          {result !== null && unit ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, geometryModePower(mode))}</span> : null}
         </div>
       </div>
     </div>
@@ -1428,45 +1006,24 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
 
   const upstream = useUpstreamShapeNode(id);
   const upstreamShape = upstream?.data.shapeKind;
-  const upstreamCompatible = upstreamShape
-    ? isBeamCompatible(upstreamShape)
-    : false;
+  const upstreamCompatible = upstreamShape ? isBeamCompatible(upstreamShape) : false;
 
-  const shape =
-    (upstream && upstreamCompatible
-      ? (upstreamShape as BeamShape)
-      : data.beamShape) ?? "rectangle";
-  const inputs =
-    upstream && upstreamCompatible
-      ? toBeamInputs(upstreamShape!, upstream.data.shapeInputs ?? {})
-      : (data.beamInputs ?? {});
+  const shape = (upstream && upstreamCompatible ? (upstreamShape as BeamShape) : data.beamShape) ?? "rectangle";
+  const inputs = upstream && upstreamCompatible ? toBeamInputs(upstreamShape!, upstream.data.shapeInputs ?? {}) : (data.beamInputs ?? {});
   const fields = BEAM_SHAPE_FIELDS[shape];
-  const result =
-    upstream && !upstreamCompatible
-      ? null
-      : computeSecondMomentOfArea(shape, inputs);
+  const result = upstream && !upstreamCompatible ? null : computeSecondMomentOfArea(shape, inputs);
   const unit = (upstream ? upstream.data.unit : data.unit) || "mm";
-  const validationError =
-    upstream && !upstreamCompatible ? null : validateBeamInputs(shape, inputs);
+  const validationError = upstream && !upstreamCompatible ? null : validateBeamInputs(shape, inputs);
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
   return (
     <div
       className="flex flex-col gap-1.5 rounded-lg p-3 shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 200, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
       <CornerResizer
         isVisible={!!selected}
@@ -1474,74 +1031,36 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         minHeight={220}
         onResize={handleResize}
       />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="shape-in"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="value-out"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="target" position={Position.Left} id="shape-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
-      <span
-        className="text-[10px] font-medium uppercase tracking-wide"
-        style={{ color: resolved.text, opacity: 0.7 }}
-      >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.beamCalcNode", "Beam section (Ix)")}
       </span>
 
       {upstream ? (
-        <p
-          className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70"
-          style={{ color: resolved.text }}
-        >
+        <p className="nodrag rounded border border-dashed border-black/15 px-2 py-1 text-[11px] opacity-70" style={{ color: resolved.text }}>
           {upstreamCompatible
             ? `${safeT(t, "settings.shapeFrom", "Shape")}: ${BEAM_SHAPE_LABELS[shape]} ("${upstream.data.label}")`
             : upstreamShape && isVolumetricShape(upstreamShape)
-              ? safeT(
-                  t,
-                  "settings.beamVolumetricWarning",
-                  `"${upstream.data.label}" is a 3D/volumetric shape (${upstreamShape}) — bending Ix only applies to a 2D cross-section, not a solid.`,
-                )
-              : safeT(
-                  t,
-                  "settings.beamNoFormula",
-                  `"${upstream.data.label}" has no Ix formula defined.`,
-                )}
+              ? safeT(t, "settings.beamVolumetricWarning", `"${upstream.data.label}" is a 3D/volumetric shape (${upstreamShape}) — bending Ix only applies to a 2D cross-section, not a solid.`)
+              : safeT(t, "settings.beamNoFormula", `"${upstream.data.label}" has no Ix formula defined.`)}
         </p>
       ) : (
         <div className="nodrag">
           <Combobox
-            options={(Object.keys(BEAM_SHAPE_FIELDS) as BeamShape[]).map(
-              (s) => ({ value: s, label: BEAM_SHAPE_LABELS[s] }),
-            )}
+            options={(Object.keys(BEAM_SHAPE_FIELDS) as BeamShape[]).map((s) => ({ value: s, label: BEAM_SHAPE_LABELS[s] }))}
             value={shape}
-            onChange={(v) =>
-              updateNodeData(id, { beamShape: v as BeamShape, beamInputs: {} })
-            }
+            onChange={(v) => updateNodeData(id, { beamShape: v as BeamShape, beamInputs: {} })}
             placeholder={safeT(t, "settings.shape", "Shape...")}
           />
         </div>
       )}
 
       <div className="nodrag flex items-center gap-1.5">
-        <span
-          className="shrink-0 text-[10px] opacity-70"
-          style={{ color: resolved.text }}
-        >
-          {safeT(t, "settings.unit", "Unit")}
-        </span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         {upstream ? (
-          <span
-            className="truncate text-[11px] font-medium"
-            style={{ color: resolved.text }}
-          >
-            {upstream.data.unit || "mm"}
-          </span>
+          <span className="truncate text-[11px] font-medium" style={{ color: resolved.text }}>{upstream.data.unit || "mm"}</span>
         ) : (
           <Combobox
             options={UNIT_OPTIONS}
@@ -1553,30 +1072,18 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         )}
       </div>
 
-      <div
-        className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10"
-        style={{ color: resolved.text }}
-      >
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
       {!upstream && (
         <div className="flex flex-col gap-1">
           {fields.map((f) => (
-            <label
-              key={f.key}
-              className="flex items-center justify-between gap-2 text-[11px]"
-              style={{ color: resolved.text }}
-            >
-              <span className="opacity-70">
-                {f.label}
-                {unit ? ` (${unit})` : ""}
-              </span>
+            <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
+              <span className="opacity-70">{f.label}{unit ? ` (${unit})` : ""}</span>
               <NumberField
                 value={inputs[f.key] ?? ""}
-                onChange={(v) =>
-                  updateNodeData(id, { beamInputs: { ...inputs, [f.key]: v } })
-                }
+                onChange={(v) => updateNodeData(id, { beamInputs: { ...inputs, [f.key]: v } })}
                 colorMode={colorMode}
                 style={{ color: resolved.text }}
               />
@@ -1587,32 +1094,17 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
 
       {validationError && (
         <p className="nodrag rounded border border-amber-400/60 bg-amber-400/10 px-2 py-1 text-[11px] leading-snug text-amber-700 dark:text-amber-400">
-          ⚠{" "}
-          {safeT(
-            t,
-            `beamValidation.${validationError}`,
-            BEAM_VALIDATION_FALLBACKS[validationError],
-          )}
+          ⚠ {safeT(t, `beamValidation.${validationError}`, BEAM_VALIDATION_FALLBACKS[validationError])}
         </p>
       )}
 
       <div className="mt-auto rounded border border-black/10 bg-white/70 px-2 py-1.5 text-center dark:bg-black/20">
-        <div
-          className="text-[10px] opacity-70"
-          style={{ color: resolved.text }}
-        >
+        <div className="text-[10px] opacity-70" style={{ color: resolved.text }}>
           {safeT(t, "settings.ixCaption", "Ix (second moment of area)")}
         </div>
-        <div
-          className="truncate text-sm font-semibold"
-          style={{ color: resolved.text }}
-        >
+        <div className="truncate text-sm font-semibold" style={{ color: resolved.text }}>
           {validationError ? "—" : formatCalcResult(result)}
-          {!validationError && result !== null ? (
-            <span className="ms-1 text-xs font-normal opacity-70">
-              {unitWithPower(unit, 4)}
-            </span>
-          ) : null}
+          {!validationError && result !== null ? <span className="ms-1 text-xs font-normal opacity-70">{unitWithPower(unit, 4)}</span> : null}
         </div>
       </div>
     </div>
@@ -1637,23 +1129,14 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
   const fields = GEOMETRY_SHAPE_FIELDS[shape];
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
   return (
     <div
       className="flex flex-col gap-1.5 rounded-lg p-3 shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 170, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
       <CornerResizer
         isVisible={!!selected}
@@ -1661,43 +1144,23 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         minHeight={160}
         onResize={handleResize}
       />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="shape-out"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="source" position={Position.Right} id="shape-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
-      <span
-        className="text-[10px] font-medium uppercase tracking-wide"
-        style={{ color: resolved.text, opacity: 0.7 }}
-      >
+      <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.shapeNode", "Shape")}
       </span>
 
       <div className="nodrag">
         <Combobox
-          options={(Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]).map(
-            (s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }),
-          )}
+          options={(Object.keys(GEOMETRY_SHAPE_FIELDS) as GeometryShape[]).map((s) => ({ value: s, label: GEOMETRY_SHAPE_LABELS[s] }))}
           value={shape}
-          onChange={(v) =>
-            updateNodeData(id, {
-              shapeKind: v as GeometryShape,
-              shapeInputs: {},
-            })
-          }
+          onChange={(v) => updateNodeData(id, { shapeKind: v as GeometryShape, shapeInputs: {} })}
           placeholder={safeT(t, "settings.shape", "Shape...")}
         />
       </div>
 
       <div className="nodrag flex items-center gap-1.5">
-        <span
-          className="shrink-0 text-[10px] opacity-70"
-          style={{ color: resolved.text }}
-        >
-          {safeT(t, "settings.unit", "Unit")}
-        </span>
+        <span className="shrink-0 text-[10px] opacity-70" style={{ color: resolved.text }}>{safeT(t, "settings.unit", "Unit")}</span>
         <Combobox
           options={UNIT_OPTIONS}
           value={data.unit ?? ""}
@@ -1707,29 +1170,17 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         />
       </div>
 
-      <div
-        className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10"
-        style={{ color: resolved.text }}
-      >
+      <div className="h-36 shrink-0 rounded border border-black/10 bg-white/40 p-2 dark:bg-black/10" style={{ color: resolved.text }}>
         <ShapeSchematic shape={shape} />
       </div>
 
       <div className="flex flex-col gap-1">
         {fields.map((f) => (
-          <label
-            key={f.key}
-            className="flex items-center justify-between gap-2 text-[11px]"
-            style={{ color: resolved.text }}
-          >
-            <span className="opacity-70">
-              {f.label}
-              {data.unit ? ` (${data.unit})` : ""}
-            </span>
+          <label key={f.key} className="flex items-center justify-between gap-2 text-[11px]" style={{ color: resolved.text }}>
+            <span className="opacity-70">{f.label}{data.unit ? ` (${data.unit})` : ""}</span>
             <NumberField
               value={inputs[f.key] ?? ""}
-              onChange={(v) =>
-                updateNodeData(id, { shapeInputs: { ...inputs, [f.key]: v } })
-              }
+              onChange={(v) => updateNodeData(id, { shapeInputs: { ...inputs, [f.key]: v } })}
               colorMode={colorMode}
               style={{ color: resolved.text }}
             />
@@ -1737,10 +1188,7 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         ))}
       </div>
 
-      <p
-        className="mt-auto text-[10px] italic opacity-60"
-        style={{ color: resolved.text }}
-      >
+      <p className="mt-auto text-[10px] italic opacity-60" style={{ color: resolved.text }}>
         Connect the dot on the right to a calculator&rsquo;s input.
       </p>
     </div>
@@ -1752,20 +1200,18 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
 // node-settings panel, same as any shape, so it doubles as a simple frame.
 function ImageNode({ id, selected, data }: DiagramNodeProps) {
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
+  const t = useTranslations("Flow");
   const fallback = SHAPE_DEFAULT_SIZE.imageNode;
   const width = data.width ?? fallback.width;
   const height = data.height ?? fallback.height;
   const borderRadius = data.borderRadius ?? 8;
   const rotation = data.rotation ?? 0;
+  const opacity = data.opacity ?? 100;
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const outerRef = React.useRef<HTMLDivElement>(null);
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
@@ -1773,8 +1219,7 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
     (file: File | undefined) => {
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = () =>
-        updateNodeData(id, { imageUrl: reader.result as string });
+      reader.onload = () => updateNodeData(id, { imageUrl: reader.result as string });
       reader.readAsDataURL(file);
     },
     [id, updateNodeData],
@@ -1787,45 +1232,24 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
     // React Flow positions them slightly outside the node's own box. The
     // rounded-corner image clipping now happens on the INNER wrapper only,
     // which has no handles inside it to cut off.
-    <div ref={outerRef} className="relative" style={{ width, height }}>
+    <div ref={outerRef} className="relative" style={{ width, height, minWidth: 80, minHeight: 60 }}>
       <CornerResizer
         isVisible={!!selected}
         minWidth={80}
         minHeight={60}
         onResize={handleResize}
       />
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <Handle type="target" position={Position.Top} id="top" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Bottom} id="bottom" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
       {/* Rotation (https://reactflow.dev/examples/nodes/rotatable-node): the
           handle is a CHILD of this same rotated element, so it moves/rotates
           along with the node rather than staying fixed at a constant spot. */}
-      <div
-        className="relative h-full w-full"
-        style={{ transform: `rotate(${rotation}deg)` }}
-      >
-        <div
-          className="h-full w-full overflow-hidden shadow-sm"
-          style={{ borderRadius }}
-        >
+      <div className="relative h-full w-full" style={{ transform: `rotate(${rotation}deg)` }}>
+        <div className="h-full w-full overflow-hidden shadow-sm" style={{ borderRadius }}>
           {data.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- data-URLs/arbitrary external URLs aren't compatible with next/image's optimizer
-            <img
-              src={data.imageUrl}
-              alt={data.label || "Image"}
-              className="h-full w-full object-contain"
-              draggable={false}
-            />
+            <img src={data.imageUrl} alt={data.label || "Image"} className="h-full w-full object-contain" draggable={false} style={{ opacity: opacity / 100 }} />
           ) : (
             <button
               type="button"
@@ -1834,7 +1258,7 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
             >
               <ImageIcon className="size-6 opacity-60" />
               <span className="flex items-center gap-1 text-[11px]">
-                <Upload className="size-3" /> Upload image
+                <Upload className="size-3" /> {safeT(t, "settings.uploadImage", "Upload image or SVG")}
               </span>
             </button>
           )}
@@ -1847,243 +1271,30 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
             onRotate={(deg) => updateNodeData(id, { rotation: deg })}
           />
         )}
-      </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
-      />
-    </div>
-  );
-}
-
-// SVG node — same idea as ImageNode (upload → data-URL → <img>), kept as a
-// distinct type mainly for labeling/organizational clarity in the palette;
-// SVG data-URLs render fine directly in an <img> so no separate renderer is needed.
-function SvgNode({ id, selected, data }: DiagramNodeProps) {
-  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
-  const fallback = SHAPE_DEFAULT_SIZE.svgNode;
-  const width = data.width ?? fallback.width;
-  const height = data.height ?? fallback.height;
-  const borderRadius = data.borderRadius ?? 8;
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
-    [id, updateNodeData],
-  );
-
-  const handleFile = useCallback(
-    (file: File | undefined) => {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () =>
-        updateNodeData(id, {
-          imageUrl: reader.result as string,
-          svgContent: undefined,
-        });
-      reader.readAsDataURL(file);
-    },
-    [id, updateNodeData],
-  );
-
-  return (
-    <div className="relative" style={{ width, height }}>
-      <CornerResizer
-        isVisible={!!selected}
-        minWidth={60}
-        minHeight={60}
-        onResize={handleResize}
-      />
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-
-      <div className="h-full w-full overflow-hidden" style={{ borderRadius }}>
-        {data.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- SVG data-URLs render fine in a plain <img>
-          <img
-            src={data.imageUrl}
-            alt={data.label || "SVG"}
-            className="h-full w-full object-contain"
-            draggable={false}
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="nodrag flex h-full w-full flex-col items-center justify-center gap-1.5 border-2 border-dashed border-black/15 text-muted-foreground transition-colors hover:border-indigo-400 hover:text-indigo-500 dark:border-white/15"
+        {/* Opacity slider — only worth showing controls for once there's
+            actually an image loaded, and only while selected. */}
+        {selected && data.imageUrl && (
+          <div
+            className="nodrag absolute inset-x-0 -bottom-8 flex items-center gap-1.5 rounded-md bg-popover/95 px-2 py-1 text-[10px] text-popover-foreground shadow-sm"
+            style={{ transform: `rotate(${-rotation}deg)` }}
           >
-            <FileCode className="size-6 opacity-60" />
-            <span className="flex items-center gap-1 text-[11px]">
-              <Upload className="size-3" /> Upload .svg
-            </span>
-          </button>
+            <span className="shrink-0 opacity-70">{safeT(t, "settings.opacity", "Opacity")}</span>
+            <Slider min={0} max={100} value={[opacity]} onValueChange={(v) => updateNodeData(id, { opacity: v[0] })} className="w-full" />
+            <span className="w-7 shrink-0 text-end tabular-nums opacity-70">{opacity}%</span>
+          </div>
         )}
       </div>
 
       <input
         ref={fileInputRef}
         type="file"
-        accept=".svg,image/svg+xml"
+        accept="image/*,.svg"
         className="hidden"
         onChange={(e) => handleFile(e.target.files?.[0])}
       />
     </div>
   );
-}
-
-// Shared component for dwgNode/dxfNode — CAD drawings can't be rendered in a
-// browser without a heavy specialized engine, so these behave as file
-// attachments: keep the original file (as a data-URL) for re-download, show
-// its name/size, and let the node live in the diagram as a reference to it.
-function CadFileNode({
-  id,
-  selected,
-  data,
-  kind,
-}: DiagramNodeProps & { kind: "dwg" | "dxf" }) {
-  const updateNodeData = useDiagramStore((s) => s.updateNodeData);
-  const colorMode = useDiagramStore((s) => s.settings.colorMode);
-  const resolved = resolveNodeColors(data, colorMode);
-  const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
-  const fallback = SHAPE_DEFAULT_SIZE[kind === "dwg" ? "dwgNode" : "dxfNode"];
-  const width = data.width ?? fallback.width;
-  const height = data.height ?? fallback.height;
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const handleFile = useCallback(
-    (file: File | undefined) => {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () =>
-        updateNodeData(id, {
-          cadFileName: file.name,
-          cadFileType: kind,
-          cadFileDataUrl: reader.result as string,
-          cadFileSize: file.size,
-        });
-      reader.readAsDataURL(file);
-    },
-    [id, kind, updateNodeData],
-  );
-
-  const handleDownload = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      if (!data.cadFileDataUrl) return;
-      const a = document.createElement("a");
-      a.href = data.cadFileDataUrl;
-      a.download = data.cadFileName || `drawing.${kind}`;
-      a.click();
-    },
-    [data.cadFileDataUrl, data.cadFileName, kind],
-  );
-
-  const sizeLabel = data.cadFileSize
-    ? `${(data.cadFileSize / 1024).toFixed(1)} KB`
-    : null;
-
-  return (
-    <div
-      className="flex flex-col gap-1.5 rounded-lg p-3 shadow-sm"
-      style={{
-        width,
-        height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
-    >
-      <Handle
-        type="target"
-        position={Position.Top}
-        id="top"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        id="bottom"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-
-      <div className="flex items-center gap-2">
-        <FileArchive
-          className="size-6 shrink-0 opacity-70"
-          style={{ color: resolved.text }}
-        />
-        <div className="min-w-0 flex-1">
-          <p
-            className="truncate text-xs font-medium"
-            style={{ color: resolved.text }}
-          >
-            {data.cadFileName || `${kind.toUpperCase()} file`}
-          </p>
-          <p
-            className="text-[10px] opacity-60"
-            style={{ color: resolved.text }}
-          >
-            {kind.toUpperCase()}{" "}
-            {sizeLabel ? `· ${sizeLabel}` : "· no file attached"}
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-auto flex gap-1.5">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="nodrag flex flex-1 items-center justify-center gap-1 rounded border border-black/10 bg-white/70 py-1 text-[11px] hover:border-indigo-400 dark:bg-black/20"
-          style={{ color: resolved.text }}
-        >
-          <Upload className="size-3" />{" "}
-          {data.cadFileDataUrl ? "Replace" : "Upload"}
-        </button>
-        {data.cadFileDataUrl && (
-          <button
-            type="button"
-            onClick={handleDownload}
-            className="nodrag flex flex-1 items-center justify-center gap-1 rounded border border-black/10 bg-white/70 py-1 text-[11px] hover:border-indigo-400 dark:bg-black/20"
-            style={{ color: resolved.text }}
-          >
-            <Download className="size-3" /> Download
-          </button>
-        )}
-      </div>
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={kind === "dwg" ? ".dwg" : ".dxf"}
-        className="hidden"
-        onChange={(e) => handleFile(e.target.files?.[0])}
-      />
-    </div>
-  );
-}
-
-function DwgNode(props: DiagramNodeProps) {
-  return <CadFileNode {...props} kind="dwg" />;
-}
-
-function DxfNode(props: DiagramNodeProps) {
-  return <CadFileNode {...props} kind="dxf" />;
 }
 
 const DEFAULT_TABLE_ROWS: string[][] = [
@@ -2109,10 +1320,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
   const width = data.width ?? fallback.width;
   const height = data.height ?? fallback.height;
 
-  const rows =
-    data.tableRows && data.tableRows.length > 0
-      ? data.tableRows
-      : DEFAULT_TABLE_ROWS;
+  const rows = data.tableRows && data.tableRows.length > 0 ? data.tableRows : DEFAULT_TABLE_ROWS;
   const hasHeader = data.tableHasHeader ?? true;
   const colCount = rows[0]?.length ?? 0;
   const activeCellRef = React.useRef({ r: 0, c: 0 });
@@ -2121,12 +1329,9 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      const text = String(reader.result ?? "");
-      updateNodeData(id, { tableRows: parseDelimitedText(text) });
-    };
-    reader.readAsText(file);
+    parseSpreadsheetFile(file)
+      .then((rows) => updateNodeData(id, { tableRows: rows }))
+      .catch((err) => console.error("Could not read spreadsheet file:", err));
     e.target.value = "";
   };
 
@@ -2150,9 +1355,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
   };
 
   const addRow = () => {
-    updateNodeData(id, {
-      tableRows: [...rows.map((row) => [...row]), Array(colCount).fill("")],
-    });
+    updateNodeData(id, { tableRows: [...rows.map((row) => [...row]), Array(colCount).fill("")] });
   };
 
   const removeRow = () => {
@@ -2171,10 +1374,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
 
   const handleResize = useCallback<OnResize>(
     (_event, params) => {
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      });
+      updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) });
     },
     [id, updateNodeData],
   );
@@ -2182,19 +1382,9 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
   return (
     <div
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 200, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer
-        isVisible={!!selected}
-        minWidth={200}
-        minHeight={100}
-        onResize={handleResize}
-      />
+      <CornerResizer isVisible={!!selected} minWidth={200} minHeight={100} onResize={handleResize} />
       <FreeConnectHandles />
 
       {/* Drag handle + row/column controls — only shown while selected, like the resize frame */}
@@ -2203,60 +1393,24 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
         style={{ borderColor: resolved.border }}
       >
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <GripHorizontal
-            className="size-3.5 shrink-0 opacity-50"
-            style={{ color: resolved.text }}
-          />
-          <span
-            className="truncate text-[11px] font-medium opacity-80"
-            style={{ color: resolved.text }}
-          >
+          <GripHorizontal className="size-3.5 shrink-0 opacity-50" style={{ color: resolved.text }} />
+          <span className="truncate text-[11px] font-medium opacity-80" style={{ color: resolved.text }}>
             {data.label || safeT(t, "nodes.tableNode", "Table")}
           </span>
         </div>
         {selected && (
           <div className="nodrag flex shrink-0 items-center gap-0.5">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addRow", "Add row")}
-              onClick={addRow}
-            >
-              <Rows3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addRow", "Add row")} onClick={addRow}>
+              <Rows3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeRow", "Remove row")}
-              onClick={removeRow}
-              disabled={rows.length <= 1}
-            >
-              <Rows3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeRow", "Remove row")} onClick={removeRow} disabled={rows.length <= 1}>
+              <Rows3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addColumn", "Add column")}
-              onClick={addColumn}
-            >
-              <Columns3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addColumn", "Add column")} onClick={addColumn}>
+              <Columns3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeColumn", "Remove column")}
-              onClick={removeColumn}
-              disabled={colCount <= 1}
-            >
-              <Columns3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeColumn", "Remove column")} onClick={removeColumn} disabled={colCount <= 1}>
+              <Columns3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
             <Button
               variant={hasHeader ? "secondary" : "ghost"}
@@ -2279,7 +1433,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".csv,.tsv,.txt"
+              accept=".xlsx,.xls,.csv,.tsv,.txt"
               className="hidden"
               onChange={handleFileImport}
             />
@@ -2292,9 +1446,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
           copied from Excel/Sheets anywhere in here (see handlePaste). */}
       <div
         className="nodrag grid flex-1 overflow-auto"
-        style={{
-          gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))`,
-        }}
+        style={{ gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))` }}
         onPaste={handlePaste}
       >
         {rows.map((row, r) =>
@@ -2303,16 +1455,12 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
               key={`${r}-${c}`}
               value={cell}
               onChange={(e) => setCell(r, c, e.target.value)}
-              onFocus={() => {
-                activeCellRef.current = { r, c };
-              }}
+              onFocus={() => { activeCellRef.current = { r, c }; }}
               className={cn(
                 "min-w-0 border-b border-e px-2 py-1.5 text-xs outline-none focus:bg-primary/5",
                 r === rows.length - 1 && "border-b-0",
                 c === colCount - 1 && "border-e-0",
-                hasHeader &&
-                  r === 0 &&
-                  "bg-black/5 font-semibold dark:bg-white/10",
+                hasHeader && r === 0 && "bg-black/5 font-semibold dark:bg-white/10",
               )}
               style={{ borderColor: resolved.border, color: resolved.text }}
             />
@@ -2328,24 +1476,16 @@ function useUpstreamTabularNode(id: string): Node<DiagramNodeData> | undefined {
   const edges = useDiagramStore((s) => s.edges);
   const nodes = useDiagramStore((s) => s.nodes);
   const incoming = edges.find((e) => e.target === id);
-  const source = incoming
-    ? nodes.find((n) => n.id === incoming.source)
-    : undefined;
-  return source &&
-    ["tableNode", "excelNode", "matrixNode"].includes(source.type ?? "")
-    ? source
-    : undefined;
+  const source = incoming ? nodes.find((n) => n.id === incoming.source) : undefined;
+  return source && ["tableNode", "excelNode", "matrixNode"].includes(source.type ?? "") ? source : undefined;
 }
 
 /** Grid of strings out of ANY of Table/Excel/Matrix's own data shape, so
  *  downstream nodes (Matrix, Chart) can treat all three as interchangeable
  *  data sources. */
-function tabularGridOf(
-  node: Node<DiagramNodeData> | undefined,
-): string[][] | undefined {
+function tabularGridOf(node: Node<DiagramNodeData> | undefined): string[][] | undefined {
   if (!node) return undefined;
-  if (node.type === "matrixNode")
-    return node.data.matrixRows?.map((row) => row.map((n) => String(n)));
+  if (node.type === "matrixNode") return node.data.matrixRows?.map((row) => row.map((n) => String(n)));
   return node.data.tableRows;
 }
 
@@ -2373,10 +1513,7 @@ function ExcelNode({ id, selected, data }: DiagramNodeProps) {
   const width = data.width ?? fallback.width;
   const height = data.height ?? fallback.height;
 
-  const rows =
-    data.tableRows && data.tableRows.length > 0
-      ? data.tableRows
-      : DEFAULT_EXCEL_ROWS;
+  const rows = data.tableRows && data.tableRows.length > 0 ? data.tableRows : DEFAULT_EXCEL_ROWS;
   const hasHeader = data.tableHasHeader ?? true;
   const colCount = rows[0]?.length ?? 0;
   const activeCellRef = React.useRef({ r: 0, c: 0 });
@@ -2400,167 +1537,75 @@ function ExcelNode({ id, selected, data }: DiagramNodeProps) {
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () =>
-      updateNodeData(id, {
-        tableRows: parseDelimitedText(String(reader.result ?? "")),
-      });
-    reader.readAsText(file);
+    parseSpreadsheetFile(file)
+      .then((rows) => updateNodeData(id, { tableRows: rows }))
+      .catch((err) => console.error("Could not read spreadsheet file:", err));
     e.target.value = "";
   };
 
-  const addRow = () =>
-    updateNodeData(id, {
-      tableRows: [...rows.map((r) => [...r]), Array(colCount).fill("")],
-    });
-  const removeRow = () =>
-    rows.length > 1 &&
-    updateNodeData(id, { tableRows: rows.slice(0, -1).map((r) => [...r]) });
-  const addColumn = () =>
-    updateNodeData(id, { tableRows: rows.map((r) => [...r, ""]) });
-  const removeColumn = () =>
-    colCount > 1 &&
-    updateNodeData(id, { tableRows: rows.map((r) => r.slice(0, -1)) });
+  const addRow = () => updateNodeData(id, { tableRows: [...rows.map((r) => [...r]), Array(colCount).fill("")] });
+  const removeRow = () => rows.length > 1 && updateNodeData(id, { tableRows: rows.slice(0, -1).map((r) => [...r]) });
+  const addColumn = () => updateNodeData(id, { tableRows: rows.map((r) => [...r, ""]) });
+  const removeColumn = () => colCount > 1 && updateNodeData(id, { tableRows: rows.map((r) => r.slice(0, -1)) });
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 220, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer
-        isVisible={!!selected}
-        minWidth={220}
-        minHeight={120}
-        onResize={handleResize}
-      />
+      <CornerResizer isVisible={!!selected} minWidth={220} minHeight={120} onResize={handleResize} />
       <FreeConnectHandles />
 
-      <div
-        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
-        style={{ borderColor: resolved.border }}
-      >
+      <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <FileArchive
-            className="size-3.5 shrink-0 opacity-50"
-            style={{ color: resolved.text }}
-          />
-          <span
-            className="truncate text-[11px] font-medium opacity-80"
-            style={{ color: resolved.text }}
-          >
+          <FileArchive className="size-3.5 shrink-0 opacity-50" style={{ color: resolved.text }} />
+          <span className="truncate text-[11px] font-medium opacity-80" style={{ color: resolved.text }}>
             {data.label || safeT(t, "nodes.excelNode", "Excel")}
           </span>
         </div>
         {selected && (
           <div className="nodrag flex shrink-0 items-center gap-0.5">
-            <Button
-              variant="secondary"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.importCsv", "Import CSV/TSV file")}
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <Button variant="secondary" size="icon-sm" className="size-6" title={safeT(t, "settings.importCsv", "Import CSV/TSV file")} onClick={() => fileInputRef.current?.click()}>
               <Upload className="size-3" />
             </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,.tsv,.txt"
-              className="hidden"
-              onChange={handleFileImport}
-            />
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addRow", "Add row")}
-              onClick={addRow}
-            >
-              <Rows3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <input ref={fileInputRef} type="file" accept=".xlsx,.xls,.csv,.tsv,.txt" className="hidden" onChange={handleFileImport} />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addRow", "Add row")} onClick={addRow}>
+              <Rows3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeRow", "Remove row")}
-              onClick={removeRow}
-              disabled={rows.length <= 1}
-            >
-              <Rows3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeRow", "Remove row")} onClick={removeRow} disabled={rows.length <= 1}>
+              <Rows3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addColumn", "Add column")}
-              onClick={addColumn}
-            >
-              <Columns3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addColumn", "Add column")} onClick={addColumn}>
+              <Columns3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeColumn", "Remove column")}
-              onClick={removeColumn}
-              disabled={colCount <= 1}
-            >
-              <Columns3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeColumn", "Remove column")} onClick={removeColumn} disabled={colCount <= 1}>
+              <Columns3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant={hasHeader ? "secondary" : "ghost"}
-              size="icon-sm"
-              className="size-6 text-[9px] font-bold"
-              title={safeT(t, "settings.toggleHeaderRow", "Toggle header row")}
-              onClick={() => updateNodeData(id, { tableHasHeader: !hasHeader })}
-            >
+            <Button variant={hasHeader ? "secondary" : "ghost"} size="icon-sm" className="size-6 text-[9px] font-bold" title={safeT(t, "settings.toggleHeaderRow", "Toggle header row")} onClick={() => updateNodeData(id, { tableHasHeader: !hasHeader })}>
               H
             </Button>
           </div>
         )}
       </div>
 
-      <div
-        className="nodrag grid flex-1 overflow-auto"
-        style={{
-          gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))`,
-        }}
-        onPaste={handlePaste}
-      >
+      <div className="nodrag grid flex-1 overflow-auto" style={{ gridTemplateColumns: `repeat(${colCount}, minmax(64px, 1fr))` }} onPaste={handlePaste}>
         {rows.map((row, r) =>
           row.map((cell, c) => (
             <input
               key={`${r}-${c}`}
               value={cell}
               onChange={(e) => setCell(r, c, e.target.value)}
-              onFocus={() => {
-                activeCellRef.current = { r, c };
-              }}
+              onFocus={() => { activeCellRef.current = { r, c }; }}
               className={cn(
                 "min-w-0 border-b border-e px-2 py-1.5 text-xs outline-none focus:bg-primary/5",
                 r === rows.length - 1 && "border-b-0",
                 c === colCount - 1 && "border-e-0",
-                hasHeader &&
-                  r === 0 &&
-                  "bg-black/5 font-semibold dark:bg-white/10",
+                hasHeader && r === 0 && "bg-black/5 font-semibold dark:bg-white/10",
               )}
               style={{ borderColor: resolved.border, color: resolved.text }}
             />
@@ -2595,19 +1640,30 @@ function MatrixNode({ id, selected, data }: DiagramNodeProps) {
 
   const upstream = useUpstreamTabularNode(id);
   const upstreamGrid = tabularGridOf(upstream);
-  const ownRows =
-    data.matrixRows && data.matrixRows.length > 0
-      ? data.matrixRows
-      : DEFAULT_MATRIX_ROWS;
+  const ownRows = data.matrixRows && data.matrixRows.length > 0 ? data.matrixRows : DEFAULT_MATRIX_ROWS;
   // When mirroring an upstream node, skip its header row (if it has one) —
   // a matrix is all numbers, a header row of column names isn't one.
   const rows: (string | number)[][] = upstream
-    ? upstream.data.tableHasHeader
-      ? (upstreamGrid ?? []).slice(1)
-      : (upstreamGrid ?? [])
+    ? (upstream.data.tableHasHeader ? (upstreamGrid ?? []).slice(1) : upstreamGrid ?? [])
     : ownRows;
   const colCount = rows[0]?.length ?? 0;
   const activeCellRef = React.useRef({ r: 0, c: 0 });
+
+  // Coordination with upstream Table/Excel data: those are free text, a
+  // Matrix is strictly numbers — flag it instead of silently turning
+  // anything unparseable into a 0.
+  const nonNumericCellCount = upstream
+    ? rows.reduce(
+        (acc, row) =>
+          acc +
+          row.filter((cell) => {
+            const s = String(cell).trim();
+            return s !== "" && !Number.isFinite(Number(s.replace(/,/g, "")));
+          }).length,
+        0,
+      )
+    : 0;
+  const upstreamIsEmpty = !!upstream && rows.length === 0;
 
   const setCell = (r: number, c: number, value: number) => {
     const next = ownRows.map((row) => [...row]);
@@ -2620,156 +1676,73 @@ function MatrixNode({ id, selected, data }: DiagramNodeProps) {
     const text = e.clipboardData.getData("text");
     if (!text) return;
     e.preventDefault();
-    const incoming = parseDelimitedText(text).map((row) =>
-      row.map(toNumberCell),
-    );
+    const incoming = parseDelimitedText(text).map((row) => row.map(toNumberCell));
     const { r, c } = activeCellRef.current;
-    updateNodeData(id, {
-      matrixRows: pasteIntoGrid(
-        ownRows.map((row) => row.map(String)),
-        incoming.map((row) => row.map(String)),
-        r,
-        c,
-      ).map((row) => row.map(toNumberCell)),
-    });
+    updateNodeData(id, { matrixRows: pasteIntoGrid(ownRows.map((row) => row.map(String)), incoming.map((row) => row.map(String)), r, c).map((row) => row.map(toNumberCell)) });
   };
 
-  const addRow = () =>
-    !upstream &&
-    updateNodeData(id, {
-      matrixRows: [...ownRows.map((r) => [...r]), Array(colCount || 1).fill(0)],
-    });
-  const removeRow = () =>
-    !upstream &&
-    ownRows.length > 1 &&
-    updateNodeData(id, { matrixRows: ownRows.slice(0, -1).map((r) => [...r]) });
-  const addColumn = () =>
-    !upstream &&
-    updateNodeData(id, { matrixRows: ownRows.map((r) => [...r, 0]) });
-  const removeColumn = () =>
-    !upstream &&
-    colCount > 1 &&
-    updateNodeData(id, { matrixRows: ownRows.map((r) => r.slice(0, -1)) });
+  const addRow = () => !upstream && updateNodeData(id, { matrixRows: [...ownRows.map((r) => [...r]), Array(colCount || 1).fill(0)] });
+  const removeRow = () => !upstream && ownRows.length > 1 && updateNodeData(id, { matrixRows: ownRows.slice(0, -1).map((r) => [...r]) });
+  const addColumn = () => !upstream && updateNodeData(id, { matrixRows: ownRows.map((r) => [...r, 0]) });
+  const removeColumn = () => !upstream && colCount > 1 && updateNodeData(id, { matrixRows: ownRows.map((r) => r.slice(0, -1)) });
 
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
   );
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 160, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer
-        isVisible={!!selected}
-        minWidth={160}
-        minHeight={120}
-        onResize={handleResize}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="table-in"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        id="matrix-out"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <CornerResizer isVisible={!!selected} minWidth={160} minHeight={120} onResize={handleResize} />
+      <Handle type="target" position={Position.Left} id="table-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="matrix-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
-      <div
-        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
-        style={{ borderColor: resolved.border }}
-      >
+      <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <GripHorizontal
-            className="size-3.5 shrink-0 opacity-50"
-            style={{ color: resolved.text }}
-          />
-          <span
-            className="truncate text-[11px] font-medium opacity-80"
-            style={{ color: resolved.text }}
-          >
-            {data.label || safeT(t, "nodes.matrixNode", "Matrix")} (
-            {rows.length}×{colCount})
+          <GripHorizontal className="size-3.5 shrink-0 opacity-50" style={{ color: resolved.text }} />
+          <span className="truncate text-[11px] font-medium opacity-80" style={{ color: resolved.text }}>
+            {data.label || safeT(t, "nodes.matrixNode", "Matrix")} ({rows.length}×{colCount})
           </span>
         </div>
         {selected && !upstream && (
           <div className="nodrag flex shrink-0 items-center gap-0.5">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addRow", "Add row")}
-              onClick={addRow}
-            >
-              <Rows3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addRow", "Add row")} onClick={addRow}>
+              <Rows3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeRow", "Remove row")}
-              onClick={removeRow}
-              disabled={ownRows.length <= 1}
-            >
-              <Rows3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeRow", "Remove row")} onClick={removeRow} disabled={ownRows.length <= 1}>
+              <Rows3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.addColumn", "Add column")}
-              onClick={addColumn}
-            >
-              <Columns3 className="size-3" />
-              <Plus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.addColumn", "Add column")} onClick={addColumn}>
+              <Columns3 className="size-3" /><Plus className="-ms-1 size-2.5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="size-6"
-              title={safeT(t, "settings.removeColumn", "Remove column")}
-              onClick={removeColumn}
-              disabled={colCount <= 1}
-            >
-              <Columns3 className="size-3" />
-              <Minus className="-ms-1 size-2.5" />
+            <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.removeColumn", "Remove column")} onClick={removeColumn} disabled={colCount <= 1}>
+              <Columns3 className="size-3" /><Minus className="-ms-1 size-2.5" />
             </Button>
           </div>
         )}
       </div>
 
       {upstream && (
-        <p
-          className="nodrag border-b px-2 py-1 text-[10px] opacity-70"
-          style={{ borderColor: resolved.border, color: resolved.text }}
-        >
+        <p className="nodrag border-b px-2 py-1 text-[10px] opacity-70" style={{ borderColor: resolved.border, color: resolved.text }}>
           Mirroring &ldquo;{upstream.data.label}&rdquo;
         </p>
       )}
 
-      <div
-        className="nodrag grid flex-1 overflow-auto"
-        style={{
-          gridTemplateColumns: `repeat(${colCount}, minmax(48px, 1fr))`,
-        }}
-        onPaste={handlePaste}
-      >
+      {nonNumericCellCount > 0 && (
+        <p className="nodrag border-b border-amber-400/60 bg-amber-400/10 px-2 py-1 text-[10px] leading-snug text-amber-700 dark:text-amber-400">
+          ⚠ {nonNumericCellCount} cell{nonNumericCellCount > 1 ? "s" : ""} in &ldquo;{upstream?.data.label}&rdquo; {nonNumericCellCount > 1 ? "aren't" : "isn't"} a number — treated as 0.
+        </p>
+      )}
+
+      {upstreamIsEmpty ? (
+        <p className="nodrag flex flex-1 items-center justify-center px-3 text-center text-xs opacity-60" style={{ color: resolved.text }}>
+          &ldquo;{upstream?.data.label}&rdquo; has no data rows to mirror (only a header, or empty).
+        </p>
+      ) : (
+      <div className="nodrag grid flex-1 overflow-auto" style={{ gridTemplateColumns: `repeat(${colCount}, minmax(48px, 1fr))` }} onPaste={handlePaste}>
         {rows.map((row, r) =>
           row.map((cell, c) => (
             <input
@@ -2777,9 +1750,7 @@ function MatrixNode({ id, selected, data }: DiagramNodeProps) {
               value={cell}
               readOnly={!!upstream}
               onChange={(e) => setCell(r, c, toNumberCell(e.target.value))}
-              onFocus={() => {
-                activeCellRef.current = { r, c };
-              }}
+              onFocus={() => { activeCellRef.current = { r, c }; }}
               dir="ltr"
               className={cn(
                 "min-w-0 border-b border-e px-2 py-1.5 text-center text-xs outline-none focus:bg-primary/5",
@@ -2791,6 +1762,7 @@ function MatrixNode({ id, selected, data }: DiagramNodeProps) {
           )),
         )}
       </div>
+      )}
     </div>
   );
 }
@@ -2817,142 +1789,198 @@ function ChartNode({ id, selected, data }: DiagramNodeProps) {
   const width = data.width ?? fallback.width;
   const height = data.height ?? fallback.height;
   const chartType = data.chartType ?? "bar";
+  const activeCellRef = React.useRef({ r: 0, c: 0 });
 
   const upstream = useUpstreamTabularNode(id);
   const upstreamGrid = tabularGridOf(upstream);
-  const rows = upstream
-    ? (upstreamGrid ?? DEFAULT_CHART_ROWS)
-    : data.chartRows && data.chartRows.length > 1
-      ? data.chartRows
-      : DEFAULT_CHART_ROWS;
+  const isMatrixUpstream = upstream?.type === "matrixNode";
+  const ownRows = data.chartRows && data.chartRows.length > 1 ? data.chartRows : DEFAULT_CHART_ROWS;
 
-  // First row = series names (skipping the empty corner cell); every row
-  // after that = one category (its first cell) plus one number per series.
-  const seriesNames = rows[0]?.slice(1) ?? [];
-  const chartData = rows.slice(1).map((row) => {
+  // A Matrix has no header row of series names (it's numbers all the way
+  // down) — so unlike Table/Excel, synthesize "Col 1/2/3" series names and
+  // "Row 1/2/3" category labels instead of misreading actual data values as
+  // if they were column headers.
+  let seriesNames: string[];
+  let dataRows: string[][];
+  if (upstream && isMatrixUpstream) {
+    const grid = upstreamGrid ?? [];
+    const cols = grid[0]?.length ?? 0;
+    seriesNames = Array.from({ length: cols }, (_, i) => `Col ${i + 1}`);
+    dataRows = grid.map((row, i) => [`Row ${i + 1}`, ...row]);
+  } else {
+    const rows = upstream ? (upstreamGrid ?? DEFAULT_CHART_ROWS) : ownRows;
+    // First row = series names (skipping the empty corner cell); every row
+    // after that = one category (its first cell) plus one number per series.
+    seriesNames = rows[0]?.slice(1) ?? [];
+    dataRows = rows.slice(1);
+  }
+
+  const chartData = dataRows.map((row) => {
     const point: Record<string, string | number> = { name: row[0] ?? "" };
-    seriesNames.forEach((series, i) => {
-      point[series] = toNumberCell(row[i + 1] ?? "0");
-    });
+    seriesNames.forEach((series, i) => { point[series] = toNumberCell(row[i + 1] ?? "0"); });
     return point;
   });
   const seriesColors = ["#6366f1", "#f59e0b", "#22c55e", "#ec4899", "#06b6d4"];
 
+  // Explicit, stable pixel size for the chart itself — computed from this
+  // node's own width/height (which only change on a deliberate resize drag),
+  // instead of a percentage-based ResponsiveContainer. ResponsiveContainer
+  // watches its parent via ResizeObserver and re-measures on every render;
+  // inside a React Flow custom node that's also being measured/resized by
+  // React Flow itself, that turned into a measure → re-render → re-measure
+  // loop (the "Maximum update depth exceeded" crash).
+  const HEADER_H = 29;
+  const EDITOR_H = !upstream && data.chartShowEditor ? 96 : 0;
+  const CHART_PADDING = 16;
+  const chartAreaWidth = Math.max(160, width - CHART_PADDING);
+  const chartAreaHeight = Math.max(120, height - HEADER_H - EDITOR_H - CHART_PADDING);
+
+  const setOwnCell = (r: number, c: number, value: string) => {
+    const next = ownRows.map((row) => [...row]);
+    next[r][c] = value;
+    updateNodeData(id, { chartRows: next });
+  };
+  const addOwnRow = () => updateNodeData(id, { chartRows: [...ownRows.map((r) => [...r]), Array(ownRows[0]?.length ?? 2).fill("")] });
+  const removeOwnRow = () => ownRows.length > 2 && updateNodeData(id, { chartRows: ownRows.slice(0, -1).map((r) => [...r]) });
+  const addOwnColumn = () => updateNodeData(id, { chartRows: ownRows.map((r) => [...r, ""]) });
+  const removeOwnColumn = () => (ownRows[0]?.length ?? 0) > 2 && updateNodeData(id, { chartRows: ownRows.map((r) => r.slice(0, -1)) });
+  const handleOwnPaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const text = e.clipboardData.getData("text");
+    if (!text) return;
+    e.preventDefault();
+    const incoming = parseDelimitedText(text);
+    const { r, c } = activeCellRef.current;
+    updateNodeData(id, { chartRows: pasteIntoGrid(ownRows, incoming, r, c) });
+  };
+
   const handleResize = useCallback<OnResize>(
-    (_e, params) =>
-      updateNodeData(id, {
-        width: Math.round(params.width),
-        height: Math.round(params.height),
-      }),
+    (_e, params) => updateNodeData(id, { width: Math.round(params.width), height: Math.round(params.height) }),
     [id, updateNodeData],
+  );
+
+  const helpText = safeT(
+    t,
+    "settings.chartHelp",
+    'How to fill this in: the top-left cell stays empty; the rest of the first row is your series names (e.g. "Revenue", "Cost"). Every row below that starts with a category label (e.g. "Jan") followed by one number per series. You can type directly, paste a range copied from Excel/Sheets, or connect a Table/Excel/Matrix node instead of entering data here.',
   );
 
   return (
     <div
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
-      style={{
-        width,
-        minHeight: height,
-        backgroundColor: resolved.background,
-        border: `1.5px solid ${selected ? selectedStroke : resolved.border}`,
-      }}
+      style={{ width, minWidth: 240, height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer
-        isVisible={!!selected}
-        minWidth={240}
-        minHeight={180}
-        onResize={handleResize}
-      />
-      <Handle
-        type="target"
-        position={Position.Left}
-        id="table-in"
-        className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
-      />
+      <CornerResizer isVisible={!!selected} minWidth={240} minHeight={180} onResize={handleResize} />
+      <Handle type="target" position={Position.Left} id="table-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
 
-      <div
-        className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing"
-        style={{ borderColor: resolved.border }}
-      >
+      <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
         <div className="flex items-center gap-1.5 overflow-hidden">
-          <GripHorizontal
-            className="size-3.5 shrink-0 opacity-50"
-            style={{ color: resolved.text }}
-          />
-          <span
-            className="truncate text-[11px] font-medium opacity-80"
-            style={{ color: resolved.text }}
-          >
+          <GripHorizontal className="size-3.5 shrink-0 opacity-50" style={{ color: resolved.text }} />
+          <span className="truncate text-[11px] font-medium opacity-80" style={{ color: resolved.text }}>
             {data.label || safeT(t, "nodes.chartNode", "Chart")}
           </span>
         </div>
         {selected && (
           <div className="nodrag flex shrink-0 items-center gap-0.5">
-            <Button
-              variant={chartType === "bar" ? "secondary" : "ghost"}
-              size="icon-sm"
-              className="size-6 text-[10px]"
-              onClick={() => updateNodeData(id, { chartType: "bar" })}
-            >
+            <Button variant={chartType === "bar" ? "secondary" : "ghost"} size="icon-sm" className="size-6 text-[10px]" onClick={() => updateNodeData(id, { chartType: "bar" })}>
               Bar
             </Button>
-            <Button
-              variant={chartType === "line" ? "secondary" : "ghost"}
-              size="icon-sm"
-              className="size-6 text-[10px]"
-              onClick={() => updateNodeData(id, { chartType: "line" })}
-            >
+            <Button variant={chartType === "line" ? "secondary" : "ghost"} size="icon-sm" className="size-6 text-[10px]" onClick={() => updateNodeData(id, { chartType: "line" })}>
               Line
             </Button>
+            {!upstream && (
+              <Button variant={data.chartShowEditor ? "secondary" : "ghost"} size="icon-sm" className="size-6" title={safeT(t, "settings.editChartData", "Edit data")} onClick={() => updateNodeData(id, { chartShowEditor: !data.chartShowEditor })}>
+                <Table className="size-3" />
+              </Button>
+            )}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon-sm" className="size-6" title={safeT(t, "settings.chartHelpTitle", "How do I enter data?")}>
+                  <HelpCircle className="size-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-64 text-xs leading-relaxed">
+                {helpText}
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </div>
 
-      <div className="nodrag min-h-0 flex-1 p-2">
-        {chartData.length === 0 || seriesNames.length === 0 ? (
-          <p
-            className="flex h-full items-center justify-center text-center text-xs opacity-60"
-            style={{ color: resolved.text }}
+      {/* Inline data editor — only relevant (and only shown) when nothing is
+          connected upstream, since a connected Table/Excel/Matrix node is
+          already the source of truth and this would just be a confusing
+          second place to edit the same thing. */}
+      {!upstream && data.chartShowEditor && (
+        <div className="nodrag flex shrink-0 items-center justify-between gap-1 border-b px-2 py-1" style={{ borderColor: resolved.border }}>
+          <div
+            className="grid flex-1 gap-px overflow-x-auto"
+            style={{ gridTemplateColumns: `repeat(${ownRows[0]?.length ?? 0}, minmax(52px, 1fr))` }}
+            onPaste={handleOwnPaste}
           >
-            Connect a Table/Excel/Matrix node, or add data with at least one
-            series column.
-          </p>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            {chartType === "bar" ? (
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <RechartsTooltip />
-                {seriesNames.map((series, i) => (
-                  <Bar
-                    key={series}
-                    dataKey={series}
-                    fill={seriesColors[i % seriesColors.length]}
-                    radius={[3, 3, 0, 0]}
-                  />
-                ))}
-              </BarChart>
-            ) : (
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <RechartsTooltip />
-                {seriesNames.map((series, i) => (
-                  <Line
-                    key={series}
-                    type="monotone"
-                    dataKey={series}
-                    stroke={seriesColors[i % seriesColors.length]}
-                    strokeWidth={2}
-                    dot={{ r: 2 }}
-                  />
-                ))}
-              </LineChart>
+            {ownRows.map((row, r) =>
+              row.map((cell, c) => (
+                <input
+                  key={`${r}-${c}`}
+                  value={cell}
+                  onChange={(e) => setOwnCell(r, c, e.target.value)}
+                  onFocus={() => { activeCellRef.current = { r, c }; }}
+                  placeholder={r === 0 && c === 0 ? "—" : undefined}
+                  className={cn(
+                    "min-w-0 rounded border px-1 py-0.5 text-[10px] outline-none focus:bg-primary/5",
+                    r === 0 && "font-semibold",
+                  )}
+                  style={{ borderColor: resolved.border, color: resolved.text }}
+                />
+              )),
             )}
-          </ResponsiveContainer>
+          </div>
+          <div className="flex shrink-0 flex-col gap-0.5">
+            <div className="flex gap-0.5">
+              <Button variant="ghost" size="icon-sm" className="size-5" title={safeT(t, "settings.addRow", "Add row")} onClick={addOwnRow}><Plus className="size-2.5" /></Button>
+              <Button variant="ghost" size="icon-sm" className="size-5" title={safeT(t, "settings.removeRow", "Remove row")} onClick={removeOwnRow}><Minus className="size-2.5" /></Button>
+            </div>
+            <div className="flex gap-0.5">
+              <Button variant="ghost" size="icon-sm" className="size-5" title={safeT(t, "settings.addColumn", "Add column")} onClick={addOwnColumn}><Columns3 className="size-2.5" /></Button>
+              <Button variant="ghost" size="icon-sm" className="size-5" title={safeT(t, "settings.removeColumn", "Remove column")} onClick={removeOwnColumn}><Columns3 className="size-2.5" /></Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="nodrag min-h-0 flex-1 overflow-hidden p-2">
+        {chartData.length === 0 || seriesNames.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 px-3 text-center">
+            <p className="text-xs opacity-60" style={{ color: resolved.text }}>
+              {upstream
+                ? `⚠ "${upstream.data.label}" doesn't have enough rows/columns to chart — need at least one category row and one series column.`
+                : "No data yet."}
+            </p>
+            {!upstream && (
+              <Button variant="outline" size="sm" className="nodrag h-7 gap-1 text-[11px]" onClick={() => updateNodeData(id, { chartShowEditor: true })}>
+                <Table className="size-3" /> {safeT(t, "settings.editChartData", "Edit data")}
+              </Button>
+            )}
+          </div>
+        ) : chartType === "bar" ? (
+          <BarChart width={chartAreaWidth} height={chartAreaHeight} data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+            <YAxis tick={{ fontSize: 10 }} />
+            <RechartsTooltip />
+            {seriesNames.map((series, i) => (
+              <Bar key={`${series}-${i}`} dataKey={series} fill={seriesColors[i % seriesColors.length]} radius={[3, 3, 0, 0]} />
+            ))}
+          </BarChart>
+        ) : (
+          <LineChart width={chartAreaWidth} height={chartAreaHeight} data={chartData}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+            <YAxis tick={{ fontSize: 10 }} />
+            <RechartsTooltip />
+            {seriesNames.map((series, i) => (
+              <Line key={`${series}-${i}`} type="monotone" dataKey={series} stroke={seriesColors[i % seriesColors.length]} strokeWidth={2} dot={{ r: 2 }} />
+            ))}
+          </LineChart>
         )}
       </div>
     </div>
@@ -2991,9 +2019,7 @@ export const nodeTypes = {
   beamCalcNode: BeamCalcNode,
   shapeNode: ShapeNode,
   imageNode: ImageNode,
-  svgNode: SvgNode,
-  dwgNode: DwgNode,
-  dxfNode: DxfNode,
+  svgNode: ImageNode,
 } satisfies Record<DiagramNodeType, React.ComponentType<DiagramNodeProps>>;
 
 /** Node types that should only be draggable by a header/handle, not the whole body. */
@@ -3004,3 +2030,6 @@ export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   matrixNode: ".table-drag-handle",
   chartNode: ".table-drag-handle",
 };
+
+
+

@@ -6,7 +6,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-
+transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-three-text'],
   images: {
     remotePatterns: [
       {

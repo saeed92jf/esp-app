@@ -1,8 +1,8 @@
 {
   "Common": {
     "appName": {
-      "lead": "Euroslot Pars",
-      "trail": "Web App.",
+      "lead": "ESP",
+      "trail": "WEB APP.",
       "accent": "trail"
     },
     "search": "Search",
@@ -410,9 +410,7 @@
       "beamCalcNode": "beam Calc",
       "geometryCalcNode": "geometry Calc",
       "imageNode": "image",
-      "svgNode": "SVG",
-      "dwgNode": "DWG",
-      "dxfNode": "DXF",
+      "svgNode": "Image",
       "starNode": "Star",
       "pentagonNode": "Pentagon",
       "multiDocumentNode": "Multi Doc",
@@ -471,7 +469,12 @@
       "toggleHeaderRow": "Toggle header row",
       "tabContent": "Content",
       "tabStyle": "Style",
-      "importCsv": "Import CSV/TSV file"
+      "importCsv": "Import CSV/TSV file",
+      "uploadImage": "Upload image or SVG",
+      "opacity": "Opacity",
+      "chartHelpTitle": "How do I enter data?",
+      "chartHelp": "How to fill this in: the top-left cell stays empty; the rest of the first row is your series names (e.g. \"Revenue\", \"Cost\"). Every row below that starts with a category label (e.g. \"Jan\") followed by one number per series. You can type directly, paste a range copied from Excel/Sheets, or connect a Table/Excel/Matrix node instead of entering data here.",
+      "editChartData": "Edit data"
     },
     "editorSettings": {
       "title": "Editor Settings",

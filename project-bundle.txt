@@ -1,13 +1,399 @@
 ﻿================================================================================
-PROJECT BUNDLE - Generated: 2026-07-15 17:42:32
-Project Root: D:\esp-app
+PROJECT BUNDLE - Generated: 2026-07-17 18:00:19
+Project Root: G:\esp-app
 ================================================================================
 
+################################################################################
+# PROJECT TREE
+################################################################################
+
+[D] .git
+[F] .gitignore
+[D] .next
+[D] .vscode
+  [F] .vscode\settings.json
+[F] components.json
+[F] eslint.config.mjs
+[D] messages
+  [F] messages\en.json
+  [F] messages\fa.json
+[F] next.config.ts
+[F] next-env.d.ts
+[D] node_modules
+[F] package.json
+[F] package-lock.json
+[F] postcss.config.mjs
+[F] project-bundle.txt
+[D] public
+  [D] public\diagrams
+    [F] public\diagrams\API Web Diagram.json
+  [D] public\docs
+    [F] public\docs\Get-ProjectBundle.ps1
+    [F] public\docs\Get-ProjectBundle.txt
+    [F] public\docs\global.css
+    [F] public\docs\Microsoft.PowerShell_profile.ps1
+    [F] public\docs\myFunc.ps1
+    [F] public\docs\tailwind-v4-cheatsheet.html
+  [F] public\file.svg
+  [D] public\fonts
+    [D] public\fonts\Inter
+      [F] public\fonts\Inter\Inter-Black.woff2
+      [F] public\fonts\Inter\Inter-BlackItalic.woff2
+      [F] public\fonts\Inter\Inter-Bold.woff2
+      [F] public\fonts\Inter\Inter-BoldItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Black.woff2
+      [F] public\fonts\Inter\InterDisplay-BlackItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Bold.woff2
+      [F] public\fonts\Inter\InterDisplay-BoldItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-ExtraBold.woff2
+      [F] public\fonts\Inter\InterDisplay-ExtraBoldItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-ExtraLight.woff2
+      [F] public\fonts\Inter\InterDisplay-ExtraLightItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Italic.woff2
+      [F] public\fonts\Inter\InterDisplay-Light.woff2
+      [F] public\fonts\Inter\InterDisplay-LightItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Medium.woff2
+      [F] public\fonts\Inter\InterDisplay-MediumItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Regular.woff2
+      [F] public\fonts\Inter\InterDisplay-SemiBold.woff2
+      [F] public\fonts\Inter\InterDisplay-SemiBoldItalic.woff2
+      [F] public\fonts\Inter\InterDisplay-Thin.woff2
+      [F] public\fonts\Inter\InterDisplay-ThinItalic.woff2
+      [F] public\fonts\Inter\Inter-ExtraBold.woff2
+      [F] public\fonts\Inter\Inter-ExtraBoldItalic.woff2
+      [F] public\fonts\Inter\Inter-ExtraLight.woff2
+      [F] public\fonts\Inter\Inter-ExtraLightItalic.woff2
+      [F] public\fonts\Inter\Inter-Italic.woff2
+      [F] public\fonts\Inter\Inter-Light.woff2
+      [F] public\fonts\Inter\Inter-LightItalic.woff2
+      [F] public\fonts\Inter\Inter-Medium.woff2
+      [F] public\fonts\Inter\Inter-MediumItalic.woff2
+      [F] public\fonts\Inter\Inter-Regular.woff2
+      [F] public\fonts\Inter\Inter-SemiBold.woff2
+      [F] public\fonts\Inter\Inter-SemiBoldItalic.woff2
+      [F] public\fonts\Inter\Inter-Thin.woff2
+      [F] public\fonts\Inter\Inter-ThinItalic.woff2
+      [F] public\fonts\Inter\InterVariable.woff2
+      [F] public\fonts\Inter\InterVariable-Italic.woff2
+    [D] public\fonts\poppins
+      [F] public\fonts\poppins\poppins-v24-latin-100.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-100italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-200.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-200italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-300.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-300italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-500.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-500italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-600.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-600italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-700.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-700italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-800.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-800italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-900.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-900italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-italic.woff2
+      [F] public\fonts\poppins\poppins-v24-latin-regular.woff2
+    [D] public\fonts\Shabnam
+      [F] public\fonts\Shabnam\Shabnam.eot
+      [F] public\fonts\Shabnam\Shabnam.ttf
+      [F] public\fonts\Shabnam\Shabnam.woff
+      [F] public\fonts\Shabnam\Shabnam.woff2
+      [F] public\fonts\Shabnam\Shabnam-Bold.eot
+      [F] public\fonts\Shabnam\Shabnam-Bold.ttf
+      [F] public\fonts\Shabnam\Shabnam-Bold.woff
+      [F] public\fonts\Shabnam\Shabnam-Bold.woff2
+      [F] public\fonts\Shabnam\Shabnam-Light.eot
+      [F] public\fonts\Shabnam\Shabnam-Light.ttf
+      [F] public\fonts\Shabnam\Shabnam-Light.woff
+      [F] public\fonts\Shabnam\Shabnam-Light.woff2
+      [F] public\fonts\Shabnam\Shabnam-Medium.eot
+      [F] public\fonts\Shabnam\Shabnam-Medium.ttf
+      [F] public\fonts\Shabnam\Shabnam-Medium.woff
+      [F] public\fonts\Shabnam\Shabnam-Medium.woff2
+      [F] public\fonts\Shabnam\Shabnam-Thin.eot
+      [F] public\fonts\Shabnam\Shabnam-Thin.ttf
+      [F] public\fonts\Shabnam\Shabnam-Thin.woff
+      [F] public\fonts\Shabnam\Shabnam-Thin.woff2
+  [F] public\globe.svg
+  [D] public\logos
+    [F] public\logos\fav.svg
+    [F] public\logos\Logo.svg
+  [F] public\next.svg
+  [F] public\vercel.svg
+  [F] public\window.svg
+[F] README.md
+[D] src
+  [D] src\app
+    [D] src\app\[locale]
+      [D] src\app\[locale]\(auth)
+        [D] src\app\[locale]\(auth)\login
+          [F] src\app\[locale]\(auth)\login\page.tsx
+        [D] src\app\[locale]\(auth)\register
+          [F] src\app\[locale]\(auth)\register\page.tsx
+        [D] src\app\[locale]\(auth)\welcome
+          [F] src\app\[locale]\(auth)\welcome\page.tsx
+      [D] src\app\[locale]\[...rest]
+        [F] src\app\[locale]\[...rest]\page.tsx
+      [D] src\app\[locale]\aparat
+        [F] src\app\[locale]\aparat\aparat-client.tsx
+        [F] src\app\[locale]\aparat\page.tsx
+      [D] src\app\[locale]\dashboard
+        [F] src\app\[locale]\dashboard\layout.tsx
+        [F] src\app\[locale]\dashboard\page.tsx
+      [D] src\app\[locale]\ESP-Flow
+        [F] src\app\[locale]\ESP-Flow\layout.tsx
+        [F] src\app\[locale]\ESP-Flow\page.tsx
+      [F] src\app\[locale]\layout.tsx
+      [F] src\app\[locale]\metadata.tsx
+      [F] src\app\[locale]\not-found.tsx
+      [F] src\app\[locale]\page.tsx
+    [D] src\app\api
+      [D] src\app\api\aparat
+        [D] src\app\api\aparat\[...path]
+          [F] src\app\api\aparat\[...path]\route.ts
+      [D] src\app\api\diagrams
+        [D] src\app\api\diagrams\monifast
+          [F] src\app\api\diagrams\monifast\route.ts
+        [F] src\app\api\diagrams\route.ts
+    [F] src\app\favicon.ico
+    [F] src\app\globals.css
+    [F] src\app\layout.tsx
+    [F] src\app\not-found.tsx
+  [D] src\components
+    [D] src\components\aparat
+      [F] src\components\aparat\aparat-skeleton.tsx
+      [F] src\components\aparat\channel-header.tsx
+      [F] src\components\aparat\ChannelStats.tsx
+      [F] src\components\aparat\channel-video-search.tsx
+      [F] src\components\aparat\Playlist.tsx
+      [F] src\components\aparat\sliding-tabs.tsx
+      [F] src\components\aparat\video-card.tsx
+      [F] src\components\aparat\video-player.tsx
+      [F] src\components\aparat\video-search-result.tsx
+    [D] src\components\auth
+      [F] src\components\auth\auth-gate.tsx
+    [D] src\components\brand
+      [F] src\components\brand\logo.tsx
+      [F] src\components\brand\logo-mark.tsx
+    [D] src\components\dashboard
+      [F] src\components\dashboard\activity-feed.tsx
+      [F] src\components\dashboard\dashboard.tsx
+      [F] src\components\dashboard\mini-chart.tsx
+      [F] src\components\dashboard\stat-card.tsx
+    [D] src\components\features
+      [D] src\components\features\feature-card
+        [F] src\components\features\feature-card\feature-card.tsx
+      [D] src\components\features\quick-access
+        [F] src\components\features\quick-access\quick-access.tsx
+        [F] src\components\features\quick-access\quick-access-customizer.tsx
+      [D] src\components\features\search
+        [F] src\components\features\search\highlight-text.tsx
+        [F] src\components\features\search\nav-search-result.tsx
+        [F] src\components\features\search\search-popup.tsx
+        [F] src\components\features\search\site-search.tsx
+    [D] src\components\home
+      [F] src\components\home\home-client.tsx
+    [D] src\components\layout
+      [F] src\components\layout\conditional-header.tsx
+      [F] src\components\layout\container.tsx
+      [F] src\components\layout\footer.tsx
+      [F] src\components\layout\header.tsx
+      [F] src\components\layout\html-lang-sync.tsx
+      [F] src\components\layout\settings-section.tsx
+      [F] src\components\layout\side-menu.tsx
+      [F] src\components\layout\theme-toggle.tsx
+    [F] src\components\locale-switcher.tsx
+    [D] src\components\sections
+      [F] src\components\sections\stats-section.tsx
+    [D] src\components\ui
+      [F] src\components\ui\accordion.tsx
+      [F] src\components\ui\alert.tsx
+      [F] src\components\ui\alert-dialog.tsx
+      [F] src\components\ui\aspect-ratio.tsx
+      [F] src\components\ui\avatar.tsx
+      [F] src\components\ui\badge.tsx
+      [F] src\components\ui\breadcrumb.tsx
+      [F] src\components\ui\button.tsx
+      [F] src\components\ui\calendar.tsx
+      [F] src\components\ui\card.tsx
+      [F] src\components\ui\carousel.tsx
+      [F] src\components\ui\chart.tsx
+      [F] src\components\ui\checkbox.tsx
+      [F] src\components\ui\collapsible.tsx
+      [F] src\components\ui\command.tsx
+      [F] src\components\ui\context-menu.tsx
+      [F] src\components\ui\dialog.tsx
+      [F] src\components\ui\drawer.tsx
+      [F] src\components\ui\dropdown-menu.tsx
+      [F] src\components\ui\form.tsx
+      [F] src\components\ui\hover-card.tsx
+      [F] src\components\ui\input.tsx
+      [F] src\components\ui\input-group.tsx
+      [F] src\components\ui\input-otp.tsx
+      [F] src\components\ui\label.tsx
+      [F] src\components\ui\menubar.tsx
+      [F] src\components\ui\navigation-menu.tsx
+      [F] src\components\ui\pagination.tsx
+      [F] src\components\ui\popover.tsx
+      [F] src\components\ui\progress.tsx
+      [F] src\components\ui\radio-group.tsx
+      [F] src\components\ui\resizable.tsx
+      [F] src\components\ui\scroll-area.tsx
+      [F] src\components\ui\select.tsx
+      [F] src\components\ui\separator.tsx
+      [F] src\components\ui\sheet.tsx
+      [F] src\components\ui\sidebar.tsx
+      [F] src\components\ui\skeleton.tsx
+      [F] src\components\ui\slider.tsx
+      [F] src\components\ui\sonner.tsx
+      [F] src\components\ui\switch.tsx
+      [F] src\components\ui\table.tsx
+      [F] src\components\ui\tabs.tsx
+      [F] src\components\ui\textarea.tsx
+      [F] src\components\ui\toggle.tsx
+      [F] src\components\ui\toggle-group.tsx
+      [F] src\components\ui\tooltip.tsx
+    [D] src\components\ui-custom
+      [F] src\components\ui-custom\combobox.tsx
+      [F] src\components\ui-custom\date-picker.tsx
+    [D] src\components\user
+      [F] src\components\user\user-menu.tsx
+    [D] src\components\welcome
+      [F] src\components\welcome\welcome-screen.tsx
+  [D] src\config
+    [F] src\config\navigation.ts
+    [F] src\config\settings.ts
+  [D] src\constants
+    [F] src\constants\layout.ts
+  [D] src\contexts
+    [F] src\contexts\aparat-context.tsx
+  [D] src\data
+    [F] src\data\stats.ts
+  [D] src\hooks
+    [F] src\hooks\use-aparat-channel.ts
+    [F] src\hooks\use-auth.ts
+    [F] src\hooks\use-count-up.ts
+    [F] src\hooks\use-dashboard.ts
+    [F] src\hooks\use-home-stats.ts
+    [F] src\hooks\use-in-view.ts
+    [F] src\hooks\use-mobile.ts
+    [F] src\hooks\use-primary-color.ts
+    [F] src\hooks\use-quick-access.ts
+    [F] src\hooks\use-relative-time.ts
+    [F] src\hooks\use-search-history.ts
+    [F] src\hooks\use-site-search.ts
+  [D] src\i18n
+    [F] src\i18n\navigation.ts
+    [F] src\i18n\request.ts
+    [F] src\i18n\routing.ts
+  [D] src\lib
+    [D] src\lib\auth
+      [F] src\lib\auth\roles.ts
+    [F] src\lib\flowStorage.ts
+    [F] src\lib\format-number.ts
+    [F] src\lib\navigation-search.ts
+    [F] src\lib\query-keys.ts
+    [F] src\lib\utils.ts
+    [D] src\lib\validations
+      [F] src\lib\validations\auth.ts
+  [F] src\middleware.ts
+  [D] src\modules
+    [D] src\modules\claude-flow
+      [D] src\modules\claude-flow\components
+        [F] src\modules\claude-flow\components\ContextMenu.tsx
+        [F] src\modules\claude-flow\components\DiagramCanvas.tsx
+        [F] src\modules\claude-flow\components\DiagramEditor.tsx
+        [F] src\modules\claude-flow\components\Dialogs.tsx
+        [D] src\modules\claude-flow\components\edges
+          [F] src\modules\claude-flow\components\edges\CustomEdge.tsx
+        [F] src\modules\claude-flow\components\EditorSettingsDialog.tsx
+        [F] src\modules\claude-flow\components\modal-shell.tsx
+        [F] src\modules\claude-flow\components\NodePalette.tsx
+        [D] src\modules\claude-flow\components\nodes
+          [F] src\modules\claude-flow\components\nodes\BaseNode.tsx
+          [F] src\modules\claude-flow\components\nodes\RotateHandle.tsx
+          [F] src\modules\claude-flow\components\nodes\ShapeNodes.tsx
+          [F] src\modules\claude-flow\components\nodes\ShapeSchematic.tsx
+        [F] src\modules\claude-flow\components\SettingsPanel.tsx
+        [F] src\modules\claude-flow\components\Toolbar.tsx
+      [F] src\modules\claude-flow\index.ts
+      [D] src\modules\claude-flow\store
+        [F] src\modules\claude-flow\store\index.ts
+      [D] src\modules\claude-flow\types
+        [F] src\modules\claude-flow\types\index.ts
+      [D] src\modules\claude-flow\utils
+        [F] src\modules\claude-flow\utils\colors.ts
+        [F] src\modules\claude-flow\utils\constants.ts
+        [F] src\modules\claude-flow\utils\floatingEdge.ts
+        [F] src\modules\claude-flow\utils\geometry.ts
+        [F] src\modules\claude-flow\utils\layout.ts
+        [F] src\modules\claude-flow\utils\operators.ts
+        [F] src\modules\claude-flow\utils\shapes.ts
+        [F] src\modules\claude-flow\utils\tabularData.ts
+        [F] src\modules\claude-flow\utils\units.ts
+        [F] src\modules\claude-flow\utils\validation.ts
+    [D] src\modules\hero-flow
+      [F] src\modules\hero-flow\HeroFlow.tsx
+      [D] src\modules\hero-flow\messages
+        [F] src\modules\hero-flow\messages\en.json
+        [F] src\modules\hero-flow\messages\fa.json
+      [D] src\modules\hero-flow\nodes
+        [F] src\modules\hero-flow\nodes\ColorNode.tsx
+        [F] src\modules\hero-flow\nodes\OutputNode.tsx
+        [F] src\modules\hero-flow\nodes\ShapeNode.tsx
+        [F] src\modules\hero-flow\nodes\ZoomNode.tsx
+      [D] src\modules\hero-flow\render
+        [F] src\modules\hero-flow\render\EngineeringObject.tsx
+      [F] src\modules\hero-flow\types.ts
+  [D] src\providers
+    [F] src\providers\app-providers.tsx
+    [F] src\providers\query-provider.tsx
+    [F] src\providers\time-provider.tsx
+  [D] src\services
+    [F] src\services\aparat.service.ts
+    [F] src\services\auth.service.ts
+    [D] src\services\core
+      [F] src\services\core\errors.ts
+      [F] src\services\core\http.ts
+      [F] src\services\core\types.ts
+    [F] src\services\dashboard.service.ts
+    [F] src\services\index.ts
+    [F] src\services\navigation.service.ts
+    [F] src\services\preferences.service.ts
+    [F] src\services\search.service.ts
+    [F] src\services\stats.service.ts
+    [F] src\services\user.service.ts
+  [D] src\styles
+    [D] src\styles\font
+      [F] src\styles\font\fonts.css
+    [D] src\styles\themes
+      [F] src\styles\themes\primary-colors.css
+      [F] src\styles\themes\semantic.css
+      [F] src\styles\themes\semantic-gradients.css
+    [D] src\styles\tokens
+      [F] src\styles\tokens\animations.css
+      [F] src\styles\tokens\breakpoints.css
+      [F] src\styles\tokens\colors.css
+      [F] src\styles\tokens\index.css
+      [F] src\styles\tokens\radius.css
+      [F] src\styles\tokens\shadows.css
+      [F] src\styles\tokens\spacing.css
+      [F] src\styles\tokens\typography.css
+      [F] src\styles\tokens\z-index.css
+  [D] src\types
+    [F] src\types\auth.ts
+    [F] src\types\index.ts
+    [F] src\types\stats.ts
+  [D] src\utils
+    [F] src\utils\aparatUtils.ts
+    [F] src\utils\dateParser.ts
+    [F] src\utils\textDirection.ts
+[F] tsconfig.json
 
 ################################################################################
 # TARGET FOLDER: src\modules\hero-flow
 ################################################################################
-
 
 --------------------------------------------------------------------------------
 FILE: src\modules\hero-flow\HeroFlow.tsx
@@ -92,19 +478,19 @@ function buildNodes(
   const targetHandlePosition = isRtl ? Position.Right : Position.Left;
 
   const positions = {
-    c: isRtl ? { x: -200, y: 30 } : { x: 40, y: 30 },
-    s: isRtl ? { x: -210, y: 100 } : { x: 20, y: 100 },
-    z: isRtl ? { x: -250, y: 200 } : { x: 35, y: 200 },
-    out: isRtl ? { x: -500, y: 40 } : { x: 210, y: 40 },
+    c: isRtl ? { x: -55, y: 30 } : { x: 40, y: 30 },
+    s: isRtl ? { x: -70, y: 100 } : { x: 20, y: 100 },
+    z: isRtl ? { x: -60, y: 200 } : { x: 35, y: 200 },
+    out: isRtl ? { x: -350, y: 40 } : { x: 210, y: 40 },
   };
 
   return [
-    {
-      id: "anchor",
-      position: { x: -200, y: 0 },
-      data: { isRtl },
-      style: { width: 1, height: 1, opacity: 0, pointerEvents: "none" },
-    },
+  {
+  id: "anchor",
+  position: { x: isRtl ? 300 : -200, y: 0 }, 
+  data: { isRtl },
+  style: { width: 1, height: 1, opacity: 0, pointerEvents: "none" },
+},
     {
       id: "c",
       type: "colorNode",
@@ -244,7 +630,7 @@ function FlowInner({
       onConnect={onConnect}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.2 }}
+      fitViewOptions={{ padding: 0.6 }}
       zoomOnScroll={false}
       zoomOnPinch={false}
       zoomOnDoubleClick={false}
@@ -286,15 +672,15 @@ export function HeroFlow() {
     >
       <div className="pointer-events-none absolute inset-0 z-20 flex items-center">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex max-w-xs flex-col items-start gap-4 rounded-3xl bg-white/5 p-5 backdrop-blur-md md:max-w-sm dark:bg-black/10">
+          <div className="flex max-w-xs flex-col items-start gap-4 rounded-3xl bg-transparent p-5 backdrop-blur-xs md:max-w-sm">
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
               {t("title")}{" "}
               <span className="text-(--theme)">{t("version")}</span>
             </h1>
 
-            <p className="text-sm font-medium text-muted-foreground md:text-base">
-              {t("description")}
-            </p>
+         <p className="text-sm font-medium text-muted-foreground md:text-base text-left isrtl:text-right">
+  {t("description")}
+</p>
 
             <div className="pointer-events-auto mt-2">
               <a
@@ -335,7 +721,6 @@ export function HeroFlow() {
 }
 
 
-
 --------------------------------------------------------------------------------
 FILE: src\modules\hero-flow\messages\en.json
 --------------------------------------------------------------------------------
@@ -349,11 +734,10 @@ FILE: src\modules\hero-flow\messages\en.json
     "scale": "Scale",
     "title": "ESP-Flow",
     "version": "V26",
-    "description": "The next generation of visual engineering for oil and gas infrastructure.",
+    "description": "The next generation of visual engineering With AI",
     "tryNow": "Try it now"
   }
 }
-
 
 
 --------------------------------------------------------------------------------
@@ -368,12 +752,11 @@ FILE: src\modules\hero-flow\messages\fa.json
     "pyramids": "Ù‡Ø±Ù…â€ŒÙ‡Ø§",
     "scale": "Ù…Ù‚ÛŒØ§Ø³",
     "title": "Ø§ÛŒ Ø§ÙØ³ Ù¾ÛŒ-ÙÙ„Ùˆ",
-    "version": "ÙˆØ±Ú˜Ù† Û²Û¶",
-    "description": "Ù†Ø³Ù„ Ø¨Ø¹Ø¯ÛŒ Ù…Ù‡Ù†Ø¯Ø³ÛŒ Ø¨ØµØ±ÛŒ Ø¨Ø±Ø§ÛŒ Ø²ÛŒØ±Ø³Ø§Ø®Øªâ€ŒÙ‡Ø§ÛŒ Ù†ÙØª Ùˆ Ú¯Ø§Ø².",
+    "version": "Û²Û¶",
+    "description": "Ù†Ø³Ù„ Ø¢ÛŒÙ†Ø¯Ù‡ Ù…Ù‡Ù†Ø¯Ø³ÛŒ Ø¨ØµØ±ÛŒ Ø¨Ø§ Ù‡ÙˆØ´ÙˆØ§Ø±Ù‡",
     "tryNow": "Ù‡Ù…ÛŒÙ† Ø­Ø§Ù„Ø§ Ø§Ù…ØªØ­Ø§Ù† Ú©Ù†ÛŒØ¯"
   }
 }
-
 
 
 --------------------------------------------------------------------------------
@@ -447,7 +830,6 @@ export const ColorNode = memo(({ id, data }: NodeProps) => {
 });
 
 ColorNode.displayName = "ColorNode";
-
 
 
 --------------------------------------------------------------------------------
@@ -529,7 +911,6 @@ export const OutputNode = memo(({ data }: NodeProps) => {
 });
 
 OutputNode.displayName = "OutputNode";
-
 
 
 --------------------------------------------------------------------------------
@@ -645,7 +1026,6 @@ export const ShapeNode = memo(({ id, data }: NodeProps) => {
 ShapeNode.displayName = "ShapeNode";
 
 
-
 --------------------------------------------------------------------------------
 FILE: src\modules\hero-flow\nodes\ZoomNode.tsx
 --------------------------------------------------------------------------------
@@ -721,7 +1101,6 @@ export const ZoomNode = memo(({ id, data }: NodeProps) => {
 });
 
 ZoomNode.displayName = "ZoomNode";
-
 
 
 --------------------------------------------------------------------------------
@@ -863,7 +1242,6 @@ export function EngineeringObject({
     </div>
   );
 }
-
 
 
 --------------------------------------------------------------------------------

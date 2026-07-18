@@ -1,10 +1,9 @@
 // src/modules/claude-flow/utils/tabularData.ts
 // Parses text copied from Excel/Sheets (tab-separated) or a plain .csv file
-// (comma-separated) into a simple string[][] grid. No external library
-// needed for this — Excel's own clipboard format for a cell range is just
-// TSV, and this project doesn't have a binary .xlsx parser installed, so
-// "Excel input" here means "paste from Excel" or "upload a .csv/.tsv file",
-// not reading an actual .xlsx binary.
+// (comma-separated) into a simple string[][] grid — used for clipboard
+// paste, which is always plain text no matter the source. Real binary
+// .xlsx/.xls files go through parseSpreadsheetFile below (SheetJS), further
+// down in this file.
 
 /** Guesses the delimiter by counting which one shows up more in the first line. */
 function detectDelimiter(firstLine: string): "\t" | "," {
@@ -90,4 +89,41 @@ export function pasteIntoGrid(
 export function toNumberCell(text: string): number {
   const n = Number(text.replace(/,/g, "").trim());
   return Number.isFinite(n) ? n : 0;
+}
+
+/**
+ * Reads an uploaded file into a string[][] grid — routes to real binary
+ * .xlsx/.xls parsing (via SheetJS, lazy-imported so it doesn't add to every
+ * page's bundle, only when someone actually imports a spreadsheet) or plain
+ * text parsing for .csv/.tsv/.txt, based on the file's extension.
+ */
+export async function parseSpreadsheetFile(file: File): Promise<string[][]> {
+  const isBinaryExcel = /\.(xlsx|xls)$/i.test(file.name);
+
+  if (isBinaryExcel) {
+    // NOTE: requires the "xlsx" package — see package.json / README for the
+    // `npm install` step. Until that's run, TypeScript can't find real types
+    // for this module, so the import result is typed loosely on purpose
+    // (no generic type-argument on sheet_to_json, and an explicit cast on
+    // its result) — this keeps every callback below fully typed either way,
+    // instead of every 'row'/'cell'/'r' silently becoming 'any'.
+    const XLSX = await import("xlsx");
+    const buffer = await file.arrayBuffer();
+    const workbook = XLSX.read(buffer, { type: "array" });
+    const firstSheetName = workbook.SheetNames[0];
+    if (!firstSheetName) return [[""]];
+    const sheet = workbook.Sheets[firstSheetName];
+    // header: 1 -> array-of-arrays (exactly our string[][] shape), instead
+    // of the default array-of-objects-keyed-by-header-row.
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" }) as (string | number | boolean | null)[][];
+    const stringRows: string[][] = rows.map((row: (string | number | boolean | null)[]) =>
+      row.map((cell: string | number | boolean | null) => (cell === null || cell === undefined ? "" : String(cell))),
+    );
+    if (stringRows.length === 0) return [[""]];
+    const width = Math.max(...stringRows.map((r: string[]) => r.length));
+    return stringRows.map((r: string[]) => (r.length < width ? [...r, ...Array(width - r.length).fill("")] : r));
+  }
+
+  const text = await file.text();
+  return parseDelimitedText(text);
 }

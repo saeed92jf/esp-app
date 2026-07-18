@@ -53,7 +53,7 @@ export function Logo({ className, showText = true }: LogoProps) {
         // Wordmark: leading-tight avoids vertical clipping; no letter-spacing
         // so Persian letters stay joined. Segments render in document order,
         // so RTL/LTR direction is handled by the surrounding layout.
-        <span className="text-[0.8em] leading-tight font-bold md:text-[0.62em]">
+        <span className="text-[0.9em] leading-tight font-extrabold md:text-[0.65em]">
           <span
             className={accent === 'lead' ? 'text-primary' : 'text-foreground'}
           >

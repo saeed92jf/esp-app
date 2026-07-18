@@ -73,8 +73,6 @@ export const SHAPE_DEFAULT_SIZE: Record<
   shapeNode: { width: 200, height: 330 },
   imageNode: { width: 220, height: 160 },
   svgNode: { width: 220, height: 160 },
-  dwgNode: { width: 200, height: 90 },
-  dxfNode: { width: 200, height: 90 },
 };
 
 /** Rounded-rectangle outline, inset by `inset` so a thick stroke never clips. */
@@ -163,14 +161,7 @@ export function getShapeGeometry(
         `A ${rx},${ry} 0 0 0 ${w - inset},${bottom} ` +
         `L ${w - inset},${top} ` +
         `A ${rx},${ry} 0 0 0 ${inset},${top} Z`;
-      return {
-        kind: "cylinder",
-        bodyPath,
-        capCx: w / 2,
-        capCy: top,
-        capRx: rx,
-        capRy: ry,
-      };
+      return { kind: "cylinder", bodyPath, capCx: w / 2, capCy: top, capRx: rx, capRy: ry };
     }
 
     case "noteNode": {
@@ -266,13 +257,9 @@ export function getShapeGeometry(
       return { kind: "none" };
 
     case "imageNode":
-      // Rendered by its own component, not through ShapeCanvas/SVG.
-      return { kind: "none" };
-
     case "svgNode":
-    case "dwgNode":
-    case "dxfNode":
-      // Rendered by their own components, not through ShapeCanvas/SVG.
+      // Rendered by ImageNode (the same component for both — see
+      // components/nodes/BaseNode.tsx), not through ShapeCanvas/SVG.
       return { kind: "none" };
 
     case "defaultNode":
@@ -280,3 +267,5 @@ export function getShapeGeometry(
       return { kind: "path", path: roundedRect(w, h, borderRadius, inset) };
   }
 }
+
+

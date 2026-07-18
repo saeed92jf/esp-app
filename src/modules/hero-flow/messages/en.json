@@ -8,7 +8,10 @@
     "scale": "Scale",
     "title": "ESP-Flow",
     "version": "V26",
-    "description": "The next generation of visual engineering for oil and gas infrastructure.",
-    "tryNow": "Try it now"
+    "description": "The next generation of visual engineering With AI",
+    "tryNow": "Try it now",
+    "feature01": "Real-time rendering & processing",
+    "feature02": "AI-driven interactive design",
+    "feature03": "Fully flexible 3D environment"
   }
 }

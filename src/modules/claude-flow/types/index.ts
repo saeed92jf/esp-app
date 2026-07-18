@@ -35,11 +35,12 @@ export type DiagramNodeType =
   // ── Pipeable shape definition — connect to a calculator's input handle ──
   | 'shapeNode'
   // ── Image ─────────────────────────────────────────────────────────────
+  // svgNode kept only so diagrams saved before Image+SVG were merged still
+  // load — it's registered to the very same ImageNode component now (see
+  // components/nodes/BaseNode.tsx). Nothing new should ever be created with
+  // type "svgNode"; the palette only offers "imageNode" going forward.
   | 'imageNode'
-  // ── Vector / CAD file attachments ────────────────────────────────────
-  | 'svgNode'
-  | 'dwgNode'
-  | 'dxfNode';
+  | 'svgNode';
 
 export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'floating' | 'floating-straight';
 
@@ -135,6 +136,10 @@ export interface DiagramNodeData extends Record<string, unknown> {
   chartRows?: string[][];
   /** chartNode: bar or line rendering (via recharts). */
   chartType?: 'bar' | 'line';
+  /** chartNode: whether the inline data-entry grid is expanded. Only
+   *  relevant (and only shown) when there's no upstream Table/Excel/Matrix
+   *  node feeding it. */
+  chartShowEditor?: boolean;
 
   // ── Geometry calculator (perimeter / area / volume) ──────────────────
   calcShape?: GeometryShape;
@@ -152,20 +157,14 @@ export interface DiagramNodeData extends Record<string, unknown> {
   shapeKind?: GeometryShape;
   shapeInputs?: Record<string, number>;
 
-  // ── Image node ────────────────────────────────────────────────────────
+  // ── Image node (also renders old "svgNode" diagrams — see DiagramNodeType) ──
   /** Data-URL (uploaded file) or external URL. */
   imageUrl?: string;
+  /** 0-100. Defaults to 100 (fully opaque). */
+  opacity?: number;
 
-  // ── SVG node ──────────────────────────────────────────────────────────
+  /** @deprecated unused — kept only so old saved diagrams don't error on load. */
   svgContent?: string;
-
-  // ── CAD file node (dwg/dxf) — can't render the drawing itself in-browser,
-  // so this behaves as an attachment: keeps the original file (as a data-URL)
-  // for re-download, plus its name/size for display.
-  cadFileName?: string;
-  cadFileType?: 'dwg' | 'dxf';
-  cadFileDataUrl?: string;
-  cadFileSize?: number;
 
   // ── Rotation (imageNode + textNode) ──────────────────────────────────
   /** Degrees, 0-360. See components/nodes/RotateHandle.tsx. */

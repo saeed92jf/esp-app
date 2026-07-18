@@ -29,13 +29,18 @@ function dims(n: Node<DiagramNodeData>) {
   return { width: n.data?.width ?? fallback.width, height: n.data?.height ?? fallback.height };
 }
 
-/** Synchronous Dagre layered layout — fast, good default. */
+/** Synchronous Dagre layered layout — fast, good default.
+ *  `restrictToIds`: when given a non-empty set, only lays out THOSE nodes
+ *  (e.g. the current selection) — everything else keeps its exact position.
+ *  Leave empty/undefined to lay out every top-level node, same as before. */
 export function layoutWithDagre(
   nodes: Node<DiagramNodeData>[],
   edges: Edge<DiagramEdgeData>[],
   direction: LayoutDirection = "TB",
+  restrictToIds?: Set<string>,
 ): Node<DiagramNodeData>[] {
-  const topLevel = nodes.filter((n) => !n.parentId);
+  const restricted = !!restrictToIds && restrictToIds.size > 0;
+  const topLevel = nodes.filter((n) => !n.parentId && (!restricted || restrictToIds!.has(n.id)));
   const topLevelIds = new Set(topLevel.map((n) => n.id));
 
   const g = new dagre.graphlib.Graph();
@@ -67,16 +72,19 @@ export function layoutWithDagre(
   return nodes.map((n) => (positioned.has(n.id) ? { ...n, position: positioned.get(n.id)! } : n));
 }
 
-/** Async ELK layered layout — a second engine option with different aesthetics/tuning. */
+/** Async ELK layered layout — a second engine option with different aesthetics/tuning.
+ *  Same `restrictToIds` behavior as layoutWithDagre. */
 export async function layoutWithElk(
   nodes: Node<DiagramNodeData>[],
   edges: Edge<DiagramEdgeData>[],
   direction: LayoutDirection = "TB",
+  restrictToIds?: Set<string>,
 ): Promise<Node<DiagramNodeData>[]> {
   const { default: ELK } = await import("elkjs/lib/elk.bundled.js");
   const elk = new ELK();
 
-  const topLevel = nodes.filter((n) => !n.parentId);
+  const restricted = !!restrictToIds && restrictToIds.size > 0;
+  const topLevel = nodes.filter((n) => !n.parentId && (!restricted || restrictToIds!.has(n.id)));
   const topLevelIds = new Set(topLevel.map((n) => n.id));
 
   const elkGraph = {
