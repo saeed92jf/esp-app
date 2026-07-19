@@ -14,12 +14,16 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const heroFlowMessages = (
     await import(`../modules/hero-flow/messages/${locale}.json`)
   ).default;
+  const aparatMessages = (
+    await import(`../modules/aparat/messages/${locale}.json`)
+  ).default;
 
   return {
     locale,
     messages: {
       ...globalMessages,
       ...heroFlowMessages,
+      Aparat: aparatMessages,
     },
   };
 });

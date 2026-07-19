@@ -1,9 +1,9 @@
-// src/components/aparat/channel-video-search.tsx
+﻿// src/components/aparat/channel-video-search.tsx
 'use client';
 
 import { useCallback } from 'react';
 
-import type { VideoListItem } from '@/types';
+import type { VideoListItem } from "../types";
 import { SearchPopup } from '@/components/features/search/search-popup';
 import { VideoSearchResult } from './video-search-result';
 
@@ -35,7 +35,7 @@ export function ChannelVideoSearch({
   const getItemKey = useCallback((video: VideoListItem) => video.id, []);
 
   // Match the query against the video title AND the channel handle. Returns an
-  // ARRAY of fields — the popup ignores null/empty entries.
+  // ARRAY of fields â€” the popup ignores null/empty entries.
   const getSearchableText = useCallback(
     (video: VideoListItem): Array<string | null | undefined> => [
       video.title,
@@ -65,3 +65,4 @@ export function ChannelVideoSearch({
     />
   );
 }
+

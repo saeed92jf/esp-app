@@ -181,7 +181,8 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری"
+      "Claud-Flow": "جریان ابری",
+      "Weight-Flow": "جریان وزن"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",
@@ -208,7 +209,8 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری"
+      "Claud-Flow": "جریان ابری",
+      "Weight-Flow": "جریان وزن"
     }
   },
   "NotFound": {
@@ -301,50 +303,7 @@
     "guest": "مهمان",
     "online": "آنلاین"
   },
-  "Aparat": {
-    "stats": {
-      "videos": "ویدیوها",
-      "followers": "دنبال‌کننده‌ها",
-      "following": "دنبال‌شده‌ها"
-    },
-    "Playlist": {
-      "title": "لیست ویدیو ها",
-      "count": "{count, plural, one {# ویدیو} other {# ویدیو}}",
-      "progress": "{loaded} از {total} ویدیو",
-      "loadMore": " ...بارگذاری بیشتر",
-      "empty": "خالی",
-      "locale": "موقعیت",
-      "views": ""
-    },
-    "time": {
-      "unknown": "نامشخص",
-      "second": "{value} ثانیه پیش",
-      "minute": "{value} دقیقه پیش",
-      "hour": "{value} ساعت پیش",
-      "day": "{value} روز پیش",
-      "month": "{value} ماه پیش",
-      "year": "{value} سال پیش"
-    },
-    "loading": "در حال بارگذاری کانال {channel}...",
-    "loadedOf": "{current} از {total} ویدیو بارگذاری شد",
-    "appearAfterLoad": "صفحه پس از بارگذاری اولین ویدیوها نمایش داده می‌شود...",
-    "youMightLike": "شاید این‌ها را هم بپسندید",
-    "allVideos": "همه ویدیوها",
-    "channelCover": "تصویر کاور کانال",
-    "officialChannel": "کانال رسمی",
-    "visitChannel": "مشاهده کانال",
-    "playlist": "لیست پخش",
-    "uncategorized": "دسته‌بندی‌نشده",
-    "videosCount": "{loaded} از {total} ویدیو",
-    "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",
-    "allLoaded": "هر {count} ویدیو با موفقیت بارگذاری شد",
-    "views": "",
-    "noVideos": "ویدیویی موجود نیست",
-    "noVideosDescription": "بعداً برای محتوای جدید سر بزنید",
-    "selectVideoToWatch": "یک ویدیو جهت پخش انتخاب کنید",
-    "unableToLoadVideo": "ویدیو بارگذاری نمی شود",
-    "watchOnAparat": "در آپارات تماشا کنید"
-  },
+
   "Flow": {
     "loadTemplate": "بارگذاری الگو...",
     "searchTemplate": "یافتن الگو",

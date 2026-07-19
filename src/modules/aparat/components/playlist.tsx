@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import * as React from "react";
@@ -6,8 +6,8 @@ import { useTranslations } from "next-intl";
 import { Calendar, Eye, PlayCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import type { PlaylistProps, VideoListItem } from "@/types";
-import { formatViews, formatRelativeTime } from "@/utils/aparatUtils";
+import type { PlaylistProps, VideoListItem } from "../types";
+import { formatViews, formatRelativeTime } from "../utils/formatters";
 
 export function Playlist({
   videos,
@@ -50,7 +50,7 @@ export function Playlist({
         <div className="flex flex-col gap-2">
           {videos.map((video: VideoListItem) => {
             const isActive = currentVideoId === video.id;
-            const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
+            const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr, video.sdate);
 
             return (
               <div
@@ -81,6 +81,10 @@ export function Playlist({
                   )}
                 </div>
 
+                <div className="flex min-w-0 flex-1 flex-col justify-center">
+                  {/* BUG FIXED HERE: Restored the missing <h4> tag */}
+                  <h4
+                    className={cn(
                       "text-foreground line-clamp-2 text-sm font-medium leading-snug transition-colors",
                       isActive && "text-primary",
                     )}
@@ -107,3 +111,4 @@ export function Playlist({
     </div>
   );
 }
+

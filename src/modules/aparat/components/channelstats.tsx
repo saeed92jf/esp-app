@@ -1,4 +1,4 @@
-// src/components/aparat/channel-stats.tsx
+﻿// src/components/aparat/channel-stats.tsx
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
@@ -7,7 +7,7 @@ import { Film, UserPlus, Users, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 
-import type { ChannelStatsProps } from '@/types';
+import type { ChannelStatsProps } from "../types";
 
 // Shape of a single stat card, derived from props at render time.
 interface StatItem {
@@ -88,3 +88,4 @@ export function ChannelStats({
     </div>
   );
 }
+

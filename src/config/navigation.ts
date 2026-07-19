@@ -367,6 +367,14 @@ export const NAVIGATION: NavGroup[] = [
         public: true,
         welcome: true,
       },
+      {
+        labelKey: "Weight-Flow",
+        href: "/Weight-Flow",
+        icon: Library,
+        color: "cyan",
+        public: true,
+        welcome: true,
+      },
     ],
   },
   {

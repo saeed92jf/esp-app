@@ -1,0 +1,30 @@
+import { z } from "zod";
+
+// Materials allowed with their exact densities (kg/m³)
+export const MaterialSchema = z.enum([
+  "CS_A516_60", "CS_A516_65", "CS_A516_70",
+  "SS_304", "SS_304L", "SS_316", "SS_316L",
+  "SS_321", "SS_347",
+  "DUPLEX_2205", "DUPLEX_2507",
+  "ALUMINUM_5052", "ALUMINUM_6061",
+  "TITANIUM_GR2", "TITANIUM_GR12",
+  "MONEL_400", "INCONEL_625", "INCOLOY_825",
+  "CU_NI_90_10", "CU_NI_70_30",
+  "HASTELLOY_C276",
+  "CLAD_CS_SS304", "CLAD_CS_SS316",
+]);
+
+export type Material = z.infer<typeof MaterialSchema>;
+
+export const MATERIAL_DENSITY: Record<Material, number> = {
+  CS_A516_60: 7850, CS_A516_65: 7850, CS_A516_70: 7850,
+  SS_304: 7930, SS_304L: 7930, SS_316: 8000, SS_316L: 8000,
+  SS_321: 7920, SS_347: 7960,
+  DUPLEX_2205: 7800, DUPLEX_2507: 7820,
+  ALUMINUM_5052: 2680, ALUMINUM_6061: 2700,
+  TITANIUM_GR2: 4510, TITANIUM_GR12: 4510,
+  MONEL_400: 8830, INCONEL_625: 8440, INCOLOY_825: 8140,
+  CU_NI_90_10: 8900, CU_NI_70_30: 8950,
+  HASTELLOY_C276: 8890,
+  CLAD_CS_SS304: 7870, CLAD_CS_SS316: 7870,
+};

@@ -181,6 +181,7 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "ESP-Flow": "ESP-Flow",
+      "Weight-Flow": "Weight-Flow",
       "Claud-Flow": "Claude Flow"
     },
     "descriptions": {
@@ -208,7 +209,8 @@
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
       "ESP-Flow": "ESP-Flow",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "Weight-Flow": "Weight-Flow"
     }
   },
   "NotFound": {
@@ -301,50 +303,7 @@
     "guest": "Guest",
     "online": "Online"
   },
-  "Aparat": {
-    "stats": {
-      "videos": "Videos",
-      "followers": "Followers",
-      "following": "Following"
-    },
-    "Playlist": {
-      "title": "Video list",
-      "count": "{count, plural, one {# video} other {# videos}}",
-      "progress": "{loaded} of {total} videos",
-      "loadMore": "Loading more…",
-      "empty": "empty",
-      "locale": "locale",
-      "views": ""
-    },
-    "time": {
-      "unknown": "Unknown",
-      "second": "{value} seconds ago",
-      "minute": "{value} minutes ago",
-      "hour": "{value} hours ago",
-      "day": "{value} days ago",
-      "month": "{value} months ago",
-      "year": "{value} years ago"
-    },
-    "loading": "Loading...",
-    "loadedOf": "Loaded {current} of {total} videos",
-    "appearAfterLoad": "Page will appear after loading the first videos...",
-    "youMightLike": "You might also like",
-    "allVideos": "All Videos",
-    "channelCover": "Channel cover",
-    "officialChannel": "Official Channel",
-    "visitChannel": "Visit Channel",
-    "playlist": "Playlist",
-    "uncategorized": "Uncategorized",
-    "videosCount": "{loaded} of {total} videos",
-    "loadingMoreVideos": "Loading {count} more videos...",
-    "allLoaded": "All {count} videos loaded successfully",
-    "noVideos": "No videos available",
-    "noVideosDescription": "Check back later for new content",
-    "selectVideoToWatch": "Select a video to watch",
-    "unableToLoadVideo": "Unable to load video",
-    "watchOnAparat": "Watch on Aparat",
-    "views": ""
-  },
+
   "Flow": {
     "loadTemplate": "load Template",
     "searchTemplate": "search Template",

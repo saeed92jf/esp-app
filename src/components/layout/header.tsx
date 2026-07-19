@@ -1,4 +1,4 @@
-// src/components/layout/header.tsx
+﻿// src/components/layout/header.tsx
 'use client';
 
 import { useTranslations } from 'next-intl';
@@ -19,7 +19,7 @@ export function Header() {
   const isAuthed = !!user && !loading;
 
   return (
-    <header className="bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur">
+    <header className="bg-background/80 relative z-40 w-full border-b backdrop-blur">
       <div className="mx-auto flex h-header z-header max-w-6xl items-center justify-between px-4">
         <div className="flex items-center gap-2">
           {isAuthed && <SideMenu />}
@@ -52,3 +52,4 @@ export function Header() {
     </header>
   );
 }
+

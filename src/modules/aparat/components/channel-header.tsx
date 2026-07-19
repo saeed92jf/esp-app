@@ -1,11 +1,11 @@
-// src/components/aparat/channel-header.tsx
+﻿// src/components/aparat/channel-header.tsx
 "use client";
 
 import * as React from "react";
 import { Tv, Users } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
-import type { Profile, VideoListItem } from "@/types";
+import type { Profile, VideoListItem } from "../types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { SlidingTabs, type SlidingTabItem } from "./sliding-tabs";
@@ -120,7 +120,7 @@ export function ChannelHeader({
       <header
         className={cn(
           // ONLY sticky here. No relative/absolute => sticky stays intact.
-          "bg-background sticky top-header z-sticky",
+          "bg-background sticky top-0 z-30",
           // True full-bleed via width + negative margin (no position change).
           "ml-[calc(50%-50vw)] w-screen",
           // Allow the search dropdown to overflow the header.
@@ -172,3 +172,5 @@ export function ChannelHeader({
     </>
   );
 }
+
+

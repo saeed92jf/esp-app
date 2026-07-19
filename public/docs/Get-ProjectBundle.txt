@@ -109,7 +109,7 @@ Description:
 
 8) Only target folder + messages
 --------------------------------------------------
-Get-ProjectBundle -TargetFolder "src\app\dashboard" -OnlyTargetFolder -IncludeMessages
+Get-ProjectBundle -TargetFolder "src" -OnlyTargetFolder -IncludeMessages
 
 Description:
 - Adds project tree first

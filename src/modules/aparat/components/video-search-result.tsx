@@ -1,11 +1,11 @@
-// src/components/aparat/video-search-result.tsx
+﻿// src/components/aparat/video-search-result.tsx
 import { Calendar, Clock, Eye, VideoOff } from "lucide-react";
-import type { VideoListItem } from "@/types";
+import type { VideoListItem } from "../types";
 import {
   formatRelativeTime,
   formatDuration,
   formatViews,
-} from "@/utils/aparatUtils";
+} from "../utils/formatters";
 import { useTranslations } from "next-intl";
 
 function highlightText(text: string, query: string) {
@@ -37,7 +37,7 @@ export function VideoSearchResult({ video, query }: VideoSearchResultProps) {
   // Move useTranslations inside the component
   const tr = useTranslations("Aparat.time");
   const poster = video.small_poster || video.big_poster;
-  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
+  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr, video.sdate);
 
   return (
     <>
@@ -81,3 +81,5 @@ export function VideoSearchResult({ video, query }: VideoSearchResultProps) {
     </>
   );
 }
+
+

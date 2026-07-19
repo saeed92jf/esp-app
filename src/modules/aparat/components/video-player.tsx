@@ -1,4 +1,4 @@
-// src/components/aparat/video-player.tsx
+﻿// src/components/aparat/video-player.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,12 +13,12 @@ import {
   Video as VideoIcon,
 } from "lucide-react";
 
-import type { VideoItem } from "@/types";
+import type { VideoItem } from "../types";
 import {
   formatDuration,
   formatViews,
   formatRelativeTime,
-} from "@/utils/aparatUtils";
+} from "../utils/formatters";
 
 interface VideoPlayerProps {
   video: VideoItem | null;
@@ -40,13 +40,13 @@ export function VideoPlayer({ video }: VideoPlayerProps) {
     );
   }
 
-  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr);
+  const timeAgo = formatRelativeTime(video.createdAtTimestamp, tr, video.sdate);
   const embedUrl = `https://www.aparat.com/video/video/embed/videohash/${video.uid}/vt/frame`;
 
   return (
     <div className="space-y-4">
       {/* Video frame */}
-      <div className="overflow-hidden rounded-2xl bg-black shadow-xl ">
+      <div className="relative z-0 overflow-hidden rounded-2xl bg-black shadow-xl">
         <div className="relative aspect-video">
           {iframeError ? (
             // Fallback when the embed fails to load: offer an external link.
@@ -80,7 +80,7 @@ export function VideoPlayer({ video }: VideoPlayerProps) {
 
       {/* Video info */}
       <div className="bg-card rounded-xl border p-5 shadow-sm">
-        {/* Title — direction is precomputed in the API normalization layer. */}
+        {/* Title â€” direction is precomputed in the API normalization layer. */}
         <h2
           dir={video.titleDir}
           className="text-foreground mb-3 line-clamp-2 text-xl font-bold"
@@ -113,3 +113,6 @@ export function VideoPlayer({ video }: VideoPlayerProps) {
     </div>
   );
 }
+
+
+
