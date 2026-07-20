@@ -1,0 +1,54 @@
+﻿{ "Dashboard": {
+    "greeting": "خوش آمدید، {name}",
+    "chartTitle": "روند ۶ ماهه",
+    "chartSubtitle": "بر اساس داده‌های نمونه",
+    "stats": {
+      "totalUsers": "کل کاربران",
+      "revenue": "درآمد",
+      "orders": "سفارش‌ها",
+      "activeSessions": "نشست‌های فعال",
+      "projects": "پروژه‌ها",
+      "openTickets": "تیکت‌های باز",
+      "completedTasks": "تسک‌های انجام‌شده",
+      "pendingReview": "در انتظار بازبینی",
+      "myOrders": "سفارش‌های من",
+      "invoices": "فاکتورها",
+      "support": "تیکت‌های پشتیبانی",
+      "wallet": "موجودی کیف پول",
+      "tasksToday": "تسک‌های امروز",
+      "messages": "پیام‌ها"
+    },
+    "roleSummary": {
+      "admin": "نمای کلی عملکرد سامانه",
+      "engineer": "وضعیت پروژه‌ها و تسک‌های فنی شما",
+      "staff": "کارهای امروز و تیکت‌های شما",
+      "customer": "خلاصه سفارش‌ها و حساب شما"
+    },
+    "months": {
+      "far": "فرو",
+      "ord": "ارد",
+      "kho": "خرد",
+      "tir": "تیر",
+      "mor": "مرد",
+      "sha": "شهر"
+    },
+    "activity": {
+      "title": "فعالیت‌های اخیر",
+      "items": {
+        "newUser": "ثبت‌نام کاربر جدید",
+        "payment": "پرداخت موفق ثبت شد",
+        "ticket": "تیکت پشتیبانی جدید",
+        "deploy": "استقرار نسخه جدید",
+        "taskDone": "تسک تکمیل شد",
+        "orderShipped": "سفارش ارسال شد",
+        "invoicePaid": "فاکتور پرداخت شد",
+        "review": "درخواست بازبینی کد"
+      },
+      "time": {
+        "minutes": "{count} دقیقه پیش",
+        "hours": "{count} ساعت پیش",
+        "days": "{count} روز پیش"
+      }
+    }
+  }
+}

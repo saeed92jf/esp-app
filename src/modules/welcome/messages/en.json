@@ -1,0 +1,22 @@
+﻿
+{
+  "Welcome": {
+    "title": "Smart Management Platform",
+    "subtitle": "Modern tools for project management, marketing, and document archiving in one unified space.",
+    "readyToStart": "Sign in to access all features",
+    "ctaLogin": "Sign in",
+    "ctaRegister": "Register",
+    "cards": {
+      "imageGallery": {
+        "description": "Browse categorized image albums and visual project assets."
+      },
+      "videos": {
+        "description": "Watch platform presentation and training videos."
+      },
+      "mediaLibrary": {
+        "description": "Access the central library of multimedia files and shared resources."
+      },
+      "presentation": "Review our presentations and visual documents."
+    }
+  }
+}

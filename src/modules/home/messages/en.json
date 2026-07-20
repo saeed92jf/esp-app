@@ -1,0 +1,43 @@
+﻿
+{
+  "Home": {
+    "meta": {
+      "title": "Home",
+      "description": "Manage your business in one place"
+    },
+    "hero": {
+      "tagline": "Everything you need to succeed",
+      "subtitle": "Powerful tools to help you work smarter, not harder.",
+      "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
+    },
+    "quickAccess": {
+      "customize": "Customize",
+      "customizeLabel": "Customize Quick Access",
+      "customizeHint": "{selected} of {max} selected",
+      "capReached": "Maximum {max} items allowed",
+      "reset": "Reset to defaults",
+      "done": "Done"
+    },
+    "stats": {
+      "clients": "Happy Clients",
+      "projects": "Successful Projects",
+      "awards": "Awards Won",
+      "support": "Support"
+    },
+    "features": {
+      "eyebrow": "Features",
+      "title": "Built for every team",
+      "subtitle": "Pick a category to explore.",
+      "all": "All",
+      "explore": "Explore"
+    },
+    "newsletter": {
+      "title": "Stay in the loop",
+      "subtitle": "Get the latest updates delivered to your inbox.",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe",
+      "success": "Thanks for subscribing! Check your email.",
+      "disclaimer": "No spam. Unsubscribe anytime."
+    }
+  }
+}

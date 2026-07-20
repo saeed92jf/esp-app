@@ -1,0 +1,56 @@
+﻿
+{
+  "Dashboard": {
+    "greeting": "Welcome, {name}",
+    "chartTitle": "6-month trend",
+    "chartSubtitle": "Based on sample data",
+    "stats": {
+      "totalUsers": "Total users",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "activeSessions": "Active sessions",
+      "projects": "Projects",
+      "openTickets": "Open tickets",
+      "completedTasks": "Completed tasks",
+      "pendingReview": "Pending review",
+      "myOrders": "My orders",
+      "invoices": "Invoices",
+      "support": "Support tickets",
+      "wallet": "Wallet balance",
+      "tasksToday": "Tasks today",
+      "messages": "Messages"
+    },
+    "roleSummary": {
+      "admin": "Overview of system performance",
+      "engineer": "Your projects and technical tasks",
+      "staff": "Today's work and your tickets",
+      "customer": "Summary of your orders and account"
+    },
+    "months": {
+      "far": "Far",
+      "ord": "Ord",
+      "kho": "Kho",
+      "tir": "Tir",
+      "mor": "Mor",
+      "sha": "Sha"
+    },
+    "activity": {
+      "title": "Recent activity",
+      "items": {
+        "newUser": "New user signed up",
+        "payment": "Payment recorded",
+        "ticket": "New support ticket",
+        "deploy": "New version deployed",
+        "taskDone": "Task completed",
+        "orderShipped": "Order shipped",
+        "invoicePaid": "Invoice paid",
+        "review": "Code review requested"
+      },
+      "time": {
+        "minutes": "{count} minutes ago",
+        "hours": "{count} hours ago",
+        "days": "{count} days ago"
+      }
+    }
+  }
+}
