@@ -11,32 +11,60 @@
 // همه باید از این فایل (api.auth، api.dashboard، ...) استفاده کنند.
 // ═════════════════════════════════════════════════════════════════════════════
 
-import { HttpClient } from './core/http';
+import { HttpClient } from "./core/http";
 
-import { FakeAuthService, RealAuthService, type IAuthService } from './auth.service';
-import { FakeDashboardService, RealDashboardService, type IDashboardService } from './dashboard.service';
-import { FakeNavigationService, RealNavigationService, type INavigationService } from './navigation.service';
-import { FakeSearchService, RealSearchService, type ISearchService } from './search.service';
-import { FakeStatsService, RealStatsService, type IStatsService } from './stats.service';
-import { FakeUserService, RealUserService, type IUserService } from './user.service';
-import { FakePreferencesService, RealPreferencesService, type IPreferencesService } from './preferences.service';
-import { AparatService, type IAparatService } from './aparat.service';
+import {
+  FakeAuthService,
+  RealAuthService,
+  type IAuthService,
+} from "@/modules/auth/services/auth.service";
+import {
+  FakeDashboardService,
+  RealDashboardService,
+  type IDashboardService,
+} from "@/modules/dashboard/services/dashboard.service";
+import {
+  FakeNavigationService,
+  RealNavigationService,
+  type INavigationService,
+} from "./navigation.service";
+import {
+  FakeSearchService,
+  RealSearchService,
+  type ISearchService,
+} from "./search.service";
+import {
+  FakeStatsService,
+  RealStatsService,
+  type IStatsService,
+} from "./stats.service";
+import {
+  FakeUserService,
+  RealUserService,
+  type IUserService,
+} from "./user.service";
+import {
+  FakePreferencesService,
+  RealPreferencesService,
+  type IPreferencesService,
+} from "./preferences.service";
+import { AparatService, type IAparatService } from "./aparat.service";
 
 // ─── حالت فعلی ────────────────────────────────────────────────────────────────
 
-export type ApiMode = 'fake' | 'real';
+export type ApiMode = "fake" | "real";
 
 export const API_MODE: ApiMode =
-  (process.env.NEXT_PUBLIC_API_MODE as ApiMode) ?? 'fake';
+  (process.env.NEXT_PUBLIC_API_MODE as ApiMode) ?? "fake";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 const http = new HttpClient(API_BASE_URL);
 
 // ─── انتخاب پیاده‌سازی بر اساس حالت ───────────────────────────────────────────
 
 function pick<TFake, TReal>(fake: TFake, real: TReal): TFake | TReal {
-  return API_MODE === 'real' ? real : fake;
+  return API_MODE === "real" ? real : fake;
 }
 
 // ─── نمونه‌های Singleton ──────────────────────────────────────────────────────
@@ -85,19 +113,26 @@ export const api = {
 
 // ─── Re-export برای راحتی import ──────────────────────────────────────────────
 
-export { ApiError, toApiError } from './core/errors';
-export type { ErrorCode } from './core/errors';
+export { ApiError, toApiError } from "./core/errors";
+export type { ErrorCode } from "./core/errors";
 export type {
-  ApiResult, ApiResponse, ApiErrorResponse,
-  PaginatedResponse, PaginationMeta, ListParams,
-} from './core/types';
+  ApiResult,
+  ApiResponse,
+  ApiErrorResponse,
+  PaginatedResponse,
+  PaginationMeta,
+  ListParams,
+} from "./core/types";
 
-export type { LoginPayload, LoginResult, RegisterPayload } from './auth.service';
-export type { DashboardData, StatCard, ChartPoint, ActivityItem } from './dashboard.service';
-export type { NavigationResult } from './navigation.service';
-export type { SearchResult, SearchPayload, SearchResponse } from './search.service';
-export type { StatItem } from './stats.service';
-export type { UpdateProfilePayload, ChangePasswordPayload } from './user.service';
-export type { UserPreferences } from './preferences.service';
-
-export { DEMO_USERS } from './auth.service';
+export type { NavigationResult } from "./navigation.service";
+export type {
+  SearchResult,
+  SearchPayload,
+  SearchResponse,
+} from "./search.service";
+export type { StatItem } from "./stats.service";
+export type {
+  UpdateProfilePayload,
+  ChangePasswordPayload,
+} from "./user.service";
+export type { UserPreferences } from "./preferences.service";

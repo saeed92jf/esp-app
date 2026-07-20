@@ -1,4 +1,5 @@
-﻿{ "Dashboard": {
+{
+  "Dashboard": {
     "greeting": "خوش آمدید، {name}",
     "chartTitle": "روند ۶ ماهه",
     "chartSubtitle": "بر اساس داده‌های نمونه",

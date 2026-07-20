@@ -1,9 +1,9 @@
 // src/components/auth/auth-gate.tsx
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
-import { useAuth } from '@/hooks/use-auth';
-import { WelcomeScreen } from '@/components/welcome/welcome-screen';
+import type { ReactNode } from "react";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { WelcomeScreen } from "@/modules/welcome/components/welcome-screen";
 
 /**
  * Wraps protected page content. While the session is being restored it

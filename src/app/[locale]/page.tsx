@@ -1,6 +1,6 @@
 // src/app/[locale]/page.tsx
-import { AuthGate } from "@/components/auth/auth-gate";
-import { HomeClient } from "@/components/home/home-client";
+import { AuthGate } from "@/modules/auth/components/auth-gate";
+import { HomeClient } from "@/modules/home/components/home-client";
 
 /**
  * Home route. The actual content is gated: guests see the WelcomeScreen,

@@ -1,118 +1,214 @@
-// src/app/[locale]/(auth)/login/page.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from '@/i18n/navigation';
-import { useAuth, getAuthErrorKey } from '@/hooks/use-auth';
-import { loginSchema } from '@/lib/validations/auth';
-import { ROLE_HOME } from '@/lib/auth/roles';
-import { DEMO_USERS } from '@/services';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations, useLocale } from "next-intl";
+import { Loader2, KeyRound } from "lucide-react";
+
+import { useRouter } from "@/i18n/navigation";
+import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+// این ایمپورت از سرویس شماست که یوزرها در آن تعریف شده‌اند
+import { DEMO_USERS } from "@/modules/auth/services/auth.service";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Logo } from "@/components/brand/logo";
 
 export default function LoginPage() {
-  const t = useTranslations('Auth');
+  const t = useTranslations("Common");
+  const locale = useLocale();
   const router = useRouter();
-  const { login, isLoggingIn } = useAuth();
 
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [formError, setFormError] = useState<string | null>(null);
+  const { login } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
+  const isFa = locale === "fa";
 
-    const parsed = loginSchema.safeParse({ identifier, password });
-    if (!parsed.success) {
-      setFormError(t('errors.invalidForm'));
-      return;
-    }
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      identifier: "",
+      password: "",
+    },
+  });
+
+  async function onSubmit(data: LoginInput) {
+    setIsLoading(true);
+    setErrorMsg("");
 
     try {
-      const loggedInUser = await login(identifier.trim(), password);
-      router.replace(ROLE_HOME[loggedInUser.role] ?? '/');
-    } catch (err) {
-      setFormError(t(`errors.${getAuthErrorKey(err)}`));
+      if (login) {
+        // ارسال جداگانه شناسنامه و رمز عبور (طبق امضای سرویس شما)
+        await login(data.identifier, data.password);
+      }
+      router.push("/dashboard");
+      router.refresh();
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      setErrorMsg(
+        error?.message ||
+          (isFa
+            ? "ایمیل/موبایل یا رمز عبور اشتباه است."
+            : "Invalid credentials."),
+      );
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }
 
-  const fillDemo = (email: string, pwd: string) => {
-    setIdentifier(email);
-    setPassword(pwd);
-    setFormError(null);
-  };
+  // متد برای پر کردن سریع فیلدها و اجرای لاگین
+  function handleDemoLogin(demo: (typeof DEMO_USERS)[0]) {
+    form.setValue("identifier", demo.email, {
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+    form.setValue("password", demo.password, {
+      shouldValidate: true,
+      shouldTouch: true,
+    });
+
+    // اجرای لاگین با مقادیر پر شده
+    onSubmit({
+      identifier: demo.email,
+      password: demo.password,
+    });
+  }
 
   return (
-    <div className="from-background to-muted/30 flex min-h-screen items-center justify-center bg-linear-to-b px-4 py-10">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight">{t('login')}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">{t('loginSubtitle')}</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="bg-card space-y-4 rounded-2xl border p-6 shadow-sm">
-          <div className="space-y-2">
-            <Label htmlFor="identifier">{t('identifier')}</Label>
-            <Input
-              id="identifier"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder={t('identifierPlaceholder')}
-              disabled={isLoggingIn}
-              autoComplete="username"
-            />
+    <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
+      <Card className="w-full max-w-md shadow-xl border-border/50">
+        <CardHeader className="space-y-4 text-center pb-6">
+          <div className="flex justify-center mb-2">
+            <Logo className="text-3xl" showText={true} />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="password">{t('password')}</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoggingIn}
-              autoComplete="current-password"
-            />
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold">{t("login")}</CardTitle>
+            <CardDescription className="text-sm">
+              {isFa
+                ? "برای ورود به پنل، اطلاعات خود را وارد کنید یا از حساب‌های دمو استفاده نمایید."
+                : "Enter your credentials to access the panel, or use a demo account."}
+            </CardDescription>
           </div>
+        </CardHeader>
 
-          {formError && (
-            <p role="alert" aria-live="assertive" className="text-destructive text-sm font-medium">
-              {formError}
-            </p>
-          )}
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="identifier"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {isFa ? "ایمیل یا موبایل" : "Email or Mobile"}
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={
+                            isFa ? "name@demo.com یا 0912..." : "name@demo.com"
+                          }
+                          autoComplete="username"
+                          dir="ltr"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-          <Button type="submit" className="w-full" disabled={isLoggingIn}>
-            {isLoggingIn ? t('loggingIn') : t('submit')}
-          </Button>
-        </form>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{isFa ? "رمز عبور" : "Password"}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="••••••••"
+                          autoComplete="current-password"
+                          dir="ltr"
+                          disabled={isLoading}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-        {/* کارت حساب‌های تستی — فقط در fake mode معنا دارد؛
-            در real mode، DEMO_USERS از services/auth.service خالی export نمی‌شود
-            مگر صراحتاً نگه داشته شود. این بلاک را قبل از رفتن به production حذف کنید. */}
-        <div className="bg-muted/40 rounded-2xl border border-dashed p-4">
-          <p className="text-sm font-semibold">{t('demoTitle')}</p>
-          <p className="text-muted-foreground mb-3 text-xs">{t('demoHint')}</p>
-          <ul className="space-y-2">
-            {DEMO_USERS.map((c) => (
-              <li key={c.user.id}>
-                <button
-                  type="button"
-                  onClick={() => fillDemo(c.email, c.password)}
-                  className="bg-card hover:bg-accent flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-start text-xs transition-colors"
-                >
-                  <span className="text-foreground font-medium">{t(`roles.${c.user.role}`)}</span>
-                  <span className="text-muted-foreground font-mono" dir="ltr">
-                    {c.email} — {c.mobile} — {c.password}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+              {errorMsg && (
+                <div className="text-sm font-medium text-destructive text-center bg-destructive/10 p-2.5 rounded-md border border-destructive/20">
+                  {errorMsg}
+                </div>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-11 text-base"
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 size-5 animate-spin" />
+                ) : null}
+                {t("login")}
+              </Button>
+
+              <div className="pt-4 pb-2">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-3 text-muted-foreground font-medium flex items-center gap-1.5">
+                      <KeyRound className="size-3.5" />
+                      {isFa ? "ورود سریع دمو" : "Quick Demo Login"}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  {DEMO_USERS.map((demo) => (
+                    <Button
+                      key={demo.user.id}
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleDemoLogin(demo)}
+                      disabled={isLoading}
+                      className="text-xs h-9 hover:bg-primary/5 hover:text-primary transition-colors"
+                    >
+                      {demo.user.role.charAt(0).toUpperCase() +
+                        demo.user.role.slice(1)}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

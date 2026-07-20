@@ -1,19 +1,5 @@
-﻿{
-    
-  "Auth": {
-    "brand": "وب اپلیکیشن یورواسلات پارس",
-    "login": "ورود",
-    "register": "ثبت‌نام",
-    "logout": "خروج",
-    "submit": "ورود",
-    "loggingIn": "در حال ورود...",
-    "loginSubtitle": "برای ادامه وارد حساب خود شوید",
-    "identifier": "ایمیل یا شماره موبایل",
-    "identifierPlaceholder": "example@mail.com یا 09xxxxxxxxx",
-    "password": "رمز عبور",
-    "userMenu": "منوی کاربر",
-    "demoTitle": "حساب‌های تستی",
-    "demoHint": "برای پرکردن خودکار فرم، روی هر مورد کلیک کنید.",
+{
+  "auth": {
     "roles": {
       "admin": "مدیر",
       "engineer": "مهندس",
@@ -21,8 +7,21 @@
       "customer": "مشتری"
     },
     "errors": {
-      "invalidForm": "ایمیل/موبایل یا رمز عبور نامعتبر است.",
-      "invalidCredentials": "حساب کاربری یافت نشد. فقط حساب‌های تستی مجاز هستند."
-    }
+      "invalidForm": "ایمیل/شماره موبایل یا رمز عبور نامعتبر است.",
+      "invalidCredentials": "حساب کاربری یافت نشد. فقط حساب‌های آزمایشی مجاز هستند."
+    },
+    "loggingIn": "در حال ورود...",
+    "brand": "وب‌اپلیکیشن ESP.",
+    "login": "ورود",
+    "register": "ثبت‌نام",
+    "logout": "خروج",
+    "submit": "ثبت",
+    "loginSubtitle": "برای ادامه، وارد حساب کاربری خود شوید",
+    "identifier": "ایمیل یا شماره موبایل",
+    "identifierPlaceholder": "example@mail.com یا 09xxxxxxxxx",
+    "password": "رمز عبور",
+    "userMenu": "منوی کاربر",
+    "demoTitle": "حساب‌های آزمایشی",
+    "demoHint": "برای پر شدن خودکار فرم، روی یکی از موارد کلیک کنید."
   }
 }

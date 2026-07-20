@@ -1,6 +1,15 @@
-﻿{}
 {
-  "Auth": {
+  "auth": {
+    "roles": {
+      "admin": "Admin",
+      "engineer": "Engineer",
+      "staff": "Staff",
+      "customer": "Customer"
+    },
+    "errors": {
+      "invalidForm": "Invalid email/mobile or password.",
+      "invalidCredentials": "Account not found. Only test accounts are allowed."
+    },
     "loggingIn": "Signing in...",
     "brand": "ESP Web App.",
     "login": "Sign in",
@@ -13,16 +22,6 @@
     "password": "Password",
     "userMenu": "User menu",
     "demoTitle": "Test accounts",
-    "demoHint": "Click any item to autofill the form.",
-    "roles": {
-      "admin": "Admin",
-      "engineer": "Engineer",
-      "staff": "Staff",
-      "customer": "Customer"
-    },
-    "errors": {
-      "invalidForm": "Invalid email/mobile or password.",
-      "invalidCredentials": "Account not found. Only test accounts are allowed."
-    }
+    "demoHint": "Click any item to autofill the form."
   }
 }

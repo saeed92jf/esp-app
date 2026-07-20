@@ -1,7 +1,7 @@
 // src/services/auth.service.ts
-import { ApiError } from "./core/errors";
-import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "./core/types";
-import type { HttpClient } from "./core/http";
+import { ApiError } from "@/services/core/errors";
+import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "@/services/core/types";
+import type { HttpClient } from "@/services/core/http";
 import type { User, UserRole } from "@/types/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
