@@ -181,7 +181,8 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری"
+      "Claud-Flow": "جریان ابری",
+      "Weight-Flow": "جریان وزن"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",
@@ -208,7 +209,8 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری"
+      "Claud-Flow": "جریان ابری",
+      "Weight-Flow": "جریان وزن"
     }
   },
   "NotFound": {

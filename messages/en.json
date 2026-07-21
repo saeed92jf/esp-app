@@ -181,7 +181,8 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "ESP-Flow": "ESP-Flow",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "Weight-Flow": "Weight Flow"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -208,7 +209,8 @@
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
       "ESP-Flow": "ESP-Flow",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "Weight-Flow": "Weight Flow"
     }
   },
   "NotFound": {

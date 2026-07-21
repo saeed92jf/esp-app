@@ -84,11 +84,7 @@
         "label": "Heater/Boiler",
         "colorToken": "blue",
         "width": 402,
-        "height": 250,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 250
       },
       "selected": false,
       "measured": {
@@ -112,11 +108,7 @@
         "label": "Pressure Vessel",
         "colorToken": "blue",
         "width": 405,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -140,11 +132,7 @@
         "label": "Aboveground Storage Tanks",
         "colorToken": "blue",
         "width": 267,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -168,11 +156,7 @@
         "label": "Piping / Pipelines",
         "colorToken": "blue",
         "width": 570,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -196,11 +180,7 @@
         "label": "Welding",
         "colorToken": "blue",
         "width": 402,
-        "height": 178,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 178
       },
       "selected": false,
       "measured": {
@@ -224,11 +204,7 @@
         "label": "Fired Heaters",
         "colorToken": "blue",
         "width": 200,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -252,11 +228,7 @@
         "label": "Quality Control",
         "colorToken": "blue",
         "width": 277,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -280,11 +252,7 @@
         "label": "Repair",
         "colorToken": "blue",
         "width": 398,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -332,11 +300,7 @@
         "label": "Pressure Vessel",
         "colorToken": "blue",
         "width": 312,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -360,11 +324,7 @@
         "label": "Piping",
         "colorToken": "blue",
         "width": 200,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -388,11 +348,7 @@
         "label": "Aboveground Storage Tank",
         "colorToken": "blue",
         "width": 300,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -416,11 +372,7 @@
         "label": "NDE",
         "colorToken": "blue",
         "width": 337,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -444,11 +396,7 @@
         "label": "Heat Exchangers",
         "colorToken": "blue",
         "width": 403,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -472,11 +420,7 @@
         "label": "Flare",
         "colorToken": "blue",
         "width": 200,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -500,11 +444,7 @@
         "label": "Materials",
         "colorToken": "blue",
         "width": 350,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -528,11 +468,7 @@
         "label": "PRDs",
         "colorToken": "blue",
         "width": 347,
-        "height": 175,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 175
       },
       "selected": false,
       "measured": {
@@ -556,11 +492,7 @@
         "label": "Injection / Process Mix Points",
         "colorToken": "blue",
         "width": 232,
-        "height": 170,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 170
       },
       "selected": false,
       "measured": {
@@ -581,11 +513,7 @@
         "label": "Fitness For Service",
         "colorToken": "blue",
         "width": 347,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -609,11 +537,7 @@
         "label": "Risk Based Inspection",
         "colorToken": "blue",
         "width": 347,
-        "height": 261,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 261
       },
       "selected": false,
       "measured": {
@@ -637,11 +561,7 @@
         "label": "Pipeline",
         "colorToken": "blue",
         "width": 354,
-        "height": 280,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 280
       },
       "selected": false,
       "measured": {
@@ -665,11 +585,7 @@
         "label": "Incident Investigation",
         "colorToken": "blue",
         "width": 200,
-        "height": 190,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 190
       },
       "selected": false,
       "measured": {
@@ -693,11 +609,7 @@
         "label": "HF Alkylation",
         "colorToken": "blue",
         "width": 200,
-        "height": 190,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 190
       },
       "selected": false,
       "measured": {
@@ -721,11 +633,7 @@
         "label": "KPI",
         "colorToken": "blue",
         "width": 200,
-        "height": 190,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 190
       },
       "selected": false,
       "measured": {
@@ -749,11 +657,7 @@
         "label": "Corrosion Under Insulation/Fireproofing",
         "colorToken": "blue",
         "width": 351,
-        "height": 160,
-        "fontWeight": "semibold",
-        "borderWidth": 1.5,
-        "fontSize": 27,
-        "borderStyle": "dashed"
+        "height": 160
       },
       "selected": false,
       "measured": {
@@ -969,7 +873,7 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 110,
+        "width": 108,
         "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
@@ -1082,7 +986,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1175,7 +1079,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1267,8 +1171,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 102,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1360,8 +1264,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 100,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1451,8 +1355,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 114,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1486,8 +1390,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 114,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1521,8 +1425,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 110,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1556,8 +1460,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 112,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1591,8 +1495,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 112,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1628,8 +1532,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 112,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1661,8 +1565,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 115,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1696,8 +1600,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 115,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1820,8 +1724,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 93,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1855,8 +1759,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 93,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1890,8 +1794,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 93,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -1954,8 +1858,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 100,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2308,8 +2212,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 106,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2420,8 +2324,8 @@
       "id": "n-api-571-dm",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 165
+        "x": 57.5,
+        "y": 143.57142857142856
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2449,8 +2353,8 @@
       "id": "n-api-938-a",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 270
+        "x": 57.5,
+        "y": 242.1428571428571
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2478,8 +2382,8 @@
       "id": "n-api-939-b",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 795
+        "x": 57.5,
+        "y": 734.9999999999999
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2507,8 +2411,8 @@
       "id": "n-api-939-c",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 60
+        "x": 57.5,
+        "y": 45
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2536,8 +2440,8 @@
       "id": "n-api-939-e",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 375
+        "x": 57.5,
+        "y": 340.71428571428567
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2565,8 +2469,8 @@
       "id": "n-api-941-dm",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 480
+        "x": 57.5,
+        "y": 439.2857142857142
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2594,8 +2498,8 @@
       "id": "n-api-945",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 690
+        "x": 57.5,
+        "y": 636.4285714285713
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2623,8 +2527,8 @@
       "id": "n-api-932-a-b",
       "type": "circleNode",
       "position": {
-        "x": 60,
-        "y": 585
+        "x": 57.5,
+        "y": 537.8571428571428
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2652,8 +2556,8 @@
       "id": "n-nace-mr0103",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1185
+        "x": 50,
+        "y": 1140
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2662,8 +2566,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2687,8 +2591,8 @@
       "id": "n-nace-sp0170",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1275
+        "x": 50,
+        "y": 1230
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2697,8 +2601,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2722,8 +2626,8 @@
       "id": "n-nace-sp0296",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 915
+        "x": 50,
+        "y": 870
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2732,8 +2636,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2757,8 +2661,8 @@
       "id": "n-nace-sp0403",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1095
+        "x": 50,
+        "y": 1050
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2767,8 +2671,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2792,8 +2696,8 @@
       "id": "n-nace-sp0472",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1455
+        "x": 50,
+        "y": 1410
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2802,8 +2706,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2827,8 +2731,8 @@
       "id": "n-nace-sp0205",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1365
+        "x": 50,
+        "y": 1320
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2837,8 +2741,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2862,8 +2766,8 @@
       "id": "n-nace-sp0590",
       "type": "hexagonNode",
       "position": {
-        "x": 60,
-        "y": 1005
+        "x": 50,
+        "y": 960
       },
       "parentId": "node-1784207360877-group",
       "extent": "parent",
@@ -2872,8 +2776,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 73,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2936,8 +2840,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -2971,8 +2875,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 101,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3093,8 +2997,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 100,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3157,8 +3061,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 93,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3192,8 +3096,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 93,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3373,7 +3277,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3408,7 +3312,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3443,7 +3347,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3478,7 +3382,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3512,8 +3416,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 99,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3634,8 +3538,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3698,8 +3602,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3733,8 +3637,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3884,8 +3788,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 115,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3920,7 +3824,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -3955,7 +3859,7 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "width": 108,
-        "height": 88,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -4105,8 +4009,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -4140,8 +4044,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -4175,8 +4079,8 @@
         "backgroundColor": "#5e5e5e",
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
-        "width": 95,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "colorToken": "neutral",
         "fontWeight": "bold",
         "borderWidth": 1,
@@ -4211,8 +4115,8 @@
         "textColor": "#ffffff",
         "borderColor": "#5e5e5e",
         "colorToken": "neutral",
-        "width": 105,
-        "height": 88,
+        "width": 108,
+        "height": 90,
         "fontWeight": "bold",
         "borderWidth": 1,
         "fontSize": 16
