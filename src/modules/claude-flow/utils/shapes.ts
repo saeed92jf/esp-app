@@ -52,7 +52,7 @@ export const SHAPE_DEFAULT_SIZE: Record<
   diamondNode: { width: 150, height: 100 },
   cylinderNode: { width: 120, height: 90 },
   parallelogramNode: { width: 160, height: 60 },
-  hexagonNode: { width: 160, height: 70 },
+  hexagonNode: { width: 160, height: 139 },
   textNode: { width: 140, height: 36 },
   noteNode: { width: 160, height: 70 },
   triangleNode: { width: 120, height: 100 },
@@ -123,7 +123,13 @@ export function getShapeGeometry(
       };
 
     case "hexagonNode": {
-      const dx = Math.min(w * 0.22, 32);
+      // Regular hexagon math (flat top/bottom, points left/right): for a
+      // side length s, width = 2s and height = s·√3 — so at THIS shape's
+      // default size (160 × 139 ≈ 160 × 160·√3⁄2) every one of the 6 sides
+      // comes out equal. dx = w/4 is exactly s/2 at that size; resizing the
+      // node away from the default proportions naturally stretches it like
+      // any other shape, same as a rectangle would.
+      const dx = w / 4;
       return {
         kind: "path",
         path: `M ${dx},${inset} L ${w - dx},${inset} L ${w - inset},${h / 2} L ${w - dx},${h - inset} L ${dx},${h - inset} L ${inset},${h / 2} Z`,

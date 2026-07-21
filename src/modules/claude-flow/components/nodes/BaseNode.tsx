@@ -567,6 +567,12 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
   const resolved = resolveNodeColors(data, colorMode);
   const selectedStroke = colorMode === "dark" ? "#818cf8" : "#6366f1";
   const borderColor = selected ? selectedStroke : resolved.border;
+  const labelPosition = data.labelPosition ?? "top";
+  const labelFontSize = data.fontSize ?? 13;
+  // Bar thickness scales with the label's own font size instead of a fixed
+  // 28px, so a bigger label actually has room to sit in.
+  const barThickness = Math.max(24, Math.round(labelFontSize * 1.9));
+  const isVerticalLabel = labelPosition === "left" || labelPosition === "right";
 
   const handleResize = useCallback<OnResize>(
     (_event, params) => {
@@ -574,6 +580,37 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
     },
     [id, updateNodeData],
   );
+
+  const barBase: React.CSSProperties = { backgroundColor: borderColor, color: "#ffffff", fontSize: labelFontSize };
+  const bodyBase: React.CSSProperties = {
+    backgroundColor: resolved.background,
+    opacity: colorMode === "dark" ? 0.35 : 0.6,
+    borderColor,
+    borderStyle: "dashed",
+  };
+
+  let barStyle: React.CSSProperties;
+  let bodyStyle: React.CSSProperties;
+  let barClassName: string;
+
+  if (labelPosition === "bottom") {
+    barStyle = { ...barBase, position: "absolute", insetInline: 0, bottom: 0, height: barThickness, borderRadius: "0 0 8px 8px" };
+    bodyStyle = { ...bodyBase, position: "absolute", insetInline: 0, top: 0, bottom: barThickness, borderRadius: "8px 8px 0 0", borderWidth: "1.5px 1.5px 0 1.5px" };
+    barClassName = "subflow-drag-handle flex cursor-grab items-center gap-1.5 px-2.5 font-semibold active:cursor-grabbing";
+  } else if (labelPosition === "left") {
+    barStyle = { ...barBase, position: "absolute", insetBlock: 0, left: 0, width: barThickness, borderRadius: "8px 0 0 8px" };
+    bodyStyle = { ...bodyBase, position: "absolute", insetBlock: 0, left: barThickness, right: 0, borderRadius: "0 8px 8px 0", borderWidth: "1.5px 1.5px 1.5px 0" };
+    barClassName = "subflow-drag-handle flex cursor-grab flex-col items-center justify-center gap-1.5 py-2.5 font-semibold active:cursor-grabbing";
+  } else if (labelPosition === "right") {
+    barStyle = { ...barBase, position: "absolute", insetBlock: 0, right: 0, width: barThickness, borderRadius: "0 8px 8px 0" };
+    bodyStyle = { ...bodyBase, position: "absolute", insetBlock: 0, left: 0, right: barThickness, borderRadius: "8px 0 0 8px", borderWidth: "1.5px 0 1.5px 1.5px" };
+    barClassName = "subflow-drag-handle flex cursor-grab flex-col items-center justify-center gap-1.5 py-2.5 font-semibold active:cursor-grabbing";
+  } else {
+    // "top" (default)
+    barStyle = { ...barBase, position: "absolute", insetInline: 0, top: 0, height: barThickness, borderRadius: "8px 8px 0 0" };
+    bodyStyle = { ...bodyBase, position: "absolute", insetInline: 0, bottom: 0, top: barThickness, borderRadius: "0 0 8px 8px", borderWidth: "0 1.5px 1.5px 1.5px" };
+    barClassName = "subflow-drag-handle flex cursor-grab items-center gap-1.5 px-2.5 font-semibold active:cursor-grabbing";
+  }
 
   return (
     <div className="relative" style={{ width, height, minWidth: 200, minHeight: 140 }}>
@@ -584,32 +621,17 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
         onResize={handleResize}
       />
 
-      <div
-        className="subflow-drag-handle absolute inset-x-0 top-0 z-10 flex h-7 cursor-grab items-center gap-1.5 rounded-t-lg px-2.5 text-xs font-semibold active:cursor-grabbing"
-        style={{ backgroundColor: borderColor, color: "#ffffff" }}
-      >
+      <div className={barClassName} style={barStyle}>
         <Layers className="size-3.5 shrink-0" />
-        <span className="truncate">{data.label}</span>
+        <span
+          className="truncate"
+          style={isVerticalLabel ? { writingMode: "vertical-rl", transform: "rotate(180deg)" } : undefined}
+        >
+          {data.label}
+        </span>
       </div>
 
-      <div
-        className="absolute inset-x-0 bottom-0 rounded-b-lg"
-        style={{
-          top: 28,
-          backgroundColor: resolved.background,
-          opacity: colorMode === "dark" ? 0.35 : 0.6,
-          borderLeftWidth: 1.5,
-          borderRightWidth: 1.5,
-          borderBottomWidth: 1.5,
-          borderTopWidth: 0,
-          borderLeftStyle: "dashed",
-          borderRightStyle: "dashed",
-          borderBottomStyle: "dashed",
-          borderLeftColor: borderColor,
-          borderRightColor: borderColor,
-          borderBottomColor: borderColor,
-        }}
-      />
+      <div style={bodyStyle} />
 
       <FreeConnectHandles />
     </div>
@@ -709,7 +731,10 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
     </div>
   );
 }
- /* only makes sense with ONE input, divide/subtract/power need exactly TWO
+
+/**
+ * OperatorNode's handles depend on the chosen operation's real arity — sqrt
+ * only makes sense with ONE input, divide/subtract/power need exactly TWO
  * in a specific order (a÷b ≠ b÷a), so those get individually labeled "a"/"b"
  * handles instead of one shared unlimited handle. See utils/operators.ts for
  * the single source of truth this mirrors in the store's recompute logic.
@@ -777,7 +802,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
       {arity === "nary" && (
         <>
           <Handle type="target" position={Position.Left} id="left" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             +
           </span>
         </>
@@ -792,7 +817,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             style={{ top: "35%" }}
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "35%" }}>
+          <span className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "35%" }}>
             a
           </span>
           <Handle
@@ -802,7 +827,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             style={{ top: "70%" }}
             className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
           />
-          <span className="pointer-events-none absolute inset-s-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "70%" }}>
+          <span className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "70%" }}>
             b
           </span>
         </>
@@ -811,7 +836,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
       {arity === "unary" && (
         <>
           <Handle type="target" position={Position.Left} id="x" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-          <span className="pointer-events-none absolute inset-s-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
+          <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             x
           </span>
         </>

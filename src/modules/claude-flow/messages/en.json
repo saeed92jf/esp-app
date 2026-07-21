@@ -39,7 +39,26 @@
       "templateLoaded": "Loaded",
       "templateLoadFailed": "Could not load",
       "confirmLoadTemplate": "Load this template? Your current canvas will be replaced.",
-      "confirmImport": "Import this file? Your current canvas will be replaced."
+      "confirmImport": "Import this file? Your current canvas will be replaced.",
+      "align": "Align",
+      "alignLeft": "Align left",
+      "alignCenterH": "Align center (horizontal)",
+      "alignRight": "Align right",
+      "alignTop": "Align top",
+      "alignCenterV": "Align middle (vertical)",
+      "alignBottom": "Align bottom",
+      "distributeH": "Distribute horizontally",
+      "distributeV": "Distribute vertically",
+      "addVerticalGuide": "Add vertical guide",
+      "addHorizontalGuide": "Add horizontal guide",
+      "clearGuides": "Clear guides",
+      "exportImage": "Download as image",
+      "exportPngBg": "PNG — with background",
+      "exportPngTransparent": "PNG — transparent",
+      "exportSvg": "SVG (vector)",
+      "exportingImage": "Generating image…",
+      "imageExported": "Image downloaded",
+      "imageExportFailed": "Could not generate the image"
     },
     "nodes": {
       "defaultNode": "Process",
@@ -128,7 +147,14 @@
       "opacity": "Opacity",
       "chartHelpTitle": "How do I enter data?",
       "chartHelp": "How to fill this in: the top-left cell stays empty; the rest of the first row is your series names (e.g. \"Revenue\", \"Cost\"). Every row below that starts with a category label (e.g. \"Jan\") followed by one number per series. You can type directly, paste a range copied from Excel/Sheets, or connect a Table/Excel/Matrix node instead of entering data here.",
-      "editChartData": "Edit data"
+      "editChartData": "Edit data",
+      "size": "Size",
+      "labelSize": "Label size",
+      "labelPosition": "Label position",
+      "side_top": "Top",
+      "side_bottom": "Bottom",
+      "side_left": "Left",
+      "side_right": "Right"
     },
     "editorSettings": {
       "title": "Editor Settings",
@@ -156,7 +182,8 @@
       "edge_floating": "Floating",
       "edge_floating_straight": "Floating straight",
       "collisionAvoidance": "Push nodes apart while dragging",
-      "colorModeNote": "synced with the site theme"
+      "colorModeNote": "synced with the site theme",
+      "gridSize": "Grid size"
     },
     "shortcuts": {
       "undo": "Undo",

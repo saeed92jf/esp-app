@@ -169,6 +169,11 @@ export interface DiagramNodeData extends Record<string, unknown> {
   // ── Rotation (imageNode + textNode) ──────────────────────────────────
   /** Degrees, 0-360. See components/nodes/RotateHandle.tsx. */
   rotation?: number;
+
+  // ── Sub-flow (groupNode) label ────────────────────────────────────────
+  /** Which edge the sub-flow's title bar sits on. Defaults to "top". Its
+   *  font size reuses the regular `fontSize` field above. */
+  labelPosition?: 'top' | 'bottom' | 'left' | 'right';
 }
 
 export interface DiagramEdgeData extends Record<string, unknown> {

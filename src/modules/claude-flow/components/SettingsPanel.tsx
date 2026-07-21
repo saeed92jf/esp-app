@@ -363,6 +363,28 @@ export function SettingsPanel() {
           </div>
         </div>
         <div className="p-4">
+          <Field label={safeT(t, "settings.size", "Size")}>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                placeholder="W"
+                defaultValue={first.width ?? ""}
+                onBlur={(e) => { const v = Number(e.target.value); if (v > 0) updateNodesData(ids, { width: Math.round(v) }); }}
+                className="w-full"
+              />
+              <span className="text-xs text-muted-foreground">×</span>
+              <Input
+                type="number"
+                min={1}
+                placeholder="H"
+                defaultValue={first.height ?? ""}
+                onBlur={(e) => { const v = Number(e.target.value); if (v > 0) updateNodesData(ids, { height: Math.round(v) }); }}
+                className="w-full"
+              />
+            </div>
+          </Field>
+
           <Field label={t("settings.backgroundColor")}>
             <NodeColorTokenRow
               value={multiSelectedNodes.every((n) => n.data.colorToken === first.colorToken) ? first.colorToken : undefined}
@@ -647,6 +669,30 @@ export function SettingsPanel() {
           )}
 
           {(isGroup || isNonShape || nodeSettingsTab === "style") && (
+          <Field label={safeT(t, "settings.size", "Size")}>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={data.width ?? ""}
+                onChange={(e) => { const v = Number(e.target.value); if (v > 0) updateNodeData(selectedNode.id, { width: Math.round(v) }); }}
+                placeholder="W"
+                className="w-full"
+              />
+              <span className="text-xs text-muted-foreground">×</span>
+              <Input
+                type="number"
+                min={1}
+                value={data.height ?? ""}
+                onChange={(e) => { const v = Number(e.target.value); if (v > 0) updateNodeData(selectedNode.id, { height: Math.round(v) }); }}
+                placeholder="H"
+                className="w-full"
+              />
+            </div>
+          </Field>
+          )}
+
+          {(isGroup || isNonShape || nodeSettingsTab === "style") && (
           <Field label={t("settings.backgroundColor")}>
             <NodeColorTokenRow
               value={data.colorToken}
@@ -710,6 +756,33 @@ export function SettingsPanel() {
                   value={[data.borderRadius ?? 8]}
                   onValueChange={(v) => updateNodeData(selectedNode.id, { borderRadius: v[0] })}
                   className="w-full"
+                />
+              </Field>
+            </>
+          )}
+
+          {isGroup && (
+            <>
+              <Field label={`${safeT(t, "settings.labelSize", "Label size")}: ${data.fontSize ?? 13}px`}>
+                <Slider
+                  min={10}
+                  max={28}
+                  value={[data.fontSize ?? 13]}
+                  onValueChange={(v) => updateNodeData(selectedNode.id, { fontSize: v[0] })}
+                  className="w-full"
+                />
+              </Field>
+
+              <Field label={safeT(t, "settings.labelPosition", "Label position")}>
+                <SegmentedControl
+                  value={data.labelPosition ?? "top"}
+                  onChange={(v) => updateNodeData(selectedNode.id, { labelPosition: v })}
+                  options={[
+                    { value: "top", label: safeT(t, "settings.side_top", "Top") },
+                    { value: "bottom", label: safeT(t, "settings.side_bottom", "Bottom") },
+                    { value: "left", label: safeT(t, "settings.side_left", "Left") },
+                    { value: "right", label: safeT(t, "settings.side_right", "Right") },
+                  ]}
                 />
               </Field>
             </>

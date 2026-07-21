@@ -7,11 +7,13 @@ import {
   Background,
   BackgroundVariant,
   Controls,
+  ControlButton,
   MiniMap,
   Panel,
   ConnectionMode,
   SelectionMode,
   useReactFlow,
+  useViewport,
   type Edge,
   type Node,
   type OnConnectStart,
@@ -21,7 +23,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useTranslations } from "next-intl";
-import { Square, Diamond, Flag, Layers, X } from "lucide-react";
+import { Square, Diamond, Flag, Layers, X, Lock, Unlock, Maximize2, Minimize2 } from "lucide-react";
 
 import { useDiagramStore } from "../store";
 import { nodeTypes, DRAG_HANDLE_BY_TYPE } from "./nodes/BaseNode";
@@ -145,6 +147,17 @@ function QuickAddMenu({ state, onPick, onClose }: { state: QuickAddState; onPick
 // dragging a connection (https://reactflow.dev/examples/interaction/validation).
 // Scoped under .cf-theme so it can never leak outside this component.
 const THEME_CSS = `
+/* Fullscreen (Toolbar's/Controls' fullscreen button): browsers default the
+   ::backdrop behind a fullscreened element to black, which made toggling
+   fullscreen look like it had switched the whole canvas to dark mode even
+   in light mode. Pin both the element's own fullscreen background and its
+   backdrop to the app's real theme color instead. */
+.cf-theme:fullscreen {
+  background: var(--background);
+}
+.cf-theme::backdrop {
+  background: var(--background);
+}
 .cf-theme .react-flow {
   --xy-selection-background-color-default: rgba(99,102,241,0.08);
   --xy-selection-border-default: 1px solid #6366f1;
@@ -173,6 +186,65 @@ const THEME_CSS = `
 }
 `;
 
+/**
+ * Figma-style infinite alignment guides — a full-width/height line at a
+ * fixed FLOW-space coordinate, added from the Toolbar. Screen position is
+ * recomputed from the live pan/zoom transform (useViewport) on every
+ * render, so it always lines up with the canvas content underneath it
+ * without needing its own resize/scroll listeners.
+ */
+function GuideLinesOverlay() {
+  const guides = useDiagramStore((s) => s.guides);
+  const moveGuide = useDiagramStore((s) => s.moveGuide);
+  const removeGuide = useDiagramStore((s) => s.removeGuide);
+  const { x: vx, y: vy, zoom } = useViewport();
+  const draggingRef = useRef<{ id: string; orientation: "horizontal" | "vertical" } | null>(null);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const dragging = draggingRef.current;
+      if (!dragging) return;
+      const wrapper = document.querySelector(".cf-theme");
+      const rect = wrapper?.getBoundingClientRect();
+      if (!rect) return;
+      if (dragging.orientation === "vertical") {
+        moveGuide(dragging.id, (e.clientX - rect.left - vx) / zoom);
+      } else {
+        moveGuide(dragging.id, (e.clientY - rect.top - vy) / zoom);
+      }
+    };
+    const onUp = () => { draggingRef.current = null; };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [moveGuide, vx, vy, zoom]);
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      {guides.map((g) => {
+        const isVertical = g.orientation === "vertical";
+        const screenPos = (g.orientation === "vertical" ? g.position * zoom + vx : g.position * zoom + vy);
+        return (
+          <div
+            key={g.id}
+            onMouseDown={() => { draggingRef.current = { id: g.id, orientation: g.orientation }; }}
+            onDoubleClick={() => removeGuide(g.id)}
+            title="Drag to move · double-click to remove"
+            className={cn(
+              "pointer-events-auto absolute bg-pink-500/70 hover:bg-pink-500",
+              isVertical ? "top-0 bottom-0 w-px cursor-ew-resize" : "start-0 end-0 h-px cursor-ns-resize",
+            )}
+            style={isVertical ? { left: screenPos } : { top: screenPos }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export function DiagramCanvas() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("Flow");
@@ -199,6 +271,9 @@ export function DiagramCanvas() {
   const selectedNodeId = useDiagramStore((s) => s.selectedNodeId);
   const selectionTool = useDiagramStore((s) => s.selectionTool);
   const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
+  const toggleCanvasLock = useDiagramStore((s) => s.toggleCanvasLock);
+  const isCanvasFullscreen = useDiagramStore((s) => s.isCanvasFullscreen);
+  const canvasFullscreenToggle = useDiagramStore((s) => s.canvasFullscreenToggle);
   const globalHideHandles = useDiagramStore((s) => s.globalHideHandles);
   const setIsCanvasFullscreen = useDiagramStore((s) => s.setIsCanvasFullscreen);
   const setCanvasFullscreenToggle = useDiagramStore((s) => s.setCanvasFullscreenToggle);
@@ -342,6 +417,27 @@ export function DiagramCanvas() {
   const onNodeDragStop = useCallback<OnNodeDrag>(
     (_event, draggedNode) => {
       setHoverGroupId(null);
+
+      // Precise snap: round every currently-dragged node's FINAL position to
+      // an exact grid multiple. React Flow's own snapToGrid prop only nudges
+      // the live drag preview via per-pixel deltas, which can drift by a
+      // fractional pixel over a long drag — this guarantees the stored
+      // position itself always lands exactly on the grid.
+      if (settings.snapToGrid) {
+        const [gx, gy] = settings.snapGrid;
+        const snap = (v: number, g: number) => Math.round(v / g) * g;
+        useDiagramStore.setState((s) => {
+          const draggedIsSelected = s.nodes.find((n) => n.id === draggedNode.id)?.selected;
+          return {
+            nodes: s.nodes.map((n) => {
+              const shouldSnap = n.id === draggedNode.id || (draggedIsSelected && n.selected);
+              if (!shouldSnap) return n;
+              return { ...n, position: { x: snap(n.position.x, gx), y: snap(n.position.y, gy) } };
+            }),
+          };
+        });
+      }
+
       if (draggedNode.type === "groupNode") return; // v1: no nesting groups inside groups
 
       const typedNode = draggedNode as Node<DiagramNodeData>;
@@ -363,7 +459,7 @@ export function DiagramCanvas() {
         reparentNode(typedNode.id, null);
       }
     },
-    [reparentNode],
+    [reparentNode, settings.snapToGrid, settings.snapGrid],
   );
 
   // ── Click handlers ────────────────────────────────────────────────────
@@ -711,7 +807,7 @@ export function DiagramCanvas() {
     // outline-none prevents the browser focus ring from showing on the canvas wrapper
     <div
       ref={wrapperRef}
-      className={cn("cf-theme relative h-full w-full outline-none", globalHideHandles && "hide-all-handles")}
+      className={cn("cf-theme relative h-full w-full bg-background outline-none", globalHideHandles && "hide-all-handles")}
       onKeyDown={onKeyDown}
       tabIndex={0}
     >
@@ -768,7 +864,16 @@ export function DiagramCanvas() {
       >
         {bgVariant !== null && <Background variant={bgVariant} gap={16} size={bgSize} color="#e2e8f0" />}
 
-        {settings.showControls && <Controls position="bottom-right" showInteractive={false} />}
+        {settings.showControls && (
+          <Controls position="bottom-right" showZoom showFitView showInteractive={false}>
+            <ControlButton onClick={toggleCanvasLock} title={isCanvasLocked ? "Unlock canvas" : "Lock canvas"}>
+              {isCanvasLocked ? <Lock className="size-3.5" /> : <Unlock className="size-3.5" />}
+            </ControlButton>
+            <ControlButton onClick={() => canvasFullscreenToggle?.()} title={isCanvasFullscreen ? "Exit fullscreen" : "Fullscreen canvas"}>
+              {isCanvasFullscreen ? <Minimize2 className="size-3.5" /> : <Maximize2 className="size-3.5" />}
+            </ControlButton>
+          </Controls>
+        )}
 
         {settings.showMiniMap && (
           <MiniMap
@@ -789,6 +894,8 @@ export function DiagramCanvas() {
           )}
         </Panel>
       </ReactFlow>
+
+      <GuideLinesOverlay />
 
       {/* Lasso capture layer — sits ON TOP of the canvas so it always gets the
           browser's hit-test first, no event-race with React Flow's own

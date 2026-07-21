@@ -38,7 +38,46 @@
     "openMenu": "باز کردن منو",
     "closeMenu": "بستن منو"
   },
- 
+  "Home": {
+    "meta": {
+      "title": "خانه",
+      "description": "کسب‌وکارتان را یکجا مدیریت کنید"
+    },
+    "hero": {
+      "tagline": "هر آنچه برای موفقیت نیاز دارید",
+      "subtitle": "ابزارهای قدرتمندی که کمک می‌کنند هوشمندانه‌تر کار کنید، نه سخت‌تر.",
+      "searchPlaceholder": "جستجو کنید: «CRM»، «پروژه‌ها»، «فاکتورها»..."
+    },
+    "quickAccess": {
+      "customize": "شخصی‌سازی",
+      "customizeLabel": "انتخاب دسترسی سریع",
+      "customizeHint": "{selected} از {max} آیتم انتخاب شده",
+      "capReached": "حداکثر {max} آیتم قابل انتخاب است",
+      "reset": "بازگشت به پیش‌فرض",
+      "done": "تأیید"
+    },
+    "stats": {
+      "clients": "مشتری راضی",
+      "projects": "پروژه موفق",
+      "awards": "جایزه و افتخار",
+      "support": "پشتیبانی"
+    },
+    "features": {
+      "eyebrow": "امکانات",
+      "title": "ساخته‌شده برای هر تیم",
+      "subtitle": "یک دسته را برای کاوش انتخاب کنید.",
+      "all": "همه",
+      "explore": "کاوش"
+    },
+    "newsletter": {
+      "title": "همراه ما بمانید",
+      "subtitle": "آخرین به‌روزرسانی‌ها را در ایمیل خود دریافت کنید.",
+      "placeholder": "ایمیل خود را وارد کنید",
+      "subscribe": "عضویت",
+      "success": "از عضویت شما متشکریم! ایمیل خود را بررسی کنید.",
+      "disclaimer": "بدون اسپم. هر زمان خواستید لغو کنید."
+    }
+  },
   "Footer": {
     "rights": "تمامی حقوق محفوظ است",
     "quickLinks": "دسترسی سریع",
@@ -55,8 +94,50 @@
     "support": "پشتیبانی",
     "supportDesc": "ارتباط با ما"
   },
- 
-  
+  "Welcome": {
+    "title": "پلتفرم مدیریت هوشمند",
+    "subtitle": "ابزارهای مدرن برای مدیریت پروژه، بازاریابی و آرشیو مستندات در یک فضای یکپارچه.",
+    "readyToStart": "برای دسترسی به تمام امکانات وارد شوید",
+    "ctaLogin": "ورود به سیستم",
+    "ctaRegister": "ثبت‌نام",
+    "cards": {
+      "imageGallery": {
+        "description": "مشاهده آلبوم تصاویر و دارایی‌های بصری پروژه به‌صورت دسته‌بندی‌شده."
+      },
+      "videos": {
+        "description": "پرزنتیشن‌های ویدیویی و ویدیوهای آموزشی پلتفرم را مشاهده کنید."
+      },
+      "mediaLibrary": {
+        "description": "دسترسی به کتابخانه مرکزی فایل‌های چندرسانه‌ای و منابع مشترک."
+      },
+      "presentation": "ارائه‌ها و اسناد بصری ما را مرور کنید."
+    }
+  },
+  "Auth": {
+    "brand": "وب اپلیکیشن یورواسلات پارس",
+    "login": "ورود",
+    "register": "ثبت‌نام",
+    "logout": "خروج",
+    "submit": "ورود",
+    "loggingIn": "در حال ورود...",
+    "loginSubtitle": "برای ادامه وارد حساب خود شوید",
+    "identifier": "ایمیل یا شماره موبایل",
+    "identifierPlaceholder": "example@mail.com یا 09xxxxxxxxx",
+    "password": "رمز عبور",
+    "userMenu": "منوی کاربر",
+    "demoTitle": "حساب‌های تستی",
+    "demoHint": "برای پرکردن خودکار فرم، روی هر مورد کلیک کنید.",
+    "roles": {
+      "admin": "مدیر",
+      "engineer": "مهندس",
+      "staff": "کارمند",
+      "customer": "مشتری"
+    },
+    "errors": {
+      "invalidForm": "ایمیل/موبایل یا رمز عبور نامعتبر است.",
+      "invalidCredentials": "حساب کاربری یافت نشد. فقط حساب‌های تستی مجاز هستند."
+    }
+  },
   "Menu": {
     "title": "منو",
     "subtitle": "همه چیز در یک مکان",
@@ -100,8 +181,7 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری",
-      "Weight-Flow": "جریان وزن"
+      "Claud-Flow": "جریان ابری"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",
@@ -128,8 +208,7 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "ESP-Flow": "جریان داده",
-      "Claud-Flow": "جریان ابری",
-      "Weight-Flow": "جریان وزن"
+      "Claud-Flow": "جریان ابری"
     }
   },
   "NotFound": {
@@ -160,7 +239,59 @@
       "purple": "بنفش"
     }
   },
- 
+  "Dashboard": {
+    "greeting": "خوش آمدید، {name}",
+    "chartTitle": "روند ۶ ماهه",
+    "chartSubtitle": "بر اساس داده‌های نمونه",
+    "stats": {
+      "totalUsers": "کل کاربران",
+      "revenue": "درآمد",
+      "orders": "سفارش‌ها",
+      "activeSessions": "نشست‌های فعال",
+      "projects": "پروژه‌ها",
+      "openTickets": "تیکت‌های باز",
+      "completedTasks": "تسک‌های انجام‌شده",
+      "pendingReview": "در انتظار بازبینی",
+      "myOrders": "سفارش‌های من",
+      "invoices": "فاکتورها",
+      "support": "تیکت‌های پشتیبانی",
+      "wallet": "موجودی کیف پول",
+      "tasksToday": "تسک‌های امروز",
+      "messages": "پیام‌ها"
+    },
+    "roleSummary": {
+      "admin": "نمای کلی عملکرد سامانه",
+      "engineer": "وضعیت پروژه‌ها و تسک‌های فنی شما",
+      "staff": "کارهای امروز و تیکت‌های شما",
+      "customer": "خلاصه سفارش‌ها و حساب شما"
+    },
+    "months": {
+      "far": "فرو",
+      "ord": "ارد",
+      "kho": "خرد",
+      "tir": "تیر",
+      "mor": "مرد",
+      "sha": "شهر"
+    },
+    "activity": {
+      "title": "فعالیت‌های اخیر",
+      "items": {
+        "newUser": "ثبت‌نام کاربر جدید",
+        "payment": "پرداخت موفق ثبت شد",
+        "ticket": "تیکت پشتیبانی جدید",
+        "deploy": "استقرار نسخه جدید",
+        "taskDone": "تسک تکمیل شد",
+        "orderShipped": "سفارش ارسال شد",
+        "invoicePaid": "فاکتور پرداخت شد",
+        "review": "درخواست بازبینی کد"
+      },
+      "time": {
+        "minutes": "{count} دقیقه پیش",
+        "hours": "{count} ساعت پیش",
+        "days": "{count} روز پیش"
+      }
+    }
+  },
   "Account": {
     "menuLabel": "منوی حساب کاربری",
     "dashboard": "داشبورد",
@@ -170,7 +301,298 @@
     "guest": "مهمان",
     "online": "آنلاین"
   },
-
+  "Aparat": {
+    "stats": {
+      "videos": "ویدیوها",
+      "followers": "دنبال‌کننده‌ها",
+      "following": "دنبال‌شده‌ها"
+    },
+    "Playlist": {
+      "title": "لیست ویدیو ها",
+      "count": "{count, plural, one {# ویدیو} other {# ویدیو}}",
+      "progress": "{loaded} از {total} ویدیو",
+      "loadMore": " ...بارگذاری بیشتر",
+      "empty": "خالی",
+      "locale": "موقعیت",
+      "views": ""
+    },
+    "time": {
+      "unknown": "نامشخص",
+      "second": "{value} ثانیه پیش",
+      "minute": "{value} دقیقه پیش",
+      "hour": "{value} ساعت پیش",
+      "day": "{value} روز پیش",
+      "month": "{value} ماه پیش",
+      "year": "{value} سال پیش"
+    },
+    "loading": "در حال بارگذاری کانال {channel}...",
+    "loadedOf": "{current} از {total} ویدیو بارگذاری شد",
+    "appearAfterLoad": "صفحه پس از بارگذاری اولین ویدیوها نمایش داده می‌شود...",
+    "youMightLike": "شاید این‌ها را هم بپسندید",
+    "allVideos": "همه ویدیوها",
+    "channelCover": "تصویر کاور کانال",
+    "officialChannel": "کانال رسمی",
+    "visitChannel": "مشاهده کانال",
+    "playlist": "لیست پخش",
+    "uncategorized": "دسته‌بندی‌نشده",
+    "videosCount": "{loaded} از {total} ویدیو",
+    "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",
+    "allLoaded": "هر {count} ویدیو با موفقیت بارگذاری شد",
+    "views": "",
+    "noVideos": "ویدیویی موجود نیست",
+    "noVideosDescription": "بعداً برای محتوای جدید سر بزنید",
+    "selectVideoToWatch": "یک ویدیو جهت پخش انتخاب کنید",
+    "unableToLoadVideo": "ویدیو بارگذاری نمی شود",
+    "watchOnAparat": "در آپارات تماشا کنید"
+  },
+  "Flow": {
+    "loadTemplate": "بارگذاری الگو...",
+    "searchTemplate": "یافتن الگو",
+    "noTemplate": "بدون الگو",
+    "editor": {
+      "title": "ویرایشگر دیاگرام",
+      "untitled": "دیاگرام بدون عنوان",
+      "newDiagram": "دیاگرام جدید",
+      "save": "ذخیره",
+      "saved": "ذخیره شد",
+      "saving": "در حال ذخیره…",
+      "export": "خروجی",
+      "import": "ورودی",
+      "share": "اشتراک‌ گذاری",
+      "settings": "تنظیمات",
+      "openDiagrams": "دیاگرام‌های من",
+      "close": "بستن"
+    },
+    "toolbar": {
+      "undo": "واگرد",
+      "redo": "انجام‌ مجدد",
+      "copy": "کپی",
+      "paste": "چسباندن",
+      "cut": "برش",
+      "delete": "حذف",
+      "selectAll": "انتخاب همه",
+      "fitView": "تنظیم نما",
+      "zoomIn": "بزرگ‌ نمایی",
+      "zoomOut": "کوچک‌ نمایی",
+      "resetZoom": "بازنشانی نما",
+      "lock": "قفل",
+      "unlock": "آزاد",
+      "addNode": "افزودن گره",
+      "loadTemplate": "بارگذاری الگو...",
+      "searchTemplate": "جستجوی الگو",
+      "noTemplate": "الگویی یافت نشد",
+      "noTemplatesInFolder": "دیاگرامی در پوشه public/diagrams یافت نشد.",
+      "templateLoaded": "بارگذاری شد",
+      "templateLoadFailed": "بارگذاری نشد",
+      "confirmLoadTemplate": "این الگو بارگذاری شود؟ کانواس فعلی جایگزین می‌شود.",
+      "confirmImport": "این فایل وارد شود؟ کانواس فعلی جایگزین می‌شود.",
+      "align": "تراز",
+      "alignLeft": "تراز چپ",
+      "alignCenterH": "وسط‌چین افقی",
+      "alignRight": "تراز راست",
+      "alignTop": "تراز بالا",
+      "alignCenterV": "وسط‌چین عمودی",
+      "alignBottom": "تراز پایین",
+      "distributeH": "چیدمان افقی با فاصله مساوی",
+      "distributeV": "چیدمان عمودی با فاصله مساوی",
+      "addVerticalGuide": "افزودن گایدلاین عمودی",
+      "addHorizontalGuide": "افزودن گایدلاین افقی",
+      "clearGuides": "حذف همه گایدلاین‌ها",
+      "exportImage": "دانلود به‌صورت عکس",
+      "exportPngBg": "PNG — با پس‌زمینه",
+      "exportPngTransparent": "PNG — بدون پس‌زمینه (شفاف)",
+      "exportSvg": "SVG (وکتور)",
+      "exportingImage": "در حال تولید عکس…",
+      "imageExported": "عکس دانلود شد",
+      "imageExportFailed": "تولید عکس ناموفق بود"
+    },
+    "nodes": {
+      "defaultNode": "فرآیند",
+      "inputNode": "شروع",
+      "outputNode": "پایان",
+      "circleNode": "دایره",
+      "diamondNode": "تصمیم",
+      "cylinderNode": "پایگاه داده",
+      "parallelogramNode": "ورودی/خروجی",
+      "hexagonNode": "شش‌ ضلعی",
+      "textNode": "متن",
+      "noteNode": "یادداشت",
+      "cloudNode": "ابری",
+      "triangleNode": "مثلث",
+      "documentNode": "سند",
+      "predefinedProcessNode": "زیر سیستم",
+      "delayNode": "تاخیر",
+      "groupNode": "گروه",
+      "numberNode": "مقدار عددی",
+      "operatorNode": "عملگر ریاضی",
+      "shapeNode": " اشکال هندسی",
+      "beamCalcNode": "محاسبه گر ممان اینرسی",
+      "geometryCalcNode": "محاسبه گر هندسی",
+      "imageNode": "عکس",
+      "svgNode": "عکس",
+      "starNode": "ستاره",
+      "pentagonNode": "پنج ضلعی",
+      "multiDocumentNode": "ترکیبی",
+      "constantNode": "ثابت",
+      "tableNode": "جدول",
+      "excelNode": "اکسل",
+      "matrixNode": "ماتریس",
+      "chartNode": "نمودار"
+    },
+    "palette": {
+      "search": "جستجوی گره‌ها…",
+      "basic": "پایه",
+      "flowchart": "فلوچارت",
+      "shapes": "اشکال",
+      "dragToAdd": "بکشید به بوم",
+      "containers": "نگهدارنده",
+      "compute": "محاسبه"
+    },
+    "settings": {
+      "label": "برچسب",
+      "description": "توضیحات",
+      "backgroundColor": "رنگ پس‌ زمینه",
+      "borderColor": "رنگ حاشیه",
+      "textColor": "رنگ متن",
+      "fontSize": "اندازه فونت",
+      "fontWeight": "وزن فونت",
+      "borderWidth": "ضخامت حاشیه",
+      "borderStyle": "سبک حاشیه",
+      "borderRadius": "شعاع گوشه",
+      "edgeType": "نوع اتصال",
+      "edgeColor": "رنگ لبه",
+      "strokeWidth": "ضخامت خط",
+      "animated": "متحرک",
+      "nodeSettings": "خصوصیات گره",
+      "edgeSettings": "خصوصیات لبه",
+      "selectElement": "یک گره یا لبه انتخاب کنید تا ویرایش کنید",
+      "weight_normal": "معمولی",
+      "weight_semibold": "متوسط",
+      "weight_bold": "ضخیم",
+      "style_solid": "ممتد",
+      "style_dashed": "خط‌چین",
+      "style_dotted": "نقطه‌چین",
+      "link": "لینک",
+      "constant": "ثابت...",
+      "operation": "عملیات...",
+      "shape": "شکل...",
+      "shapeFrom": "شکل",
+      "unit": "واحد",
+      "ixCaption": "Ix (ممان دوم سطح)",
+      "beamVolumetricWarning": "این یک شکل سه‌بعدی/حجمی است — ممان اینرسی خمشی فقط برای مقطع دوبعدی معنا دارد، نه یک جسم توپر.",
+      "beamNoFormula": "این شکل فرمول ممان اینرسی ندارد.",
+      "addRow": "افزودن ردیف",
+      "removeRow": "حذف ردیف",
+      "addColumn": "افزودن ستون",
+      "removeColumn": "حذف ستون",
+      "toggleHeaderRow": "ردیف سرستون",
+      "tabContent": "محتوا",
+      "tabStyle": "ظاهر",
+      "importCsv": "وارد کردن فایل CSV/TSV",
+      "uploadImage": "بارگذاری عکس یا SVG",
+      "opacity": "شفافیت",
+      "chartHelpTitle": "چطور داده وارد کنم؟",
+      "chartHelp": "راهنما: خانه‌ی بالا-چپ خالی می‌ماند؛ بقیه‌ی ردیف اول اسم سری‌های شماست (مثلاً «درآمد»، «هزینه»). هر ردیف بعدی با یک برچسب دسته (مثلاً «فروردین») شروع می‌شود و بعدش یک عدد برای هر سری می‌آید. می‌توانید مستقیم تایپ کنید، یک محدوده کپی‌شده از اکسل/شیتس پیست کنید، یا به‌جای وارد کردن داده اینجا، یک نود جدول/اکسل/ماتریس وصل کنید.",
+      "editChartData": "ویرایش داده",
+      "size": "اندازه",
+      "labelSize": "اندازه‌ی لیبل",
+      "labelPosition": "موقعیت لیبل",
+      "side_top": "بالا",
+      "side_bottom": "پایین",
+      "side_left": "چپ",
+      "side_right": "راست"
+    },
+    "editorSettings": {
+      "title": "تنظیمات ادیتور",
+      "canvas": "بوم",
+      "snapToGrid": "چسبیدن به شبکه",
+      "showMiniMap": "نمایش مینی‌مپ",
+      "showControls": "نمایش کنترل بزرگ‌نمایی",
+      "background": "الگوی پس‌زمینه",
+      "bg_dots": "نقطه‌ای",
+      "bg_lines": "خطی",
+      "bg_cross": "صلیبی",
+      "bg_none": "بدون پس‌زمینه",
+      "appearance": "ظاهر",
+      "colorMode": "حالت رنگ",
+      "mode_light": "روشن",
+      "mode_dark": "تیره",
+      "behavior": "رفتار",
+      "defaultEdgeType": "سبک پیش‌فرض اتصال",
+      "edge_default": "منحنی",
+      "edge_straight": "مستقیم",
+      "edge_smoothstep": "پله‌ای",
+      "edge_step": "پله تیز",
+      "autoSave": "ذخیره خودکار در کتابخانه",
+      "shortcuts": "میانبرهای صفحه‌کلید",
+      "edge_floating": "شناور",
+      "edge_floating_straight": "شناور مستقیم",
+      "collisionAvoidance": "پراکنده‌کردن گره‌ها هنگام درگ",
+      "colorModeNote": "هماهنگ با تم سایت",
+      "gridSize": "اندازه‌ی گرید"
+    },
+    "shortcuts": {
+      "undo": "واگرد",
+      "redo": "انجام‌مجدد",
+      "save": "ذخیره دیاگرام",
+      "copy": "کپی گره",
+      "paste": "چسباندن",
+      "duplicate": "تکثیر گره",
+      "delete": "حذف انتخاب‌شده",
+      "fitView": "تنظیم نما"
+    },
+    "dialogs": {
+      "newDiagram": "ایجاد دیاگرام جدید",
+      "openDiagram": "باز کردن دیاگرام",
+      "diagramName": "نام",
+      "diagramDesc": "توضیحات (اختیاری)",
+      "cancel": "انصراف",
+      "create": "ایجاد",
+      "confirm": "تأیید",
+      "delete": "حذف",
+      "confirmDelete": "این دیاگرام برای همیشه حذف شود؟",
+      "exportJSON": "خروجی JSON",
+      "exportPNG": "خروجی تصویر",
+      "importJSON": "ورودی JSON",
+      "confirmNewDiagram": "یک دیاگرام جدید شروع شود؟ کانواس فعلی جایگزین می‌شود."
+    },
+    "messages": {
+      "savedSuccessfully": "با موفقیت ذخیره شد",
+      "deletedSuccessfully": "حذف شد",
+      "importedSuccessfully": "با موفقیت وارد شد",
+      "copiedToClipboard": "در کلیپ‌بورد کپی شد",
+      "noDiagrams": "هنوز دیاگرامی ذخیره نشده",
+      "createFirst": "اولین دیاگرام خود را بسازید",
+      "nodeCount": "{count} گره"
+    },
+    "contextMenu": {
+      "addNode": "افزودن گره",
+      "paste": "چسباندن",
+      "selectAll": "انتخاب همه",
+      "fitView": "تنظیم نما",
+      "delete": "حذف",
+      "duplicate": "تکثیر"
+    },
+    "global": {
+      "search": "جستجو",
+      "cancel": "انصراف",
+      "confirm": "تأیید",
+      "loading": "در حال بارگذاری…",
+      "noResults": "نتیجه‌ای یافت نشد",
+      "all": "همه"
+    },
+    "beamValidation": {
+      "positiveDims": "عرض و ارتفاع باید هر دو بزرگ‌تر از صفر باشند.",
+      "positiveDiameter": "قطر باید بزرگ‌تر از صفر باشد.",
+      "positiveOuterDiameter": "قطر خارجی باید بزرگ‌تر از صفر باشد.",
+      "negativeInnerDiameter": "قطر داخلی نمی‌تواند منفی باشد.",
+      "innerNotSmallerThanOuter": "قطر داخلی باید کوچک‌تر از قطر خارجی باشد.",
+      "positiveBaseHeight": "قاعده و ارتفاع باید هر دو بزرگ‌تر از صفر باشند.",
+      "positiveIBeamDims": "هر چهار بُعد باید بزرگ‌تر از صفر باشند.",
+      "webWiderThanFlange": "ضخامت جان نمی‌تواند از عرض بال بیشتر باشد.",
+      "flangeTooThick": "ضخامت بال برای این ارتفاع کل خیلی زیاد است."
+    }
+  },
   "Combobox": {
     "placeholder": "انتخاب کنید...",
     "searchPlaceholder": "جستجو...",

@@ -108,6 +108,21 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             <Row label={t("editorSettings.snapToGrid")}>
               <Switch checked={settings.snapToGrid} onCheckedChange={(v) => set("snapToGrid", v)} />
             </Row>
+            {settings.snapToGrid && (
+              <Row label={safeT(t, "editorSettings.gridSize", "Grid size")}>
+                <Select
+                  value={String(settings.snapGrid[0])}
+                  onValueChange={(v: string) => set("snapGrid", [Number(v), Number(v)])}
+                >
+                  <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[5, 10, 15, 20, 25, 50].map((g) => (
+                      <SelectItem key={g} value={String(g)}>{g}px</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Row>
+            )}
             <Row label={t("editorSettings.showMiniMap")}>
               <Switch checked={settings.showMiniMap} onCheckedChange={(v) => set("showMiniMap", v)} />
             </Row>

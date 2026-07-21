@@ -5,13 +5,6 @@ import { useReactFlow, getNodesBounds, getViewportForBounds } from "@xyflow/reac
 import {
   Undo2,
   Redo2,
-  ZoomIn,
-  ZoomOut,
-  Maximize,
-  Maximize2,
-  Minimize2,
-  Lock,
-  Unlock,
   Save,
   FolderOpen,
   FilePlus2,
@@ -36,6 +29,15 @@ import {
   Group,
   Eye,
   EyeOff,
+  AlignStartVertical,
+  AlignCenterVertical,
+  AlignEndVertical,
+  AlignStartHorizontal,
+  AlignCenterHorizontal,
+  AlignEndHorizontal,
+  StretchHorizontal,
+  StretchVertical,
+  X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
@@ -108,6 +110,7 @@ export function Toolbar({
   const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
   const [clearMenuOpen, setClearMenuOpen] = useState(false);
   const [selectMenuOpen, setSelectMenuOpen] = useState(false);
+  const [alignMenuOpen, setAlignMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Diagram templates, listed from public/diagrams (see the API route at
@@ -182,7 +185,7 @@ export function Toolbar({
     }
   };
 
-  const { zoomIn, zoomOut, fitView } = useReactFlow();
+  const { fitView, getViewport, screenToFlowPosition } = useReactFlow();
 
   const diagramName = useDiagramStore((s) => s.diagramName);
   const setDiagramName = useDiagramStore((s) => s.setDiagramName);
@@ -201,6 +204,11 @@ export function Toolbar({
   const selectAllNodes = useDiagramStore((s) => s.selectAllNodes);
   const selectAllEdges = useDiagramStore((s) => s.selectAllEdges);
   const selectAllGroups = useDiagramStore((s) => s.selectAllGroups);
+  const alignSelectedNodes = useDiagramStore((s) => s.alignSelectedNodes);
+  const distributeSelectedNodes = useDiagramStore((s) => s.distributeSelectedNodes);
+  const addGuide = useDiagramStore((s) => s.addGuide);
+  const clearGuides = useDiagramStore((s) => s.clearGuides);
+  const guidesCount = useDiagramStore((s) => s.guides.length);
   const globalHideHandles = useDiagramStore((s) => s.globalHideHandles);
   const toggleGlobalHandles = useDiagramStore((s) => s.toggleGlobalHandles);
   const clearCanvas = useDiagramStore((s) => s.clearCanvas);
@@ -211,10 +219,6 @@ export function Toolbar({
   const lassoMode = useDiagramStore((s) => s.lassoMode);
   const setLassoMode = useDiagramStore((s) => s.setLassoMode);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
-  const isCanvasLocked = useDiagramStore((s) => s.isCanvasLocked);
-  const toggleCanvasLock = useDiagramStore((s) => s.toggleCanvasLock);
-  const isCanvasFullscreen = useDiagramStore((s) => s.isCanvasFullscreen);
-  const canvasFullscreenToggle = useDiagramStore((s) => s.canvasFullscreenToggle);
 
   // ── Export diagram as downloadable JSON file (save & restore) ────────────
   const handleExport = () => {
@@ -305,33 +309,58 @@ export function Toolbar({
 
   // ── Download as image (https://reactflow.dev/examples/misc/download-image) ──
   // NEW DEPENDENCY REQUIRED: `npm install html-to-image`.
-  const handleDownloadImage = async () => {
+  const [imageExportMenuOpen, setImageExportMenuOpen] = useState(false);
+  const [isExportingImage, setIsExportingImage] = useState(false);
+
+  const handleDownloadImage = async (format: "png" | "png-transparent" | "svg") => {
+    setImageExportMenuOpen(false);
     const { nodes } = useDiagramStore.getState();
     if (nodes.length === 0) return;
     const viewportEl = document.querySelector(".react-flow__viewport") as HTMLElement | null;
     if (!viewportEl) return;
 
-    const { toPng } = await import("html-to-image");
-    const imageWidth = 1600;
-    const imageHeight = 1200;
-    const bounds = getNodesBounds(nodes);
-    const viewport = getViewportForBounds(bounds, imageWidth, imageHeight, 0.2, 2, 0.1);
+    setIsExportingImage(true);
+    // Large diagrams can genuinely take a few seconds to rasterize — without
+    // this, the toolbar just sits there with no feedback and looks hung.
+    const toastId = toast.loading(safeT(t, "toolbar.exportingImage", "Generating image…"));
 
-    const dataUrl = await toPng(viewportEl, {
-      backgroundColor: colorMode === "dark" ? "#0f172a" : "#ffffff",
-      width: imageWidth,
-      height: imageHeight,
-      style: {
-        width: `${imageWidth}px`,
-        height: `${imageHeight}px`,
-        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
-      },
-    });
+    try {
+      const { toPng, toSvg } = await import("html-to-image");
+      // Fixed logical frame the diagram is fit into, then rendered at a much
+      // higher actual pixel density via pixelRatio — this is what makes the
+      // exported file look sharp instead of just being a bigger blurry PNG.
+      const frameWidth = 1600;
+      const frameHeight = 1200;
+      const bounds = getNodesBounds(nodes);
+      const viewport = getViewportForBounds(bounds, frameWidth, frameHeight, 0.2, 2, 0.1);
+      const transparent = format === "png-transparent";
+      const backgroundColor = transparent ? undefined : colorMode === "dark" ? "#0f172a" : "#ffffff";
 
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = `${diagramName || "diagram"}.png`;
-    a.click();
+      const commonOptions = {
+        backgroundColor,
+        width: frameWidth,
+        height: frameHeight,
+        pixelRatio: format === "svg" ? undefined : 3,
+        style: {
+          width: `${frameWidth}px`,
+          height: `${frameHeight}px`,
+          transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
+        },
+      };
+
+      const dataUrl = format === "svg" ? await toSvg(viewportEl, commonOptions) : await toPng(viewportEl, commonOptions);
+
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${diagramName || "diagram"}.${format === "svg" ? "svg" : "png"}`;
+      a.click();
+      toast.success(safeT(t, "toolbar.imageExported", "Image downloaded"), { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error(safeT(t, "toolbar.imageExportFailed", "Could not generate the image"), { id: toastId });
+    } finally {
+      setIsExportingImage(false);
+    }
   };
 
   return (
@@ -378,12 +407,6 @@ export function Toolbar({
       {/* History */}
       <ToolbarButton icon={Undo2} label={t("toolbar.undo")} onClick={undo} disabled={!canUndo} />
       <ToolbarButton icon={Redo2} label={t("toolbar.redo")} onClick={redo} disabled={!canRedo} />
-      <Divider />
-
-      {/* Viewport controls */}
-      <ToolbarButton icon={ZoomIn} label={t("toolbar.zoomIn")} onClick={() => zoomIn()} />
-      <ToolbarButton icon={ZoomOut} label={t("toolbar.zoomOut")} onClick={() => zoomOut()} />
-      <ToolbarButton icon={Maximize} label={t("toolbar.fitView")} onClick={() => fitView({ duration: 300 })} />
       <Divider />
 
       {/* Selection tool (https://reactflow.dev/examples/whiteboard/rectangle,
@@ -461,6 +484,83 @@ export function Toolbar({
         )}
       </div>
 
+      {/* Align/distribute — acts on the current multi-selection of nodes. */}
+      <div className="relative">
+        <button
+          onClick={() => setAlignMenuOpen((o) => !o)}
+          title={safeT(t, "toolbar.align", "Align")}
+          className={cn(
+            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
+            "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+        >
+          <AlignStartVertical className="size-4" />
+          <ChevronDown className="size-3" />
+        </button>
+        {alignMenuOpen && (
+          <div
+            className="absolute top-9 start-0 z-20 w-52 rounded-md border border-border bg-popover py-1 shadow-md"
+            onMouseLeave={() => setAlignMenuOpen(false)}
+          >
+            {(
+              [
+                { edge: "left" as const, icon: AlignStartVertical, label: safeT(t, "toolbar.alignLeft", "Align left") },
+                { edge: "centerH" as const, icon: AlignCenterVertical, label: safeT(t, "toolbar.alignCenterH", "Align center (horizontal)") },
+                { edge: "right" as const, icon: AlignEndVertical, label: safeT(t, "toolbar.alignRight", "Align right") },
+                { edge: "top" as const, icon: AlignStartHorizontal, label: safeT(t, "toolbar.alignTop", "Align top") },
+                { edge: "centerV" as const, icon: AlignCenterHorizontal, label: safeT(t, "toolbar.alignCenterV", "Align middle (vertical)") },
+                { edge: "bottom" as const, icon: AlignEndHorizontal, label: safeT(t, "toolbar.alignBottom", "Align bottom") },
+              ]
+            ).map(({ edge, icon: Icon, label }) => (
+              <button
+                key={edge}
+                onClick={() => { alignSelectedNodes(edge); setAlignMenuOpen(false); }}
+                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                <Icon className="size-3.5" /> {label}
+              </button>
+            ))}
+            <div className="my-1 h-px bg-border" />
+            <button
+              onClick={() => { distributeSelectedNodes("horizontal"); setAlignMenuOpen(false); }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <StretchHorizontal className="size-3.5" /> {safeT(t, "toolbar.distributeH", "Distribute horizontally")}
+            </button>
+            <button
+              onClick={() => { distributeSelectedNodes("vertical"); setAlignMenuOpen(false); }}
+              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+            >
+              <StretchVertical className="size-3.5" /> {safeT(t, "toolbar.distributeV", "Distribute vertically")}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Infinite alignment guides — added at the current viewport center;
+          drag them on the canvas to reposition, double-click to remove one. */}
+      <ToolbarButton
+        icon={StretchVertical}
+        label={safeT(t, "toolbar.addVerticalGuide", "Add vertical guide")}
+        onClick={() => {
+          const { x, zoom } = getViewport();
+          const centerFlowX = (window.innerWidth / 2 - x) / zoom;
+          addGuide("vertical", centerFlowX);
+        }}
+      />
+      <ToolbarButton
+        icon={StretchHorizontal}
+        label={safeT(t, "toolbar.addHorizontalGuide", "Add horizontal guide")}
+        onClick={() => {
+          const { y, zoom } = getViewport();
+          const centerFlowY = (window.innerHeight / 2 - y) / zoom;
+          addGuide("horizontal", centerFlowY);
+        }}
+      />
+      {guidesCount > 0 && (
+        <ToolbarButton icon={X} label={safeT(t, "toolbar.clearGuides", "Clear guides")} onClick={clearGuides} />
+      )}
+
       {/* Hide/show every connection handle at once (a single global CSS
           switch — see the "hide-all-handles" class in DiagramCanvas.tsx). */}
       <ToolbarButton
@@ -516,7 +616,36 @@ export function Toolbar({
       {/* Import / Export */}
       <ToolbarButton icon={Download} label={t("dialogs.exportJSON")} onClick={handleExport} />
       <ToolbarButton icon={Upload} label={t("dialogs.importJSON")} onClick={handleImportClick} />
-      <ToolbarButton icon={ImageDown} label="Download as image" onClick={handleDownloadImage} />
+      <div className="relative">
+        <button
+          onClick={() => setImageExportMenuOpen((o) => !o)}
+          disabled={isExportingImage}
+          title={safeT(t, "toolbar.exportImage", "Download as image")}
+          className={cn(
+            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors disabled:opacity-50",
+            "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+        >
+          <ImageDown className={cn("size-4", isExportingImage && "animate-pulse")} />
+          <ChevronDown className="size-3" />
+        </button>
+        {imageExportMenuOpen && (
+          <div
+            className="absolute top-9 start-0 z-20 w-56 rounded-md border border-border bg-popover py-1 shadow-md"
+            onMouseLeave={() => setImageExportMenuOpen(false)}
+          >
+            <button onClick={() => handleDownloadImage("png")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngBg", "PNG — with background")}
+            </button>
+            <button onClick={() => handleDownloadImage("png-transparent")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngTransparent", "PNG — transparent")}
+            </button>
+            <button onClick={() => handleDownloadImage("svg")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
+              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportSvg", "SVG (vector)")}
+            </button>
+          </div>
+        )}
+      </div>
       {/* Hidden file input — triggered programmatically by handleImportClick */}
       <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
       <Divider />
@@ -562,24 +691,6 @@ export function Toolbar({
       <div className="ms-auto flex items-center gap-1">
         {/* Auto-save indicator — shown only while save is in progress */}
         {isSaving && <span className="me-1 text-xs text-muted-foreground">{t("editor.saving")}</span>}
-
-        {/* Real Fullscreen API on the canvas wrapper only (not the toolbar/
-            side panels) — see the effect registering this in DiagramCanvas.tsx */}
-        <ToolbarButton
-          icon={isCanvasFullscreen ? Minimize2 : Maximize2}
-          label={isCanvasFullscreen ? "Exit fullscreen" : "Fullscreen canvas"}
-          active={isCanvasFullscreen}
-          onClick={() => canvasFullscreenToggle?.()}
-        />
-
-        {/* View-only lock: dragging/connecting/selecting nodes is disabled,
-            panning and zooming still work. */}
-        <ToolbarButton
-          icon={isCanvasLocked ? Lock : Unlock}
-          label={isCanvasLocked ? "Unlock canvas" : "Lock canvas"}
-          active={isCanvasLocked}
-          onClick={toggleCanvasLock}
-        />
 
         {/* Editor global settings dialog */}
         <ToolbarButton icon={Settings2} label={t("editorSettings.title")} onClick={onOpenSettings} />

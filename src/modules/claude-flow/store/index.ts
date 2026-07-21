@@ -163,6 +163,12 @@ interface DiagramStore {
   /** Selects every sub-flow (groupNode) container, not its children. */
   selectAllGroups: () => void;
 
+  // Alignment / distribution (Toolbar's "Align" menu) — act on the current
+  // multi-selection of nodes; no-op with fewer than 2 selected.
+  alignSelectedNodes: (edge: 'left' | 'right' | 'top' | 'bottom' | 'centerH' | 'centerV') => void;
+  /** Evenly spaces 3+ selected nodes between the two outermost ones along an axis. */
+  distributeSelectedNodes: (axis: 'horizontal' | 'vertical') => void;
+
   // Subflow / grouping
   reparentNode: (nodeId: string, parentId: string | null) => void;
   groupSelectedNodes: () => void;
@@ -173,6 +179,15 @@ interface DiagramStore {
   // sync with any individual node's own data.
   globalHideHandles: boolean;
   toggleGlobalHandles: () => void;
+
+  // Infinite alignment guide lines (Figma-style) — full-canvas vertical/
+  // horizontal lines at a fixed flow-space coordinate, dragged in from the
+  // Toolbar. Not persisted per-node; just a canvas-wide visual aid.
+  guides: { id: string; orientation: 'horizontal' | 'vertical'; position: number }[];
+  addGuide: (orientation: 'horizontal' | 'vertical', position: number) => void;
+  moveGuide: (id: string, position: number) => void;
+  removeGuide: (id: string) => void;
+  clearGuides: () => void;
 
   // History
   pushHistory: () => void;
@@ -236,6 +251,7 @@ export const useDiagramStore = create<DiagramStore>()(
       isCanvasFullscreen: false,
       canvasFullscreenToggle: null,
       globalHideHandles: false,
+      guides: [],
 
       setDiagramName: (name) => set({ diagramName: name }),
 
@@ -308,7 +324,11 @@ export const useDiagramStore = create<DiagramStore>()(
       setViewport: (viewport) => set({ viewport }),
 
       addNode: (node) => {
-        set((state) => ({ nodes: [...state.nodes, node] }));
+        const { snapToGrid, snapGrid } = get().settings;
+        const placed = snapToGrid
+          ? { ...node, position: { x: Math.round(node.position.x / snapGrid[0]) * snapGrid[0], y: Math.round(node.position.y / snapGrid[1]) * snapGrid[1] } }
+          : node;
+        set((state) => ({ nodes: [...state.nodes, placed] }));
         get().pushHistory();
       },
 
@@ -685,6 +705,89 @@ export const useDiagramStore = create<DiagramStore>()(
         }));
       },
 
+      // ── Align / distribute (Toolbar's "Align" menu) ─────────────────────
+      // Both only ever act among nodes that share the same parent (all
+      // top-level, or all inside the same sub-flow) — positions are relative
+      // to different origins otherwise, so mixing them wouldn't mean anything.
+      alignSelectedNodes: (edge) => {
+        const { nodes } = get();
+        const selected = nodes.filter((n) => n.selected);
+        if (selected.length < 2) return;
+        const parentId = selected[0].parentId;
+        const group = selected.filter((n) => n.parentId === parentId);
+        if (group.length < 2) return;
+
+        const bounds = group.map((n) => {
+          const { width, height } = nodeSize(n);
+          return { id: n.id, width, height, x: n.position.x, y: n.position.y };
+        });
+
+        let target: number;
+        if (edge === 'left') target = Math.min(...bounds.map((b) => b.x));
+        else if (edge === 'right') target = Math.max(...bounds.map((b) => b.x + b.width));
+        else if (edge === 'top') target = Math.min(...bounds.map((b) => b.y));
+        else if (edge === 'bottom') target = Math.max(...bounds.map((b) => b.y + b.height));
+        else if (edge === 'centerH') target = (Math.min(...bounds.map((b) => b.x)) + Math.max(...bounds.map((b) => b.x + b.width))) / 2;
+        else target = (Math.min(...bounds.map((b) => b.y)) + Math.max(...bounds.map((b) => b.y + b.height))) / 2; // centerV
+
+        const idSet = new Set(group.map((b) => b.id));
+        set((state) => ({
+          nodes: state.nodes.map((n) => {
+            if (!idSet.has(n.id)) return n;
+            const { width, height } = nodeSize(n);
+            const pos = { ...n.position };
+            if (edge === 'left') pos.x = target;
+            else if (edge === 'right') pos.x = target - width;
+            else if (edge === 'top') pos.y = target;
+            else if (edge === 'bottom') pos.y = target - height;
+            else if (edge === 'centerH') pos.x = target - width / 2;
+            else pos.y = target - height / 2;
+            return { ...n, position: pos };
+          }),
+        }));
+        get().pushHistory();
+      },
+
+      distributeSelectedNodes: (axis) => {
+        const { nodes } = get();
+        const selected = nodes.filter((n) => n.selected);
+        if (selected.length < 3) return;
+        const parentId = selected[0].parentId;
+        const group = selected.filter((n) => n.parentId === parentId);
+        if (group.length < 3) return;
+
+        const items = group.map((n) => {
+          const { width, height } = nodeSize(n);
+          return { id: n.id, x: n.position.x, y: n.position.y, width, height };
+        });
+
+        const next = new Map<string, number>();
+        if (axis === 'horizontal') {
+          items.sort((a, b) => a.x - b.x);
+          const first = items[0];
+          const last = items[items.length - 1];
+          const totalWidth = items.reduce((sum, it) => sum + it.width, 0);
+          const gap = (last.x + last.width - first.x - totalWidth) / (items.length - 1);
+          let cursor = first.x;
+          items.forEach((it) => { next.set(it.id, cursor); cursor += it.width + gap; });
+          set((state) => ({
+            nodes: state.nodes.map((n) => (next.has(n.id) ? { ...n, position: { ...n.position, x: next.get(n.id)! } } : n)),
+          }));
+        } else {
+          items.sort((a, b) => a.y - b.y);
+          const first = items[0];
+          const last = items[items.length - 1];
+          const totalHeight = items.reduce((sum, it) => sum + it.height, 0);
+          const gap = (last.y + last.height - first.y - totalHeight) / (items.length - 1);
+          let cursor = first.y;
+          items.forEach((it) => { next.set(it.id, cursor); cursor += it.height + gap; });
+          set((state) => ({
+            nodes: state.nodes.map((n) => (next.has(n.id) ? { ...n, position: { ...n.position, y: next.get(n.id)! } } : n)),
+          }));
+        }
+        get().pushHistory();
+      },
+
       pushHistory: () => {
         const { nodes, edges, history, historyIndex } = get();
         const entry: HistoryEntry = {
@@ -823,6 +926,18 @@ export const useDiagramStore = create<DiagramStore>()(
 
       togglePalette: () => set((state) => ({ isPalettOpen: !state.isPalettOpen })),
       toggleGlobalHandles: () => set((state) => ({ globalHideHandles: !state.globalHideHandles })),
+
+      addGuide: (orientation, position) => {
+        const id = `guide-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        set((state) => ({ guides: [...state.guides, { id, orientation, position }] }));
+      },
+      moveGuide: (id, position) => {
+        set((state) => ({ guides: state.guides.map((g) => (g.id === id ? { ...g, position } : g)) }));
+      },
+      removeGuide: (id) => {
+        set((state) => ({ guides: state.guides.filter((g) => g.id !== id) }));
+      },
+      clearGuides: () => set({ guides: [] }),
       toggleSettingsPanel: () => set((state) => ({ isSettingsPanelOpen: !state.isSettingsPanelOpen })),
       setSelectionTool: (tool) => set({ selectionTool: tool }),
       setLassoMode: (mode) => set({ lassoMode: mode }),

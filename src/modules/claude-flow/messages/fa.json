@@ -39,7 +39,26 @@
       "templateLoaded": "بارگذاری شد",
       "templateLoadFailed": "بارگذاری نشد",
       "confirmLoadTemplate": "این الگو بارگذاری شود؟ کانواس فعلی جایگزین می‌شود.",
-      "confirmImport": "این فایل وارد شود؟ کانواس فعلی جایگزین می‌شود."
+      "confirmImport": "این فایل وارد شود؟ کانواس فعلی جایگزین می‌شود.",
+      "align": "تراز",
+      "alignLeft": "تراز چپ",
+      "alignCenterH": "وسط‌چین افقی",
+      "alignRight": "تراز راست",
+      "alignTop": "تراز بالا",
+      "alignCenterV": "وسط‌چین عمودی",
+      "alignBottom": "تراز پایین",
+      "distributeH": "چیدمان افقی با فاصله مساوی",
+      "distributeV": "چیدمان عمودی با فاصله مساوی",
+      "addVerticalGuide": "افزودن گایدلاین عمودی",
+      "addHorizontalGuide": "افزودن گایدلاین افقی",
+      "clearGuides": "حذف همه گایدلاین‌ها",
+      "exportImage": "دانلود به‌صورت عکس",
+      "exportPngBg": "PNG — با پس‌زمینه",
+      "exportPngTransparent": "PNG — بدون پس‌زمینه (شفاف)",
+      "exportSvg": "SVG (وکتور)",
+      "exportingImage": "در حال تولید عکس…",
+      "imageExported": "عکس دانلود شد",
+      "imageExportFailed": "تولید عکس ناموفق بود"
     },
     "nodes": {
       "defaultNode": "فرآیند",
@@ -128,7 +147,14 @@
       "opacity": "شفافیت",
       "chartHelpTitle": "چطور داده وارد کنم؟",
       "chartHelp": "راهنما: خانه‌ی بالا-چپ خالی می‌ماند؛ بقیه‌ی ردیف اول اسم سری‌های شماست (مثلاً «درآمد»، «هزینه»). هر ردیف بعدی با یک برچسب دسته (مثلاً «فروردین») شروع می‌شود و بعدش یک عدد برای هر سری می‌آید. می‌توانید مستقیم تایپ کنید، یک محدوده کپی‌شده از اکسل/شیتس پیست کنید، یا به‌جای وارد کردن داده اینجا، یک نود جدول/اکسل/ماتریس وصل کنید.",
-      "editChartData": "ویرایش داده"
+      "editChartData": "ویرایش داده",
+      "size": "اندازه",
+      "labelSize": "اندازه‌ی لیبل",
+      "labelPosition": "موقعیت لیبل",
+      "side_top": "بالا",
+      "side_bottom": "پایین",
+      "side_left": "چپ",
+      "side_right": "راست"
     },
     "editorSettings": {
       "title": "تنظیمات ادیتور",
@@ -156,7 +182,8 @@
       "edge_floating": "شناور",
       "edge_floating_straight": "شناور مستقیم",
       "collisionAvoidance": "پراکنده‌کردن گره‌ها هنگام درگ",
-      "colorModeNote": "هماهنگ با تم سایت"
+      "colorModeNote": "هماهنگ با تم سایت",
+      "gridSize": "اندازه‌ی گرید"
     },
     "shortcuts": {
       "undo": "واگرد",
