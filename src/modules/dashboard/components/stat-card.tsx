@@ -17,7 +17,7 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
-import type { StatCard as StatCardType } from '@/lib/fake-dashboard';
+import type { StatCard as StatCardType } from '../services/dashboard.service';
 
 // Map serializable icon names to lucide components.
 const ICONS = {

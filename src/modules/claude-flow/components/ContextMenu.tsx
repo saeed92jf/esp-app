@@ -28,7 +28,16 @@ export interface QuickAddItem {
 
 // Menu dimensions used for edge-clamping calculations
 const MENU_W = 176; // w-44 = 11rem = 176px
-const MENU_H = 160; // approximate max height (5 items Ã— ~32px)
+const MENU_H = 160; // approximate max height (5 items × ~32px)
+
+/** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
 
 /**
  * Clamps the menu position so it never overflows the viewport.
@@ -80,7 +89,7 @@ export function ContextMenu({
   const t = useTranslations("Flow");
   const ref = useRef<HTMLDivElement>(null);
 
-  // Clamped position â€” recalculated whenever the menu appears at a new spot
+  // Clamped position — recalculated whenever the menu appears at a new spot
   const { x, y } = clampPosition(state.x, state.y);
 
   // Tiny mount flag drives the entrance animation via opacity/scale transition
@@ -91,7 +100,9 @@ export function ContextMenu({
     return () => cancelAnimationFrame(id);
   }, []);
 
-  // Close on any outside click or right-click
+  // Close ONLY on an outside click/right-click or Escape — never on hover/
+  // mouse-leave, so the menu stays open while the pointer wanders over the
+  // canvas or another panel before the user actually decides what to click.
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose();
@@ -146,13 +157,13 @@ export function ContextMenu({
     </button>
   );
 
-  // â”€â”€ Section: destructive actions (delete) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Section: destructive actions (delete) ──────────────────────────────
   const hasDestructive = state.target === "node" || state.target === "edge";
 
-  // â”€â”€ Section: node-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Section: node-only actions ──────────────────────────────────────────
   const hasNodeActions = state.target === "node";
 
-  // â”€â”€ Section: pane-only actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Section: pane-only actions ──────────────────────────────────────────
   const hasPaneActions = state.target === "pane";
 
   return (
@@ -164,20 +175,20 @@ export function ContextMenu({
         "fixed z-50 w-44",
         // Visual shell
         "rounded-lg border border-slate-200 bg-white p-1 shadow-lg",
-        // Entrance animation â€” starts at opacity-0 scale-95, transitions to full
+        // Entrance animation — starts at opacity-0 scale-95, transitions to full
         "transition-[opacity,transform] duration-100",
         visible ? "scale-100 opacity-100" : "scale-95 opacity-0",
       )}
       // Stop propagation so the outside-click handler doesn't immediately close
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {/* ── Node actions ─────────────────────────────────────────────── */}
+      {/* ── Node actions ── */}
       {hasNodeActions && (
         <div className="space-y-0.5">
           {item(Copy, t("contextMenu.duplicate"), onDuplicate)}
           {isGroupNode
-            ? onUngroup && item(Layers, "Ungroup", onUngroup)
-            : onGroup && item(Layers, "Group into sub-flow", onGroup)}
+            ? onUngroup && item(Layers, safeT(t, "contextMenu.ungroup", "Ungroup"), onUngroup)
+            : onGroup && item(Layers, safeT(t, "contextMenu.group", "Group into sub-flow"), onGroup)}
         </div>
       )}
 
@@ -186,14 +197,14 @@ export function ContextMenu({
         <div className="my-1 border-t border-slate-100" />
       )}
 
-      {/* â”€â”€ Destructive actions (node + edge) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Destructive actions (node + edge) ── */}
       {hasDestructive && (
         <div className="space-y-0.5">
           {item(Trash2, t("contextMenu.delete"), onDelete)}
         </div>
       )}
 
-      {/* â”€â”€ Pane actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Pane actions ── */}
       {hasPaneActions && (
         <div className="space-y-0.5">
           {item(ClipboardPaste, t("contextMenu.paste"), onPaste, !canPaste)}
@@ -203,7 +214,9 @@ export function ContextMenu({
           {onAddNode && quickAddItems && quickAddItems.length > 0 && (
             <>
               <div className="my-1 border-t border-slate-100" />
-              <p className="px-2.5 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Add node here</p>
+              <p className="px-2.5 pb-0.5 pt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                {safeT(t, "quickAdd.title", "Add node here")}
+              </p>
               {quickAddItems.map((qi) => item(qi.icon, qi.label, () => onAddNode(qi.type)))}
             </>
           )}
@@ -212,6 +225,3 @@ export function ContextMenu({
     </div>
   );
 }
-
-
-

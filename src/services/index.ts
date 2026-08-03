@@ -131,8 +131,12 @@ export type {
   SearchResponse,
 } from "./search.service";
 export type { StatItem } from "./stats.service";
-export type {
-  UpdateProfilePayload,
-  ChangePasswordPayload,
-} from "./user.service";
 export type { UserPreferences } from "./preferences.service";
+export type {
+  DashboardData,
+  StatCard as DashboardStatCard,
+  ChartPoint,
+  ActivityItem,
+  Trend as DashboardTrend,
+  IconName as DashboardIconName,
+} from "@/modules/dashboard/services/dashboard.service";

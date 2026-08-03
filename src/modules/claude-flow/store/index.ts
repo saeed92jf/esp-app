@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS: EditorSettings = {
 
 const MAX_HISTORY = 50;
 
-// ── Subflow helpers ─────────────────────────────────────────────────────
+// ── Subflow helpers ────────────────────────────────────────────────────
 // React Flow requires that a parent node appears before its children in the
 // nodes array. This topological sort keeps everything else in its original
 // relative order and is safe to call repeatedly (idempotent).
@@ -144,6 +144,12 @@ interface DiagramStore {
   resetEdgeToDefault: (edgeId: string) => void;
   /** Same as resetEdgeToDefault, applied to many edges at once (group reset). */
   resetEdgesToDefault: (edgeIds: string[]) => void;
+  /** Swaps the node type (its rendered shape) for every id in the list,
+   *  leaving all other data (label, color, size, connections, ...) intact.
+   *  Used by the multi-select "change shape" control in SettingsPanel —
+   *  only offered when every selected node is a plain, non-computational
+   *  shape (see SettingsPanel's SIMPLE_SHAPE_TYPES list). */
+  changeNodesShape: (nodeIds: string[], newType: DiagramNodeType) => void;
   deleteSelected: () => void;
   duplicateSelected: () => void;
   /** Removes every node AND edge — a blank diagram, same name/id kept. */
@@ -406,13 +412,17 @@ export const useDiagramStore = create<DiagramStore>()(
         historyTimeout = setTimeout(() => get().pushHistory(), 500);
       },
 
-      // ── Reset to default ──────────────────────────────────────────────
+      // ── Reset to default ────────────────────────────────────────────
       // "Default" = whatever each field's own fallback already is throughout
       // BaseNode/CustomEdge (e.g. `data.fontSize ?? 13`) — so resetting just
       // means clearing the override back to `undefined`. Only cosmetic
       // fields are touched; label text, position, links, connections and any
       // structural/computed data (value, operation, shapeKind, url, ...)
       // are left exactly as they were.
+      //
+      // Size (width/height) and the aspect-ratio-lock flag are reset too, so
+      // "reset to default" also restores the shape's original SHAPE_DEFAULT_SIZE
+      // dimensions instead of leaving whatever the user last resized it to.
       resetNodesToDefault: (nodeIds) => {
         const ids = new Set(nodeIds);
         const STYLE_RESET = {
@@ -426,6 +436,9 @@ export const useDiagramStore = create<DiagramStore>()(
           borderStyle: undefined,
           borderRadius: undefined,
           rotation: undefined,
+          width: undefined,
+          height: undefined,
+          aspectRatioLocked: undefined,
         } as const;
         set((state) => ({
           nodes: state.nodes.map((n) => (ids.has(n.id) ? { ...n, data: { ...n.data, ...STYLE_RESET } } : n)),
@@ -488,6 +501,14 @@ export const useDiagramStore = create<DiagramStore>()(
               markerStart: undefined,
             };
           }),
+        }));
+        get().pushHistory();
+      },
+
+      changeNodesShape: (nodeIds, newType) => {
+        const ids = new Set(nodeIds);
+        set((state) => ({
+          nodes: state.nodes.map((n) => (ids.has(n.id) ? { ...n, type: newType } : n)),
         }));
         get().pushHistory();
       },
@@ -600,7 +621,7 @@ export const useDiagramStore = create<DiagramStore>()(
         get().pushHistory();
       },
 
-      // ── Subflow / grouping ────────────────────────────────────────────
+      // ── Subflow / grouping ─────────────────────────────────────────────
 
       reparentNode: (nodeId, parentId) => {
         set((state) => {
@@ -674,7 +695,7 @@ export const useDiagramStore = create<DiagramStore>()(
         get().pushHistory();
       },
 
-      // ── Select-all (Toolbar) ────────────────────────────────────────────
+      // ── Select-all (Toolbar) ─────────────────────────────────────────────
       // Each of these selects only its own kind and explicitly clears
       // everything else, so "select all edges" can't leave some previously
       // selected node still marked selected too.
@@ -945,7 +966,7 @@ export const useDiagramStore = create<DiagramStore>()(
       setIsCanvasFullscreen: (v) => set({ isCanvasFullscreen: v }),
       setCanvasFullscreenToggle: (fn) => set({ canvasFullscreenToggle: fn }),
 
-      // ── Computing flows ────────────────────────────────────────────────
+      // ── Computing flows ──────────────────────────────────────────────────
       // Walks the graph from each numberNode's literal value through any
       // chain of operatorNodes, memoizing as it goes (with a cycle guard so a
       // loop just resolves to `undefined`/no-op instead of hanging), and

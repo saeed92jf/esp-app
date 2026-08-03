@@ -48,39 +48,33 @@
    ============================================ */
 @layer base {
   :root {
-    --primary-h: 0;
-    --primary-s: 84%;
-    --primary-l: 45%;
-  }
-
-  .primary-color-blue {
-    --primary-h: 239;
-    --primary-s: 50%;
-    --primary-l: 50%;
-  }
-
-  .primary-color-green {
-    --primary-h: 142;
-    --primary-s: 60%;
-    --primary-l: 40%;
+    --primary-h: 265;
+    --primary-s: 83%;
+    --primary-l: 57%;
   }
 
   .primary-color-red {
-    --primary-h: 0;
-    --primary-s: 84%;
-    --primary-l: 45%;
+    --primary-h: 1;
+    --primary-s: 79%;
+    --primary-l: 48%;
   }
 
-  .primary-color-orange {
-    --primary-h: 25;
-    --primary-s: 84%;
-    --primary-l: 45%;
+  .primary-color-pink {
+    --primary-h: 334;
+    --primary-s: 100%;
+    --primary-l: 50%;
   }
 
   .primary-color-purple {
-    --primary-h: 262;
+    --primary-h: 265;
     --primary-s: 83%;
-    --primary-l: 45%;
+    --primary-l: 57%;
+  }
+
+  .primary-color-green {
+    --primary-h: 164;
+    --primary-s: 95%;
+    --primary-l: 43%;
   }
 
   /* ---- Dark mode overrides ---- */
@@ -117,19 +111,19 @@
     );
   }
 
-  .dark.primary-color-green {
-    --primary-l: 70%;
-  }
-
   .dark.primary-color-red {
-    --primary-l: 50%;
+    --primary-l: 55%;
   }
 
-  .dark.primary-color-orange {
-    --primary-l: 50%;
+  .dark.primary-color-pink {
+    --primary-l: 55%;
   }
 
   .dark.primary-color-purple {
-    --primary-l: 50%;
+    --primary-l: 60%;
+  }
+
+  .dark.primary-color-green {
+    --primary-l: 48%;
   }
 }

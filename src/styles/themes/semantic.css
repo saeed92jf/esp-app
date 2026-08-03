@@ -100,7 +100,7 @@
     --bg-tertiary: var(--color-slate-200);
     --bg-inverse: var(--color-slate-900);
     --bg-error: var(--color-danger-500);
-    --bg-input: var(--color-slate-100);
+    --bg-input: #ffffff;
     --bg-overlay: var(--color-slate-400);
     --bg-overlay-light: var(--color-slate-300);
 
@@ -163,7 +163,7 @@
     --bg-tertiary: var(--color-slate-800);
     --bg-inverse: var(--color-white);
     --bg-error: var(--color-danger-500);
-    --bg-input: var(--color-slate-900);
+    --bg-input: #000000;
     --bg-overlay: var(--color-slate-500);
     --bg-overlay-light: var(--color-slate-600);
 

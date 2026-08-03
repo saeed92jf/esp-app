@@ -3,6 +3,7 @@
 import React from "react";
 import { Handle, Position, NodeResizer, type NodeProps } from "@xyflow/react";
 import type { DiagramNodeData } from "../../types";
+import { FLOW_HANDLE_NEUTRAL } from "../../utils/handles";
 import { cn } from "@/lib/utils";
 
 interface BaseNodeShellProps {
@@ -39,11 +40,10 @@ export function getNodeStyle(data: DiagramNodeData): React.CSSProperties {
   };
 }
 
-// Shared class string for all four ReactFlow connection handles.
-// In Tailwind v4, important modifier moves to suffix: `h-2.5!` instead of `!h-2.5`.
-const HANDLE_CLS = "size-2.5! border-2! border-white! bg-slate-400!";
+// Shared class string for all four ReactFlow connection handles on standard shapes (logicless / neutral)
+const HANDLE_CLS = FLOW_HANDLE_NEUTRAL;
 
-// NodeResizer overrides â€” lineClassName targets the resize border line,
+// NodeResizer overrides — lineClassName targets the resize border line,
 // handleClassName targets the corner/edge drag handles.
 const RESIZER_LINE_CLS = "border-indigo-500!";
 const RESIZER_HANDLE_CLS =
@@ -65,21 +65,21 @@ export function BaseNodeShell({
   return (
     <div
       className={cn(
-        // layout â€” min-h-11 = 44px, min-w-30 = 120px (Tailwind v4 scale)
+        // layout — min-h-11 = 44px, min-w-30 = 120px (Tailwind v4 scale)
         "group relative flex min-h-11 min-w-30 items-center justify-center px-4 py-2.5 text-center",
         // base shadow + smooth transition on state changes
         "shadow-xs transition-shadow",
-        // selection ring â€” ring-indigo-500 replaces the old --tw-ring-color CSS var (v3 internals)
+        // selection ring — ring-indigo-500 replaces the old --tw-ring-color CSS var (v3 internals)
         selected
           ? "shadow-md ring-2 ring-indigo-500 ring-offset-2"
           : "hover:shadow-md",
         shapeClassName,
       )}
-      // All dynamic values (color, border-style, radiusâ€¦) go through inline style
+      // All dynamic values (color, border-style, radius…) go through inline style
       // to guarantee specificity over any Tailwind utility.
       style={{ ...nodeStyle, ...style }}
     >
-      {/* Resize handles â€” only mounted when resizable=true, visible only when selected */}
+      {/* Resize handles — only mounted when resizable=true, visible only when selected */}
       {resizable && (
         <NodeResizer
           isVisible={selected}
@@ -90,7 +90,7 @@ export function BaseNodeShell({
         />
       )}
 
-      {/* Four directional connection handles (target top/left, source bottom/right) */}
+      {/* Connection handles — 4 cardinal positions, hidden when showHandles=false */}
       {showHandles && (
         <>
           <Handle
@@ -118,13 +118,22 @@ export function BaseNodeShell({
         </>
       )}
 
-      {/* Node label â€” pointer-events-none prevents drag interference */}
-      <span className="pointer-events-none w-full truncate">{children}</span>
+      {children}
     </div>
   );
 }
 
-export type DiagramNodeProps = NodeProps & { data: DiagramNodeData };
-
-
-
+/** Default rectangular node */
+export function DefaultNode({ data, selected }: NodeProps) {
+  return (
+    <BaseNodeShell
+      selected={selected}
+      data={data as DiagramNodeData}
+      resizable
+      minWidth={120}
+      minHeight={44}
+    >
+      <span className="truncate">{(data as DiagramNodeData).label ?? "Default Node"}</span>
+    </BaseNodeShell>
+  );
+}

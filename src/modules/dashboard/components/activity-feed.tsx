@@ -3,7 +3,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import type { ActivityItem } from '@/lib/fake-dashboard';
+import type { ActivityItem } from '../services/dashboard.service';
 
 // Status -> dot color.
 const DOT = {

@@ -229,16 +229,18 @@
     "escape": "Esc to clear"
   },
   "Settings": {
-    "title": "Appearance",
-    "light": "light",
-    "dark": "dark",
-    "system": "system",
+    "title": "Appearance & Theme",
+    "theme": "Theme",
+    "color": "Primary Color",
+    "language": "Language",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
     "colors": {
-      "blue": "blue",
-      "green": "green",
-      "red": "red",
-      "orange": "orange",
-      "purple": "purple"
+      "red": "Red",
+      "pink": "Pink",
+      "purple": "Purple",
+      "green": "Green"
     }
   },
   "Dashboard": {
@@ -439,7 +441,16 @@
       "tableNode": "Table",
       "excelNode": "Excel",
       "matrixNode": "Matrix",
-      "chartNode": "Chart"
+      "chartNode": "Chart",
+      "vesselRootNode": "Vessel Root",
+      "shellNode": "Shell Section",
+      "headNode": "Head",
+      "nozzleNode": "Nozzle",
+      "supportNode": "Support",
+      "attachmentsNode": "Attachments",
+      "outputHubNode": "Output Hub",
+      "mistEliminatorNode": "Mist Eliminator",
+      "internalsNode": "Internals"
     },
     "palette": {
       "search": "Search nodes…",
@@ -448,7 +459,10 @@
       "shapes": "Shapes",
       "dragToAdd": "Drag to canvas",
       "containers": "Containers",
-      "compute": "Computation"
+      "compute": "Computation",
+      "diagram": "Diagram",
+      "weight": "Weight calculations",
+      "weightComingSoon": "Weight-calculation nodes are coming soon."
     },
     "settings": {
       "label": "Label",

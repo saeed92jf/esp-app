@@ -210,6 +210,33 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-form: var(--form);
+  --color-form-node: var(--form-node);
+  --color-form-primary: var(--form-primary);
+  --color-form-primary-hover: var(--form-primary-hover);
+  --color-form-primary-foreground: var(--form-primary-foreground);
+  --color-form-secondary: var(--form-secondary);
+  --color-form-accent: var(--form-accent);
+  --color-form-border: var(--form-border);
+  --color-form-muted: var(--form-muted);
+  --color-alice-blue: var(--alice-blue);
+  --color-pale-sky: var(--pale-sky);
+  --color-icy-blue: var(--icy-blue);
+  --color-baby-blue-ice: var(--baby-blue-ice);
+  --color-wisteria-blue: var(--wisteria-blue);
+  --color-medium-slate-blue: var(--medium-slate-blue);
+  --color-dusty-grape: var(--dusty-grape);
+  --color-twilight-indigo: var(--twilight-indigo);
+  --color-sky-900: var(--sky-900);
+  --color-sky-800: var(--sky-800);
+  --color-sky-700: var(--sky-700);
+  --color-sky-600: var(--sky-600);
+  --color-sky-500: var(--sky-500);
+  --color-sky-400: var(--sky-400);
+  --color-sky-300: var(--sky-300);
+  --color-sky-200: var(--sky-200);
+  --color-sky-100: var(--sky-100);
+  --color-sky-50: var(--sky-50);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -223,8 +250,41 @@ body {
 
 :root {
   --background: oklch(1 0 0);
+
+  /* ============================================
+     GLOBAL FORM THEME PALETTE
+     ============================================ */
+  --alice-blue: #e4f3fe;
+  --pale-sky: #cceaff;
+  --icy-blue: #bee3ff;
+  --baby-blue-ice: #a4c4f4;
+  --wisteria-blue: #8ba4e4;
+  --medium-slate-blue: #7f60ff;
+  --dusty-grape: #535a9a;
+  --twilight-indigo: #39436a;
+
+  --sky-900: #39436a;
+  --sky-800: #535a9a;
+  --sky-700: #7f60ff;
+  --sky-600: #8ba4e4;
+  --sky-500: #a4c4f4;
+  --sky-400: #bee3ff;
+  --sky-300: #cceaff;
+  --sky-200: #e4f3fe;
+  --sky-100: #e4f3fe;
+  --sky-50: #e4f3fe;
+
+  --form: #e4f3fe;
+  --form-node: #e4f3fe;
+  --form-primary: #39436a;
+  --form-primary-hover: #535a9a;
+  --form-primary-foreground: #ffffff;
+  --form-secondary: #535a9a;
+  --form-accent: #7f60ff;
+  --form-border: #a4c4f4;
+  --form-muted: #cceaff;
   --foreground: oklch(0.148 0.004 228.8);
-  --card: oklch(1 0 0);
+  --card: var(--form-node);
   --card-foreground: oklch(0.148 0.004 228.8);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.148 0.004 228.8);
@@ -273,8 +333,41 @@ body {
 
 .dark {
   --background: oklch(0.148 0.004 228.8);
+
+  /* ============================================
+     GLOBAL FORM DARK PALETTE
+     ============================================ */
+  --alice-blue: #e4f3fe;
+  --pale-sky: #cceaff;
+  --icy-blue: #bee3ff;
+  --baby-blue-ice: #a4c4f4;
+  --wisteria-blue: #8ba4e4;
+  --medium-slate-blue: #7f60ff;
+  --dusty-grape: #535a9a;
+  --twilight-indigo: #39436a;
+
+  --sky-900: #121526;
+  --sky-800: #1a1f36;
+  --sky-700: #39436a;
+  --sky-600: #535a9a;
+  --sky-500: #7f60ff;
+  --sky-400: #8ba4e4;
+  --sky-300: #a4c4f4;
+  --sky-200: #bee3ff;
+  --sky-100: #cceaff;
+  --sky-50: #0e111d;
+
+  --form: #121526;
+  --form-node: #181d33;
+  --form-primary: #535a9a;
+  --form-primary-hover: #7f60ff;
+  --form-primary-foreground: #ffffff;
+  --form-secondary: #7f60ff;
+  --form-accent: #8ba4e4;
+  --form-border: #2a3254;
+  --form-muted: #1e243d;
   --foreground: oklch(0.987 0.002 197.1);
-  --card: oklch(0.218 0.008 223.9);
+  --card: var(--form-node);
   --card-foreground: oklch(0.987 0.002 197.1);
   --popover: oklch(0.218 0.008 223.9);
   --popover-foreground: oklch(0.987 0.002 197.1);
@@ -317,4 +410,16 @@ body {
   --sidebar-accent-foreground: oklch(0.987 0.002 197.1);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.56 0.021 213.5);
+}
+
+/* Hide native browser spin buttons for clean custom steppers */
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }

@@ -73,6 +73,22 @@ export const SHAPE_DEFAULT_SIZE: Record<
   shapeNode: { width: 200, height: 330 },
   imageNode: { width: 220, height: 160 },
   svgNode: { width: 220, height: 160 },
+  // ── Vessel-weight nodes ────────────────────────────────────────────────
+  vesselRootNode: { width: 320, height: 420 },
+  shellNode: { width: 360, height: 500 },
+  headNode: { width: 360, height: 540 },
+  nozzleNode: { width: 380, height: 600 },
+  supportNode: { width: 360, height: 520 },
+  attachmentsNode: { width: 360, height: 400 },
+  outputHubNode: { width: 340, height: 380 },
+  mistEliminatorNode: { width: 360, height: 500 },
+  internalsNode: { width: 280, height: 200 },
+  projectDataNode: { width: 380, height: 560 },
+  generalDataNode: { width: 440, height: 760 },
+  jacketNode: { width: 480, height: 600 },
+  regenVacuumSteamoutNode: { width: 440, height: 520 },
+  surfacePrepNode: { width: 360, height: 420 },
+  mtoNode: { width: 560, height: 620 },
 };
 
 /** Rounded-rectangle outline, inset by `inset` so a thick stroke never clips. */

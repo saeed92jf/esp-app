@@ -27,34 +27,55 @@ import {
   Image as ImageIconLucide,
   Pi,
   Table,
-  LayoutGrid,
   Workflow,
   Boxes,
   FileSpreadsheet,
   Grid3x3,
   BarChart3,
+  Scale,
+  Cylinder,
+  Box,
+  Disc,
+  Target,
+  Settings,
+  ArrowDownToLine,
+  Paperclip,
+  Link,
+  Layers as LayersIcon,
+  Filter,
+  ClipboardList,
+  FileSliders,
+  Paintbrush,
+  Flame,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
-import type { PaletteItem } from "../types";
+import type { PaletteItem, PaletteCategory } from "../types";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
-// â”€â”€ Static palette definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Static palette definitions ───────────────────────────────────────────
 // defaultData values are merged into node data on drop; colors use Tailwind-safe hex values
+//
+// Category restructure: the old "basic/flowchart/shapes/containers" split is
+// gone. Every ordinary, no-computation shape now lives under a single
+// "diagram" category (general-purpose flowchart/diagram building blocks).
+// Nodes that carry or derive numeric values live under "compute". "weight"
+// is a reserved, currently-empty category for future weight-calculation
+// nodes — see the empty-state message further down.
 const PALETTE_ITEMS: PaletteItem[] = [
   {
     type: "defaultNode",
     labelKey: "defaultNode",
     icon: "square",
-    category: "basic",
+    category: "diagram",
     defaultData: { label: "Process" },
   },
   {
     type: "inputNode",
     labelKey: "inputNode",
     icon: "arrowRight",
-    category: "flowchart",
+    category: "diagram",
     defaultData: {
       label: "Start",
       colorToken: "green",
@@ -64,7 +85,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     type: "outputNode",
     labelKey: "outputNode",
     icon: "flag",
-    category: "flowchart",
+    category: "diagram",
     defaultData: {
       label: "End",
       colorToken: "red",
@@ -74,7 +95,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     type: "diamondNode",
     labelKey: "diamondNode",
     icon: "diamond",
-    category: "flowchart",
+    category: "diagram",
     defaultData: {
       label: "Decision",
       colorToken: "amber",
@@ -84,35 +105,35 @@ const PALETTE_ITEMS: PaletteItem[] = [
     type: "cylinderNode",
     labelKey: "cylinderNode",
     icon: "database",
-    category: "flowchart",
+    category: "diagram",
     defaultData: { label: "Database" },
   },
   {
     type: "parallelogramNode",
     labelKey: "parallelogramNode",
     icon: "square",
-    category: "flowchart",
+    category: "diagram",
     defaultData: { label: "I/O" },
   },
   {
     type: "circleNode",
     labelKey: "circleNode",
     icon: "circle",
-    category: "shapes",
+    category: "diagram",
     defaultData: { label: "Circle" },
   },
   {
     type: "hexagonNode",
     labelKey: "hexagonNode",
     icon: "hexagon",
-    category: "shapes",
+    category: "diagram",
     defaultData: { label: "Hexagon" },
   },
   {
     type: "textNode",
     labelKey: "textNode",
     icon: "type",
-    category: "basic",
+    category: "diagram",
     defaultData: {
       label: "Text",
       backgroundColor: "transparent",
@@ -123,21 +144,21 @@ const PALETTE_ITEMS: PaletteItem[] = [
     type: "noteNode",
     labelKey: "noteNode",
     icon: "note",
-    category: "basic",
+    category: "diagram",
     defaultData: { label: "Note text…" },
   },
   {
     type: "imageNode",
     labelKey: "imageNode",
     icon: "image",
-    category: "basic",
+    category: "diagram",
     defaultData: { label: "Image" },
   },
   {
     type: "tableNode",
     labelKey: "tableNode",
     icon: "table",
-    category: "basic",
+    category: "diagram",
     defaultData: {
       label: "Table",
       colorToken: "neutral",
@@ -201,42 +222,42 @@ const PALETTE_ITEMS: PaletteItem[] = [
     type: "triangleNode",
     labelKey: "triangleNode",
     icon: "triangle",
-    category: "shapes",
+    category: "diagram",
     defaultData: { label: "Triangle" },
   },
   {
     type: "cloudNode",
     labelKey: "cloudNode",
     icon: "cloud",
-    category: "shapes",
+    category: "diagram",
     defaultData: { label: "Cloud", colorToken: "blue" },
   },
   {
     type: "documentNode",
     labelKey: "documentNode",
     icon: "document",
-    category: "flowchart",
+    category: "diagram",
     defaultData: { label: "Document" },
   },
   {
     type: "predefinedProcessNode",
     labelKey: "predefinedProcessNode",
     icon: "predefinedProcess",
-    category: "flowchart",
+    category: "diagram",
     defaultData: { label: "Subroutine" },
   },
   {
     type: "delayNode",
     labelKey: "delayNode",
     icon: "delay",
-    category: "flowchart",
+    category: "diagram",
     defaultData: { label: "Delay", colorToken: "amber" },
   },
   {
     type: "groupNode",
     labelKey: "groupNode",
     icon: "group",
-    category: "containers",
+    category: "diagram",
     defaultData: { label: "Sub-flow", colorToken: "neutral" },
   },
   {
@@ -281,6 +302,112 @@ const PALETTE_ITEMS: PaletteItem[] = [
     category: "compute",
     defaultData: { label: "Beam section (Ix)", beamShape: "rectangle", colorToken: "blue" },
   },
+  // ── Weight calculation nodes (vessel-weight module) ─────────────────
+  {
+    type: "vesselRootNode",
+    labelKey: "vesselRootNode",
+    icon: "vesselRoot",
+    category: "weight",
+    defaultData: { label: "Vessel Root" },
+  },
+  {
+    type: "shellNode",
+    labelKey: "shellNode",
+    icon: "shellSection",
+    category: "weight",
+    defaultData: { label: "Shell Section" },
+  },
+  {
+    type: "headNode",
+    labelKey: "headNode",
+    icon: "head",
+    category: "weight",
+    defaultData: { label: "Head" },
+  },
+  {
+    type: "nozzleNode",
+    labelKey: "nozzleNode",
+    icon: "nozzle",
+    category: "weight",
+    defaultData: { label: "Nozzle" },
+  },
+  {
+    type: "supportNode",
+    labelKey: "supportNode",
+    icon: "support",
+    category: "weight",
+    defaultData: { label: "Support" },
+  },
+  {
+    type: "attachmentsNode",
+    labelKey: "attachmentsNode",
+    icon: "attachments",
+    category: "weight",
+    defaultData: { label: "Attachments" },
+  },
+  {
+    type: "outputHubNode",
+    labelKey: "outputHubNode",
+    icon: "outputHub",
+    category: "weight",
+    defaultData: { label: "Output Hub" },
+  },
+  {
+    type: "mistEliminatorNode",
+    labelKey: "mistEliminatorNode",
+    icon: "mistEliminator",
+    category: "weight",
+    defaultData: { label: "Mist Eliminator" },
+  },
+  {
+    type: "internalsNode",
+    labelKey: "internalsNode",
+    icon: "internals",
+    category: "weight",
+    defaultData: { label: "Internals" },
+  },
+  {
+    type: "projectDataNode",
+    labelKey: "projectDataNode",
+    icon: "projectData",
+    category: "weight",
+    defaultData: { label: "Project Data" },
+  },
+  {
+    type: "generalDataNode",
+    labelKey: "generalDataNode",
+    icon: "generalData",
+    category: "weight",
+    defaultData: { label: "General Data Body" },
+  },
+  {
+    type: "jacketNode",
+    labelKey: "jacketNode",
+    icon: "layers",
+    category: "weight",
+    defaultData: { label: "Jacket" },
+  },
+  {
+    type: "regenVacuumSteamoutNode",
+    labelKey: "regenVacuumSteamoutNode",
+    icon: "flame",
+    category: "weight",
+    defaultData: { label: "Regen / Vacuum / Steam Out" },
+  },
+  {
+    type: "surfacePrepNode",
+    labelKey: "surfacePrepNode",
+    icon: "paintbrush",
+    category: "weight",
+    defaultData: { label: "Surface Preparation" },
+  },
+  {
+    type: "mtoNode",
+    labelKey: "mtoNode",
+    icon: "fileSpreadsheet",
+    category: "weight",
+    defaultData: { label: "Material Take-Off (MTO)" },
+  },
 ];
 
 // Map icon string keys to Lucide components; Square is the fallback
@@ -311,16 +438,35 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   excel: FileSpreadsheet,
   matrix: Grid3x3,
   chart: BarChart3,
+  // vessel-weight icons
+  vesselRoot: Database,
+  shellSection: Cylinder,
+  head: Disc,
+  nozzle: Target,
+  support: ArrowDownToLine,
+  attachments: Paperclip,
+  outputHub: Link,
+  mistEliminator: Filter,
+  internals: LayersIcon,
+  projectData: ClipboardList,
+  generalData: FileSliders,
+  jacket: LayersIcon,
+  regen: Flame,
+  surfacePrep: Paintbrush,
+  paintbrush: Paintbrush,
+  flame: Flame,
+  weight: Scale,
+  fileSpreadsheet: FileSpreadsheet,
 };
 
-// Category order determines render order in the palette sidebar
-const CATEGORIES = ["basic", "flowchart", "shapes", "containers", "compute"] as const;
-const CATEGORY_ICONS: Record<(typeof CATEGORIES)[number], typeof Square> = {
-  basic: LayoutGrid,
-  flowchart: Workflow,
-  shapes: Shapes,
-  containers: Layers,
+// Category order determines render order in the palette sidebar. "All" was
+// removed entirely — the rail now only ever shows these three, and the
+// default active category is "diagram".
+const CATEGORIES: PaletteCategory[] = ["diagram", "compute", "weight"];
+const CATEGORY_ICONS: Record<PaletteCategory, typeof Square> = {
+  diagram: Workflow,
   compute: Sigma,
+  weight: Scale,
 };
 
 // English fallbacks for the newly-added keys, used if the project's message
@@ -346,10 +492,27 @@ const LABEL_FALLBACKS: Record<string, string> = {
   shapeNode: "Shape",
   imageNode: "Image",
   svgNode: "Image",
+  // vessel-weight
+  vesselRootNode: "Vessel Root",
+  shellNode: "Shell Section",
+  headNode: "Head",
+  nozzleNode: "Nozzle",
+  supportNode: "Support",
+  attachmentsNode: "Attachments",
+  outputHubNode: "Output Hub",
+  mistEliminatorNode: "Mist Eliminator",
+  internalsNode: "Internals",
+  projectDataNode: "Project Data",
+  generalDataNode: "General Data Body",
+  jacketNode: "Jacket",
+  regenVacuumSteamoutNode: "Regen / Vacuum / Steam Out",
+  surfacePrepNode: "Surface Preparation",
+  mtoNode: "Material Take-Off (MTO)",
 };
-const CATEGORY_FALLBACKS: Record<string, string> = {
-  containers: "Containers",
+const CATEGORY_FALLBACKS: Record<PaletteCategory, string> = {
+  diagram: "Diagram",
   compute: "Computation",
+  weight: "Weight calculations",
 };
 
 function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
@@ -360,26 +523,27 @@ function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: str
   }
 }
 
-// â”€â”€ NodePalette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── NodePalette ─────────────────────────────────────────────────────────
 export function NodePalette() {
   // next-intl: all keys live under the "Flow" namespace
   const t = useTranslations("Flow");
   const [query, setQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<"all" | (typeof CATEGORIES)[number]>("all");
+  // Default tab is "diagram" now that the "All" tab no longer exists.
+  const [activeCategory, setActiveCategory] = useState<PaletteCategory>("diagram");
 
   const label = (item: PaletteItem) =>
     safeT(t, `nodes.${item.labelKey}`, LABEL_FALLBACKS[item.labelKey] ?? item.defaultData.label ?? item.type);
 
-  // Filter items by translated label + active category tab, then group by category.
-  // Re-runs only when query, category, or locale changes (t is stable per render).
+  // Filter items by translated label within the active category tab only
+  // (no more "all categories" combined view), then group (single group,
+  // kept as an array for the empty-state / rendering logic below).
   const grouped = useMemo(() => {
     const q = query.toLowerCase();
-    const filtered = PALETTE_ITEMS.filter((item) => label(item).toLowerCase().includes(q));
-    const categoriesToShow = activeCategory === "all" ? CATEGORIES : [activeCategory];
-    return categoriesToShow.map((cat) => ({
-      cat,
-      items: filtered.filter((i) => i.category === cat),
-    })).filter((g) => g.items.length > 0);
+    const filtered = PALETTE_ITEMS.filter(
+      (item) => item.category === activeCategory && label(item).toLowerCase().includes(q),
+    );
+    if (filtered.length === 0) return [];
+    return [{ cat: activeCategory, items: filtered }];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeCategory, t]);
 
@@ -395,26 +559,15 @@ export function NodePalette() {
 
   return (
     <aside className="flex h-full border-e border-border bg-background">
-      {/* ── Category rail — vertical, alongside the panel ─────────────────── */}
+      {/* ── Category rail — vertical, alongside the panel ── */}
       <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-e border-border bg-muted/30 py-3">
-        <button
-          onClick={() => setActiveCategory("all")}
-          title={safeT(t, "global.all", "All")}
-          className={cn(
-            "flex size-8 items-center justify-center rounded-md transition-colors",
-            activeCategory === "all" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <Boxes className="size-4" />
-        </button>
-        <div className="my-1 h-px w-6 bg-border" />
         {CATEGORIES.map((cat) => {
           const Icon = CATEGORY_ICONS[cat];
           return (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              title={safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat] ?? cat)}
+              title={safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat])}
               className={cn(
                 "flex size-8 items-center justify-center rounded-md transition-colors",
                 activeCategory === cat ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground",
@@ -426,7 +579,7 @@ export function NodePalette() {
         })}
       </div>
 
-      {/* ── Search + grouped node list ─────────────────────────────────────── */}
+      {/* ── Search + grouped node list ── */}
       <div className="flex w-64 flex-col">
         <div className="border-b border-border p-3">
           <div className="relative">
@@ -441,13 +594,13 @@ export function NodePalette() {
           </div>
         </div>
 
-        {/* ── Grouped node list ─────────────────────────────────────────────── */}
+        {/* ── Grouped node list ── */}
         <div className="flex-1 overflow-y-auto p-3">
           {grouped.map(({ cat, items }) => (
             <div key={cat} className="mb-4">
               {/* Dynamic category heading: Flow.palette.<cat> */}
               <h3 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                {safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat] ?? cat)}
+                {safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat])}
               </h3>
 
               <div className="grid grid-cols-2 gap-2">
@@ -482,8 +635,7 @@ export function NodePalette() {
             </div>
           ))}
 
-          {/* Empty state — shown when search query matches nothing */}
-          {grouped.length === 0 && (
+          {grouped.length === 0 && activeCategory !== "weight" && (
             <p className="px-1 py-6 text-center text-xs text-muted-foreground">
               {t("global.noResults")}
             </p>
@@ -495,6 +647,3 @@ export function NodePalette() {
 }
 
 export { PALETTE_ITEMS };
-
-
-

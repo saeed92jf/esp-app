@@ -44,9 +44,10 @@ import { toast } from "sonner";
 import { useDiagramStore } from "../store";
 import { layoutWithDagre, layoutWithElk, type LayoutDirection } from "../utils/layout";
 import { cn } from "@/lib/utils";
-import { Combobox, type ComboboxOption } from "@/components/ui-custom/combobox";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
-// ── Reusable toolbar button ───────────────────────────────────────────────
+// ── Reusable toolbar button ──────────────────────────────────────────────
 // Uses semantic design tokens so it adapts to light/dark mode automatically.
 function ToolbarButton({
   icon: Icon,
@@ -79,7 +80,7 @@ function ToolbarButton({
   );
 }
 
-// ── Visual separator between toolbar groups ───────────────────────────────
+// ── Visual separator between toolbar groups ──────────────────────────────
 function Divider() {
   return <div className="mx-1 h-5 w-px bg-border" />;
 }
@@ -93,7 +94,25 @@ function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: str
   }
 }
 
-// ── Toolbar ────────────────────────────────────────────────────────────
+
+
+// Large diagrams risk a slow/crashing export or layout pass — warn instead
+// of silently hanging the tab.
+const CROWDED_THRESHOLD = 300;
+function warnIfCrowded(t: ReturnType<typeof useTranslations>) {
+  const { nodes, edges } = useDiagramStore.getState();
+  if (nodes.length + edges.length > CROWDED_THRESHOLD) {
+    toast.warning(
+      safeT(
+        t,
+        "toolbar.crowdedWarning",
+        "This diagram is large — exporting or generating an image may be slow or crash the tab.",
+      ),
+    );
+  }
+}
+
+// ── Toolbar ──────────────────────────────────────────────────────────────
 export function Toolbar({
   onOpenLibrary,
   onOpenNew,
@@ -107,10 +126,6 @@ export function Toolbar({
 }) {
   const t = useTranslations("Flow");
 
-  const [layoutMenuOpen, setLayoutMenuOpen] = useState(false);
-  const [clearMenuOpen, setClearMenuOpen] = useState(false);
-  const [selectMenuOpen, setSelectMenuOpen] = useState(false);
-  const [alignMenuOpen, setAlignMenuOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // ── Diagram templates, listed from public/diagrams (see the API route at
@@ -260,25 +275,27 @@ export function Toolbar({
   };
 
   // ── Auto-layout (https://reactflow.dev/examples/layout/dagre,
-  //     /layout/elkjs, /layout/horizontal) ─────────────────────────────────
+  //     /layout/elkjs, /layout/horizontal) ──────────────────────────────────
   // NEW DEPENDENCIES REQUIRED: `npm install dagre elkjs` (+ `@types/dagre` for
   // TypeScript). Only top-level nodes are repositioned — nodes inside a
   // sub-flow keep their position relative to their group (see utils/layout.ts).
   // If anything is selected, only the selected nodes get rearranged (everything
   // else stays put); with nothing selected, it lays out the whole diagram.
   const runDagreLayout = (direction: LayoutDirection) => {
+    warnIfCrowded(t);
     const { nodes, edges, setNodes, pushHistory } = useDiagramStore.getState();
     const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
     setNodes(layoutWithDagre(nodes, edges, direction, selectedIds));
     pushHistory();
     requestAnimationFrame(() => fitView({ duration: 300 }));
-    setLayoutMenuOpen(false);
+
   };
 
   const runElkLayout = async (direction: LayoutDirection) => {
+    warnIfCrowded(t);
     const { nodes, edges, setNodes, pushHistory } = useDiagramStore.getState();
     const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
-    setLayoutMenuOpen(false);
+
     const laidOut = await layoutWithElk(nodes, edges, direction, selectedIds);
     setNodes(laidOut);
     pushHistory();
@@ -287,21 +304,21 @@ export function Toolbar({
 
   // ── Destructive bulk actions — each guarded by a plain browser confirm() ──
   const handleClearCanvas = () => {
-    setClearMenuOpen(false);
+
     if (window.confirm("Clear the entire canvas? This removes every node and connection.")) {
       clearCanvas();
     }
   };
 
   const handleDeleteAllNodes = () => {
-    setClearMenuOpen(false);
+
     if (window.confirm("Delete all nodes? Their connections will be removed too.")) {
       deleteAllNodes();
     }
   };
 
   const handleDeleteAllEdges = () => {
-    setClearMenuOpen(false);
+
     if (window.confirm("Delete all connections? Nodes will stay in place.")) {
       deleteAllEdges();
     }
@@ -309,11 +326,10 @@ export function Toolbar({
 
   // ── Download as image (https://reactflow.dev/examples/misc/download-image) ──
   // NEW DEPENDENCY REQUIRED: `npm install html-to-image`.
-  const [imageExportMenuOpen, setImageExportMenuOpen] = useState(false);
   const [isExportingImage, setIsExportingImage] = useState(false);
 
   const handleDownloadImage = async (format: "png" | "png-transparent" | "svg") => {
-    setImageExportMenuOpen(false);
+    warnIfCrowded(t);
     const { nodes } = useDiagramStore.getState();
     if (nodes.length === 0) return;
     const viewportEl = document.querySelector(".react-flow__viewport") as HTMLElement | null;
@@ -324,11 +340,28 @@ export function Toolbar({
     // this, the toolbar just sits there with no feedback and looks hung.
     const toastId = toast.loading(safeT(t, "toolbar.exportingImage", "Generating image…"));
 
+    // Hide every connection handle for the duration of the export by default
+    // — handles are an editing affordance, not something people want baked
+    // into a shared/exported picture of the diagram. Restored afterward
+    // regardless of success/failure.
+    const prevHideHandles = useDiagramStore.getState().globalHideHandles;
+    useDiagramStore.setState({ globalHideHandles: true });
+    // Two animation frames so the "hide-all-handles" CSS class has actually
+    // been painted before we start capturing the DOM.
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // A short extra pause before the heavy synchronous clone/rasterize work
+    // below, so the "Generating image…" toast has a chance to actually
+    // render first — without this the tab can appear to hang before the
+    // browser even shows the loading state, which read as a crash even
+    // though the download eventually completed.
+    await new Promise((r) => setTimeout(r, 50));
+
     try {
       const { toPng, toSvg } = await import("html-to-image");
-      // Fixed logical frame the diagram is fit into, then rendered at a much
-      // higher actual pixel density via pixelRatio — this is what makes the
-      // exported file look sharp instead of just being a bigger blurry PNG.
+      // Fixed logical frame the diagram is fit into, then rendered at a
+      // moderate pixel density via pixelRatio — this keeps the exported file
+      // sharp without the extreme (and crash-prone) memory spike of a very
+      // high pixelRatio on top of an already-large logical canvas.
       const frameWidth = 1600;
       const frameHeight = 1200;
       const bounds = getNodesBounds(nodes);
@@ -340,7 +373,11 @@ export function Toolbar({
         backgroundColor,
         width: frameWidth,
         height: frameHeight,
-        pixelRatio: format === "svg" ? undefined : 3,
+        // Lowered from 3 to 2: at pixelRatio 3 the rasterized canvas (4800×3600)
+        // was large enough to intermittently freeze/crash the tab before the
+        // browser recovered and still triggered the download — 2x keeps the
+        // image crisp while cutting the pixel buffer to ~4/9ths the size.
+        pixelRatio: format === "svg" ? undefined : 2,
         style: {
           width: `${frameWidth}px`,
           height: `${frameHeight}px`,
@@ -348,7 +385,32 @@ export function Toolbar({
         },
       };
 
-      const dataUrl = format === "svg" ? await toSvg(viewportEl, commonOptions) : await toPng(viewportEl, commonOptions);
+      // SVG-only options: skip embedding every @font-face as base64 (by far
+      // the single biggest contributor to bloated/slow SVG exports) and drop
+      // chrome elements (minimap/controls/attribution) that the user doesn't
+      // see as part of the diagram itself — keeps the exported SVG close to
+      // "just the diagram" instead of a full page snapshot.
+      const svgOnlyOptions =
+        format === "svg"
+          ? {
+              fontEmbedCSS: "",
+              filter: (node: HTMLElement) => {
+                const cls = node.classList;
+                if (!cls) return true;
+                return (
+                  !cls.contains("react-flow__minimap") &&
+                  !cls.contains("react-flow__controls") &&
+                  !cls.contains("react-flow__attribution") &&
+                  !cls.contains("react-flow__panel")
+                );
+              },
+            }
+          : {};
+
+      const dataUrl =
+        format === "svg"
+          ? await toSvg(viewportEl, { ...commonOptions, ...svgOnlyOptions })
+          : await toPng(viewportEl, commonOptions);
 
       const a = document.createElement("a");
       a.href = dataUrl;
@@ -359,6 +421,7 @@ export function Toolbar({
       console.error(err);
       toast.error(safeT(t, "toolbar.imageExportFailed", "Could not generate the image"), { id: toastId });
     } finally {
+      useDiagramStore.setState({ globalHideHandles: prevHideHandles });
       setIsExportingImage(false);
     }
   };
@@ -411,9 +474,9 @@ export function Toolbar({
 
       {/* Selection tool (https://reactflow.dev/examples/whiteboard/rectangle,
           /whiteboard/lasso-selection): left mouse button behavior on empty canvas */}
-      <ToolbarButton icon={MousePointer2} label="Pointer (pan)" active={selectionTool === "pointer"} onClick={() => setSelectionTool("pointer")} />
-      <ToolbarButton icon={Square} label="Box select" active={selectionTool === "box"} onClick={() => setSelectionTool("box")} />
-      <ToolbarButton icon={Lasso} label="Lasso select" active={selectionTool === "lasso"} onClick={() => setSelectionTool("lasso")} />
+      <ToolbarButton icon={MousePointer2} label={safeT(t, "toolbar.pointerPan", "Pointer (pan)")} active={selectionTool === "pointer"} onClick={() => setSelectionTool("pointer")} />
+      <ToolbarButton icon={Square} label={safeT(t, "toolbar.boxSelect", "Box select")} active={selectionTool === "box"} onClick={() => setSelectionTool("box")} />
+      <ToolbarButton icon={Lasso} label={safeT(t, "toolbar.lassoSelect", "Lasso select")} active={selectionTool === "lasso"} onClick={() => setSelectionTool("lasso")} />
       {/* Lasso hit-test mode — only relevant once lasso is the active tool.
           Partial: selects anything the lasso touches. Full: only nodes it fully encloses. */}
       {selectionTool === "lasso" && (
@@ -424,9 +487,9 @@ export function Toolbar({
               "rounded px-2 py-1 font-medium transition-colors",
               lassoMode === "partial" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
             )}
-            title="Select anything the lasso touches"
+            title={safeT(t, "toolbar.lassoPartial", "Select anything the lasso touches")}
           >
-            Partial
+            {safeT(t, "toolbar.lassoPartial", "Partial")}
           </button>
           <button
             onClick={() => setLassoMode("full")}
@@ -434,9 +497,9 @@ export function Toolbar({
               "rounded px-2 py-1 font-medium transition-colors",
               lassoMode === "full" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground",
             )}
-            title="Only select nodes fully inside the lasso"
+            title={safeT(t, "toolbar.lassoFull", "Only select nodes fully inside the lasso")}
           >
-            Full
+            {safeT(t, "toolbar.lassoFull", "Full")}
           </button>
         </div>
       )}
@@ -445,97 +508,70 @@ export function Toolbar({
       {/* Select-all — each option selects only its own kind (see the store's
           selectAllNodes/selectAllEdges/selectAllGroups: picking one clears
           any other selection so they never mix). */}
-      <div className="relative">
-        <button
-          onClick={() => setSelectMenuOpen((o) => !o)}
-          title="Select all..."
-          className={cn(
-            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
-            "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <MousePointerClick className="size-4" />
-          <ChevronDown className="size-3" />
-        </button>
-        {selectMenuOpen && (
-          <div
-            className="absolute top-9 start-0 z-20 w-44 rounded-md border border-border bg-popover py-1 shadow-md"
-            onMouseLeave={() => setSelectMenuOpen(false)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            title={safeT(t, "toolbar.selectAllTitle", "Select all...")}
+            className={cn(
+              "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
+              "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
           >
-            <button
-              onClick={() => { selectAllNodes(); setSelectMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <Square className="size-3.5" /> All nodes
-            </button>
-            <button
-              onClick={() => { selectAllEdges(); setSelectMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <Spline className="size-3.5" /> All connections
-            </button>
-            <button
-              onClick={() => { selectAllGroups(); setSelectMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <Group className="size-3.5" /> All sub-flows
-            </button>
-          </div>
-        )}
-      </div>
+            <MousePointerClick className="size-4" />
+            <ChevronDown className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-44">
+          <DropdownMenuItem onClick={() => selectAllNodes()}>
+            <Square className="size-3.5" /> {safeT(t, "toolbar.selectAllNodes", "All nodes")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => selectAllEdges()}>
+            <Spline className="size-3.5" /> {safeT(t, "toolbar.selectAllEdges", "All connections")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => selectAllGroups()}>
+            <Group className="size-3.5" /> {safeT(t, "toolbar.selectAllGroups", "All sub-flows")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Align/distribute — acts on the current multi-selection of nodes. */}
-      <div className="relative">
-        <button
-          onClick={() => setAlignMenuOpen((o) => !o)}
-          title={safeT(t, "toolbar.align", "Align")}
-          className={cn(
-            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
-            "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <AlignStartVertical className="size-4" />
-          <ChevronDown className="size-3" />
-        </button>
-        {alignMenuOpen && (
-          <div
-            className="absolute top-9 start-0 z-20 w-52 rounded-md border border-border bg-popover py-1 shadow-md"
-            onMouseLeave={() => setAlignMenuOpen(false)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            title={safeT(t, "toolbar.align", "Align")}
+            className={cn(
+              "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
+              "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
           >
-            {(
-              [
-                { edge: "left" as const, icon: AlignStartVertical, label: safeT(t, "toolbar.alignLeft", "Align left") },
-                { edge: "centerH" as const, icon: AlignCenterVertical, label: safeT(t, "toolbar.alignCenterH", "Align center (horizontal)") },
-                { edge: "right" as const, icon: AlignEndVertical, label: safeT(t, "toolbar.alignRight", "Align right") },
-                { edge: "top" as const, icon: AlignStartHorizontal, label: safeT(t, "toolbar.alignTop", "Align top") },
-                { edge: "centerV" as const, icon: AlignCenterHorizontal, label: safeT(t, "toolbar.alignCenterV", "Align middle (vertical)") },
-                { edge: "bottom" as const, icon: AlignEndHorizontal, label: safeT(t, "toolbar.alignBottom", "Align bottom") },
-              ]
-            ).map(({ edge, icon: Icon, label }) => (
-              <button
-                key={edge}
-                onClick={() => { alignSelectedNodes(edge); setAlignMenuOpen(false); }}
-                className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-              >
-                <Icon className="size-3.5" /> {label}
-              </button>
-            ))}
-            <div className="my-1 h-px bg-border" />
-            <button
-              onClick={() => { distributeSelectedNodes("horizontal"); setAlignMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <StretchHorizontal className="size-3.5" /> {safeT(t, "toolbar.distributeH", "Distribute horizontally")}
-            </button>
-            <button
-              onClick={() => { distributeSelectedNodes("vertical"); setAlignMenuOpen(false); }}
-              className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-            >
-              <StretchVertical className="size-3.5" /> {safeT(t, "toolbar.distributeV", "Distribute vertically")}
-            </button>
-          </div>
-        )}
-      </div>
+            <AlignStartVertical className="size-4" />
+            <ChevronDown className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-52">
+          {(
+            [
+              { edge: "left" as const, icon: AlignStartVertical, label: safeT(t, "toolbar.alignLeft", "Align left") },
+              { edge: "centerH" as const, icon: AlignCenterVertical, label: safeT(t, "toolbar.alignCenterH", "Align center (horizontal)") },
+              { edge: "right" as const, icon: AlignEndVertical, label: safeT(t, "toolbar.alignRight", "Align right") },
+              { edge: "top" as const, icon: AlignStartHorizontal, label: safeT(t, "toolbar.alignTop", "Align top") },
+              { edge: "centerV" as const, icon: AlignCenterHorizontal, label: safeT(t, "toolbar.alignCenterV", "Align middle (vertical)") },
+              { edge: "bottom" as const, icon: AlignEndHorizontal, label: safeT(t, "toolbar.alignBottom", "Align bottom") },
+            ]
+          ).map(({ edge, icon: Icon, label }) => (
+            <DropdownMenuItem key={edge} onClick={() => alignSelectedNodes(edge)}>
+              <Icon className="size-3.5" /> {label}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => distributeSelectedNodes("horizontal")}>
+            <StretchHorizontal className="size-3.5" /> {safeT(t, "toolbar.distributeH", "Distribute horizontally")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => distributeSelectedNodes("vertical")}>
+            <StretchVertical className="size-3.5" /> {safeT(t, "toolbar.distributeV", "Distribute vertically")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       {/* Infinite alignment guides — added at the current viewport center;
           drag them on the canvas to reposition, double-click to remove one. */}
@@ -565,7 +601,7 @@ export function Toolbar({
           switch — see the "hide-all-handles" class in DiagramCanvas.tsx). */}
       <ToolbarButton
         icon={globalHideHandles ? EyeOff : Eye}
-        label={globalHideHandles ? "Show all handles" : "Hide all handles"}
+        label={globalHideHandles ? safeT(t, "toolbar.showAllHandles", "Show all handles") : safeT(t, "toolbar.hideAllHandles", "Hide all handles")}
         active={globalHideHandles}
         onClick={toggleGlobalHandles}
       />
@@ -574,120 +610,99 @@ export function Toolbar({
 
       {/* Sub-flow: wraps the current multi-selection (shift/box/lasso-select) in a
           resizable, collapsible group container — Ctrl/Cmd+G. */}
-      <ToolbarButton icon={Layers} label="Group into sub-flow (Ctrl+G)" onClick={groupSelectedNodes} />
+      <ToolbarButton icon={Layers} label={safeT(t, "toolbar.groupSubflow", "Group into sub-flow (Ctrl+G)")} onClick={groupSelectedNodes} />
 
       {/* Auto-layout (Dagre / ELK, vertical / horizontal) */}
-      <div className="relative">
-        <button
-          onClick={() => setLayoutMenuOpen((o) => !o)}
-          title="Auto layout"
-          className={cn(
-            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
-            "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <Workflow className="size-4" />
-          <ChevronDown className="size-3" />
-        </button>
-        {layoutMenuOpen && (
-          <div
-            className="absolute top-9 start-0 z-20 w-48 rounded-md border border-border bg-popover py-1 shadow-md"
-            onMouseLeave={() => setLayoutMenuOpen(false)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            title={safeT(t, "toolbar.autoLayout", "Auto layout")}
+            className={cn(
+              "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors",
+              "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
           >
-            <p className="px-3 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Dagre</p>
-            <button onClick={() => runDagreLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Vertical (top → bottom)
-            </button>
-            <button onClick={() => runDagreLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Horizontal (left → right)
-            </button>
-            <p className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">ELK</p>
-            <button onClick={() => runElkLayout("TB")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Vertical (top → bottom)
-            </button>
-            <button onClick={() => runElkLayout("LR")} className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              Horizontal (left → right)
-            </button>
-          </div>
-        )}
-      </div>
+            <Workflow className="size-4" />
+            <ChevronDown className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-48">
+          <div className="px-2 pb-1 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Dagre</div>
+          <DropdownMenuItem onClick={() => runDagreLayout("TB")}>
+            {safeT(t, "toolbar.layoutVertical", "Vertical (top → bottom)")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => runDagreLayout("LR")}>
+            {safeT(t, "toolbar.layoutHorizontal", "Horizontal (left → right)")}
+          </DropdownMenuItem>
+          <div className="px-2 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">ELK</div>
+          <DropdownMenuItem onClick={() => runElkLayout("TB")}>
+            {safeT(t, "toolbar.layoutVertical", "Vertical (top → bottom)")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => runElkLayout("LR")}>
+            {safeT(t, "toolbar.layoutHorizontal", "Horizontal (left → right)")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       <Divider />
 
       {/* Import / Export */}
       <ToolbarButton icon={Download} label={t("dialogs.exportJSON")} onClick={handleExport} />
       <ToolbarButton icon={Upload} label={t("dialogs.importJSON")} onClick={handleImportClick} />
-      <div className="relative">
-        <button
-          onClick={() => setImageExportMenuOpen((o) => !o)}
-          disabled={isExportingImage}
-          title={safeT(t, "toolbar.exportImage", "Download as image")}
-          className={cn(
-            "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors disabled:opacity-50",
-            "text-muted-foreground hover:bg-accent hover:text-foreground",
-          )}
-        >
-          <ImageDown className={cn("size-4", isExportingImage && "animate-pulse")} />
-          <ChevronDown className="size-3" />
-        </button>
-        {imageExportMenuOpen && (
-          <div
-            className="absolute top-9 start-0 z-20 w-56 rounded-md border border-border bg-popover py-1 shadow-md"
-            onMouseLeave={() => setImageExportMenuOpen(false)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            disabled={isExportingImage}
+            title={safeT(t, "toolbar.exportImage", "Download as image")}
+            className={cn(
+              "flex h-8 items-center gap-0.5 rounded-md px-1.5 transition-colors disabled:opacity-50",
+              "text-muted-foreground hover:bg-accent hover:text-foreground",
+            )}
           >
-            <button onClick={() => handleDownloadImage("png")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngBg", "PNG — with background")}
-            </button>
-            <button onClick={() => handleDownloadImage("png-transparent")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngTransparent", "PNG — transparent")}
-            </button>
-            <button onClick={() => handleDownloadImage("svg")} className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground">
-              <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportSvg", "SVG (vector)")}
-            </button>
-          </div>
-        )}
-      </div>
+            <ImageDown className={cn("size-4", isExportingImage && "animate-pulse")} />
+            <ChevronDown className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuItem onClick={() => handleDownloadImage("png")}>
+            <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngBg", "PNG — with background")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleDownloadImage("png-transparent")}>
+            <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportPngTransparent", "PNG — transparent")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => handleDownloadImage("svg")}>
+            <ImageDown className="size-3.5" /> {safeT(t, "toolbar.exportSvg", "SVG (vector)")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {/* Hidden file input — triggered programmatically by handleImportClick */}
       <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleFileChange} />
       <Divider />
 
       {/* Destructive bulk actions — each confirms before acting */}
-      <div className="relative">
-        <button
-          onClick={() => setClearMenuOpen((o) => !o)}
-          title="Clear"
-          className="flex h-8 items-center gap-0.5 rounded-md px-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-        >
-          <Eraser className="size-4" />
-          <ChevronDown className="size-3" />
-        </button>
-        {clearMenuOpen && (
-          <div
-            className="absolute top-9 start-0 z-20 w-52 rounded-md border border-border bg-popover py-1 shadow-md"
-            onMouseLeave={() => setClearMenuOpen(false)}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            title={safeT(t, "toolbar.clear", "Clear")}
+            className="flex h-8 items-center gap-0.5 rounded-md px-1.5 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
-            <button
-              onClick={handleClearCanvas}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-destructive/10 hover:text-destructive"
-            >
-              Clear entire canvas
-            </button>
-            <button
-              onClick={handleDeleteAllNodes}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-destructive/10 hover:text-destructive"
-            >
-              Delete all nodes
-            </button>
-            <button
-              onClick={handleDeleteAllEdges}
-              className="flex w-full items-center px-3 py-1.5 text-xs text-popover-foreground hover:bg-destructive/10 hover:text-destructive"
-            >
-              Delete all connections
-            </button>
-          </div>
-        )}
-      </div>
+            <Eraser className="size-4" />
+            <ChevronDown className="size-3" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-52">
+          <DropdownMenuItem onClick={handleClearCanvas} variant="destructive">
+            {safeT(t, "toolbar.clearCanvas", "Clear entire canvas")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDeleteAllNodes} variant="destructive">
+            {safeT(t, "toolbar.deleteAllNodes", "Delete all nodes")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleDeleteAllEdges} variant="destructive">
+            {safeT(t, "toolbar.deleteAllEdges", "Delete all connections")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      {/* ── Right-side controls ─────────────────────────────────────────── */}
+      {/* ── Right-side controls ── */}
       <div className="ms-auto flex items-center gap-1">
         {/* Auto-save indicator — shown only while save is in progress */}
         {isSaving && <span className="me-1 text-xs text-muted-foreground">{t("editor.saving")}</span>}

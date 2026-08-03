@@ -19,7 +19,7 @@ export type DiagramNodeType =
   | 'documentNode'
   | 'predefinedProcessNode'
   | 'delayNode'
-  // ── Subflow / container node ─────────────────────────────────────
+  // ── Subflow / container node ──────────────────────────────────────
   | 'groupNode'
   // ── Computing flows (https://reactflow.dev/learn/advanced-use/computing-flows) ──
   | 'numberNode'
@@ -29,18 +29,34 @@ export type DiagramNodeType =
   | 'excelNode'
   | 'matrixNode'
   | 'chartNode'
-  // ── Standalone geometry calculators ──────────────────────────────
+  // ── Standalone geometry calculators ───────────────────────────────
   | 'geometryCalcNode'
   | 'beamCalcNode'
   // ── Pipeable shape definition — connect to a calculator's input handle ──
   | 'shapeNode'
-  // ── Image ─────────────────────────────────────────────────────────────
+  // ── Image ──────────────────────────────────────────────────────────────
   // svgNode kept only so diagrams saved before Image+SVG were merged still
   // load — it's registered to the very same ImageNode component now (see
   // components/nodes/BaseNode.tsx). Nothing new should ever be created with
   // type "svgNode"; the palette only offers "imageNode" going forward.
   | 'imageNode'
-  | 'svgNode';
+  | 'svgNode'
+  // ── Vessel-weight nodes (from vessel-weight module) ────────────────────
+  | 'vesselRootNode'
+  | 'shellNode'
+  | 'headNode'
+  | 'nozzleNode'
+  | 'supportNode'
+  | 'attachmentsNode'
+  | 'outputHubNode'
+  | 'mistEliminatorNode'
+  | 'internalsNode'
+  | 'projectDataNode'
+  | 'generalDataNode'
+  | 'jacketNode'
+  | 'regenVacuumSteamoutNode'
+  | 'surfacePrepNode'
+  | 'mtoNode';
 
 export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'floating' | 'floating-straight';
 
@@ -70,6 +86,12 @@ export type SelectionTool = 'pointer' | 'box' | 'lasso';
  *  "full" only selects nodes entirely enclosed by it.
  *  See https://reactflow.dev/examples/whiteboard/lasso-selection */
 export type LassoMode = 'partial' | 'full';
+
+/** Palette / node categories. "diagram" is the general-purpose,
+ *  no-computation shape set used to build ordinary flowcharts/diagrams.
+ *  "compute" holds nodes that carry or derive numeric values. "weight"
+ *  is reserved for future weight-calculation nodes (currently empty). */
+export type PaletteCategory = 'diagram' | 'compute' | 'weight';
 
 export interface DiagramNodeData extends Record<string, unknown> {
   label: string;
@@ -101,6 +123,10 @@ export interface DiagramNodeData extends Record<string, unknown> {
    *  default (see utils/shapes.ts) when a node hasn't been resized yet. */
   width?: number;
   height?: number;
+  /** Whether resizing this node preserves its current width:height ratio.
+   *  Defaults to true (locked) when unset — see components/nodes/BaseNode.tsx's
+   *  CornerResizer and the "Lock aspect ratio" toggle in SettingsPanel. */
+  aspectRatioLocked?: boolean;
 
   // ── Computing flows (numberNode / operatorNode) ──────────────────────
   /** numberNode: the user-entered input value. */
@@ -115,7 +141,7 @@ export interface DiagramNodeData extends Record<string, unknown> {
    *  See utils/constants.ts for the full list. Defaults to "pi". */
   constantKey?: string;
 
-  // ── Table node ─────────────────────────────────────────────────────
+  // ── Table node ────────────────────────────────────────────────────
   /** tableNode: the grid itself — tableRows[r][c] is that cell's text.
    *  All rows are kept the same length (padded/trimmed together whenever a
    *  column is added/removed) so indexing never goes out of bounds. */
@@ -129,7 +155,14 @@ export interface DiagramNodeData extends Record<string, unknown> {
    *  tableRows, kept separate since it's numbers, not free text. */
   matrixRows?: number[][];
 
-  // ── Chart node ─────────────────────────────────────────────────────
+  // ── Vessel Nodes Custom Handles ────────────────────────────────────
+  vesselHandlesConfig?: {
+    sourceCount: number;
+    targetCount: number;
+    positionMode: 'top-bottom' | 'bottom-top' | 'left-right' | 'right-left';
+  };
+
+  // ── Chart node ────────────────────────────────────────────────────
   /** chartNode: its own data when not fed by an upstream Table/Excel/Matrix
    *  node — first row = series names (column headers), first cell of every
    *  other row = that row's category label. */
@@ -146,7 +179,7 @@ export interface DiagramNodeData extends Record<string, unknown> {
   calcMode?: GeometryMode;
   calcInputs?: Record<string, number>;
 
-  // ── Beam second-moment-of-area calculator ────────────────────────────
+  // ── Beam second-moment-of-area calculator ─────────────────────────────
   beamShape?: BeamShape;
   beamInputs?: Record<string, number>;
 
@@ -166,11 +199,49 @@ export interface DiagramNodeData extends Record<string, unknown> {
   /** @deprecated unused — kept only so old saved diagrams don't error on load. */
   svgContent?: string;
 
-  // ── Rotation (imageNode + textNode) ──────────────────────────────────
+  // ── Rotation (imageNode + textNode) ────────────────────────────────────────
   /** Degrees, 0-360. See components/nodes/RotateHandle.tsx. */
   rotation?: number;
 
-  // ── Sub-flow (groupNode) label ────────────────────────────────────────
+  // ── Vessel-weight node data (loosely typed; vessel modules own their schemas) ─
+  /** vesselRootNode: global vessel configuration object. */
+  vessel?: Record<string, unknown>;
+  /** shellNode: array of shell course definitions. */
+  courses?: Record<string, unknown>[];
+  /** headNode: array of head definitions. */
+  heads?: Record<string, unknown>[];
+  /** nozzleNode: array of nozzle definitions. */
+  nozzles?: Record<string, unknown>[];
+  /** supportNode: support type and geometry. */
+  support?: Record<string, unknown>;
+  /** attachmentsNode: list of attachment items. */
+  attachments?: Record<string, unknown>[];
+  /** mistEliminatorNode: mist eliminator configuration. */
+  mistEliminator?: Record<string, unknown>;
+  /** internalsNode: custom internals weight input. */
+  customInternalsWeight_kg?: number;
+  /** projectDataNode: project-level identification and item list. */
+  projectData?: Record<string, unknown>;
+  /** generalDataNode: general data body specification. */
+  generalData?: Record<string, unknown>;
+  /** Shared calculated weight output (read by OutputHubNode aggregation). */
+  calculatedWeight?: number;
+  /** Shared raw weight (pre-fabrication). */
+  rawWeight?: number;
+  /** Nozzle total fabricated weight. */
+  totalFabricatedWeight?: number;
+  /** Whether to exclude this node from weight aggregation. */
+  excludeFromWeight?: boolean;
+  /** Electrode consumption in kg (welding). */
+  electrodeWeight_kg?: number;
+  /** Plate area in m² (for material takeoff). */
+  area_m2?: number;
+  /** Internal volume in m³ (for fluid weight calculation). */
+  internalVolume?: number;
+  /** Generic description/status for MTO export (vessel-weight nodes). */
+  status?: string;
+
+  // ── Sub-flow (groupNode) label ─────────────────────────────────────────
   /** Which edge the sub-flow's title bar sits on. Defaults to "top". Its
    *  font size reuses the regular `fontSize` field above. */
   labelPosition?: 'top' | 'bottom' | 'left' | 'right';
@@ -226,7 +297,7 @@ export interface PaletteItem {
   labelKey: string;
   icon: string;
   defaultData: Partial<DiagramNodeData>;
-  category: 'basic' | 'flowchart' | 'shapes' | 'containers' | 'compute';
+  category: PaletteCategory;
 }
 
 export type { ColorToken } from '../utils/colors';

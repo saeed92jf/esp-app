@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,34 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export interface ComboboxOption { value: string; label: string; }
+
+export const COMBOBOX_SEARCH_THRESHOLD = 10;
+
 interface ComboboxProps {
-  options: ComboboxOption[]; value?: string; onChange?: (value: string) => void;
-  placeholder?: string; searchPlaceholder?: string; emptyText?: string;
-  className?: string; showSearch?: boolean;
+  options: ComboboxOption[];
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
+  searchPlaceholder?: string;
+  emptyText?: string;
+  className?: string;
+  showSearch?: boolean;
+  searchThreshold?: number;
+  disabled?: boolean;
 }
 
-export function Combobox({ options, value, onChange, placeholder, searchPlaceholder, emptyText, className, showSearch = true }: ComboboxProps) {
+export function Combobox({
+  options,
+  value,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  className,
+  showSearch,
+  searchThreshold = COMBOBOX_SEARCH_THRESHOLD,
+  disabled,
+}: ComboboxProps) {
   const t = useTranslations("Combobox");
   const [open, setOpen] = React.useState(false);
   const selected = options.find((o) => o.value === value);
@@ -22,17 +43,33 @@ export function Combobox({ options, value, onChange, placeholder, searchPlacehol
   const resolvedSearchPlaceholder = searchPlaceholder ?? (t ? t("searchPlaceholder") : "Search...");
   const resolvedEmptyText = emptyText ?? (t ? t("emptyText") : "No results.");
 
+  const shouldShowSearch =
+    typeof showSearch === "boolean"
+      ? showSearch
+      : options.length > searchThreshold;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className={cn("w-full justify-between px-3 font-normal", className)}>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={cn(
+            "group w-full justify-between px-2.5 font-normal bg-white dark:bg-black hover:bg-muted/40 transition-colors",
+            className
+          )}
+        >
           <span className="truncate">{selected ? selected.label : resolvedPlaceholder}</span>
-          <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" />
+          <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
+            <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
+          </span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
         <Command>
-          {showSearch && <CommandInput placeholder={resolvedSearchPlaceholder} />}
+          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} />}
           <CommandList>
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>

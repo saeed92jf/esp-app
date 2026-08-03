@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { RotateHandle } from "./RotateHandle";
 import { cn } from "@/lib/utils";
-import { Combobox } from "@/components/ui-custom/combobox";
+import { Combobox } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -27,6 +27,7 @@ import type { DiagramNodeData, DiagramNodeType, ArithmeticOperation } from "../.
 import { getShapeGeometry, SHAPE_DEFAULT_SIZE } from "../../utils/shapes";
 import { resolveNodeColors } from "../../utils/colors";
 import { OPERATOR_ARITY, OPERATOR_SYMBOL, OPERATOR_LABEL } from "../../utils/operators";
+import { FLOW_HANDLE_NEUTRAL, FLOW_HANDLE_SOURCE, FLOW_HANDLE_TARGET } from "../../utils/handles";
 import { UNIT_OPTIONS, unitWithPower, geometryModePower } from "../../utils/units";
 import { MATH_CONSTANTS, MATH_CONSTANT_BY_KEY, MATH_CONSTANT_OPTIONS } from "../../utils/constants";
 import { parseDelimitedText, pasteIntoGrid, toNumberCell, parseSpreadsheetFile } from "../../utils/tabularData";
@@ -56,8 +57,25 @@ import {
   type GeometryMode,
   type BeamShape,
 } from "../../utils/geometry";
+import {
+  VesselRootNodeWrapper,
+  ShellNodeWrapper,
+  HeadNodeWrapper,
+  NozzleNodeWrapper,
+  SupportNodeWrapper,
+  AttachmentsNodeWrapper,
+  OutputHubNodeWrapper,
+  MistEliminatorNodeWrapper,
+  InternalsNodeWrapper,
+  ProjectDataNodeWrapper,
+  GeneralDataNodeWrapper,
+  JacketNodeWrapper,
+  RegenVacuumSteamoutNodeWrapper,
+  SurfacePrepNodeWrapper,
+  MtoReportNodeWrapper,
+} from "./VesselNodes";
 
-// â”€â”€â”€ Font weight lookup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Font weight lookup ─────────────────────────────────────────────────
 
 const FONT_WEIGHT_MAP: Record<string, number> = {
   normal: 400,
@@ -65,8 +83,8 @@ const FONT_WEIGHT_MAP: Record<string, number> = {
   bold: 700,
 };
 
-// â”€â”€â”€ Typed node alias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// ReactFlow v12+ requires Node<TData, TType> â€” not just the data shape.
+// ─── Typed node alias ───────────────────────────────────────────────────
+// ReactFlow v12+ requires Node<TData, TType> — not just the data shape.
 type DiagramNodeObject = Node<DiagramNodeData, DiagramNodeType>;
 type DiagramNodeProps = NodeProps<DiagramNodeObject>;
 
@@ -129,12 +147,10 @@ function NumberField({
   );
 }
 
-// "Precise-border easy connect" (https://reactflow.dev/examples/nodes/easy-connect):
-// the visible dot stays tiny/exact, but every handle also gets an invisible
-// ::after box extended 8px past its own edges on all sides — roughly tripling
-// the real clickable/draggable hit-area without changing how the handle looks,
-// so starting a connection is far more forgiving while the node's border stays crisp.
-const HANDLE_CLS = "h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']";
+// 3 distinct handle styles: Neutral (ordinary shapes), Source (outputs), Target (inputs)
+const HANDLE_NEUTRAL_CLS = FLOW_HANDLE_NEUTRAL;
+const HANDLE_SOURCE_CLS = FLOW_HANDLE_SOURCE;
+const HANDLE_TARGET_CLS = FLOW_HANDLE_TARGET;
 
 const RESIZE_LINE_CLS = "border-indigo-500! border-dashed!";
 const RESIZE_DOT_CLS = "h-2.5! w-2.5! rounded-sm! border! border-indigo-500! bg-indigo-500!";
@@ -168,29 +184,37 @@ const CORNER_OFFSET_STYLE: Record<"top-left" | "top-right" | "bottom-left" | "bo
  * DOTS only at the 4 corners (nothing there to collide with), plus the 4
  * edge LINES for the drag-frame outline and edge-resizing — lines don't
  * visually clash with a small dot handle the way another dot would.
+ *
+ * `keepAspectRatio`: when true (the default — see DiagramNodeData's
+ * `aspectRatioLocked`, which itself defaults to true/locked), every corner
+ * and edge control preserves the node's current width:height ratio while
+ * dragging, so a resize can't accidentally distort the shape. Users can
+ * unlock this per-node from the Style tab in SettingsPanel.
  */
 function CornerResizer({
   isVisible,
   minWidth,
   minHeight,
   onResize,
+  keepAspectRatio = true,
 }: {
   isVisible: boolean;
   minWidth: number;
   minHeight: number;
   onResize: OnResize;
+  keepAspectRatio?: boolean;
 }) {
   if (!isVisible) return null;
   return (
     <>
-      <NodeResizeControl position="top" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.top} />
-      <NodeResizeControl position="bottom" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.bottom} />
-      <NodeResizeControl position="left" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.left} />
-      <NodeResizeControl position="right" variant={ResizeControlVariant.Line} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.right} />
-      <NodeResizeControl position="top-left" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-left"]} />
-      <NodeResizeControl position="top-right" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-right"]} />
-      <NodeResizeControl position="bottom-left" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-left"]} />
-      <NodeResizeControl position="bottom-right" variant={ResizeControlVariant.Handle} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-right"]} />
+      <NodeResizeControl position="top" variant={ResizeControlVariant.Line} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.top} />
+      <NodeResizeControl position="bottom" variant={ResizeControlVariant.Line} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.bottom} />
+      <NodeResizeControl position="left" variant={ResizeControlVariant.Line} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.left} />
+      <NodeResizeControl position="right" variant={ResizeControlVariant.Line} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_LINE_CLS} style={LINE_OFFSET_STYLE.right} />
+      <NodeResizeControl position="top-left" variant={ResizeControlVariant.Handle} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-left"]} />
+      <NodeResizeControl position="top-right" variant={ResizeControlVariant.Handle} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["top-right"]} />
+      <NodeResizeControl position="bottom-left" variant={ResizeControlVariant.Handle} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-left"]} />
+      <NodeResizeControl position="bottom-right" variant={ResizeControlVariant.Handle} keepAspectRatio={keepAspectRatio} minWidth={minWidth} minHeight={minHeight} onResize={onResize} className={RESIZE_DOT_CLS} style={CORNER_OFFSET_STYLE["bottom-right"]} />
     </>
   );
 }
@@ -212,20 +236,20 @@ function FreeConnectHandles() {
   return (
     <>
       {/* Target handles — pure drop targets, rendered first (underneath) */}
-      <Handle type="target" position={Position.Top} id="top-in" className={HANDLE_CLS} />
-      <Handle type="target" position={Position.Bottom} id="bottom-in" className={HANDLE_CLS} />
-      <Handle type="target" position={Position.Left} id="left-in" className={HANDLE_CLS} />
-      <Handle type="target" position={Position.Right} id="right-in" className={HANDLE_CLS} />
+      <Handle type="target" position={Position.Top} id="top-in" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="target" position={Position.Bottom} id="bottom-in" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="target" position={Position.Left} id="left-in" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="target" position={Position.Right} id="right-in" className={HANDLE_NEUTRAL_CLS} />
       {/* Source handles — where new connections start from, rendered last (on top) */}
-      <Handle type="source" position={Position.Top} id="top" className={HANDLE_CLS} />
-      <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_CLS} />
-      <Handle type="source" position={Position.Left} id="left" className={HANDLE_CLS} />
-      <Handle type="source" position={Position.Right} id="right" className={HANDLE_CLS} />
+      <Handle type="source" position={Position.Top} id="top" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="source" position={Position.Left} id="left" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="source" position={Position.Right} id="right" className={HANDLE_NEUTRAL_CLS} />
     </>
   );
 }
 
-// â”€â”€â”€ ShapeCanvas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ShapeCanvas ────────────────────────────────────────────────────────
 // Shared renderer used by every node wrapper below. Draws the shape as real
 // SVG (see utils/shapes.ts), keeps its pixel size on node.data so resizing
 // persists, and shows a link badge when data.url is set.
@@ -233,14 +257,14 @@ function FreeConnectHandles() {
 /** Start terminator: only ONE outgoing handle — nothing should ever flow
  *  INTO a "Start" node, so no target handle is rendered at all. */
 function SingleSourceHandle() {
-  return <Handle type="source" position={Position.Bottom} id="out" className={HANDLE_CLS} />;
+  return <Handle type="source" position={Position.Bottom} id="out" className={HANDLE_SOURCE_CLS} />;
 }
 
 /** End terminator: only ONE incoming handle — nothing should ever flow OUT
  *  of an "End" node (which also naturally keeps it from triggering
  *  add-node-on-edge-drop, since that only fires from a source handle). */
 function SingleTargetHandle() {
-  return <Handle type="target" position={Position.Top} id="in" className={HANDLE_CLS} />;
+  return <Handle type="target" position={Position.Top} id="in" className={HANDLE_TARGET_CLS} />;
 }
 
 interface ShapeCanvasProps {
@@ -285,6 +309,9 @@ function ShapeCanvas({
   const fallback = SHAPE_DEFAULT_SIZE[shape];
   const width = data.width ?? fallback.width;
   const height = data.height ?? fallback.height;
+  // Aspect-ratio lock defaults to ON — resizing preserves the node's current
+  // width:height ratio unless the user explicitly unlocks it (Style tab).
+  const aspectLocked = data.aspectRatioLocked ?? true;
 
   // Resolves the fixed light/dark color-token palette, falling back to any
   // legacy raw hex the node already carries (see utils/colors.ts).
@@ -341,6 +368,7 @@ function ShapeCanvas({
           minWidth={minShapeWidth}
           minHeight={minShapeHeight}
           onResize={handleResize}
+          keepAspectRatio={aspectLocked}
         />
       )}
 
@@ -465,7 +493,7 @@ function ShapeCanvas({
       )}
       </div>
 
-      {/* Link badge â€” visible when the node carries a URL; click opens it directly. */}
+      {/* Link badge — visible when the node carries a URL; click opens it directly. */}
       {hasLink && (
         <button
           type="button"
@@ -487,7 +515,7 @@ function ShapeCanvas({
   );
 }
 
-// â”€â”€â”€ Node wrapper components (one per DiagramNodeType) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Node wrapper components (one per DiagramNodeType) ──────────────────
 // Kept as separate functions (rather than deriving the shape from props.type)
 // so the `nodeTypes` registry below stays explicit and each node type is
 // trivially greppable.
@@ -619,6 +647,7 @@ function GroupNode({ id, selected, data }: DiagramNodeProps) {
         minWidth={200}
         minHeight={140}
         onResize={handleResize}
+        keepAspectRatio={data.aspectRatioLocked ?? true}
       />
 
       <div className={barClassName} style={barStyle}>
@@ -672,7 +701,7 @@ function NumberNode({ id, selected, data }: DiagramNodeProps) {
         className="w-full text-sm font-semibold"
         style={{ color: resolved.text }}
       />
-      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="right" className={HANDLE_SOURCE_CLS} />
     </div>
   );
 }
@@ -727,7 +756,7 @@ function ConstantNode({ id, selected, data }: DiagramNodeProps) {
         {constant.description}
       </p>
 
-      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="right" className={HANDLE_SOURCE_CLS} />
     </div>
   );
 }
@@ -801,7 +830,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
 
       {arity === "nary" && (
         <>
-          <Handle type="target" position={Position.Left} id="left" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+          <Handle type="target" position={Position.Left} id="left" className={HANDLE_TARGET_CLS} />
           <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             +
           </span>
@@ -815,7 +844,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             position={Position.Left}
             id="a"
             style={{ top: "35%" }}
-            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
+            className={HANDLE_TARGET_CLS}
           />
           <span className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "35%" }}>
             a
@@ -825,7 +854,7 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
             position={Position.Left}
             id="b"
             style={{ top: "70%" }}
-            className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']"
+            className={HANDLE_TARGET_CLS}
           />
           <span className="pointer-events-none absolute start-0 -translate-x-3 text-[9px] opacity-50 rtl:translate-x-3" style={{ top: "70%" }}>
             b
@@ -835,21 +864,21 @@ function OperatorNode({ id, selected, data }: DiagramNodeProps) {
 
       {arity === "unary" && (
         <>
-          <Handle type="target" position={Position.Left} id="x" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+          <Handle type="target" position={Position.Left} id="x" className={HANDLE_TARGET_CLS} />
           <span className="pointer-events-none absolute start-0 top-1/2 -translate-x-3 -translate-y-1/2 text-[9px] opacity-50 rtl:translate-x-3">
             x
           </span>
         </>
       )}
 
-      <Handle type="source" position={Position.Right} id="right" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="right" className={HANDLE_SOURCE_CLS} />
     </div>
   );
 }
 
-// ── Standalone calculators ──────────────────────────────────────────────
-// Unlike numberNode/operatorNode, these don't need any incoming edges — all
-// their inputs live on the node itself, so the result is just computed
+// ── Standalone calculators ────────────────────────────────────────────
+// Unlike numberNode/operatorNode, these don't need any incoming edges —
+// all their inputs live on the node itself, so the result is just computed
 // directly in the component (utils/geometry.ts) on every render.
 
 const GEOMETRY_SHAPE_LABELS: Record<GeometryShape, string> = {
@@ -924,9 +953,10 @@ function GeometryCalcNode({ id, selected, data }: DiagramNodeProps) {
         minWidth={180}
         minHeight={200}
         onResize={handleResize}
+        keepAspectRatio={data.aspectRatioLocked ?? true}
       />
-      <Handle type="target" position={Position.Left} id="shape-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-      <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="target" position={Position.Left} id="shape-in" className={HANDLE_TARGET_CLS} />
+      <Handle type="source" position={Position.Right} id="value-out" className={HANDLE_SOURCE_CLS} />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.geometryCalcNode", "Geometry calculator")}
@@ -1055,9 +1085,10 @@ function BeamCalcNode({ id, selected, data }: DiagramNodeProps) {
         minWidth={200}
         minHeight={220}
         onResize={handleResize}
+        keepAspectRatio={data.aspectRatioLocked ?? true}
       />
-      <Handle type="target" position={Position.Left} id="shape-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-      <Handle type="source" position={Position.Right} id="value-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="target" position={Position.Left} id="shape-in" className={HANDLE_TARGET_CLS} />
+      <Handle type="source" position={Position.Right} id="value-out" className={HANDLE_SOURCE_CLS} />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.beamCalcNode", "Beam section (Ix)")}
@@ -1168,8 +1199,9 @@ function ShapeNode({ id, selected, data }: DiagramNodeProps) {
         minWidth={170}
         minHeight={160}
         onResize={handleResize}
+        keepAspectRatio={data.aspectRatioLocked ?? true}
       />
-      <Handle type="source" position={Position.Right} id="shape-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="source" position={Position.Right} id="shape-out" className={HANDLE_SOURCE_CLS} />
 
       <span className="text-[10px] font-medium uppercase tracking-wide" style={{ color: resolved.text, opacity: 0.7 }}>
         {data.label || safeT(t, "nodes.shapeNode", "Shape")}
@@ -1263,9 +1295,10 @@ function ImageNode({ id, selected, data }: DiagramNodeProps) {
         minWidth={80}
         minHeight={60}
         onResize={handleResize}
+        keepAspectRatio={data.aspectRatioLocked ?? true}
       />
-      <Handle type="target" position={Position.Top} id="top" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-      <Handle type="source" position={Position.Bottom} id="bottom" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <Handle type="target" position={Position.Top} id="top" className={HANDLE_NEUTRAL_CLS} />
+      <Handle type="source" position={Position.Bottom} id="bottom" className={HANDLE_NEUTRAL_CLS} />
 
       {/* Rotation (https://reactflow.dev/examples/nodes/rotatable-node): the
           handle is a CHILD of this same rotated element, so it moves/rotates
@@ -1409,7 +1442,7 @@ function TableNode({ id, selected, data }: DiagramNodeProps) {
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
       style={{ width, minWidth: 200, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer isVisible={!!selected} minWidth={200} minHeight={100} onResize={handleResize} />
+      <CornerResizer isVisible={!!selected} minWidth={200} minHeight={100} onResize={handleResize} keepAspectRatio={data.aspectRatioLocked ?? true} />
       <FreeConnectHandles />
 
       {/* Drag handle + row/column controls — only shown while selected, like the resize frame */}
@@ -1583,7 +1616,7 @@ function ExcelNode({ id, selected, data }: DiagramNodeProps) {
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
       style={{ width, minWidth: 220, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer isVisible={!!selected} minWidth={220} minHeight={120} onResize={handleResize} />
+      <CornerResizer isVisible={!!selected} minWidth={220} minHeight={120} onResize={handleResize} keepAspectRatio={data.aspectRatioLocked ?? true} />
       <FreeConnectHandles />
 
       <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
@@ -1721,9 +1754,9 @@ function MatrixNode({ id, selected, data }: DiagramNodeProps) {
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
       style={{ width, minWidth: 160, minHeight: height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer isVisible={!!selected} minWidth={160} minHeight={120} onResize={handleResize} />
-      <Handle type="target" position={Position.Left} id="table-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
-      <Handle type="source" position={Position.Right} id="matrix-out" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <CornerResizer isVisible={!!selected} minWidth={160} minHeight={120} onResize={handleResize} keepAspectRatio={data.aspectRatioLocked ?? true} />
+      <Handle type="target" position={Position.Left} id="table-in" className={HANDLE_TARGET_CLS} />
+      <Handle type="source" position={Position.Right} id="matrix-out" className={HANDLE_SOURCE_CLS} />
 
       <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
         <div className="flex items-center gap-1.5 overflow-hidden">
@@ -1894,8 +1927,8 @@ function ChartNode({ id, selected, data }: DiagramNodeProps) {
       className="flex flex-col overflow-hidden rounded-lg shadow-sm"
       style={{ width, minWidth: 240, height, backgroundColor: resolved.background, border: `1.5px solid ${selected ? selectedStroke : resolved.border}` }}
     >
-      <CornerResizer isVisible={!!selected} minWidth={240} minHeight={180} onResize={handleResize} />
-      <Handle type="target" position={Position.Left} id="table-in" className="h-2.5! w-2.5! border-2! border-white! bg-slate-400! relative after:absolute after:-inset-2 after:content-['']" />
+      <CornerResizer isVisible={!!selected} minWidth={240} minHeight={180} onResize={handleResize} keepAspectRatio={data.aspectRatioLocked ?? true} />
+      <Handle type="target" position={Position.Left} id="table-in" className={HANDLE_TARGET_CLS} />
 
       <div className="table-drag-handle flex shrink-0 cursor-grab items-center justify-between gap-1 border-b px-2 py-1 active:cursor-grabbing" style={{ borderColor: resolved.border }}>
         <div className="flex items-center gap-1.5 overflow-hidden">
@@ -2012,7 +2045,7 @@ function ChartNode({ id, selected, data }: DiagramNodeProps) {
   );
 }
 
-// ─── nodeTypes registry ─────────────────────────────────────────────────────
+// ─── nodeTypes registry ───────────────────────────────────────────────────
 // Keys match DiagramNodeType exactly; `satisfies` validates the shape without
 // widening to React Flow's generic NodeTypes.
 
@@ -2045,6 +2078,22 @@ export const nodeTypes = {
   shapeNode: ShapeNode,
   imageNode: ImageNode,
   svgNode: ImageNode,
+  // ── Vessel-weight nodes ─────────────────────────────────────────
+  vesselRootNode: VesselRootNodeWrapper,
+  shellNode: ShellNodeWrapper,
+  headNode: HeadNodeWrapper,
+  nozzleNode: NozzleNodeWrapper,
+  supportNode: SupportNodeWrapper,
+  attachmentsNode: AttachmentsNodeWrapper,
+  outputHubNode: OutputHubNodeWrapper,
+  mistEliminatorNode: MistEliminatorNodeWrapper,
+  internalsNode: InternalsNodeWrapper,
+  projectDataNode: ProjectDataNodeWrapper,
+  generalDataNode: GeneralDataNodeWrapper,
+  jacketNode: JacketNodeWrapper,
+  regenVacuumSteamoutNode: RegenVacuumSteamoutNodeWrapper,
+  surfacePrepNode: SurfacePrepNodeWrapper,
+  mtoNode: MtoReportNodeWrapper,
 } satisfies Record<DiagramNodeType, React.ComponentType<DiagramNodeProps>>;
 
 /** Node types that should only be draggable by a header/handle, not the whole body. */
@@ -2054,7 +2103,19 @@ export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   excelNode: ".table-drag-handle",
   matrixNode: ".table-drag-handle",
   chartNode: ".table-drag-handle",
+  vesselRootNode: ".vessel-drag-handle",
+  shellNode: ".vessel-drag-handle",
+  headNode: ".vessel-drag-handle",
+  nozzleNode: ".vessel-drag-handle",
+  supportNode: ".vessel-drag-handle",
+  attachmentsNode: ".vessel-drag-handle",
+  outputHubNode: ".vessel-drag-handle",
+  mistEliminatorNode: ".vessel-drag-handle",
+  internalsNode: ".vessel-drag-handle",
+  projectDataNode: ".vessel-drag-handle",
+  generalDataNode: ".vessel-drag-handle",
+  jacketNode: ".vessel-drag-handle",
+  regenVacuumSteamoutNode: ".vessel-drag-handle",
+  surfacePrepNode: ".vessel-drag-handle",
+  mtoNode: ".vessel-drag-handle",
 };
-
-
-

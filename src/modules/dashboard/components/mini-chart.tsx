@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { ChartPoint } from '@/lib/fake-dashboard';
+import type { ChartPoint } from '../services/dashboard.service';
 
 export function MiniChart({ data }: { data: ChartPoint[] }) {
   const t = useTranslations('Dashboard');

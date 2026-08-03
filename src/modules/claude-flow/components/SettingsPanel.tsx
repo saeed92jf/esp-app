@@ -2,9 +2,10 @@
 
 import React, { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useUpdateNodeInternals } from "@xyflow/react";
 import { useDiagramStore } from "../store";
-import { Trash2, Copy, ExternalLink, Smile, RotateCcw, FileText, Palette } from "lucide-react";
-import type { DiagramEdgeType } from "../types";
+import { Trash2, Copy, ExternalLink, Smile, RotateCcw, FileText, Palette, Shapes } from "lucide-react";
+import type { DiagramEdgeType, DiagramNodeType } from "../types";
 import { COLOR_TOKEN_ORDER, NODE_COLOR_TOKENS, EDGE_COLOR_TOKENS, type ColorToken } from "../utils/colors";
 import { cn } from "@/lib/utils";
 import { Toggle } from "@/components/ui/toggle";
@@ -15,9 +16,9 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Combobox } from "@/components/ui-custom/combobox";
+import { Combobox } from "@/components/ui/combobox";
 
-// ─── Sub-components ─────────────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────
 // IMPORTANT: every component used below is declared at MODULE scope (outside
 // SettingsPanel). Declaring components *inside* a render function gives them
 // a brand-new identity on every render, which makes React unmount + remount
@@ -49,11 +50,17 @@ const DEL_BTN = cn(ACTION_BTN, "hover:text-destructive");
 const RESET_BTN = cn(ACTION_BTN, "hover:text-primary");
 
 /** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
-function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string, values?: Record<string, any>): string {
   try {
-    return t(key);
+    return t(key, values);
   } catch {
-    return fallback;
+    let res = fallback;
+    if (values) {
+      Object.entries(values).forEach(([k, v]) => {
+        res = res.replace(`{${k}}`, String(v));
+      });
+    }
+    return res;
   }
 }
 
@@ -283,6 +290,25 @@ const EDGE_TYPE_OPTIONS: { value: DiagramEdgeType; label: string }[] = [
   { value: "floating-straight", label: "Floating straight" },
 ];
 
+/** Plain, non-computational shapes that can be freely swapped for one
+ *  another via the multi-select "Change shape" control — deliberately
+ *  excludes calculator/data nodes (numberNode, tableNode, shapeNode, ...)
+ *  whose data shape isn't interchangeable with a plain shape's. */
+const SIMPLE_SHAPE_TYPES: DiagramNodeType[] = [
+  "defaultNode",
+  "circleNode",
+  "diamondNode",
+  "hexagonNode",
+  "triangleNode",
+  "parallelogramNode",
+  "cylinderNode",
+  "cloudNode",
+  "documentNode",
+  "predefinedProcessNode",
+  "delayNode",
+  "noteNode",
+];
+
 /** Opens a node's link in a new tab; bare hosts get "https://" prefixed. */
 function openLink(url: string | undefined) {
   if (!url?.trim()) return;
@@ -290,10 +316,12 @@ function openLink(url: string | undefined) {
   window.open(href, "_blank", "noopener,noreferrer");
 }
 
-// ─── SettingsPanel ────────────────────────────────────────────────────────
+// ── SettingsPanel ─────────────────────────────────────────────────────────
 export function SettingsPanel() {
   // next-intl: all keys scoped under the "Flow" namespace
   const t = useTranslations("Flow");
+  const tv = useTranslations("VesselWeight");
+  const updateNodeInternals = useUpdateNodeInternals();
 
   const nodes = useDiagramStore((s) => s.nodes);
   const edges = useDiagramStore((s) => s.edges);
@@ -308,6 +336,7 @@ export function SettingsPanel() {
   const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);
   const resetEdgeToDefault = useDiagramStore((s) => s.resetEdgeToDefault);
   const resetEdgesToDefault = useDiagramStore((s) => s.resetEdgesToDefault);
+  const changeNodesShape = useDiagramStore((s) => s.changeNodesShape);
   const colorMode = useDiagramStore((s) => s.settings.colorMode);
 
   const nodeLabelRef = useRef<HTMLTextAreaElement>(null);
@@ -326,7 +355,7 @@ export function SettingsPanel() {
   const selectedNode = nodes.find((n) => n.id === selectedNodeId);
   const selectedEdge = edges.find((e) => e.id === selectedEdgeId);
 
-  // ─── Empty state ──────────────────────────────────────────────────────
+  // ── Empty state ──────────────────────────────────────────────────────────
   if (!isMultiSelect && !isMultiEdgeSelect && !selectedNode && !selectedEdge) {
     return (
       <Shell>
@@ -337,15 +366,25 @@ export function SettingsPanel() {
     );
   }
 
-  // ─── Multi-node settings (group style editing) ───────────────────────
+  // ── Multi-node settings (group style editing) ────────────────────────────
   if (isMultiSelect) {
     const ids = multiSelectedNodes.map((n) => n.id);
     const first = multiSelectedNodes[0].data;
+    // Only offer bulk shape-swapping when every selected node is a plain,
+    // non-computational shape (see SIMPLE_SHAPE_TYPES above) — e.g. several
+    // circleNodes selected together can all become hexagons in one action.
+    const allSimpleShapes = multiSelectedNodes.every((n) =>
+      SIMPLE_SHAPE_TYPES.includes(n.type as DiagramNodeType),
+    );
+    const allSameAspectLock = multiSelectedNodes.every(
+      (n) => (n.data.aspectRatioLocked ?? true) === (first.aspectRatioLocked ?? true),
+    );
+
     return (
       <Shell>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {multiSelectedNodes.length} nodes selected
+            {safeT(t, "settings.multiNodeHeader", "{count} nodes selected", { count: multiSelectedNodes.length })}
           </h3>
           <div className="flex gap-1">
             <Button
@@ -353,7 +392,7 @@ export function SettingsPanel() {
               size="icon-sm"
               onClick={() => resetNodesToDefault(ids)}
               className={cn(ACTION_BTN, "hover:text-primary")}
-              title="Reset all to default"
+              title={safeT(t, "settings.resetAllToDefault", "Reset all to default")}
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
@@ -363,6 +402,17 @@ export function SettingsPanel() {
           </div>
         </div>
         <div className="p-4">
+          {allSimpleShapes && (
+            <Field label={safeT(t, "settings.changeShape", "Change shape to")}>
+              <Combobox
+                options={SIMPLE_SHAPE_TYPES.map((ty) => ({ value: ty, label: safeT(t, `nodes.${ty}`, ty) }))}
+                value=""
+                onChange={(v) => v && changeNodesShape(ids, v as DiagramNodeType)}
+                placeholder={safeT(t, "settings.shape", "Shape...")}
+              />
+            </Field>
+          )}
+
           <Field label={safeT(t, "settings.size", "Size")}>
             <div className="flex items-center gap-2">
               <Input
@@ -383,6 +433,19 @@ export function SettingsPanel() {
                 className="w-full"
               />
             </div>
+          </Field>
+
+          <Field label={safeT(t, "settings.lockAspectRatio", "Lock aspect ratio")}>
+            <Toggle
+              size="sm"
+              variant="outline"
+              pressed={allSameAspectLock ? (first.aspectRatioLocked ?? true) : false}
+              onPressedChange={(v) => updateNodesData(ids, { aspectRatioLocked: v })}
+            >
+              {(allSameAspectLock ? (first.aspectRatioLocked ?? true) : false)
+                ? safeT(t, "settings.toggleOn", "On")
+                : safeT(t, "settings.toggleOff", "Off")}
+            </Toggle>
           </Field>
 
           <Field label={t("settings.backgroundColor")}>
@@ -449,14 +512,16 @@ export function SettingsPanel() {
           </Field>
 
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            Style changes above apply to all {multiSelectedNodes.length} selected nodes at once.
+            {safeT(t, "settings.multiStyleNote", "Style changes above apply to all {count} selected nodes at once.", {
+              count: multiSelectedNodes.length,
+            })}
           </p>
         </div>
       </Shell>
     );
   }
 
-  // ─── Multi-edge settings (group style editing) ───────────────────────
+  // ── Multi-edge settings (group style editing) ────────────────────────────
   if (isMultiEdgeSelect) {
     const ids = multiSelectedEdges.map((e) => e.id);
     const first = multiSelectedEdges[0].data ?? {};
@@ -464,7 +529,7 @@ export function SettingsPanel() {
       <Shell>
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {multiSelectedEdges.length} edges selected
+            {safeT(t, "settings.multiEdgeHeader", "{count} edges selected", { count: multiSelectedEdges.length })}
           </h3>
           <div className="flex gap-1">
             <Button
@@ -472,7 +537,7 @@ export function SettingsPanel() {
               size="icon-sm"
               onClick={() => resetEdgesToDefault(ids)}
               className={cn(ACTION_BTN, "hover:text-primary")}
-              title="Reset all to default"
+              title={safeT(t, "settings.resetAllToDefault", "Reset all to default")}
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
@@ -509,7 +574,7 @@ export function SettingsPanel() {
             />
           </Field>
 
-          <Field label="Arrowheads">
+          <Field label={safeT(t, "settings.arrowheads", "Arrowheads")}>
             <div className="flex gap-2">
               <Toggle
                 size="sm"
@@ -517,7 +582,7 @@ export function SettingsPanel() {
                 pressed={first.arrowStart ?? false}
                 onPressedChange={(v) => updateEdgesData(ids, { arrowStart: v })}
               >
-                Start
+                {safeT(t, "settings.arrowStart", "Start")}
               </Toggle>
               <Toggle
                 size="sm"
@@ -525,7 +590,7 @@ export function SettingsPanel() {
                 pressed={first.arrowEnd ?? true}
                 onPressedChange={(v) => updateEdgesData(ids, { arrowEnd: v })}
               >
-                End
+                {safeT(t, "settings.arrowEnd", "End")}
               </Toggle>
             </div>
           </Field>
@@ -537,22 +602,42 @@ export function SettingsPanel() {
               pressed={first.animated ?? false}
               onPressedChange={(v) => updateEdgesData(ids, { animated: v })}
             >
-              {first.animated ? "On" : "Off"}
+              {(first.animated ?? false) ? safeT(t, "settings.toggleOn", "On") : safeT(t, "settings.toggleOff", "Off")}
             </Toggle>
           </Field>
 
           <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-            Style changes above apply to all {multiSelectedEdges.length} selected edges at once.
+            {safeT(t, "settings.multiStyleNoteEdges", "Style changes above apply to all {count} selected edges at once.", {
+              count: multiSelectedEdges.length,
+            })}
           </p>
         </div>
       </Shell>
     );
   }
 
-  // ─── Node settings ────────────────────────────────────────────────────
+  // ── Node settings ──────────────────────────────────────────────────────────
   if (selectedNode) {
     const data = selectedNode.data;
     const isGroup = selectedNode.type === "groupNode";
+    const isVesselNode = [
+      "vesselRootNode",
+      "shellNode",
+      "headNode",
+      "nozzleNode",
+      "supportNode",
+      "attachmentsNode",
+      "outputHubNode",
+      "mistEliminatorNode",
+      "internalsNode",
+      "projectDataNode",
+      "generalDataNode",
+      "jacketNode",
+      "regenVacuumSteamoutNode",
+      "surfacePrepNode",
+      "mtoNode",
+    ].includes(selectedNode.type ?? "");
+
     // Types rendered with their own custom UI (not ShapeCanvas/SVG) — font
     // size/weight and border width/style/radius controls don't apply to them.
     const isNonShape = [
@@ -569,13 +654,28 @@ export function SettingsPanel() {
       "excelNode",
       "matrixNode",
       "chartNode",
+      "vesselRootNode",
+      "shellNode",
+      "headNode",
+      "nozzleNode",
+      "supportNode",
+      "attachmentsNode",
+      "outputHubNode",
+      "mistEliminatorNode",
+      "internalsNode",
+      "projectDataNode",
+      "generalDataNode",
+      "jacketNode",
+      "regenVacuumSteamoutNode",
+      "surfacePrepNode",
+      "mtoNode",
     ].includes(
       selectedNode.type ?? "",
     );
     return (
       <aside className="flex h-full w-72 flex-col overflow-hidden border-s border-border bg-background">
         <PanelHeader
-          title={isGroup ? "Sub-flow settings" : t("settings.nodeSettings")}
+          title={isGroup ? safeT(t, "settings.subflowSettings", "Sub-flow settings") : t("settings.nodeSettings")}
           showDuplicate={!isGroup}
           onDuplicate={duplicateSelected}
           onDelete={deleteSelected}
@@ -585,36 +685,9 @@ export function SettingsPanel() {
         />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Category rail — vertical, alongside the fields column (not a
-              horizontal tab row above them). */}
-          {!isGroup && !isNonShape && (
-            <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-e border-border bg-muted/30 py-3">
-              {(
-                [
-                  { key: "content", icon: FileText, label: safeT(t, "settings.tabContent", "Content") },
-                  { key: "style", icon: Palette, label: safeT(t, "settings.tabStyle", "Style") },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setNodeSettingsTab(tab.key)}
-                  title={tab.label}
-                  className={cn(
-                    "flex size-8 items-center justify-center rounded-md transition-colors",
-                    nodeSettingsTab === tab.key
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
-                  )}
-                >
-                  <tab.icon className="size-4" />
-                </button>
-              ))}
-            </div>
-          )}
-
           <div className="flex-1 overflow-y-auto p-4">
-          {(isGroup || isNonShape || nodeSettingsTab === "content") && (
-          <Field label={isGroup ? "Sub-flow name" : t("settings.label")}>
+          {(!isVesselNode && (isGroup || isNonShape || nodeSettingsTab === "content")) && (
+          <Field label={isGroup ? safeT(t, "settings.subflowName", "Sub-flow name") : t("settings.label")}>
             <div className="flex items-start gap-1.5">
               <Textarea
                 ref={nodeLabelRef}
@@ -635,7 +708,7 @@ export function SettingsPanel() {
                   checked={!!data.isRichText}
                   onCheckedChange={(v) => updateNodeData(selectedNode.id, { isRichText: !!v })}
                 />
-                Render label as HTML (rich text)
+                {safeT(t, "settings.renderAsHtml", "Render label as HTML (rich text)")}
               </label>
             )}
           </Field>
@@ -643,7 +716,7 @@ export function SettingsPanel() {
 
           {/* Link — opens on click of the badge shown on the node, or on
               double-clicking the node itself (see components/nodes/BaseNode.tsx) */}
-          {!isNonShape && nodeSettingsTab === "content" && (
+          {(!isNonShape || isVesselNode) && nodeSettingsTab === "content" && (
             <Field label={t("settings.link")}>
               <div className="flex items-center gap-1.5">
                 <Input
@@ -668,7 +741,7 @@ export function SettingsPanel() {
             </Field>
           )}
 
-          {(isGroup || isNonShape || nodeSettingsTab === "style") && (
+          {(isGroup || (isNonShape && !isVesselNode) || nodeSettingsTab === "style") && (
           <Field label={safeT(t, "settings.size", "Size")}>
             <div className="flex items-center gap-2">
               <Input
@@ -692,7 +765,23 @@ export function SettingsPanel() {
           </Field>
           )}
 
-          {(isGroup || isNonShape || nodeSettingsTab === "style") && (
+          {/* Aspect-ratio lock — defaults ON (locked). Applies to any
+              resizable shape node; when on, dragging any corner/edge handle
+              preserves the current width:height ratio (see BaseNode.tsx's
+              CornerResizer + ShapeCanvas). */}
+          {!isNonShape && (isGroup ? false : (nodeSettingsTab === "style")) && (
+            <Field label={safeT(t, "settings.lockAspectRatio", "Lock aspect ratio")}>
+              <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Checkbox
+                  checked={data.aspectRatioLocked ?? true}
+                  onCheckedChange={(v) => updateNodeData(selectedNode.id, { aspectRatioLocked: !!v })}
+                />
+                {safeT(t, "settings.lockAspectRatioHint", "Resizing keeps the current width:height ratio")}
+              </label>
+            </Field>
+          )}
+
+          {(isGroup || (isNonShape && !isVesselNode) || nodeSettingsTab === "style") && (
           <Field label={t("settings.backgroundColor")}>
             <NodeColorTokenRow
               value={data.colorToken}
@@ -758,6 +847,20 @@ export function SettingsPanel() {
                   className="w-full"
                 />
               </Field>
+
+              {/* Change shape — swaps this single node's rendered shape while
+                  keeping label/color/size/connections intact. Only offered
+                  for plain, non-computational shapes (see SIMPLE_SHAPE_TYPES). */}
+              {SIMPLE_SHAPE_TYPES.includes(selectedNode.type as DiagramNodeType) && (
+                <Field label={safeT(t, "settings.changeShape", "Change shape to")}>
+                  <Combobox
+                    options={SIMPLE_SHAPE_TYPES.map((ty) => ({ value: ty, label: safeT(t, `nodes.${ty}`, ty) }))}
+                    value=""
+                    onChange={(v) => v && changeNodesShape([selectedNode.id], v as DiagramNodeType)}
+                    placeholder={safeT(t, "settings.shape", "Shape...")}
+                  />
+                </Field>
+              )}
             </>
           )}
 
@@ -790,18 +893,105 @@ export function SettingsPanel() {
 
           {isGroup && (
             <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-              Drag any node onto this sub-flow to group it inside. Drag it back
-              out to remove it from the group. Deleting the sub-flow ungroups
-              its contents instead of removing them.
+              {safeT(
+                t,
+                "settings.subflowHint",
+                "Drag any node onto this sub-flow to group it inside. Drag it back out to remove it from the group. Deleting the sub-flow ungroups its contents instead of removing them.",
+              )}
             </p>
           )}
+
+          {isVesselNode && (
+            <>
+              <div className="mt-4 mb-2">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-foreground">{tv("nodeHandles")}</h4>
+              </div>
+              
+              <Field label={`${tv("sourceHandles")}: ${data.vesselHandlesConfig?.sourceCount ?? 1}`}>
+                <Slider
+                  min={0}
+                  max={10}
+                  value={[data.vesselHandlesConfig?.sourceCount ?? 1]}
+                  onValueChange={(v) => {
+                    updateNodeData(selectedNode.id, { 
+                      vesselHandlesConfig: { ...(data.vesselHandlesConfig || { targetCount: 1, positionMode: 'left-right' }), sourceCount: v[0] } 
+                    });
+                    requestAnimationFrame(() => updateNodeInternals(selectedNode.id));
+                  }}
+                  className="w-full"
+                />
+              </Field>
+
+              <Field label={`${tv("targetHandles")}: ${data.vesselHandlesConfig?.targetCount ?? 1}`}>
+                <Slider
+                  min={0}
+                  max={10}
+                  value={[data.vesselHandlesConfig?.targetCount ?? 1]}
+                  onValueChange={(v) => {
+                    updateNodeData(selectedNode.id, { 
+                      vesselHandlesConfig: { ...(data.vesselHandlesConfig || { sourceCount: 1, positionMode: 'left-right' }), targetCount: v[0] } 
+                    });
+                    requestAnimationFrame(() => updateNodeInternals(selectedNode.id));
+                  }}
+                  className="w-full"
+                />
+              </Field>
+
+              <Field label={tv("handlePosition")}>
+                <Combobox
+                  value={data.vesselHandlesConfig?.positionMode ?? "left-right"}
+                  onChange={(v) => {
+                    updateNodeData(selectedNode.id, { 
+                      vesselHandlesConfig: { ...(data.vesselHandlesConfig || { sourceCount: 1, targetCount: 1 }), positionMode: v as any } 
+                    });
+                    requestAnimationFrame(() => updateNodeInternals(selectedNode.id));
+                  }}
+                  options={[
+                    { value: "left-right", label: tv("pos_left_right") },
+                    { value: "right-left", label: tv("pos_right_left") },
+                    { value: "top-bottom", label: tv("pos_top_bottom") },
+                    { value: "bottom-top", label: tv("pos_bottom_top") },
+                  ]}
+                  placeholder={tv("selectPosition")}
+                />
+              </Field>
+            </>
+          )}
           </div>
+
+          {/* Category rail — moved to the END (right) edge of the panel, so
+              it sits on the outer side away from the canvas regardless of
+              locale direction; kept vertical, alongside the fields column. */}
+          {!isGroup && !isNonShape && (
+            <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-s border-border bg-muted/30 py-3">
+              {(
+                [
+                  { key: "content", icon: FileText, label: safeT(t, "settings.tabContent", "Content") },
+                  { key: "style", icon: Palette, label: safeT(t, "settings.tabStyle", "Style") },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setNodeSettingsTab(tab.key)}
+                  title={tab.label}
+                  className={cn(
+                    "flex size-8 items-center justify-center rounded-md transition-colors",
+                    nodeSettingsTab === tab.key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <tab.icon className="size-4" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </aside>
     );
   }
 
-  // ─── Edge settings ────────────────────────────────────────────────────
+  // ── Edge settings ──────────────────────────────────────────────────────────
   if (selectedEdge) {
     const data = selectedEdge.data ?? {};
     return (
@@ -862,7 +1052,7 @@ export function SettingsPanel() {
 
           {/* Arrowheads — toggle start/end markers independently.
               Uses the project's existing shadcn Toggle component. */}
-          <Field label="Arrowheads">
+          <Field label={safeT(t, "settings.arrowheads", "Arrowheads")}>
             <div className="flex gap-2">
               <Toggle
                 size="sm"
@@ -870,7 +1060,7 @@ export function SettingsPanel() {
                 pressed={data.arrowStart ?? false}
                 onPressedChange={(v) => updateEdgeData(selectedEdge.id, { arrowStart: v })}
               >
-                Start
+                {safeT(t, "settings.arrowStart", "Start")}
               </Toggle>
               <Toggle
                 size="sm"
@@ -878,7 +1068,7 @@ export function SettingsPanel() {
                 pressed={data.arrowEnd ?? true}
                 onPressedChange={(v) => updateEdgeData(selectedEdge.id, { arrowEnd: v })}
               >
-                End
+                {safeT(t, "settings.arrowEnd", "End")}
               </Toggle>
             </div>
           </Field>
@@ -892,7 +1082,7 @@ export function SettingsPanel() {
               pressed={!!data.animated}
               onPressedChange={(v) => updateEdgeData(selectedEdge.id, { animated: v })}
             >
-              {data.animated ? "On" : "Off"}
+              {data.animated ? safeT(t, "settings.toggleOn", "On") : safeT(t, "settings.toggleOff", "Off")}
             </Toggle>
           </Field>
         </div>

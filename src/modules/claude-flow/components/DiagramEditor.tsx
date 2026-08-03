@@ -9,11 +9,21 @@ import { SettingsPanel } from "./SettingsPanel";
 import { DiagramCanvas } from "./DiagramCanvas";
 import { NewDiagramDialog, DiagramLibraryDialog } from "./Dialogs";
 import { EditorSettingsDialog } from "./EditorSettingsDialog";
-import { Check } from "lucide-react";
+import { Check, Home } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/navigation";
 
-// â”€â”€ Transient save-confirmation toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+/** Falls back to plain English if a `Flow.<key>` translation is missing yet. */
+function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
+  try {
+    return t(key);
+  } catch {
+    return fallback;
+  }
+}
+
+// ── Transient save-confirmation toast ─────────────────────────────────────────
 // Rendered at the bottom-center of the viewport; invisible when message is null.
 function Toast({ message }: { message: string | null }) {
   if (!message) return null;
@@ -137,6 +147,23 @@ function EditorShell() {
       className="flex h-full w-full flex-col overflow-hidden bg-background"
       dir={dir}
     >
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+        <div className="flex shrink-0 select-none items-baseline gap-1.5">
+          <span className="text-sm font-medium tracking-tight text-foreground">
+            {safeT(t, "header.title", "ESP-Flow")}
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            {safeT(t, "header.version", "V26")}
+          </span>
+        </div>
+        <Link
+          href="/"
+          title={safeT(t, "toolbar.home", "Home")}
+          className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <Home className="size-3.5" />
+        </Link>
+      </div>
       <Toolbar
         onOpenLibrary={() => setShowLibraryDialog(true)}
         onOpenNew={() => setShowNewDialog(true)}

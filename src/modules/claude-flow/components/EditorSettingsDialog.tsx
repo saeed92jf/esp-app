@@ -22,9 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Combobox } from "@/components/ui-custom/combobox";
 
-// ── Local sub-components ──────────────────────────────────────────────────
+// ── Local sub-components ────────────────────────────────────────────────
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -81,7 +80,11 @@ const SHORTCUT_KEYS = [
   { labelKey: "fitView", combo: "Right-click → Fit view" },
 ] as const;
 
-// ── EditorSettingsDialog ───────────────────────────────────────────────────
+// ── EditorSettingsDialog ─────────────────────────────────────────────────
+// NOTE: the "default connection style" control below intentionally uses the
+// project's plain <Select> component (a simple dropdown), NOT the searchable
+// <Combobox> — there are only 6 fixed options and this is the canvas-wide
+// settings dialog, so a search box adds friction without adding value.
 export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const settings = useDiagramStore((s) => s.settings);
@@ -158,13 +161,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             {/* Behavior */}
             <SectionTitle>{t("editorSettings.behavior")}</SectionTitle>
             <Row label={t("editorSettings.defaultEdgeType")}>
-              <Combobox
-                options={edgeTypeOptions}
-                value={settings.defaultEdgeType}
-                onChange={(v) => set("defaultEdgeType", v as DiagramEdgeType)}
-                placeholder={t("settings.edgeType")}
-                className="w-56"
-              />
+              <Select value={settings.defaultEdgeType} onValueChange={(v: DiagramEdgeType) => set("defaultEdgeType", v)}>
+                <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {edgeTypeOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Row>
             <Row label={t("editorSettings.autoSave")}>
               <Switch checked={settings.autoSave} onCheckedChange={(v) => set("autoSave", v)} />

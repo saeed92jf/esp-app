@@ -1,5 +1,5 @@
-// src/services/dashboard.service.ts
-import type { HttpClient } from './core/http';
+// src/modules/dashboard/services/dashboard.service.ts
+import type { HttpClient } from '@/services/core/http';
 import type { UserRole } from '@/types/auth';
 
 // ─── Types (از fake-dashboard.ts استخراج شد) ─────────────────────────────────

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { Check, Monitor, Moon, Sun } from 'lucide-react';
+import { Check, Monitor, Moon, Sun, Palette } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { PRIMARY_COLORS } from '@/config/settings';
@@ -38,61 +38,67 @@ export function SettingsSection() {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="space-y-3 px-4 py-3">
-      {/* ---- Section label ---- */}
-      <p className="text-muted-foreground text-xs font-medium">{t('title')}</p>
-
+    <div className="space-y-3">
       {/* ---- Theme switcher: segmented control ---- */}
-      <div className="bg-muted/60 flex gap-1 rounded-lg p-1">
-        {THEME_OPTIONS.map((opt) => {
-          const Icon = opt.icon;
-          const active = mounted && theme === opt.value;
-          return (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => setTheme(opt.value)}
-              aria-pressed={active}
-              className={cn(
-                'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
-                active
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              <Icon className="size-4" />
-              <span>{t(opt.labelKey)}</span>
-            </button>
-          );
-        })}
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-medium text-muted-foreground">{t('theme')}</p>
+        <div className="bg-background/80 dark:bg-background/40 border border-border/50 flex gap-1 rounded-lg p-1">
+          {THEME_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            const active = mounted && theme === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setTheme(opt.value)}
+                aria-pressed={active}
+                className={cn(
+                  'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+                  active
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                )}
+              >
+                <Icon className="size-3.5" />
+                <span>{t(opt.labelKey)}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ---- Primary color swatches ---- */}
-      <div className="flex items-center gap-2">
-        {PRIMARY_COLORS.map((preset) => {
-          const active = colorId === preset.id;
-          return (
-            <button
-              key={preset.id}
-              type="button"
-              onClick={() => setColor(preset.id)}
-              aria-pressed={active}
-              aria-label={tColors(preset.labelKey)}
-              title={tColors(preset.labelKey)}
-              // Inline HSL preview keeps the swatch in sync with the token.
-              style={{ backgroundColor: `hsl(${preset.hsl})` }}
-              className={cn(
-                'ring-offset-background relative flex size-7 items-center justify-center rounded-full transition-transform hover:scale-110',
-                active && 'ring-ring ring-2 ring-offset-2',
-              )}
-            >
-              {active ? (
-                <Check className="size-4 text-white" strokeWidth={3} />
-              ) : null}
-            </button>
-          );
-        })}
+      <div className="space-y-1.5 pt-1">
+        <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+          <Palette className="size-3" />
+          <span>{t('color')}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2 px-1">
+          {PRIMARY_COLORS.map((preset) => {
+            const active = colorId === preset.id;
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => setColor(preset.id)}
+                aria-pressed={active}
+                aria-label={tColors(preset.labelKey)}
+                title={tColors(preset.labelKey)}
+                style={{ backgroundColor: preset.hex }}
+                className={cn(
+                  'ring-offset-background relative flex size-7 items-center justify-center rounded-full transition-all hover:scale-110 shadow-xs',
+                  active && 'ring-ring ring-2 ring-offset-2 scale-105',
+                )}
+              >
+                {active ? (
+                  <Check className="size-3.5 text-white drop-shadow-xs" strokeWidth={3} />
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
+

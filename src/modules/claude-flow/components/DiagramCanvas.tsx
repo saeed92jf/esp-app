@@ -170,9 +170,71 @@ const THEME_CSS = `
 /* Toolbar's "hide/show all handles" toggle — one global CSS switch instead of
    touching every node's own data, so it's instant and can't fall out of sync. */
 .cf-theme.hide-all-handles .react-flow__handle {
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
+.cf-theme .react-flow__handle {
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: crosshair;
+  transform-origin: center center;
+}
+
+/* Precise centering for Top handles */
+.cf-theme .react-flow__handle-top {
+  transform: translate(-50%, -50%) !important;
+}
+.cf-theme .react-flow__handle-top:hover {
+  transform: translate(-50%, -50%) scale(1.25) !important;
+}
+.cf-theme .react-flow__handle-top.cf-handle-diamond {
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+}
+.cf-theme .react-flow__handle-top.cf-handle-diamond:hover {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.25) !important;
+}
+
+/* Precise centering for Bottom handles */
+.cf-theme .react-flow__handle-bottom {
+  transform: translate(-50%, 50%) !important;
+}
+.cf-theme .react-flow__handle-bottom:hover {
+  transform: translate(-50%, 50%) scale(1.25) !important;
+}
+.cf-theme .react-flow__handle-bottom.cf-handle-diamond {
+  transform: translate(-50%, 50%) rotate(45deg) !important;
+}
+.cf-theme .react-flow__handle-bottom.cf-handle-diamond:hover {
+  transform: translate(-50%, 50%) rotate(45deg) scale(1.25) !important;
+}
+
+/* Precise centering for Left handles */
+.cf-theme .react-flow__handle-left {
+  transform: translate(-50%, -50%) !important;
+}
+.cf-theme .react-flow__handle-left:hover {
+  transform: translate(-50%, -50%) scale(1.25) !important;
+}
+.cf-theme .react-flow__handle-left.cf-handle-diamond {
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+}
+.cf-theme .react-flow__handle-left.cf-handle-diamond:hover {
+  transform: translate(-50%, -50%) rotate(45deg) scale(1.25) !important;
+}
+
+/* Precise centering for Right handles */
+.cf-theme .react-flow__handle-right {
+  transform: translate(50%, -50%) !important;
+}
+.cf-theme .react-flow__handle-right:hover {
+  transform: translate(50%, -50%) scale(1.25) !important;
+}
+.cf-theme .react-flow__handle-right.cf-handle-diamond {
+  transform: translate(50%, -50%) rotate(45deg) !important;
+}
+.cf-theme .react-flow__handle-right.cf-handle-diamond:hover {
+  transform: translate(50%, -50%) rotate(45deg) scale(1.25) !important;
+}
+
 .cf-theme .react-flow__handle.valid {
   background-color: #22c55e !important;
   border-color: #16a34a !important;

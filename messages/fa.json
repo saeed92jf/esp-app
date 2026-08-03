@@ -229,16 +229,18 @@
     "escape": "Esc برای پاک کردن"
   },
   "Settings": {
-    "title": "ظاهر",
+    "title": "ظاهر و پوسته",
+    "theme": "پوسته",
+    "color": "رنگ شاخص",
+    "language": "زبان سیستم",
     "light": "روشن",
     "dark": "تیره",
     "system": "سیستم",
     "colors": {
-      "blue": "آبی",
-      "green": "سبز",
       "red": "قرمز",
-      "orange": "نارنجی",
-      "purple": "بنفش"
+      "pink": "صورتی",
+      "purple": "بنفش",
+      "green": "سبز"
     }
   },
   "Dashboard": {

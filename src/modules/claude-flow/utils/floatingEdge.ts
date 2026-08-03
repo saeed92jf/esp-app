@@ -13,6 +13,14 @@
 // outline as a polygon that matches its actual rendered shape (see
 // nodePolygon below) and intersect a ray against THAT instead — this is
 // what makes the edge actually touch the shape you see, not its box.
+//
+// Rotation: textNode and imageNode can be rotated by the user (see
+// components/nodes/RotateHandle.tsx). Their VISIBLE outline is the
+// unrotated polygon rotated by data.rotation degrees around the node's own
+// center. Previously the intersection ray was cast against the unrotated
+// polygon regardless of rotation, so a rotated node's edge sometimes landed
+// short of (or past) the shape actually on screen. We rotate the polygon
+// to match before intersecting.
 // ─────────────────────────────────────────────────────────────────────────
 
 import { Position, type InternalNode } from "@xyflow/react";
@@ -118,6 +126,25 @@ function nodePolygon(type: string | undefined, w: number, h: number): Point[] {
   }
 }
 
+/** Rotates a point around a center by `deg` degrees (matches the CSS
+ *  `transform: rotate(deg)` applied to rotatable node shells). */
+function rotatePoint(p: Point, center: Point, deg: number): Point {
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+  const dx = p.x - center.x;
+  const dy = p.y - center.y;
+  return {
+    x: center.x + dx * cos - dy * sin,
+    y: center.y + dx * sin + dy * cos,
+  };
+}
+
+/** Node types that can carry a data.rotation and are rendered rotated
+ *  (see components/nodes/BaseNode.tsx: ShapeCanvas's `rotatable` prop and
+ *  ImageNode's own rotation transform). */
+const ROTATABLE_TYPES = new Set(["textNode", "imageNode", "svgNode"]);
+
 /** Ray (from c toward t, both in absolute coords) vs. one polygon edge segment (a→b). */
 function raySegmentIntersection(c: Point, t: Point, a: Point, b: Point): (Point & { t: number }) | null {
   const rdx = t.x - c.x;
@@ -164,7 +191,15 @@ function getNodeIntersection(intersectionNode: InternalNode, targetNode: Interna
   if (w === 0 || h === 0) return center; // not measured yet — fall back gracefully
 
   const localPolygon = nodePolygon(intersectionNode.type, w, h);
-  const absPolygon = localPolygon.map((p) => ({ x: p.x + origin.x, y: p.y + origin.y }));
+  let absPolygon = localPolygon.map((p) => ({ x: p.x + origin.x, y: p.y + origin.y }));
+
+  // Rotated nodes (text/image): rotate the polygon to match what's actually
+  // rendered on screen before intersecting, or the ray can land short of /
+  // past the visible shape.
+  const rotation = (intersectionNode.data as { rotation?: number } | undefined)?.rotation;
+  if (rotation && ROTATABLE_TYPES.has(intersectionNode.type ?? "")) {
+    absPolygon = absPolygon.map((p) => rotatePoint(p, center, rotation));
+  }
 
   return polygonRayIntersection(absPolygon, center, targetCenter);
 }

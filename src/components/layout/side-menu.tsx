@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Menu as MenuIcon, Search as SearchIcon } from "lucide-react";
+import { Globe, Menu as MenuIcon, Search as SearchIcon } from "lucide-react";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/accordion";
 
 import { SettingsSection } from "@/components/layout/settings-section";
-import { LocaleSwitcher } from "@/components/locale-switcher";
+import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 export function SideMenu() {
   const locale = useLocale();
@@ -37,6 +37,7 @@ export function SideMenu() {
   const tMenu = useTranslations("Menu");
   const tSections = useTranslations("Menu.sections");
   const tItems = useTranslations("Menu.items");
+  const tSettings = useTranslations("Settings");
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -73,9 +74,20 @@ export function SideMenu() {
     [pathname],
   );
 
-  const openGroups = query.trim()
-    ? filteredNav.map((g) => g.id)
-    : activeRouteGroups;
+  const [openGroup, setOpenGroup] = useState<string | undefined>(
+    () => activeRouteGroups[0] || (filteredNav[0]?.id ?? undefined),
+  );
+
+  // Sync active group when pathname or search query changes
+  useEffect(() => {
+    if (query.trim()) {
+      if (filteredNav.length > 0) {
+        setOpenGroup(filteredNav[0].id);
+      }
+    } else if (activeRouteGroups.length > 0) {
+      setOpenGroup(activeRouteGroups[0]);
+    }
+  }, [query, filteredNav, activeRouteGroups]);
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next);
@@ -115,9 +127,10 @@ export function SideMenu() {
 
         <nav className="flex-1 overflow-y-auto px-2 py-2">
           <Accordion
-            type="multiple"
-            key={`${query}|${openGroups.join("|")}`}
-            defaultValue={openGroups}
+            type="single"
+            collapsible
+            value={openGroup}
+            onValueChange={setOpenGroup}
             className="space-y-1"
           >
             {filteredNav.map((group) => {
@@ -136,7 +149,7 @@ export function SideMenu() {
                     </span>
                   </AccordionTrigger>
 
-                  <AccordionContent className="mx-2 pt-0 pb-2">
+                  <AccordionContent className="mx-2 pt-0 pb-2 [&_a]:no-underline">
                     {/* NORMAL NAV ITEMS */}
                     {!group.custom && (
                       <ul className="space-y-1 ms-4">
@@ -150,7 +163,7 @@ export function SideMenu() {
                                 href={item.href}
                                 onClick={() => handleOpenChange(false)}
                                 className={cn(
-                                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm",
+                                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline",
                                   isActive
                                     ? "bg-primary/10 text-primary font-medium"
                                     : "bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -169,11 +182,24 @@ export function SideMenu() {
 
                     {/* SETTINGS CUSTOM CONTENT */}
                     {group.custom === "settings" && (
-                      <div className="ms-4 space-y-4 px-3 py-2">
-                        <SettingsSection />
-                        <LocaleSwitcher
-                          onLocaleChange={() => handleOpenChange(false)}
-                        />
+                      <div className="space-y-3 px-1 py-2">
+                        {/* 1. Theme and Color Card */}
+                        <div className="rounded-xl bg-muted/40 p-3 border border-border/50">
+                          <SettingsSection />
+                        </div>
+
+                        {/* 2. Language Card */}
+                        <div className="rounded-xl bg-muted/40 p-3 border border-border/50 space-y-2">
+                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                            <Globe className="size-3.5" />
+                            <span>{tSettings("language")}</span>
+                          </div>
+                          <LocaleSwitcher
+                            onLocaleChange={() => handleOpenChange(false)}
+                            showIcon={false}
+                            className="w-full"
+                          />
+                        </div>
                       </div>
                     )}
                   </AccordionContent>
@@ -190,3 +216,4 @@ export function SideMenu() {
     </Sheet>
   );
 }
+

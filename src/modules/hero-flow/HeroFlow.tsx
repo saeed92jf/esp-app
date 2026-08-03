@@ -24,6 +24,7 @@ import { ZoomNode } from "./nodes/ZoomNode";
 import { OutputNode } from "./nodes/OutputNode";
 import { FLOW_THEME, type ShapeType } from "./types";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/navigation";
 
 const nodeTypes = {
   colorNode: ColorNode,
@@ -317,7 +318,7 @@ export function HeroFlow() {
                 className="rounded-full text-white shadow-md transition-all duration-300 hover:shadow-lg"
                 style={{ backgroundColor: "var(--theme)" }} 
               >
-                <a href="/ESP-Flow" className="flex items-center gap-2 px-4">
+                <Link href="/ESP-Flow" className="flex items-center gap-2 px-4">
                   {t("tryNow")}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -335,7 +336,7 @@ export function HeroFlow() {
                       clipRule="evenodd"
                     />
                   </svg>
-                </a>
+                </Link>
               </Button>
             </div>
           </div>
