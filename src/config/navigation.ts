@@ -156,6 +156,7 @@ export interface NavItem {
   color?: NavColor;
   public?: boolean;
   welcome?: boolean;
+  free?: boolean;
 }
 
 /**
@@ -334,6 +335,7 @@ export const NAVIGATION: NavGroup[] = [
         color: "orange",
         public: true,
         welcome: true,
+        free: true,
       },
       {
         labelKey: "videos",
@@ -342,6 +344,7 @@ export const NAVIGATION: NavGroup[] = [
         color: "rose",
         public: true,
         welcome: true,
+        free: true,
       },
       {
         labelKey: "audio",
@@ -350,6 +353,7 @@ export const NAVIGATION: NavGroup[] = [
         color: "violet",
         public: true,
         welcome: true,
+        free: true,
       },
       {
         labelKey: "mediaLibrary",
@@ -358,6 +362,7 @@ export const NAVIGATION: NavGroup[] = [
         color: "amber",
         public: true,
         welcome: true,
+        free: false,
       },
       {
         labelKey: "ESP-Flow",
@@ -366,6 +371,7 @@ export const NAVIGATION: NavGroup[] = [
         color: "cyan",
         public: true,
         welcome: true,
+        free: false,
       },
       {
         labelKey: "Weight-Flow",
@@ -374,16 +380,9 @@ export const NAVIGATION: NavGroup[] = [
         color: "cyan",
         public: true,
         welcome: true,
+        free: false,
       },
     ],
-  },
-  {
-    id: "settings",
-    labelKey: "settings",
-    icon: Settings,
-    color: "slate",
-    custom: "settings",
-    items: [],
   },
 ];
 

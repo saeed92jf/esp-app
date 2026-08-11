@@ -1,8 +1,6 @@
 // src/hooks/use-quick-access.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// نسخه جدید — منطق UI همان قبلی است، اما ذخیره/بازیابی از طریق
-// api.preferences انجام می‌شود (نه مستقیم localStorage). این یعنی وقتی
-// API_MODE=real شود، quick-access خودکار روی سرور sync می‌شود.
+// Hook for managing Google-style quick access shortcuts with preferences sync
 
 'use client';
 
@@ -10,35 +8,39 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/services';
 import { NAVIGATION, type NavItem } from '@/config/navigation';
 
-export const QUICK_ACCESS_MAX = 5;
-
-const DEFAULT_HREFS: string[] = NAVIGATION.flatMap((g) => g.items.slice(0, 1))
-  .slice(0, QUICK_ACCESS_MAX)
-  .map((item) => item.href);
+export const QUICK_ACCESS_MAX = 8;
 
 export const ALL_SELECTABLE_ITEMS: NavItem[] = NAVIGATION.filter(
   (g) => g.id !== 'settings' && g.items.length > 0,
 ).flatMap((g) => g.items);
 
+const DEFAULT_HREFS: string[] = ALL_SELECTABLE_ITEMS.slice(0, 5).map(
+  (item) => item.href,
+);
+
 export function useQuickAccess() {
   const [selectedHrefs, setSelectedHrefs] = useState<string[]>(DEFAULT_HREFS);
   const [hydrated, setHydrated] = useState(false);
-  const skipNextSave = useRef(true); // جلوگیری از save بلافاصله بعد از load اولیه
+  const skipNextSave = useRef(true);
 
-  // بارگذاری اولیه از سرویس preferences
+  // Initial load from preferences service
   useEffect(() => {
     let cancelled = false;
     api.preferences.get().then((prefs) => {
       if (cancelled) return;
-      setSelectedHrefs(
-        prefs.quickAccessHrefs.length > 0 ? prefs.quickAccessHrefs : DEFAULT_HREFS,
-      );
+      if (prefs.quickAccessHrefs && prefs.quickAccessHrefs.length > 0) {
+        setSelectedHrefs(prefs.quickAccessHrefs.slice(0, QUICK_ACCESS_MAX));
+      } else {
+        setSelectedHrefs(DEFAULT_HREFS);
+      }
       setHydrated(true);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  // ذخیره با هر تغییر (به‌جز بار اول)
+  // Save on change (except first load)
   useEffect(() => {
     if (!hydrated) return;
     if (skipNextSave.current) {
@@ -60,10 +62,31 @@ export function useQuickAccess() {
     });
   }, []);
 
+  const removeShortcut = useCallback((href: string) => {
+    setSelectedHrefs((prev) => prev.filter((h) => h !== href));
+  }, []);
+
+  const addShortcut = useCallback((href: string) => {
+    setSelectedHrefs((prev) => {
+      if (prev.includes(href) || prev.length >= QUICK_ACCESS_MAX) return prev;
+      return [...prev, href];
+    });
+  }, []);
+
   const reset = useCallback(() => setSelectedHrefs(DEFAULT_HREFS), []);
 
   const isFull = selectedHrefs.length >= QUICK_ACCESS_MAX;
   const isSelected = (href: string) => selectedHrefs.includes(href);
 
-  return { items, selectedHrefs, toggle, reset, isFull, isSelected, hydrated };
+  return {
+    items,
+    selectedHrefs,
+    toggle,
+    removeShortcut,
+    addShortcut,
+    reset,
+    isFull,
+    isSelected,
+    hydrated,
+  };
 }

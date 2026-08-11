@@ -10,12 +10,17 @@
       "searchPlaceholder": "جستجو کنید: «CRM»، «پروژه‌ها»، «فاکتورها»..."
     },
     "quickAccess": {
-      "customize": "شخصی‌سازی",
+      "customize": "شخصی‌سازی میانبرها",
       "customizeLabel": "انتخاب دسترسی سریع",
-      "customizeHint": "{selected} از {max} آیتم انتخاب شده",
-      "capReached": "حداکثر {max} آیتم قابل انتخاب است",
+      "customizeHint": "{selected} از {max} میانبر انتخاب شده",
+      "capReached": "حداکثر {max} میانبر قابل انتخاب است",
       "reset": "بازگشت به پیش‌فرض",
-      "done": "تأیید"
+      "done": "تأیید",
+      "addShortcut": "افزودن میانبر",
+      "editShortcut": "ویرایش میانبر",
+      "removeShortcut": "حذف",
+      "cancel": "انصراف",
+      "save": "ذخیره"
     },
     "stats": {
       "clients": "مشتری راضی",

@@ -1,22 +1,13 @@
 // src/hooks/use-site-search.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// جایگزین import مستقیم NAV_SEARCH_SOURCE در site-search.tsx.
-//
-// رفتار بسته به API_MODE فرق می‌کند:
-//  • fake: تمام آیتم‌های ناوبری یک‌بار گرفته می‌شود، فیلتر کاملاً client-side
-//          و آنی است (همان تجربه فعلی، بدون تأخیر شبکه).
-//  • real: هر keystroke (با debounce) یک درخواست واقعی به api.search می‌زند،
-//          چون در real mode ممکن است نتایج از منابع دیگر (کاربران، اسناد، ...)
-//          هم بیایند که سمت کلاینت موجود نیستند.
-//
-// کامپوننت SiteSearch با این hook کار می‌کند و کاملاً بی‌خبر از API_MODE است.
+// Rich Bilingual Site Search Hook
 
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { api, API_MODE, type SearchResult } from '@/services';
-import { NAV_SEARCH_SOURCE, type NavSearchItem } from '@/lib/navigation-search';
+import { NAV_SEARCH_SOURCE, type NavSearchItem, getBilingualKeywords } from '@/lib/navigation-search';
 
 const DEBOUNCE_MS = 250;
 
@@ -24,15 +15,46 @@ export function useSiteSearchItems() {
   const tItems = useTranslations('Menu.items');
   const tSections = useTranslations('Menu.sections');
 
-  // ── حالت fake: همه آیتم‌ها را یک‌بار resolve می‌کنیم (ترجمه‌شده) ──────────
+  // Build items with rich bilingual keywords and descriptions
   const staticItems = useMemo<NavSearchItem[]>(
     () =>
-      NAV_SEARCH_SOURCE.map((entry) => ({
-        href: entry.href,
-        title: tItems(entry.labelKey),
-        section: tSections(entry.sectionLabelKey),
-        icon: entry.icon,
-      })),
+      NAV_SEARCH_SOURCE.map((entry) => {
+        let title = entry.labelKey;
+        try {
+          title = tItems(entry.labelKey);
+        } catch {
+          // fallback
+        }
+
+        let section = entry.sectionLabelKey;
+        try {
+          section = tSections(entry.sectionLabelKey);
+        } catch {
+          // fallback
+        }
+
+        const bilingual = getBilingualKeywords(entry.href);
+        const keywords = [
+          title,
+          section,
+          entry.href,
+          entry.labelKey,
+          ...(entry.keywordsEn || []),
+          ...(entry.keywordsFa || []),
+          ...(bilingual.en || []),
+          ...(bilingual.fa || []),
+        ];
+
+        return {
+          href: entry.href,
+          title,
+          section,
+          icon: entry.icon,
+          color: entry.color,
+          keywords,
+          description: bilingual.descriptionFa || bilingual.descriptionEn,
+        };
+      }),
     [tItems, tSections],
   );
 
@@ -40,8 +62,7 @@ export function useSiteSearchItems() {
 }
 
 /**
- * جستجوی واقعی برای real mode — debounce شده، با cancel خودکار.
- * فقط زمانی فراخوانی شود که API_MODE === 'real' باشد.
+ * Real mode remote search
  */
 export function useRemoteSearch(query: string) {
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -53,7 +74,7 @@ export function useRemoteSearch(query: string) {
     if (timerRef.current) clearTimeout(timerRef.current);
     abortRef.current?.abort();
 
-    if (query.trim().length < 2) {
+    if (query.trim().length < 1) {
       setResults([]);
       return;
     }

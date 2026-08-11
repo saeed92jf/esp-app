@@ -9,18 +9,35 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@theme {
+  /* Map standard sans font to our custom bilingual base font for Shadcn UI components */
+  --font-sans: var(--font-base);
+  
+  /* Provide utility classes for specific overrides */
+  --font-poppins: 'Poppins', system-ui, sans-serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-shabnam: 'Shabnam', system-ui, sans-serif;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
    BASE STYLES
    ============================================ */
 
+html[dir="rtl"] {
+  --font-base: 'Inter', 'Shabnam', system-ui, sans-serif;
+}
+
+html[dir="ltr"] {
+  --font-base: 'Inter', 'Shabnam', system-ui, sans-serif;
+}
+
 * {
-  transition-property: background-color, border-color, color, fill, stroke;
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
   color-scheme: light dark;
-  font-family: var(--font-english);
   direction: auto;
 }
 
@@ -33,12 +50,23 @@ html {
   min-width: 320px;
 }
 
+/* Force React Flow elements to respect the base font, overriding their internal hardcoded styles */
+.react-flow, .react-flow__node, .react-flow__pane {
+  font-family: var(--font-base) !important;
+}
+
 body {
   min-width: 320px;
-  overflow-x: auto;
-  direction: auto;
   overflow-x: clip;
+  direction: auto;
+  font-family: var(--font-base);
 }
+
+/* Ensure form controls inherit the global font normally */
+button, input, select, textarea {
+  font-family: var(--font-base);
+}
+
 @media (max-width: 320px) {
 }
 @utility container {
@@ -274,15 +302,15 @@ body {
   --sky-100: #e4f3fe;
   --sky-50: #e4f3fe;
 
-  --form: #e4f3fe;
-  --form-node: #e4f3fe;
+  --form: #f8fafc;
+  --form-node: #fbfcfe;
   --form-primary: #39436a;
   --form-primary-hover: #535a9a;
   --form-primary-foreground: #ffffff;
   --form-secondary: #535a9a;
   --form-accent: #7f60ff;
-  --form-border: #a4c4f4;
-  --form-muted: #cceaff;
+  --form-border: #d1d5db;
+  --form-muted: #f1f5f9;
   --foreground: oklch(0.148 0.004 228.8);
   --card: var(--form-node);
   --card-foreground: oklch(0.148 0.004 228.8);

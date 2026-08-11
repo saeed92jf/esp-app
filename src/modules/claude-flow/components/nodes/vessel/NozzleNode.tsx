@@ -429,7 +429,7 @@ export const NozzleNode = memo(({ id, data, selected }: Props) => {
 
                   <div className="text-[11px] text-muted-foreground pt-0.5 flex justify-between items-center">
                     <span>Flange Unit Weight:</span>
-                    <span className="text-foreground font-bold font-mono">
+                    <span className="text-foreground font-bold font-sans">
                       {nz.flangeUnitWeight ?? 25} kg
                     </span>
                   </div>

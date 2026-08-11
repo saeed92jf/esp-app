@@ -402,6 +402,13 @@ const PALETTE_ITEMS: PaletteItem[] = [
     defaultData: { label: "Surface Preparation" },
   },
   {
+    type: "materialListNode",
+    labelKey: "materialListNode",
+    icon: "fileSpreadsheet",
+    category: "weight",
+    defaultData: { label: "Material Specification Schedule" },
+  },
+  {
     type: "mtoNode",
     labelKey: "mtoNode",
     icon: "fileSpreadsheet",
@@ -507,6 +514,7 @@ const LABEL_FALLBACKS: Record<string, string> = {
   jacketNode: "Jacket",
   regenVacuumSteamoutNode: "Regen / Vacuum / Steam Out",
   surfacePrepNode: "Surface Preparation",
+  materialListNode: "Material Specification Schedule",
   mtoNode: "Material Take-Off (MTO)",
 };
 const CATEGORY_FALLBACKS: Record<PaletteCategory, string> = {

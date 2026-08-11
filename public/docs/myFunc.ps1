@@ -6,7 +6,7 @@
 $global:EspRoot      = 'D:\esp-app'
 $global:EspJobName   = 'esp-dev'
 $global:EspDevScript = 'dev:network'      # npm script that runall executes
-$global:EspPort      = 3000               # port the dev server listens on
+$global:EspPort      = 4000               # port the dev server listens on
 $global:EspLanIp     = '192.168.0.71'     # LAN IP to open for other devices
 
 function gp {

@@ -26,13 +26,14 @@ interface TaggedVideo extends VideoListItem {
 export function AparatClient({ usernames }: AparatClientProps) {
   const t = useTranslations("Aparat");
 
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState(usernames[0] || "");
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
 
   // استیت‌های لود دیتا از API
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [allVideos, setAllVideos] = useState<TaggedVideo[]>([]);
+  const [syncStatus, setSyncStatus] = useState<Record<string, "loading" | "done" | "error">>({});
 
   useEffect(() => {
     if (!usernames || usernames.length === 0) {
@@ -47,7 +48,11 @@ export function AparatClient({ usernames }: AparatClientProps) {
       setLoading(true);
       try {
         const fetchedProfiles: Record<string, Profile> = {};
-        let fetchedVideos: TaggedVideo[] = [];
+        const initialSyncStatus: Record<string, "loading"> = {};
+        usernames.forEach((u) => {
+          initialSyncStatus[u] = "loading";
+        });
+        setSyncStatus(initialSyncStatus);
 
         await Promise.all(
           usernames.map(async (user) => {
@@ -72,22 +77,57 @@ export function AparatClient({ usernames }: AparatClientProps) {
                   _sourceChannel: user,
                 })) as TaggedVideo[];
 
-                fetchedVideos = [...fetchedVideos, ...tagged];
+                setAllVideos((prev) =>
+                  [...prev, ...tagged].sort(
+                    (a, b) => b.createdAtTimestamp - a.createdAtTimestamp,
+                  ),
+                );
+
+                // Background Fetcher for remaining videos
+                (async function backgroundLoad() {
+                  try {
+                    let r = await generator.next();
+                    let batch: TaggedVideo[] = [];
+                    while (!r.done && !abortController.signal.aborted) {
+                      if (r.value) {
+                        const newTagged = r.value.map((v) => ({
+                          ...v,
+                          _sourceChannel: user,
+                        })) as TaggedVideo[];
+                        batch.push(...newTagged);
+                      }
+                      
+                      // Batch updates every 100 videos to avoid excessive re-renders
+                      if (batch.length >= 100) {
+                        setAllVideos((prev) => [...prev, ...batch].sort((a, b) => b.createdAtTimestamp - a.createdAtTimestamp));
+                        batch = [];
+                      }
+                      r = await generator.next();
+                    }
+                    // Flush remaining
+                    if (batch.length > 0 && !abortController.signal.aborted) {
+                      setAllVideos((prev) => [...prev, ...batch].sort((a, b) => b.createdAtTimestamp - a.createdAtTimestamp));
+                    }
+                    if (!abortController.signal.aborted) {
+                      setSyncStatus((prev) => ({ ...prev, [user]: "done" }));
+                    }
+                  } catch (err: any) {
+                    if (err.name !== "AbortError") {
+                      console.error(`Background load failed for ${user}:`, err);
+                      setSyncStatus((prev) => ({ ...prev, [user]: "error" }));
+                    }
+                  }
+                })();
               }
             } catch (err: any) {
               if (err.name !== "AbortError") {
-                console.error(`Failed to load data for ${user}:`, err);
+                console.error(`Failed to load initial data for ${user}:`, err);
               }
             }
           }),
         );
 
-        fetchedVideos.sort(
-          (a, b) => b.createdAtTimestamp - a.createdAtTimestamp,
-        );
-
         setProfiles(fetchedProfiles);
-        setAllVideos(fetchedVideos);
       } catch (error: any) {
         if (error.name !== "AbortError") {
           console.error("Failed to load Aparat data:", error);
@@ -97,15 +137,20 @@ export function AparatClient({ usernames }: AparatClientProps) {
       }
     }
 
-    fetchData();
+    fetchData().catch(() => {
+      // Catch any stray rejections that escape the inner try/catch blocks
+    });
 
     return () => {
-      abortController.abort();
+      // Providing a specific AbortError prevents the browser/React from logging
+      // "signal is aborted without reason".
+      const abortError = new Error("Component unmounted");
+      abortError.name = "AbortError";
+      abortController.abort(abortError);
     };
   }, [usernames]);
 
   const displayedVideos = useMemo(() => {
-    if (activeTab === "all") return allVideos;
     return allVideos.filter((v) => v._sourceChannel === activeTab);
   }, [activeTab, allVideos]);
 
@@ -131,18 +176,21 @@ export function AparatClient({ usernames }: AparatClientProps) {
     );
   }
 
-  const tabs = [
-    { value: "all", label: t("allVideos") },
-    ...usernames.map((u) => ({
-      value: u,
-      label: profiles[u]?.name || u,
-    })),
-  ];
+  const tabs = usernames.map((u) => ({
+    value: u,
+    label: profiles[u]?.name || u,
+  }));
 
-  const activeProfile =
-    activeTab === "all"
-      ? profiles[usernames[0]] || null
-      : profiles[activeTab] || null;
+  const activeProfile = profiles[activeTab] || null;
+
+  const name = activeProfile?.name || activeTab;
+  const avatarUrl = activeProfile?.avatar;
+  const initials = name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w.charAt(0))
+    .join("")
+    .toUpperCase();
 
   return (
     <Tabs
@@ -151,8 +199,6 @@ export function AparatClient({ usernames }: AparatClientProps) {
       className="flex flex-col gap-6"
     >
       <ChannelHeader
-        channel={activeProfile}
-        fallbackUsername={activeTab === "all" ? usernames[0] : activeTab}
         videos={displayedVideos}
         onVideoSelect={(v) => setSelectedVideo(v as VideoItem)}
         tabs={tabs}
@@ -166,13 +212,35 @@ export function AparatClient({ usernames }: AparatClientProps) {
           </div>
         ) : (
           <>
-            <div className="mb-8 mt-4">
-              <ChannelStats
-                videoCount={displayedVideos.length}
-                followerCount={activeProfile?.followers || 0}
-                followedCount={activeTab === "all" ? usernames.length - 1 : 0}
-                official={true}
-              />
+            <div className="mb-8 mt-4 flex flex-col md:flex-row md:items-center justify-between gap-6 rounded-2xl bg-card p-6 shadow-sm border">
+              <div className="flex items-center gap-4">
+                <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-primary/10 overflow-hidden">
+                  {avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={avatarUrl} alt={name} className="size-full object-cover" />
+                  ) : (
+                    <span className="text-primary font-bold text-xl">{initials}</span>
+                  )}
+                </div>
+                <div className="flex flex-col">
+                  <h1 className="text-2xl font-bold text-foreground">
+                    {name}
+                  </h1>
+                  <span className="text-muted-foreground text-sm">
+                    @{activeTab}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-1 max-w-2xl">
+                <ChannelStats
+                  videoCount={displayedVideos.length}
+                  followerCount={activeProfile?.followers || 0}
+                  followedCount={0}
+                  official={true}
+                  syncStatus={syncStatus[activeTab] || "loading"}
+                />
+              </div>
             </div>
 
             {tabs.map((tab) => (
@@ -212,6 +280,7 @@ export function AparatClient({ usernames }: AparatClientProps) {
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                           {displayedVideos
                             .filter((v) => v.id !== selectedVideo?.id)
+                            .slice(0, 24)
                             .map((video) => (
                               <VideoCard
                                 key={video.id}

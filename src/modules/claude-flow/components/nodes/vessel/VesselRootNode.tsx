@@ -75,7 +75,7 @@ export const VesselRootNode = memo(({ id, data, selected }: Props) => {
           subtitle="Core Properties & Dimensions"
           badge={
             vessel.vesselTag ? (
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
+              <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
                 {vessel.vesselTag}
               </span>
             ) : undefined

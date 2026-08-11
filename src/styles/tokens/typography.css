@@ -14,6 +14,8 @@
   --font-shabnam: 'Shabnam', 'Inter', sans-serif;
   --font-inter: 'Inter', 'Shabnam', sans-serif;
   --font-poppins: 'Poppins', 'Shabnam', sans-serif;
+  --font-open-sans: 'Open Sans', 'Inter', sans-serif;
+  --font-logo: var(--font-open-sans);
 
   /* ===== Font Sizes ===== */
   --font-size-xs: 0.75rem;    /* 12px */

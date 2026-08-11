@@ -1,11 +1,28 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { motion, useScroll, useTransform } from "motion/react";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } },
+};
+
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.08,
+    },
+  },
+};
+
 import {
   Mail,
   Rocket,
   CheckCircle2,
+  ChevronDown,
   type LucideIcon,
   Plus,
 } from "lucide-react";
@@ -18,39 +35,9 @@ import { StatsSection } from "@/components/sections/stats-section";
 import { STATS } from "@/data/stats";
 import { SiteSearch } from "@/components/features/search/site-search";
 import { FeatureCard } from "@/components/features/feature-card/feature-card";
-import { QuickAccessCard } from "@/components/features/quick-access/quick-access";
-import { useQuickAccess, QUICK_ACCESS_MAX } from "@/hooks/use-quick-access";
+import { QuickAccessSection } from "@/components/features/quick-access";
 import { FullWidth, Container } from "@/components/layout/container";
 import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
-
-function useReveal() {
-  const [revealed, setRevealed] = useState<Set<string>>(new Set());
-  const refs = useRef<Map<string, HTMLElement>>(new Map());
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setRevealed((prev) => new Set(prev).add(entry.target.id));
-          }
-        });
-      },
-      { threshold: 0.1 },
-    );
-
-    refs.current.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
-
-  const register = (id: string) => (el: HTMLElement | null) => {
-    if (el) refs.current.set(id, el);
-  };
-
-  const isRevealed = (id: string) => revealed.has(id);
-
-  return { register, isRevealed };
-}
 
 function resolveIconClass(color?: NavColor): string {
   return NAV_COLOR_MAP[color ?? "slate"]?.icon ?? NAV_COLOR_MAP.slate.icon;
@@ -93,9 +80,17 @@ export function HomeClient() {
   const isRtl = locale === "fa";
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const { register, isRevealed } = useReveal();
-
   const [activeTab, setActiveTab] = useState<string>("all");
+
+  const { scrollY } = useScroll();
+  const exploreOpacity = useTransform(scrollY, [0, 150], [1, 0]);
+
+  const heroFlowRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: heroFlowProgress } = useScroll({
+    target: heroFlowRef,
+    offset: ["start start", "end start"],
+  });
+  const heroFlowOpacity = useTransform(heroFlowProgress, [0.4, 1], [1, 0]);
 
   const tabs = useMemo(
     () => [
@@ -104,8 +99,6 @@ export function HomeClient() {
     ],
     [],
   );
-
-  const { items: quickAccessItems, hydrated } = useQuickAccess();
 
   const visibleFeatures = useMemo(() => {
     if (activeTab === "all") return NAVIGATION.flatMap((g) => g.items);
@@ -128,136 +121,139 @@ export function HomeClient() {
     <>
       <section
         id="hero"
-        ref={register("hero")}
-        className="relative flex min-h-screen w-full flex-col bg-background"
+        className="relative flex w-full flex-col bg-background"
       >
-        <div className="w-full py-20 text-center">
+        {/* Centered Main Content Area taking full viewport height minus header overlap */}
+        <div className="relative flex min-h-[100dvh] -mt-[64px] w-full flex-col items-center justify-center pt-[64px] pb-20 text-center">
           <Container>
-            <div
-              className={cn(
-                "relative mx-auto mt-40 max-w-xl transition-all delay-200 duration-700",
-                isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
-              )}
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={staggerContainer}
+              className="relative mx-auto w-full flex flex-col items-center"
             >
-              <div
-                className={cn(
-                  "absolute inset-x-0 flex justify-center transition-all delay-100 duration-700",
-                  isRevealed("hero")
-                    ? "opacity-100"
-                    : "translate-y-4 opacity-0",
-                )}
-                style={{
-                  bottom: "calc(100% + 1.5rem)",
-                  zIndex: isSearchOpen ? "var(--z-logo)" : "var(--z-base)",
-                }}
-              >
-                <Logo className="text-4xl md:text-6xl" />
+              <div className="w-full max-w-2xl flex flex-col items-center">
+                {/* Google-Inspired Badass Multicolored Logo */}
+                <motion.div variants={fadeUp} className="mb-6 sm:mb-8 flex justify-center">
+                  <Logo className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl" />
+                </motion.div>
+
+                {/* Google Search Bar */}
+                <motion.div variants={fadeUp} className="w-full">
+                  <SiteSearch
+                    className="w-full"
+                    onOpenChange={setIsSearchOpen}
+                    onOverviewClick={() => {
+                      document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                  />
+                </motion.div>
               </div>
 
-              <SiteSearch
-                className="mx-auto max-w-xl"
-                onOpenChange={setIsSearchOpen}
-              />
-            </div>
-
-            <div
-              className={cn(
-                "mt-20 transition-all delay-300 duration-700",
-                isRevealed("hero") ? "opacity-100" : "translate-y-4 opacity-0",
-              )}
-            >
-              <div className="flex flex-wrap justify-center gap-6">
-                {(hydrated
-                  ? quickAccessItems
-                  : Array(QUICK_ACCESS_MAX).fill(null)
-                ).map((item, i) => {
-                  if (!item) {
-                    return (
-                      <div
-                        key={i}
-                        className="h-30 w-30 animate-pulse rounded-2xl bg-muted/50"
-                      />
-                    );
-                  }
-
-                  const colorMap = resolveColorMap(item.color);
-
-                  return (
-                    <QuickAccessCard
-                      key={item.href}
-                      href={item.href}
-                      icon={item.icon}
-                      iconBgClassName={colorMap.iconBg}
-                      iconClassName={cn(colorMap.icon, colorMap.iconHover)}
-                      cardBgClassName={colorMap.bg}
-                      borderClassName={colorMap.ring}
-                      title={tItems(item.labelKey)}
-                    />
-                  );
-                })}
-
-                <button
-                  onClick={() => {}}
-                  aria-label={t("quickAccess.customizeLabel")}
-                  className={cn(
-                    "group flex h-30 w-30 cursor-pointer flex-col items-center justify-center gap-3.5 rounded-2xl text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/5 hover:text-primary",
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "flex size-10 items-center justify-center rounded-full border border-dashed border-current transition-transform duration-200 group-hover:scale-100",
-                    )}
-                  >
-                    <Plus className="size-5" />
-                  </span>
-                  <span className="text-sm font-normal"></span>
-                </button>
+              <div className="mt-7 sm:mt-9 w-full">
+                <QuickAccessSection />
               </div>
-            </div>
+            </motion.div>
           </Container>
-          <FullWidth>
-            <div className="h-162.5 w-full overflow-hidden">
-              <HeroFlow />
-            </div>
-          </FullWidth>
+
+          {/* Minimal Animated Scroll Indicator */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 1 }}
+            className="absolute bottom-24 lg:bottom-32 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+          >
+            <motion.div
+              style={{ opacity: exploreOpacity }}
+              className="flex flex-col items-center text-muted-foreground/50 hover:text-foreground transition-colors cursor-pointer pointer-events-auto"
+              onClick={() => {
+                document.getElementById("hero-flow-section")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <span className="text-[11px] uppercase tracking-[0.2em] font-medium mb-2">
+                {isRtl ? "کشف کنید" : "Explore"}
+              </span>
+              <ChevronDown className="size-5 animate-bounce stroke-[1.5]" />
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* The Animated Mesh/Globe below the fold */}
+        <div className="w-full text-center">
+
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.3 }}
+          >
+            <FullWidth>
+              <motion.div 
+                ref={heroFlowRef}
+                style={{ opacity: heroFlowOpacity }}
+                id="hero-flow-section" 
+                className="h-[100vh] w-full overflow-hidden"
+              >
+                <HeroFlow />
+              </motion.div>
+            </FullWidth>
+          </motion.div>
         </div>
       </section>
 
-      <section className="relative bg-muted/50 py-20">
+      <section id="features" className="relative bg-muted/50 py-20 scroll-mt-6">
         <Container>
-          <div className="mb-10 text-center">
-            <span className="text-primary text-sm font-semibold tracking-wider uppercase">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="mb-10 text-center"
+          >
+            <motion.span variants={fadeUp} className="text-primary text-sm font-semibold tracking-wider uppercase inline-block">
               {t("features.eyebrow")}
-            </span>
-            <h2 className="mt-2 text-3xl font-bold md:text-4xl">
+            </motion.span>
+            <motion.h2 variants={fadeUp} className="mt-2 text-3xl font-bold md:text-4xl">
               {t("features.title")}
-            </h2>
-            <p className="text-muted-foreground mx-auto mt-2 max-w-2xl">
+            </motion.h2>
+            <motion.p variants={fadeUp} className="text-muted-foreground mx-auto mt-2 max-w-2xl">
               {t("features.subtitle")}
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
 
-          <div className="mb-10 flex flex-wrap justify-center gap-2">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="mb-10 flex flex-wrap justify-center gap-2"
+          >
             {tabs.map((tab) => {
               const TabIcon = tab.icon;
               const label =
                 tab.id === "all" ? t("features.all") : tSections(tab.labelKey);
 
               return (
-                <Button
-                  key={tab.id}
-                  variant={activeTab === tab.id ? "default" : "outline"}
-                  onClick={() => setActiveTab(tab.id)}
-                  className="gap-2"
-                >
-                  {TabIcon && <TabIcon className="size-4" />}
-                  {label}
-                </Button>
+                <motion.div key={tab.id} variants={fadeUp}>
+                  <Button
+                    variant={activeTab === tab.id ? "default" : "outline"}
+                    onClick={() => setActiveTab(tab.id)}
+                    className="gap-2"
+                  >
+                    {TabIcon && <TabIcon className="size-4" />}
+                    {label}
+                  </Button>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
 
-          <div className="flex flex-wrap justify-center gap-6">
+          <motion.div 
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+            className="flex flex-wrap justify-center gap-6"
+          >
             {visibleFeatures.map((feature) => {
               const group = NAVIGATION.find((g) =>
                 g.items.some((item) => item.href === feature.href),
@@ -277,70 +273,91 @@ export function HomeClient() {
               }
 
               return (
-                <FeatureCard
-                  key={feature.href}
-                  href={feature.href}
-                  icon={feature.icon}
-                  title={tItems(feature.labelKey)}
-                  description={description}
-                  iconClassName={cn(colorMap.icon, colorMap.iconHover)}
-                  iconBgClassName={colorMap.iconBg}
-                  cardBgClassName={colorMap.bg}
-                  borderClassName={colorMap.ring}
-                  cta={t("features.explore")}
-                  isRtl={isRtl}
+                <motion.div 
+                  key={feature.href} 
+                  variants={fadeUp} 
                   className="h-60 w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(25%-1.125rem)]"
-                />
+                >
+                  <FeatureCard
+                    href={feature.href}
+                    icon={feature.icon}
+                    title={tItems(feature.labelKey)}
+                    description={description}
+                    iconClassName={cn(colorMap.icon, colorMap.iconHover)}
+                    iconBgClassName={colorMap.iconBg}
+                    cardBgClassName={colorMap.bg}
+                    borderClassName={colorMap.ring}
+                    cta={t("features.explore")}
+                    isRtl={isRtl}
+                    className="h-full w-full"
+                  />
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </Container>
       </section>
 
-      <StatsSection stats={STATS} />
+      <motion.div
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-50px" }}
+        variants={fadeUp}
+      >
+        <StatsSection stats={STATS} />
+      </motion.div>
 
-      <section id="newsletter" ref={register("newsletter")} className="py-20">
+      <section id="newsletter" className="py-20">
         <Container size="narrow" className="text-center">
-          <div className="bg-primary/10 mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl">
-            <Mail className="text-primary size-9" />
-          </div>
+          <motion.div
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-50px" }}
+            variants={staggerContainer}
+          >
+            <motion.div variants={fadeUp} className="bg-primary/10 mx-auto mb-6 flex size-20 items-center justify-center rounded-2xl">
+              <Mail className="text-primary size-9" />
+            </motion.div>
 
-          <h2 className="text-3xl font-bold md:text-4xl">
-            {t("newsletter.title")}
-          </h2>
+            <motion.h2 variants={fadeUp} className="text-3xl font-bold md:text-4xl">
+              {t("newsletter.title")}
+            </motion.h2>
 
-          <p className="text-muted-foreground mt-2">
-            {t("newsletter.subtitle")}
-          </p>
+            <motion.p variants={fadeUp} className="text-muted-foreground mt-2">
+              {t("newsletter.subtitle")}
+            </motion.p>
 
-          {submitted ? (
-            <div className="mt-8 flex items-center justify-center gap-2 rounded-2xl border border-green-300 bg-green-50 p-4 text-green-700 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400">
-              <CheckCircle2 className="size-5" />
-              {t("newsletter.success")}
-            </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
-            >
-              <Input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("newsletter.placeholder")}
-                className="flex-1"
-              />
-              <Button type="submit" size="lg" className="gap-2">
-                {t("newsletter.subscribe")}
-                <Rocket className="size-4" />
-              </Button>
-            </form>
-          )}
+            <motion.div variants={fadeUp}>
+              {submitted ? (
+                <div className="mt-8 flex items-center justify-center gap-2 rounded-2xl border border-green-300 bg-green-50 p-4 text-green-700 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400">
+                  <CheckCircle2 className="size-5" />
+                  {t("newsletter.success")}
+                </div>
+              ) : (
+                <form
+                  onSubmit={handleSubmit}
+                  className="mx-auto mt-8 flex max-w-md flex-col gap-3 sm:flex-row"
+                >
+                  <Input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("newsletter.placeholder")}
+                    className="flex-1"
+                  />
+                  <Button type="submit" size="lg" className="gap-2">
+                    {t("newsletter.subscribe")}
+                    <Rocket className="size-4" />
+                  </Button>
+                </form>
+              )}
+            </motion.div>
 
-          <p className="text-muted-foreground mt-4 text-sm">
-            {t("newsletter.disclaimer")}
-          </p>
+            <motion.p variants={fadeUp} className="text-muted-foreground mt-4 text-sm">
+              {t("newsletter.disclaimer")}
+            </motion.p>
+          </motion.div>
         </Container>
       </section>
     </>

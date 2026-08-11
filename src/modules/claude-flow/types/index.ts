@@ -56,6 +56,7 @@ export type DiagramNodeType =
   | 'jacketNode'
   | 'regenVacuumSteamoutNode'
   | 'surfacePrepNode'
+  | 'materialListNode'
   | 'mtoNode';
 
 export type DiagramEdgeType = 'default' | 'straight' | 'step' | 'smoothstep' | 'floating' | 'floating-straight';

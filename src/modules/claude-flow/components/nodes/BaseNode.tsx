@@ -72,6 +72,7 @@ import {
   JacketNodeWrapper,
   RegenVacuumSteamoutNodeWrapper,
   SurfacePrepNodeWrapper,
+  MaterialListNodeWrapper,
   MtoReportNodeWrapper,
 } from "./VesselNodes";
 
@@ -2093,6 +2094,7 @@ export const nodeTypes = {
   jacketNode: JacketNodeWrapper,
   regenVacuumSteamoutNode: RegenVacuumSteamoutNodeWrapper,
   surfacePrepNode: SurfacePrepNodeWrapper,
+  materialListNode: MaterialListNodeWrapper,
   mtoNode: MtoReportNodeWrapper,
 } satisfies Record<DiagramNodeType, React.ComponentType<DiagramNodeProps>>;
 
@@ -2117,5 +2119,6 @@ export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   jacketNode: ".vessel-drag-handle",
   regenVacuumSteamoutNode: ".vessel-drag-handle",
   surfacePrepNode: ".vessel-drag-handle",
+  materialListNode: ".vessel-drag-handle",
   mtoNode: ".vessel-drag-handle",
 };

@@ -2,7 +2,9 @@
 "use client";
 
 import * as React from "react";
-import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { format } from "date-fns-jalali";
+import { toPersianDigits } from "@/utils/textDirection";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -51,11 +53,6 @@ const GREGORIAN_MONTHS = [
 
 const JALALI_WEEK_DAYS = ["ش", "ی", "د", "س", "چ", "پ", "ج"];
 const GREGORIAN_WEEK_DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-export const toPersianDigits = (num: number | string): string => {
-  const farsiDigits = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"];
-  return String(num).replace(/[0-9]/g, (d) => farsiDigits[parseInt(d, 10)]);
-};
 
 // Extract Jalali year, month (1..12), day (1..31) accurately from any Date
 export function getJalaliDate(date: Date): { year: number; month: number; day: number } {

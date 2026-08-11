@@ -147,19 +147,19 @@ function EditorShell() {
       className="flex h-full w-full flex-col overflow-hidden bg-background"
       dir={dir}
     >
-      <div className="flex h-8 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+      <div className="flex h-8 shrink-0 items-center justify-between border-b border-primary/20 bg-gradient-to-r from-primary/95 to-primary/80 px-4 shadow-sm">
         <div className="flex shrink-0 select-none items-baseline gap-1.5">
-          <span className="text-sm font-medium tracking-tight text-foreground">
+          <span className="text-sm font-medium tracking-tight text-primary-foreground">
             {safeT(t, "header.title", "ESP-Flow")}
           </span>
-          <span className="text-[10px] text-muted-foreground">
+          <span className="text-[10px] text-primary-foreground/70">
             {safeT(t, "header.version", "V26")}
           </span>
         </div>
         <Link
           href="/"
           title={safeT(t, "toolbar.home", "Home")}
-          className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="flex size-6 shrink-0 items-center justify-center rounded-sm text-primary-foreground/70 transition-colors hover:bg-primary-foreground/20 hover:text-primary-foreground"
         >
           <Home className="size-3.5" />
         </Link>

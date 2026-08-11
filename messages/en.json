@@ -15,6 +15,14 @@
     "locale": {
       "en": "EN",
       "fa": "FA"
+    },
+    "footer": {
+      "designedBy": "Designed by",
+      "rdTeam": "R&D Team",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfUse": "Terms of Use",
+      "sitemap": "Sitemap",
+      "allRightsReserved": "All rights reserved."
     }
   },
   "LocaleSwitcher": {
@@ -99,7 +107,9 @@
     "subtitle": "Modern tools for project management, marketing, and document archiving in one unified space.",
     "readyToStart": "Sign in to access all features",
     "ctaLogin": "Sign in",
-    "ctaRegister": "Register",
+    "ctaRegister": "Create Account",
+    "freeFeatures": "Free Services",
+    "premiumFeatures": "Premium Services",
     "cards": {
       "imageGallery": {
         "description": "Browse categorized image albums and visual project assets."
@@ -121,9 +131,13 @@
     "logout": "Sign out",
     "submit": "submit",
     "loginSubtitle": "Sign in to your account to continue",
+    "registerSubtitle": "Create an account to access all features",
     "identifier": "Email or mobile number",
     "identifierPlaceholder": "example@mail.com or 09xxxxxxxxx",
     "password": "Password",
+    "fullName": "Full Name",
+    "email": "Email",
+    "haveAccount": "Already have an account?",
     "userMenu": "User menu",
     "demoTitle": "Test accounts",
     "demoHint": "Click any item to autofill the form.",
@@ -245,6 +259,7 @@
   },
   "Dashboard": {
     "greeting": "Welcome, {name}",
+    "themeSettings": "Theme Settings",
     "chartTitle": "6-month trend",
     "chartSubtitle": "Based on sample data",
     "stats": {
@@ -613,5 +628,28 @@
     "placeholder": "Select...",
     "searchPlaceholder": "Search...",
     "emptyText": "No results found."
+  },
+  "Hero-Flow": {
+    "title": "ESP Flow",
+    "version": "v26",
+    "description": "An unparalleled platform for advanced 3D engineering and modeling. By combining interactive design tools with powerful Cloud-Flow modules, we've minimized the gap between ideation and execution of complex industrial projects. Fast, precise, and fully integrated for engineering teams.",
+    "module1Title": "Cloud-Flow 3D",
+    "module1Desc": "Real-time powerful rendering of industrial models in highest fidelity.",
+    "module2Title": "Cloud-Flow Sync",
+    "module2Desc": "Instant synchronization of engineering data and environment changes.",
+    "module3Title": "Cloud-Flow Logic",
+    "module3Desc": "Workflow management and conditional logic for piping equipment.",
+    "module4Title": "Cloud-Flow UI",
+    "module4Desc": "Customizable, interactive node-based user interfaces.",
+    "tryNow": "Start Interactive 3D",
+    "flangeType": "Model Type",
+    "lapJoint": "Lap Joint Flange",
+    "weldNeck": "Weld Neck Flange",
+    "rotation": "Rotation",
+    "preview": "Preview",
+    "scale": "Scale",
+    "feature01": "Model industrial equipment accurately, faster.",
+    "feature02": "Review and analyze process diagrams.",
+    "feature03": "Advanced visual design for process engineers."
   }
 }

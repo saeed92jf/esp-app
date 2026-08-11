@@ -131,6 +131,7 @@
       "jacketNode": "Jacket",
       "regenVacuumSteamoutNode": "Regen / Vacuum / Steam Out",
       "surfacePrepNode": "Surface Preparation",
+      "materialListNode": "Material Specification Schedule",
       "mtoNode": "Material Take-Off (MTO)"
     },
     "palette": {

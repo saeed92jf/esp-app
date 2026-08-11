@@ -1,68 +1,77 @@
-﻿// src/components/aparat/channel-video-search.tsx
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-
+import React, { useState } from "react";
 import type { VideoListItem } from "../types";
-import { SearchPopup } from '@/components/features/search/search-popup';
-import { VideoSearchResult } from './video-search-result';
+import { GenericSearchBox } from "@/components/ui/generic-search-box";
+import { VideoSearchResult } from "./video-search-result";
+import { normalizeSearchText } from "@/lib/navigation-search";
+import { useLocale } from "next-intl";
+import { cn } from "@/lib/utils";
 
 interface ChannelVideoSearchProps {
-  /** The channel's loaded videos to search within. */
   videos: VideoListItem[];
-  /** Fired when a result row is chosen; jumps the player to that video. */
   onSelect: (video: VideoListItem) => void;
   className?: string;
 }
 
-/**
- * ChannelVideoSearch
- * ----------------------------------------------------------------------------
- * Thin, video-specific adapter over the generic <SearchPopup>. It owns the
- * memoized callbacks so the popup's internal filter memo is never invalidated
- * on parent re-renders, and it renders <VideoSearchResult> so each match shows
- * the thumbnail, title, and metadata (duration / views / date).
- *
- * Note: <SearchPopup> reads its own UI strings via useTranslations('Search'),
- * so NO `messages` prop is passed here.
- */
 export function ChannelVideoSearch({
   videos,
   onSelect,
   className,
 }: ChannelVideoSearchProps) {
-  // Stable unique key per video for React keys + de-duplication in the popup.
-  const getItemKey = useCallback((video: VideoListItem) => video.id, []);
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const [query, setQuery] = useState("");
 
-  // Match the query against the video title AND the channel handle. Returns an
-  // ARRAY of fields â€” the popup ignores null/empty entries.
-  const getSearchableText = useCallback(
-    (video: VideoListItem): Array<string | null | undefined> => [
-      video.title,
-      video.username,
-    ],
-    [],
-  );
+  const filterFn = (q: string, items: VideoListItem[]) => {
+    const normalizedQuery = normalizeSearchText(q);
+    if (!normalizedQuery) return [];
+    
+    return items.filter((video) => {
+      if (normalizeSearchText(video.title).includes(normalizedQuery)) return true;
+      if (normalizeSearchText(video.username).includes(normalizedQuery)) return true;
+      return false;
+    }).slice(0, 10); // Limit to 10 results
+  };
 
-  // Rich result row: thumbnail + highlighted title + metadata, owned by
-  // <VideoSearchResult>. `query` is forwarded for match highlighting.
-  const renderItem = useCallback(
-    (video: VideoListItem, query: string) => (
-      <VideoSearchResult video={video} query={query} />
-    ),
-    [],
-  );
+  const renderItem = (video: VideoListItem, isSelected: boolean, handleSelect: () => void) => {
+    return (
+      <div
+        key={video.id}
+        onClick={handleSelect}
+        className={cn(
+          "group/result relative me-2.5 flex cursor-pointer select-none items-center justify-between p-2 px-3.5 transition-colors",
+          "rounded-s-none rounded-e-full",
+          isSelected
+            ? "bg-[#e8eaed] dark:bg-[#303134]"
+            : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80",
+        )}
+      >
+        {isSelected && (
+          <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
+        )}
+        <div className="flex w-full min-w-0 items-center gap-3">
+          <VideoSearchResult video={video} query={query} />
+        </div>
+      </div>
+    );
+  };
 
   return (
-    <SearchPopup<VideoListItem>
-      items={videos}
-      getItemKey={getItemKey}
-      getSearchableText={getSearchableText}
-      renderItem={renderItem}
-      onSelect={onSelect}
-      minQueryLength={2}
+    <GenericSearchBox
       className={className}
+      historyKey="aparat-search-history"
+      items={videos}
+      filterFn={filterFn}
+      renderItem={renderItem}
+      getItemKey={(v) => v.id}
+      onSelect={onSelect}
+      onQueryChange={setQuery}
+      placeholder={
+        isRtl
+          ? "جستجوی ویدیو..."
+          : "Search videos..."
+      }
     />
   );
 }
-

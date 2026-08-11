@@ -1,16 +1,18 @@
 // src/components/dashboard/dashboard.tsx
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useAuth } from "../../auth/hooks/use-auth";
 import { useDashboard } from "../hooks/use-dashboard";
 import { StatCard } from "./stat-card";
 import { MiniChart } from "./mini-chart";
 import { ActivityFeed } from "./activity-feed";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SettingsSection } from "@/components/layout/settings-section";
 
 export function Dashboard() {
   const t = useTranslations("Dashboard");
+  const locale = useLocale();
   const { user } = useAuth();
   const { data, loading, error, refetch } = useDashboard(user?.role);
 
@@ -48,11 +50,13 @@ export function Dashboard() {
     );
   }
 
+  const displayName = locale === "fa" && user?.fullNameFa ? user.fullNameFa : user?.fullName;
+
   return (
     <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">
-          {t("greeting", { name: user.fullName })}
+          {t("greeting", { name: displayName })}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
           {t(`roleSummary.${user.role}`)}
@@ -69,7 +73,15 @@ export function Dashboard() {
         <div className="lg:col-span-2">
           <MiniChart data={data.chart} />
         </div>
-        <ActivityFeed items={data.activities} />
+        <div className="space-y-4">
+          <ActivityFeed items={data.activities} />
+          {user.role.toLowerCase() === "admin" && (
+            <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-4 space-y-3">
+              <h3 className="font-semibold text-sm">{t("themeSettings")}</h3>
+              <SettingsSection />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -15,6 +15,14 @@
     "locale": {
       "en": "انگلیسی",
       "fa": "فارسی"
+    },
+    "footer": {
+      "designedBy": "طراحی توسط",
+      "rdTeam": "تیم تحقیق و توسعه",
+      "privacyPolicy": "حریم خصوصی",
+      "termsOfUse": "شرایط استفاده",
+      "sitemap": "نقشه سایت",
+      "allRightsReserved": "تمامی حقوق محفوظ است."
     }
   },
   "LocaleSwitcher": {
@@ -99,7 +107,9 @@
     "subtitle": "ابزارهای مدرن برای مدیریت پروژه، بازاریابی و آرشیو مستندات در یک فضای یکپارچه.",
     "readyToStart": "برای دسترسی به تمام امکانات وارد شوید",
     "ctaLogin": "ورود به سیستم",
-    "ctaRegister": "ثبت‌نام",
+    "ctaRegister": "ایجاد حساب کاربری",
+    "freeFeatures": "امکانات رایگان",
+    "premiumFeatures": "امکانات ویژه (نیازمند حساب کاربری)",
     "cards": {
       "imageGallery": {
         "description": "مشاهده آلبوم تصاویر و دارایی‌های بصری پروژه به‌صورت دسته‌بندی‌شده."
@@ -121,9 +131,13 @@
     "submit": "ورود",
     "loggingIn": "در حال ورود...",
     "loginSubtitle": "برای ادامه وارد حساب خود شوید",
+    "registerSubtitle": "برای استفاده از امکانات حساب کاربری ایجاد کنید",
     "identifier": "ایمیل یا شماره موبایل",
     "identifierPlaceholder": "example@mail.com یا 09xxxxxxxxx",
     "password": "رمز عبور",
+    "fullName": "نام و نام خانوادگی",
+    "email": "ایمیل",
+    "haveAccount": "قبلاً حساب کاربری داشته‌اید؟",
     "userMenu": "منوی کاربر",
     "demoTitle": "حساب‌های تستی",
     "demoHint": "برای پرکردن خودکار فرم، روی هر مورد کلیک کنید.",
@@ -245,6 +259,7 @@
   },
   "Dashboard": {
     "greeting": "خوش آمدید، {name}",
+    "themeSettings": "تنظیمات ظاهر",
     "chartTitle": "روند ۶ ماهه",
     "chartSubtitle": "بر اساس داده‌های نمونه",
     "stats": {
@@ -601,5 +616,28 @@
     "placeholder": "انتخاب کنید...",
     "searchPlaceholder": "جستجو...",
     "emptyText": "موردی یافت نشد."
+  },
+  "Hero-Flow": {
+    "title": "ESP Flow",
+    "version": "v26",
+    "description": "پلتفرمی بی‌نظیر برای مهندسی و مدلسازی سه‌بعدی پیشرفته. ما با ترکیب ابزارهای طراحی تعاملی و ماژول‌های ابری Cloud-Flow، فاصله‌ی بین ایده‌پردازی تا اجرای پروژه‌های پیچیده‌ی صنعتی را به حداقل رسانده‌ایم. تجربه‌ای سریع، دقیق و کاملاً یکپارچه برای تیم‌های مهندسی.",
+    "module1Title": "Cloud-Flow 3D",
+    "module1Desc": "رندرینگ بی‌درنگ و قدرتمند مدل‌های صنعتی با بالاترین کیفیت.",
+    "module2Title": "Cloud-Flow Sync",
+    "module2Desc": "همگام‌سازی لحظه‌ای داده‌های مهندسی و تغییرات محیطی.",
+    "module3Title": "Cloud-Flow Logic",
+    "module3Desc": "مدیریت گردش کار و منطق شرطی برای تجهیزات پایپینگ.",
+    "module4Title": "Cloud-Flow UI",
+    "module4Desc": "رابط کاربری تعاملی و قابل شخصی‌سازی بر پایه نودها.",
+    "tryNow": "شروع مدلسازی تعاملی",
+    "flangeType": "نوع مدل",
+    "lapJoint": "فلنج Lap Joint",
+    "weldNeck": "فلنج Weld Neck",
+    "rotation": "چرخش مدل",
+    "preview": "پیش‌نمایش",
+    "scale": "مقیاس",
+    "feature01": "مدلسازی دقیق تجهیزات صنعتی، سریع‌تر.",
+    "feature02": "بررسی و تحلیل دیاگرام‌های فرایند.",
+    "feature03": "طراحی بصری پیشرفته برای مهندسین فرایند."
   }
 }

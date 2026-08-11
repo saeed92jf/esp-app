@@ -1,63 +1,61 @@
-// src/components/layout/footer.tsx
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/brand/logo';
 
-/**
- * Site footer.
- * Server component (no interactivity) — translations are resolved on the
- * server via the synchronous `useTranslations` hook.
- */
 export function Footer() {
-  const t = useTranslations('Footer');
-  const tHeader = useTranslations('Header');
   const tCommon = useTranslations('Common');
-
-  // Current year for the copyright line.
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const year = new Date().getFullYear();
 
-  const links = [
-    { href: '/', label: tHeader('home') },
-    { href: '/about', label: tHeader('about') },
-    { href: '/contact', label: tHeader('contact') },
-  ] as const;
-
   return (
-    <footer className="bg-muted/30 border-t">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 md:grid-cols-3">
-        {/* Brand column */}
-        <div>
-          <h2 className="text-base font-bold">{tCommon('appName')}</h2>
-          <p className="text-muted-foreground mt-2 text-sm">{t('rights')}</p>
+    <footer className="fa-num relative w-full border-t border-border/30 bg-muted/40 text-foreground backdrop-blur-2xl z-40 overflow-hidden">
+      {/* Subtle top glow */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-(--theme)/30 to-transparent" />
+      
+      <div className="mx-auto max-w-7xl px-6 pt-8 pb-4 flex flex-col gap-4">
+        
+        {/* Top Row: Logo */}
+        <div className="flex items-center justify-center sm:justify-start">
+          <Logo className="text-xl sm:text-2xl opacity-80 hover:opacity-100 transition-opacity" showText={false} />
         </div>
 
-        {/* Quick links */}
-        <nav aria-label={t('quickLinks')}>
-          <h3 className="text-sm font-semibold">{t('quickLinks')}</h3>
-          <ul className="mt-3 space-y-2">
-            {links.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="text-muted-foreground hover:text-foreground text-sm"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {/* Directional Faded Divider */}
+        <div 
+          className={`h-[1px] w-full from-border/50 to-transparent ${
+            isRtl ? 'bg-gradient-to-l' : 'bg-gradient-to-r'
+          }`} 
+        />
 
-        {/* Follow us */}
-        <div>
-          <h3 className="text-sm font-semibold">{t('followUs')}</h3>
+        {/* Bottom Row: Copyright, Designed by R&D Team & Links */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          
+          <div className="flex flex-col sm:flex-row items-center justify-start gap-1.5 sm:gap-2 text-muted-foreground/70 text-[11px] sm:text-xs font-medium tracking-wider text-center sm:text-start">
+            <div className="flex items-center gap-1.5">
+              <span>©</span>
+              <bdi>{year}</bdi>
+              <span>{tCommon('appName.lead')} {tCommon('appName.trail')}</span>
+              <span className="hidden sm:inline-block opacity-70">| {tCommon('footer.allRightsReserved')}</span>
+            </div>
+            
+            <span className="hidden sm:inline-block opacity-40">|</span>
+            
+            <div className="flex items-center gap-1">
+              <span>{tCommon('footer.designedBy')}</span>
+              <Link href="/team" className="text-foreground/80 hover:text-primary transition-colors font-semibold">
+                {tCommon('footer.rdTeam')}
+              </Link>
+            </div>
+          </div>
+
+          {/* Minimal Links */}
+          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-[12px] sm:text-[13px] font-medium tracking-wide">
+            <Link href="/privacy" className="text-foreground/80 hover:text-primary transition-colors">{tCommon('footer.privacyPolicy')}</Link>
+            <Link href="/terms" className="text-foreground/80 hover:text-primary transition-colors">{tCommon('footer.termsOfUse')}</Link>
+            <Link href="/sitemap" className="text-foreground/80 hover:text-primary transition-colors">{tCommon('footer.sitemap')}</Link>
+          </div>
+          
         </div>
-      </div>
-
-      {/* Bottom bar */}
-      <div className="border-t py-4">
-        <p className="text-muted-foreground text-center text-xs">
-          © <bdi>{year}</bdi> {tCommon('appName')} — {t('rights')}
-        </p>
       </div>
     </footer>
   );

@@ -3,7 +3,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'search-history';
 const MAX_ITEMS = 10;
 
 /**
@@ -12,15 +11,17 @@ const MAX_ITEMS = 10;
  * - Hydrates once on mount (client only) to avoid SSR/localStorage mismatches.
  * - `add` promotes an existing term to the top instead of duplicating it,
  *   and caps the list at MAX_ITEMS.
+ * - `remove` deletes an individual item.
+ * - `clear` deletes all items.
  * - Every mutation is mirrored to localStorage so history survives reloads.
  * - All storage access is wrapped in try/catch (private mode / blocked storage).
  */
-export function useSearchHistory() {
+export function useSearchHistory(key: string = 'search-history') {
   const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(key);
       if (saved) setHistory(JSON.parse(saved));
     } catch {
       setHistory([]);
@@ -36,22 +37,34 @@ export function useSearchHistory() {
         MAX_ITEMS,
       );
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        localStorage.setItem(key, JSON.stringify(next));
       } catch {
-        /* storage unavailable — keep in-memory only */
+        // ignore
       }
       return next;
     });
-  }, []);
+  }, [key]);
+
+  const remove = useCallback((term: string) => {
+    setHistory((prev) => {
+      const next = prev.filter((h) => h !== term);
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, [key]);
 
   const clear = useCallback(() => {
     setHistory([]);
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(key);
     } catch {
-      /* ignore */
+      // ignore
     }
-  }, []);
+  }, [key]);
 
-  return { history, add, clear };
+  return { history, add, remove, clear };
 }

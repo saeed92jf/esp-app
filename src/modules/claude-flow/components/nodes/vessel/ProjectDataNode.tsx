@@ -203,7 +203,7 @@ function PhoneField({
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => setTouched(true)}
           placeholder={placeholder || (isMobile ? "0912 345 6789" : "021 8888 8888")}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-mono placeholder:text-muted-foreground text-foreground"
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans placeholder:text-muted-foreground text-foreground"
         />
         {isValid && (
           <CheckCircle2 className="size-3.5 shrink-0 text-form-primary" />
@@ -378,7 +378,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
           subtitle={pd.indentNumber ? `Indent: ${pd.indentNumber}` : "Project Specifications"}
           badge={
             pd.indentNumber ? (
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
+              <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
                 {pd.indentNumber}
               </span>
             ) : undefined
@@ -418,7 +418,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 value={pd.quotationNo || ""}
                 onChange={(e) => patch({ quotationNo: e.target.value })}
                 placeholder="QT-2026-001"
-                className="h-7 text-xs bg-white dark:bg-black font-mono w-full min-w-0"
+                className="h-7 text-xs bg-white dark:bg-black font-sans w-full min-w-0"
               />
             </div>
             <div className="col-span-4 space-y-1 min-w-0">
@@ -427,7 +427,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 value={pd.rev || ""}
                 onChange={(e) => patch({ rev: e.target.value })}
                 placeholder="0"
-                className="h-7 text-xs bg-white dark:bg-black font-mono text-center w-full min-w-0"
+                className="h-7 text-xs bg-white dark:bg-black font-sans text-center w-full min-w-0"
               />
             </div>
           </div>

@@ -46,6 +46,7 @@ const DEMO_USERS = [
     user: {
       id: "u-admin",
       fullName: "Morteza Shafiee",
+      fullNameFa: "مرتضی شفیعی",
       email: "admin@demo.com",
       mobile: "09120000001",
       avatar: "",
@@ -59,6 +60,7 @@ const DEMO_USERS = [
     user: {
       id: "u-engineer",
       fullName: "Saeed Jalili Fard",
+      fullNameFa: "سعید جلیلی‌فرد",
       email: "engineer@demo.com",
       mobile: "09120000002",
       avatar: "",
@@ -72,6 +74,7 @@ const DEMO_USERS = [
     user: {
       id: "u-staff",
       fullName: "Morteza Saeedi",
+      fullNameFa: "مرتضی سعیدی",
       email: "staff@demo.com",
       mobile: "09120000003",
       avatar: "",
@@ -85,6 +88,7 @@ const DEMO_USERS = [
     user: {
       id: "u-customer",
       fullName: "Allaye Mahestan",
+      fullNameFa: "آلیاژ مهستان",
       email: "customer@demo.com",
       mobile: "09120000004",
       avatar: "",
@@ -121,7 +125,17 @@ export class FakeAuthService implements IAuthService {
       throw new ApiError("UNAUTHORIZED", "Not authenticated", 401);
     const raw = localStorage.getItem(AUTH_USER_KEY);
     if (!raw) throw new ApiError("UNAUTHORIZED", "کاربر یافت نشد.", 401);
-    return JSON.parse(raw) as User;
+    
+    let parsed = JSON.parse(raw) as User;
+    
+    // Sync with DEMO_USERS to inject latest properties if it's a demo user
+    const demoMatch = DEMO_USERS.find(d => d.user.id === parsed.id);
+    if (demoMatch) {
+      parsed = { ...parsed, ...demoMatch.user };
+      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
+    }
+    
+    return parsed;
   }
 
   async refreshToken(): Promise<{ token: string }> {

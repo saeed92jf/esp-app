@@ -88,6 +88,7 @@ export const SHAPE_DEFAULT_SIZE: Record<
   jacketNode: { width: 480, height: 600 },
   regenVacuumSteamoutNode: { width: 440, height: 520 },
   surfacePrepNode: { width: 360, height: 420 },
+  materialListNode: { width: 840, height: 680 },
   mtoNode: { width: 560, height: 620 },
 };
 

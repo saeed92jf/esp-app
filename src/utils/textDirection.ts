@@ -42,14 +42,21 @@ const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '�
  * Convert all Western (0-9) and Arabic-Indic (٠-٩) digits in a string to
  * Persian digits (۰-۹). Non-digit characters are left untouched.
  */
-export function toPersianDigits(text: string | null | undefined): string {
-  if (!text) return '';
+export function toPersianDigits(input: string | number | null | undefined): string {
+  if (input === null || input === undefined) return '';
+  const text = String(input);
 
-  return text.replace(/[0-9\u0660-\u0669]/g, (digit) => {
-    // Western digits: charCode - 48 (e.g. '0' => 0). Arabic-Indic: -0x0660.
-    const code = digit.charCodeAt(0);
-    const value = code <= 57 ? code - 48 : code - 0x0660;
-    return PERSIAN_DIGITS[value];
+  // Replace ASCII/Arabic-Indic digits with Persian digits,
+  // BUT skip words containing English letters to preserve codes like "ESP-32".
+  return text.replace(/(\S+)/g, (word) => {
+    if (/[a-zA-Z]/.test(word)) {
+      return word;
+    }
+    return word.replace(/[0-9\u0660-\u0669]/g, (digit) => {
+      const code = digit.charCodeAt(0);
+      const value = code <= 57 ? code - 48 : code - 0x0660;
+      return PERSIAN_DIGITS[value];
+    });
   });
 }
 

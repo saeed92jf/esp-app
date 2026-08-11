@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/accordion";
 
 import { SettingsSection } from "@/components/layout/settings-section";
-import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 
 export function SideMenu() {
   const locale = useLocale();
@@ -178,29 +177,6 @@ export function SideMenu() {
                           );
                         })}
                       </ul>
-                    )}
-
-                    {/* SETTINGS CUSTOM CONTENT */}
-                    {group.custom === "settings" && (
-                      <div className="space-y-3 px-1 py-2">
-                        {/* 1. Theme and Color Card */}
-                        <div className="rounded-xl bg-muted/40 p-3 border border-border/50">
-                          <SettingsSection />
-                        </div>
-
-                        {/* 2. Language Card */}
-                        <div className="rounded-xl bg-muted/40 p-3 border border-border/50 space-y-2">
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                            <Globe className="size-3.5" />
-                            <span>{tSettings("language")}</span>
-                          </div>
-                          <LocaleSwitcher
-                            onLocaleChange={() => handleOpenChange(false)}
-                            showIcon={false}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
                     )}
                   </AccordionContent>
                 </AccordionItem>

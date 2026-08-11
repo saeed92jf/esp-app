@@ -9,7 +9,7 @@ import { Dashboard } from "@/modules/dashboard/components/dashboard";
 export default function HomePage() {
   return (
     <AuthGate>
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
+      <div className="fa-num mx-auto w-full max-w-5xl px-4 py-10">
         <Dashboard />
       </div>
     </AuthGate>

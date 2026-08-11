@@ -8,6 +8,7 @@ export type UserRole = 'admin' | 'engineer' | 'customer' | 'staff';
 export interface User {
   id: string;
   fullName: string;
+  fullNameFa?: string;
   mobile?: string;
   email?: string;
   avatar?: string;

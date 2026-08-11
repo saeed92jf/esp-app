@@ -38,10 +38,9 @@ export interface IAparatService {
 // ─── کمک‌کننده‌های درونی (مشترک) ──────────────────────────────────────────────
 
 function isAbortError(err: unknown): boolean {
-  return (
-    err instanceof DOMException &&
-    (err.name === "AbortError" || err.name === "TimeoutError")
-  );
+  if (err instanceof DOMException && (err.name === "AbortError" || err.name === "TimeoutError")) return true;
+  if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) return true;
+  return false;
 }
 function isTransient(err: unknown, status?: number): boolean {
   if (err instanceof TypeError) return true;

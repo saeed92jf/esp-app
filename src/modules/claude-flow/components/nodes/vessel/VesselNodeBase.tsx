@@ -116,7 +116,7 @@ export function VesselNodeContainer({
   return (
     <div
       className={cn(
-        "relative select-none font-mono text-xs transition-all duration-200",
+        "relative select-none font-sans text-xs transition-all duration-200",
         widthClass,
         className
       )}
@@ -281,6 +281,8 @@ export interface VesselSectionHeaderProps {
   subtitle?: ReactNode;
   action?: ReactNode;
   className?: string;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function VesselSectionHeader({
@@ -288,15 +290,24 @@ export function VesselSectionHeader({
   subtitle,
   action,
   className,
+  isCollapsed,
+  onToggleCollapse,
 }: VesselSectionHeaderProps) {
   return (
     <div
+      onClick={onToggleCollapse ? onToggleCollapse : undefined}
       className={cn(
         "text-[10px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-200 bg-sky-100/70 dark:bg-sky-950/60 py-1 px-2.5 rounded-md border border-sky-200/80 dark:border-sky-800/60 flex items-center justify-between gap-2 select-none",
+        onToggleCollapse && "cursor-pointer hover:bg-sky-200/60 dark:hover:bg-sky-900/60 transition-colors",
         className
       )}
     >
       <div className="flex items-center gap-1.5 truncate">
+        {onToggleCollapse && (
+          <span className="text-sky-700 dark:text-sky-300 transition-transform duration-200">
+            {isCollapsed ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
+          </span>
+        )}
         <span className="truncate">{title}</span>
         {subtitle && (
           <span className="text-[9px] font-normal text-sky-700/80 dark:text-sky-400/80 normal-case">
@@ -304,7 +315,16 @@ export function VesselSectionHeader({
           </span>
         )}
       </div>
-      {action && <div className="shrink-0">{action}</div>}
+      {action && (
+        <div
+          className="shrink-0"
+          onClick={(e) => {
+            if (onToggleCollapse) e.stopPropagation();
+          }}
+        >
+          {action}
+        </div>
+      )}
     </div>
   );
 }

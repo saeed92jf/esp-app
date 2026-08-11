@@ -6,6 +6,9 @@ import { getMessages, setRequestLocale } from 'next-intl/server';
 
 import { ConditionalHeader } from '@/components/layout/conditional-header';
 import { HtmlLangSync } from '@/components/layout/html-lang-sync';
+import { PersianDigitsProvider } from '@/components/PersianDigitsProvider';
+import { ConditionalFooter } from '@/components/layout/conditional-footer';
+import { ScrollToTop } from '@/components/layout/scroll-to-top';
 import { routing } from '@/i18n/routing';
 
 // Locale-aware metadata stays here, since this layout receives `locale`.
@@ -29,9 +32,14 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      <PersianDigitsProvider enabled={locale === 'fa'} />
       <HtmlLangSync locale={locale} />
       <ConditionalHeader />
-      {children}
+      <div className="relative flex flex-col min-h-screen">
+        <main className="flex-1">{children}</main>
+        <ConditionalFooter />
+      </div>
+      <ScrollToTop />
     </NextIntlClientProvider>
   );
 }

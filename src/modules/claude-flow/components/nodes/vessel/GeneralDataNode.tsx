@@ -1,12 +1,14 @@
 "use client";
 
-import React, { memo, useState, useCallback } from "react";
+import React, { memo, useState, useCallback, useMemo } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { Position, type NodeProps, type Node, type Edge } from "@xyflow/react";
 import {
   ChevronDown,
+  ChevronUp,
   Info,
   MoreHorizontal,
+  Plus,
   FileSliders,
   Layers,
   Flame,
@@ -16,7 +18,9 @@ import {
   ArrowDownToLine,
   Paperclip,
   Paintbrush,
+  FileSpreadsheet,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 import { useDiagramStore } from "@/modules/claude-flow/store";
 import type { DiagramNodeData, DiagramEdgeData, DiagramNodeType } from "@/modules/claude-flow/types";
@@ -56,9 +60,11 @@ export interface GeneralData {
   serviceLink?: string;
   special?: string;
   specialDetails?: string;
-  jacket?: boolean;
 
   // Section 2: Operating / Design Data
+  jacket?: boolean;
+
+  // Condition 1 / Standard Operating & Design Data (Shell / Internal)
   operatingTemp_C?: string | number;
   operatingTempDetails?: string;
   designTemp_C?: string | number;
@@ -76,8 +82,47 @@ export interface GeneralData {
   designPressureDetails?: string;
   hydrotestPressure_barg?: string | number;
   hydrotestPressureDetails?: string;
+  externalPressure_barg?: string | number;
+  externalPressureDetails?: string;
 
+  // Condition 2 (Jacket Chamber) Operating & Design Data
+  jacketOperatingTemp_C?: string | number;
+  jacketOperatingTempDetails?: string;
+  jacketDesignTemp_C?: string | number;
+  jacketDesignTempDetails?: string;
+  jacketHydrotestTemp_C?: string | number;
+  jacketHydrotestTempDetails?: string;
+  jacketMat_C?: string | number;
+  jacketMatDetails?: string;
+  jacketMdmt_C?: string | number;
+  jacketMdmtDetails?: string;
+
+  jacketOperatingPressure_barg?: string | number;
+  jacketOperatingPressureDetails?: string;
+  jacketDesignPressure_barg?: string | number;
+  jacketDesignPressureDetails?: string;
+  jacketHydrotestPressure_barg?: string | number;
+  jacketHydrotestPressureDetails?: string;
+
+  // Regen / Vacuum / Steam Out Section
   regenerationVacuumSteamout?: boolean;
+  steamOutEnabled?: boolean;
+  steamOutPressure_barg?: string | number;
+  steamOutPressureDetails?: string;
+  steamOutTemp_C?: string | number;
+  steamOutTempDetails?: string;
+
+  vacuumEnabled?: boolean;
+  vacuumPressure_barg?: string | number;
+  vacuumPressureDetails?: string;
+  vacuumTemp_C?: string | number;
+  vacuumTempDetails?: string;
+
+  regenEnabled?: boolean;
+  regenTemp_C?: string | number;
+  regenTempDetails?: string;
+  regenPressure_barg?: string | number;
+  regenPressureDetails?: string;
 
   // Section 3: Material
   matGroup?: string;
@@ -151,27 +196,54 @@ const SPECIAL_OPTIONS = [
   { value: "Refractory", label: "Refractory Lined" },
 ];
 
-const MAT_GROUP_OPTIONS = [
+export const MAT_GROUP_OPTIONS = [
   { value: "CS", label: "Carbon Steel" },
-  { value: "LAS", label: "Low Alloy Steel" },
+  { value: "LTCS", label: "Low Temp Carbon Steel (LTCS)" },
+  { value: "LAS", label: "Low Alloy Steel (Cr-Mo)" },
   { value: "SS_Austenitic", label: "Stainless Steel (Austenitic)" },
   { value: "SS_Duplex", label: "Duplex / Super Duplex" },
   { value: "Nickel", label: "Nickel Alloy (Inconel/Monel)" },
-  { value: "Titanium", label: "Titanium / Zirconium" },
   { value: "Clad", label: "Clad Steel Plate" },
 ];
 
-const MAT_SUB_GROUP_OPTIONS = [
-  { value: "SA-516-70", label: "SA-516 Gr. 70" },
-  { value: "SA-516-65", label: "SA-516 Gr. 65" },
-  { value: "SA-516-60", label: "SA-516 Gr. 60" },
-  { value: "SA-240-304L", label: "SA-240 Type 304L" },
-  { value: "SA-240-316L", label: "SA-240 Type 316L" },
-  { value: "SA-240-321", label: "SA-240 Type 321" },
-  { value: "SA-240-2205", label: "SA-240 UNS S31803 (2205)" },
-  { value: "SA-387-11", label: "SA-387 Gr. 11 Cl. 2" },
-  { value: "SA-387-22", label: "SA-387 Gr. 22 Cl. 2" },
-];
+export const MAT_SUB_GROUP_MAP: Record<string, Array<{ value: string; label: string }>> = {
+  CS: [
+    { value: "LowCarbon", label: "Low Carbon Steel" },
+    { value: "SA-516-70", label: "Medium Carbon (SA-516 Gr. 70)" },
+    { value: "SA-516-65", label: "Medium Carbon (SA-516 Gr. 65)" },
+    { value: "SA-516-60", label: "Medium Carbon (SA-516 Gr. 60)" },
+    { value: "KilledCS", label: "Fully Killed Carbon Steel" },
+    { value: "HIC_CS", label: "HIC Resistant Carbon Steel" },
+  ],
+  LTCS: [
+    { value: "LTCS_SA516", label: "SA-516 Gr. 60 (Impact @ -46°C)" },
+    { value: "LTCS_SA333", label: "SA-333 Gr. 6 / SA-350 LF2" },
+  ],
+  LAS: [
+    { value: "SA-387-11", label: "1.25Cr-0.5Mo (SA-387 Gr. 11 Cl. 2)" },
+    { value: "SA-387-22", label: "2.25Cr-1Mo (SA-387 Gr. 22 Cl. 2)" },
+    { value: "SA-387-5", label: "5Cr-0.5Mo (SA-387 Gr. 5 Cl. 2)" },
+  ],
+  SS_Austenitic: [
+    { value: "SA-240-304L", label: "SS 304 / 304L (SA-240 304L)" },
+    { value: "SA-240-316L", label: "SS 316 / 316L (SA-240 316L)" },
+    { value: "SA-240-321", label: "SS 321 (High Temp Ti-Stab)" },
+    { value: "SA-240-347", label: "SS 347 (Niobium Stabilized)" },
+  ],
+  SS_Duplex: [
+    { value: "SA-240-2205", label: "2205 Duplex (UNS S31803 / S32205)" },
+    { value: "SA-240-2507", label: "2507 Super Duplex (UNS S32750)" },
+  ],
+  Nickel: [
+    { value: "Inconel-625", label: "Inconel 625 (UNS N06625)" },
+    { value: "Incoloy-825", label: "Incoloy 825 (UNS N08825)" },
+    { value: "Monel-400", label: "Monel 400 (UNS N04400)" },
+  ],
+  Clad: [
+    { value: "CS-SS316L-Clad", label: "Carbon Steel + SS 316L Clad" },
+    { value: "CS-Inconel625-Clad", label: "Carbon Steel + Inconel 625 Clad" },
+  ],
+};
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
@@ -219,6 +291,10 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
     })
   );
   const [showTagMenu, setShowTagMenu] = useState(false);
+  const [isOperatingCollapsed, setIsOperatingCollapsed] = useState(false);
+  const [isMaterialCollapsed, setIsMaterialCollapsed] = useState(false);
+  const [isGeometryCollapsed, setIsGeometryCollapsed] = useState(false);
+  const [isOthersCollapsed, setIsOthersCollapsed] = useState(false);
 
   // ─── Track live node IDs for auto-unchecking ─────────────────────────────────
   const liveNodeIds = useDiagramStore(useShallow((s) => new Set(s.nodes.map((n) => n.id))));
@@ -241,9 +317,36 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
     operatingPressure_barg: 15,
     designPressure_barg: 25,
     hydrotestPressure_barg: 37.5,
+    externalPressure_barg: 1.0,
+
+    jacketOperatingTemp_C: 120,
+    jacketDesignTemp_C: 150,
+    jacketHydrotestTemp_C: 20,
+    jacketMat_C: 100,
+    jacketMdmt_C: -20,
+    jacketOperatingPressure_barg: 4.0,
+    jacketDesignPressure_barg: 6.0,
+    jacketHydrotestPressure_barg: 9.0,
+
     regenerationVacuumSteamout: false,
+    steamOutEnabled: true,
+    steamOutPressure_barg: 1.5,
+    steamOutPressureDetails: "",
+    steamOutTemp_C: 120,
+    steamOutTempDetails: "",
+    vacuumEnabled: false,
+    vacuumPressure_barg: -1.0,
+    vacuumPressureDetails: "",
+    vacuumTemp_C: 50,
+    vacuumTempDetails: "",
+    regenEnabled: false,
+    regenTemp_C: 250,
+    regenTempDetails: "",
+    regenPressure_barg: 3.0,
+    regenPressureDetails: "",
+
     matGroup: "CS",
-    matSubGroup: "SA-516-70",
+    matSubGroup: "LowCarbon",
     ca_mm: 3.0,
     selectAllMaterial: false,
     diameter_mm: 1500,
@@ -258,6 +361,23 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
     spawnedNodeIds: {},
     mechanicalTest: false,
   };
+
+  const serviceOptions = useMemo(() => {
+    const currentService = gd.service || "General";
+    if (!SERVICE_OPTIONS.some((o) => o.value === currentService)) {
+      return [...SERVICE_OPTIONS, { value: currentService, label: currentService }];
+    }
+    return SERVICE_OPTIONS;
+  }, [gd.service]);
+
+  const currentSubGroupOptions = useMemo(() => {
+    const group = gd.matGroup || "CS";
+    const baseList = MAT_SUB_GROUP_MAP[group] || MAT_SUB_GROUP_MAP["CS"] || [];
+    if (gd.matSubGroup && !baseList.some((opt) => opt.value === gd.matSubGroup)) {
+      return [{ value: gd.matSubGroup, label: gd.matSubGroup }, ...baseList];
+    }
+    return baseList;
+  }, [gd.matGroup, gd.matSubGroup]);
 
   const patch = useCallback(
     (p: Partial<GeneralData>) => {
@@ -274,8 +394,6 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
     if (orphaned.length === 0) return;
 
     const keyToCheckedField: Record<string, keyof GeneralData> = {
-      jacket: "jacket",
-      regen: "regenerationVacuumSteamout",
       shell: "shellChecked",
       head: "headChecked",
       nozzle: "nozzleChecked",
@@ -283,6 +401,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
       attachments: "attachmentsChecked",
       insulation: "insulationChecked",
       surfacePrep: "surfacePrepChecked",
+      materialList: "selectAllMaterial",
     };
     const cleanedSpawned = { ...spawned };
     const patchData: Partial<GeneralData> = { spawnedNodeIds: cleanedSpawned };
@@ -298,7 +417,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
   // ─── Dynamic Canvas Node Spawning & Linking Handler ─────────────────────────
   const handleGeometryNodeToggle = useCallback(
     (
-      key: "jacket" | "regen" | "shell" | "head" | "nozzle" | "support" | "attachments" | "insulation" | "surfacePrep" | string,
+      key: "shell" | "head" | "nozzle" | "support" | "attachments" | "insulation" | "surfacePrep" | string,
       nodeType: DiagramNodeType,
       label: string,
       checkedKey: keyof GeneralData,
@@ -401,7 +520,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
           subtitle={gd.tagNo ? `${gd.tagNo} (×${gd.qty || 1})` : "Equipment Specifications"}
           badge={
             gd.tagNo ? (
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
+              <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-form-primary/10 text-form-primary font-semibold border border-form-primary/20">
                 {gd.tagNo}
               </span>
             ) : undefined
@@ -425,7 +544,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                         onClick={() => setShowTagMenu((v) => !v)}
                         className="h-7 w-full text-xs flex items-center justify-between gap-1 rounded-md border border-input bg-white dark:bg-black px-2 hover:border-form-primary/60 transition-colors"
                       >
-                        <span className="truncate font-mono text-form-primary font-semibold">
+                        <span className="truncate font-sans text-form-primary font-semibold">
                           {gd.tagNo || "Select tag…"}
                         </span>
                         {gd.qty != null && (
@@ -449,7 +568,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                               }}
                               className="w-full flex items-center gap-2 px-2 py-1.5 text-left hover:bg-form-primary/10 hover:text-form-primary transition-colors"
                             >
-                              <span className="font-mono font-bold text-form-primary">{item.tagNo}</span>
+                              <span className="font-sans font-bold text-form-primary">{item.tagNo}</span>
                               <span className="text-muted-foreground">×{item.qty}</span>
                               {item.equipmentType && (
                                 <span className="ml-auto text-[9px] text-muted-foreground bg-muted px-1 rounded">{item.equipmentType}</span>
@@ -513,7 +632,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                   <div className="flex items-center gap-1 nodrag w-full min-w-0">
                     <div className="flex-1 min-w-0">
                       <Combobox
-                        options={SERVICE_OPTIONS}
+                        options={serviceOptions}
                         value={gd.service || "General"}
                         onChange={(v) => patch({ service: v })}
                         className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
@@ -528,18 +647,22 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                             size="icon"
                             onClick={() =>
                               openPrompt(
-                                "Service documentation or link URL:",
-                                gd.serviceLink,
-                                (val) => patch({ serviceLink: val })
+                                "Enter Custom Service:",
+                                gd.service || "",
+                                (val) => {
+                                  if (val && val.trim()) {
+                                    patch({ service: val.trim() });
+                                  }
+                                }
                               )
                             }
                             className="size-7 rounded-[calc(var(--radius)-2px)] p-0 text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
                           >
-                            <Info className="size-3.5" />
+                            <Plus className="size-3.5" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top" className="text-xs z-50">
-                          {gd.serviceLink ? `Link: ${gd.serviceLink}` : "Service details / link"}
+                          {gd.service ? `Current: ${gd.service} (Click to set custom)` : "Add custom service"}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -585,487 +708,1160 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                   </div>
                 </div>
               </div>
-
-              {/* Row 4: JACKET Checkbox */}
-              <div className="flex gap-2 pt-1">
-                <div
-                  onClick={() => handleGeometryNodeToggle("jacket", "jacketNode", "Jacket", "jacket", 0)}
-                  className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                    gd.jacket
-                      ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                      : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                  }`}
-                >
-                  <div className={`flex items-center justify-center size-4 rounded border ${gd.jacket ? "border-form-primary bg-form-primary/20 text-form-primary" : "border-border bg-muted/20 text-muted-foreground"}`}>
-                    <Layers size={11} />
-                  </div>
-                  <span className="text-xs font-semibold whitespace-nowrap">Jacket</span>
-                </div>
-              </div>
             </div>
 
             {/* ════════════════ SECTION 2: OPERATING/DESIGN DATA ════════════════ */}
             <div className="pt-2 border-t border-border space-y-2 min-w-0">
-              <VesselSectionHeader title="Operating & Design Data" />
+              <VesselSectionHeader
+                title="Operating & Design Data"
+                isCollapsed={isOperatingCollapsed}
+                onToggleCollapse={() => setIsOperatingCollapsed(!isOperatingCollapsed)}
+              />
 
-              <div className="grid grid-cols-12 gap-3 divide-x divide-border">
-                {/* Left Column: Temperatures */}
-                <div className="col-span-6 space-y-1.5 pe-1 min-w-0">
-                  {/* Operating Temp */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Operating Temp" unit="°C" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.operatingTemp_C ?? ""}
-                        onChange={(e) => patch({ operatingTemp_C: e.target.value })}
-                        placeholder="80"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+              {!isOperatingCollapsed && (
+                <div className="space-y-3 min-w-0 pt-0.5">
+                  {/* Two Symmetrical Check Items under Group Title */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className={`flex items-center gap-2 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
+                      gd.jacket
+                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                    }`}>
+                      <Checkbox
+                        checked={!!gd.jacket}
+                        onCheckedChange={(c) => patch({ jacket: !!c })}
+                        className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Operating Temp Details:", gd.operatingTempDetails, (v) => patch({ operatingTempDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                      <Layers size={12} className={gd.jacket ? "text-form-primary" : "text-muted-foreground"} />
+                      <span className="text-[11px] font-medium truncate">Jacket</span>
+                    </label>
 
-                  {/* Design Temp */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Design Temp" unit="°C" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.designTemp_C ?? ""}
-                        onChange={(e) => patch({ designTemp_C: e.target.value })}
-                        placeholder="120"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                    <label className={`flex items-center gap-2 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
+                      gd.regenerationVacuumSteamout
+                        ? "bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 font-bold shadow-sm"
+                        : "bg-card border-border hover:border-orange-500/50 text-foreground"
+                    }`}>
+                      <Checkbox
+                        checked={!!gd.regenerationVacuumSteamout}
+                        onCheckedChange={(c) => patch({ regenerationVacuumSteamout: !!c })}
+                        className="size-3.5 data-[state=checked]:bg-orange-500 data-[state=checked]:border-orange-500"
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Design Temp Details:", gd.designTempDetails, (v) => patch({ designTempDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
+                      <Flame size={12} className={gd.regenerationVacuumSteamout ? "text-orange-500" : "text-muted-foreground"} />
+                      <span className="text-[11px] font-medium truncate">Regen / Vac / Steam</span>
+                    </label>
                   </div>
+                  {!gd.jacket ? (
+                    /* ─── Standard Single-Chamber Operating Data ─── */
+                    <div className="grid grid-cols-12 gap-3 divide-x divide-border">
+                      {/* Left Column: Temperatures */}
+                      <div className="col-span-6 space-y-1.5 pe-1 min-w-0">
+                        {/* Operating Temp */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Operating Temp" unit="°C" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.operatingTemp_C ?? ""}
+                              onChange={(e) => patch({ operatingTemp_C: e.target.value })}
+                              placeholder="80"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Operating Temp Details:", gd.operatingTempDetails, (v) => patch({ operatingTempDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* Hydrotest Temp */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Hydrotest Temp" unit="°C" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.hydrotestTemp_C ?? ""}
-                        onChange={(e) => patch({ hydrotestTemp_C: e.target.value })}
-                        placeholder="40"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Hydrotest Temp Details:", gd.hydrotestTempDetails, (v) => patch({ hydrotestTempDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                        {/* Design Temp */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Design Temp" unit="°C" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.designTemp_C ?? ""}
+                              onChange={(e) => patch({ designTemp_C: e.target.value })}
+                              placeholder="120"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Design Temp Details:", gd.designTempDetails, (v) => patch({ designTempDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* M.A.T */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="M.A.T" unit="°C" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.mat_C ?? ""}
-                        onChange={(e) => patch({ mat_C: e.target.value })}
-                        placeholder="20"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("M.A.T Details:", gd.matDetails, (v) => patch({ matDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                        {/* Hydrotest Temp */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Hydrotest Temp" unit="°C" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.hydrotestTemp_C ?? ""}
+                              onChange={(e) => patch({ hydrotestTemp_C: e.target.value })}
+                              placeholder="40"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Hydrotest Temp Details:", gd.hydrotestTempDetails, (v) => patch({ hydrotestTempDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
 
-                  {/* M.D.M.T */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="M.D.M.T" unit="°C" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.mdmt_C ?? ""}
-                        onChange={(e) => patch({ mdmt_C: e.target.value })}
-                        placeholder="-29"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("M.D.M.T Details:", gd.mdmtDetails, (v) => patch({ mdmtDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
+                        {/* M.A.T */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="M.A.T" unit="°C" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.mat_C ?? ""}
+                              onChange={(e) => patch({ mat_C: e.target.value })}
+                              placeholder="20"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("M.A.T Details:", gd.matDetails, (v) => patch({ matDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* M.D.M.T */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="M.D.M.T" unit="°C" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.mdmt_C ?? ""}
+                              onChange={(e) => patch({ mdmt_C: e.target.value })}
+                              placeholder="-29"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("M.D.M.T Details:", gd.mdmtDetails, (v) => patch({ mdmtDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Column: Pressures */}
+                      <div className="col-span-6 space-y-1.5 ps-3 min-w-0">
+                        {/* Operating Pressure */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Operating Press." unit="barg" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.operatingPressure_barg ?? ""}
+                              onChange={(e) => patch({ operatingPressure_barg: e.target.value })}
+                              placeholder="15"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Operating Pressure Details:", gd.operatingPressureDetails, (v) => patch({ operatingPressureDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Design Pressure */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Design Press." unit="barg" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.designPressure_barg ?? ""}
+                              onChange={(e) => patch({ designPressure_barg: e.target.value })}
+                              placeholder="25"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Design Pressure Details:", gd.designPressureDetails, (v) => patch({ designPressureDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Hydrotest Pressure */}
+                        <div className="space-y-0.5 min-w-0">
+                          <VesselFieldLabel label="Hydrotest Press." unit="barg" />
+                          <div className="flex items-center gap-1 w-full min-w-0">
+                            <Input
+                              type="number"
+                              value={gd.hydrotestPressure_barg ?? ""}
+                              onChange={(e) => patch({ hydrotestPressure_barg: e.target.value })}
+                              placeholder="37.5"
+                              className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                              onClick={() => openPrompt("Hydrotest Pressure Details:", gd.hydrotestPressureDetails, (v) => patch({ hydrotestPressureDetails: v }))}
+                            >
+                              <MoreHorizontal className="size-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* ─── Dual-Chamber Operating Data (Jacket Active) ─── */
+                    <div className="space-y-2.5 min-w-0">
+                      {/* Condition 1: Main Shell / Chamber */}
+                      <div className="rounded-lg border border-sky-200/80 dark:border-sky-900/60 p-2.5 space-y-2 bg-sky-50/20 dark:bg-sky-950/20">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-200 flex items-center gap-1.5 pb-1 border-b border-sky-200/60 dark:border-sky-800/40">
+                          <div className="size-2 rounded-full bg-form-primary" />
+                          <span>Condition 1 (Main Shell / Chamber)</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-3 divide-x divide-border">
+                          {/* Left Column (Temperatures) */}
+                          <div className="col-span-6 space-y-1.5 pe-1 min-w-0">
+                            {/* Operating Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Operating Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.operatingTemp_C ?? ""}
+                                  onChange={(e) => patch({ operatingTemp_C: e.target.value })}
+                                  placeholder="80"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Operating Temp Details:", gd.operatingTempDetails, (v) => patch({ operatingTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Design Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Design Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.designTemp_C ?? ""}
+                                  onChange={(e) => patch({ designTemp_C: e.target.value })}
+                                  placeholder="120"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Design Temp Details:", gd.designTempDetails, (v) => patch({ designTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Hydrotest Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Hydrotest Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.hydrotestTemp_C ?? ""}
+                                  onChange={(e) => patch({ hydrotestTemp_C: e.target.value })}
+                                  placeholder="40"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Hydrotest Temp Details:", gd.hydrotestTempDetails, (v) => patch({ hydrotestTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* M.D.M.T */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="M.D.M.T" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.mdmt_C ?? ""}
+                                  onChange={(e) => patch({ mdmt_C: e.target.value })}
+                                  placeholder="-29"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("M.D.M.T Details:", gd.mdmtDetails, (v) => patch({ mdmtDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right Column (Pressures) */}
+                          <div className="col-span-6 space-y-1.5 ps-3 min-w-0">
+                            {/* Operating Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Operating Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.operatingPressure_barg ?? ""}
+                                  onChange={(e) => patch({ operatingPressure_barg: e.target.value })}
+                                  placeholder="15"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Operating Pressure Details:", gd.operatingPressureDetails, (v) => patch({ operatingPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Design Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Design Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.designPressure_barg ?? ""}
+                                  onChange={(e) => patch({ designPressure_barg: e.target.value })}
+                                  placeholder="25"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Design Pressure Details:", gd.designPressureDetails, (v) => patch({ designPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Hydrotest Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Hydrotest Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.hydrotestPressure_barg ?? ""}
+                                  onChange={(e) => patch({ hydrotestPressure_barg: e.target.value })}
+                                  placeholder="37.5"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Hydrotest Pressure Details:", gd.hydrotestPressureDetails, (v) => patch({ hydrotestPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* External Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="External Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.externalPressure_barg ?? ""}
+                                  onChange={(e) => patch({ externalPressure_barg: e.target.value })}
+                                  placeholder="1.0"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("External Pressure Details:", gd.externalPressureDetails, (v) => patch({ externalPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Condition 2: Jacket / Thermal Chamber */}
+                      <div className="rounded-lg border border-amber-500/40 dark:border-amber-500/30 p-2.5 space-y-2 bg-amber-500/5">
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5 pb-1 border-b border-amber-500/20">
+                          <Layers size={12} className="text-amber-600 dark:text-amber-400" />
+                          <span>Condition 2 (Jacket Chamber)</span>
+                        </div>
+                        <div className="grid grid-cols-12 gap-3 divide-x divide-border">
+                          {/* Left Column (Temperatures) */}
+                          <div className="col-span-6 space-y-1.5 pe-1 min-w-0">
+                            {/* Operating Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Operating Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketOperatingTemp_C ?? ""}
+                                  onChange={(e) => patch({ jacketOperatingTemp_C: e.target.value })}
+                                  placeholder="120"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Operating Temp Details:", gd.jacketOperatingTempDetails, (v) => patch({ jacketOperatingTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Design Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Design Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketDesignTemp_C ?? ""}
+                                  onChange={(e) => patch({ jacketDesignTemp_C: e.target.value })}
+                                  placeholder="150"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Design Temp Details:", gd.jacketDesignTempDetails, (v) => patch({ jacketDesignTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Hydrotest Temp */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Hydrotest Temp" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketHydrotestTemp_C ?? ""}
+                                  onChange={(e) => patch({ jacketHydrotestTemp_C: e.target.value })}
+                                  placeholder="20"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Hydrotest Temp Details:", gd.jacketHydrotestTempDetails, (v) => patch({ jacketHydrotestTempDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* M.A.T */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="M.A.T" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketMat_C ?? ""}
+                                  onChange={(e) => patch({ jacketMat_C: e.target.value })}
+                                  placeholder="100"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket M.A.T Details:", gd.jacketMatDetails, (v) => patch({ jacketMatDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* M.D.M.T */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="M.D.M.T" unit="°C" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketMdmt_C ?? ""}
+                                  onChange={(e) => patch({ jacketMdmt_C: e.target.value })}
+                                  placeholder="-20"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket M.D.M.T Details:", gd.jacketMdmtDetails, (v) => patch({ jacketMdmtDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right Column (Pressures) */}
+                          <div className="col-span-6 space-y-1.5 ps-3 min-w-0">
+                            {/* Operating Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Operating Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketOperatingPressure_barg ?? ""}
+                                  onChange={(e) => patch({ jacketOperatingPressure_barg: e.target.value })}
+                                  placeholder="4.0"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Operating Pressure Details:", gd.jacketOperatingPressureDetails, (v) => patch({ jacketOperatingPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Design Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Design Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketDesignPressure_barg ?? ""}
+                                  onChange={(e) => patch({ jacketDesignPressure_barg: e.target.value })}
+                                  placeholder="6.0"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Design Pressure Details:", gd.jacketDesignPressureDetails, (v) => patch({ jacketDesignPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Hydrotest Press. */}
+                            <div className="space-y-0.5 min-w-0">
+                              <VesselFieldLabel label="Hydrotest Press." unit="barg" />
+                              <div className="flex items-center gap-1 w-full min-w-0">
+                                <Input
+                                  type="number"
+                                  value={gd.jacketHydrotestPressure_barg ?? ""}
+                                  onChange={(e) => patch({ jacketHydrotestPressure_barg: e.target.value })}
+                                  placeholder="9.0"
+                                  className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                  onClick={() => openPrompt("Jacket Hydrotest Pressure Details:", gd.jacketHydrotestPressureDetails, (v) => patch({ jacketHydrotestPressureDetails: v }))}
+                                >
+                                  <MoreHorizontal className="size-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ─── Integrated Regen / Vacuum / Steam-out Section ─── */}
+                  {gd.regenerationVacuumSteamout && (
+                    <div className="rounded-lg border border-orange-500/30 p-2 space-y-2 bg-orange-500/5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center gap-1.5 pb-1 border-b border-orange-500/20">
+                        <Flame size={12} className="text-orange-500" />
+                        <span>Regeneration / Vacuum / Steam-out Cycles</span>
+                      </div>
+
+                      {/* Steam Out Sub-Card */}
+                      <div className="rounded-md border border-border/80 p-2 space-y-1.5 bg-background/60">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[11px] text-sky-900 dark:text-sky-200">Steam Out</span>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-form-primary">
+                            <Checkbox
+                              checked={!!gd.steamOutEnabled}
+                              onCheckedChange={(c) => patch({ steamOutEnabled: !!c })}
+                              className="size-3.5"
+                            />
+                            <span className="text-[10px]">Enable</span>
+                          </label>
+                        </div>
+                        <div className={cn("grid grid-cols-2 gap-2 transition-opacity", !gd.steamOutEnabled && "opacity-40 pointer-events-none")}>
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Steam Out Press." unit="barg" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.steamOutPressure_barg ?? ""}
+                                onChange={(e) => patch({ steamOutPressure_barg: e.target.value })}
+                                placeholder="1.5"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Steam Out Pressure Details:", gd.steamOutPressureDetails, (v) => patch({ steamOutPressureDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Steam Out Temp" unit="°C" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.steamOutTemp_C ?? ""}
+                                onChange={(e) => patch({ steamOutTemp_C: e.target.value })}
+                                placeholder="120"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Steam Out Temp Details:", gd.steamOutTempDetails, (v) => patch({ steamOutTempDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Vacuum Sub-Card */}
+                      <div className="rounded-md border border-border/80 p-2 space-y-1.5 bg-background/60">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[11px] text-sky-900 dark:text-sky-200">Vacuum</span>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-form-primary">
+                            <Checkbox
+                              checked={!!gd.vacuumEnabled}
+                              onCheckedChange={(c) => patch({ vacuumEnabled: !!c })}
+                              className="size-3.5"
+                            />
+                            <span className="text-[10px]">Enable</span>
+                          </label>
+                        </div>
+                        <div className={cn("grid grid-cols-2 gap-2 transition-opacity", !gd.vacuumEnabled && "opacity-40 pointer-events-none")}>
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Vacuum Press." unit="barg" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.vacuumPressure_barg ?? ""}
+                                onChange={(e) => patch({ vacuumPressure_barg: e.target.value })}
+                                placeholder="-1.0"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Vacuum Pressure Details:", gd.vacuumPressureDetails, (v) => patch({ vacuumPressureDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Vacuum Temp" unit="°C" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.vacuumTemp_C ?? ""}
+                                onChange={(e) => patch({ vacuumTemp_C: e.target.value })}
+                                placeholder="50"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Vacuum Temp Details:", gd.vacuumTempDetails, (v) => patch({ vacuumTempDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Regeneration Sub-Card */}
+                      <div className="rounded-md border border-border/80 p-2 space-y-1.5 bg-background/60">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[11px] text-sky-900 dark:text-sky-200">Regeneration</span>
+                          <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-form-primary">
+                            <Checkbox
+                              checked={!!gd.regenEnabled}
+                              onCheckedChange={(c) => patch({ regenEnabled: !!c })}
+                              className="size-3.5"
+                            />
+                            <span className="text-[10px]">Enable</span>
+                          </label>
+                        </div>
+                        <div className={cn("grid grid-cols-2 gap-2 transition-opacity", !gd.regenEnabled && "opacity-40 pointer-events-none")}>
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Regen Press." unit="barg" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.regenPressure_barg ?? ""}
+                                onChange={(e) => patch({ regenPressure_barg: e.target.value })}
+                                placeholder="3.0"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Regen Pressure Details:", gd.regenPressureDetails, (v) => patch({ regenPressureDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="space-y-0.5 min-w-0">
+                            <VesselFieldLabel label="Regen Temp" unit="°C" />
+                            <div className="flex items-center gap-1 w-full min-w-0">
+                              <Input
+                                type="number"
+                                value={gd.regenTemp_C ?? ""}
+                                onChange={(e) => patch({ regenTemp_C: e.target.value })}
+                                placeholder="250"
+                                className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                                onClick={() => openPrompt("Regen Temp Details:", gd.regenTempDetails, (v) => patch({ regenTempDetails: v }))}
+                              >
+                                <MoreHorizontal className="size-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-
-                {/* Right Column: Pressures */}
-                <div className="col-span-6 space-y-1.5 ps-3 min-w-0">
-                  {/* Operating Pressure */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Operating Press." unit="barg" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.operatingPressure_barg ?? ""}
-                        onChange={(e) => patch({ operatingPressure_barg: e.target.value })}
-                        placeholder="15"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Operating Pressure Details:", gd.operatingPressureDetails, (v) => patch({ operatingPressureDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Design Pressure */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Design Press." unit="barg" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.designPressure_barg ?? ""}
-                        onChange={(e) => patch({ designPressure_barg: e.target.value })}
-                        placeholder="25"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Design Pressure Details:", gd.designPressureDetails, (v) => patch({ designPressureDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Hydrotest Pressure */}
-                  <div className="space-y-0.5 min-w-0">
-                    <VesselFieldLabel label="Hydrotest Press." unit="barg" />
-                    <div className="flex items-center gap-1 w-full min-w-0">
-                      <Input
-                        type="number"
-                        value={gd.hydrotestPressure_barg ?? ""}
-                        onChange={(e) => patch({ hydrotestPressure_barg: e.target.value })}
-                        placeholder="37.5"
-                        className="h-7 text-xs bg-white dark:bg-black flex-1 min-w-0"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="size-7 p-0 rounded-[calc(var(--radius)-2px)] text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                        onClick={() => openPrompt("Hydrotest Pressure Details:", gd.hydrotestPressureDetails, (v) => patch({ hydrotestPressureDetails: v }))}
-                      >
-                        <MoreHorizontal className="size-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row: REGENERATION/VACUUM/STEAMOUT */}
-              <div className="flex gap-2 pt-1">
-                <div
-                  onClick={() =>
-                    handleGeometryNodeToggle(
-                      "regen",
-                      "regenVacuumSteamoutNode",
-                      "Regen / Vacuum / Steam Out",
-                      "regenerationVacuumSteamout",
-                      1
-                    )
-                  }
-                  className={`inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                    gd.regenerationVacuumSteamout
-                      ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                      : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                  }`}
-                >
-                  <div className={`flex items-center justify-center size-4 rounded border ${gd.regenerationVacuumSteamout ? "border-form-primary bg-form-primary/20 text-form-primary" : "border-border bg-muted/20 text-muted-foreground"}`}>
-                    <Flame size={11} />
-                  </div>
-                  <span className="text-xs font-semibold whitespace-nowrap">
-                    Regen / Vacuum / Steam-out
-                  </span>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* ════════════════ SECTION 3: MATERIAL ════════════════ */}
             <div className="pt-2 border-t border-border space-y-2 min-w-0">
-              <VesselSectionHeader title="Material Specification" />
+              <VesselSectionHeader
+                title="Material Specification"
+                isCollapsed={isMaterialCollapsed}
+                onToggleCollapse={() => setIsMaterialCollapsed(!isMaterialCollapsed)}
+              />
 
-              {/* Mat Group & Sub-Group */}
-              <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-6 space-y-1 min-w-0">
-                  <VesselFieldLabel label="Material Group" />
-                  <div className="nodrag w-full min-w-0">
-                    <Combobox
-                      options={MAT_GROUP_OPTIONS}
-                      value={gd.matGroup || "CS"}
-                      onChange={(v) => patch({ matGroup: v })}
-                      className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
-                    />
+              {!isMaterialCollapsed && (
+                <div className="space-y-2 min-w-0">
+                  {/* Mat Group & Sub-Group */}
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-6 space-y-1 min-w-0">
+                      <VesselFieldLabel label="Material Group" />
+                      <div className="nodrag w-full min-w-0">
+                        <Combobox
+                          options={MAT_GROUP_OPTIONS}
+                          value={gd.matGroup || "CS"}
+                          onChange={(v) => {
+                            const defaultSub = MAT_SUB_GROUP_MAP[v]?.[0]?.value || "LowCarbon";
+                            patch({ matGroup: v, matSubGroup: defaultSub });
+                          }}
+                          className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="col-span-6 space-y-1 min-w-0">
+                      <VesselFieldLabel label="Sub-Group / Grade" />
+                      <div className="flex items-center gap-1 w-full min-w-0">
+                        <div className="nodrag flex-1 min-w-0">
+                          <Combobox
+                            options={currentSubGroupOptions}
+                            value={gd.matSubGroup || "LowCarbon"}
+                            onChange={(v) => patch({ matSubGroup: v })}
+                            className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openPrompt("Material Sub-Group Details / Spec:", gd.matSubGroupDetails, (v) => patch({ matSubGroupDetails: v }))}
+                          className="size-7 rounded-[calc(var(--radius)-2px)] p-0 text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
+                        >
+                          <MoreHorizontal className="size-3.5" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="col-span-6 space-y-1 min-w-0">
-                  <VesselFieldLabel label="Sub-Group / Grade" />
-                  <div className="flex items-center gap-1 w-full min-w-0">
-                    <div className="nodrag flex-1 min-w-0">
-                      <Combobox
-                        options={MAT_SUB_GROUP_OPTIONS}
-                        value={gd.matSubGroup || "SA-516-70"}
-                        onChange={(v) => patch({ matSubGroup: v })}
-                        className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                  {/* C.A. & SELECT ALL MATERIAL */}
+                  <div className="grid grid-cols-12 gap-2 items-end">
+                    <div className="col-span-6 space-y-1 min-w-0">
+                      <VesselFieldLabel label="Corrosion Allow." unit="mm" />
+                      <Input
+                        type="number"
+                        step={0.5}
+                        value={gd.ca_mm ?? ""}
+                        onChange={(e) => patch({ ca_mm: e.target.value })}
+                        placeholder="3.0"
+                        className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
                       />
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => openPrompt("Material Sub-Group Details / Spec:", gd.matSubGroupDetails, (v) => patch({ matSubGroupDetails: v }))}
-                      className="size-7 rounded-[calc(var(--radius)-2px)] p-0 text-muted-foreground hover:text-form-primary bg-muted/40 hover:bg-form-primary/15 border border-border hover:border-form-primary/40 transition-colors shrink-0"
-                    >
-                      <MoreHorizontal className="size-3.5" />
-                    </Button>
+
+                    <div className="col-span-6 min-w-0">
+                      <label
+                        onClick={() =>
+                          handleGeometryNodeToggle(
+                            "materialList",
+                            "materialListNode",
+                            "Material Specification",
+                            "selectAllMaterial",
+                            6
+                          )
+                        }
+                        className={`flex items-center gap-2 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.selectAllMaterial
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.selectAllMaterial}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <FileSpreadsheet
+                          size={12}
+                          className={gd.selectAllMaterial ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Select All Mat</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              {/* C.A. & SELECT ALL MATERIAL */}
-              <div className="grid grid-cols-12 gap-2 items-center">
-                <div className="col-span-5 space-y-1 min-w-0">
-                  <VesselFieldLabel label="Corrosion Allow." unit="mm" />
-                  <Input
-                    type="number"
-                    step={0.5}
-                    value={gd.ca_mm ?? ""}
-                    onChange={(e) => patch({ ca_mm: e.target.value })}
-                    placeholder="3.0"
-                    className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
-                  />
-                </div>
-
-                <div className="col-span-7 flex items-center gap-2 pt-4 min-w-0">
-                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-semibold text-foreground">
-                    <Checkbox
-                      id={`select-all-mat-${id}`}
-                      checked={!!gd.selectAllMaterial}
-                      onCheckedChange={(c) => patch({ selectAllMaterial: !!c })}
-                    />
-                    <span className="truncate">Select All Material</span>
-                  </label>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* ════════════════ SECTION 4: GEOMETRY ════════════════ */}
             <div className="pt-2 border-t border-border space-y-2.5 min-w-0">
-              <VesselSectionHeader title="Geometry & Components" />
+              <VesselSectionHeader
+                title="Geometry & Components"
+                isCollapsed={isGeometryCollapsed}
+                onToggleCollapse={() => setIsGeometryCollapsed(!isGeometryCollapsed)}
+              />
 
-              {/* Diameter & T.L. TO T.L. */}
-              <div className="grid grid-cols-12 gap-2">
-                <div className="col-span-6 space-y-1 min-w-0">
-                  <VesselFieldLabel label="Diameter" unit="mm" />
-                  <Input
-                    type="number"
-                    value={gd.diameter_mm ?? ""}
-                    onChange={(e) => patch({ diameter_mm: e.target.value })}
-                    placeholder="1500"
-                    className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
-                  />
+              {!isGeometryCollapsed && (
+                <div className="space-y-2.5 min-w-0">
+                  {/* Diameter & T.L. TO T.L. */}
+                  <div className="grid grid-cols-12 gap-2">
+                    <div className="col-span-6 space-y-1 min-w-0">
+                      <VesselFieldLabel label="Diameter" unit="mm" />
+                      <Input
+                        type="number"
+                        value={gd.diameter_mm ?? ""}
+                        onChange={(e) => patch({ diameter_mm: e.target.value })}
+                        placeholder="1500"
+                        className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
+                      />
+                    </div>
+
+                    <div className="col-span-6 space-y-1 min-w-0">
+                      <VesselFieldLabel label="T.L. to T.L." unit="mm" />
+                      <Input
+                        type="number"
+                        value={gd.tlToTl_mm ?? ""}
+                        onChange={(e) => patch({ tlToTl_mm: e.target.value })}
+                        placeholder="4000"
+                        className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Geometry Nodes (Canvas Spawn & Link) */}
+                  <div className="space-y-1.5 pt-1 min-w-0">
+                    {/* Row 1 of Geometry Checkboxes: SHELL, HEAD, NOZZLE, SUPPORT */}
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {/* SHELL */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("shell", "shellNode", "Shell Section", "shellChecked", 0)}
+                        className={`flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.shellChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.shellChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Cylinder
+                          size={12}
+                          className={gd.shellChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Shell</span>
+                      </label>
+
+                      {/* HEAD */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("head", "headNode", "Vessel Head", "headChecked", 1)}
+                        className={`flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.headChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.headChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Disc
+                          size={12}
+                          className={gd.headChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Head</span>
+                      </label>
+
+                      {/* NOZZLE */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("nozzle", "nozzleNode", "Nozzle Component", "nozzleChecked", 2)}
+                        className={`flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.nozzleChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.nozzleChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Target
+                          size={12}
+                          className={gd.nozzleChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Nozzle</span>
+                      </label>
+
+                      {/* SUPPORT */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("support", "supportNode", "Vessel Support", "supportChecked", 3)}
+                        className={`flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.supportChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.supportChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <ArrowDownToLine
+                          size={12}
+                          className={gd.supportChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Support</span>
+                      </label>
+                    </div>
+
+                    {/* Row 2 of Geometry Checkboxes: ATTACHMENTS, INSULATION, SURFACE PREP */}
+                    <div className="grid grid-cols-12 gap-1.5">
+                      {/* ATTACHMENTS */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("attachments", "attachmentsNode", "Vessel Attachments", "attachmentsChecked", 4)}
+                        className={`col-span-4 flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.attachmentsChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.attachmentsChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Paperclip
+                          size={12}
+                          className={gd.attachmentsChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Attachments</span>
+                      </label>
+
+                      {/* INSULATION / FIRE PROOF */}
+                      <label
+                        onClick={() => handleGeometryNodeToggle("insulation", "internalsNode", "Insulation & Fireproofing", "insulationChecked", 5)}
+                        className={`col-span-4 flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.insulationChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.insulationChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Layers
+                          size={12}
+                          className={gd.insulationChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Insulation</span>
+                      </label>
+
+                      {/* Surface Preparation */}
+                      <label
+                        onClick={() =>
+                          handleGeometryNodeToggle(
+                            "surfacePrep",
+                            "surfacePrepNode",
+                            "Surface Preparation",
+                            "surfacePrepChecked",
+                            6
+                          )
+                        }
+                        className={`col-span-4 flex items-center gap-1.5 h-7 px-2 rounded-md border cursor-pointer select-none transition-colors ${
+                          gd.surfacePrepChecked
+                            ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                            : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                        }`}
+                      >
+                        <Checkbox
+                          checked={!!gd.surfacePrepChecked}
+                          className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                        />
+                        <Paintbrush
+                          size={12}
+                          className={gd.surfacePrepChecked ? "text-form-primary" : "text-muted-foreground"}
+                        />
+                        <span className="text-[11px] font-medium truncate">Surface Prep.</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
-
-                <div className="col-span-6 space-y-1 min-w-0">
-                  <VesselFieldLabel label="T.L. to T.L." unit="mm" />
-                  <Input
-                    type="number"
-                    value={gd.tlToTl_mm ?? ""}
-                    onChange={(e) => patch({ tlToTl_mm: e.target.value })}
-                    placeholder="4000"
-                    className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
-                  />
-                </div>
-              </div>
-
-              {/* Geometry Nodes (Canvas Spawn & Link) */}
-              <div className="space-y-2 pt-1 min-w-0">
-                {/* Row 1 of Geometry Checkboxes: SHELL, HEAD, NOZZLE, SUPPORT */}
-                <div className="grid grid-cols-4 gap-1.5">
-                  {/* SHELL */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("shell", "shellNode", "Shell Section", "shellChecked", 0)}
-                    className={`flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.shellChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.shellChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Cylinder size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Shell</span>
-                  </div>
-
-                  {/* HEAD */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("head", "headNode", "Vessel Head", "headChecked", 1)}
-                    className={`flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.headChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.headChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Disc size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Head</span>
-                  </div>
-
-                  {/* NOZZLE */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("nozzle", "nozzleNode", "Nozzle Component", "nozzleChecked", 2)}
-                    className={`flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.nozzleChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.nozzleChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Target size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Nozzle</span>
-                  </div>
-
-                  {/* SUPPORT */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("support", "supportNode", "Vessel Support", "supportChecked", 3)}
-                    className={`flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.supportChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.supportChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <ArrowDownToLine size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Support</span>
-                  </div>
-                </div>
-
-                {/* Row 2 of Geometry Checkboxes: ATTACHMENTS, INSULATION, SURFACE PREP */}
-                <div className="grid grid-cols-12 gap-1.5">
-                  {/* ATTACHMENTS */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("attachments", "attachmentsNode", "Vessel Attachments", "attachmentsChecked", 4)}
-                    className={`col-span-4 flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.attachmentsChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.attachmentsChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Paperclip size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Attachments</span>
-                  </div>
-
-                  {/* INSULATION / FIRE PROOF */}
-                  <div
-                    onClick={() => handleGeometryNodeToggle("insulation", "internalsNode", "Insulation & Fireproofing", "insulationChecked", 5)}
-                    className={`col-span-4 flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.insulationChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.insulationChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Layers size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Insulation</span>
-                  </div>
-
-                  {/* Surface Preparation */}
-                  <div
-                    onClick={() =>
-                      handleGeometryNodeToggle(
-                        "surfacePrep",
-                        "surfacePrepNode",
-                        "Surface Preparation",
-                        "surfacePrepChecked",
-                        6
-                      )
-                    }
-                    className={`col-span-4 flex items-center gap-1.5 p-1.5 rounded-md border cursor-pointer select-none transition-colors ${
-                      gd.surfacePrepChecked
-                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
-                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
-                    }`}
-                  >
-                    <div className={`flex items-center justify-center size-4 rounded shrink-0 ${gd.surfacePrepChecked ? "text-form-primary" : "text-muted-foreground"}`}>
-                      <Paintbrush size={12} />
-                    </div>
-                    <span className="text-[10px] truncate font-medium">Surface Prep.</span>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* ════════════════ SECTION 5: OTHERS ════════════════ */}
             <div className="pt-2 border-t border-border space-y-2 min-w-0">
-              <VesselSectionHeader title="Others" />
+              <VesselSectionHeader
+                title="Others"
+                isCollapsed={isOthersCollapsed}
+                onToggleCollapse={() => setIsOthersCollapsed(!isOthersCollapsed)}
+              />
 
-              <div className="flex items-center gap-2 pt-0.5 min-w-0">
-                <label
-                  htmlFor={`mech-test-${id}`}
-                  className="flex items-center gap-2 text-xs font-semibold cursor-pointer select-none text-foreground"
-                >
-                  <Checkbox
-                    id={`mech-test-${id}`}
-                    checked={!!gd.mechanicalTest}
-                    onCheckedChange={(c) => patch({ mechanicalTest: !!c })}
-                  />
-                  <span>Mechanical Test</span>
-                </label>
-              </div>
+              {!isOthersCollapsed && (
+                <div className="flex items-center gap-2 pt-0.5 min-w-0">
+                  <label
+                    onClick={() => patch({ mechanicalTest: !gd.mechanicalTest })}
+                    className={`flex items-center gap-2 h-7 px-2.5 rounded-md border cursor-pointer select-none transition-colors max-w-[200px] ${
+                      gd.mechanicalTest
+                        ? "bg-form-primary/10 border-form-primary text-form-primary font-bold shadow-sm"
+                        : "bg-card border-border hover:border-form-primary/50 text-foreground"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={!!gd.mechanicalTest}
+                      className="size-3.5 data-[state=checked]:bg-form-primary data-[state=checked]:border-form-primary"
+                    />
+                    <FileSliders
+                      size={12}
+                      className={gd.mechanicalTest ? "text-form-primary" : "text-muted-foreground"}
+                    />
+                    <span className="text-[11px] font-medium truncate">Mechanical Test</span>
+                  </label>
+                </div>
+              )}
             </div>
           </div>
         )}

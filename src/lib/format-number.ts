@@ -4,20 +4,7 @@
  */
 export type AppLocale = 'fa' | 'en';
 
-/**
- * Maps Latin digits (0-9) to Persian digits (۰-۹).
- * Index of the array equals the digit value.
- */
-const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-
-/**
- * Convert every Latin digit in a string to its Persian equivalent.
- * Non-digit characters (like "/", "+", ".") are left untouched.
- */
-export function toPersianDigits(input: string): string {
-  return input.replace(/[0-9]/g, (d) => PERSIAN_DIGITS[Number(d)]);
-}
-
+import { toPersianDigits } from '@/utils/textDirection';
 /**
  * Format a number according to the active locale using Intl.NumberFormat.
  * - fa: groups with the Persian thousands separator and Persian digits

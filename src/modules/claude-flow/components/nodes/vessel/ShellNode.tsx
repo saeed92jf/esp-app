@@ -291,7 +291,7 @@ export const ShellNode = memo(({ id, data, selected }: Props) => {
                           ]}
                           className="h-7 text-xs flex-1 bg-white dark:bg-black"
                         />
-                        <span className="text-xs px-2 py-1 bg-muted/30 border border-border rounded-lg whitespace-nowrap flex items-center justify-center font-mono">
+                        <span className="text-xs px-2 py-1 bg-muted/30 border border-border rounded-lg whitespace-nowrap flex items-center justify-center font-sans">
                           {course.material?.startsWith("SS") ? "8000" : "7850"} kg/m³
                         </span>
                       </div>

@@ -19,7 +19,7 @@ type ShapeNodeData = {
 export const ShapeNode = memo(({ id, data }: NodeProps) => {
   const { setNodes } = useReactFlow();
   const typedData = data as ShapeNodeData;
-  const shape = typedData.shape ?? "cuboids";
+  const shape = typedData.shape ?? "lapJoint";
   const label = typedData.label ?? "Geometry";
   const options = typedData.options ?? [];
   const sourcePosition = typedData.isRtl ? Position.Left : Position.Right;
@@ -42,8 +42,8 @@ export const ShapeNode = memo(({ id, data }: NodeProps) => {
   };
 
   return (
-    <div className="flex w-24 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
-      <div className="rounded-t-lg border-b border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[8px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+    <div dir={typedData.isRtl ? "rtl" : "ltr"} className="flex w-32 flex-col rounded-lg border border-slate-200 bg-white shadow-md dark:border-slate-700 dark:bg-slate-800">
+      <div className="text-start rounded-t-lg border-b border-slate-200 bg-slate-50 px-2 py-1 font-sans text-[8px] font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
         {label}
       </div>
 
@@ -98,7 +98,7 @@ export const ShapeNode = memo(({ id, data }: NodeProps) => {
           type="source"
           id="shape"
           position={sourcePosition}
-          className="h-1.5 w-1.5 border-none border-black bg-black"
+          className="pointer-events-none h-1.5 w-1.5 border-none border-black bg-black"
         />
       </div>
     </div>

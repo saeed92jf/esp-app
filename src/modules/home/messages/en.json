@@ -10,12 +10,17 @@
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
     },
     "quickAccess": {
-      "customize": "Customize",
+      "customize": "Customize Shortcuts",
       "customizeLabel": "Customize Quick Access",
-      "customizeHint": "{selected} of {max} selected",
-      "capReached": "Maximum {max} items allowed",
+      "customizeHint": "{selected} of {max} shortcuts selected",
+      "capReached": "Maximum {max} shortcuts allowed",
       "reset": "Reset to defaults",
-      "done": "Done"
+      "done": "Done",
+      "addShortcut": "Add shortcut",
+      "editShortcut": "Edit shortcut",
+      "removeShortcut": "Remove",
+      "cancel": "Cancel",
+      "save": "Save"
     },
     "stats": {
       "clients": "Happy Clients",

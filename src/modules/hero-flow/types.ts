@@ -1,7 +1,7 @@
-export type ShapeType = "cuboids" | "pyramids";
+export type ShapeType = "lapJoint" | "weldNeck";
 
 export type HeroFlowData = {
-  color: string;
+  rotation: number;
   shape: ShapeType;
   zoom: number;
 };

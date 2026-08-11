@@ -34,7 +34,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`primary-color-${primaryColor}`}
     >
-      <body className="bg-background text-foreground min-h-dvh antialiased">
+      <body className="bg-background text-foreground min-h-dvh antialiased" suppressHydrationWarning>
         {/*
           ThemeProvider lives in the ROOT layout, which never re-renders on a
           locale switch. So the <script> next-themes injects is only ever

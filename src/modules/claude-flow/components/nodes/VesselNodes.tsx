@@ -14,6 +14,7 @@ import { GeneralDataNode } from "./vessel/GeneralDataNode";
 import { JacketNode } from "./vessel/JacketNode";
 import { RegenVacuumSteamoutNode } from "./vessel/RegenVacuumSteamoutNode";
 import { SurfacePrepNode } from "./vessel/SurfacePrepNode";
+import { MaterialListNode } from "./vessel/MaterialListNode";
 import { MtoReportNode } from "./vessel/MtoReportNode";
 
 export const VesselRootNodeWrapper = VesselRootNode;
@@ -30,4 +31,5 @@ export const GeneralDataNodeWrapper = GeneralDataNode;
 export const JacketNodeWrapper = JacketNode;
 export const RegenVacuumSteamoutNodeWrapper = RegenVacuumSteamoutNode;
 export const SurfacePrepNodeWrapper = SurfacePrepNode;
+export const MaterialListNodeWrapper = MaterialListNode;
 export const MtoReportNodeWrapper = MtoReportNode;

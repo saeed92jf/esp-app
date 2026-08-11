@@ -131,6 +131,7 @@
       "jacketNode": "ژاکت حرارتی",
       "regenVacuumSteamoutNode": "احیا / خلاء / تخلیه بخار",
       "surfacePrepNode": "آماده‌سازی سطح",
+      "materialListNode": "جدول مشخصات متریال (MTO Schedule)",
       "mtoNode": "صورت متریال و قطعات (MTO)"
     },
     "palette": {

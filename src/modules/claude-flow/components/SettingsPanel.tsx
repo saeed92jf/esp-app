@@ -635,6 +635,7 @@ export function SettingsPanel() {
       "jacketNode",
       "regenVacuumSteamoutNode",
       "surfacePrepNode",
+      "materialListNode",
       "mtoNode",
     ].includes(selectedNode.type ?? "");
 
@@ -668,6 +669,7 @@ export function SettingsPanel() {
       "jacketNode",
       "regenVacuumSteamoutNode",
       "surfacePrepNode",
+      "materialListNode",
       "mtoNode",
     ].includes(
       selectedNode.type ?? "",
