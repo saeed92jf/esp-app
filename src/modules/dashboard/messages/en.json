@@ -3,6 +3,7 @@
     "greeting": "Welcome, {name}",
     "chartTitle": "6-month trend",
     "chartSubtitle": "Based on sample data",
+    "peak": "Peak",
     "stats": {
       "totalUsers": "Total users",
       "revenue": "Revenue",
@@ -17,7 +18,15 @@
       "support": "Support tickets",
       "wallet": "Wallet balance",
       "tasksToday": "Tasks today",
-      "messages": "Messages"
+      "messages": "Messages",
+      "growth": "Growth rate",
+      "bounceRate": "Bounce rate",
+      "bugs": "Reported bugs",
+      "deploys": "Deployments",
+      "meetings": "Meetings",
+      "hoursLogged": "Hours logged",
+      "rewards": "Reward points",
+      "views": "Profile views"
     },
     "roleSummary": {
       "admin": "Overview of system performance",
@@ -50,6 +59,21 @@
         "hours": "{count} hours ago",
         "days": "{count} days ago"
       }
+    },
+    "calendar": {
+      "title": "Upcoming Events",
+      "types": {
+        "meeting": "Meeting",
+        "deadline": "Deadline",
+        "review": "Review",
+        "event": "Event"
+      },
+      "empty": "No upcoming events"
+    },
+    "themeSettings": "Theme Settings",
+    "checklist": {
+      "title": "Tasks Checklist",
+      "empty": "All caught up!"
     }
   }
 }

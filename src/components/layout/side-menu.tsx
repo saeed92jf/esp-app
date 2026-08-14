@@ -141,7 +141,7 @@ export function SideMenu() {
                   value={group.id}
                   className="border-none border-b-0"
                 >
-                  <AccordionTrigger className="hover:bg-muted rounded-lg px-3 py-2 text-sm font-semibold hover:no-underline">
+                  <AccordionTrigger className="hover:bg-muted rounded-lg px-3 py-2 text-sm font-semibold hover:no-underline transition-colors duration-100 ease-out">
                     <span className="flex items-center gap-2">
                       {GroupIcon && <GroupIcon className="size-4 shrink-0" />}
                       {tSections(group.labelKey)}
@@ -162,7 +162,7 @@ export function SideMenu() {
                                 href={item.href}
                                 onClick={() => handleOpenChange(false)}
                                 className={cn(
-                                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline",
+                                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-colors duration-100 ease-out",
                                   isActive
                                     ? "bg-primary/10 text-primary font-medium"
                                     : "bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground",

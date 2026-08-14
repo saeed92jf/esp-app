@@ -451,3 +451,39 @@ button, input, select, textarea {
     -moz-appearance: textfield;
   }
 }
+
+/* ============================================
+   GLOBAL SCROLLBAR STYLES (DARK/LIGHT AWARE)
+   ============================================ */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Fix react-resizable handle in dark mode */
+.dark .react-resizable-handle {
+  filter: invert(1) hue-rotate(180deg) opacity(0.8);
+}

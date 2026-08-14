@@ -37,10 +37,11 @@ const TREND_ICON = {
   down: TrendingDown,
   neutral: Minus,
 } as const;
+
 const TREND_COLOR = {
-  up: 'text-emerald-600 dark:text-emerald-400',
-  down: 'text-rose-600 dark:text-rose-400',
-  neutral: 'text-muted-foreground',
+  up: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
+  down: 'text-rose-600 dark:text-rose-400 bg-rose-500/10',
+  neutral: 'text-muted-foreground bg-muted/60',
 } as const;
 
 export function StatCard({ stat }: { stat: StatCardType }) {
@@ -49,28 +50,25 @@ export function StatCard({ stat }: { stat: StatCardType }) {
   const TrendIcon = TREND_ICON[stat.trend];
 
   return (
-    <div className="group bg-card relative overflow-hidden rounded-xl border p-5 transition-shadow hover:shadow-md">
-      {/* Decorative gradient blob in the corner */}
-      <div className="bg-primary/5 pointer-events-none absolute -inset-e-6 -top-6 h-20 w-20 rounded-full transition-transform group-hover:scale-125" />
-      <div className="flex items-center justify-between">
-        <span className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-lg">
-          <Icon className="h-5 w-5" />
+    <div className="relative overflow-hidden rounded-xl rounded-br-none border border-border/50 bg-card p-1.5 @[140px]:p-3 @sm:p-5 transition-all duration-300 h-full flex flex-col justify-between">
+      {/* Decorative gradient blob */}
+      <div className="pointer-events-none absolute -end-4 -top-4 h-10 w-10 @[140px]:-end-6 @[140px]:-top-6 @[140px]:h-16 @[140px]:w-16 @sm:h-24 @sm:w-24 rounded-none bg-primary/5 transition-transform duration-500" />
+
+      <div className="flex flex-wrap items-center justify-between gap-1 z-10">
+        <span className="flex h-5 w-5 @[140px]:h-8 @[140px]:w-8 @sm:h-10 @sm:w-10 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform duration-300 shrink-0">
+          <Icon className="h-2.5 w-2.5 @[140px]:h-4 @[140px]:w-4 @sm:h-5 @sm:w-5" />
         </span>
-        <span
-          className={cn(
-            'flex items-center gap-1 text-xs font-medium',
-            TREND_COLOR[stat.trend],
-          )}
-        >
-          <TrendIcon className="h-3.5 w-3.5" />
-          <span dir="ltr">{stat.delta}</span>
+        <span className={cn('flex items-center gap-0.5 @[140px]:gap-1 px-1 py-0.5 text-[8px] @[140px]:text-[10px] @sm:text-xs font-semibold', stat.trend === 'up' ? 'text-emerald-500' : 'text-rose-500')}>
+          <TrendIcon className="h-2 w-2 @[140px]:h-2.5 @[140px]:w-2.5 @sm:h-3 @sm:w-3" />
+          <span className="leading-none">{stat.delta}</span>
         </span>
       </div>
-      <div className="mt-4">
-        <p className="text-2xl font-bold tracking-tight" dir="ltr">
+
+      <div className="mt-1 @[140px]:mt-3 @sm:mt-4 z-10">
+        <p className="text-sm @[140px]:text-xl @sm:text-2xl font-bold tracking-tight text-foreground leading-none" dir="ltr">
           {stat.value}
         </p>
-        <p className="text-muted-foreground mt-1 text-sm">{t(stat.labelKey)}</p>
+        <p className="block mt-0.5 @sm:mt-1 text-[8px] @[140px]:text-[10px] @sm:text-sm font-medium text-muted-foreground transition-colors duration-300 leading-tight">{t(stat.labelKey)}</p>
       </div>
     </div>
   );

@@ -41,12 +41,14 @@ interface GoogleSearchBoxProps {
   className?: string;
   onOpenChange?: (open: boolean) => void;
   onOverviewClick?: () => void;
+  placeholder?: string;
 }
 
 export function GoogleSearchBox({
   className,
   onOpenChange,
   onOverviewClick,
+  placeholder,
 }: GoogleSearchBoxProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -152,9 +154,9 @@ export function GoogleSearchBox({
       showOverallViewButton={true}
       onOverallViewClick={onOverviewClick}
       placeholder={
-        isRtl
+        placeholder || (isRtl
           ? "جستجو در ابزارها، محاسبات، مخازن تحت فشار..."
-          : "Search tools, calculations, pressure vessels..."
+          : "Search tools, calculations, pressure vessels...")
       }
     />
   );

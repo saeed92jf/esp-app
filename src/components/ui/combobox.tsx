@@ -49,7 +49,7 @@ export function Combobox({
       : options.length > searchThreshold;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={false}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -67,7 +67,7 @@ export function Combobox({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start">
         <Command>
           {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} />}
           <CommandList>

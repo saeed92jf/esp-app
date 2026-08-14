@@ -11,16 +11,19 @@ export function SiteSearch({
   className,
   onOpenChange,
   onOverviewClick,
+  placeholder,
 }: {
   className?: string;
   onOpenChange?: (open: boolean) => void;
   onOverviewClick?: () => void;
+  placeholder?: string;
 }) {
   return (
     <GoogleSearchBox
       className={className}
       onOpenChange={onOpenChange}
       onOverviewClick={onOverviewClick}
+      placeholder={placeholder}
     />
   );
 }

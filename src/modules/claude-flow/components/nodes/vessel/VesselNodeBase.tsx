@@ -116,7 +116,7 @@ export function VesselNodeContainer({
   return (
     <div
       className={cn(
-        "relative select-none font-sans text-xs transition-all duration-200",
+        "relative select-none font-sans text-xs transition-all duration-300 fa-num",
         widthClass,
         className
       )}
@@ -128,8 +128,8 @@ export function VesselNodeContainer({
       <div
         dir={dir}
         className={cn(
-          "rounded-xl border bg-form-node text-card-foreground shadow-sm transition-all duration-200 overflow-hidden",
-          "border-sky-200/90 dark:border-sky-900/60 hover:border-form-primary/70",
+          "rounded-xl border bg-gradient-to-br from-card to-card/50 backdrop-blur-xl text-card-foreground shadow-lg transition-all duration-300 overflow-hidden",
+          "border-border/50 hover:border-primary/50 group",
           "focus-within:border-form-primary focus-within:ring-2 focus-within:ring-form-primary/30",
           selected
             ? "border-form-primary ring-2 ring-form-primary ring-offset-2 ring-offset-background shadow-xl shadow-sky-800/15"

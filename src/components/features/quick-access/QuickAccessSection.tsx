@@ -47,20 +47,26 @@ export function QuickAccessSection({
       <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-3.5">
         {!hydrated ? (
           /* Skeletons matching exact Google tile structure */
-          Array.from({ length: 5 }).map((_, i) => (
-            <motion.div
-              key={i}
-              variants={fadeUp}
-              className="flex flex-col items-center justify-start w-[88px] sm:w-[96px] h-[96px] sm:h-[104px] p-2 rounded-2xl animate-pulse"
-            >
-              <div className="size-11 sm:size-11 rounded-full bg-muted/60" />
-              <div className="mt-2.5 h-3 w-14 rounded-md bg-muted/60" />
-            </motion.div>
-          ))
+          Array.from({ length: 5 }).map((_, i) => {
+            const isMobileHidden = i >= 3;
+            return (
+              <motion.div
+                key={i}
+                variants={fadeUp}
+                className={cn(
+                  "flex flex-col items-center justify-start w-[72px] sm:w-[96px] h-[84px] sm:h-[104px] p-1.5 sm:p-2 rounded-2xl animate-pulse",
+                  isMobileHidden && "hidden sm:flex"
+                )}
+              >
+                <div className="size-10 sm:size-11 rounded-full bg-muted/60" />
+                <div className="mt-1.5 sm:mt-2.5 h-3 w-14 rounded-md bg-muted/60" />
+              </motion.div>
+            );
+          })
         ) : (
           <>
             {/* Active Shortcuts */}
-            {items.map((item) => {
+            {items.map((item, index) => {
               let title = item.labelKey;
               try {
                 title = tItems(item.labelKey);
@@ -76,8 +82,10 @@ export function QuickAccessSection({
                 group?.color ??
                 "sky") as NavColor;
 
+              const isMobileHidden = index >= 3;
+
               return (
-                <motion.div key={item.href} variants={fadeUp}>
+                <motion.div key={item.href} variants={fadeUp} className={cn(isMobileHidden && "hidden sm:block")}>
                   <GoogleShortcutTile
                     href={item.href}
                     icon={item.icon}
@@ -90,9 +98,13 @@ export function QuickAccessSection({
               );
             })}
 
-            {/* Add Shortcut Tile (if not reached max) */}
-            {items.length < maxItems && (
+            {/* Add / Customize Shortcut Tile */}
+            {items.length < maxItems ? (
               <motion.div variants={fadeUp}>
+                <GoogleAddShortcutTile onClick={() => setIsModalOpen(true)} />
+              </motion.div>
+            ) : (
+              <motion.div variants={fadeUp} className="sm:hidden">
                 <GoogleAddShortcutTile onClick={() => setIsModalOpen(true)} />
               </motion.div>
             )}

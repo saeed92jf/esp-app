@@ -250,6 +250,9 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System",
+    "user": "User",
+    "mode": "Mode",
+    "themeLocked": "To change the theme, first set the mode to User",
     "colors": {
       "red": "Red",
       "pink": "Pink",

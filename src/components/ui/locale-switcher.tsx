@@ -50,6 +50,8 @@ export function LocaleSwitcher({ className }: { className?: string }) {
   const [isHovered, setIsHovered] = useState(false);
   const textNormal = optimisticLocale === "en" ? "English" : "فارسی";
   const textHover = optimisticLocale === "en" ? "Switch to Persian" : "تبدیل به انگلیسی";
+  const shortNormal = optimisticLocale === "en" ? "EN" : "FA";
+  const shortHover = optimisticLocale === "en" ? "FA" : "EN";
 
   return (
     <>
@@ -86,7 +88,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
 
       <button
         className={cn(
-          "relative h-9 px-4 overflow-hidden rounded-full border border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50 hover:bg-muted/50 text-[13px] font-semibold text-foreground transition-all duration-300",
+          "relative flex items-center justify-center h-9 w-9 sm:w-auto sm:px-4 overflow-hidden rounded-full border border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50 hover:bg-muted/50 text-[13px] font-semibold text-foreground transition-all duration-300",
           (isPending || isFadingOut) && "pointer-events-none opacity-50",
           className
         )}
@@ -99,9 +101,9 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         role="button"
         aria-label="Toggle Language"
       >
-        <div className="relative flex items-center justify-center">
-          {/* Invisible placeholder ensures button width doesn't jitter */}
-          <div className="invisible whitespace-nowrap">
+        <div className="relative flex items-center justify-center w-full h-full">
+          {/* Invisible placeholder ensures button width doesn't jitter on desktop */}
+          <div className="invisible whitespace-nowrap hidden sm:block">
             {textHover}
           </div>
           
@@ -111,18 +113,20 @@ export function LocaleSwitcher({ className }: { className?: string }) {
               initial={false}
               animate={{ y: isHovered ? -24 : 0, opacity: isHovered ? 0 : 1 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute whitespace-nowrap"
+              className="absolute whitespace-nowrap flex items-center justify-center"
             >
-              {textNormal}
+              <span className="hidden sm:inline">{textNormal}</span>
+              <span className="sm:hidden">{shortNormal}</span>
             </motion.span>
             
             <motion.span
               initial={false}
               animate={{ y: isHovered ? 0 : 24, opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute whitespace-nowrap text-primary"
+              className="absolute whitespace-nowrap text-primary flex items-center justify-center"
             >
-              {textHover}
+              <span className="hidden sm:inline">{textHover}</span>
+              <span className="sm:hidden">{shortHover}</span>
             </motion.span>
           </div>
         </div>

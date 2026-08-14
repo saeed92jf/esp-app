@@ -44,6 +44,12 @@
   overflow: hidden;
   z-index: 2;
   transform: rotate(0deg) scale(1);
+  animation: sun-pulse 2s infinite alternate;
+}
+
+@keyframes sun-pulse {
+  0% { box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 10px rgba(251,191,36,0.5); }
+  100% { box-shadow: 0 2px 4px rgba(0,0,0,0.2), 0 0 20px rgba(251,191,36,1), 0 0 30px rgba(251,191,36,0.6); }
 }
 
 .moon-dot {
@@ -96,16 +102,16 @@
   position: absolute;
   fill: #fff;
   transition: all 0.4s !important;
-  animation: twinkle 3s infinite alternate;
+  animation: twinkle 1.5s infinite alternate;
 }
-#star-1 { width: 7px; top: 5px; left: 24px; animation-delay: 0s; }
-#star-2 { width: 5px; top: 12px; left: 30px; animation-delay: 1s; }
-#star-3 { width: 4px; top: 18px; left: 18px; animation-delay: 0.5s; }
-#star-4 { width: 6px; top: 8px; left: 12px; animation-delay: 1.5s; }
+#star-1 { width: 11px; top: 4px; left: 22px; animation-delay: 0s; }
+#star-2 { width: 8px; top: 11px; left: 30px; animation-delay: 0.5s; }
+#star-3 { width: 7px; top: 18px; left: 17px; animation-delay: 0.2s; }
+#star-4 { width: 9px; top: 7px; left: 11px; animation-delay: 0.8s; }
 
 @keyframes twinkle {
-  0% { opacity: 0.5; transform: scale(0.8); }
-  100% { opacity: 1; transform: scale(1.1); }
+  0% { opacity: 0.2; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1.4); }
 }
 
 .theme-switch input:checked + .theme-slider {
@@ -117,6 +123,7 @@
   transform: translateX(28px) rotate(360deg) scale(0.95);
   background-color: #f1f5f9;
   box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 0 12px rgba(255,255,255,0.6);
+  animation: none;
 }
 
 .theme-switch input:checked + .theme-slider .moon-dot {

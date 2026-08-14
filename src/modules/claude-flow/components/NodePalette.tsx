@@ -566,7 +566,7 @@ export function NodePalette() {
   };
 
   return (
-    <aside className="flex h-full border-e border-border bg-background">
+    <aside className="flex h-full border-r border-border/50 bg-gradient-to-b from-card to-card/50 backdrop-blur-xl shadow-2xl fa-num">
       {/* ── Category rail — vertical, alongside the panel ── */}
       <div className="flex w-10 shrink-0 flex-col items-center gap-1 border-e border-border bg-muted/30 py-3">
         {CATEGORIES.map((cat) => {
@@ -622,15 +622,15 @@ export function NodePalette() {
                       title={t("palette.dragToAdd")}
                       className={cn(
                         // Base layout
-                        "flex cursor-grab flex-col items-center gap-1.5 rounded-lg",
-                        "border border-border px-2 py-3 text-center",
+                        "flex cursor-grab flex-col items-center gap-1.5 rounded-xl",
+                        "border border-border/50 bg-card/40 px-2 py-3 text-center",
                         // Interaction: subtle bg lift on hover, shadow on active drag
-                        "transition-colors hover:bg-accent hover:border-primary/40",
-                        "active:cursor-grabbing active:shadow-xs",
+                        "transition-all duration-300 hover:bg-card/80 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 group",
+                        "active:cursor-grabbing active:shadow-sm active:translate-y-0",
                       )}
                     >
                       {/* Icon: muted-foreground keeps it secondary; primary on hover via group */}
-                      <Icon className="h-5 w-5 text-muted-foreground" />
+                      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
 
                       {/* Dynamic node label: Flow.nodes.<labelKey> */}
                       <span className="text-[11px] font-medium leading-tight text-foreground">

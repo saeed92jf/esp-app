@@ -64,7 +64,7 @@ export function GoogleShortcutTile({
   return (
     <div
       className={cn(
-        "group relative flex flex-col items-center justify-start w-[88px] sm:w-[96px] h-[96px] sm:h-[104px] p-2 rounded-2xl select-none transition-colors duration-150",
+        "group relative flex flex-col items-center justify-start w-[72px] sm:w-[96px] h-[84px] sm:h-[104px] p-1.5 sm:p-2 rounded-2xl select-none transition-colors duration-150",
         "hover:bg-black/[0.05] dark:hover:bg-white/[0.08]",
         isMenuOpen && "bg-black/[0.05] dark:bg-white/[0.08]",
         className
@@ -125,7 +125,7 @@ export function GoogleShortcutTile({
         {/* Google Circular Icon Bubble */}
         <div
           className={cn(
-            "flex size-11 sm:size-11 items-center justify-center rounded-full text-white shadow-xs transition-colors duration-150",
+            "flex size-10 sm:size-11 items-center justify-center rounded-full text-white shadow-xs transition-colors duration-150",
             navBgClass,
             "group-hover:brightness-95"
           )}
@@ -140,7 +140,7 @@ export function GoogleShortcutTile({
 
         {/* Shortcut Title */}
         <span
-          className="mt-2 text-[12px] sm:text-[12.5px] font-normal tracking-normal text-foreground/90 text-center leading-tight line-clamp-1 max-w-[84px] sm:max-w-[96px] truncate"
+          className="mt-1.5 sm:mt-2 text-[11px] sm:text-[12.5px] font-normal tracking-normal text-foreground/90 text-center leading-tight line-clamp-1 max-w-[64px] sm:max-w-[96px] truncate"
           title={title}
         >
           {title}

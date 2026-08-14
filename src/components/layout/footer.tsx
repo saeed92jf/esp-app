@@ -13,7 +13,7 @@ export function Footer() {
       {/* Subtle top glow */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-(--theme)/30 to-transparent" />
       
-      <div className="mx-auto max-w-7xl px-6 pt-8 pb-4 flex flex-col gap-4">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 pt-8 pb-4 flex flex-col gap-4">
         
         {/* Top Row: Logo */}
         <div className="flex items-center justify-center sm:justify-start">

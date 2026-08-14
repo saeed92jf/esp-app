@@ -3,6 +3,7 @@
     "greeting": "خوش آمدید، {name}",
     "chartTitle": "روند ۶ ماهه",
     "chartSubtitle": "بر اساس داده‌های نمونه",
+    "peak": "پیک",
     "stats": {
       "totalUsers": "کل کاربران",
       "revenue": "درآمد",
@@ -17,7 +18,15 @@
       "support": "تیکت‌های پشتیبانی",
       "wallet": "موجودی کیف پول",
       "tasksToday": "تسک‌های امروز",
-      "messages": "پیام‌ها"
+      "messages": "پیام‌ها",
+      "growth": "نرخ رشد",
+      "bounceRate": "نرخ پرش",
+      "bugs": "باگ‌های گزارش شده",
+      "deploys": "استقرارها",
+      "meetings": "جلسات",
+      "hoursLogged": "ساعات ثبت شده",
+      "rewards": "امتیازات",
+      "views": "بازدید پروفایل"
     },
     "roleSummary": {
       "admin": "نمای کلی عملکرد سامانه",
@@ -50,6 +59,21 @@
         "hours": "{count} ساعت پیش",
         "days": "{count} روز پیش"
       }
+    },
+    "calendar": {
+      "title": "رویدادهای پیش رو",
+      "types": {
+        "meeting": "جلسه",
+        "deadline": "مهلت",
+        "review": "بررسی",
+        "event": "رویداد"
+      },
+      "empty": "رویدادی وجود ندارد"
+    },
+    "themeSettings": "تنظیمات ظاهری",
+    "checklist": {
+      "title": "چک‌لیست وظایف",
+      "empty": "همه کارها انجام شد!"
     }
   }
 }

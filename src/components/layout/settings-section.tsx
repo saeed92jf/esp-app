@@ -4,59 +4,108 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { Check, Monitor, Moon, Sun, Palette } from 'lucide-react';
+import { Check, Monitor, Moon, Sun, Palette, User } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { PRIMARY_COLORS } from '@/config/settings';
 import { usePrimaryColor } from '@/hooks/use-primary-color';
 
-// Theme options rendered as a 3-way segmented control.
-// `value` matches the next-themes API ('light' | 'dark' | 'system').
+const MODE_OPTIONS = [
+  { value: 'system', labelKey: 'system', icon: Monitor },
+  { value: 'user', labelKey: 'user', icon: User },
+] as const;
+
 const THEME_OPTIONS = [
   { value: 'light', labelKey: 'light', icon: Sun },
   { value: 'dark', labelKey: 'dark', icon: Moon },
-  { value: 'system', labelKey: 'system', icon: Monitor },
 ] as const;
 
 /**
  * SettingsSection
  * Compact appearance controls embedded at the bottom of the side menu:
- *  - Theme switcher (light / dark / system) via next-themes.
+ *  - Mode switcher (system / user).
+ *  - Theme switcher (light / dark) - locked in system mode.
  *  - Primary color picker rendered as colored swatches.
- *
- * Theme-dependent UI is gated behind `mounted` to prevent a
- * hydration mismatch (the server can't know the resolved theme).
  */
 export function SettingsSection() {
   const t = useTranslations('Settings');
   const tColors = useTranslations('Settings.colors');
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
 
-  // next-themes is client-only; render the active state post-mount.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  const mode = theme === 'system' ? 'system' : 'user';
+
+  const handleModeChange = (newMode: 'system' | 'user') => {
+    if (newMode === 'system') {
+      setTheme('system');
+    } else {
+      // Switch to user mode by explicitly setting to the current resolved theme
+      setTheme(resolvedTheme || 'light');
+    }
+  };
+
+  const handleThemeChange = (newTheme: 'light' | 'dark') => {
+    if (mode === 'system') {
+      toast.info(t('themeLocked'));
+      return;
+    }
+    setTheme(newTheme);
+  };
+
   return (
-    <div className="space-y-3">
-      {/* ---- Theme switcher: segmented control ---- */}
+    <div className="space-y-4">
+      {/* ---- Mode switcher ---- */}
       <div className="space-y-1.5">
-        <p className="text-[11px] font-medium text-muted-foreground">{t('theme')}</p>
+        <p className="text-[11px] font-medium text-muted-foreground">{t('mode')}</p>
         <div className="bg-background/80 dark:bg-background/40 border border-border/50 flex gap-1 rounded-lg p-1">
-          {THEME_OPTIONS.map((opt) => {
+          {MODE_OPTIONS.map((opt) => {
             const Icon = opt.icon;
-            const active = mounted && theme === opt.value;
+            const active = mounted && mode === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => setTheme(opt.value)}
+                onClick={() => handleModeChange(opt.value as 'system' | 'user')}
                 aria-pressed={active}
                 className={cn(
                   'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
                   active
                     ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                )}
+              >
+                <Icon className="size-3.5" />
+                <span>{t(opt.labelKey)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ---- Theme switcher ---- */}
+      <div className="space-y-1.5">
+        <p className="text-[11px] font-medium text-muted-foreground">{t('theme')}</p>
+        <div className={cn("bg-background/80 dark:bg-background/40 border border-border/50 flex gap-1 rounded-lg p-1", mode === 'system' && "opacity-60")}>
+          {THEME_OPTIONS.map((opt) => {
+            const Icon = opt.icon;
+            // The active theme is based on resolvedTheme so it reflects reality even in system mode
+            const active = mounted && resolvedTheme === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleThemeChange(opt.value as 'light' | 'dark')}
+                aria-pressed={active}
+                className={cn(
+                  'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
+                  active
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                  mode === 'system' && "cursor-not-allowed"
                 )}
               >
                 <Icon className="size-3.5" />
@@ -101,4 +150,5 @@ export function SettingsSection() {
     </div>
   );
 }
+
 

@@ -25,10 +25,25 @@ export interface ActivityItem {
   status: 'success' | 'pending' | 'error';
 }
 
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string;
+  type: 'meeting' | 'deadline' | 'review' | 'event';
+}
+
+export interface ChecklistItem {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface DashboardData {
   stats: StatCard[];
   chart: ChartPoint[];
   activities: ActivityItem[];
+  calendarEvents: CalendarEvent[];
+  checklist: ChecklistItem[];
 }
 
 // ─── Interface ────────────────────────────────────────────────────────────────
@@ -55,6 +70,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'revenue',labelKey:'revenue',         value:'84.5M',  delta:'+12.5%', trend:'up',      icon:'wallet'   },
       { id:'orders', labelKey:'orders',           value:'3,127',  delta:'-2.1%',  trend:'down',    icon:'package'  },
       { id:'active', labelKey:'activeSessions',   value:'486',    delta:'+4.0%',  trend:'up',      icon:'activity' },
+      { id:'growth', labelKey:'growth',           value:'15.3%',  delta:'+1.2%',  trend:'up',      icon:'check'    },
+      { id:'bounce', labelKey:'bounceRate',       value:'42%',    delta:'-5.4%',  trend:'down',    icon:'clock'    },
     ],
     chart: chart([42,55,48,70,65,82]),
     activities: [
@@ -63,6 +80,16 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       {id:'a3',titleKey:'ticket',     timeKey:'hours',  count:1,  status:'pending'},
       {id:'a4',titleKey:'deploy',     timeKey:'hours',  count:3,  status:'success'},
     ],
+    calendarEvents: [
+      { id: 'ce1', title: 'Board Meeting', date: '2026-08-15', type: 'meeting' },
+      { id: 'ce2', title: 'Q3 Report Deadline', date: '2026-08-20', type: 'deadline' },
+      { id: 'ce3', title: 'Team Building', date: '2026-08-25', type: 'event' }
+    ],
+    checklist: [
+      { id: 'cl1', title: 'Review Q3 Financials', completed: true },
+      { id: 'cl2', title: 'Approve new hires', completed: false },
+      { id: 'cl3', title: 'Update security policies', completed: false }
+    ],
   },
   engineer: {
     stats: [
@@ -70,6 +97,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'tickets', labelKey:'openTickets',     value:'14', delta:'-3',   trend:'down',    icon:'wrench'  },
       { id:'done',    labelKey:'completedTasks',  value:'57', delta:'+9',   trend:'up',      icon:'check'   },
       { id:'review',  labelKey:'pendingReview',   value:'5',  delta:'0',    trend:'neutral', icon:'clock'   },
+      { id:'bugs',    labelKey:'bugs',            value:'12', delta:'-2',   trend:'down',    icon:'message' },
+      { id:'deploys', labelKey:'deploys',         value:'24', delta:'+4',   trend:'up',      icon:'activity'},
     ],
     chart: chart([12,18,15,22,19,25]),
     activities: [
@@ -78,6 +107,20 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       {id:'e3',titleKey:'taskDone', timeKey:'hours',  count:5, status:'success'},
       {id:'e4',titleKey:'ticket',   timeKey:'days',   count:1, status:'error'  },
     ],
+    calendarEvents: [
+      { id: 'ce1', title: 'Sprint Planning', date: '2026-08-14', type: 'meeting' },
+      { id: 'ce2', title: 'Code Freeze', date: '2026-08-18', type: 'deadline' },
+      { id: 'ce3', title: 'Architecture Review', date: '2026-08-22', type: 'review' },
+      { id: 'ce4', title: 'Team Building', date: '2026-08-14', type: 'event' },
+      { id: 'ce5', title: 'Deploy to Prod', date: '2026-08-13', type: 'deadline' },
+      { id: 'ce6', title: 'Design Sync', date: '2026-08-13', type: 'meeting' },
+      { id: 'ce7', title: 'Q3 Review', date: '2026-08-15', type: 'review' }
+    ],
+    checklist: [
+      { id: 'cl1', title: 'Fix auth bug #342', completed: true },
+      { id: 'cl2', title: 'Write tests for dashboard', completed: false },
+      { id: 'cl3', title: 'Update documentation', completed: false }
+    ],
   },
   staff: {
     stats: [
@@ -85,6 +128,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'done',  labelKey:'completedTasks',value:'38', delta:'+5', trend:'up',   icon:'activity' },
       { id:'tickets',labelKey:'openTickets',  value:'6',  delta:'-1', trend:'down', icon:'wrench'   },
       { id:'msgs',  labelKey:'messages',       value:'23', delta:'+7', trend:'up',   icon:'message'  },
+      { id:'meetings',labelKey:'meetings',     value:'4',  delta:'0',  trend:'neutral', icon:'users'},
+      { id:'hours', labelKey:'hoursLogged',    value:'32', delta:'+4', trend:'up',   icon:'clock'    },
     ],
     chart: chart([8,12,10,14,11,16]),
     activities: [
@@ -93,6 +138,14 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       {id:'s3',titleKey:'newUser', timeKey:'hours',  count:2, status:'success'},
       {id:'s4',titleKey:'review',  timeKey:'hours',  count:4, status:'pending'},
     ],
+    calendarEvents: [
+      { id: 'ce1', title: 'Weekly Sync', date: '2026-08-13', type: 'meeting' },
+      { id: 'ce2', title: 'Submit Timesheet', date: '2026-08-15', type: 'deadline' }
+    ],
+    checklist: [
+      { id: 'cl1', title: 'Respond to 5 tickets', completed: true },
+      { id: 'cl2', title: 'Complete compliance training', completed: false }
+    ],
   },
   customer: {
     stats: [
@@ -100,6 +153,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'invoices',labelKey:'invoices', value:'4',    delta:'0',    trend:'neutral', icon:'file'    },
       { id:'support', labelKey:'support',  value:'2',    delta:'-1',   trend:'down',    icon:'wrench'  },
       { id:'wallet',  labelKey:'wallet',   value:'1.2M', delta:'+3.4%',trend:'up',      icon:'wallet'  },
+      { id:'rewards', labelKey:'rewards',  value:'450',  delta:'+50',  trend:'up',      icon:'check'   },
+      { id:'views',   labelKey:'views',    value:'12K',  delta:'+1K',  trend:'up',      icon:'activity'},
     ],
     chart: chart([2,4,3,5,4,6]),
     activities: [
@@ -107,6 +162,15 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       {id:'c2',titleKey:'invoicePaid', timeKey:'days', count:1,status:'success'},
       {id:'c3',titleKey:'ticket',      timeKey:'days', count:2,status:'pending'},
       {id:'c4',titleKey:'payment',     timeKey:'days', count:4,status:'success'},
+    ],
+    calendarEvents: [
+      { id: 'ce1', title: 'Product Demo', date: '2026-08-16', type: 'event' },
+      { id: 'ce2', title: 'Subscription Renewal', date: '2026-08-30', type: 'deadline' }
+    ],
+    checklist: [
+      { id: 'cl1', title: 'Verify email address', completed: true },
+      { id: 'cl2', title: 'Add payment method', completed: false },
+      { id: 'cl3', title: 'Complete profile setup', completed: false }
     ],
   },
 };

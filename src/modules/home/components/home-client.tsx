@@ -142,6 +142,7 @@ export function HomeClient() {
                 <motion.div variants={fadeUp} className="w-full">
                   <SiteSearch
                     className="w-full"
+                    placeholder={t("hero.searchPlaceholder")}
                     onOpenChange={setIsSearchOpen}
                     onOverviewClick={() => {
                       document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
@@ -161,7 +162,7 @@ export function HomeClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-24 lg:bottom-32 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            className="absolute bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
           >
             <motion.div
               style={{ opacity: exploreOpacity }}
@@ -191,7 +192,7 @@ export function HomeClient() {
                 ref={heroFlowRef}
                 style={{ opacity: heroFlowOpacity }}
                 id="hero-flow-section" 
-                className="h-[100vh] w-full overflow-hidden"
+                className="h-[100vh] w-full overflow-hidden scroll-mt-[64px]"
               >
                 <HeroFlow />
               </motion.div>

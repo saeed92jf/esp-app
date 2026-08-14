@@ -25,17 +25,17 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/50 backdrop-blur-2xl">
-      <div className="mx-auto flex h-header z-header w-full items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2">
+      <div className="mx-auto flex h-header z-header w-full items-center justify-between px-2 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-1 sm:gap-2">
           {isAuthed && <SideMenu />}
           <Link href="/" aria-label={t("brand")}>
-            <Logo compact className="text-xl sm:text-2xl" />
+            <Logo compact className="text-base sm:text-2xl" />
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
-          <ThemeToggle className="scale-90" />
-          <LocaleSwitcher className="scale-90" />
+        <div className="flex items-center gap-1 sm:gap-3">
+          <ThemeToggle className="scale-[0.8] sm:scale-90 origin-right" />
+          <LocaleSwitcher className="scale-[0.8] sm:scale-90 origin-center" />
           {loading ? (
             <Skeleton className="h-10 w-10 rounded-full" />
           ) : user ? (
@@ -47,6 +47,7 @@ export function Header() {
               imageUrl={user.avatar || user.imageUrl}
               size="lg"
               onLogout={logout}
+              className="scale-[0.75] sm:scale-100 origin-right"
             />
           ) : (
             <Button
