@@ -17,19 +17,19 @@ interface TeamMember {
 }
 
 const leadershipTeam: TeamMember[] = [
-  { id: "m1", keyName: "morteza", roleKey: "head", github: "morteza-sh", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20", avatar: "/images/team/avatar_2_1786863503222.jpg" },
+  { id: "m1", keyName: "morteza", roleKey: "head", github: "morteza-sh", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20", avatar: "/images/team/morteza.jpg" },
 ];
 
 const engineeringTeam: TeamMember[] = [
-  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20", avatar: "/images/team/avatar_1_1786863491896.jpg" },
-  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20", avatar: "/images/team/avatar_3_1786863513758.jpg" },
-  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20", avatar: "/images/team/avatar_4_1786863523976.jpg" },
+  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20", avatar: "/images/team/saeed.jpg" },
+  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20", avatar: "/images/team/peyman.jpg" },
+  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20", avatar: "/images/team/pouria.jpg" },
 ];
 
 const contentTeam: TeamMember[] = [
-  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", github: "msaeed-content", email: "msaeed@example.com", gradient: "from-rose-500/20 to-red-500/20", avatar: "/images/team/avatar_mohammadsaeed_1786860787419.jpg" },
-  { id: "c2", keyName: "behzad", roleKey: "content", github: "behzad-creative", email: "behzad@example.com", gradient: "from-indigo-500/20 to-blue-500/20", avatar: "/images/team/avatar_behzad_1786860796461.jpg" },
-  { id: "c3", keyName: "seyedMohammad", roleKey: "content", github: "smohammad-media", email: "smohammad@example.com", gradient: "from-fuchsia-500/20 to-pink-500/20", avatar: "/images/team/avatar_seyedmohammad_1786860808880.jpg" },
+  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", github: "msaeed-content", email: "msaeed@example.com", gradient: "from-rose-500/20 to-red-500/20", avatar: "/images/team/mohammadsaeed.jpg" },
+  { id: "c2", keyName: "behzad", roleKey: "content", github: "behzad-creative", email: "behzad@example.com", gradient: "from-indigo-500/20 to-blue-500/20", avatar: "/images/team/behzad.jpg" },
+  { id: "c3", keyName: "seyedMohammad", roleKey: "content", github: "smohammad-media", email: "smohammad@example.com", gradient: "from-fuchsia-500/20 to-pink-500/20", avatar: "/images/team/seyedmohammad.jpg" },
   { id: "c4", keyName: "sina", roleKey: "content", github: "sina-social", email: "sina@example.com", gradient: "from-cyan-500/20 to-sky-500/20", avatar: "/images/team/avatar_sina_new_1786862334366.jpg" },
 ];
 
