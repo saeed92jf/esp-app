@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
 import { useQuickAccess, QUICK_ACCESS_MAX } from "@/hooks/use-quick-access";
 import { NAVIGATION, type NavColor } from "@/config/navigation";
 import { GoogleShortcutTile } from "./GoogleShortcutTile";
@@ -15,7 +15,7 @@ interface QuickAccessSectionProps {
   maxItems?: number;
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 15 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } },
 };

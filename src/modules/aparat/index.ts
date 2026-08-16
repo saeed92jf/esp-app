@@ -1,4 +1,6 @@
-﻿export * from "./components/aparat-skeleton";
+export * from "./components/aparat-skeleton";
+export * from "./components/channel-banner";
+export * from "./components/channel-info-bar";
 export * from "./components/channel-header";
 export * from "./components/channelstats";
 export * from "./components/channel-video-search";

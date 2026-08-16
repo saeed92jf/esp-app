@@ -23,6 +23,7 @@ export interface GenericSearchBoxProps<T> {
   onOpenChange?: (open: boolean) => void;
   showOverallViewButton?: boolean;
   onOverallViewClick?: () => void;
+  renderResultsHeader?: (count: number, query: string) => React.ReactNode;
 }
 
 export function GenericSearchBox<T>({
@@ -38,6 +39,7 @@ export function GenericSearchBox<T>({
   onOpenChange,
   showOverallViewButton,
   onOverallViewClick,
+  renderResultsHeader,
 }: GenericSearchBoxProps<T>) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -289,7 +291,7 @@ export function GenericSearchBox<T>({
         </div>
 
         {showDropdown && (
-          <div className="space-y-0.5 overflow-hidden pb-3 pt-0.5 animate-in fade-in-50 duration-100 sm:pb-3.5">
+          <div className="space-y-0.5 overflow-y-auto custom-scrollbar max-h-[60vh] pb-3 pt-0.5 animate-in fade-in-50 duration-100 sm:pb-3.5">
             {!showResultsMode &&
               history.map((item, idx) => {
                 const isSelected = idx === selectedIndex;
@@ -345,6 +347,7 @@ export function GenericSearchBox<T>({
 
             {showResultsMode && filteredResults.length > 0 && (
               <div className="space-y-0.5">
+                {renderResultsHeader?.(filteredResults.length, query)}
                 {filteredResults.map((item, idx) => (
                   <React.Fragment key={getItemKey(item as T)}>
                     {renderItem(item as T, idx === selectedIndex, () =>

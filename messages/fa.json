@@ -167,6 +167,7 @@
       "documentArchive": "بایگانی اسناد",
       "employees": "کارکنان",
       "multimedia": "چندرسانه‌ای",
+      "engineering": "مهندسی",
       "settings": "تنظیمات",
       "language": "زبان"
     },
@@ -324,6 +325,7 @@
     "online": "آنلاین"
   },
   "Aparat": {
+    "loadingVideos": "در حال دریافت ویدیوها... ({loaded} از {total})",
     "stats": {
       "videos": "ویدیوها",
       "followers": "دنبال‌کننده‌ها",

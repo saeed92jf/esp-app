@@ -25,6 +25,15 @@ import { OutputNode } from "./nodes/OutputNode";
 import { FLOW_THEME, type ShapeType } from "./types";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const nodeTypes = {
   rotateNode: RotateNode,
@@ -294,8 +303,10 @@ export function HeroFlow() {
   const locale = useLocale();
   const router = useRouter();
   const isRtl = locale === "fa";
+  const isMobile = useIsMobile();
   const [initialColor, setInitialColor] = useState(FALLBACK_PRIMARY);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [showMobileAlert, setShowMobileAlert] = useState(false);
 
   useEffect(() => {
     setInitialColor(resolveThemeColor(FLOW_THEME.color));
@@ -348,13 +359,15 @@ export function HeroFlow() {
       <div className="w-full max-w-[100vw] overflow-x-hidden flex flex-col min-h-screen relative z-10 pointer-events-none">
         
         {/* REACT FLOW CANVAS: Normal flow on mobile (top), Absolute full-screen on desktop */}
-        <div 
-          className="w-full h-[50vh] min-h-[350px] relative lg:absolute lg:inset-0 lg:h-full lg:min-h-full z-0 pointer-events-auto overflow-hidden"
-        >
-          <ReactFlowProvider>
-            <FlowInner isRtl={isRtl} initialColor={initialColor} />
-          </ReactFlowProvider>
-        </div>
+        {!isMobile && (
+          <div 
+            className="w-full h-[50vh] min-h-[350px] relative lg:absolute lg:inset-0 lg:h-full lg:min-h-full z-0 pointer-events-auto overflow-hidden hidden md:block"
+          >
+            <ReactFlowProvider>
+              <FlowInner isRtl={isRtl} initialColor={initialColor} />
+            </ReactFlowProvider>
+          </div>
+        )}
 
         <div className="flex-1 container mx-auto px-6 md:px-12 flex flex-col justify-center py-12 gap-8 lg:gap-12 relative z-10">
           <div className="w-full h-auto pointer-events-none -mt-12 lg:-mt-28">
@@ -386,6 +399,11 @@ export function HeroFlow() {
                     target="_blank"
                     className="flex items-center justify-center w-full h-full outline-none"
                     onClick={(e) => {
+                      if (isMobile) {
+                        e.preventDefault();
+                        setShowMobileAlert(true);
+                        return;
+                      }
                       e.preventDefault();
                       if (isNavigating) return;
                       setIsNavigating(true);
@@ -425,8 +443,8 @@ export function HeroFlow() {
             </div>
           </div>
 
-          <div className="pointer-events-none w-full z-30 pb-12 lg:pb-0 mt-8 lg:mt-16 xl:mt-24">
-          <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full pointer-events-none">
+          <div className="pointer-events-none w-full z-30 pb-4 lg:pb-0 mt-4 lg:mt-16 xl:mt-24">
+          <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full pointer-events-none">
             <div 
               className="absolute inset-[-10%] z-[-1] backdrop-blur-sm pointer-events-none"
               style={{
@@ -435,12 +453,12 @@ export function HeroFlow() {
               }}
             />
             {modules.map((mod, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center gap-1 p-4 sm:p-5 pointer-events-none h-full">
-                <div className="text-(--theme) mb-2 opacity-80 mix-blend-multiply dark:mix-blend-screen shrink-0">
+              <div key={idx} className="flex flex-col items-center text-center gap-1 p-2 sm:p-5 pointer-events-none h-full">
+                <div className="text-(--theme) mb-1 sm:mb-2 opacity-80 mix-blend-multiply dark:mix-blend-screen shrink-0 scale-75 sm:scale-100">
                   {mod.icon}
                 </div>
-                <div className="text-lg font-bold text-(--theme)">{mod.title}</div>
-                <div className="text-[13px] font-medium text-foreground/70 leading-[1.6] line-clamp-3 min-h-[60px] mt-1">
+                <div className="text-sm sm:text-lg font-bold text-(--theme) leading-tight">{mod.title}</div>
+                <div className="hidden sm:block text-[13px] font-medium text-foreground/70 leading-[1.6] line-clamp-3 min-h-[60px] mt-1">
                   {mod.desc}
                 </div>
               </div>
@@ -449,6 +467,26 @@ export function HeroFlow() {
           </div>
         </div>
       </div>
+
+      <Dialog open={showMobileAlert} onOpenChange={setShowMobileAlert}>
+        <DialogContent className={isRtl ? "fa-num font-vazir" : ""} dir={isRtl ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle className="text-xl text-center mb-2">
+              {isRtl ? "پشتیبانی دسکتاپ" : "Desktop Only"}
+            </DialogTitle>
+            <DialogDescription className="text-center text-base leading-relaxed">
+              {isRtl 
+                ? "اجرای محیط ESP-Flow نیازمند نمایشگر بزرگتر است و این بخش تنها در نسخه دسکتاپ قابل دسترس می‌باشد. لطفا برای تجربه کامل، از کامپیوتر یا لپ‌تاپ استفاده کنید." 
+                : "The ESP-Flow environment requires a larger display and is only available on the desktop version. Please use a computer or laptop for the full experience."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 sm:justify-center">
+            <Button onClick={() => setShowMobileAlert(false)} className="w-full sm:w-auto min-w-[120px]">
+              {isRtl ? "متوجه شدم" : "Understood"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

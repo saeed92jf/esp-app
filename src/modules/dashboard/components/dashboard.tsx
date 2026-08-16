@@ -36,8 +36,8 @@ export function Dashboard() {
   const { user } = useAuth();
   const { data, loading, error, refetch } = useDashboard(user?.role);
   const isAdmin = user?.role?.toLowerCase() === "admin";
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-  const [menuSidebarOpen, setMenuSidebarOpen] = React.useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const [menuSidebarOpen, setMenuSidebarOpen] = React.useState(false);
 
   const {
     layouts,
@@ -131,7 +131,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="mx-auto max-w-screen-2xl pb-8 relative px-4 sm:px-6">
+    <div className="mx-auto w-full max-w-[1800px] pb-8 relative px-4 sm:px-6">
       <DashboardHeader 
         displayName={displayName}
         userRole={user.role}
@@ -190,7 +190,7 @@ export function Dashboard() {
       >
         <ResponsiveGridLayout
           className="layout"
-          layouts={layouts}
+          layouts={layouts as any}
           breakpoints={{ lg: 1024, md: 768, sm: 640 }}
           cols={{ lg: 12, md: 10, sm: 6 }}
           rowHeight={80}
@@ -236,18 +236,41 @@ export function Dashboard() {
       {/* ── Menu Sidebar (opposite to calendar) ── */}
       <AnimatePresence initial={false}>
         {menuSidebarOpen && (
-          <motion.div
-            initial={{ x: locale === "fa" ? "100%" : "-100%", opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: locale === "fa" ? "100%" : "-100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className={cn(
-              "fixed top-0 bottom-0 w-80 sm:w-[340px] bg-card border-x border-border/50 z-[60] overflow-y-auto custom-scrollbar rounded-none",
-              locale === "fa" ? "right-0" : "left-0"
-            )}
-          >
-            <DashboardMenuSidebar />
-          </motion.div>
+          <>
+            {/* Mobile/Tablet Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMenuSidebarOpen(false)}
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[50]"
+            />
+            <motion.div
+              initial={{ x: locale === "fa" ? "100%" : "-100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: locale === "fa" ? "100%" : "-100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className={cn(
+                "fixed top-0 bottom-0 w-80 sm:w-[340px] bg-card border-x border-border/50 z-[60] overflow-y-auto custom-scrollbar rounded-none",
+                locale === "fa" ? "right-0" : "left-0"
+              )}
+            >
+              <DashboardMenuSidebar />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      
+      {/* ── Calendar Sidebar Backdrop for Mobile/Tablet ── */}
+      <AnimatePresence>
+        {sidebarOpen && (
+           <motion.div
+             initial={{ opacity: 0 }}
+             animate={{ opacity: 1 }}
+             exit={{ opacity: 0 }}
+             onClick={() => setSidebarOpen(false)}
+             className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[50]"
+           />
         )}
       </AnimatePresence>
     </div>

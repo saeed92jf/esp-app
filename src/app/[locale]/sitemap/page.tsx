@@ -36,7 +36,7 @@ export default function SitemapPage() {
             >
               <div className="flex items-center gap-2 mb-3 border-b border-border/50 pb-2">
                 <div className="p-1 rounded-md bg-primary/10 text-primary">
-                  <Icon className="size-3.5" />
+                  {Icon && <Icon className="size-3.5" />}
                 </div>
                 <h2 className="text-foreground font-medium text-sm">{tNav(`sections.${group.labelKey}`)}</h2>
               </div>
@@ -54,7 +54,7 @@ export default function SitemapPage() {
                         href={item.href as any} 
                         className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group"
                       >
-                        <ItemIcon className="size-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />
+                        {ItemIcon && <ItemIcon className="size-3.5 opacity-70 group-hover:opacity-100 transition-opacity" />}
                         <span className="font-medium text-[13px]">
                           {/* Fallback to raw labelKey if translation is missing (e.g. for ESP-Flow if not defined in Nav) */}
                           {tNav.has(`items.${item.labelKey}`) ? tNav(`items.${item.labelKey}`) : item.labelKey}

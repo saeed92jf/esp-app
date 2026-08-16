@@ -167,6 +167,7 @@
       "documentArchive": "Document Archive",
       "employees": "Employees",
       "multimedia": "Multimedia",
+      "engineering": "Engineering",
       "settings": "Settings",
       "language": "Language"
     },
@@ -324,6 +325,7 @@
     "online": "Online"
   },
   "Aparat": {
+    "loadingVideos": "Loading videos... ({loaded} of {total})",
     "stats": {
       "videos": "Videos",
       "followers": "Followers",

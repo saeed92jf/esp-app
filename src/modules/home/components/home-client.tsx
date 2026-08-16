@@ -2,14 +2,14 @@
 
 import { useState, useMemo, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion, useScroll, useTransform, type Variants } from "motion/react";
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 15 },
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } },
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: {},
   show: {
     transition: {
@@ -162,7 +162,7 @@ export function HomeClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+            className="absolute bottom-10 lg:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
           >
             <motion.div
               style={{ opacity: exploreOpacity }}
@@ -192,7 +192,7 @@ export function HomeClient() {
                 ref={heroFlowRef}
                 style={{ opacity: heroFlowOpacity }}
                 id="hero-flow-section" 
-                className="h-[100vh] w-full overflow-hidden scroll-mt-[64px]"
+                className="min-h-[100vh] h-auto w-full overflow-hidden scroll-mt-0 md:scroll-mt-[64px]"
               >
                 <HeroFlow />
               </motion.div>
@@ -249,6 +249,7 @@ export function HomeClient() {
           </motion.div>
 
           <motion.div 
+            key={activeTab}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-50px" }}

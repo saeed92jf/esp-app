@@ -68,14 +68,15 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       {filteredEvents.length > 0 ? (
         <ul className="space-y-1.5 @sm:space-y-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
           {filteredEvents.map((event) => {
-            const Icon = (TYPE_ICONS[event.type] || CalendarIcon) as React.ElementType;
+            const typeKey = event.type as keyof typeof TYPE_ICONS;
+            const Icon = (TYPE_ICONS[typeKey] || CalendarIcon) as any;
 
             return (
               <li
                 key={event.id}
                 className="group flex items-center gap-2 @sm:gap-3 px-2 @sm:px-3 py-1.5 @sm:py-2.5 rounded-xl border border-transparent hover:border-primary/20 hover:bg-primary/5 hover:shadow-sm transition-all duration-300"
               >
-                <div className={cn("p-1.5 @sm:p-2 rounded-xl shrink-0 transition-transform duration-300 group-hover:scale-110", TYPE_COLORS[event.type])}>
+                <div className={cn("p-1.5 @sm:p-2 rounded-xl shrink-0 transition-transform duration-300 group-hover:scale-110", TYPE_COLORS[typeKey] || "")}>
                   <Icon className="size-3 @sm:size-3.5" />
                 </div>
                 <div className="flex-1 min-w-0">

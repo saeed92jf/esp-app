@@ -88,7 +88,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
 
       <button
         className={cn(
-          "relative flex items-center justify-center h-9 w-9 sm:w-auto sm:px-4 overflow-hidden rounded-full border border-border/50 bg-background/50 backdrop-blur-sm hover:border-primary/50 hover:bg-muted/50 text-[13px] font-semibold text-foreground transition-all duration-300",
+          "relative flex items-center justify-center h-7 w-7 sm:w-auto sm:h-7 sm:px-3 overflow-hidden rounded-full border border-border/80 bg-muted/80 dark:bg-muted/50 backdrop-blur-md hover:border-primary/50 hover:bg-accent text-[12px] font-semibold text-foreground transition-all duration-300 shadow-sm",
           (isPending || isFadingOut) && "pointer-events-none opacity-50",
           className
         )}

@@ -16,7 +16,7 @@ import {
 import { type NavColor } from "@/config/navigation";
 import { GenericSearchBox } from "@/components/ui/generic-search-box";
 
-const NAV_COLOR_BG_MAP: Record<NavColor, string> = {
+const NAV_COLOR_BG_MAP: Partial<Record<NavColor, string>> = {
   sky: "bg-sky-500",
   violet: "bg-violet-500",
   rose: "bg-rose-500",

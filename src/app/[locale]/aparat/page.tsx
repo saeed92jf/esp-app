@@ -12,17 +12,13 @@ export async function generateMetadata({
 }
 
 export default function AparatPage() {
-  // خواندن نام کانال‌ها از فایل .env.local
-  const envUsernames = process.env.NEXT_PUBLIC_APARAT_USERNAMES || "";
-  const usernames = envUsernames
-    .split(",")
-    .map((u) => u.trim())
-    .filter(Boolean);
+  // خواندن نام کانال از فایل .env.local
+  const channelName = (process.env.NEXT_PUBLIC_APARAT_USERNAMES || process.env.NEXT_PUBLIC_APARAT_CHANNEL || "zoomit").split(",")[0].trim();
 
   return (
-    <div className="min-h-screen">
-      {/* پاس دادن نام کانال‌ها به کلاینت برای واکشی اطلاعات از طریق سرویس شما */}
-      <AparatClient usernames={usernames} />
+    <div className="min-h-screen pt-20">
+      {/* پاس دادن نام کانال به کلاینت */}
+      <AparatClient username={channelName} />
     </div>
   );
 }

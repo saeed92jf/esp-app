@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -33,19 +33,18 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
       onClick={onClick}
       aria-pressed={isActive}
       className={cn(
-        "group bg-card block w-full overflow-hidden rounded-lg border text-start transition-all duration-300",
-        isActive
-          ? "ring-primary scale-[1.02] shadow-lg ring-2"
-          : "hover:ring-primary/50 hover:scale-[1.02] hover:shadow-lg hover:ring-1",
+        "group block w-full text-start transition-all duration-300",
+        isActive && "opacity-80"
       )}
     >
-      <div className="bg-muted relative aspect-video overflow-hidden">
+      {/* Thumbnail Container */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl bg-muted transition-transform duration-300 group-hover:shadow-md">
         {showImage ? (
           <Image
             src={poster}
             alt={video.title}
             fill
-            sizes="(max-width: 768px) 50vw, 33vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading="lazy"
             onError={() => setHasError(true)}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -56,29 +55,26 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
           </div>
         )}
 
-        <div className="absolute inset-e-2 bottom-2 rounded-md bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white shadow-sm backdrop-blur-sm">
+        {/* Duration Badge */}
+        <div className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-bold text-white shadow-sm fa-num">
           {formatDuration(video.duration)}
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/40">
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-all duration-300 group-hover:bg-black/30">
           <Play className="size-12 scale-50 fill-white text-white opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100" />
         </div>
       </div>
 
-      <div className="p-3">
-        <h3 className="text-foreground group-hover:text-primary line-clamp-2 h-10 text-sm leading-5 font-medium transition-colors duration-200">
+      {/* Info Container */}
+      <div className="pt-3 px-1">
+        <h3 className="text-foreground line-clamp-2 h-12 text-base leading-normal font-semibold transition-colors duration-200 group-hover:text-primary">
           {video.title}
         </h3>
-        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-          <span className="flex items-center gap-1">
-            <Eye className="size-3" />
-            {formatViews(video.visit_cnt)}
-          </span>
-          <span>•</span>
-          <span className="flex items-center gap-1">
-            <Calendar className="size-3" />
-            {timeAgo}
-          </span>
+        <div className="text-muted-foreground mt-2 flex items-center gap-2 text-sm font-medium fa-num">
+          <span>{formatViews(video.visit_cnt)} بازدید</span>
+          <span className="opacity-50">•</span>
+          <span>{timeAgo}</span>
         </div>
       </div>
     </button>

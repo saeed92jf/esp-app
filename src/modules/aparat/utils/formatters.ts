@@ -178,19 +178,10 @@ export function formatRelativeTime(
   const isFa = tr("unknown") === "نامشخص";
 
   const processSdate = (str: string) => {
-    if (!isFa) return str;
-    const latinStr = toLatinDigits(str);
-    // اگر از سمت سرور خودش "پیش" داشت، فقط اعدادش را فارسی کن
-    if (/(پیش|دقیقه|ساعت|روز|ماه|سال)/.test(latinStr)) {
-      return latinStr.replace(/\d+/g, (match) =>
-        getPersianWord(parseInt(match, 10)),
-      );
-    }
     return str;
   };
 
   const format = (key: string, val: number) => {
-    if (isFa) return tr(key, { value: getPersianWord(val) });
     return tr(key, { value: val });
   };
 

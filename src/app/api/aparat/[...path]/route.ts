@@ -36,7 +36,13 @@ export async function GET(
 ) {
   const { path } = await params;
   const apiPath = path.join("/");
-  const upstreamUrl = `${APARAT_API_BASE}/${apiPath}`;
+  
+  let upstreamUrl = `${APARAT_API_BASE}/${apiPath}`;
+  if (apiPath.startsWith("api/fa/v1/")) {
+    // If the path already includes the full v1 path, route it directly
+    upstreamUrl = `https://www.aparat.com/${apiPath}`;
+  }
+
   const ttl = revalidateSeconds(apiPath);
 
   let upstream: Response;

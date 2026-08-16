@@ -31,7 +31,7 @@ export function ChannelVideoSearch({
       if (normalizeSearchText(video.title).includes(normalizedQuery)) return true;
       if (normalizeSearchText(video.username).includes(normalizedQuery)) return true;
       return false;
-    }).slice(0, 10); // Limit to 10 results
+    });
   };
 
   const renderItem = (video: VideoListItem, isSelected: boolean, handleSelect: () => void) => {
@@ -64,7 +64,7 @@ export function ChannelVideoSearch({
       items={videos}
       filterFn={filterFn}
       renderItem={renderItem}
-      getItemKey={(v) => v.id}
+      getItemKey={(v) => v.id.toString()}
       onSelect={onSelect}
       onQueryChange={setQuery}
       placeholder={
@@ -72,6 +72,11 @@ export function ChannelVideoSearch({
           ? "جستجوی ویدیو..."
           : "Search videos..."
       }
+      renderResultsHeader={(count) => (
+        <div className="px-4 py-2 mb-1 -mt-0.5 text-xs font-medium text-primary-foreground fa-num bg-primary sticky -top-1 z-10 text-center shadow-md">
+          {isRtl ? `${count} نتیجه یافت شد` : `${count} results found`}
+        </div>
+      )}
     />
   );
 }

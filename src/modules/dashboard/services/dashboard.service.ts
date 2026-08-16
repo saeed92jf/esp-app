@@ -63,6 +63,14 @@ const MONTHS: ChartPoint[] = [
 const chart = (values: number[]): ChartPoint[] =>
   MONTHS.map((m, i) => ({ ...m, value: values[i] }));
 
+const OIL_GAS_EVENTS: CalendarEvent[] = [
+  { id: 'og1', title: 'نمایشگاه بین المللی نفت، گاز و پتروشیمی تهران', date: '2026-08-18', type: 'event' },
+  { id: 'og2', title: 'کنفرانس توسعه میادین نفت و گاز', date: '2026-08-22', type: 'meeting' },
+  { id: 'og3', title: 'نشست تخصصی تجهیزات حفاری پیشرفته', date: '2026-08-28', type: 'meeting' },
+  { id: 'og4', title: 'نمایشگاه دستاوردهای صنعت پالایش', date: '2026-09-05', type: 'event' },
+  { id: 'og5', title: 'مهلت ثبت‌نام در مناقصه پتروشیمی', date: '2026-08-25', type: 'deadline' }
+];
+
 const FAKE_DATA: Record<UserRole, DashboardData> = {
   admin: {
     stats: [
@@ -83,7 +91,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
     calendarEvents: [
       { id: 'ce1', title: 'Board Meeting', date: '2026-08-15', type: 'meeting' },
       { id: 'ce2', title: 'Q3 Report Deadline', date: '2026-08-20', type: 'deadline' },
-      { id: 'ce3', title: 'Team Building', date: '2026-08-25', type: 'event' }
+      { id: 'ce3', title: 'Team Building', date: '2026-08-25', type: 'event' },
+      ...OIL_GAS_EVENTS
     ],
     checklist: [
       { id: 'cl1', title: 'Review Q3 Financials', completed: true },
@@ -114,7 +123,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id: 'ce4', title: 'Team Building', date: '2026-08-14', type: 'event' },
       { id: 'ce5', title: 'Deploy to Prod', date: '2026-08-13', type: 'deadline' },
       { id: 'ce6', title: 'Design Sync', date: '2026-08-13', type: 'meeting' },
-      { id: 'ce7', title: 'Q3 Review', date: '2026-08-15', type: 'review' }
+      { id: 'ce7', title: 'Q3 Review', date: '2026-08-15', type: 'review' },
+      ...OIL_GAS_EVENTS
     ],
     checklist: [
       { id: 'cl1', title: 'Fix auth bug #342', completed: true },
@@ -140,7 +150,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
     ],
     calendarEvents: [
       { id: 'ce1', title: 'Weekly Sync', date: '2026-08-13', type: 'meeting' },
-      { id: 'ce2', title: 'Submit Timesheet', date: '2026-08-15', type: 'deadline' }
+      { id: 'ce2', title: 'Submit Timesheet', date: '2026-08-15', type: 'deadline' },
+      ...OIL_GAS_EVENTS
     ],
     checklist: [
       { id: 'cl1', title: 'Respond to 5 tickets', completed: true },
@@ -165,7 +176,8 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
     ],
     calendarEvents: [
       { id: 'ce1', title: 'Product Demo', date: '2026-08-16', type: 'event' },
-      { id: 'ce2', title: 'Subscription Renewal', date: '2026-08-30', type: 'deadline' }
+      { id: 'ce2', title: 'Subscription Renewal', date: '2026-08-30', type: 'deadline' },
+      ...OIL_GAS_EVENTS
     ],
     checklist: [
       { id: 'cl1', title: 'Verify email address', completed: true },

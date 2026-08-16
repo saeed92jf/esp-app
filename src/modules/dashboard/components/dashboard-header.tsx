@@ -39,18 +39,17 @@ export function DashboardHeader({
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
       className="sticky top-0 z-50 flex items-center justify-between w-full mb-6 bg-background/60 backdrop-blur-md py-3"
     >
-      <div className="flex items-center justify-start gap-3 sm:gap-4">
+      <div className="flex items-center justify-start gap-0">
         <div className="flex-shrink-0 scale-75 origin-left rtl:origin-right">
           <DashboardAvatar />
         </div>
-        <div>
-          <h1 className="fa-num font-bold tracking-tight flex items-center gap-2 text-lg">
-            <span>{tDashboard("greeting", { name: displayName })}</span>
-            <span className="text-primary opacity-60">|</span>
-            <span className="text-muted-foreground font-medium text-xs">
-              {userRole ? tAuth(`roles.${userRole}`) : tDashboard(`roleSummary.${userRole}`)}
-            </span>
+        <div className="flex flex-col rtl:mr-1 ltr:ml-1">
+          <h1 className="fa-num font-bold tracking-tight text-lg leading-tight capitalize">
+            {displayName}
           </h1>
+          <span className="text-muted-foreground font-medium text-xs mt-0.5">
+            {userRole ? tAuth(`roles.${userRole}`) : tDashboard(`roleSummary.${userRole}`)}
+          </span>
         </div>
       </div>
 

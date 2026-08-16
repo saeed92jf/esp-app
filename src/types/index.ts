@@ -21,6 +21,15 @@ export interface CategoryWithVideos extends Category {
 }
 
 /* ============================================================
+ * Playlist
+ * ============================================================ */
+export interface Playlist {
+  id: string;
+  title: string;
+  count: number;
+}
+
+/* ============================================================
  * Video list item
  * Lightweight shape used by the Playlist and video lists.
  * Field names match the real Aparat API output.
@@ -97,7 +106,14 @@ export interface Profile {
   username: string;
   name: string;
   avatar: string;
-  followers?: number;
+  followers: string;
+  videoCount: number;
+  cover_src: string | null;
+  description?: string;
+  official: boolean;
+  totalVisits?: string;
+  monthVisits?: string;
+  startDate?: string;
 }
 
 export interface UserProfile {

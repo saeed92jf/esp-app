@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import type { Layouts, Layout } from "react-grid-layout";
+export type Layouts = Record<string, any>;
+export type Layout = any;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ const DEFAULT_LAYOUTS: Layouts = {
 const enforceConstraints = (layouts: Layouts): Layouts => {
   const result: Layouts = {};
   for (const bp in layouts) {
-    result[bp] = layouts[bp].map((item) => {
+    result[bp] = layouts[bp].map((item: any) => {
       const constraints = MIN_SIZES[item.i as WidgetId] || { minW: 2, minH: 2 };
       return {
         ...item,
@@ -146,7 +147,7 @@ export function useDashboardLayout(adminMode = false) {
 
 
   // Update layouts from react-grid-layout
-  const onLayoutChange = useCallback((currentLayout: Layout[], allLayouts: Layouts) => {
+  const onLayoutChange = useCallback((currentLayout: any, allLayouts: any) => {
     setLayouts(prev => {
       const merged: Layouts = {};
       const breakpoints = ['lg', 'md', 'sm'] as const;
@@ -156,8 +157,8 @@ export function useDashboardLayout(adminMode = false) {
         const existingLayoutForBp = prev[bp] || [];
         
         // Keep widgets that were in prev but are missing in allLayouts (because they are hidden)
-        const newLayoutIds = new Set(newLayoutForBp.map(l => l.i));
-        const preservedLayouts = existingLayoutForBp.filter(l => !newLayoutIds.has(l.i));
+        const newLayoutIds = new Set(newLayoutForBp.map((l: any) => l.i));
+        const preservedLayouts = existingLayoutForBp.filter((l: any) => !newLayoutIds.has(l.i));
         
         merged[bp] = [...newLayoutForBp, ...preservedLayouts];
       });
@@ -179,9 +180,9 @@ export function useDashboardLayout(adminMode = false) {
           breakpoints.forEach(bp => {
             const current = prevLayouts[bp] || [];
             const defaultForBp = CONSTRAINED_DEFAULT[bp] || [];
-            const defaultItem = defaultForBp.find(l => l.i === id);
+            const defaultItem = defaultForBp.find((l: any) => l.i === id);
             // Remove old entry for this widget and add the default one
-            const filtered = current.filter(l => l.i !== id);
+            const filtered = current.filter((l: any) => l.i !== id);
             if (defaultItem) {
               restored[bp] = [...filtered, { ...defaultItem }];
             } else {

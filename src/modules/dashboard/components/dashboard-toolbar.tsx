@@ -64,11 +64,16 @@ export function DashboardToolbar({
                   exit={{ opacity: 0, scale: 0.8 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 >
-                  <HiddenWidgetBadge
-                    label={locale === "fa" ? meta.label : meta.labelEn}
-                    icon={<meta.icon className="size-3.5" />}
-                    onShow={() => onShow(id)}
-                  />
+                  {(() => {
+                    const Icon = meta.icon as any;
+                    return (
+                      <HiddenWidgetBadge
+                        label={locale === "fa" ? meta.label : meta.labelEn}
+                        icon={<Icon className="size-3.5" />}
+                        onShow={() => onShow(id)}
+                      />
+                    );
+                  })()}
                 </motion.div>
               );
             })}

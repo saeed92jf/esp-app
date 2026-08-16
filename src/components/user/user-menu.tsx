@@ -68,17 +68,21 @@ export function UserMenu({
           type="button"
           aria-label={t("menuLabel")}
           className={cn(
-            "focus-visible:ring-ring focus-visible:ring-offset-background rounded-full transition outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-            isAuthenticated && "ring-2 ring-emerald-500 ring-offset-2 ring-offset-background",
+            "relative flex items-center justify-center p-0.5 rounded-full group cursor-pointer outline-none ring-0",
             className,
           )}
         >
-          <Avatar size={size}>
-            {imageUrl ? <AvatarImage src={imageUrl} alt={displayName} /> : null}
-            <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
+          {isAuthenticated && (
+            <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity" />
+          )}
+          <div className="relative z-10 bg-background rounded-full p-[2px]">
+            <Avatar size={size}>
+              {imageUrl ? <AvatarImage src={imageUrl} alt={displayName} className="object-cover" /> : null}
+              <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
+          </div>
         </button>
       </DropdownMenuTrigger>
 

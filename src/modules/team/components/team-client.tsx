@@ -1,143 +1,239 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
-import { Mail, User } from "lucide-react";
+import { Mail, Sparkles, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 interface TeamMember {
   id: string;
   keyName: string;
   roleKey: string;
-  github?: string;
-  email?: string;
+  github: string;
+  email: string;
   gradient: string;
+  avatar: string;
 }
 
-const allMembers: TeamMember[] = [
-  { id: "m1", keyName: "morteza", roleKey: "head", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20" },
-  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20" },
-  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20" },
-  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20" },
-  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", gradient: "from-rose-500/20 to-red-500/20" },
-  { id: "c2", keyName: "behzad", roleKey: "content", gradient: "from-indigo-500/20 to-blue-500/20" },
-  { id: "c3", keyName: "seyedMohammad", roleKey: "content", gradient: "from-fuchsia-500/20 to-pink-500/20" },
-  { id: "c4", keyName: "sina", roleKey: "content", gradient: "from-cyan-500/20 to-sky-500/20" },
+const leadershipTeam: TeamMember[] = [
+  { id: "m1", keyName: "morteza", roleKey: "head", github: "morteza-sh", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20", avatar: "/images/team/avatar_2_1786863503222.jpg" },
 ];
 
-function MemberCard({ member }: { member: TeamMember }) {
+const engineeringTeam: TeamMember[] = [
+  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20", avatar: "/images/team/avatar_1_1786863491896.jpg" },
+  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20", avatar: "/images/team/avatar_3_1786863513758.jpg" },
+  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20", avatar: "/images/team/avatar_4_1786863523976.jpg" },
+];
+
+const contentTeam: TeamMember[] = [
+  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", github: "msaeed-content", email: "msaeed@example.com", gradient: "from-rose-500/20 to-red-500/20", avatar: "/images/team/avatar_mohammadsaeed_1786860787419.jpg" },
+  { id: "c2", keyName: "behzad", roleKey: "content", github: "behzad-creative", email: "behzad@example.com", gradient: "from-indigo-500/20 to-blue-500/20", avatar: "/images/team/avatar_behzad_1786860796461.jpg" },
+  { id: "c3", keyName: "seyedMohammad", roleKey: "content", github: "smohammad-media", email: "smohammad@example.com", gradient: "from-fuchsia-500/20 to-pink-500/20", avatar: "/images/team/avatar_seyedmohammad_1786860808880.jpg" },
+  { id: "c4", keyName: "sina", roleKey: "content", github: "sina-social", email: "sina@example.com", gradient: "from-cyan-500/20 to-sky-500/20", avatar: "/images/team/avatar_sina_new_1786862334366.jpg" },
+];
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 300, damping: 24 } 
+  },
+};
+
+function MemberCard({ member, isLarge = false }: { member: TeamMember, isLarge?: boolean }) {
   const t = useTranslations("Team");
-  const locale = useLocale();
-  const isFa = locale === "fa";
-  
+
   return (
-    <div className="group relative flex-shrink-0 w-64 md:w-72 h-[22rem] md:h-[26rem] rounded-[2rem] overflow-hidden bg-muted/30 border border-border/40 shadow-sm hover:shadow-2xl hover:border-border/80 transition-all duration-500 cursor-pointer">
-      
-      {/* Background / Image Placeholder */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${member.gradient} opacity-80 group-hover:opacity-100 transition-opacity duration-500`} />
-      
-      {/* Abstract Texture Overlay */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+    <motion.div 
+      variants={itemVariants}
+      className={`relative h-full ${isLarge ? 'md:col-span-2 lg:col-span-4 max-w-sm mx-auto w-full' : 'w-full'}`}
+    >
+      <div
+        className="group relative w-full h-full flex flex-col rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-700 ease-in-out"
+      >
+        
+        {/* Background Gradient */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${member.gradient} opacity-10 group-hover:opacity-40 transition-opacity duration-700 ease-in-out pointer-events-none`} />
+        
+        {/* Abstract Texture Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
 
-      <div className="absolute inset-0 flex items-center justify-center pb-20">
-        <User className="size-32 text-foreground/10 group-hover:text-foreground/20 transition-colors duration-500" />
-      </div>
+        {/* AI Avatar */}
+        <div className={`relative w-full flex-1 min-h-[16rem] overflow-hidden bg-muted/10`}>
+          <Image 
+            src={member.avatar} 
+            alt={t(`members.${member.keyName}`)} 
+            fill
+            className="object-cover object-top opacity-90 group-hover:scale-110 group-hover:rotate-1 group-hover:opacity-100 transition-all duration-[2000ms] ease-out"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
 
-      {/* Social Links (Hidden by default, appear on hover) */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500 z-20">
-        {member.github && (
-          <a href={`https://github.com/${member.github}`} target="_blank" rel="noreferrer" className="p-3 rounded-full bg-background/80 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground shadow-lg transition-colors">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-4"
+        {/* Info & Social Panel */}
+        <div className="relative p-5 flex flex-col gap-4 border-t border-border/30 bg-card/80 backdrop-blur-md z-10">
+          <div className="text-center">
+            <h3 className={`font-bold text-foreground mb-1 tracking-tight leading-tight ${isLarge ? 'text-2xl' : 'text-xl'}`}>
+              {t(`members.${member.keyName}`)}
+            </h3>
+            <p className="text-sm font-medium text-primary/80">
+              {t(`roles.${member.roleKey}`)}
+            </p>
+          </div>
+          
+          <div className="flex gap-2">
+            <a 
+              href={`https://github.com/${member.github}`} 
+              target="_blank" 
+              rel="noreferrer" 
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-500"
             >
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-              <path d="M9 18c-4.51 2-5-2-7-2" />
-            </svg>
-          </a>
-        )}
-        {member.email && (
-          <a href={`mailto:${member.email}`} className="p-3 rounded-full bg-background/80 backdrop-blur-md text-foreground hover:bg-primary hover:text-primary-foreground shadow-lg transition-colors">
-            <Mail className="size-4" />
-          </a>
-        )}
-      </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-4"
+              >
+                <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                <path d="M9 18c-4.51 2-5-2-7-2" />
+              </svg>
+              <span className="text-xs font-semibold">GitHub</span>
+            </a>
+            <a 
+              href={`mailto:${member.email}`} 
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-500"
+            >
+              <Mail className="size-4" />
+              <span className="text-xs font-semibold">Email</span>
+            </a>
+          </div>
+        </div>
 
-      {/* Glassmorphism Name Tag at Bottom */}
-      <div className="absolute bottom-3 left-3 right-3 p-4 bg-background/60 backdrop-blur-xl border border-border/50 rounded-2xl group-hover:bg-background/80 group-hover:border-border transition-colors duration-500 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-        <h3 className="text-lg font-bold text-foreground mb-1 tracking-tight truncate">
-          {t(`members.${member.keyName}`)}
-        </h3>
-        <p className="text-sm font-medium text-muted-foreground truncate">
-          {t(`roles.${member.roleKey}`)}
-        </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 export function TeamClient() {
   const t = useTranslations("Team");
-  
-  // We double the array so the marquee can seamlessly loop
-  const duplicatedMembers = [...allMembers, ...allMembers, ...allMembers];
+  const locale = useLocale();
+  const isFa = locale === "fa";
 
   return (
     <div className="min-h-screen pt-32 pb-24 relative overflow-hidden">
-      {/* Background Ambient Grid/Glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(var(--theme-rgb),0.05),transparent_50%)] pointer-events-none" />
       
-      <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6 mb-16 md:mb-24 text-center">
+      {/* Background Animated Glowing Orbs */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -right-24 top-0 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[150px]"
+        />
+        <motion.div
+          animate={{ scale: [1.2, 1, 1.2], rotate: [0, -90, 0], opacity: [0.1, 0.25, 0.1] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+          className={`absolute top-1/2 ${isFa ? '-right-48' : '-left-48'} h-[400px] w-[400px] rounded-full bg-cyan-500/10 blur-[120px]`}
+        />
+      </div>
+      
+      <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6 mb-16 text-center">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
+          transition={{ duration: 0.7, ease: [0.6, 0.05, 0.01, 0.9] }}
         >
-          <span className="inline-block py-1.5 px-4 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6 border border-primary/20">
-            {t("sections.leadership")} & Team
-          </span>
-          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-2 py-2 px-5 rounded-full bg-background/50 backdrop-blur-md border border-border/50 text-muted-foreground text-sm font-medium shadow-sm">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span>{t("sections.leadership")} & Team</span>
+            </div>
+          </div>
+          
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 text-foreground">
             {t("title")}
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {t("description")}
           </p>
         </motion.div>
       </div>
 
-      {/* Infinite Marquee Section */}
-      <div className="relative w-full overflow-hidden pb-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10 space-y-16">
         
-        {/* Left and Right Fade Masks for a premium look */}
-        <div className="absolute inset-y-0 left-0 w-16 md:w-48 bg-gradient-to-r from-background to-transparent z-20 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-16 md:w-48 bg-gradient-to-l from-background to-transparent z-20 pointer-events-none" />
-
-        <div className="flex group w-max">
-          <motion.div
-            className="flex gap-6 px-3"
-            animate={{ x: ["0%", "-33.333333%"] }}
-            transition={{
-              repeat: Infinity,
-              ease: "linear",
-              duration: 35, // Adjust speed here
-            }}
-            // Framer motion allows us to pause animations on hover using a whileHover on the wrapper, 
-            // but for marquee we can just use simple CSS animation or let Framer Motion handle it.
-            // Using a CSS approach for hover pause is often cleaner for infinite scrolling, but Framer Motion is fine.
-          >
-            {duplicatedMembers.map((member, idx) => (
-              <MemberCard key={`${member.id}-${idx}`} member={member} />
+        {/* Leadership Section (No Heading) */}
+        <section>
+          <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="grid gap-6 sm:gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {leadershipTeam.map((member) => (
+              <MemberCard key={member.id} member={member} isLarge />
             ))}
           </motion.div>
-        </div>
+        </section>
+
+        {/* Engineering Section (No Heading) */}
+        <section>
+          <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {engineeringTeam.map((member) => (
+              <MemberCard key={member.id} member={member} />
+            ))}
+          </motion.div>
+        </section>
+
+        {/* Content Section (No Heading) */}
+        <section>
+          <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            {contentTeam.map((member) => (
+              <MemberCard key={member.id} member={member} />
+            ))}
+          </motion.div>
+        </section>
+
       </div>
+
+      {/* CTA Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ delay: 0.2, duration: 0.7 }}
+        className="max-w-3xl mx-auto mt-24 px-4 md:px-6 relative z-10 text-center"
+      >
+        <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-border/50 bg-card/60 px-8 py-12 shadow-xl backdrop-blur-xl relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground relative z-10">
+            {isFa ? "به تیم ما بپیوندید" : "Join Our Amazing Team"}
+          </h3>
+          <p className="max-w-md text-muted-foreground relative z-10">
+            {isFa 
+              ? "ما همیشه به دنبال افراد مستعد و خلاق هستیم تا در مسیر ساخت بهترین محصولات همراه ما باشند."
+              : "We're always looking for talented روی individuals to join our mission and build amazing products together."}
+          </p>
+          <Link
+            href={`/${locale}/contact`}
+            className="group/btn relative overflow-hidden inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 text-primary-foreground font-semibold shadow-lg shadow-primary/20 transition-transform duration-300 hover:scale-105 active:scale-95 z-10"
+          >
+            <span className="relative z-10">{isFa ? "موقعیت‌های شغلی" : "View Open Positions"}</span>
+            <ArrowRight className={`relative z-10 h-5 w-5 transition-transform duration-300 ${isFa ? "rotate-180 group-hover/btn:-translate-x-1" : "group-hover/btn:translate-x-1"}`} />
+          </Link>
+        </div>
+      </motion.div>
+
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
+import { useLocale } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Upload, X } from 'lucide-react';
@@ -9,39 +10,33 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const PREDEFINED_AVATARS = [
-  // Male Manager (Suit)
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Manager1&clothing=blazerAndShirt',
-  // Female Manager (Blazer)
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Manager2&clothing=blazerAndSweater',
-  // Male Engineer (Overall)
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Eng1&clothing=overall',
-  // Female Engineer (Overall)
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Eng2&clothing=overall',
-  // Staff/Worker
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Staff1&clothing=shirtCrewNeck',
-  // Support/Tech
-  'https://api.dicebear.com/9.x/avataaars/svg?seed=Support1&clothing=hoodie'
+  '/avatar/businessman.webp',
+  '/avatar/secretary.webp',
+  '/avatar/architect.webp',
+  '/avatar/programmer.webp',
+  '/avatar/photographer.webp',
+  '/avatar/teacher.webp',
+  '/avatar/doctor.jpg',
+  '/avatar/chef.jpg',
+  '/avatar/artist.jpg',
 ];
 
 export function DashboardAvatar() {
-  const { user } = useAuth();
+  const locale = useLocale();
+  const { user, updateAvatar } = useAuth();
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (user?.id) {
-      const saved = localStorage.getItem(`esp_custom_avatar_${user.id}`);
-      if (saved) {
-        setAvatarUrl(saved);
-      } else if (user.avatar) {
-        setAvatarUrl(user.avatar);
-      }
+    if (user) {
+      setAvatarUrl(user.avatar || null);
     }
-  }, [user]);
+  }, [user?.avatar]);
 
   const saveAvatar = (url: string | null) => {
     setAvatarUrl(url);
+    updateAvatar(url);
     if (user?.id) {
       if (url) {
         localStorage.setItem(`esp_custom_avatar_${user.id}`, url);
@@ -66,7 +61,8 @@ export function DashboardAvatar() {
 
   if (!user) return null;
 
-  const initial = (user.fullNameFa || user.fullName || 'U').charAt(0).toUpperCase();
+  const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
+  const initial = (nameToUse || 'U').charAt(0).toUpperCase();
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

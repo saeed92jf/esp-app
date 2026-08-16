@@ -14,7 +14,7 @@ import {
 import { type NavColor } from "@/config/navigation";
 
 // Solid vibrant background colors matching navigation & search index
-const NAV_COLOR_BG_MAP: Record<NavColor, string> = {
+const NAV_COLOR_BG_MAP: Partial<Record<NavColor, string>> = {
   sky: "bg-sky-500",
   violet: "bg-violet-500",
   rose: "bg-rose-500",

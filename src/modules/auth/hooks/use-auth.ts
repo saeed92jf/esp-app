@@ -19,6 +19,7 @@ interface AuthState {
   setLoading: (loading: boolean) => void;
   setIsLoggingIn: (isLoggingIn: boolean) => void;
   setHydrated: (hydrated: boolean) => void;
+  updateAvatar: (url: string | null) => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
@@ -30,6 +31,7 @@ const useAuthStore = create<AuthState>((set) => ({
   setLoading: (loading) => set({ loading }),
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
   setHydrated: (hydrated) => set({ hydrated }),
+  updateAvatar: (url) => set((state) => ({ user: state.user ? { ...state.user, avatar: url || undefined } : null })),
 }));
 
 export function useAuth() {
@@ -54,6 +56,12 @@ export function useAuth() {
           }
         } catch (e) {
           // ignore
+        }
+
+        // Load custom avatar if it exists
+        const customAvatar = localStorage.getItem(`esp_custom_avatar_${parsed.id}`);
+        if (customAvatar) {
+          parsed.avatar = customAvatar;
         }
 
         store.setUser(parsed);
@@ -97,6 +105,7 @@ export function useAuth() {
     isLoggingIn: store.isLoggingIn,
     login,
     logout,
+    updateAvatar: store.updateAvatar,
   };
 }
 

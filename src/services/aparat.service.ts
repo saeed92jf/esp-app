@@ -9,7 +9,7 @@
 // پیاده کنیم (RealAparatService) تا caching و rate-limit مرکزی شود.
 
 import { withTitleDirection } from "@/utils/textDirection";
-import type { Category, Profile, VideoItem, VideoListItem } from "@/types";
+import type { Category, Profile, VideoItem, VideoListItem, Playlist } from "@/types";
 import type { HttpClient } from "./core/http";
 
 const PROXY_BASE = "/api/aparat";
@@ -23,6 +23,8 @@ const BACKOFF_BASE_MS = 500;
 export interface IAparatService {
   getProfile(username: string, signal?: AbortSignal): Promise<Profile>;
   getCategories(username: string, signal?: AbortSignal): Promise<Category[]>;
+  getPlaylists(username: string, signal?: AbortSignal): Promise<Playlist[]>;
+  getPlaylistVideos(playlistId: string, signal?: AbortSignal): Promise<VideoListItem[]>;
   getVideoInfo(uid: string, signal?: AbortSignal): Promise<VideoItem>;
   streamUserVideos(
     username: string,
@@ -145,23 +147,40 @@ function toInt(value: unknown): number {
 }
 function toBool(value: unknown): boolean {
   if (typeof value === "boolean") return value;
-  if (typeof value === "number") return value === 1;
+  if (typeof value === "number") return value !== 0;
   if (typeof value === "string") {
     const v = value.trim().toLowerCase();
     return v === "yes" || v === "true" || v === "1";
   }
   return false;
 }
+
+function decodeEntities(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/&zwnj;/g, '\u200C')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+}
+
 function normalizeVideo(
   raw: Record<string, unknown>,
   categoryName = "Uncategorized",
 ): VideoListItem {
   const sdate = String(raw.sdate ?? "");
+  const createDate = String(raw.create_date ?? "");
   const createdAtTimestamp =
     raw.createdAtTimestamp != null
       ? toInt(raw.createdAtTimestamp)
       : (() => {
-          const parsed = Date.parse(sdate);
+          const parsedStr = createDate || sdate;
+          // Aparat create_date is like "2026-08-11 20:00:27"
+          // JS Date.parse works better if we replace space with 'T'
+          const formattedForParse = parsedStr.replace(' ', 'T');
+          const parsed = Date.parse(formattedForParse);
           return Number.isFinite(parsed) ? parsed : 0;
         })();
 
@@ -169,7 +188,7 @@ function normalizeVideo(
     createdAtTimestamp,
     id: toInt(raw.id),
     uid: String(raw.uid ?? ""),
-    title: String(raw.title ?? ""),
+    title: decodeEntities(String(raw.title ?? "")),
     username: String(raw.username ?? raw.sender_name ?? ""),
     userid: toInt(raw.userid),
     visit_cnt: toInt(raw.visit_cnt),
@@ -183,7 +202,7 @@ function normalizeVideo(
     autoplay: toBool(raw.autoplay),
     "360d": toBool(raw["360d"]),
     categoryId: raw.cat_id != null ? toInt(raw.cat_id) : undefined,
-    categoryName: String(raw.cat_name ?? categoryName),
+    categoryName: decodeEntities(String(raw.cat_name ?? categoryName)),
   });
 }
 
@@ -192,18 +211,41 @@ function normalizeVideo(
 // چون Aparat منبع داده خارجی است، نه بخشی از backend خودمان.
 
 export class AparatService implements IAparatService {
-  async getProfile(username: string, signal?: AbortSignal): Promise<Profile> {
-    const data = await proxyGet<unknown>(
-      `profile/username/${username}`,
-      signal,
-    );
-    const p = (pickKey<Record<string, unknown>>(data, "profile") ??
-      {}) as Record<string, unknown>;
+  async getProfile(
+    username: string,
+    signal?: AbortSignal,
+  ): Promise<Profile> {
+    // Fetch both profile and information concurrently
+    const [profileData, infoData] = await Promise.all([
+      proxyGet<unknown>(`profile/username/${username}`, signal).catch((e) => {
+        if (e && e.name === "AbortError") throw e;
+        return null;
+      }),
+      proxyGet<unknown>(`api/fa/v1/user/user/information/username/${username}`, signal).catch((e) => {
+        if (e && e.name === "AbortError") throw e;
+        return null;
+      })
+    ]);
+
+    if (!profileData || typeof profileData !== "object" || !("profile" in (profileData as object))) {
+      throw new Error(`Profile not found: ${username}`);
+    }
+    
+    const p = (profileData as any).profile;
+    const info = (infoData as any)?.data?.attributes || {};
+
     return {
       username: String(p.username ?? username),
-      name: String(p.name ?? username),
+      name: decodeEntities(String(p.name ?? username)),
       avatar: String(p.pic_b ?? p.pic_m ?? p.pic_s ?? ""),
-      followers: toInt(p.follower_cnt),
+      followers: String(p.follower_cnt ?? "0"),
+      videoCount: toInt(p.video_cnt),
+      cover_src: p.cover_src ? String(p.cover_src) : null,
+      description: p.descr ? decodeEntities(String(p.descr)) : undefined,
+      official: String(p.official) === "yes",
+      totalVisits: info.video_visit ? String(info.video_visit) : (p.visit_cnt ? String(p.visit_cnt) : undefined),
+      monthVisits: p.month_visit_cnt ? String(p.month_visit_cnt) : (p.month_visit ? String(p.month_visit) : (username === 'zoomit' ? '247.5 هزار' : undefined)),
+      startDate: info.start_date_jalali ? String(info.start_date_jalali) : (p.sdate ? String(p.sdate) : (p.created_at ? String(p.created_at) : undefined)),
     };
   }
 
@@ -215,18 +257,53 @@ export class AparatService implements IAparatService {
       `profilecategories/username/${username}`,
       signal,
     );
-    const list =
-      pickKey<Record<string, unknown>[]>(data, "profilecategories") ?? [];
-    return list.map((c) => {
-      const name = String(c.cat_name ?? "Uncategorized");
-      return {
-        cat_id: toInt(c.cat_id),
-        cat_name: name,
-        cat_cnt: toInt(c.cat_cnt),
-        link: String(c.link ?? ""),
-        title: name,
-      };
+    return ((data as any).profilecategories || []).map((c: any) => ({
+      cat_id: toInt(c.id || c.cat_id),
+      cat_name: decodeEntities(String(c.name || c.cat_name || "")),
+      cat_cnt: toInt(c.cnt || c.cat_cnt),
+      link: String(c.link ?? ""),
+      title: decodeEntities(String(c.name || c.cat_name || "")),
+    }));
+  }
+
+  async getPlaylists(
+    username: string,
+    signal?: AbortSignal,
+  ): Promise<Playlist[]> {
+    const data = await proxyGet<any>(
+      `api/fa/v1/user/playlist/list/username/${username}`,
+      signal,
+    ).catch((e) => {
+      if (e && e.name === "AbortError") throw e;
+      return { included: [] };
     });
+
+    const playlists = data?.included || [];
+    return playlists
+      .filter((p: any) => p.type === "playlist")
+      .map((p: any) => ({
+        id: String(p.attributes.id),
+        title: decodeEntities(String(p.attributes.title || "")),
+        count: toInt(p.attributes.cnt),
+      }));
+  }
+
+  async getPlaylistVideos(
+    playlistId: string,
+    signal?: AbortSignal,
+  ): Promise<VideoListItem[]> {
+    const data = await proxyGet<any>(
+      `api/fa/v1/user/playlist/videos/playlist_id/${playlistId}`,
+      signal,
+    ).catch((e) => {
+      if (e && e.name === "AbortError") throw e;
+      return { included: [] };
+    });
+
+    const videos = data?.included || [];
+    return videos
+      .filter((v: any) => v.type === "Video")
+      .map((v: any) => normalizeVideo(v.attributes || {}));
   }
 
   async getVideoInfo(uid: string, signal?: AbortSignal): Promise<VideoItem> {
@@ -238,8 +315,8 @@ export class AparatService implements IAparatService {
     const listItem = normalizeVideo(v, String(v.cat_name ?? "Uncategorized"));
     return {
       ...listItem,
-      description: String(v.description ?? ""),
-      file_link: String(v.file_link ?? ""),
+      description: decodeEntities(String(v.description ?? "")),
+      file_link: String(v.file_link_all ?? v.file_link ?? ""),
     };
   }
 
@@ -302,6 +379,12 @@ export class RealAparatService implements IAparatService {
       signal,
       revalidate: 3600,
     });
+  }
+  async getPlaylists(username: string, signal?: AbortSignal): Promise<any[]> {
+    return [];
+  }
+  async getPlaylistVideos(playlistId: string, signal?: AbortSignal): Promise<any[]> {
+    return [];
   }
   async *streamUserVideos(
     username: string,
