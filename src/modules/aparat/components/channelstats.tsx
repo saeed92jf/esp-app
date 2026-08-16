@@ -105,7 +105,7 @@ export function ChannelStats({
               <p className="text-foreground mt-0.5 text-2xl font-bold flex items-center gap-2">
                 {numberFormatter.format(stat.value)}
                 {stat.label === t('stats.videos') && syncStatus === "loading" && (
-                   <span className="text-[10px] text-muted-foreground font-normal whitespace-nowrap animate-pulse">درحال دریافت...</span>
+                   <span className="text-[10px] text-muted-foreground font-normal whitespace-nowrap animate-pulse">{t("loading")}</span>
                 )}
               </p>
             </div>

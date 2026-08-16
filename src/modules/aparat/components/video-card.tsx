@@ -72,7 +72,7 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
           {video.title}
         </h3>
         <div className="text-muted-foreground mt-2 flex items-center gap-2 text-sm font-medium fa-num">
-          <span>{formatViews(video.visit_cnt)} بازدید</span>
+          <span>{formatViews(video.visit_cnt)} {t("views")}</span>
           <span className="opacity-50">•</span>
           <span>{timeAgo}</span>
         </div>

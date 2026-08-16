@@ -343,15 +343,15 @@ export const MistEliminatorNode = memo(({ id, data, selected }: NodeProps) => {
                             <div className="space-y-0.5 mb-2">
                               <div className="flex justify-between text-muted-foreground">
                                 <span>Flat Bars ({dem.barWidth_mm}x{dem.barThickness_mm}):</span>
-                                <span className="font-semibold text-foreground">{(wData.metrics.totalBarLength / 1000).toFixed(1)} m ({wData.metrics.barBranches_6m} شاخه ۶ متری)</span>
+                                <span className="font-semibold text-foreground">{(wData.metrics.totalBarLength / 1000).toFixed(1)} m ({wData.metrics.barBranches_6m} {t("branch6m")})</span>
                               </div>
                               <div className="flex justify-between text-muted-foreground">
                                 <span>H-Rods (Ø{dem.horizontalRodDia_mm}):</span>
-                                <span className="font-semibold text-foreground">{(wData.metrics.totalHorizRodLength / 1000).toFixed(1)} m ({wData.metrics.horizRodBranches_6m} شاخه ۶ متری)</span>
+                                <span className="font-semibold text-foreground">{(wData.metrics.totalHorizRodLength / 1000).toFixed(1)} m ({wData.metrics.horizRodBranches_6m} {t("branch6m")})</span>
                               </div>
                               <div className="flex justify-between text-muted-foreground">
                                 <span>V-Rods (Ø{dem.verticalRodDia_mm}):</span>
-                                <span className="font-semibold text-foreground">{(wData.metrics.totalVertRodsLength / 1000).toFixed(1)} m ({wData.metrics.vertRodBranches_6m} شاخه ۶ متری)</span>
+                                <span className="font-semibold text-foreground">{(wData.metrics.totalVertRodsLength / 1000).toFixed(1)} m ({wData.metrics.vertRodBranches_6m} {t("branch6m")})</span>
                               </div>
                               <div className="flex justify-between text-muted-foreground">
                                 <span>V-Rods Qty:</span>

@@ -91,6 +91,9 @@
       "categoryPlaceholder": "دسته‌بندی",
       "all": "همه",
       "empty": "همه کارها انجام شد!"
+    },
+    "avatar": {
+      "selectImage": "انتخاب تصویر پروفایل"
     }
   }
 }

@@ -91,6 +91,9 @@
       "addPlaceholder": "Add new task...",
       "categoryPlaceholder": "Category",
       "all": "All"
+    },
+    "avatar": {
+      "selectImage": "Select Profile Image"
     }
   }
 }

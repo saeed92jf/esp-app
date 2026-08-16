@@ -295,7 +295,7 @@ export function AparatClient({ username }: AparatClientProps) {
                       <div className="mt-6 px-4 text-center flex flex-col items-center gap-3">
                         <h2 className="text-2xl md:text-3xl font-black text-foreground leading-normal md:leading-relaxed">{selectedVideo.title}</h2>
                         <div className="flex items-center gap-3 text-muted-foreground text-base font-semibold fa-num mt-2">
-                          <span>{formatViews(selectedVideo.visit_cnt)} بازدید</span>
+                          <span>{formatViews(selectedVideo.visit_cnt)} {t("views")}</span>
                           <span className="opacity-50">•</span>
                           <span>{formatRelativeTime(selectedVideo.createdAtTimestamp, trTime, selectedVideo.sdate)}</span>
                         </div>
@@ -373,7 +373,7 @@ export function AparatClient({ username }: AparatClientProps) {
                         </div>
                       ) : displayedVideos.length === 0 ? (
                         <div className="flex min-h-[20vh] items-center justify-center rounded-xl border border-dashed text-muted-foreground text-base">
-                          <p>{t("noVideos") || "ویدیویی در این دسته یافت نشد"}</p>
+                          <p>{t("noVideosFound")}</p>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 gap-6 gap-y-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">

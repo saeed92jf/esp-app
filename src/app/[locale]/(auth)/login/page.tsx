@@ -142,7 +142,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{isFa ? "رمز عبور" : "Password"}</FormLabel>
+                      <FormLabel>{t("password")}</FormLabel>
                       <FormControl>
                         <Input
                           type="password"

@@ -217,18 +217,16 @@ export function TeamClient() {
         <div className="flex flex-col items-center gap-6 rounded-[2.5rem] border border-border/50 bg-card/60 px-8 py-12 shadow-xl backdrop-blur-xl relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           <h3 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground relative z-10">
-            {isFa ? "به تیم ما بپیوندید" : "Join Our Amazing Team"}
+            {t("cta.joinTeam")}
           </h3>
           <p className="max-w-md text-muted-foreground relative z-10">
-            {isFa 
-              ? "ما همیشه به دنبال افراد مستعد و خلاق هستیم تا در مسیر ساخت بهترین محصولات همراه ما باشند."
-              : "We're always looking for talented روی individuals to join our mission and build amazing products together."}
+            {t("cta.joinTeamDesc")}
           </p>
           <Link
             href={`/${locale}/contact`}
             className="group/btn relative overflow-hidden inline-flex items-center gap-3 rounded-full bg-primary px-8 py-4 text-primary-foreground font-semibold shadow-lg shadow-primary/20 transition-transform duration-300 hover:scale-105 active:scale-95 z-10"
           >
-            <span className="relative z-10">{isFa ? "موقعیت‌های شغلی" : "View Open Positions"}</span>
+            <span className="relative z-10">{t("cta.openPositions")}</span>
             <ArrowRight className={`relative z-10 h-5 w-5 transition-transform duration-300 ${isFa ? "rotate-180 group-hover/btn:-translate-x-1" : "group-hover/btn:translate-x-1"}`} />
           </Link>
         </div>

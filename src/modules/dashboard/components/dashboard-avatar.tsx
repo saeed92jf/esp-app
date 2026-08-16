@@ -85,7 +85,7 @@ export function DashboardAvatar() {
       
       <PopoverContent className="w-64 p-4 rounded-xl shadow-lg border border-border/50" align="start">
         <div className="space-y-4">
-          <h4 className="font-medium text-sm text-center">انتخاب تصویر پروفایل</h4>
+          <h4 className="font-medium text-sm text-center">{t("avatar.selectImage")}</h4>
           
           <div className="grid grid-cols-3 gap-2">
             {PREDEFINED_AVATARS.map((url, i) => (
