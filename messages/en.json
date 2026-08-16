@@ -313,6 +313,16 @@
         "hours": "{count} hours ago",
         "days": "{count} days ago"
       }
+    },
+    "checklist": {
+      "addPlaceholder": "Add new task...",
+      "categoryPlaceholder": "Category (Optional)",
+      "work": "Work",
+      "personal": "Personal",
+      "all": "All"
+    },
+    "calendar": {
+      "addPlaceholder": "Add new event..."
     }
   },
   "Account": {

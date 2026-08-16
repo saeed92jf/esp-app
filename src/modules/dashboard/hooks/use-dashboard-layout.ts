@@ -22,12 +22,12 @@ export type WidgetId =
 // ─── Defaults ─────────────────────────────────────────────────────────────────
 
 const MIN_SIZES: Record<WidgetId, { minW: number; minH: number }> = {
-  "stat-0": { minW: 2, minH: 2 },
-  "stat-1": { minW: 2, minH: 2 },
-  "stat-2": { minW: 2, minH: 2 },
-  "stat-3": { minW: 2, minH: 2 },
-  "stat-4": { minW: 2, minH: 2 },
-  "stat-5": { minW: 2, minH: 2 },
+  "stat-0": { minW: 1, minH: 1 },
+  "stat-1": { minW: 1, minH: 1 },
+  "stat-2": { minW: 1, minH: 1 },
+  "stat-3": { minW: 1, minH: 1 },
+  "stat-4": { minW: 1, minH: 1 },
+  "stat-5": { minW: 1, minH: 1 },
   chart: { minW: 4, minH: 3 },
   activity: { minW: 3, minH: 3 },
   checklist: { minW: 3, minH: 3 }, // Matching activity min sizes

@@ -66,14 +66,31 @@
         "meeting": "Meeting",
         "deadline": "Deadline",
         "review": "Review",
-        "event": "Event"
+        "event": "Event",
+        "official": "Official Holiday",
+        "fair": "Exhibition",
+        "company_event": "Company Event",
+        "birthday": "Employee Birthday"
       },
-      "empty": "No upcoming events"
+      "empty": "No upcoming events",
+      "addPlaceholder": "New event...",
+      "add": "Add",
+      "eventsCount": "{count} events found",
+      "views": {
+        "all": "All",
+        "day": "Day",
+        "week": "Week",
+        "month": "Month",
+        "year": "Year"
+      }
     },
     "themeSettings": "Theme Settings",
     "checklist": {
       "title": "Tasks Checklist",
-      "empty": "All caught up!"
+      "empty": "All caught up!",
+      "addPlaceholder": "Add new task...",
+      "categoryPlaceholder": "Category",
+      "all": "All"
     }
   }
 }

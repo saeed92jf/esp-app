@@ -313,6 +313,16 @@
         "hours": "{count} ساعت پیش",
         "days": "{count} روز پیش"
       }
+    },
+    "checklist": {
+      "addPlaceholder": "افزودن کار جدید...",
+      "categoryPlaceholder": "دسته‌بندی (اختیاری)",
+      "work": "کاری",
+      "personal": "شخصی",
+      "all": "همه"
+    },
+    "calendar": {
+      "addPlaceholder": "افزودن رویداد جدید..."
     }
   },
   "Account": {

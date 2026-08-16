@@ -62,17 +62,34 @@
     },
     "calendar": {
       "title": "رویدادهای پیش رو",
+      "addPlaceholder": "رویداد جدید...",
+      "add": "افزودن",
       "types": {
         "meeting": "جلسه",
         "deadline": "مهلت",
         "review": "بررسی",
-        "event": "رویداد"
+        "event": "رویداد",
+        "official": "مناسبت‌های رسمی",
+        "fair": "نمایشگاه‌ها",
+        "company_event": "مناسبت‌های شرکت",
+        "birthday": "تولد کارکنان"
       },
-      "empty": "رویدادی وجود ندارد"
+      "views": {
+        "all": "همه",
+        "day": "روز",
+        "week": "هفته",
+        "month": "ماه",
+        "year": "سال"
+      },
+      "empty": "رویدادی وجود ندارد",
+      "eventsCount": "{count} رویداد یافت شد"
     },
     "themeSettings": "تنظیمات ظاهری",
     "checklist": {
       "title": "چک‌لیست وظایف",
+      "addPlaceholder": "افزودن کار جدید...",
+      "categoryPlaceholder": "دسته‌بندی",
+      "all": "همه",
       "empty": "همه کارها انجام شد!"
     }
   }

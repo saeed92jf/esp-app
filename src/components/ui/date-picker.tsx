@@ -113,7 +113,7 @@ interface CalendarContentProps {
   handleSelect: (d?: Date) => void;
   startYear?: number;
   endYear?: number;
-  hasEvent?: (date: Date) => boolean;
+  getEventColors?: (date: Date) => string[];
 }
 
 function CalendarContent({
@@ -125,7 +125,7 @@ function CalendarContent({
   handleSelect,
   startYear,
   endYear,
-  hasEvent,
+  getEventColors,
 }: CalendarContentProps) {
   const locale = useLocale();
   const isFa = locale === "fa";
@@ -460,7 +460,7 @@ function CalendarContent({
         {gridCells.map((cell, idx) => {
           const isSelected = isSameDay(cell.date, selectedDate);
           const isCurrentDay = isToday(cell.date);
-          const hasBadge = hasEvent ? hasEvent(cell.date) : false;
+          const eventColors = getEventColors ? getEventColors(cell.date) : [];
 
           return (
             <button
@@ -476,8 +476,18 @@ function CalendarContent({
               )}
             >
               {displayNum(cell.day)}
-              {hasBadge && (
-                <span className={cn("absolute bottom-1 w-1 h-1 rounded-full", isSelected ? "bg-primary-foreground" : "bg-primary")} />
+              {eventColors.length > 0 && (
+                <div className="absolute bottom-0.5 flex gap-0.5 justify-center w-full">
+                  {eventColors.map((color, i) => (
+                    <span 
+                      key={i} 
+                      className={cn(
+                        "w-1 h-1 rounded-full",
+                        isSelected ? "bg-primary-foreground" : color
+                      )} 
+                    />
+                  ))}
+                </div>
               )}
             </button>
           );
@@ -502,7 +512,7 @@ export interface DatePickerProps {
   startYear?: number;
   endYear?: number;
   size?: "xs" | "sm" | "default" | "lg";
-  hasEvent?: (date: Date) => boolean;
+  getEventColors?: (date: Date) => string[];
   /**
    * "popover" (default) — renders a trigger button that opens a popover with the calendar.
    * "inline" — renders the calendar directly on the page without any trigger/popover.
@@ -524,7 +534,7 @@ export function DatePicker({
   startYear,
   endYear,
   size = "default",
-  hasEvent,
+  getEventColors,
   mode = "popover",
 }: DatePickerProps) {
   const [internalDate, setInternalDate] = React.useState<Date | undefined>(value);
@@ -610,7 +620,7 @@ export function DatePicker({
       handleSelect={handleSelect}
       startYear={startYear}
       endYear={endYear}
-      hasEvent={hasEvent}
+      getEventColors={getEventColors}
     />
   );
 
