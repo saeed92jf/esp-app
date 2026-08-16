@@ -178,6 +178,21 @@ export function formatRelativeTime(
   const isFa = tr("unknown") === "نامشخص";
 
   const processSdate = (str: string) => {
+    if (isFa) {
+      return str
+        .replace(/(^|\s)یک(\s|$)/g, "$11$2")
+        .replace(/(^|\s)دو(\s|$)/g, "$12$2")
+        .replace(/(^|\s)سه(\s|$)/g, "$13$2")
+        .replace(/(^|\s)چهار(\s|$)/g, "$14$2")
+        .replace(/(^|\s)پنج(\s|$)/g, "$15$2")
+        .replace(/(^|\s)شش(\s|$)/g, "$16$2")
+        .replace(/(^|\s)هفت(\s|$)/g, "$17$2")
+        .replace(/(^|\s)هشت(\s|$)/g, "$18$2")
+        .replace(/(^|\s)نه(\s|$)/g, "$19$2")
+        .replace(/(^|\s)ده(\s|$)/g, "$110$2")
+        .replace(/(^|\s)یازده(\s|$)/g, "$111$2")
+        .replace(/(^|\s)دوازده(\s|$)/g, "$112$2");
+    }
     return str;
   };
 

@@ -71,8 +71,8 @@ export function ChannelInfoBar({
         {/* About Channel Card */}
         {description && (
           <div className="w-full bg-muted/30 rounded-2xl p-6 border border-border/50 text-center">
-            <h3 className="font-bold text-lg mb-3 text-foreground">درباره کانال</h3>
-            <p className="text-sm text-muted-foreground font-medium leading-8 md:leading-9 text-center">
+            <h3 className="font-bold text-base mb-3 text-foreground">درباره کانال</h3>
+            <p className="text-xs text-muted-foreground font-medium leading-7 md:leading-8 text-center">
               {description}
             </p>
           </div>

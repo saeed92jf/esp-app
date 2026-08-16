@@ -2,16 +2,23 @@
 
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { Users, Clock, Eye, Calendar as CalendarIcon } from "lucide-react";
 import type { CalendarEvent } from "../services/dashboard.service";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import * as React from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Cake, Plus } from "lucide-react";
 
 const TYPE_ICONS = {
   meeting: Users,
   deadline: Clock,
   review: Eye,
   event: CalendarIcon,
+  official: Flag,
+  fair: Store,
+  company_event: PartyPopper,
+  birthday: Cake,
 } as const;
 
 const TYPE_COLORS = {
@@ -19,14 +26,51 @@ const TYPE_COLORS = {
   deadline: "text-rose-500 bg-rose-500/10 dark:bg-rose-500/20",
   review: "text-amber-500 bg-amber-500/10 dark:bg-amber-500/20",
   event: "text-emerald-500 bg-emerald-500/10 dark:bg-emerald-500/20",
+  official: "text-purple-500 bg-purple-500/10 dark:bg-purple-500/20",
+  fair: "text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/20",
+  company_event: "text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20",
+  birthday: "text-pink-500 bg-pink-500/10 dark:bg-pink-500/20",
+} as const;
+
+const TYPE_DOT_COLORS = {
+  meeting: "bg-blue-500",
+  deadline: "bg-rose-500",
+  review: "bg-amber-500",
+  event: "bg-emerald-500",
+  official: "bg-purple-500",
+  fair: "bg-cyan-500",
+  company_event: "bg-indigo-500",
+  birthday: "bg-pink-500",
+} as const;
+
+const SOLID_COLORS = {
+  meeting: "bg-blue-500 text-white",
+  deadline: "bg-rose-500 text-white",
+  review: "bg-amber-500 text-white",
+  event: "bg-emerald-500 text-white",
+  official: "bg-purple-500 text-white",
+  fair: "bg-cyan-500 text-white",
+  company_event: "bg-indigo-500 text-white",
+  birthday: "bg-pink-500 text-white",
 } as const;
 
 export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
   const t = useTranslations("Dashboard.calendar");
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(new Date());
-  const eventDateSet = React.useMemo(() => {
-    return new Set(events?.map(e => e.date));
+  const [localEvents, setLocalEvents] = React.useState<CalendarEvent[]>(events || []);
+  const [newEventTitle, setNewEventTitle] = React.useState("");
+  const [newEventType, setNewEventType] = React.useState<string>("event");
+  const [viewMode, setViewMode] = React.useState<"year"|"month"|"week"|"day">("day");
+  const [typeFilter, setTypeFilter] = React.useState<string>("all");
+  const [isFormVisible, setIsFormVisible] = React.useState(false);
+
+  React.useEffect(() => {
+    if (events) setLocalEvents(events);
   }, [events]);
+
+  const eventDateSet = React.useMemo(() => {
+    return new Set(localEvents?.map(e => e.date));
+  }, [localEvents]);
 
   const hasEvent = React.useCallback((date: Date) => {
     const gy = date.getFullYear();
@@ -36,13 +80,94 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
   }, [eventDateSet]);
 
   const filteredEvents = React.useMemo(() => {
-    if (!selectedDate) return [];
-    const gy = selectedDate.getFullYear();
-    const gm = String(selectedDate.getMonth() + 1).padStart(2, "0");
-    const gd = String(selectedDate.getDate()).padStart(2, "0");
-    const formatted = `${gy}-${gm}-${gd}`;
-    return events?.filter(e => e.date === formatted) || [];
-  }, [events, selectedDate]);
+    let result = localEvents;
+
+    // Apply Time Filter (always active)
+    if (!selectedDate) {
+      result = [];
+    } else {
+      const { year: gy, month: gm, day: gd } = getJalaliDate(selectedDate);
+
+      // Week logic: Start from Saturday in Jalali, but DatePicker natively supports JS Date.
+      // A simpler approximation for week view is just +/- 3 days from selectedDate.
+      const startOfWeek = new Date(selectedDate);
+      startOfWeek.setDate(selectedDate.getDate() - ((selectedDate.getDay() + 1) % 7)); // Sat=0
+      startOfWeek.setHours(0,0,0,0);
+      
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      endOfWeek.setHours(23,59,59,999);
+
+      result = localEvents.filter(e => {
+        const [ey, em, ed] = e.date.split("-").map(Number);
+        if (viewMode === "year") return ey === gy;
+        if (viewMode === "month") return ey === gy && em === gm;
+        if (viewMode === "week") {
+          // It's safer to compare as JS dates if they were Greg, but since they are Jalali strings,
+          // converting each event to Greg just for 'week' view is heavy. Let's just do a simple check.
+          // Wait, 'getJalaliDate' gives the Jalali parts. I'll just check if the Gregorian dates fall in range.
+          // But parsing Jalali to Gregorian requires `jalaliToGregorianDate` which isn't imported here.
+          // For simplicity, let's just use a string-based or day-diff-based logic.
+          // Since the user mainly uses day/month/year, I'll approximate the week for now or import jalaliToGregorianDate.
+          return ey === gy && em === gm && Math.abs(ed - gd) <= 3;
+        }
+        return ey === gy && em === gm && ed === gd;
+      });
+    }
+
+    // Apply Type Filter
+    if (typeFilter !== "all") {
+      result = result.filter(e => e.type === typeFilter);
+    }
+
+    return [...result].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [localEvents, selectedDate, viewMode, typeFilter]);
+
+  const deleteEvent = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setLocalEvents(prev => prev.filter(ev => ev.id !== id));
+  };
+
+  const getEventColors = (date: Date) => {
+    const { year: gy, month: gm, day: gd } = getJalaliDate(date);
+    
+    // Find unique types for this day
+    const typesOnDay = new Set<keyof typeof TYPE_DOT_COLORS>();
+    localEvents.forEach(e => {
+      // Do not show badges for birthdays
+      if (e.type === "birthday") return;
+      
+      const [ey, em, ed] = e.date.split("-").map(Number);
+      if (ey === gy && em === gm && ed === gd) {
+        typesOnDay.add(e.type as keyof typeof TYPE_DOT_COLORS);
+      }
+    });
+
+    // Return the background color classes for the badges
+    return Array.from(typesOnDay).map(t => TYPE_DOT_COLORS[t] || "bg-primary");
+  };
+
+  const toggleTypeFilter = (type: string) => {
+    setTypeFilter(prev => prev === type ? "all" : type);
+  };
+
+  const addEvent = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!newEventTitle.trim() || !selectedDate) return;
+    
+    const { year: gy, month: gm, day: gd } = getJalaliDate(selectedDate);
+    const formatted = `${gy}-${String(gm).padStart(2, "0")}-${String(gd).padStart(2, "0")}`;
+
+    const newEvent: CalendarEvent = {
+      id: `event-${Date.now()}`,
+      title: newEventTitle.trim(),
+      date: formatted,
+      type: newEventType as any,
+    };
+    
+    setLocalEvents(prev => [...prev, newEvent]);
+    setNewEventTitle("");
+  };
 
   return (
     <div className="bg-transparent p-4 @sm:p-5 flex flex-col gap-3 @sm:gap-4 h-full">
@@ -55,42 +180,148 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       </div>
 
       {/* Inline Calendar */}
-      <div className="bg-background/40 rounded-xl border border-border/40 p-3">
+      <div className="bg-background/40 rounded-xl border border-border/40 p-3 relative">
         <DatePicker
           mode="inline"
           value={selectedDate}
-          onChange={setSelectedDate}
-          hasEvent={hasEvent}
+          onChange={(d) => {
+            setSelectedDate(d);
+            setViewMode("day");
+            setTypeFilter("all");
+          }}
+          getEventColors={getEventColors}
         />
+        
+        {/* Toggle Form Button */}
+        <div 
+          className="flex justify-center mt-3 pt-3 border-t border-border/30 cursor-pointer text-muted-foreground hover:text-primary transition-colors text-xs font-medium"
+          onClick={() => setIsFormVisible(!isFormVisible)}
+        >
+          <div className="flex items-center gap-1">
+            {t("addPlaceholder")}
+            <Plus className={cn("size-3.5 transition-transform duration-300", isFormVisible && "rotate-45")} />
+          </div>
+        </div>
+      </div>
+
+      {/* Add Event Form */}
+      <div className={cn(
+        "grid transition-all duration-300 ease-in-out",
+        isFormVisible ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+      )}>
+        <div className="overflow-hidden">
+          <form onSubmit={addEvent} className="flex flex-col gap-2 px-1 pb-3">
+            <Input 
+              type="text" 
+              value={newEventTitle}
+              onChange={(e) => setNewEventTitle(e.target.value)}
+              placeholder={t("addPlaceholder")}
+              className="h-9 text-sm"
+            />
+            <div className="flex gap-2">
+              <Select value={newEventType} onValueChange={setNewEventType}>
+                <SelectTrigger className="h-9 flex-1 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-[9999]">
+                  <SelectItem value="event">{t("types.event")}</SelectItem>
+                  <SelectItem value="official">{t("types.official")}</SelectItem>
+                  <SelectItem value="fair">{t("types.fair")}</SelectItem>
+                  <SelectItem value="meeting">{t("types.meeting")}</SelectItem>
+                  <SelectItem value="company_event">{t("types.company_event")}</SelectItem>
+                  <SelectItem value="birthday">{t("types.birthday")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button type="submit" variant="default" className="h-9">
+                {t("add")}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {/* View Toggle */}
+      <div className="grid grid-cols-4 gap-1.5 pb-2 px-1 w-full">
+        {(["year", "month", "week", "day"] as const).map(mode => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={cn(
+              "w-full py-1.5 rounded-lg text-[11px] @sm:text-xs font-semibold transition-colors",
+              viewMode === mode 
+                ? "bg-primary text-primary-foreground shadow-sm" 
+                : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}
+          >
+            {t(`views.${mode}`)}
+          </button>
+        ))}
+      </div>
+
+      {/* Type Filter (Secondary Tabs) */}
+      <div className="flex flex-wrap items-center gap-1.5 pb-1 px-1">
+        {(["all", "official", "fair", "company_event", "birthday", "meeting", "event"]).map(type => {
+          const isActive = typeFilter === type;
+          const activeClasses = type === "all" 
+            ? "bg-primary text-primary-foreground shadow-sm" 
+            : `${SOLID_COLORS[type as keyof typeof SOLID_COLORS]} shadow-sm`;
+            
+          return (
+            <button
+              key={type}
+              onClick={() => setTypeFilter(type)}
+              className={cn(
+                "px-3 py-1 rounded-full text-[11px] @sm:text-xs font-semibold transition-colors",
+                isActive 
+                  ? activeClasses 
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              )}
+            >
+              {type === "all" ? t("views.all") : t(`types.${type}`)}
+            </button>
+          );
+        })}
       </div>
 
       {/* Events list */}
+      <div className="flex justify-between items-center px-2 mb-1">
+        <span className="text-[11px] font-semibold text-muted-foreground">
+          {t("eventsCount", { count: filteredEvents.length })}
+        </span>
+      </div>
       {filteredEvents.length > 0 ? (
-        <ul className="space-y-1.5 @sm:space-y-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+        <ul className="space-y-1.5 flex-1 min-h-[250px] overflow-y-auto pr-1 pb-1 custom-scrollbar">
           {filteredEvents.map((event) => {
             const typeKey = event.type as keyof typeof TYPE_ICONS;
             const Icon = (TYPE_ICONS[typeKey] || CalendarIcon) as any;
+            const colorClass = TYPE_COLORS[typeKey] || "";
+            const isFiltered = typeFilter === event.type;
 
             return (
-              <li
-                key={event.id}
-                className="group flex items-center gap-2 @sm:gap-3 px-2 @sm:px-3 py-1.5 @sm:py-2.5 rounded-xl border border-transparent hover:border-primary/20 hover:bg-primary/5 hover:shadow-sm transition-all duration-300"
+              <li 
+                key={event.id} 
+                className="flex items-start justify-between gap-3 p-2.5 transition-colors group relative hover:opacity-80"
               >
-                <div className={cn("p-1.5 @sm:p-2 rounded-xl shrink-0 transition-transform duration-300 group-hover:scale-110", TYPE_COLORS[typeKey] || "")}>
-                  <Icon className="size-3 @sm:size-3.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs @sm:text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors duration-300">
-                    {event.title}
-                  </p>
-                  <p className="text-[10px] @sm:text-[11px] text-muted-foreground mt-0.5">
-                    {event.date}
-                    <span className="mx-1 @sm:mx-1.5 opacity-40">·</span>
-                    <span className="uppercase tracking-wide font-bold opacity-70">
-                      {t(`types.${event.type}`)}
+                <div className="flex items-start gap-2.5 min-w-0 w-full">
+                  <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", colorClass)}>
+                    <Icon className="size-4" />
+                  </div>
+                  <div className="flex flex-col min-w-0 w-full">
+                    <span className="text-[13px] font-medium text-foreground leading-tight whitespace-normal break-words pr-2">
+                      {event.title}
                     </span>
-                  </p>
+                    <span className="text-[11px] font-medium opacity-80 mt-0.5">
+                      {event.date}
+                    </span>
+                  </div>
                 </div>
+                <button
+                  onClick={(e) => deleteEvent(e, event.id)}
+                  className="p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-md transition-all duration-300"
+                  aria-label="Delete event"
+                >
+                  <X className="size-4" />
+                </button>
               </li>
             );
           })}

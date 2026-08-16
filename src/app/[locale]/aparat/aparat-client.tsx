@@ -300,8 +300,8 @@ export function AparatClient({ username }: AparatClientProps) {
                           <span>{formatRelativeTime(selectedVideo.createdAtTimestamp, trTime, selectedVideo.sdate)}</span>
                         </div>
                         {selectedVideo.description && (
-                          <div className="w-full text-justify text-sm text-muted-foreground mt-5 leading-relaxed bg-muted/30 p-6 rounded-2xl border border-border/50 max-h-96 overflow-y-auto custom-scrollbar whitespace-pre-wrap">
-                            <div dangerouslySetInnerHTML={{ __html: selectedVideo.description }} />
+                          <div className="w-full text-justify text-[13px] text-muted-foreground mt-5 leading-8 md:leading-9 bg-muted/30 p-6 rounded-2xl border border-border/50 max-h-80 overflow-y-auto custom-scrollbar">
+                            <div dangerouslySetInnerHTML={{ __html: selectedVideo.description.replace(/\n/g, '<br/>') }} />
                           </div>
                         )}
                         {videoLoading && !selectedVideo.description && (
