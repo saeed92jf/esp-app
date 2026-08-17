@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Home, LayoutDashboard } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 
 export function ProfilePage() {
   const t = useTranslations("Profile");
@@ -59,11 +60,27 @@ export function ProfilePage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t("title", { defaultValue: "اطلاعات کاربری" })}</h1>
-        <p className="text-muted-foreground mt-2">
-          {t("subtitle", { defaultValue: "مدیریت اطلاعات حساب کاربری و تنظیمات شخصی" })}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title", { defaultValue: "اطلاعات کاربری" })}</h1>
+          <p className="text-muted-foreground mt-2">
+            {t("subtitle", { defaultValue: "مدیریت اطلاعات حساب کاربری و تنظیمات شخصی" })}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild size="sm">
+            <Link href="/dashboard">
+              <LayoutDashboard className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              {t("actions.dashboard", { defaultValue: "داشبورد" })}
+            </Link>
+          </Button>
+          <Button variant="outline" asChild size="sm">
+            <Link href="/">
+              <Home className="size-4 mr-2 rtl:ml-2 rtl:mr-0" />
+              {t("actions.home", { defaultValue: "خانه" })}
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="personal" className="w-full">
