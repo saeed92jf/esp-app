@@ -315,8 +315,7 @@ export function CommoditiesWidget() {
                         value={weightUnit}
                         onChange={(val) => setWeightUnitState(val as WeightUnit)}
                         placeholder="انتخاب واحد..."
-                        className="w-full h-8 bg-muted/30"
-                        dir="rtl"
+                        className="w-full h-8 bg-muted/30 rtl:text-right"
                       />
                       <p className="text-[10px] text-muted-foreground mt-1 text-right">
                         راهنما: هر اونس جهانی برابر ۳۱.۱۰۳ گرم است.
