@@ -20,8 +20,11 @@ const UNITS: Record<string, string> = {
   gold: 'unitOz',
   silver: 'unitOz',
   platinum: 'unitOz',
+  palladium: 'unitOz',
   copper: 'unitOz',
   aluminum: 'unitTon',
+  zinc: 'unitTon',
+  steel: 'unitTon',
   wti: 'unitBbl',
   brent: 'unitBbl',
   ng: 'unitMbtu',
@@ -124,6 +127,12 @@ export function CommoditiesWidget() {
                       placeholder={t('usdRate')}
                       className="rtl:text-right w-full"
                     />
+                    
+                    {irrMode !== 'manual' && (
+                      <p className="text-xs text-muted-foreground mt-1 text-right fa-num" dir="rtl">
+                        {t('activeRateText', { rate: (isToman ? activeRate / 10 : activeRate).toLocaleString('en-US', { maximumFractionDigits: 0 }) })} {isToman ? t('toman') : t('rial')}
+                      </p>
+                    )}
                     
                     {irrMode === 'manual' && (
                       <div className="flex gap-2">

@@ -117,11 +117,11 @@
       "unitMbtu": "دلار / MMBtu",
       "platinum": "پلاتین",
       "copper": "مس",
-      "eur": "یورو (EUR)",
-      "gbp": "پوند (GBP)",
-      "cny": "یوان چین (CNY)",
-      "aed": "درهم امارات (AED)",
-      "try": "لیر ترکیه (TRY)",
+      "eur": "🇪🇺 یورو (EUR)",
+      "gbp": "🇬🇧 پوند (GBP)",
+      "cny": "🇨🇳 یوان چین (CNY)",
+      "aed": "🇦🇪 درهم امارات (AED)",
+      "try": "🇹🇷 لیر ترکیه (TRY)",
       "categories": {
         "metals": "فلزات گران‌بها",
         "energy": "انرژی",
@@ -141,7 +141,11 @@
         "manual": "دستی"
       },
       "aluminum": "آلومینیوم",
-      "unitTon": "دلار / تن"
+      "unitTon": "دلار / تن",
+      "palladium": "پالادیوم",
+      "steel": "فولاد",
+      "zinc": "روی",
+      "activeRateText": "نرخ فعلی: {rate}"
     }
   }
 }

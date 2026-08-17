@@ -117,11 +117,11 @@
       "unitMbtu": "USD / MMBtu",
       "platinum": "Platinum",
       "copper": "Copper",
-      "eur": "Euro (EUR)",
-      "gbp": "Pound (GBP)",
-      "cny": "Chinese Yuan (CNY)",
-      "aed": "UAE Dirham (AED)",
-      "try": "Turkish Lira (TRY)",
+      "eur": "🇪🇺 Euro (EUR)",
+      "gbp": "🇬🇧 Pound (GBP)",
+      "cny": "🇨🇳 Chinese Yuan (CNY)",
+      "aed": "🇦🇪 UAE Dirham (AED)",
+      "try": "🇹🇷 Turkish Lira (TRY)",
       "categories": {
         "metals": "Precious Metals",
         "energy": "Energy",
@@ -141,7 +141,11 @@
         "manual": "Manual"
       },
       "aluminum": "Aluminum",
-      "unitTon": "USD / ton"
+      "unitTon": "USD / ton",
+      "palladium": "Palladium",
+      "steel": "Steel",
+      "zinc": "Zinc",
+      "activeRateText": "Current rate: {rate}"
     }
   }
 }

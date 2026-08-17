@@ -5,8 +5,11 @@ const TICKERS = [
   { id: 'gold', symbol: 'GC=F', category: 'metals' },
   { id: 'silver', symbol: 'SI=F', category: 'metals' },
   { id: 'platinum', symbol: 'PL=F', category: 'metals' },
+  { id: 'palladium', symbol: 'PA=F', category: 'metals' },
   { id: 'copper', symbol: 'HG=F', category: 'metals' },
   { id: 'aluminum', symbol: 'ALI=F', category: 'metals' },
+  { id: 'zinc', symbol: 'ZNC=F', category: 'metals' },
+  { id: 'steel', symbol: 'HRC=F', category: 'metals' },
   // Energy
   { id: 'wti', symbol: 'CL=F', category: 'energy' },
   { id: 'brent', symbol: 'BZ=F', category: 'energy' },
