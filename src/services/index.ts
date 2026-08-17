@@ -48,6 +48,11 @@ import {
   RealPreferencesService,
   type IPreferencesService,
 } from "./preferences.service";
+import {
+  FakeCommoditiesService,
+  RealCommoditiesService,
+  type ICommoditiesService,
+} from "@/modules/dashboard/services/commodities.service";
 import { AparatService, type IAparatService } from "./aparat.service";
 
 // ─── حالت فعلی ────────────────────────────────────────────────────────────────
@@ -104,6 +109,11 @@ export const api = {
   preferences: pick<IPreferencesService, IPreferencesService>(
     new FakePreferencesService(),
     new RealPreferencesService(http),
+  ),
+
+  commodities: pick<ICommoditiesService, ICommoditiesService>(
+    new FakeCommoditiesService(),
+    new RealCommoditiesService(http),
   ),
 
   // Aparat همیشه از یک پیاده‌سازی استفاده می‌کند (نه fake/real سوییچ‌پذیر)

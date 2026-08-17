@@ -103,5 +103,18 @@
       "selectThis": "Select",
       "userProfile": "Profile"
     }
+  },
+  "commodities": {
+    "title": "Live Commodities",
+    "gold": "Gold Ounce",
+    "silver": "Silver Ounce",
+    "wti": "WTI Crude Oil",
+    "brent": "Brent Crude Oil",
+    "ng": "Natural Gas",
+    "usdRate": "USD to IRR Rate",
+    "update": "Update",
+    "unitOz": "USD / oz",
+    "unitBbl": "USD / bbl",
+    "unitMbtu": "USD / MMBtu"
   }
 }
