@@ -21,9 +21,6 @@ type WeightUnit = 'oz' | 'g' | 'kg' | 'ton';
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
   silver: 'unitOz',
-  platinum: 'unitOz',
-  palladium: 'unitOz',
-  copper: 'unitOz',
   geram18: 'unitG',
   geram24: 'unitG',
   mesghal: 'unitMesghal',
@@ -43,6 +40,15 @@ const UNITS: Record<string, string> = {
   cny: 'unitCurrency',
   aed: 'unitCurrency',
   try: 'unitCurrency',
+  chf: 'unitCurrency',
+  cad: 'unitCurrency',
+  aud: 'unitCurrency',
+  jpy: 'unitCurrency',
+  rub: 'unitCurrency',
+  iqd: 'unitCurrency',
+  sar: 'unitCurrency',
+  inr: 'unitCurrency',
+  kwd: 'unitCurrency',
   btc: 'unitCurrency',
   eth: 'unitCurrency',
   usdt: 'unitCurrency',
@@ -406,11 +412,15 @@ export function CommoditiesWidget() {
                   >
                     <div className="flex items-center gap-2.5">
                       {activeCategory === 'forex' && (
-                        <div className="shrink-0">
+                        <div className="shrink-0 flex items-center">
                           <img 
-                            src={`https://flagcdn.com/w40/${{ eur: 'eu', gbp: 'gb', cny: 'cn', aed: 'ae', try: 'tr' }[item.id]}.png`} 
+                            src={`https://flagcdn.com/w40/${{ 
+                              eur: 'eu', gbp: 'gb', cny: 'cn', aed: 'ae', try: 'tr',
+                              chf: 'ch', cad: 'ca', aud: 'au', jpy: 'jp', rub: 'ru',
+                              iqd: 'iq', sar: 'sa', inr: 'in', kwd: 'kw'
+                            }[item.id]}.png`} 
                             alt={item.id} 
-                            className="w-5 rounded-[2px] shadow-sm object-cover opacity-90"
+                            className="w-7 h-5 rounded-[3px] shadow-sm object-cover opacity-90 border border-black/5"
                           />
                         </div>
                       )}

@@ -172,9 +172,15 @@
       "unitGal": "USD / Gal",
       "unitLb": "Cent / Lb",
       "geram24": "Gold 24k",
-      "platinum": "Global Platinum",
-      "palladium": "Global Palladium",
-      "copper": "Global Copper"
+      "chf": "Swiss Franc (CHF)",
+      "cad": "Canadian Dollar (CAD)",
+      "aud": "Australian Dollar (AUD)",
+      "jpy": "Japanese Yen (JPY)",
+      "rub": "Russian Ruble (RUB)",
+      "iqd": "Iraqi Dinar (IQD)",
+      "sar": "Saudi Riyal (SAR)",
+      "inr": "Indian Rupee (INR)",
+      "kwd": "Kuwaiti Dinar (KWD)"
     }
   }
 }

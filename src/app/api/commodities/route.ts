@@ -4,9 +4,6 @@ const TICKERS = [
   // Global Metals
   { id: 'gold', tgju: 'ons', category: 'global_metals' },
   { id: 'silver', tgju: 'silver', category: 'global_metals' },
-  { id: 'platinum', tgju: 'platinum', category: 'global_metals' },
-  { id: 'palladium', tgju: 'palladium', category: 'global_metals' },
-  { id: 'copper', tgju: 'copper', category: 'global_metals' },
   // Iran Gold & Coins
   { id: 'geram18', tgju: 'geram18', category: 'iran_gold', type: 'fiat' },
   { id: 'geram24', tgju: 'geram24', category: 'iran_gold', type: 'fiat' },
@@ -30,6 +27,15 @@ const TICKERS = [
   { id: 'cny', tgju: 'price_cny', category: 'forex', type: 'fiat' },
   { id: 'aed', tgju: 'price_aed', category: 'forex', type: 'fiat' },
   { id: 'try', tgju: 'price_try', category: 'forex', type: 'fiat' },
+  { id: 'chf', tgju: 'price_chf', category: 'forex', type: 'fiat' },
+  { id: 'cad', tgju: 'price_cad', category: 'forex', type: 'fiat' },
+  { id: 'aud', tgju: 'price_aud', category: 'forex', type: 'fiat' },
+  { id: 'jpy', tgju: 'price_jpy', category: 'forex', type: 'fiat' },
+  { id: 'rub', tgju: 'price_rub', category: 'forex', type: 'fiat' },
+  { id: 'iqd', tgju: 'price_iqd', category: 'forex', type: 'fiat' },
+  { id: 'sar', tgju: 'price_sar', category: 'forex', type: 'fiat' },
+  { id: 'inr', tgju: 'price_inr', category: 'forex', type: 'fiat' },
+  { id: 'kwd', tgju: 'price_kwd', category: 'forex', type: 'fiat' },
   // Crypto (TGJU returns in USD)
   { id: 'btc', tgju: 'crypto-bitcoin', category: 'crypto' },
   { id: 'eth', tgju: 'crypto-ethereum', category: 'crypto' },
