@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { useTranslations } from "next-intl";
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }) {
   const { locale } = await props.params;
@@ -9,12 +10,13 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
 export default async function TermsPage(props: { params: Promise<{ locale: string }> }) {
   const { locale } = await props.params;
   const isFa = locale === "fa";
+  const t = useTranslations("Terms");
 
   return (
     <main className="container mx-auto px-6 py-24 md:py-32 max-w-4xl min-h-screen">
       <div className="prose prose-neutral dark:prose-invert prose-lg max-w-none">
         <h1 className="text-4xl font-bold mb-8 text-foreground">
-          {isFa ? "شرایط استفاده از خدمات" : "Terms of Use"}
+          {t("title")}
         </h1>
         <p className="text-muted-foreground mb-8">
           {isFa 
@@ -24,7 +26,7 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
 
         <section className="mb-10">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {isFa ? "پذیرش شرایط" : "Acceptance of Terms"}
+            {t("acceptance")}
           </h2>
           <p className="text-muted-foreground/80 leading-relaxed">
             {isFa 
@@ -35,7 +37,7 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
 
         <section className="mb-10">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {isFa ? "مالکیت معنوی" : "Intellectual Property"}
+            {t("intellectualProperty")}
           </h2>
           <p className="text-muted-foreground/80 leading-relaxed">
             {isFa
@@ -46,7 +48,7 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
 
         <section className="mb-10">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {isFa ? "سلب مسئولیت" : "Disclaimer"}
+            {t("disclaimer")}
           </h2>
           <p className="text-muted-foreground/80 leading-relaxed">
             {isFa

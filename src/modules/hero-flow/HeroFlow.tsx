@@ -472,7 +472,7 @@ export function HeroFlow() {
         <DialogContent className={isRtl ? "fa-num font-vazir" : ""} dir={isRtl ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle className="text-xl text-center mb-2">
-              {isRtl ? "پشتیبانی دسکتاپ" : "Desktop Only"}
+              {t('desktopOnly')}
             </DialogTitle>
             <DialogDescription className="text-center text-base leading-relaxed">
               {isRtl 
@@ -482,7 +482,7 @@ export function HeroFlow() {
           </DialogHeader>
           <DialogFooter className="mt-4 sm:justify-center">
             <Button onClick={() => setShowMobileAlert(false)} className="w-full sm:w-auto min-w-[120px]">
-              {isRtl ? "متوجه شدم" : "Understood"}
+              {t('understood')}
             </Button>
           </DialogFooter>
         </DialogContent>

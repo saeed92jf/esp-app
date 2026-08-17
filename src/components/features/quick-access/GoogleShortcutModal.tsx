@@ -32,6 +32,7 @@ export function GoogleShortcutModal({
   const tItems = useTranslations("Menu.items");
   const tSections = useTranslations("Menu.sections");
   const locale = useLocale();
+  const tQA = useTranslations("Common.quickAccess");
   const isRtl = locale === "fa";
   const panelRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -140,7 +141,7 @@ export function GoogleShortcutModal({
             <Search className="absolute top-2.5 start-3 size-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder={isRtl ? "جستجوی ابزارها..." : "Search shortcuts..."}
+              placeholder={tQA("searchShortcuts")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-9 ps-9 text-xs rounded-full bg-muted/50 border-border/60 focus-visible:ring-1 focus-visible:ring-primary"

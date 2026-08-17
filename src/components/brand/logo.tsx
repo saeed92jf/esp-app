@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -38,10 +38,11 @@ export function Logo({
   compact = false,
 }: LogoProps) {
   const locale = useLocale();
+  const t = useTranslations('Common.brand');
   const isRtl = locale === 'fa';
 
-  const leadWord = isRtl ? 'یورواسلات' : 'euroslot';
-  const trailWord = isRtl ? 'پارس' : 'pars';
+  const leadWord = t('euroslot');
+  const trailWord = t('pars');
   const fullName = `${leadWord} ${trailWord}`;
 
   return (
@@ -130,7 +131,7 @@ export function Logo({
             isRtl && 'tracking-normal font-normal text-[0.26em]'
           )}
         >
-          {isRtl ? 'سامانه یکپارچه مهندسی و محاسبات' : 'Engineering & Calculation Platform'}
+          {t('engineeringPlatform')}
         </span>
       )}
     </div>
