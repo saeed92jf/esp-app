@@ -146,7 +146,10 @@
       "palladium": "Palladium",
       "steel": "Steel",
       "zinc": "Zinc",
-      "activeRateText": "Current rate: {rate}"
+      "activeRateText": "Current rate: {rate}",
+      "unitG": "Gram",
+      "unitKg": "Kilogram",
+      "weightUnit": "Metals Weight Unit"
     }
   }
 }

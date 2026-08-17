@@ -16,6 +16,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CATEGORIES = ['metals', 'energy', 'forex', 'crypto'] as const;
 
+type WeightUnit = 'oz' | 'g' | 'kg' | 'ton';
+
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
   silver: 'unitOz',
@@ -52,10 +54,16 @@ export function CommoditiesWidget() {
   const [activeCategory, setActiveCategory] = useState<string>('metals');
   const [isToman, setIsTomanState] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [weightUnit, setWeightUnitState] = useState<WeightUnit>('oz');
 
   useEffect(() => {
-    const saved = localStorage.getItem('currency-unit');
-    if (saved === 'toman') setIsTomanState(true);
+    const savedToman = localStorage.getItem('currency-unit');
+    if (savedToman === 'toman') setIsTomanState(true);
+
+    const savedUnit = localStorage.getItem('metals-unit') as WeightUnit;
+    if (savedUnit && ['oz', 'g', 'kg', 'ton'].includes(savedUnit)) {
+      setWeightUnitState(savedUnit);
+    }
   }, []);
 
   // Derived: what we show in the input (rial or toman depending on toggle)
@@ -100,6 +108,52 @@ export function CommoditiesWidget() {
     return val.toLocaleString('en-US', { maximumFractionDigits: 0 });
   };
 
+  const setWeightUnit = (unit: WeightUnit) => {
+    setWeightUnitState(unit);
+    localStorage.setItem('metals-unit', unit);
+  };
+
+  const getConvertedPriceAndUnit = (item: CommodityItem, targetUnit: WeightUnit) => {
+    let price = item.price;
+    let unitKey = UNITS[item.id] || 'unitOz';
+    
+    if (activeCategory !== 'metals') return { price, unitKey };
+
+    let pricePerGram = 0;
+    let canConvert = false;
+
+    if (unitKey === 'unitOz') {
+      pricePerGram = price / 31.1034768; // 1 Troy Ounce = 31.1034768 grams
+      canConvert = true;
+    } else if (unitKey === 'unitTon') {
+      pricePerGram = price / 1000000; // 1 Metric Ton = 1,000,000 grams
+      canConvert = true;
+    }
+
+    if (canConvert) {
+      switch (targetUnit) {
+        case 'g': 
+          price = pricePerGram;
+          unitKey = 'unitG';
+          break;
+        case 'kg':
+          price = pricePerGram * 1000;
+          unitKey = 'unitKg';
+          break;
+        case 'ton':
+          price = pricePerGram * 1000000;
+          unitKey = 'unitTon';
+          break;
+        case 'oz':
+          price = pricePerGram * 31.1034768;
+          unitKey = 'unitOz';
+          break;
+      }
+    }
+
+    return { price, unitKey };
+  };
+
   const filteredData = commodities?.filter(c => c.category === activeCategory) || [];
 
   const rateModes = [
@@ -124,6 +178,13 @@ export function CommoditiesWidget() {
       value: 'manual', 
       label: t('rateModes.manual')
     },
+  ];
+
+  const weightUnitOptions = [
+    { value: 'oz', label: t('unitOz') },
+    { value: 'g', label: t('unitG') },
+    { value: 'kg', label: t('unitKg') },
+    { value: 'ton', label: t('unitTon') },
   ];
 
   return (
@@ -202,6 +263,19 @@ export function CommoditiesWidget() {
                     )}
                   </div>
                   
+                  {activeCategory === 'metals' && (
+                    <div className="space-y-3 pt-3 border-t border-border/50">
+                      <p className="text-xs font-medium text-muted-foreground">{t('weightUnit')}</p>
+                      <Combobox
+                        options={weightUnitOptions}
+                        value={weightUnit}
+                        onChange={(v) => setWeightUnit(v as WeightUnit)}
+                        placeholder={t('weightUnit')}
+                        className="rtl:text-right w-full"
+                      />
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-3 border-t border-border/50">
                     <Label htmlFor="toman-mode" className="text-xs font-medium text-muted-foreground">
                       {t('toman')}
@@ -257,6 +331,7 @@ export function CommoditiesWidget() {
               {filteredData.map((item: CommodityItem, index) => {
                 const isUp = item.trend === 'up';
                 const isDown = item.trend === 'down';
+                const { price, unitKey } = getConvertedPriceAndUnit(item, weightUnit);
                 
                 return (
                   <motion.div 
@@ -283,7 +358,7 @@ export function CommoditiesWidget() {
                         {t(item.id)}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
-                        {t(UNITS[item.id] || 'unitOz')}
+                        {t(unitKey)}
                       </p>
                     </div>
                     
@@ -298,11 +373,11 @@ export function CommoditiesWidget() {
                             <span dir="ltr">{item.percentChange.toFixed(2)}%</span>
                           </span>
                           <span className="text-sm font-bold fa-num" dir="ltr">
-                            ${formatPrice(item.price)}
+                            ${formatPrice(price)}
                           </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-0.5 fa-num">
-                          {formatIrr(item.price, activeRate, isToman)} {isToman ? t('toman') : t('rial')}
+                          {formatIrr(price, activeRate, isToman)} {isToman ? t('toman') : t('rial')}
                         </p>
                       </div>
                     </div>
