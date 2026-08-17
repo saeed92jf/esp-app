@@ -100,8 +100,8 @@ export function CommoditiesWidget() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm relative">
-      <div className="p-4 border-b border-border/50 flex flex-col gap-3 bg-muted/20">
+    <div className="flex flex-col h-full bg-card rounded-xl rounded-br-none border border-border/50 overflow-hidden relative">
+      <div className="px-4 pt-4 pb-3 border-b border-border/50 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
