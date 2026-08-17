@@ -294,7 +294,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
           options={filterTypeOptions}
           value={typeFilter}
           onChange={(val) => setTypeFilter(val || "all")}
-          className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm rtl:text-right"
+          className="h-9 text-xs font-semibold w-full bg-background border-border shadow-sm rtl:text-right"
           showSearch={false}
         />
       </div>
