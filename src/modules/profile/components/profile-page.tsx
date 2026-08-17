@@ -94,7 +94,7 @@ export function ProfilePage() {
 
         <TabsContent value="personal">
           <Card>
-            <CardHeader>
+            <CardHeader className="rtl:text-right">
               <CardTitle>{t("tabs.personal", { defaultValue: "اطلاعات شخصی" })}</CardTitle>
               <CardDescription>
                 {t("descriptions.personal", { defaultValue: "اطلاعات هویتی و راه‌های ارتباطی خود را در این بخش مدیریت کنید." })}
@@ -167,7 +167,7 @@ export function ProfilePage() {
 
         <TabsContent value="organizational">
           <Card>
-            <CardHeader>
+            <CardHeader className="rtl:text-right">
               <CardTitle>{t("tabs.organizational", { defaultValue: "اطلاعات سازمانی" })}</CardTitle>
               <CardDescription>
                 {t("descriptions.organizational", { defaultValue: "موقعیت شغلی و اطلاعات شما در ساختار شرکت." })}
@@ -228,7 +228,7 @@ export function ProfilePage() {
 
         <TabsContent value="skills">
           <Card>
-            <CardHeader>
+            <CardHeader className="rtl:text-right">
               <CardTitle>{t("tabs.skills", { defaultValue: "مهارت‌ها" })}</CardTitle>
               <CardDescription>
                 {t("descriptions.skills", { defaultValue: "مهارت‌های فنی و نرم خود را اینجا ثبت کنید." })}
@@ -263,7 +263,7 @@ export function ProfilePage() {
 
         <TabsContent value="insurance">
           <Card>
-            <CardHeader>
+            <CardHeader className="rtl:text-right">
               <CardTitle>{t("tabs.insurance", { defaultValue: "اطلاعات بیمه" })}</CardTitle>
               <CardDescription>
                 {t("descriptions.insurance", { defaultValue: "سوابق و اطلاعات بیمه درمانی و تامین اجتماعی." })}
@@ -311,7 +311,7 @@ export function ProfilePage() {
 
         <TabsContent value="education">
           <Card>
-            <CardHeader>
+            <CardHeader className="rtl:text-right">
               <CardTitle>{t("tabs.education", { defaultValue: "اطلاعات تحصیلی" })}</CardTitle>
               <CardDescription>
                 {t("descriptions.education", { defaultValue: "سوابق تحصیلی و دانشگاهی خود را در این بخش مدیریت کنید." })}
