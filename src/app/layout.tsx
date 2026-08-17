@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { TimeProvider } from "@/providers/time-provider";
 import {
   DEFAULT_PRIMARY_COLOR,
