@@ -121,7 +121,7 @@ export function SettingsSection() {
           <span>{t("color")}</span>
         </div>
         
-        <div className="flex w-full h-14 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
+        <div className="flex w-full h-16 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
           {PRIMARY_COLORS.map((preset) => {
             const active = colorId === preset.id;
             return (
@@ -144,15 +144,6 @@ export function SettingsSection() {
                 {active && (
                   <div className="absolute bg-black/15 inset-0 pointer-events-none" />
                 )}
-                {active && (
-                  <motion.div 
-                    initial={{ scale: 0 }} 
-                    animate={{ scale: 1 }} 
-                    className="absolute top-1 right-1 pointer-events-none"
-                  >
-                    <Check className="size-3.5 text-white drop-shadow-md" strokeWidth={3} />
-                  </motion.div>
-                )}
                 <motion.div 
                   variants={{
                     initial: { opacity: 0 },
@@ -161,10 +152,10 @@ export function SettingsSection() {
                   }}
                   className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
                 >
-                  <span className="text-[11px] font-bold text-white drop-shadow-md whitespace-nowrap">
+                  <span className="text-xs font-bold text-white drop-shadow-md whitespace-nowrap">
                     {tColors(preset.labelKey)}
                   </span>
-                  <span className="text-[9px] font-medium text-white/90 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                  <span className="text-[10px] font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
                     {preset.hex}
                   </span>
                 </motion.div>
