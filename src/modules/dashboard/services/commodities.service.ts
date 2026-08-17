@@ -4,7 +4,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface CommodityItem {
   id: string;
-  category: 'metals' | 'energy' | 'forex';
+  category: 'metals' | 'energy' | 'forex' | 'crypto';
   price: number;
   change: number;
   percentChange: number;
@@ -12,8 +12,15 @@ export interface CommodityItem {
   error?: boolean;
 }
 
+export interface ExchangeRates {
+  cbi: number;
+  sana: number;
+  free: number;
+}
+
 export interface ICommoditiesService {
   getCommodities(): Promise<CommodityItem[]>;
+  getExchangeRates(): Promise<ExchangeRates>;
 }
 
 const FAKE_COMMODITIES: CommodityItem[] = [
@@ -29,12 +36,20 @@ const FAKE_COMMODITIES: CommodityItem[] = [
   { id: 'cny', category: 'forex', price: 0.14, change: 0.0005, percentChange: 0.35, trend: 'up' },
   { id: 'aed', category: 'forex', price: 0.27, change: 0, percentChange: 0, trend: 'neutral' },
   { id: 'try', category: 'forex', price: 0.03, change: -0.0001, percentChange: -0.3, trend: 'down' },
+  { id: 'btc', category: 'crypto', price: 65000, change: 1200, percentChange: 1.8, trend: 'up' },
+  { id: 'eth', category: 'crypto', price: 3500, change: -50, percentChange: -1.4, trend: 'down' },
+  { id: 'usdt', category: 'crypto', price: 1.0, change: 0, percentChange: 0, trend: 'neutral' },
 ];
 
 export class FakeCommoditiesService implements ICommoditiesService {
   async getCommodities(): Promise<CommodityItem[]> {
     await wait(600);
     return FAKE_COMMODITIES;
+  }
+
+  async getExchangeRates(): Promise<ExchangeRates> {
+    await wait(400);
+    return { cbi: 420000, sana: 450000, free: 600000 };
   }
 }
 
@@ -45,6 +60,12 @@ export class RealCommoditiesService implements ICommoditiesService {
     // We are calling our internal Next.js API route to proxy Yahoo Finance
     const res = await fetch('/api/commodities', { next: { revalidate: 60 } });
     if (!res.ok) throw new Error('Failed to fetch commodities');
+    return res.json();
+  }
+
+  async getExchangeRates(): Promise<ExchangeRates> {
+    const res = await fetch('/api/exchange-rates', { next: { revalidate: 3600 } });
+    if (!res.ok) throw new Error('Failed to fetch exchange rates');
     return res.json();
   }
 }

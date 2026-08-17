@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useCommodities } from '../hooks/use-commodities';
+import { useCommodities, IrrMode } from '../hooks/use-commodities';
 import type { CommodityItem } from '../services/commodities.service';
 import { Settings2, TrendingDown, TrendingUp, Minus, Activity, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -10,16 +10,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Combobox } from '@/components/ui/combobox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CATEGORIES = ['metals', 'energy', 'forex'] as const;
+const CATEGORIES = ['metals', 'energy', 'forex', 'crypto'] as const;
 
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
   silver: 'unitOz',
   platinum: 'unitOz',
   copper: 'unitOz',
+  aluminum: 'unitTon',
   wti: 'unitBbl',
   brent: 'unitBbl',
   ng: 'unitMbtu',
@@ -28,6 +30,9 @@ const UNITS: Record<string, string> = {
   cny: 'unitCurrency',
   aed: 'unitCurrency',
   try: 'unitCurrency',
+  btc: 'unitCurrency',
+  eth: 'unitCurrency',
+  usdt: 'unitCurrency',
 };
 
 const formatPrice = (price: number) => {
@@ -38,8 +43,8 @@ const formatPrice = (price: number) => {
 
 export function CommoditiesWidget() {
   const t = useTranslations('Dashboard.commodities');
-  const { commodities, isLoading, irrRate, setIrrRate, refetch } = useCommodities();
-  const [rateInput, setRateInput] = useState(irrRate.toString());
+  const { commodities, isLoading, irrMode, setIrrMode, manualRate, setManualRate, activeRate, refetch } = useCommodities();
+  const [rateInput, setRateInput] = useState(manualRate.toString());
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('metals');
   const [isToman, setIsTomanState] = useState(false);
@@ -49,6 +54,10 @@ export function CommoditiesWidget() {
     if (saved === 'toman') setIsTomanState(true);
   }, []);
 
+  useEffect(() => {
+    setRateInput(manualRate.toString());
+  }, [manualRate]);
+
   const setIsToman = (val: boolean) => {
     setIsTomanState(val);
     localStorage.setItem('currency-unit', val ? 'toman' : 'rial');
@@ -57,8 +66,7 @@ export function CommoditiesWidget() {
   const handleSaveRate = () => {
     const num = Number(rateInput.replace(/,/g, ''));
     if (!isNaN(num) && num > 0) {
-      setIrrRate(num);
-      setOpen(false);
+      setManualRate(num);
     }
   };
 
@@ -70,6 +78,13 @@ export function CommoditiesWidget() {
   };
 
   const filteredData = commodities?.filter(c => c.category === activeCategory) || [];
+
+  const rateModes = [
+    { value: 'free', label: t('rateModes.free') },
+    { value: 'sana', label: t('rateModes.sana') },
+    { value: 'cbi', label: t('rateModes.cbi') },
+    { value: 'manual', label: t('rateModes.manual') },
+  ];
 
   return (
     <div className="flex flex-col h-full bg-card rounded-2xl border border-border/50 overflow-hidden shadow-sm relative">
@@ -98,22 +113,32 @@ export function CommoditiesWidget() {
                   <Settings2 className="size-3.5 text-muted-foreground" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-4" align="end">
+              <PopoverContent className="w-72 p-4" align="end">
                 <div className="space-y-4">
                   <div className="space-y-3">
                     <p className="text-xs font-medium text-muted-foreground">{t('usdRate')}</p>
-                    <div className="flex gap-2">
-                      <Input 
-                        value={rateInput}
-                        onChange={(e) => setRateInput(e.target.value)}
-                        className="h-8 text-sm fa-num"
-                        placeholder="600000"
-                        dir="ltr"
-                      />
-                      <Button size="sm" className="h-8 px-3" onClick={handleSaveRate}>
-                        {t('update')}
-                      </Button>
-                    </div>
+                    <Combobox
+                      options={rateModes}
+                      value={irrMode}
+                      onChange={(v) => setIrrMode(v as IrrMode)}
+                      placeholder={t('usdRate')}
+                      className="rtl:text-right w-full"
+                    />
+                    
+                    {irrMode === 'manual' && (
+                      <div className="flex gap-2">
+                        <Input 
+                          value={rateInput}
+                          onChange={(e) => setRateInput(e.target.value)}
+                          className="h-8 text-sm fa-num"
+                          placeholder="600000"
+                          dir="ltr"
+                        />
+                        <Button size="sm" className="h-8 px-3" onClick={handleSaveRate}>
+                          {t('update')}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="flex items-center justify-between pt-3 border-t border-border/50">
@@ -206,7 +231,7 @@ export function CommoditiesWidget() {
                           </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-0.5 fa-num">
-                          {formatIrr(item.price, irrRate, isToman)} {isToman ? t('toman') : t('rial')}
+                          {formatIrr(item.price, activeRate, isToman)} {isToman ? t('toman') : t('rial')}
                         </p>
                       </div>
                     </div>

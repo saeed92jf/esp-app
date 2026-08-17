@@ -6,6 +6,7 @@ const TICKERS = [
   { id: 'silver', symbol: 'SI=F', category: 'metals' },
   { id: 'platinum', symbol: 'PL=F', category: 'metals' },
   { id: 'copper', symbol: 'HG=F', category: 'metals' },
+  { id: 'aluminum', symbol: 'ALI=F', category: 'metals' },
   // Energy
   { id: 'wti', symbol: 'CL=F', category: 'energy' },
   { id: 'brent', symbol: 'BZ=F', category: 'energy' },
@@ -16,6 +17,10 @@ const TICKERS = [
   { id: 'cny', symbol: 'CNY=X', category: 'forex', type: 'inverse' }, // 1 USD = X CNY
   { id: 'aed', symbol: 'AED=X', category: 'forex', type: 'inverse' }, // 1 USD = X AED
   { id: 'try', symbol: 'TRY=X', category: 'forex', type: 'inverse' }, // 1 USD = X TRY
+  // Crypto
+  { id: 'btc', symbol: 'BTC-USD', category: 'crypto' },
+  { id: 'eth', symbol: 'ETH-USD', category: 'crypto' },
+  { id: 'usdt', symbol: 'USDT-USD', category: 'crypto' },
 ];
 
 export async function GET() {

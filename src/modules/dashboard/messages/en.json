@@ -125,11 +125,23 @@
       "categories": {
         "metals": "Precious Metals",
         "energy": "Energy",
-        "forex": "Forex"
+        "forex": "Forex",
+        "crypto": "Crypto"
       },
       "unitCurrency": "USD / Currency",
       "rial": "IRR",
-      "toman": "Toman"
+      "toman": "Toman",
+      "btc": "Bitcoin (BTC)",
+      "eth": "Ethereum (ETH)",
+      "usdt": "Tether (USDT)",
+      "rateModes": {
+        "free": "Free Market",
+        "sana": "Sana / Nima",
+        "cbi": "Central Bank",
+        "manual": "Manual"
+      },
+      "aluminum": "Aluminum",
+      "unitTon": "USD / ton"
     }
   }
 }
