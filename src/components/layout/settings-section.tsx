@@ -129,20 +129,20 @@ export function SettingsSection() {
                 key={preset.id}
                 type="button"
                 onClick={() => setColor(preset.id)}
-                whileHover={{ flex: 4 }}
-                initial={{ flex: 1 }}
-                animate={{ flex: 1 }}
+                initial="initial"
+                animate="animate"
+                whileHover="hover"
+                variants={{
+                  initial: { flex: 1 },
+                  animate: { flex: 1 },
+                  hover: { flex: 4 }
+                }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className="group relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
-                title={tColors(preset.labelKey)}
+                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
               >
                 {active && (
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }} 
-                    className="absolute bg-black/15 inset-0 pointer-events-none"
-                  />
+                  <div className="absolute bg-black/15 inset-0 pointer-events-none" />
                 )}
                 {active && (
                   <motion.div 
@@ -153,14 +153,21 @@ export function SettingsSection() {
                     <Check className="size-3.5 text-white drop-shadow-md" strokeWidth={3} />
                   </motion.div>
                 )}
-                <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none pt-1">
+                <motion.div 
+                  variants={{
+                    initial: { opacity: 0 },
+                    animate: { opacity: 0 },
+                    hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
+                  }}
+                  className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
+                >
                   <span className="text-[11px] font-bold text-white drop-shadow-md whitespace-nowrap">
                     {tColors(preset.labelKey)}
                   </span>
                   <span className="text-[9px] font-medium text-white/90 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
                     {preset.hex}
                   </span>
-                </div>
+                </motion.div>
               </motion.button>
             );
           })}
