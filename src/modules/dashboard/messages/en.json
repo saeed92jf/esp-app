@@ -105,8 +105,8 @@
     },
     "commodities": {
       "title": "Live Commodities",
-      "gold": "Gold",
-      "silver": "Silver",
+      "gold": "Global Gold",
+      "silver": "Global Silver",
       "wti": "WTI Crude Oil",
       "brent": "Brent Crude Oil",
       "ng": "Natural Gas",
@@ -115,19 +115,18 @@
       "unitOz": "USD / oz",
       "unitBbl": "USD / bbl",
       "unitMbtu": "USD / MMBtu",
-      "platinum": "Platinum",
-      "copper": "Copper",
       "eur": "🇪🇺 Euro (EUR)",
       "gbp": "🇬🇧 Pound (GBP)",
       "cny": "🇨🇳 Chinese Yuan (CNY)",
       "aed": "🇦🇪 UAE Dirham (AED)",
       "try": "🇹🇷 Turkish Lira (TRY)",
       "categories": {
-        "metals": "Precious Metals",
         "energy": "Energy",
         "forex": "Forex",
         "crypto": "Crypto",
-        "agriculture": "Agriculture"
+        "agriculture": "Agriculture",
+        "iran_gold": "Iran Gold & Coins",
+        "global_metals": "Global Metals"
       },
       "unitCurrency": "USD / Currency",
       "rial": "IRR",
@@ -142,11 +141,8 @@
         "manual": "Manual",
         "noData": "No data"
       },
-      "aluminum": "Aluminum",
       "unitTon": "USD / ton",
-      "palladium": "Palladium",
       "steel": "Steel",
-      "zinc": "Zinc",
       "activeRateText": "Current rate: {rate}",
       "unitG": "Gram",
       "unitKg": "Kilogram",
@@ -174,7 +170,8 @@
       "unitMesghal": "Mesghal",
       "unitPiece": "Piece",
       "unitGal": "USD / Gal",
-      "unitLb": "Cent / Lb"
+      "unitLb": "Cent / Lb",
+      "geram24": "Gold 24k"
     }
   }
 }

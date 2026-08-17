@@ -14,25 +14,20 @@ import { Combobox } from '@/components/ui/combobox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CATEGORIES = ['metals', 'energy', 'agriculture', 'forex', 'crypto'] as const;
+const CATEGORIES = ['iran_gold', 'global_metals', 'energy', 'agriculture', 'forex', 'crypto'] as const;
 
 type WeightUnit = 'oz' | 'g' | 'kg' | 'ton';
 
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
+  silver: 'unitOz',
   geram18: 'unitG',
+  geram24: 'unitG',
   mesghal: 'unitMesghal',
   sekee: 'unitPiece',
   sekeb: 'unitPiece',
   nim: 'unitPiece',
   rob: 'unitPiece',
-  silver: 'unitOz',
-  platinum: 'unitOz',
-  palladium: 'unitOz',
-  copper: 'unitOz',
-  aluminum: 'unitTon',
-  zinc: 'unitTon',
-  steel: 'unitTon',
   wti: 'unitBbl',
   brent: 'unitBbl',
   ng: 'unitMbtu',
@@ -50,8 +45,6 @@ const UNITS: Record<string, string> = {
   usdt: 'unitCurrency',
 };
 
-const IRANIAN_METALS = ['geram18', 'mesghal', 'sekee', 'sekeb', 'nim', 'rob'];
-
 const formatPrice = (price: number) => {
   if (price > 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   if (price < 1) return price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
@@ -64,7 +57,7 @@ export function CommoditiesWidget() {
   const { commodities, isLoading, irrMode, setIrrMode, manualRate, setManualRate, activeRate, refetch } = useCommodities();
   const [rateInput, setRateInput] = useState(manualRate.toString());
   const [open, setOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<string>('metals');
+  const [activeCategory, setActiveCategory] = useState<string>('iran_gold');
   const [isToman, setIsTomanState] = useState(false);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [weightUnit, setWeightUnitState] = useState<WeightUnit>('oz');
@@ -146,8 +139,8 @@ export function CommoditiesWidget() {
     let price = item.price;
     let unitKey = UNITS[item.id] || 'unitOz';
     
-    // Do not apply conversions to non-metals or fixed-unit Iranian metals
-    if (activeCategory !== 'metals' || IRANIAN_METALS.includes(item.id)) {
+    // Do not apply conversions to anything except global_metals
+    if (activeCategory !== 'global_metals') {
       return { price, unitKey };
     }
 
@@ -311,7 +304,7 @@ export function CommoditiesWidget() {
                     )}
                   </div>
                   
-                  {activeCategory === 'metals' && (
+                  {activeCategory === 'global_metals' && (
                     <div className="space-y-3 pt-3 border-t border-border/50">
                       <p className="text-xs font-medium text-muted-foreground">{t('weightUnit')}</p>
                       <Combobox
@@ -403,7 +396,7 @@ export function CommoditiesWidget() {
                         "text-sm font-semibold transition-colors duration-200",
                         hoveredId === item.id ? "text-primary" : "text-foreground"
                       )}>
-                        {activeCategory === 'metals' && !IRANIAN_METALS.includes(item.id)
+                        {activeCategory === 'global_metals'
                           ? t('metalTitle', { unit: t(`unitNames.${weightUnit}`), metal: t(item.id) }) 
                           : t(item.id)}
                       </p>

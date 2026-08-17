@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 
 const TICKERS = [
-  // Metals
-  { id: 'gold', tgju: 'ons', category: 'metals' },
-  { id: 'geram18', tgju: 'geram18', category: 'metals', type: 'fiat' },
-  { id: 'mesghal', tgju: 'mesghal', category: 'metals', type: 'fiat' },
-  { id: 'sekee', tgju: 'sekee', category: 'metals', type: 'fiat' },
-  { id: 'sekeb', tgju: 'sekeb', category: 'metals', type: 'fiat' },
-  { id: 'nim', tgju: 'nim', category: 'metals', type: 'fiat' },
-  { id: 'rob', tgju: 'rob', category: 'metals', type: 'fiat' },
-  { id: 'silver', tgju: 'silver', category: 'metals' },
-  { id: 'platinum', tgju: 'platinum', category: 'metals' },
-  { id: 'palladium', tgju: 'palladium', category: 'metals' },
-  { id: 'copper', tgju: 'copper', category: 'metals' },
-  { id: 'aluminum', tgju: 'aluminum', category: 'metals' },
-  { id: 'zinc', tgju: 'zinc', category: 'metals' },
+  // Global Metals
+  { id: 'gold', tgju: 'ons', category: 'global_metals' },
+  { id: 'silver', tgju: 'silver', category: 'global_metals' },
+  // Iran Gold & Coins
+  { id: 'geram18', tgju: 'geram18', category: 'iran_gold', type: 'fiat' },
+  { id: 'geram24', tgju: 'geram24', category: 'iran_gold', type: 'fiat' },
+  { id: 'mesghal', tgju: 'mesghal', category: 'iran_gold', type: 'fiat' },
+  { id: 'sekee', tgju: 'sekee', category: 'iran_gold', type: 'fiat' },
+  { id: 'sekeb', tgju: 'sekeb', category: 'iran_gold', type: 'fiat' },
+  { id: 'nim', tgju: 'nim', category: 'iran_gold', type: 'fiat' },
+  { id: 'rob', tgju: 'rob', category: 'iran_gold', type: 'fiat' },
   // Energy
   { id: 'wti', tgju: 'oil', category: 'energy' },
   { id: 'brent', tgju: 'oil_brent', category: 'energy' },

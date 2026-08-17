@@ -4,7 +4,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export interface CommodityItem {
   id: string;
-  category: 'metals' | 'energy' | 'forex' | 'crypto';
+  category: 'iran_gold' | 'global_metals' | 'energy' | 'agriculture' | 'forex' | 'crypto';
   price: number;
   change: number;
   percentChange: number;
@@ -17,14 +17,14 @@ export interface ICommoditiesService {
 }
 
 const FAKE_COMMODITIES: CommodityItem[] = [
-  { id: 'gold', category: 'metals', price: 2450.50, change: 12.5, percentChange: 0.51, trend: 'up' },
-  { id: 'silver', category: 'metals', price: 29.80, change: -0.2, percentChange: -0.67, trend: 'down' },
-  { id: 'platinum', category: 'metals', price: 950.00, change: 5.0, percentChange: 0.53, trend: 'up' },
-  { id: 'palladium', category: 'metals', price: 1333.00, change: 8.0, percentChange: 0.6, trend: 'up' },
-  { id: 'copper', category: 'metals', price: 4.10, change: -0.05, percentChange: -1.2, trend: 'down' },
-  { id: 'aluminum', category: 'metals', price: 3455.00, change: 22.0, percentChange: 0.64, trend: 'up' },
-  { id: 'zinc', category: 'metals', price: 2530.00, change: -15.0, percentChange: -0.59, trend: 'down' },
-  { id: 'steel', category: 'metals', price: 1175.00, change: 5.0, percentChange: 0.43, trend: 'up' },
+  { id: 'gold', category: 'global_metals', price: 2450.50, change: 12.5, percentChange: 0.51, trend: 'up' },
+  { id: 'silver', category: 'global_metals', price: 29.80, change: -0.2, percentChange: -0.67, trend: 'down' },
+  { id: 'platinum', category: 'global_metals', price: 950.00, change: 5.0, percentChange: 0.53, trend: 'up' },
+  { id: 'palladium', category: 'global_metals', price: 1333.00, change: 8.0, percentChange: 0.6, trend: 'up' },
+  { id: 'copper', category: 'global_metals', price: 4.10, change: -0.05, percentChange: -1.2, trend: 'down' },
+  { id: 'aluminum', category: 'global_metals', price: 3455.00, change: 22.0, percentChange: 0.64, trend: 'up' },
+  { id: 'zinc', category: 'global_metals', price: 2530.00, change: -15.0, percentChange: -0.59, trend: 'down' },
+  { id: 'steel', category: 'global_metals', price: 1175.00, change: 5.0, percentChange: 0.43, trend: 'up' },
   { id: 'wti', category: 'energy', price: 82.40, change: 1.1, percentChange: 1.35, trend: 'up' },
   { id: 'brent', category: 'energy', price: 86.90, change: 0.9, percentChange: 1.04, trend: 'up' },
   { id: 'ng', category: 'energy', price: 2.15, change: -0.05, percentChange: -2.27, trend: 'down' },

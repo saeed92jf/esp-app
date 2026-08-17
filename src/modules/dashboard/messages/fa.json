@@ -105,8 +105,8 @@
     },
     "commodities": {
       "title": "نرخ لحظه‌ای کالاها",
-      "gold": "طلا",
-      "silver": "نقره",
+      "gold": "طلای جهانی",
+      "silver": "نقره جهانی",
       "wti": "نفت خام WTI",
       "brent": "نفت برنت",
       "ng": "گاز طبیعی",
@@ -115,19 +115,18 @@
       "unitOz": "دلار / انس",
       "unitBbl": "دلار / بشکه",
       "unitMbtu": "دلار / MMBtu",
-      "platinum": "پلاتین",
-      "copper": "مس",
       "eur": "🇪🇺 یورو (EUR)",
       "gbp": "🇬🇧 پوند (GBP)",
       "cny": "🇨🇳 یوان چین (CNY)",
       "aed": "🇦🇪 درهم امارات (AED)",
       "try": "🇹🇷 لیر ترکیه (TRY)",
       "categories": {
-        "metals": "فلزات گران‌بها",
         "energy": "انرژی",
         "forex": "ارزها",
         "crypto": "ارز دیجیتال",
-        "agriculture": "کشاورزی"
+        "agriculture": "کشاورزی",
+        "iran_gold": "طلا و سکه",
+        "global_metals": "فلزات جهانی"
       },
       "unitCurrency": "دلار / ارز",
       "rial": "ریال",
@@ -142,11 +141,8 @@
         "manual": "دستی",
         "noData": "داده ندارد"
       },
-      "aluminum": "آلومینیوم",
       "unitTon": "دلار / تن",
-      "palladium": "پالادیوم",
       "steel": "فولاد",
-      "zinc": "روی",
       "activeRateText": "نرخ فعلی: {rate}",
       "unitG": "گرم",
       "unitKg": "کیلوگرم",
@@ -174,7 +170,8 @@
       "unitMesghal": "مثقال",
       "unitPiece": "عدد",
       "unitGal": "دلار / گالن",
-      "unitLb": "سنت / پوند"
+      "unitLb": "سنت / پوند",
+      "geram24": "طلای ۲۴ عیار"
     }
   }
 }
