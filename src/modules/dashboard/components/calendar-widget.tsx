@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "../services/dashboard.service";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
@@ -256,19 +257,26 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       </div>
 
       {/* View Toggle */}
-      <div className="grid grid-cols-4 gap-1.5 pb-2 px-1 w-full">
+      <div className="flex gap-1.5 pb-2 px-1 w-full bg-muted/20 p-1.5 rounded-xl border border-border/40">
         {(["year", "month", "week", "day"] as const).map(mode => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
             className={cn(
-              "w-full py-1.5 rounded-lg text-[11px] @sm:text-xs font-semibold transition-colors",
+              "relative flex-1 py-1.5 rounded-lg text-[11px] @sm:text-xs font-semibold transition-colors outline-none",
               viewMode === mode 
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                ? "text-primary-foreground" 
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {t(`views.${mode}`)}
+            {viewMode === mode && (
+              <motion.div
+                layoutId="calendar-view-tab"
+                className="absolute inset-0 bg-primary shadow-sm rounded-lg"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <span className="relative z-10">{t(`views.${mode}`)}</span>
           </button>
         ))}
       </div>
@@ -288,25 +296,26 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       {/* Events list header */}
       <div className="flex flex-col gap-2 px-2 mb-2">
         {/* Time filters in one row */}
-        <div className="flex items-center justify-between gap-1 bg-muted/30 p-1 rounded-lg">
-          <button 
-            onClick={() => setTimeFilter("all")}
-            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            {t("filters.all")}
-          </button>
-          <button 
-            onClick={() => setTimeFilter("past")}
-            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "past" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            {t("filters.past")}
-          </button>
-          <button 
-            onClick={() => setTimeFilter("upcoming")}
-            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "upcoming" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
-          >
-            {t("filters.upcoming")}
-          </button>
+        <div className="flex gap-1.5 bg-muted/20 p-1.5 rounded-xl border border-border/40">
+          {(["all", "past", "upcoming"] as const).map(filter => (
+            <button 
+              key={filter}
+              onClick={() => setTimeFilter(filter)}
+              className={cn(
+                "relative flex-1 text-[10px] sm:text-xs py-1.5 rounded-lg transition-colors font-medium text-center outline-none",
+                timeFilter === filter ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {timeFilter === filter && (
+                <motion.div
+                  layoutId="calendar-time-tab"
+                  className="absolute inset-0 bg-background shadow-sm rounded-lg"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10">{t(`filters.${filter}`)}</span>
+            </button>
+          ))}
         </div>
         {/* Count */}
         <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">

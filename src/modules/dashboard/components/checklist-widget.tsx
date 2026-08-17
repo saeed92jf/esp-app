@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
+import { motion } from "motion/react";
 import { CheckSquare, Circle, CheckCircle2, ChevronDown, ChevronUp, X, Plus } from "lucide-react";
 import type { ChecklistItem } from "../services/dashboard.service";
 import { cn } from "@/lib/utils";
@@ -110,38 +111,53 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
       )}
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 mb-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1">
+      <div className="flex items-center gap-1.5 mb-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1 relative">
         <button
           onClick={() => setActiveTab("all")}
+          className={cn(
+            "relative px-3 py-1 text-[11px] @sm:text-xs font-semibold whitespace-nowrap transition-colors rounded-full outline-none",
+            activeTab === "all" 
+              ? "text-primary-foreground" 
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {activeTab === "all" && (
+            <motion.div
+              layoutId="checklist-category-tab"
+              className="absolute inset-0 bg-primary shadow-sm rounded-full"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            />
+          )}
+          <span className="relative z-10">{t('all')}</span>
+        </button>
+        
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveTab(cat)}
             className={cn(
-              "px-3 py-1 rounded-full text-[11px] @sm:text-xs font-semibold whitespace-nowrap transition-colors",
-              activeTab === "all" 
-                ? "bg-primary text-primary-foreground shadow-sm" 
-                : "bg-muted text-muted-foreground hover:bg-muted/80"
+              "group relative px-3 py-1 pe-7 text-[11px] @sm:text-xs font-semibold whitespace-nowrap transition-colors flex items-center rounded-full outline-none",
+              activeTab === cat 
+                ? "text-primary-foreground" 
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {t('all')}
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveTab(cat)}
-              className={cn(
-                "group relative px-3 py-1 pe-7 rounded-full text-[11px] @sm:text-xs font-semibold whitespace-nowrap transition-colors flex items-center",
-                activeTab === cat 
-                  ? "bg-primary text-primary-foreground shadow-sm" 
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
+            {activeTab === cat && (
+              <motion.div
+                layoutId="checklist-category-tab"
+                className="absolute inset-0 bg-primary shadow-sm rounded-full"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+              />
+            )}
+            <span className="relative z-10">{cat}</span>
+            <span 
+              onClick={(e) => deleteCategory(e, cat)}
+              className="absolute end-1.5 p-0.5 rounded-full hover:bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity z-10"
             >
-              {cat}
-              <span 
-                onClick={(e) => deleteCategory(e, cat)}
-                className="absolute end-1.5 p-0.5 rounded-full hover:bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="size-3" />
-              </span>
-            </button>
-          ))}
+              <X className="size-3" />
+            </span>
+          </button>
+        ))}
       </div>
 
       {filteredTasks && filteredTasks.length > 0 ? (
