@@ -15,13 +15,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 // ── Local sub-components ────────────────────────────────────────────────
 
@@ -113,17 +107,13 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             </Row>
             {settings.snapToGrid && (
               <Row label={safeT(t, "editorSettings.gridSize", "Grid size")}>
-                <Select
+                <Combobox
                   value={String(settings.snapGrid[0])}
-                  onValueChange={(v: string) => set("snapGrid", [Number(v), Number(v)])}
-                >
-                  <SelectTrigger className="w-24"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {[5, 10, 15, 20, 25, 50].map((g) => (
-                      <SelectItem key={g} value={String(g)}>{g}px</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={(v) => { if(v) set("snapGrid", [Number(v), Number(v)]); }}
+                  options={[5, 10, 15, 20, 25, 50].map(g => ({ value: String(g), label: `${g}px` }))}
+                  className="w-24"
+                  showSearch={false}
+                />
               </Row>
             )}
             <Row label={t("editorSettings.showMiniMap")}>
@@ -133,15 +123,18 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
               <Switch checked={settings.showControls} onCheckedChange={(v) => set("showControls", v)} />
             </Row>
             <Row label={t("editorSettings.background")}>
-              <Select value={settings.backgroundVariant} onValueChange={(v: any) => set("backgroundVariant", v)}>
-                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dots">{t("editorSettings.bg_dots")}</SelectItem>
-                  <SelectItem value="lines">{t("editorSettings.bg_lines")}</SelectItem>
-                  <SelectItem value="cross">{t("editorSettings.bg_cross")}</SelectItem>
-                  <SelectItem value="none">{t("editorSettings.bg_none")}</SelectItem>
-                </SelectContent>
-              </Select>
+              <Combobox
+                value={settings.backgroundVariant}
+                onChange={(v) => { if(v) set("backgroundVariant", v as any); }}
+                options={[
+                  { value: "dots", label: t("editorSettings.bg_dots") },
+                  { value: "lines", label: t("editorSettings.bg_lines") },
+                  { value: "cross", label: t("editorSettings.bg_cross") },
+                  { value: "none", label: t("editorSettings.bg_none") }
+                ]}
+                className="w-40"
+                showSearch={false}
+              />
             </Row>
 
             <div className="my-3 h-px bg-border" />
@@ -161,14 +154,13 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             {/* Behavior */}
             <SectionTitle>{t("editorSettings.behavior")}</SectionTitle>
             <Row label={t("editorSettings.defaultEdgeType")}>
-              <Select value={settings.defaultEdgeType} onValueChange={(v: DiagramEdgeType) => set("defaultEdgeType", v)}>
-                <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {edgeTypeOptions.map((o) => (
-                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox
+                value={settings.defaultEdgeType}
+                onChange={(v) => { if(v) set("defaultEdgeType", v as DiagramEdgeType); }}
+                options={edgeTypeOptions}
+                className="w-56"
+                showSearch={false}
+              />
             </Row>
             <Row label={t("editorSettings.autoSave")}>
               <Switch checked={settings.autoSave} onCheckedChange={(v) => set("autoSave", v)} />

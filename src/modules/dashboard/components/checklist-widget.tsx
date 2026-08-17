@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import { CheckSquare, Circle, CheckCircle2, ChevronDown, ChevronUp, X, Plus } from "lucide-react";
 import type { ChecklistItem } from "../services/dashboard.service";
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 

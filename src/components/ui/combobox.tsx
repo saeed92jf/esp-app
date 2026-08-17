@@ -58,6 +58,7 @@ export function Combobox({
           disabled={disabled}
           className={cn(
             "group w-full justify-between px-2.5 font-normal bg-white dark:bg-black hover:bg-muted/40 transition-colors",
+            "rtl:text-right",
             className
           )}
         >
@@ -74,7 +75,7 @@ export function Combobox({
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
-                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }}>
+                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:flex-row-reverse rtl:justify-end rtl:text-right">
                   <Check className={cn("me-2 size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
                   {opt.label}
                 </CommandItem>
