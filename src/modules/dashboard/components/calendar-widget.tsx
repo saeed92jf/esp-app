@@ -242,7 +242,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
                 value={newEventTitle}
                 onChange={(e) => setNewEventTitle(e.target.value)}
                 placeholder={t("addPlaceholder")}
-                className="h-9 text-xs border-transparent bg-background shadow-sm hover:border-border focus-visible:ring-1 focus-visible:ring-primary rtl:text-right"
+                className="h-9 text-xs bg-background shadow-sm rtl:text-right"
               />
               <div className="flex gap-2">
                 <Combobox 
