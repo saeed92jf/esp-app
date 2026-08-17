@@ -131,7 +131,7 @@ export function SettingsSection() {
                 onClick={() => setColor(preset.id)}
                 whileHover={{ flex: 4 }}
                 initial={{ flex: 1 }}
-                animate={{ flex: active ? 2.5 : 1 }}
+                animate={{ flex: 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
                 className="group relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
