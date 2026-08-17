@@ -35,10 +35,40 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
+const CustomTick = (props: any) => {
+  const { x, y, payload, chartData } = props;
+  const match = chartData.find((c: any) => c.name === payload.value);
+  if (!match) return null;
+
+  return (
+    <g transform={`translate(${x},${y})`} className="group cursor-default">
+      <text 
+        x={0} 
+        y={0} 
+        dy={14} 
+        textAnchor="middle" 
+        fill={match.isNewMonth ? "var(--color-primary)" : "var(--color-muted-foreground)"} 
+        fontSize={11} 
+        fontWeight={match.isNewMonth ? "bold" : "normal"}
+        fontFamily="inherit"
+      >
+        {match.dayStr}
+        {match.isNewMonth && <title>{match.monthStr}</title>}
+      </text>
+      {match.isNewMonth && (
+        <circle cx={0} cy={22} r={2.5} fill="var(--color-primary)" className="opacity-80 group-hover:opacity-100 transition-opacity">
+          <title>{match.monthStr}</title>
+        </circle>
+      )}
+    </g>
+  );
+};
+
 // ─── MiniChart ────────────────────────────────────────────────────────────────
 
 export function MiniChart({ data }: { data: ChartPoint[] }) {
   const t = useTranslations('Dashboard');
+  const tCommodities = useTranslations('Dashboard.commodities');
   const { chartSource, chartType, setChartType } = useDashboardSettings();
 
   let lastMonth = -1;
@@ -49,7 +79,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
       if (isNaN(d.getTime())) throw new Error();
     } catch {
       // Fallback for fake data
-      return { name: p.labelKey, tickLabel: p.labelKey, tooltipLabel: p.labelKey, value: p.value };
+      return { name: p.labelKey, dayStr: p.labelKey, monthStr: '', isNewMonth: false, tooltipLabel: p.labelKey, value: p.value };
     }
 
     const m = d.getMonth();
@@ -57,11 +87,13 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
     lastMonth = m;
     
     const dayStr = new Intl.DateTimeFormat('fa-IR', { day: 'numeric' }).format(d);
-    const monthStr = new Intl.DateTimeFormat('fa-IR', { month: 'short' }).format(d);
+    const monthStr = new Intl.DateTimeFormat('fa-IR', { month: 'long' }).format(d);
 
     return {
       name: p.labelKey,
-      tickLabel: isNewMonth ? `${dayStr} ${monthStr}` : dayStr,
+      dayStr,
+      monthStr,
+      isNewMonth,
       tooltipLabel: `${dayStr} ${monthStr}`,
       value: p.value,
     };
@@ -76,7 +108,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
       <div className="mb-3 @sm:mb-5 flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-sm @sm:text-base flex items-center gap-2">
-            <span>{t('chartTitle')}</span>
+            <span>{tCommodities(chartSource)}</span>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">روند یک ماهه</span>
           </h3>
           <p className="text-muted-foreground text-[10px] @sm:text-xs mt-1 font-medium">
@@ -135,11 +167,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
             />
             <XAxis
               dataKey="name"
-              tickFormatter={(val) => {
-                const match = chartData.find(c => c.name === val);
-                return match ? match.tickLabel : val;
-              }}
-              tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }}
+              tick={<CustomTick chartData={chartData} />}
               axisLine={false}
               tickLine={false}
               dy={6}
@@ -167,7 +195,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
           ) : chartType === 'line' ? (
             <LineChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.4} vertical={false} />
-              <XAxis dataKey="name" tickFormatter={(val) => { const match = chartData.find(c => c.name === val); return match ? match.tickLabel : val; }} tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} dy={6} />
+              <XAxis dataKey="name" tick={<CustomTick chartData={chartData} />} axisLine={false} tickLine={false} dy={6} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} />
               <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1.5, strokeDasharray: '4 2' }} />
               <Line type="monotone" dataKey="value" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ fill: 'var(--color-primary)', strokeWidth: 0, r: 4 }} activeDot={{ r: 6, fill: 'var(--color-primary)', stroke: 'var(--color-background)', strokeWidth: 2 }} isAnimationActive={true} animationDuration={1200} animationEasing="ease-out" />
@@ -175,7 +203,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
           ) : (
             <BarChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.4} vertical={false} />
-              <XAxis dataKey="name" tickFormatter={(val) => { const match = chartData.find(c => c.name === val); return match ? match.tickLabel : val; }} tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} dy={6} />
+              <XAxis dataKey="name" tick={<CustomTick chartData={chartData} />} axisLine={false} tickLine={false} dy={6} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: 'var(--color-muted)', opacity: 0.2 }} />
               <Bar dataKey="value" fill="var(--color-primary)" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={1200} animationEasing="ease-out" />
