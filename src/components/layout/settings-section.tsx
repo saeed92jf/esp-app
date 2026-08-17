@@ -121,7 +121,7 @@ export function SettingsSection() {
           <span>{t("color")}</span>
         </div>
         
-        <div className="flex w-full h-16 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
+        <div className="flex w-full h-20 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
           {PRIMARY_COLORS.map((preset) => {
             const active = colorId === preset.id;
             return (
@@ -141,9 +141,6 @@ export function SettingsSection() {
                 style={{ backgroundColor: preset.hex }}
                 className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
               >
-                {active && (
-                  <div className="absolute bg-black/15 inset-0 pointer-events-none" />
-                )}
                 <motion.div 
                   variants={{
                     initial: { opacity: 0 },
@@ -152,10 +149,10 @@ export function SettingsSection() {
                   }}
                   className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
                 >
-                  <span className="text-xs font-bold text-white drop-shadow-md whitespace-nowrap">
+                  <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
                     {tColors(preset.labelKey)}
                   </span>
-                  <span className="text-[10px] font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                  <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
                     {preset.hex}
                   </span>
                 </motion.div>
