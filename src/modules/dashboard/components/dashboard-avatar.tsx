@@ -144,26 +144,32 @@ export function DashboardAvatar() {
               onChange={handleFileUpload} 
             />
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-start justify-center gap-1 sm:gap-2">
               <button
                 onClick={() => saveAvatar(PREDEFINED_AVATARS[currentSlide])}
-                className="flex flex-col items-center justify-center gap-1.5 flex-1 text-xs py-2 rounded-lg border border-primary text-primary bg-primary/5 hover:bg-primary/10 transition-colors font-medium text-center shadow-sm"
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-primary/5 text-primary transition-colors text-center"
               >
-                <Check className="size-4" />
+                <div className="p-1.5 rounded-full bg-primary/10 mb-0.5">
+                  <Check className="size-3.5" />
+                </div>
                 {t("avatar.selectThis")}
               </button>
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center justify-center gap-1.5 flex-1 text-xs py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors text-center"
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-secondary/80 text-secondary-foreground transition-colors text-center"
               >
-                <Upload className="size-4" />
+                <div className="p-1.5 rounded-full bg-secondary mb-0.5">
+                  <Upload className="size-3.5" />
+                </div>
                 {t("avatar.uploadNew")}
               </button>
               <button 
                 onClick={() => saveAvatar(null)}
-                className="flex flex-col items-center justify-center gap-1.5 flex-1 text-xs py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors text-center"
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-destructive/5 text-destructive transition-colors text-center"
               >
-                <X className="size-4" />
+                <div className="p-1.5 rounded-full bg-destructive/10 mb-0.5">
+                  <X className="size-3.5" />
+                </div>
                 {t("avatar.noImage")}
               </button>
             </div>
