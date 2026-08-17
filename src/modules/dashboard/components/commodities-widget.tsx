@@ -57,19 +57,28 @@ export function CommoditiesWidget() {
     if (saved === 'toman') setIsTomanState(true);
   }, []);
 
+  // Derived: what we show in the input (rial or toman depending on toggle)
+  const displayRate = isToman ? Math.round(manualRate / 10) : manualRate;
+
   useEffect(() => {
-    setRateInput(manualRate.toString());
-  }, [manualRate]);
+    setRateInput(displayRate.toString());
+  }, [manualRate, isToman]);
 
   const setIsToman = (val: boolean) => {
     setIsTomanState(val);
     localStorage.setItem('currency-unit', val ? 'toman' : 'rial');
+    // update the input immediately to reflect unit change
+    const current = Number(rateInput.replace(/,/g, ''));
+    if (!isNaN(current) && current > 0) {
+      setRateInput(val ? Math.round(current / 10).toString() : (current * 10).toString());
+    }
   };
 
   const handleSaveRate = () => {
     const num = Number(rateInput.replace(/,/g, ''));
     if (!isNaN(num) && num > 0) {
-      setManualRate(num);
+      // Always store internally as Rial
+      setManualRate(isToman ? num * 10 : num);
     }
   };
 
@@ -135,17 +144,22 @@ export function CommoditiesWidget() {
                     )}
                     
                     {irrMode === 'manual' && (
-                      <div className="flex gap-2">
-                        <Input 
-                          value={rateInput}
-                          onChange={(e) => setRateInput(e.target.value)}
-                          className="h-8 text-sm fa-num"
-                          placeholder="600000"
-                          dir="ltr"
-                        />
-                        <Button size="sm" className="h-8 px-3" onClick={handleSaveRate}>
-                          {t('update')}
-                        </Button>
+                      <div className="space-y-1">
+                        <div className="flex gap-2">
+                          <Input 
+                            value={rateInput}
+                            onChange={(e) => setRateInput(e.target.value)}
+                            className="h-8 text-sm fa-num"
+                            placeholder={isToman ? '60000' : '600000'}
+                            dir="ltr"
+                          />
+                          <Button size="sm" className="h-8 px-3" onClick={handleSaveRate}>
+                            {t('update')}
+                          </Button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground text-right">
+                          {isToman ? t('toman') : t('rial')}
+                        </p>
                       </div>
                     )}
                   </div>
