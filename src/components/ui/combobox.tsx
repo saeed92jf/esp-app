@@ -78,7 +78,7 @@ export function Combobox({
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
-                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:text-right w-full flex items-center">
+                <CommandItem key={opt.value} value={opt.value} keywords={[opt.label]} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:text-right w-full flex items-center">
                   <Check className={cn("ms-auto size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
                   <div className="flex-1 flex items-center gap-2 rtl:text-right">
                     {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
