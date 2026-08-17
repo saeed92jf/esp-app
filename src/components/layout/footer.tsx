@@ -36,7 +36,7 @@ export function Footer() {
             {/* Designed By */}
             <div className="text-[12px] text-muted-foreground/80 flex items-center justify-center md:justify-end gap-1.5 font-medium md:w-1/3">
               <span>{tCommon('footer.designedBy')}</span>
-              <Link href="/team" className="font-semibold text-foreground/80 hover:text-primary transition-colors duration-300">
+              <Link href="/team" target="_blank" rel="noreferrer" className="font-semibold text-foreground/80 hover:text-primary transition-colors duration-300">
                 {tCommon('footer.rdTeam')}
               </Link>
             </div>

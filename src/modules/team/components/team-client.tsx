@@ -1,9 +1,10 @@
 
 "use client";
 
+import { useRef } from "react";
 import { motion, Variants } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
-import { Mail, Sparkles, ArrowRight } from "lucide-react";
+import { Mail, Sparkles, ArrowRight, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -107,32 +108,92 @@ const contentTeam: TeamMember[] = [
   },
 ];
 
+// ─── الگوی باینری پس‌زمینه (محاسبه یک‌بار در module) ─────────────────────────
+const BINARY_BG = Array.from({ length: 60 }, (_, row) =>
+  Array.from({ length: 220 }, (_, col) =>
+    (row * 31 + col * 17) % 5 > 2 ? "1" : "0"
+  ).join(" ")
+).join("\n");
+
+// ─── Variants (خارج از کامپوننت تا در هر render دوباره ساخته نشن) ────────────
+
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-    },
+    transition: { staggerChildren: 0.07 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 350, damping: 25 },
+    transition: { type: "spring", stiffness: 300, damping: 28 },
   },
 };
 
-// آیکون گیت‌هاب (SVG)
+const imgZoomVariants: Variants = {
+  rest: { scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
+  hover: { scale: 1.04, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const glowVariants: Variants = {
+  rest: { opacity: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  hover: { opacity: 0.45, transition: { duration: 0.35, ease: "easeOut" } },
+};
+
+// اسم بالا می‌رود، بعد دکمه‌ها باز می‌شوند
+const nameVariants: Variants = {
+  rest: { y: 0, transition: { type: "spring", stiffness: 300, damping: 28 } },
+  hover: { y: -12, transition: { type: "spring", stiffness: 280, damping: 24 } },
+};
+
+const socialBtnVariants: Variants = {
+  rest: {
+    width: 36,
+    transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
+  },
+  hover: {
+    width: 100,
+    transition: { delay: 0.22, duration: 0.32, ease: [0.4, 0, 0.2, 1] },
+  },
+};
+
+const socialTextVariants: Variants = {
+  rest: {
+    opacity: 0,
+    x: -5,
+    transition: { duration: 0.12, ease: "easeIn" },
+  },
+  hover: {
+    opacity: 1,
+    x: 0,
+    transition: { delay: 0.56, duration: 0.18, ease: "easeOut" },
+  },
+};
+
+// متن دکمه راست
+const socialTextRightVariants: Variants = {
+  rest: {
+    opacity: 0,
+    x: 5,
+    transition: { duration: 0.12, ease: "easeIn" },
+  },
+  hover: {
+    opacity: 1,
+    x: 0,
+    transition: { delay: 0.56, duration: 0.18, ease: "easeOut" },
+  },
+};
+
+// ─── GitHubIcon ───────────────────────────────────────────────────────────────
 const GitHubIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
+    width="16"
+    height="16"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -140,153 +201,89 @@ const GitHubIcon = ({ className }: { className?: string }) => (
     strokeLinecap="round"
     strokeLinejoin="round"
     className={className}
+    aria-hidden="true"
   >
     <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
     <path d="M9 18c-4.51 2-5-2-7-2" />
   </svg>
 );
 
-// ------------------------------------------------------------
-//  MemberCard
-// ------------------------------------------------------------
-function MemberCard({ member, isLarge = false }: { member: TeamMember; isLarge?: boolean }) {
+// ─── دکمه اجتماعی (framer-motion برای slide روان) ───────────────────────────
+function SocialBtn({
+  href,
+  label,
+  icon,
+  external,
+  side = "left",
+}: {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  external?: boolean;
+  side?: "left" | "right";
+}) {
+  const isRight = side === "right";
+
+  return (
+    <motion.a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+      variants={socialBtnVariants}
+      style={{ willChange: "width" }}
+      className={`relative overflow-hidden rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 transition-colors duration-300 h-9 flex items-center ${isRight ? "flex-row-reverse" : ""}`}
+      dir="ltr"
+    >
+      {/* آیکون – absolute، همیشه در گوشه مربوطه */}
+      <div className={`absolute inset-y-0 ${isRight ? "right-0" : "left-0"} w-9 flex items-center justify-center pointer-events-none`}>
+        {icon}
+      </div>
+      {/* فضانگه‌دار */}
+      <div className="w-9 h-9 flex-shrink-0" />
+      {/* متن کشویی */}
+      <motion.span
+        variants={isRight ? socialTextRightVariants : socialTextVariants}
+        className={`text-xs font-medium whitespace-nowrap ${isRight ? "pl-3" : "pr-3"}`}
+      >
+        {label}
+      </motion.span>
+    </motion.a>
+  );
+}
+
+// ─── MemberCard ───────────────────────────────────────────────────────────────
+function MemberCard({
+  member,
+  isLarge = false,
+  fillHeight = false,
+}: {
+  member: TeamMember;
+  isLarge?: boolean;
+  fillHeight?: boolean;
+}) {
   const t = useTranslations("Team");
   const locale = useLocale();
-  const isFa = locale === "fa";
-
-  // پنل پایین – ارتفاع ثابت
-  const panelVariants: Variants = {
-    rest: {
-      height: "100px",
-      transition: { type: "spring", stiffness: 300, damping: 30 },
-    },
-    hover: {
-      height: "100px",
-      transition: { type: "spring", stiffness: 300, damping: 30 },
-    },
-  };
-
-  // دکمه‌های اجتماعی – با استفاده از as const برای transition
-  const socialButtonVariants: Variants = {
-    rest: {
-      width: "36px",
-      padding: "6px 0",
-      transition: { type: "tween", duration: 0.25, ease: "easeOut" } as const,
-    },
-    hover: {
-      width: "92px",
-      padding: "6px 16px",
-      transition: { type: "tween", duration: 0.25, ease: "easeOut" } as const,
-    },
-  };
-
-  // متن دکمه‌ها – برای RTL تنظیم شده
-  const socialTextVariants: Variants = {
-    rest: { opacity: 0, width: 0, margin: 0, display: "none" },
-    hover: {
-      opacity: 1,
-      width: "auto",
-      marginLeft: isFa ? "0" : "6px",
-      marginRight: isFa ? "6px" : "0",
-      display: "inline-block",
-      transition: { delay: 0.06, duration: 0.15, ease: "easeOut" } as const,
-    },
-  };
-
-  // انیمیشن اسم – بزرگ‌تر شدن با origin مناسب
-  const nameVariants: Variants = {
-    rest: { scale: 1 },
-    hover: { scale: 1.1, transition: { type: "spring", stiffness: 400, damping: 20 } },
-  };
-
-  const nameOrigin = isFa ? "origin-bottom-right" : "origin-bottom-left";
-
-  // ترتیب دکمه‌ها در فارسی برعکس می‌شود
-  const socialButtons = isFa ? (
-    <>
-      <motion.a
-        href={`mailto:${member.email}`}
-        variants={socialButtonVariants}
-        className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 transition-colors duration-300 overflow-hidden whitespace-nowrap will-change-[width,padding]"
-      >
-        <Mail className="size-4 flex-shrink-0" />
-        <motion.span
-          variants={socialTextVariants}
-          className="text-xs font-medium overflow-hidden"
-          style={{ direction: "ltr" }}
-        >
-          ایمیل
-        </motion.span>
-      </motion.a>
-      <motion.a
-        href={`https://github.com/${member.github}`}
-        target="_blank"
-        rel="noreferrer"
-        variants={socialButtonVariants}
-        className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 transition-colors duration-300 overflow-hidden whitespace-nowrap will-change-[width,padding]"
-      >
-        <GitHubIcon className="size-4 flex-shrink-0" />
-        <motion.span
-          variants={socialTextVariants}
-          className="text-xs font-medium overflow-hidden"
-          style={{ direction: "ltr" }}
-        >
-          گیت‌هاب
-        </motion.span>
-      </motion.a>
-    </>
-  ) : (
-    <>
-      <motion.a
-        href={`https://github.com/${member.github}`}
-        target="_blank"
-        rel="noreferrer"
-        variants={socialButtonVariants}
-        className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 transition-colors duration-300 overflow-hidden whitespace-nowrap will-change-[width,padding]"
-      >
-        <GitHubIcon className="size-4 flex-shrink-0" />
-        <motion.span
-          variants={socialTextVariants}
-          className="text-xs font-medium overflow-hidden"
-        >
-          GitHub
-        </motion.span>
-      </motion.a>
-      <motion.a
-        href={`mailto:${member.email}`}
-        variants={socialButtonVariants}
-        className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white/90 hover:bg-white/20 hover:border-white/40 transition-colors duration-300 overflow-hidden whitespace-nowrap will-change-[width,padding]"
-      >
-        <Mail className="size-4 flex-shrink-0" />
-        <motion.span
-          variants={socialTextVariants}
-          className="text-xs font-medium overflow-hidden"
-        >
-          Email
-        </motion.span>
-      </motion.a>
-    </>
-  );
 
   return (
     <motion.div
       variants={itemVariants}
-      className={`relative h-full ${isLarge ? "md:col-span-2 lg:col-span-4 max-w-sm mx-auto w-full" : "w-full"}`}
+      className={`relative h-full ${
+        isLarge ? "max-w-[280px] mx-auto w-full" : "w-full"
+      }`}
     >
       <motion.div
         initial="rest"
         whileHover="hover"
         animate="rest"
-        className="group relative w-full rounded-2xl overflow-hidden bg-card border border-border/40 shadow-lg transition-all duration-500 hover:shadow-2xl hover:border-primary/40 aspect-[4/7] sm:aspect-[4/6.5] cursor-default"
+        style={{ willChange: "transform" }}
+        className={`group relative w-full rounded-2xl overflow-hidden bg-card border border-border/40 shadow-lg hover:shadow-2xl hover:border-primary/40 transition-shadow duration-300 cursor-default ${
+          fillHeight ? "h-full" : "aspect-[4/7] sm:aspect-[4/6.5]"
+        }`}
       >
         {/* عکس پس‌زمینه */}
         <div className="absolute inset-0 w-full h-full overflow-hidden bg-muted/5">
           <motion.div
-            variants={{
-              rest: { scale: 1 },
-              hover: { scale: 1.05 },
-            }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
+            variants={imgZoomVariants}
+            style={{ willChange: "transform" }}
             className="w-full h-full"
           >
             <Image
@@ -294,202 +291,199 @@ function MemberCard({ member, isLarge = false }: { member: TeamMember; isLarge?:
               alt={t(`members.${member.keyName}`)}
               fill
               className="object-cover object-center"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               priority={isLarge}
             />
           </motion.div>
         </div>
 
-        {/* گرادینت از پایین */}
+        {/* گرادینت از پایین – استاتیک */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
 
         {/* Glow رنگی روی هاور */}
         <motion.div
-          variants={{
-            rest: { opacity: 0 },
-            hover: { opacity: 0.5 },
-          }}
-          transition={{ duration: 0.5 }}
-          className={`absolute inset-0 bg-gradient-to-br ${member.gradient} opacity-0 group-hover:opacity-40 transition-opacity duration-500 pointer-events-none mix-blend-overlay`}
+          variants={glowVariants}
+          style={{ willChange: "opacity" }}
+          className={`absolute inset-0 bg-gradient-to-br ${member.gradient} pointer-events-none mix-blend-overlay`}
         />
 
-        {/* پنل پایین */}
-        <motion.div
-          variants={panelVariants}
-          className="absolute bottom-0 left-0 right-0 z-10 px-5 py-4 overflow-visible"
-        >
-          <div className="flex flex-col justify-end h-full">
-            {/* اسم و نقش */}
-            <motion.div
-              variants={nameVariants}
-              className={`space-y-0.5 ${nameOrigin}`}
-            >
-              <h3 className="text-2xl font-extrabold tracking-tight leading-tight drop-shadow-lg text-white">
-                {t(`members.${member.keyName}`)}
-              </h3>
-              <p className="text-sm font-medium text-white/80 drop-shadow-md">
-                {t(`roles.${member.roleKey}`)}
-              </p>
-            </motion.div>
+        {/* پنل پایین – اسم و نقش وسط‌چین، با هاور بالا می‌رود */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-14 pt-4">
+          <motion.div variants={nameVariants} style={{ willChange: "transform" }} className="text-center space-y-0.5">
+            <h3 className="text-2xl font-extrabold tracking-tight leading-tight drop-shadow-lg text-white">
+              {t(`members.${member.keyName}`)}
+            </h3>
+            <p className="text-sm font-medium text-white/80 drop-shadow-md">
+              {t(`roles.${member.roleKey}`)}
+            </p>
+          </motion.div>
+        </div>
 
-            {/* دکمه‌های اجتماعی */}
-            <div className="flex items-center gap-2 mt-3">{socialButtons}</div>
-          </div>
-        </motion.div>
+        {/* دکمه چپ – گوشه پایین چپ، به سمت راست باز می‌شه */}
+        <div className="absolute bottom-4 left-3 z-20">
+          <SocialBtn
+            href={`https://github.com/${member.github}`}
+            label={locale === "fa" ? "گیت‌هاب" : "GitHub"}
+            icon={<GitHubIcon />}
+            external
+            side="left"
+          />
+        </div>
 
-        {/* خط تزئینی پایین */}
-        <motion.div
-          variants={{
-            rest: { width: "0%" },
-            hover: { width: "100%" },
-          }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
-          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-accent rounded-full"
-        />
+        {/* دکمه راست – گوشه پایین راست، به سمت چپ باز می‌شه */}
+        <div className="absolute bottom-4 right-3 z-20">
+          <SocialBtn
+            href={`mailto:${member.email}`}
+            label={locale === "fa" ? "ایمیل" : "Email"}
+            icon={<Mail className="size-4 flex-shrink-0" />}
+            side="right"
+          />
+        </div>
+
       </motion.div>
     </motion.div>
   );
 }
 
-// ------------------------------------------------------------
-//  TeamClient
-// ------------------------------------------------------------
+// ─── TeamClient ───────────────────────────────────────────────────────────────
 export function TeamClient() {
   const t = useTranslations("Team");
   const locale = useLocale();
   const isFa = locale === "fa";
+  const section2Ref = useRef<HTMLElement>(null);
+  const section3Ref = useRef<HTMLElement>(null);
 
   return (
-    <div className="min-h-screen pt-32 pb-24 relative overflow-hidden">
-      {/* اورب‌های متحرک */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            rotate: [0, 120, 0],
-            opacity: [0.15, 0.3, 0.15],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute -right-32 top-0 h-[600px] w-[600px] rounded-full bg-primary/30 blur-[180px]"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [0, -90, 0],
-            opacity: [0.1, 0.25, 0.1],
-          }}
-          transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
-          className={`absolute top-1/2 ${isFa ? "-right-64" : "-left-64"} h-[500px] w-[500px] rounded-full bg-cyan-500/20 blur-[160px]`}
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.05, 0.15, 0.05],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[400px] w-[800px] rounded-full bg-fuchsia-500/10 blur-[200px]"
-        />
+    <div className="relative">
+      {/* الگوی باینری – fixed تا در همه سکشن‌ها دیده بشه */}
+      <div
+        className="fixed inset-0 -z-10 overflow-hidden pointer-events-none select-none font-mono text-[10px] leading-[18px] tracking-wider text-foreground/[0.055] whitespace-pre"
+        aria-hidden="true"
+        style={{
+          maskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+        }}
+      >
+        {BINARY_BG}
       </div>
 
-      {/* هدر */}
-      <div className="max-w-7xl mx-auto relative z-10 px-4 md:px-6 mb-16 text-center">
+      {/* ═══ Section 1: هدر + کارت رهبری ═══ */}
+      <section className="h-dvh min-h-[580px] flex flex-col items-center pt-28 pb-10 px-4 md:px-6 relative z-10">
+        {/* هدر */}
         <motion.div
-          initial={{ opacity: 0, y: -30 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.6, 0.05, 0.01, 0.9] }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center"
         >
-          <div className="mb-6 flex justify-center">
+          <div className="mb-5 flex justify-center">
             <div className="inline-flex items-center gap-2 py-2 px-6 rounded-full bg-background/40 backdrop-blur-md border border-border/40 text-muted-foreground text-sm font-semibold shadow-sm">
               <Sparkles className="h-4 w-4 text-primary" />
               <span>{t("sections.leadership")}</span>
             </div>
           </div>
-
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-6 text-foreground leading-[1.1]">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-4 text-foreground leading-[1.15]">
             {t("title")}
           </h1>
-          <div className="w-24 h-1.5 bg-gradient-to-r from-primary to-accent rounded-full mx-auto mb-6" />
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {t("description")}
           </p>
         </motion.div>
-      </div>
 
-      {/* بخش‌های تیم */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10 space-y-20">
-        <section>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-          >
-            {leadershipTeam.map((member) => (
-              <MemberCard key={member.id} member={member} isLarge />
-            ))}
-          </motion.div>
-        </section>
+        {/* کارت رهبری – وسط، با ارتفاع کشیده */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="flex-1 flex items-center justify-center w-full py-4"
+        >
+          <div className="w-[220px] sm:w-[260px] h-full max-h-[480px]">
+            <MemberCard member={leadershipTeam[0]} isLarge fillHeight />
+          </div>
+        </motion.div>
 
-        <section>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-          >
-            {engineeringTeam.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </motion.div>
-        </section>
+        {/* دکمه اسکرول */}
+        <motion.button
+          onClick={() => section2Ref.current?.scrollIntoView({ behavior: "smooth" })}
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 cursor-pointer"
+          aria-label="scroll to engineering team"
+        >
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase">scroll</span>
+          <ChevronDown className="h-5 w-5" />
+        </motion.button>
+      </section>
 
-        <section>
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
-          >
-            {contentTeam.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </motion.div>
-        </section>
-      </div>
-
-      {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-80px" }}
-        transition={{ delay: 0.2, duration: 0.7 }}
-        className="max-w-3xl mx-auto mt-28 px-4 md:px-6 relative z-10 text-center"
+      {/* ═══ Section 2: تیم مهندسی (۳ کارت) ═══ */}
+      <section
+        ref={section2Ref}
+        className="h-dvh min-h-[580px] flex items-center justify-center px-4 md:px-6 py-20 relative z-10"
       >
-        <div className="relative flex flex-col items-center gap-6 rounded-[3rem] border border-border/40 bg-card/40 px-8 py-14 shadow-2xl backdrop-blur-xl overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          dir="ltr"
+          className="grid gap-5 grid-cols-1 sm:grid-cols-3 w-full max-w-4xl"
+          style={{ height: "min(calc(100dvh - 160px), 520px)" }}
+        >
+          {engineeringTeam.map((member) => (
+            <MemberCard key={member.id} member={member} fillHeight />
+          ))}
+        </motion.div>
+      </section>
 
-          <h3 className="text-3xl md:text-4xl font-black tracking-tight text-foreground relative z-10">
-            {t("cta.joinTeam")}
-          </h3>
-          <p className="max-w-md text-muted-foreground relative z-10 text-lg">
-            {t("cta.joinTeamDesc")}
-          </p>
-          <Link
-            href={`/${locale}/contact`}
-            className="group/btn relative overflow-hidden inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-primary to-accent px-10 py-5 text-primary-foreground font-bold text-lg shadow-xl shadow-primary/30 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/40 active:scale-95 z-10"
-          >
-            <span className="relative z-10">{t("cta.openPositions")}</span>
-            <ArrowRight
-              className={`relative z-10 h-5 w-5 transition-transform duration-300 ${
-                isFa ? "rotate-180 group-hover/btn:-translate-x-1" : "group-hover/btn:translate-x-1"
-              }`}
-            />
-            <span className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500" />
-          </Link>
-        </div>
+      {/* ═══ Section 3: تیم محتوا (۴ کارت) ═══ */}
+      <section
+        ref={section3Ref}
+        className="h-dvh min-h-[580px] flex items-center justify-center px-4 md:px-6 py-20 relative z-10"
+      >
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-40px" }}
+          dir="ltr"
+          className="grid gap-5 grid-cols-2 sm:grid-cols-4 w-full max-w-5xl"
+          style={{ height: "min(calc(100dvh - 160px), 480px)" }}
+        >
+          {contentTeam.map((member) => (
+            <MemberCard key={member.id} member={member} fillHeight />
+          ))}
+        </motion.div>
+      </section>
+
+      {/* \u2500\u2500\u2500 \u0628\u0631\u06af\u0634\u062a \u0628\u0647 \u062e\u0627\u0646\u0647 \u2500\u2500\u2500 */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col items-center justify-center gap-6 py-24 px-4 relative z-10"
+      >
+        {/* خط جداکننده */}
+        <div className="w-16 h-px bg-border/50" />
+
+        <p className="text-sm text-muted-foreground/60 tracking-wider uppercase">
+          {isFa ? "پایان" : "end of page"}
+        </p>
+
+        {/* دکمه برگشت */}
+        <Link
+          href={`/${locale}`}
+          className="group inline-flex items-center gap-2.5 rounded-full border border-border/50 bg-background/60 backdrop-blur-sm px-7 py-3 text-sm font-medium text-foreground/70 hover:text-foreground hover:border-border transition-all duration-300 hover:shadow-sm"
+        >
+          <ArrowRight
+            className={`h-4 w-4 transition-transform duration-300 ${
+              isFa
+                ? "group-hover:translate-x-1"
+                : "rotate-180 group-hover:-translate-x-1"
+            }`}
+          />
+          <span>{isFa ? "بازگشت به خانه" : "Back to Home"}</span>
+        </Link>
       </motion.div>
     </div>
   );
