@@ -72,6 +72,11 @@
         "company_event": "Company Event",
         "birthday": "Employee Birthday"
       },
+      "filters": {
+        "past": "Past Events",
+        "upcoming": "Upcoming Events",
+        "all": "All Events"
+      },
       "empty": "No upcoming events",
       "addPlaceholder": "New event...",
       "add": "Add",

@@ -62,6 +62,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
   const [newEventType, setNewEventType] = React.useState<string>("event");
   const [viewMode, setViewMode] = React.useState<"year"|"month"|"week"|"day">("day");
   const [typeFilter, setTypeFilter] = React.useState<string>("all");
+  const [timeFilter, setTimeFilter] = React.useState<"all"|"past"|"upcoming">("all");
   const [isFormVisible, setIsFormVisible] = React.useState(false);
 
   React.useEffect(() => {
@@ -115,13 +116,25 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       });
     }
 
+
+    // Apply timeFilter (past/upcoming)
+    if (timeFilter !== "all") {
+      const todayJalali = getJalaliDate(new Date());
+      const todayStr = `${todayJalali.year}-${String(todayJalali.month).padStart(2, "0")}-${String(todayJalali.day).padStart(2, "0")}`;
+      result = result.filter(e => {
+        if (timeFilter === "past") return e.date < todayStr;
+        if (timeFilter === "upcoming") return e.date >= todayStr;
+        return true;
+      });
+    }
+
     // Apply Type Filter
     if (typeFilter !== "all") {
       result = result.filter(e => e.type === typeFilter);
     }
 
     return [...result].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [localEvents, selectedDate, viewMode, typeFilter]);
+  }, [localEvents, selectedDate, viewMode, typeFilter, timeFilter]);
 
   const deleteEvent = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -259,35 +272,48 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       </div>
 
       {/* Type Filter (Secondary Tabs) */}
-      <div className="flex flex-wrap items-center gap-1.5 pb-1 px-1">
-        {(["all", "official", "fair", "company_event", "birthday", "meeting", "event"]).map(type => {
-          const isActive = typeFilter === type;
-          const activeClasses = type === "all" 
-            ? "bg-primary text-primary-foreground shadow-sm" 
-            : `${SOLID_COLORS[type as keyof typeof SOLID_COLORS]} shadow-sm`;
-            
-          return (
-            <button
-              key={type}
-              onClick={() => setTypeFilter(type)}
-              className={cn(
-                "px-3 py-1 rounded-full text-[11px] @sm:text-xs font-semibold transition-colors",
-                isActive 
-                  ? activeClasses 
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
-              {type === "all" ? t("views.all") : t(`types.${type}`)}
-            </button>
-          );
-        })}
+      <div className="px-1 pb-1 pt-1">
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm">
+            <SelectValue placeholder={t("views.all")} />
+          </SelectTrigger>
+          <SelectContent className="z-[9999]">
+            <SelectItem value="all">{t("views.all")}</SelectItem>
+            <SelectItem value="official">{t("types.official")}</SelectItem>
+            <SelectItem value="fair">{t("types.fair")}</SelectItem>
+            <SelectItem value="company_event">{t("types.company_event")}</SelectItem>
+            <SelectItem value="birthday">{t("types.birthday")}</SelectItem>
+            <SelectItem value="meeting">{t("types.meeting")}</SelectItem>
+            <SelectItem value="event">{t("types.event")}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Events list */}
-      <div className="flex justify-between items-center px-2 mb-1">
-        <span className="text-[11px] font-semibold text-muted-foreground">
+      <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center px-2 mb-2 gap-2">
+        <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
           {t("eventsCount", { count: filteredEvents.length })}
         </span>
+        <div className="flex flex-wrap items-center gap-1">
+          <button 
+            onClick={() => setTimeFilter("all")}
+            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+          >
+            {t("filters.all")}
+          </button>
+          <button 
+            onClick={() => setTimeFilter("past")}
+            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "past" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+          >
+            {t("filters.past")}
+          </button>
+          <button 
+            onClick={() => setTimeFilter("upcoming")}
+            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "upcoming" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+          >
+            {t("filters.upcoming")}
+          </button>
+        </div>
       </div>
       {filteredEvents.length > 0 ? (
         <ul className="space-y-1.5 flex-1 min-h-[250px] overflow-y-auto pr-1 pb-1 custom-scrollbar">
