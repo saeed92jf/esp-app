@@ -8,7 +8,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Cake, Plus } from "lucide-react";
+import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Cake, Plus, ChevronDown } from "lucide-react";
 
 const TYPE_ICONS = {
   meeting: Users,
@@ -204,52 +204,52 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
           }}
           getEventColors={getEventColors}
         />
-        
-        {/* Toggle Form Button */}
+      </div>
+      {/* Add Event Standalone Section */}
+      <div className="bg-background/40 rounded-xl border border-border/40 overflow-hidden">
+        {/* Toggle Button */}
         <div 
-          className="flex justify-center mt-3 pt-3 border-t border-border/30 cursor-pointer text-muted-foreground hover:text-primary transition-colors text-xs font-medium"
+          className="flex items-center justify-between p-3 cursor-pointer text-muted-foreground hover:text-primary hover:bg-muted/20 transition-colors"
           onClick={() => setIsFormVisible(!isFormVisible)}
         >
-          <div className="flex items-center gap-1">
-            {t("addPlaceholder")}
-            <Plus className={cn("size-3.5 transition-transform duration-300", isFormVisible && "rotate-45")} />
-          </div>
+          <span className="text-xs font-semibold rtl:text-right w-full">{t("addPlaceholder")}</span>
+          <ChevronDown className={cn("size-4 transition-transform duration-300", isFormVisible && "rotate-180")} />
         </div>
-      </div>
 
-      {/* Add Event Form */}
-      <div className={cn(
-        "grid transition-all duration-300 ease-in-out",
-        isFormVisible ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-      )}>
-        <div className="overflow-hidden">
-          <form onSubmit={addEvent} className="flex flex-col gap-2 px-1 pb-3">
-            <Input 
-              type="text" 
-              value={newEventTitle}
-              onChange={(e) => setNewEventTitle(e.target.value)}
-              placeholder={t("addPlaceholder")}
-              className="h-9 text-sm"
-            />
-            <div className="flex gap-2">
-              <Select value={newEventType} onValueChange={setNewEventType}>
-                <SelectTrigger className="h-9 flex-1 text-xs rtl:text-right" dir="rtl">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="z-[9999]" dir="rtl">
-                  <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
-                  <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
-                  <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
-                  <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
-                  <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
-                  <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button type="submit" variant="default" className="h-9">
-                {t("add")}
-              </Button>
-            </div>
-          </form>
+        {/* Add Event Form Panel */}
+        <div className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          isFormVisible ? "grid-rows-[1fr] opacity-100 border-t border-border/30" : "grid-rows-[0fr] opacity-0"
+        )}>
+          <div className="overflow-hidden bg-muted/10">
+            <form onSubmit={addEvent} className="flex flex-col gap-2 p-3">
+              <Input 
+                type="text" 
+                value={newEventTitle}
+                onChange={(e) => setNewEventTitle(e.target.value)}
+                placeholder={t("addPlaceholder")}
+                className="h-9 text-xs border-transparent bg-background shadow-sm hover:border-border focus-visible:ring-1 focus-visible:ring-primary rtl:text-right"
+              />
+              <div className="flex gap-2">
+                <Select value={newEventType} onValueChange={setNewEventType}>
+                  <SelectTrigger className="h-9 flex-1 text-xs border-transparent bg-background shadow-sm hover:border-border rtl:text-right" dir="rtl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[9999]" dir="rtl">
+                    <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
+                    <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
+                    <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
+                    <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
+                    <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
+                    <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button type="submit" variant="default" className="h-9 text-xs px-4 shadow-sm">
+                  {t("add")}
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
