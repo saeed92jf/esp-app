@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "../services/dashboard.service";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
@@ -226,11 +226,16 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
         </div>
 
         {/* Add Event Form Panel */}
-        <div className={cn(
-          "grid transition-all duration-300 ease-in-out",
-          isFormVisible ? "grid-rows-[1fr] opacity-100 border-t border-border/30" : "grid-rows-[0fr] opacity-0"
-        )}>
-          <div className="overflow-hidden bg-muted/10">
+        <AnimatePresence initial={false}>
+          {isFormVisible && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden border-t border-border/30 bg-muted/10"
+            >
+              
             <form onSubmit={addEvent} className="flex flex-col gap-2 p-3">
               <Input 
                 type="text" 
@@ -252,12 +257,14 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
                 </Button>
               </div>
             </form>
-          </div>
-        </div>
+          
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* View Toggle */}
-      <div className="flex gap-1.5 pb-2 px-1 w-full bg-muted/20 p-1.5 rounded-xl border border-border/40">
+      <motion.div layout className="flex gap-1.5 pb-2 px-1 w-full bg-muted/20 p-1.5 rounded-xl border border-border/40">
         {(["year", "month", "week", "day"] as const).map(mode => (
           <button
             key={mode}
@@ -279,7 +286,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
             <span className="relative z-10">{t(`views.${mode}`)}</span>
           </button>
         ))}
-      </div>
+      </motion.div>
 
       {/* Type Filter (Secondary Tabs) */}
       <div className="px-1 pb-1 pt-1">
@@ -296,27 +303,27 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       {/* Events list header */}
       <div className="flex flex-col gap-2 px-2 mb-2">
         {/* Time filters in one row */}
-        <div className="flex gap-1.5 bg-muted/20 p-1.5 rounded-xl border border-border/40">
+        <motion.div layout className="flex gap-1.5 bg-muted/20 p-1.5 rounded-xl border border-border/40">
           {(["all", "past", "upcoming"] as const).map(filter => (
             <button 
               key={filter}
               onClick={() => setTimeFilter(filter)}
               className={cn(
                 "relative flex-1 text-[10px] sm:text-xs py-1.5 rounded-lg transition-colors font-medium text-center outline-none",
-                timeFilter === filter ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                timeFilter === filter ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {timeFilter === filter && (
                 <motion.div
                   layoutId="calendar-time-tab"
-                  className="absolute inset-0 bg-background shadow-sm rounded-lg"
+                  className="absolute inset-0 bg-primary shadow-sm rounded-lg"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
               <span className="relative z-10">{t(`filters.${filter}`)}</span>
             </button>
           ))}
-        </div>
+        </motion.div>
         {/* Count */}
         <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">
           {t("eventsCount", { count: filteredEvents.length })}
