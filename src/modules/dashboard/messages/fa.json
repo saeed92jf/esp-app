@@ -102,19 +102,19 @@
       "noImage": "بدون تصویر",
       "selectThis": "انتخاب",
       "userProfile": "پروفایل"
+    },
+    "commodities": {
+      "title": "نرخ لحظه‌ای کالاها",
+      "gold": "انس طلا",
+      "silver": "انس نقره",
+      "wti": "نفت خام WTI",
+      "brent": "نفت برنت",
+      "ng": "گاز طبیعی",
+      "usdRate": "نرخ تبدیل دلار (ریال)",
+      "update": "بروزرسانی",
+      "unitOz": "دلار / انس",
+      "unitBbl": "دلار / بشکه",
+      "unitMbtu": "دلار / MMBtu"
     }
-  },
-  "commodities": {
-    "title": "نرخ لحظه‌ای کالاها",
-    "gold": "انس طلا",
-    "silver": "انس نقره",
-    "wti": "نفت خام WTI",
-    "brent": "نفت برنت",
-    "ng": "گاز طبیعی",
-    "usdRate": "نرخ تبدیل دلار (ریال)",
-    "update": "بروزرسانی",
-    "unitOz": "دلار / انس",
-    "unitBbl": "دلار / بشکه",
-    "unitMbtu": "دلار / MMBtu"
   }
 }
