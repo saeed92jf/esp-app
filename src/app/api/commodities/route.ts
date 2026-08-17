@@ -18,8 +18,8 @@ const TICKERS = [
   { id: 'ng', tgju: 'energy-natural-gas', category: 'energy' },
   { id: 'gasoline', tgju: 'gasoline', category: 'energy' },
   // Agriculture
-  { id: 'cocoa', tgju: 'cocoa', category: 'agriculture' },
-  { id: 'coffee', tgju: 'coffee', category: 'agriculture' },
+  { id: 'cocoa', tgju: 'commodities-us-cocoa', category: 'agriculture' },
+  { id: 'coffee', tgju: 'commodities-us-coffee', category: 'agriculture' },
   { id: 'cotton', tgju: 'commodity-cotton', category: 'agriculture' },
   // Forex (fiat means TGJU returns it in RIAL, needs division by USD)
   { id: 'eur', tgju: 'price_eur', category: 'forex', type: 'fiat' },
