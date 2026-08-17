@@ -114,7 +114,22 @@
       "update": "بروزرسانی",
       "unitOz": "دلار / انس",
       "unitBbl": "دلار / بشکه",
-      "unitMbtu": "دلار / MMBtu"
+      "unitMbtu": "دلار / MMBtu",
+      "platinum": "پلاتین",
+      "copper": "مس",
+      "eur": "یورو (EUR)",
+      "gbp": "پوند (GBP)",
+      "cny": "یوان چین (CNY)",
+      "aed": "درهم امارات (AED)",
+      "try": "لیر ترکیه (TRY)",
+      "categories": {
+        "metals": "فلزات گران‌بها",
+        "energy": "انرژی",
+        "forex": "ارزها"
+      },
+      "unitCurrency": "دلار / ارز",
+      "rial": "ریال",
+      "toman": "تومان"
     }
   }
 }

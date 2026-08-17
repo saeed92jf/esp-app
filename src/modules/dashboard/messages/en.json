@@ -114,7 +114,22 @@
       "update": "Update",
       "unitOz": "USD / oz",
       "unitBbl": "USD / bbl",
-      "unitMbtu": "USD / MMBtu"
+      "unitMbtu": "USD / MMBtu",
+      "platinum": "Platinum",
+      "copper": "Copper",
+      "eur": "Euro (EUR)",
+      "gbp": "Pound (GBP)",
+      "cny": "Chinese Yuan (CNY)",
+      "aed": "UAE Dirham (AED)",
+      "try": "Turkish Lira (TRY)",
+      "categories": {
+        "metals": "Precious Metals",
+        "energy": "Energy",
+        "forex": "Forex"
+      },
+      "unitCurrency": "USD / Currency",
+      "rial": "IRR",
+      "toman": "Toman"
     }
   }
 }

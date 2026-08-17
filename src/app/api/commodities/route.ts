@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 
 const TICKERS = [
-  { id: 'gold', symbol: 'GC=F' },
-  { id: 'silver', symbol: 'SI=F' },
-  { id: 'wti', symbol: 'CL=F' },
-  { id: 'brent', symbol: 'BZ=F' },
-  { id: 'ng', symbol: 'NG=F' }
+  // Metals
+  { id: 'gold', symbol: 'GC=F', category: 'metals' },
+  { id: 'silver', symbol: 'SI=F', category: 'metals' },
+  { id: 'platinum', symbol: 'PL=F', category: 'metals' },
+  { id: 'copper', symbol: 'HG=F', category: 'metals' },
+  // Energy
+  { id: 'wti', symbol: 'CL=F', category: 'energy' },
+  { id: 'brent', symbol: 'BZ=F', category: 'energy' },
+  { id: 'ng', symbol: 'NG=F', category: 'energy' },
+  // Forex
+  { id: 'eur', symbol: 'EURUSD=X', category: 'forex', type: 'direct' }, // 1 EUR = X USD
+  { id: 'gbp', symbol: 'GBPUSD=X', category: 'forex', type: 'direct' }, // 1 GBP = X USD
+  { id: 'cny', symbol: 'CNY=X', category: 'forex', type: 'inverse' }, // 1 USD = X CNY
+  { id: 'aed', symbol: 'AED=X', category: 'forex', type: 'inverse' }, // 1 USD = X AED
+  { id: 'try', symbol: 'TRY=X', category: 'forex', type: 'inverse' }, // 1 USD = X TRY
 ];
 
 export async function GET() {
@@ -24,13 +34,20 @@ export async function GET() {
           const meta = data?.chart?.result?.[0]?.meta;
           if (!meta) throw new Error('Invalid data');
           
-          const currentPrice = meta.regularMarketPrice;
-          const prevPrice = meta.previousClose;
+          let currentPrice = meta.regularMarketPrice;
+          let prevPrice = meta.previousClose;
+
+          if (t.type === 'inverse') {
+            currentPrice = 1 / meta.regularMarketPrice;
+            prevPrice = 1 / meta.previousClose;
+          }
+
           const diff = currentPrice - prevPrice;
           const percentChange = (diff / prevPrice) * 100;
 
           return {
             id: t.id,
+            category: t.category,
             price: currentPrice,
             change: diff,
             percentChange: percentChange,
@@ -38,7 +55,7 @@ export async function GET() {
           };
         } catch (e) {
           console.error(`Failed to fetch ${t.symbol}`, e);
-          return { id: t.id, price: 0, change: 0, percentChange: 0, trend: 'neutral', error: true };
+          return { id: t.id, category: t.category, price: 0, change: 0, percentChange: 0, trend: 'neutral', error: true };
         }
       })
     );
