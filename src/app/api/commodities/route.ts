@@ -77,12 +77,16 @@ function parseTgjuRow(row: string[]) {
   if (trend !== 'neutral') {
     const rawChange = changeHtml.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
     change = parseFloat(rawChange);
+    if (isNaN(change)) change = 0;
     if (trend === 'down') change = -change;
 
     const rawPercent = percentHtml.replace(/<[^>]*>/g, '').replace(/,/g, '').replace('%', '').trim();
     percentChange = parseFloat(rawPercent);
+    if (isNaN(percentChange)) percentChange = 0;
     if (trend === 'down') percentChange = -percentChange;
   }
+
+  if (isNaN(price)) price = 0;
 
   return { price, change, percentChange, trend };
 }

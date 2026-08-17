@@ -420,7 +420,7 @@ export function CommoditiesWidget() {
                             isUp ? "text-emerald-500" : isDown ? "text-rose-500" : "text-muted-foreground"
                           )}>
                             {isUp ? <TrendingUp className="size-3 me-0.5" /> : isDown ? <TrendingDown className="size-3 me-0.5" /> : <Minus className="size-3 me-0.5" />}
-                            <span dir="ltr">{item.percentChange.toFixed(2)}%</span>
+                            <span dir="ltr">{(item.percentChange || 0).toFixed(2)}%</span>
                           </span>
                           <span className="text-sm font-bold fa-num" dir="ltr">
                             ${formatPrice(price)}
