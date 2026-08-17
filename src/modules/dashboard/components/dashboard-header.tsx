@@ -40,10 +40,10 @@ export function DashboardHeader({
       className="sticky top-0 z-50 flex items-center justify-between w-full mb-6 bg-background/60 backdrop-blur-md py-3"
     >
       <div className="flex items-center justify-start gap-0">
-        <div className="flex-shrink-0 origin-left rtl:origin-right mt-2">
+        <div className="flex-shrink-0 origin-left rtl:origin-right mt-2 -mb-8 relative z-50">
           <DashboardAvatar />
         </div>
-        <div className="flex flex-col rtl:mr-1 ltr:ml-1">
+        <div className="flex flex-col rtl:mr-4 ltr:ml-4">
           <h1 className="fa-num font-bold tracking-tight text-lg leading-tight capitalize">
             {displayName}
           </h1>

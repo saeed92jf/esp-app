@@ -103,31 +103,32 @@ export function DashboardAvatar() {
         </button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-64 p-4 rounded-xl shadow-lg border border-border/50" align="start">
+      <PopoverContent className="w-[320px] sm:w-[360px] p-4 rounded-xl shadow-lg border border-border/50" align="start">
         <div className="space-y-4">
           <h4 className="font-medium text-sm text-center">{t("avatar.selectImage")}</h4>
           
-          <div className="relative flex flex-col items-center justify-center gap-4">
-            <div className="relative w-48 h-48 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-inner">
-              <img 
-                src={PREDEFINED_AVATARS[currentSlide]} 
-                alt={`Avatar ${currentSlide + 1}`} 
-                className="w-full h-full object-cover transition-opacity duration-300"
-              />
-            </div>
-            
-            <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 flex justify-between px-2 w-full pointer-events-none">
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center justify-between w-full px-1 sm:px-2">
               <button 
                 onClick={handlePrev}
-                className="size-8 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-sm flex items-center justify-center pointer-events-auto hover:bg-secondary transition-colors"
+                className="size-10 rounded-full bg-secondary/50 border border-border/50 shadow-sm flex items-center justify-center hover:bg-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <ChevronLeft className="size-5" />
+                <ChevronLeft className="size-5 rtl:rotate-180" />
               </button>
+              
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-inner flex-shrink-0 mx-2">
+                <img 
+                  src={PREDEFINED_AVATARS[currentSlide]} 
+                  alt={`Avatar ${currentSlide + 1}`} 
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                />
+              </div>
+              
               <button 
                 onClick={handleNext}
-                className="size-8 rounded-full bg-background/80 backdrop-blur-sm border border-border shadow-sm flex items-center justify-center pointer-events-auto hover:bg-secondary transition-colors"
+                className="size-10 rounded-full bg-secondary/50 border border-border/50 shadow-sm flex items-center justify-center hover:bg-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <ChevronRight className="size-5" />
+                <ChevronRight className="size-5 rtl:rotate-180" />
               </button>
             </div>
 
