@@ -115,11 +115,11 @@
       "unitOz": "USD / oz",
       "unitBbl": "USD / bbl",
       "unitMbtu": "USD / MMBtu",
-      "eur": "🇪🇺 Euro (EUR)",
-      "gbp": "🇬🇧 Pound (GBP)",
-      "cny": "🇨🇳 Chinese Yuan (CNY)",
-      "aed": "🇦🇪 UAE Dirham (AED)",
-      "try": "🇹🇷 Turkish Lira (TRY)",
+      "eur": "Euro (EUR)",
+      "gbp": "Pound (GBP)",
+      "cny": "Chinese Yuan (CNY)",
+      "aed": "UAE Dirham (AED)",
+      "try": "Turkish Lira (TRY)",
       "categories": {
         "energy": "Energy",
         "forex": "Forex",
@@ -171,7 +171,10 @@
       "unitPiece": "Piece",
       "unitGal": "USD / Gal",
       "unitLb": "Cent / Lb",
-      "geram24": "Gold 24k"
+      "geram24": "Gold 24k",
+      "platinum": "Global Platinum",
+      "palladium": "Global Palladium",
+      "copper": "Global Copper"
     }
   }
 }

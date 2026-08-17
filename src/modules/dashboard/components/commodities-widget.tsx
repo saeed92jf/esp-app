@@ -21,6 +21,9 @@ type WeightUnit = 'oz' | 'g' | 'kg' | 'ton';
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
   silver: 'unitOz',
+  platinum: 'unitOz',
+  palladium: 'unitOz',
+  copper: 'unitOz',
   geram18: 'unitG',
   geram24: 'unitG',
   mesghal: 'unitMesghal',
@@ -310,12 +313,23 @@ export function CommoditiesWidget() {
                       <Combobox
                         options={weightUnitOptions}
                         value={weightUnit}
-                        onChange={(v) => setWeightUnit(v as WeightUnit)}
-                        placeholder={t('weightUnit')}
-                        className="rtl:text-right w-full"
+                        onChange={(val) => setWeightUnitState(val as WeightUnit)}
+                        placeholder="انتخاب واحد..."
+                        className="w-full h-8 bg-muted/30"
+                        dir="rtl"
                       />
+                      <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                        راهنما: هر اونس جهانی برابر ۳۱.۱۰۳ گرم است.
+                      </p>
                     </div>
                   )}
+                  
+                  {activeCategory === 'iran_gold' && (
+                    <div className="space-y-3 pt-3 border-t border-border/50">
+                      <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                        راهنما: هر مثقال طلای ایران برابر ۴.۶۰۸ گرم است.
+                      </p>
+                    </div> )}
 
                   <div className="flex items-center justify-between pt-3 border-t border-border/50">
                     <Label htmlFor="toman-mode" className="text-xs font-medium text-muted-foreground">
@@ -391,11 +405,21 @@ export function CommoditiesWidget() {
                         : "bg-muted/10 border-border/40"
                     )}
                   >
-                    <div>
-                      <p className={cn(
-                        "text-sm font-semibold transition-colors duration-200",
-                        hoveredId === item.id ? "text-primary" : "text-foreground"
-                      )}>
+                    <div className="flex items-center gap-2.5">
+                      {activeCategory === 'forex' && (
+                        <div className="shrink-0">
+                          <img 
+                            src={`https://flagcdn.com/w40/${{ eur: 'eu', gbp: 'gb', cny: 'cn', aed: 'ae', try: 'tr' }[item.id]}.png`} 
+                            alt={item.id} 
+                            className="w-5 rounded-[2px] shadow-sm object-cover opacity-90"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <p className={cn(
+                          "text-sm font-semibold transition-colors duration-200",
+                          hoveredId === item.id ? "text-primary" : "text-foreground"
+                        )}>
                         {activeCategory === 'global_metals'
                           ? t('metalTitle', { unit: t(`unitNames.${weightUnit}`), metal: t(item.id) }) 
                           : t(item.id)}
@@ -404,6 +428,7 @@ export function CommoditiesWidget() {
                         {t(unitKey)}
                       </p>
                     </div>
+                  </div>
                     
                     <div className="flex items-center gap-4">
                       <div className="text-right">

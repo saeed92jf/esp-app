@@ -4,6 +4,9 @@ const TICKERS = [
   // Global Metals
   { id: 'gold', tgju: 'ons', category: 'global_metals' },
   { id: 'silver', tgju: 'silver', category: 'global_metals' },
+  { id: 'platinum', tgju: 'platinum', category: 'global_metals' },
+  { id: 'palladium', tgju: 'palladium', category: 'global_metals' },
+  { id: 'copper', tgju: 'copper', category: 'global_metals' },
   // Iran Gold & Coins
   { id: 'geram18', tgju: 'geram18', category: 'iran_gold', type: 'fiat' },
   { id: 'geram24', tgju: 'geram24', category: 'iran_gold', type: 'fiat' },
