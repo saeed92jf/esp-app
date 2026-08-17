@@ -55,7 +55,7 @@ export function DashboardHeader({
         <div className="flex-shrink-0 origin-left rtl:origin-right -mb-6 relative z-50">
           <DashboardAvatar />
         </div>
-        <div className="flex flex-col rtl:mr-4 ltr:ml-4 pt-1">
+        <div className="flex flex-col rtl:mr-4 ltr:ml-4">
           <h1 className="fa-num font-bold tracking-tight text-lg leading-tight capitalize">
             {displayName}
           </h1>
