@@ -138,7 +138,8 @@
         "free": "Free Market",
         "sana": "Sana / Nima",
         "cbi": "Central Bank",
-        "manual": "Manual"
+        "manual": "Manual",
+        "noData": "No data"
       },
       "aluminum": "Aluminum",
       "unitTon": "USD / ton",

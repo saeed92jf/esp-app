@@ -93,10 +93,27 @@ export function CommoditiesWidget() {
   const filteredData = commodities?.filter(c => c.category === activeCategory) || [];
 
   const rateModes = [
-    { value: 'free', label: t('rateModes.free') },
-    { value: 'sana', label: t('rateModes.sana') },
-    { value: 'cbi', label: t('rateModes.cbi') },
-    { value: 'manual', label: t('rateModes.manual') },
+    { 
+      value: 'free', 
+      label: t('rateModes.free'), 
+      hint: 'TGJU'
+    },
+    { 
+      value: 'sana', 
+      label: t('rateModes.sana'), 
+      disabled: true,
+      hint: t('rateModes.noData')
+    },
+    { 
+      value: 'cbi', 
+      label: t('rateModes.cbi'), 
+      disabled: true,
+      hint: t('rateModes.noData')
+    },
+    { 
+      value: 'manual', 
+      label: t('rateModes.manual')
+    },
   ];
 
   return (
@@ -139,9 +156,19 @@ export function CommoditiesWidget() {
                     />
                     
                     {irrMode !== 'manual' && (
-                      <p className="text-xs text-muted-foreground mt-1 text-right fa-num" dir="rtl">
-                        {t('activeRateText', { rate: (isToman ? activeRate / 10 : activeRate).toLocaleString('en-US', { maximumFractionDigits: 0 }) })} {isToman ? t('toman') : t('rial')}
-                      </p>
+                      <div className="mt-2 rounded-lg bg-muted/40 border border-border/40 px-3 py-2 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">{t('activeRateText', { rate: '' }).replace(': ', '')}</p>
+                          {irrMode === 'free' && (
+                            <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                              TGJU
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm font-bold fa-num" dir="ltr">
+                          {(isToman ? activeRate / 10 : activeRate).toLocaleString('en-US', { maximumFractionDigits: 0 })} {isToman ? t('toman') : t('rial')}
+                        </p>
+                      </div>
                     )}
                     
                     {irrMode === 'manual' && (

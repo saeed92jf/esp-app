@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface ComboboxOption { value: string; label: string; icon?: React.ReactNode; }
+export interface ComboboxOption { value: string; label: string; icon?: React.ReactNode; disabled?: boolean; hint?: string; }
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
@@ -78,11 +78,26 @@ export function Combobox({
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
-                <CommandItem key={opt.value} value={opt.value} keywords={[opt.label]} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:text-right w-full flex items-center">
-                  <Check className={cn("ms-auto size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
+                <CommandItem 
+                  key={opt.value} 
+                  value={opt.value} 
+                  keywords={[opt.label]} 
+                  onSelect={(currentValue) => { 
+                    if (opt.disabled) return;
+                    onChange?.(currentValue === value ? '' : currentValue); 
+                    setOpen(false); 
+                  }} 
+                  disabled={opt.disabled}
+                  className={cn(
+                    "rtl:text-right w-full flex items-center",
+                    opt.disabled && "opacity-40 cursor-not-allowed pointer-events-none"
+                  )}
+                >
+                  <Check className={cn('ms-auto size-4 shrink-0', value === opt.value ? 'opacity-100' : 'opacity-0')} />
                   <div className="flex-1 flex items-center gap-2 rtl:text-right">
                     {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
                     <span className="truncate">{opt.label}</span>
+                    {opt.hint && <span className="ms-auto text-[10px] text-muted-foreground">{opt.hint}</span>}
                   </div>
                 </CommandItem>
               ))}
