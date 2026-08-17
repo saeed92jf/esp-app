@@ -10,15 +10,15 @@ import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-import avatar1 from '../assets/avatars/handsome_manager_male.jpg';
-import avatar2 from '../assets/avatars/gorgeous_manager_female.jpg';
-import avatar3 from '../assets/avatars/attractive_engineer_male.jpg';
-import avatar4 from '../assets/avatars/beautiful_engineer_female.jpg';
-import avatar5 from '../assets/avatars/handsome_executive_male.jpg';
-import avatar6 from '../assets/avatars/stunning_executive_female.jpg';
-import avatar7 from '../assets/avatars/handsome_techlead_male.jpg';
-import avatar8 from '../assets/avatars/beautiful_techlead_female.jpg';
-import avatar9 from '../assets/avatars/stunning_pm_female.jpg';
+import avatar1 from '../assets/avatars/Avatar (1).webp';
+import avatar2 from '../assets/avatars/Avatar (2).webp';
+import avatar3 from '../assets/avatars/Avatar (3).webp';
+import avatar4 from '../assets/avatars/Avatar (4).webp';
+import avatar5 from '../assets/avatars/Avatar (5).webp';
+import avatar6 from '../assets/avatars/Avatar (6).webp';
+import avatar7 from '../assets/avatars/Avatar (7).webp';
+import avatar8 from '../assets/avatars/Avatar (8).webp';
+import avatar9 from '../assets/avatars/Avatar (9).webp';
 
 const PREDEFINED_AVATARS = [
   avatar1.src,
