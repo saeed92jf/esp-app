@@ -1,67 +1,59 @@
-// src/components/layout/settings-section.tsx
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useTheme } from 'next-themes';
-import { Check, Monitor, Moon, Sun, Palette, User } from 'lucide-react';
-import { toast } from 'sonner';
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
+import { Check, Monitor, Moon, Sun, Palette, User } from "lucide-react";
+import { toast } from "sonner";
+import { motion, AnimatePresence } from "motion/react";
 
-import { cn } from '@/lib/utils';
-import { PRIMARY_COLORS } from '@/config/settings';
-import { usePrimaryColor } from '@/hooks/use-primary-color';
+import { cn } from "@/lib/utils";
+import { PRIMARY_COLORS } from "@/config/settings";
+import { usePrimaryColor } from "@/hooks/use-primary-color";
 
 const MODE_OPTIONS = [
-  { value: 'system', labelKey: 'system', icon: Monitor },
-  { value: 'user', labelKey: 'user', icon: User },
+  { value: "system", labelKey: "system", icon: Monitor },
+  { value: "user", labelKey: "user", icon: User },
 ] as const;
 
 const THEME_OPTIONS = [
-  { value: 'light', labelKey: 'light', icon: Sun },
-  { value: 'dark', labelKey: 'dark', icon: Moon },
+  { value: "light", labelKey: "light", icon: Sun },
+  { value: "dark", labelKey: "dark", icon: Moon },
 ] as const;
 
-/**
- * SettingsSection
- * Compact appearance controls embedded at the bottom of the side menu:
- *  - Mode switcher (system / user).
- *  - Theme switcher (light / dark) - locked in system mode.
- *  - Primary color picker rendered as colored swatches.
- */
 export function SettingsSection() {
-  const t = useTranslations('Settings');
-  const tColors = useTranslations('Settings.colors');
+  const t = useTranslations("Settings");
+  const tColors = useTranslations("Settings.colors");
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const mode = theme === 'system' ? 'system' : 'user';
+  const mode = theme === "system" ? "system" : "user";
 
-  const handleModeChange = (newMode: 'system' | 'user') => {
-    if (newMode === 'system') {
-      setTheme('system');
+  const handleModeChange = (newMode: "system" | "user") => {
+    if (newMode === "system") {
+      setTheme("system");
     } else {
-      // Switch to user mode by explicitly setting to the current resolved theme
-      setTheme(resolvedTheme || 'light');
+      setTheme(resolvedTheme || "light");
     }
   };
 
-  const handleThemeChange = (newTheme: 'light' | 'dark') => {
-    if (mode === 'system') {
-      toast.info(t('themeLocked'));
+  const handleThemeChange = (newTheme: "light" | "dark") => {
+    if (mode === "system") {
+      toast.info(t("themeLocked"));
       return;
     }
     setTheme(newTheme);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* ---- Mode switcher ---- */}
-      <div className="space-y-1.5">
-        <p className="text-[11px] font-medium text-muted-foreground">{t('mode')}</p>
-        <div className="bg-background/80 dark:bg-background/40 border border-border/50 flex gap-1 rounded-lg p-1">
+      <div className="space-y-2">
+        <p className="text-[11px] font-medium text-muted-foreground">{t("mode")}</p>
+        <div className="relative flex bg-muted/40 p-1 rounded-xl items-center">
           {MODE_OPTIONS.map((opt) => {
             const Icon = opt.icon;
             const active = mounted && mode === opt.value;
@@ -69,15 +61,19 @@ export function SettingsSection() {
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => handleModeChange(opt.value as 'system' | 'user')}
-                aria-pressed={active}
+                onClick={() => handleModeChange(opt.value)}
                 className={cn(
-                  'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
+                  "relative flex-1 flex items-center justify-center gap-1.5 h-8 text-xs font-semibold rounded-lg z-10 transition-colors",
+                  active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {active && (
+                  <motion.div
+                    layoutId="settings-mode-active"
+                    className="absolute inset-0 bg-primary rounded-lg -z-10 shadow-sm"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  />
+                )}
                 <Icon className="size-3.5" />
                 <span>{t(opt.labelKey)}</span>
               </button>
@@ -87,27 +83,29 @@ export function SettingsSection() {
       </div>
 
       {/* ---- Theme switcher ---- */}
-      <div className="space-y-1.5">
-        <p className="text-[11px] font-medium text-muted-foreground">{t('theme')}</p>
-        <div className={cn("bg-background/80 dark:bg-background/40 border border-border/50 flex gap-1 rounded-lg p-1", mode === 'system' && "opacity-60")}>
+      <div className={cn("space-y-2 transition-opacity", mode === "system" && "opacity-50 grayscale pointer-events-none")}>
+        <p className="text-[11px] font-medium text-muted-foreground">{t("theme")}</p>
+        <div className="relative flex bg-muted/40 p-1 rounded-xl items-center">
           {THEME_OPTIONS.map((opt) => {
             const Icon = opt.icon;
-            // The active theme is based on resolvedTheme so it reflects reality even in system mode
             const active = mounted && resolvedTheme === opt.value;
             return (
               <button
                 key={opt.value}
                 type="button"
-                onClick={() => handleThemeChange(opt.value as 'light' | 'dark')}
-                aria-pressed={active}
+                onClick={() => handleThemeChange(opt.value)}
                 className={cn(
-                  'flex flex-1 items-center justify-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium transition-colors',
-                  active
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-                  mode === 'system' && "cursor-not-allowed"
+                  "relative flex-1 flex items-center justify-center gap-1.5 h-8 text-xs font-semibold rounded-lg z-10 transition-colors",
+                  active ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
+                {active && (
+                  <motion.div
+                    layoutId="settings-theme-active"
+                    className="absolute inset-0 bg-primary rounded-lg -z-10 shadow-sm"
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  />
+                )}
                 <Icon className="size-3.5" />
                 <span>{t(opt.labelKey)}</span>
               </button>
@@ -116,33 +114,44 @@ export function SettingsSection() {
         </div>
       </div>
 
-      {/* ---- Primary color swatches ---- */}
-      <div className="space-y-1.5 pt-1">
-        <div className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
-          <Palette className="size-3" />
-          <span>{t('color')}</span>
+      {/* ---- Primary color swatches (Modern Hover Panel) ---- */}
+      <div className="pt-2">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-3">
+          <Palette className="size-3.5" />
+          <span>{t("color")}</span>
         </div>
-        <div className="flex items-center justify-between gap-2 px-1">
+        
+        <div className="flex w-full h-10 rounded-xl overflow-hidden bg-muted/20 border border-border/50 group">
           {PRIMARY_COLORS.map((preset) => {
             const active = colorId === preset.id;
             return (
-              <button
+              <motion.button
                 key={preset.id}
                 type="button"
                 onClick={() => setColor(preset.id)}
-                aria-pressed={active}
-                aria-label={tColors(preset.labelKey)}
-                title={tColors(preset.labelKey)}
+                whileHover={{ flex: 4 }}
+                initial={{ flex: 1 }}
+                animate={{ flex: active ? 2 : 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className={cn(
-                  'ring-offset-background relative flex size-7 items-center justify-center rounded-full transition-all hover:scale-110 shadow-xs',
-                  active && 'ring-ring ring-2 ring-offset-2 scale-105',
-                )}
+                className="relative h-full flex items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                title={tColors(preset.labelKey)}
               >
-                {active ? (
-                  <Check className="size-3.5 text-white drop-shadow-xs" strokeWidth={3} />
-                ) : null}
-              </button>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                  <span className="text-[10px] font-bold text-white drop-shadow-md whitespace-nowrap">
+                    {tColors(preset.labelKey)}
+                  </span>
+                </div>
+                {active && (
+                  <motion.div 
+                    initial={{ scale: 0 }} 
+                    animate={{ scale: 1 }} 
+                    className="absolute bg-black/20 inset-0 flex items-center justify-center pointer-events-none"
+                  >
+                    <Check className="size-4 text-white drop-shadow-lg" strokeWidth={3} />
+                  </motion.div>
+                )}
+              </motion.button>
             );
           })}
         </div>
@@ -150,5 +159,3 @@ export function SettingsSection() {
     </div>
   );
 }
-
-

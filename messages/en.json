@@ -258,7 +258,9 @@
       "red": "Red",
       "pink": "Pink",
       "purple": "Purple",
-      "green": "Green"
+      "blue": "Blue",
+      "green": "Green",
+      "orange": "Orange"
     }
   },
   "Dashboard": {
