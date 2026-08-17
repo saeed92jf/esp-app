@@ -51,6 +51,7 @@ export function CommoditiesWidget() {
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('metals');
   const [isToman, setIsTomanState] = useState(false);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('currency-unit');
@@ -227,11 +228,21 @@ export function CommoditiesWidget() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    key={item.id} 
-                    className="flex items-center justify-between p-3 rounded-xl bg-muted/10 border border-border/40 hover:bg-muted/30 transition-colors group"
+                    key={item.id}
+                    onMouseEnter={() => setHoveredId(item.id)}
+                    onMouseLeave={() => setHoveredId(null)}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-xl border transition-all duration-200",
+                      hoveredId === item.id
+                        ? "bg-muted/40 border-primary/30 shadow-sm scale-[1.01]"
+                        : "bg-muted/10 border-border/40"
+                    )}
                   >
                     <div>
-                      <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                      <p className={cn(
+                        "text-sm font-semibold transition-colors duration-200",
+                        hoveredId === item.id ? "text-primary" : "text-foreground"
+                      )}>
                         {t(item.id)}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
