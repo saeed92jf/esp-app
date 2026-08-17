@@ -68,16 +68,16 @@ export function Combobox({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start" dir="rtl">
         <Command>
-          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} />}
+          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} className="rtl:text-right" />}
           <CommandList>
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
-                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:flex-row-reverse rtl:justify-end rtl:text-right">
-                  <Check className={cn("me-2 size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
-                  {opt.label}
+                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:text-right w-full flex items-center">
+                  <Check className={cn("ms-auto size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
+                  <span className="flex-1 rtl:text-right">{opt.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
