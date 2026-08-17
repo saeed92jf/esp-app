@@ -67,17 +67,17 @@
         "deadline": "Deadline",
         "review": "Review",
         "event": "Event",
-        "official": "Official Holiday",
+        "official": "Official",
         "fair": "Exhibition",
-        "company_event": "Company Event"
+        "company_event": "Company"
       },
       "filters": {
-        "past": "Past Events",
-        "upcoming": "Upcoming Events",
-        "all": "All Events"
+        "past": "Past",
+        "upcoming": "Upcoming",
+        "all": "All"
       },
       "empty": "No upcoming events",
-      "addPlaceholder": "New event...",
+      "addPlaceholder": "New event",
       "add": "Add",
       "eventsCount": "{count} events found",
       "views": {
@@ -92,16 +92,16 @@
     "checklist": {
       "title": "Tasks Checklist",
       "empty": "All caught up!",
-      "addPlaceholder": "Add new task...",
+      "addPlaceholder": "New task",
       "categoryPlaceholder": "Category",
       "all": "All"
     },
     "avatar": {
-      "selectImage": "Select Profile Image",
-      "uploadNew": "Upload New Image",
-      "noImage": "No Image (Initials)",
-      "selectThis": "Select this avatar",
-      "userProfile": "User Profile"
+      "selectImage": "Profile Image",
+      "uploadNew": "Upload",
+      "noImage": "No Image",
+      "selectThis": "Select",
+      "userProfile": "Profile"
     }
   }
 }

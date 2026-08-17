@@ -62,21 +62,21 @@
     },
     "calendar": {
       "title": "رویدادهای پیش رو",
-      "addPlaceholder": "رویداد جدید...",
+      "addPlaceholder": "رویداد جدید",
       "add": "افزودن",
       "types": {
         "meeting": "جلسه",
         "deadline": "مهلت",
         "review": "بررسی",
         "event": "رویداد",
-        "official": "مناسبت‌های رسمی",
-        "fair": "نمایشگاه‌ها",
-        "company_event": "رویداد شرکتی"
+        "official": "رسمی",
+        "fair": "نمایشگاه",
+        "company_event": "شرکتی"
       },
       "filters": {
-        "past": "رویدادهای گذشته",
-        "upcoming": "رویدادهای پیش رو",
-        "all": "همه رویدادها"
+        "past": "گذشته",
+        "upcoming": "پیش‌رو",
+        "all": "همه"
       },
       "views": {
         "all": "همه",
@@ -91,17 +91,17 @@
     "themeSettings": "تنظیمات ظاهری",
     "checklist": {
       "title": "چک‌لیست وظایف",
-      "addPlaceholder": "افزودن کار جدید...",
+      "addPlaceholder": "تسک جدید",
       "categoryPlaceholder": "دسته‌بندی",
       "all": "همه",
       "empty": "همه کارها انجام شد!"
     },
     "avatar": {
-      "selectImage": "انتخاب تصویر پروفایل",
-      "uploadNew": "آپلود تصویر جدید",
-      "noImage": "بدون تصویر (حرف اول نام)",
-      "selectThis": "انتخاب این آواتار",
-      "userProfile": "اطلاعات کاربری"
+      "selectImage": "تصویر پروفایل",
+      "uploadNew": "آپلود",
+      "noImage": "بدون تصویر",
+      "selectThis": "انتخاب",
+      "userProfile": "پروفایل"
     }
   }
 }
