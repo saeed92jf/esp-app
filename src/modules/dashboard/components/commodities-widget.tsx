@@ -388,7 +388,9 @@ export function CommoditiesWidget() {
                         "text-sm font-semibold transition-colors duration-200",
                         hoveredId === item.id ? "text-primary" : "text-foreground"
                       )}>
-                        {t(item.id)}
+                        {activeCategory === 'metals' 
+                          ? t('metalTitle', { unit: t(`unitNames.${weightUnit}`), metal: t(item.id) }) 
+                          : t(item.id)}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
                         {t(unitKey)}

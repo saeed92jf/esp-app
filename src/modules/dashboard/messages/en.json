@@ -105,8 +105,8 @@
     },
     "commodities": {
       "title": "Live Commodities",
-      "gold": "Gold Ounce",
-      "silver": "Silver Ounce",
+      "gold": "Gold",
+      "silver": "Silver",
       "wti": "WTI Crude Oil",
       "brent": "Brent Crude Oil",
       "ng": "Natural Gas",
@@ -152,7 +152,14 @@
       "weightUnit": "Metals Weight Unit",
       "thousand": "Thousand",
       "million": "Million",
-      "billion": "Billion"
+      "billion": "Billion",
+      "metalTitle": "{metal} {unit}",
+      "unitNames": {
+        "oz": "Ounce",
+        "g": "Gram",
+        "kg": "Kilogram",
+        "ton": "Ton"
+      }
     }
   }
 }

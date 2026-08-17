@@ -105,8 +105,8 @@
     },
     "commodities": {
       "title": "نرخ لحظه‌ای کالاها",
-      "gold": "انس طلا",
-      "silver": "انس نقره",
+      "gold": "طلا",
+      "silver": "نقره",
       "wti": "نفت خام WTI",
       "brent": "نفت برنت",
       "ng": "گاز طبیعی",
@@ -152,7 +152,14 @@
       "weightUnit": "واحد وزن فلزات",
       "thousand": "هزار",
       "million": "میلیون",
-      "billion": "میلیارد"
+      "billion": "میلیارد",
+      "metalTitle": "{unit} {metal}",
+      "unitNames": {
+        "oz": "انس",
+        "g": "گرم",
+        "kg": "کیلوگرم",
+        "ton": "تن"
+      }
     }
   }
 }
