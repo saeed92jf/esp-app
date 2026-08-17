@@ -6,7 +6,7 @@ import { Check, CalendarIcon, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { format } from "date-fns-jalali";
 import { toPersianDigits } from "@/utils/textDirection";
 import { cn } from "@/lib/utils";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { motion } from "motion/react";
@@ -128,6 +128,7 @@ function CalendarContent({
   getEventColors,
 }: CalendarContentProps) {
   const locale = useLocale();
+    const t = useTranslations("Common.datePicker");
   const isFa = locale === "fa";
   const displayNum = React.useCallback((n: number | string) => isFa ? toPersianDigits(n.toString()) : n.toString(), [isFa]);
 
@@ -383,7 +384,7 @@ function CalendarContent({
           onClick={handleGoToToday}
           className="text-xs h-7 px-2.5 text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors rounded-md font-medium"
         >
-          {isFa ? "امروز" : "Today"}
+          {t("today")}
         </Button>
       </div>
 
@@ -407,7 +408,7 @@ function CalendarContent({
               onChange={(val) => { if (val) handleMonthChange(val); }}
               options={months.map((m, i) => ({ value: i.toString(), label: m }))}
               showSearch={false}
-              placeholder={isFa ? "انتخاب ماه..." : "Select Month..."}
+              placeholder={t("selectMonth")}
               className="h-8 text-xs md:text-sm bg-background/50 border border-border/40 hover:border-primary/40 rounded-lg px-2"
             />
           </div>
@@ -418,9 +419,9 @@ function CalendarContent({
               onChange={(val) => { if (val) handleYearChange(val); }}
               options={years.map(y => ({ value: y.toString(), label: displayNum(y) }))}
               showSearch={true}
-              placeholder={isFa ? "انتخاب سال..." : "Select Year..."}
-              searchPlaceholder={isFa ? "جستجو..." : "Search..."}
-              emptyText={isFa ? "پیدا نشد" : "Not found"}
+              placeholder={t("selectYear")}
+              searchPlaceholder={t("search")}
+              emptyText={t("notFound")}
               className="h-8 text-xs md:text-sm bg-background/50 border border-border/40 hover:border-primary/40 rounded-lg px-2"
             />
           </div>

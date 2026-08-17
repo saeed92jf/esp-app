@@ -23,6 +23,25 @@
       "termsOfUse": "شرایط استفاده",
       "sitemap": "نقشه سایت",
       "allRightsReserved": "تمامی حقوق محفوظ است."
+    },
+    "datePicker": {
+      "today": "امروز",
+      "selectMonth": "انتخاب ماه...",
+      "selectYear": "انتخاب سال...",
+      "search": "جستجو...",
+      "notFound": "پیدا نشد"
+    },
+    "searchBox": {
+      "overallView": "نمای کلی امکانات و کارت‌ها",
+      "removeFromHistory": "حذف از تاریخچه"
+    },
+    "quickAccess": {
+      "searchShortcuts": "جستجوی ابزارها..."
+    },
+    "brand": {
+      "euroslot": "یورواسلات",
+      "pars": "پارس",
+      "engineeringPlatform": "سامانه یکپارچه مهندسی و محاسبات"
     }
   },
   "LocaleSwitcher": {
@@ -150,7 +169,10 @@
     "errors": {
       "invalidForm": "ایمیل/موبایل یا رمز عبور نامعتبر است.",
       "invalidCredentials": "حساب کاربری یافت نشد. فقط حساب‌های تستی مجاز هستند."
-    }
+    },
+    "emailOrMobile": "ایمیل یا موبایل",
+    "emailPlaceholder": "name@demo.com یا 0912...",
+    "quickDemoLogin": "ورود سریع دمو"
   },
   "Menu": {
     "title": "منو",
@@ -334,7 +356,21 @@
     },
     "commodities": {
       "helpOunce": "راهنما: هر اونس جهانی برابر ۳۱.۱۰۳ گرم است.",
-      "helpMesghal": "راهنما: هر مثقال طلای ایران برابر ۴.۶۰۸ گرم است."
+      "helpMesghal": "راهنما: هر مثقال طلای ایران برابر ۴.۶۰۸ گرم است.",
+      "unitBarrel": "واحد: دلار / بشکه",
+      "unitOunce": "واحد: دلار / انس",
+      "unitCoin": "واحد: دلار / کوین"
+    },
+    "toolbar": {
+      "hidden": "مخفی:",
+      "resetDashboard": "بازنشانی داشبورد",
+      "reset": "بازنشانی"
+    },
+    "header": {
+      "closeMenu": "بستن منو",
+      "openMenu": "باز کردن منو",
+      "hideEvents": "بستن رویدادها",
+      "upcomingEvents": "رویدادهای پیش رو"
     }
   },
   "Account": {
@@ -666,5 +702,21 @@
     "feature01": "مدلسازی دقیق تجهیزات صنعتی، سریع‌تر.",
     "feature02": "بررسی و تحلیل دیاگرام‌های فرایند.",
     "feature03": "طراحی بصری پیشرفته برای مهندسین فرایند."
+  },
+  "HeroFlow": {
+    "desktopOnly": "پشتیبانی دسکتاپ",
+    "understood": "متوجه شدم"
+  },
+  "Terms": {
+    "title": "شرایط استفاده از خدمات",
+    "acceptance": "پذیرش شرایط",
+    "intellectualProperty": "مالکیت معنوی",
+    "disclaimer": "سلب مسئولیت"
+  },
+  "Privacy": {
+    "title": "حریم خصوصی",
+    "dataCollection": "۱. جمع‌آوری داده‌ها",
+    "useOfCookies": "۲. استفاده از کوکی‌ها",
+    "yourRights": "۳. حقوق شما"
   }
 }

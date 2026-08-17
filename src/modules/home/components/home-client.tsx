@@ -172,7 +172,7 @@ export function HomeClient() {
               }}
             >
               <span className="text-[11px] uppercase tracking-[0.2em] font-medium mb-2">
-                {isRtl ? "کشف کنید" : "Explore"}
+                {t('features.explore')}
               </span>
               <ChevronDown className="size-5 animate-bounce stroke-[1.5]" />
             </motion.div>

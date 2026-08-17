@@ -23,6 +23,25 @@
       "termsOfUse": "Terms of Use",
       "sitemap": "Sitemap",
       "allRightsReserved": "All rights reserved."
+    },
+    "datePicker": {
+      "today": "Today",
+      "selectMonth": "Select Month...",
+      "selectYear": "Select Year...",
+      "search": "Search...",
+      "notFound": "Not found"
+    },
+    "searchBox": {
+      "overallView": "Overall Features View",
+      "removeFromHistory": "Remove from history"
+    },
+    "quickAccess": {
+      "searchShortcuts": "Search shortcuts..."
+    },
+    "brand": {
+      "euroslot": "euroslot",
+      "pars": "pars",
+      "engineeringPlatform": "Engineering & Calculation Platform"
     }
   },
   "LocaleSwitcher": {
@@ -150,7 +169,10 @@
     "errors": {
       "invalidForm": "Invalid email/mobile or password.",
       "invalidCredentials": "Account not found. Only test accounts are allowed."
-    }
+    },
+    "emailOrMobile": "Email or Mobile",
+    "emailPlaceholder": "name@demo.com",
+    "quickDemoLogin": "Quick Demo Login"
   },
   "Menu": {
     "title": "Menu",
@@ -334,7 +356,21 @@
     },
     "commodities": {
       "helpOunce": "Help: One Troy Ounce is equal to 31.103 grams.",
-      "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams."
+      "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams.",
+      "unitBarrel": "Unit: USD / Barrel",
+      "unitOunce": "Unit: USD / Ounce",
+      "unitCoin": "Unit: USD / Coin"
+    },
+    "toolbar": {
+      "hidden": "Hidden:",
+      "resetDashboard": "Reset Dashboard",
+      "reset": "Reset"
+    },
+    "header": {
+      "closeMenu": "Close menu",
+      "openMenu": "Open menu",
+      "hideEvents": "Hide Events",
+      "upcomingEvents": "Upcoming Events"
     }
   },
   "Account": {
@@ -678,5 +714,21 @@
     "feature01": "Model industrial equipment accurately, faster.",
     "feature02": "Review and analyze process diagrams.",
     "feature03": "Advanced visual design for process engineers."
+  },
+  "HeroFlow": {
+    "desktopOnly": "Desktop Only",
+    "understood": "Understood"
+  },
+  "Terms": {
+    "title": "Terms of Use",
+    "acceptance": "Acceptance of Terms",
+    "intellectualProperty": "Intellectual Property",
+    "disclaimer": "Disclaimer"
+  },
+  "Privacy": {
+    "title": "Privacy Policy",
+    "dataCollection": "1. Data Collection",
+    "useOfCookies": "2. Use of Cookies",
+    "yourRights": "3. Your Rights"
   }
 }

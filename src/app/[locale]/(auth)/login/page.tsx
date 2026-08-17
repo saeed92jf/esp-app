@@ -119,12 +119,12 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        {isFa ? "ایمیل یا موبایل" : "Email or Mobile"}
+                        {t("emailOrMobile")}
                       </FormLabel>
                       <FormControl>
                         <Input
                           placeholder={
-                            isFa ? "name@demo.com یا 0912..." : "name@demo.com"
+                            t("emailPlaceholder")
                           }
                           autoComplete="username"
                           dir="ltr"
@@ -184,7 +184,7 @@ export default function LoginPage() {
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-card px-3 text-muted-foreground font-medium flex items-center gap-1.5">
                       <KeyRound className="size-3.5" />
-                      {isFa ? "ورود سریع دمو" : "Quick Demo Login"}
+                      {t("quickDemoLogin")}
                     </span>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Search, X, LayoutGrid, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchHistory } from "@/hooks/use-search-history";
@@ -42,6 +42,7 @@ export function GenericSearchBox<T>({
   renderResultsHeader,
 }: GenericSearchBoxProps<T>) {
   const locale = useLocale();
+  const t = useTranslations('Common');
   const isRtl = locale === "fa";
 
   const [query, setQuery] = useState("");
@@ -281,8 +282,8 @@ export function GenericSearchBox<T>({
             <button
               type="button"
               onClick={handleOverallViewScroll}
-              title={isRtl ? "نمای کلی امکانات و کارت‌ها" : "Overall Features View"}
-              aria-label={isRtl ? "نمای کلی امکانات و کارت‌ها" : "Overall Features View"}
+              title={t("searchBox.overallView")}
+              aria-label={t("searchBox.overallView")}
               className="bg-muted hover:bg-muted/80 absolute end-[7px] top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-all duration-150 sm:end-[8px] sm:size-[34px]"
             >
               <LayoutGrid className="text-foreground/70 size-4 stroke-[2] sm:size-4.5" />
@@ -331,7 +332,7 @@ export function GenericSearchBox<T>({
                           setSelectedIndex(-1);
                         }
                       }}
-                      title={isRtl ? "حذف از تاریخچه" : "Remove from history"}
+                      title={t("searchBox.removeFromHistory")}
                       className={cn(
                         "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#70757a] transition-all hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
                         isSelected

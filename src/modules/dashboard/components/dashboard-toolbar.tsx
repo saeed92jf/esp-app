@@ -4,6 +4,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RotateCcw, LayoutDashboard, Users, Wallet, Package, Activity, Wrench, CheckCircle2, Clock, FileText, MessageSquare, BarChart3, Settings, ListTodo } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { HiddenWidgetBadge } from "./widget-shell";
 
 // ─── Widget labels & icons ────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ export function DashboardToolbar({
   onShow,
   onReset,
 }: DashboardToolbarProps) {
+  const t = useTranslations("Dashboard.toolbar");
   const hasHidden = hiddenWidgets.length > 0;
 
   return (
@@ -51,7 +53,7 @@ export function DashboardToolbar({
           >
             <span className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
               <LayoutDashboard className="size-3.5" />
-              {locale === "fa" ? "مخفی:" : "Hidden:"}
+              {t("hidden")}
             </span>
             {hiddenWidgets.map((id) => {
               const meta = WIDGET_META[id];
@@ -87,11 +89,11 @@ export function DashboardToolbar({
         onClick={onReset}
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.97 }}
-        title={locale === "fa" ? "بازنشانی داشبورد" : "Reset Dashboard"}
+        title={t("resetDashboard")}
         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-border/40 hover:border-border/80 hover:bg-muted/40 transition-all duration-200 font-medium ms-auto"
       >
         <RotateCcw className="size-3" />
-        {locale === "fa" ? "بازنشانی" : "Reset"}
+        {t("reset")}
       </motion.button>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { DashboardAvatar } from "./dashboard-avatar";
@@ -32,6 +32,7 @@ export function DashboardHeader({
   setSidebarOpen,
 }: DashboardHeaderProps) {
   const locale = useLocale();
+  const tDash = useTranslations("Dashboard.header");
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
 
@@ -90,7 +91,7 @@ export function DashboardHeader({
             "flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-primary/10 hover:text-primary transition-all duration-200 p-1.5",
             menuSidebarOpen && "bg-primary/5 border-primary/20 text-primary"
           )}
-          title={menuSidebarOpen ? "بستن منو" : "باز کردن منو"}
+          title={menuSidebarOpen ? tDash("closeMenu") : tDash("openMenu")}
         >
           <Menu className="size-4" />
         </button>
@@ -100,7 +101,7 @@ export function DashboardHeader({
             "flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-primary/10 hover:text-primary transition-all duration-200 p-1.5",
             sidebarOpen && "bg-primary/5 border-primary/20 text-primary"
           )}
-          title={sidebarOpen ? (locale === "fa" ? "بستن رویدادها" : "Hide Events") : (locale === "fa" ? "رویدادهای پیش رو" : "Upcoming Events")}
+          title={sidebarOpen ? tDash("hideEvents") : tDash("upcomingEvents")}
         >
           <CalendarIcon className="size-4" />
         </button>
