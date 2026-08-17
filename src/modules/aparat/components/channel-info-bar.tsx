@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { BadgeCheck, Clapperboard, Calendar, Eye, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ChannelInfoBarProps {
   name: string;
@@ -29,6 +30,7 @@ export function ChannelInfoBar({
   searchNode,
   className,
 }: ChannelInfoBarProps) {
+  const t = useTranslations("Aparat");
   const initials = name
     .split(" ")
     .slice(0, 2)
@@ -71,7 +73,7 @@ export function ChannelInfoBar({
         {/* About Channel Card */}
         {description && (
           <div className="w-full bg-muted/30 rounded-2xl p-6 border border-border/50 text-center">
-            <h3 className="font-bold text-base mb-3 text-foreground">درباره کانال</h3>
+            <h3 className="font-bold text-base mb-3 text-foreground">{t("channelInfo")}</h3>
             <p className="text-xs text-muted-foreground font-medium leading-7 md:leading-8 text-center">
               {description}
             </p>
@@ -83,27 +85,27 @@ export function ChannelInfoBar({
           {/* Followers */}
           <div className="bg-muted/30 rounded-2xl p-4 flex flex-col items-center justify-center border border-border/50 hover:border-border transition-colors text-center">
             <Users className="size-6 text-muted-foreground mb-3 stroke-[1.5]" />
-            <span className="text-sm text-muted-foreground mb-1">دنبال‌کننده‌ها</span>
+            <span className="text-sm text-muted-foreground mb-1">{t("followers")}</span>
             <span className="text-xl font-bold fa-num text-foreground">{followers ?? "-"}</span>
           </div>
           {/* Video Count */}
           <div className="bg-muted/30 rounded-2xl p-4 flex flex-col items-center justify-center border border-border/50 hover:border-border transition-colors text-center">
             <Clapperboard className="size-6 text-muted-foreground mb-3 stroke-[1.5]" />
-            <span className="text-sm text-muted-foreground mb-1">تعداد ویدیو</span>
+            <span className="text-sm text-muted-foreground mb-1">{t("videosCount")}</span>
             <span className="text-xl font-bold fa-num text-foreground">{videoCount ?? "-"}</span>
           </div>
 
           {/* Start Date */}
           <div className="bg-muted/30 rounded-2xl p-4 flex flex-col items-center justify-center border border-border/50 hover:border-border transition-colors text-center">
             <Calendar className="size-6 text-muted-foreground mb-3 stroke-[1.5]" />
-            <span className="text-sm text-muted-foreground mb-1">شروع فعالیت</span>
+            <span className="text-sm text-muted-foreground mb-1">{t("startDate")}</span>
             <span className="text-xl font-bold fa-num text-foreground" dir="ltr">{startDate ? startDate.split(" ")[0].replace(/-/g, "/") : "-"}</span>
           </div>
 
           {/* Total Visits */}
           <div className="bg-muted/30 rounded-2xl p-4 flex flex-col items-center justify-center border border-border/50 hover:border-border transition-colors text-center">
             <Eye className="size-6 text-muted-foreground mb-3 stroke-[1.5]" />
-            <span className="text-sm text-muted-foreground mb-1">بازدید کل</span>
+            <span className="text-sm text-muted-foreground mb-1">{t("totalViews")}</span>
             <span className="text-xl font-bold fa-num text-foreground">{totalVisits ?? "-"}</span>
           </div>
         </div>

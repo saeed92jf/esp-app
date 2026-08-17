@@ -17,6 +17,7 @@ export type WidgetId =
   | "chart"
   | "activity"
   | "checklist"
+  | "commodities"
   | "settings";
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -31,6 +32,7 @@ const MIN_SIZES: Record<WidgetId, { minW: number; minH: number }> = {
   chart: { minW: 4, minH: 3 },
   activity: { minW: 3, minH: 3 },
   checklist: { minW: 3, minH: 3 }, // Matching activity min sizes
+  commodities: { minW: 3, minH: 3 },
   settings: { minW: 2, minH: 2 },
 };
 
@@ -45,7 +47,8 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "chart", x: 0, y: 2, w: 12, h: 4 }, // Full width
     { i: "activity", x: 0, y: 6, w: 6, h: 4 }, // Next row, side-by-side
     { i: "checklist", x: 6, y: 6, w: 6, h: 4 },
-    { i: "settings", x: 0, y: 10, w: 6, h: 4 },
+    { i: "settings", x: 0, y: 10, w: 12, h: 4 },
+    { i: "commodities", x: 0, y: 14, w: 12, h: 4 },
   ],
   md: [
     { i: "stat-0", x: 0, y: 0, w: 2, h: 2 },
@@ -57,7 +60,8 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "chart", x: 0, y: 4, w: 10, h: 4 }, // Full width (10 cols)
     { i: "activity", x: 0, y: 8, w: 5, h: 4 }, // Side-by-side
     { i: "checklist", x: 5, y: 8, w: 5, h: 4 },
-    { i: "settings", x: 0, y: 12, w: 5, h: 4 },
+    { i: "settings", x: 0, y: 12, w: 10, h: 4 },
+    { i: "commodities", x: 0, y: 16, w: 10, h: 4 },
   ],
   sm: [
     { i: "stat-0", x: 0, y: 0, w: 3, h: 2 },
@@ -70,6 +74,7 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "activity", x: 0, y: 10, w: 6, h: 4 },
     { i: "checklist", x: 0, y: 14, w: 6, h: 4 },
     { i: "settings", x: 0, y: 18, w: 6, h: 3 },
+    { i: "commodities", x: 0, y: 21, w: 6, h: 4 },
   ],
 };
 
@@ -100,11 +105,12 @@ const DEFAULT_VISIBILITY: Record<WidgetId, boolean> = {
   chart: true,
   activity: true,
   checklist: true,
+  commodities: true,
   settings: true,
 };
 
-const STORAGE_KEY_LAYOUTS = "dashboard-layouts-v11"; // bumped version for fully packed layout
-const STORAGE_KEY_VISIBILITY = "dashboard-visibility-v11";
+const STORAGE_KEY_LAYOUTS = "dashboard-layouts-v12"; // bumped version for fully packed layout
+const STORAGE_KEY_VISIBILITY = "dashboard-visibility-v12";
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 

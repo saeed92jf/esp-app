@@ -23,6 +23,11 @@
       "behzad": "Behzad Saeidi",
       "seyedMohammad": "Seyed Mohammad Hosseini Fard",
       "sina": "Sina Jahanbakhsh"
+    },
+    "cta": {
+      "joinTeam": "Join Our Amazing Team",
+      "joinTeamDesc": "We're always looking for talented individuals to join our mission and build amazing products together.",
+      "openPositions": "View Open Positions"
     }
   }
 }

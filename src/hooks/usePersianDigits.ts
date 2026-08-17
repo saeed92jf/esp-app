@@ -23,7 +23,9 @@ function convertTextNode(node: Node) {
   // Matches digits (with optional dots/commas) followed by optional space and k, m, b, or t at word boundary.
   text = text.replace(/([\d.,]+)\s*([kKmMBbTt])\b/g, (match, numberPart, suffix) => {
     const translatedSuffix = abbreviationMap[suffix.toLowerCase()];
-    return translatedSuffix ? `${numberPart}${translatedSuffix}` : match;
+    // Wrap in RLE (\u202B) and PDF (\u202C) to force RTL rendering of the number and word,
+    // ensuring the word (e.g., میلیون) appears on the left of the number visually.
+    return translatedSuffix ? `\u202B${numberPart}${translatedSuffix}\u202C` : match;
   });
 
   // Replace ASCII digits with Persian digits, BUT skip words containing English letters.

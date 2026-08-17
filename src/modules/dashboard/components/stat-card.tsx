@@ -45,7 +45,7 @@ const TREND_COLOR = {
 } as const;
 
 export function StatCard({ stat }: { stat: StatCardType }) {
-  const t = useTranslations('Dashboard.stats');
+  const t = useTranslations('Dashboard.commodities');
   const Icon = ICONS[stat.icon];
   const TrendIcon = TREND_ICON[stat.trend];
 

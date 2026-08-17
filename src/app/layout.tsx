@@ -2,8 +2,9 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/providers/theme-provider";
 import { TimeProvider } from "@/providers/time-provider";
+import { QueryProvider } from "@/providers/query-provider";
 import {
   DEFAULT_PRIMARY_COLOR,
   PRIMARY_COLOR_STORAGE_KEY,
@@ -47,7 +48,9 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TimeProvider>{children}</TimeProvider>
+          <QueryProvider>
+            <TimeProvider>{children}</TimeProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

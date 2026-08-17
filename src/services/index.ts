@@ -1,14 +1,17 @@
 // src/services/index.ts
 // ═════════════════════════════════════════════════════════════════════════════
-// نقطه مرکزی اتصال. وقتی به سرور واقعی وصل می‌شوی، فقط این فایل را تغییر بده.
 //
-// نحوه سوییچ به real API:
-//   ۱. در .env.local بنویس:  NEXT_PUBLIC_API_MODE=real
-//                            NEXT_PUBLIC_API_BASE_URL=https://api.yourserver.com
-//   ۲. همین! تمام هوک‌ها و کامپوننت‌ها بدون تغییر به real API وصل می‌شوند.
+//  ██████╗ ███████╗██████╗ ██╗   ██╗██╗ ██████╗███████╗    ██████╗ ███████╗ ██████╗
+//  ██╔════╝██╔════╝██╔══██╗██║   ██║██║██╔════╝██╔════╝    ██╔══██╗██╔════╝██╔════╝
+//  ███████╗█████╗  ██████╔╝██║   ██║██║██║     █████╗      ██████╔╝█████╗  ██║  ███╗
+//  ╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██║██║     ██╔══╝      ██╔══██╗██╔══╝  ██║   ██║
+//  ███████║███████╗██║  ██║ ╚████╔╝ ██║╚██████╗███████╗    ██║  ██║███████╗╚██████╔╝
+//  ╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚═╝ ╚═════╝╚══════╝    ╚═╝  ╚═╝╚══════╝ ╚═════╝
 //
+// ─────────────────────────────────────────────────────────────────────────────
+// نقطه مرکزی DI (Dependency Injection).
 // هیچ component یا hook نباید مستقیماً FakeXService یا RealXService وارد کند.
-// همه باید از این فایل (api.auth، api.dashboard، ...) استفاده کنند.
+// همه از این فایل مصرف می‌کنند: api.auth، api.dashboard، ...
 // ═════════════════════════════════════════════════════════════════════════════
 
 import { HttpClient } from "./core/http";
@@ -48,66 +51,132 @@ import {
   RealPreferencesService,
   type IPreferencesService,
 } from "./preferences.service";
+import {
+  FakeCommoditiesService,
+  RealCommoditiesService,
+  type ICommoditiesService,
+} from "@/modules/dashboard/services/commodities.service";
+import {
+  FakeExchangeRatesService,
+  RealExchangeRatesService,
+  type IExchangeRatesService,
+} from "@/modules/dashboard/services/exchange-rates.service";
 import { AparatService, type IAparatService } from "./aparat.service";
 
-// ─── حالت فعلی ────────────────────────────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// ⚙️  حالت پیش‌فرض جهانی  (از .env.local خوانده می‌شود)
+//
+//  NEXT_PUBLIC_API_MODE=fake   ← پیش‌فرض: داده‌های Fake برای توسعه محلی
+//  NEXT_PUBLIC_API_MODE=real   ← پروداکشن: سرویس‌ها به backend واقعی وصل می‌شوند
+// ═════════════════════════════════════════════════════════════════════════════
 
 export type ApiMode = "fake" | "real";
 
-export const API_MODE: ApiMode =
+const GLOBAL_API_MODE: ApiMode =
   (process.env.NEXT_PUBLIC_API_MODE as ApiMode) ?? "fake";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
 
 const http = new HttpClient(API_BASE_URL);
 
-// ─── انتخاب پیاده‌سازی بر اساس حالت ───────────────────────────────────────────
+// ═════════════════════════════════════════════════════════════════════════════
+// 🗺️  جدول وضعیت سرویس‌ها  ← اینجا وضعیت هر سرویس را ببینید و تغییر دهید
+//
+//  'inherit'  ← از GLOBAL_API_MODE پیروی می‌کند (پیش‌فرض)
+//  'fake'     ← همیشه Fake، حتی اگر NEXT_PUBLIC_API_MODE=real باشد
+//  'real'     ← همیشه Real، حتی اگر NEXT_PUBLIC_API_MODE=fake باشد
+//
+//  برای مهاجرت یک سرویس از Fake به Real:
+//    ۱. وضعیت آن را اینجا از 'inherit' به 'real' تغییر دهید
+//    ۲. مطمئن شوید RealXService پیاده‌سازی کامل دارد
+//    ۳. endpoint های لازم را در .env.local تنظیم کنید
+// ═════════════════════════════════════════════════════════════════════════════
 
-function pick<TFake, TReal>(fake: TFake, real: TReal): TFake | TReal {
-  return API_MODE === "real" ? real : fake;
+const SERVICE_MODES = {
+  // ──────────────────────────────────── Backend سرویس‌های
+  auth:          'inherit',  // 🔴 Fake  — backend احراز هویت هنوز آماده نیست
+  dashboard:     'inherit',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
+  navigation:    'inherit',  // 🔴 Fake  — منوی ناوبری هنوز static است
+  search:        'inherit',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
+  stats:         'inherit',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
+  user:          'inherit',  // 🔴 Fake  — پروفایل کاربری هنوز backend ندارد
+  preferences:   'inherit',  // 🔴 Fake  — تنظیمات در localStorage ذخیره می‌شوند
+
+  // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
+  commodities:   'real',     // 🟢 REAL   — قیمت‌ها از TGJU (Next.js API route)
+  exchangeRates: 'real',     // 🟢 REAL   — نرخ ارز زنده از TGJU، همیشه واقعی
+  aparat:        'real',     // 🟢 REAL   — ویدیوهای آپارات، همیشه واقعی
+} as const satisfies Record<string, 'fake' | 'real' | 'inherit'>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// تابع کمکی: بر اساس جدول SERVICE_MODES، پیاده‌سازی صحیح را انتخاب می‌کند
+// ─────────────────────────────────────────────────────────────────────────────
+
+function pickService<T>(
+  service: keyof typeof SERVICE_MODES,
+  fake: T,
+  real: T
+): T {
+  const override = SERVICE_MODES[service];
+  const effectiveMode: ApiMode = override === 'inherit' ? GLOBAL_API_MODE : override;
+  return effectiveMode === 'real' ? real : fake;
 }
 
-// ─── نمونه‌های Singleton ──────────────────────────────────────────────────────
-// هر سرویس فقط یک‌بار ساخته می‌شود و در کل اپ به‌اشتراک می‌رود.
+// Re-export for backward compatibility (some hooks use API_MODE directly)
+export const API_MODE = GLOBAL_API_MODE;
+
+// ═════════════════════════════════════════════════════════════════════════════
+// 🏗️  Singleton Instances — هر سرویس فقط یک‌بار ساخته می‌شود
+// ═════════════════════════════════════════════════════════════════════════════
 
 export const api = {
-  auth: pick<IAuthService, IAuthService>(
+  auth: pickService<IAuthService>('auth',
     new FakeAuthService(),
     new RealAuthService(http),
   ),
 
-  dashboard: pick<IDashboardService, IDashboardService>(
+  dashboard: pickService<IDashboardService>('dashboard',
     new FakeDashboardService(),
     new RealDashboardService(http),
   ),
 
-  navigation: pick<INavigationService, INavigationService>(
+  navigation: pickService<INavigationService>('navigation',
     new FakeNavigationService(),
     new RealNavigationService(http),
   ),
 
-  search: pick<ISearchService, ISearchService>(
+  search: pickService<ISearchService>('search',
     new FakeSearchService(),
     new RealSearchService(http),
   ),
 
-  stats: pick<IStatsService, IStatsService>(
+  stats: pickService<IStatsService>('stats',
     new FakeStatsService(),
     new RealStatsService(http),
   ),
 
-  user: pick<IUserService, IUserService>(
+  user: pickService<IUserService>('user',
     new FakeUserService(),
     new RealUserService(http),
   ),
 
-  preferences: pick<IPreferencesService, IPreferencesService>(
+  preferences: pickService<IPreferencesService>('preferences',
     new FakePreferencesService(),
     new RealPreferencesService(http),
   ),
 
-  // Aparat همیشه از یک پیاده‌سازی استفاده می‌کند (نه fake/real سوییچ‌پذیر)
-  // چون منبع داده شخص‌ثالث است، نه backend خودمان.
+  commodities: pickService<ICommoditiesService>('commodities',
+    new FakeCommoditiesService(),
+    new RealCommoditiesService(http),
+  ),
+
+  // نرخ ارز — همیشه Real (مستقل از GLOBAL_API_MODE)
+  exchangeRates: pickService<IExchangeRatesService>('exchangeRates',
+    new FakeExchangeRatesService(),
+    new RealExchangeRatesService(),
+  ),
+
+  // آپارات — همیشه Real (مستقل از GLOBAL_API_MODE)
   aparat: new AparatService() as IAparatService,
 };
 

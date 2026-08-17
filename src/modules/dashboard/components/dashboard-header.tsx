@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { DashboardAvatar } from "./dashboard-avatar";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { Link } from "@/i18n/navigation";
-import { Home, Menu, Calendar as CalendarIcon } from "lucide-react";
+import { Home, Menu, Calendar as CalendarIcon, Settings } from "lucide-react";
+import { DashboardSettingsModal } from "./dashboard-settings-modal";
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -31,19 +32,32 @@ export function DashboardHeader({
   setSidebarOpen,
 }: DashboardHeaderProps) {
   const locale = useLocale();
+  const [isScrolled, setIsScrolled] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <motion.header
+      <motion.header
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-50 flex items-center justify-between w-full mb-6 bg-background/60 backdrop-blur-md py-3"
+      className={cn(
+        "sticky top-0 z-50 flex items-center justify-between w-full mb-10 bg-background/60 backdrop-blur-md py-3 transition-shadow duration-300",
+        isScrolled ? "shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] border-b border-border/50" : ""
+      )}
     >
       <div className="flex items-center justify-start gap-0">
-        <div className="flex-shrink-0 scale-75 origin-left rtl:origin-right">
+        <div className="flex-shrink-0 origin-left rtl:origin-right -mb-6 relative z-50">
           <DashboardAvatar />
         </div>
-        <div className="flex flex-col rtl:mr-1 ltr:ml-1">
+        <div className="flex flex-col rtl:mr-4 ltr:ml-4">
           <h1 className="fa-num font-bold tracking-tight text-lg leading-tight capitalize">
             {displayName}
           </h1>
@@ -63,6 +77,13 @@ export function DashboardHeader({
         >
           <Home className="size-4" />
         </Link>
+        <button
+          onClick={() => setSettingsOpen(true)}
+          className="flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-primary/10 hover:text-primary transition-all duration-200 p-1.5"
+          title="تنظیمات داشبورد"
+        >
+          <Settings className="size-4" />
+        </button>
         <button
           onClick={() => setMenuSidebarOpen(!menuSidebarOpen)}
           className={cn(
@@ -84,6 +105,7 @@ export function DashboardHeader({
           <CalendarIcon className="size-4" />
         </button>
       </div>
+      <DashboardSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </motion.header>
   );
 }

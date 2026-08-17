@@ -23,7 +23,7 @@
     "month": "{value} ماه پیش",
     "year": "{value} سال پیش"
   },
-  "loading": "در حال بارگذاری کانال {channel}...",
+  "loading": "درحال دریافت...",
   "loadedOf": "{current} از {total} ویدیو بارگذاری شد",
   "appearAfterLoad": "صفحه پس از بارگذاری اولین ویدیوها نمایش داده می‌شود...",
   "youMightLike": "شاید این‌ها را هم بپسندید",
@@ -33,13 +33,18 @@
   "visitChannel": "مشاهده کانال",
   "playlist": "لیست پخش",
   "uncategorized": "دسته‌بندی‌نشده",
-  "videosCount": "{loaded} از {total} ویدیو",
+  "videosCount": "تعداد ویدیو",
   "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",
   "allLoaded": "هر {count} ویدیو با موفقیت بارگذاری شد",
-  "views": "",
+  "views": "بازدید",
   "noVideos": "ویدیویی موجود نیست",
   "noVideosDescription": "بعداً برای محتوای جدید سر بزنید",
   "selectVideoToWatch": "یک ویدیو جهت پخش انتخاب کنید",
   "unableToLoadVideo": "ویدیو بارگذاری نمی شود",
-  "watchOnAparat": "در آپارات تماشا کنید"
+  "watchOnAparat": "در آپارات تماشا کنید",
+  "channelInfo": "درباره کانال",
+  "followers": "دنبال‌کننده‌ها",
+  "startDate": "شروع فعالیت",
+  "totalViews": "بازدید کل",
+  "noVideosFound": "ویدیویی در این دسته یافت نشد"
 }

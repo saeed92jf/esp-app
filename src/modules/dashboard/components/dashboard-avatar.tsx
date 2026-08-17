@@ -2,30 +2,43 @@
 
 import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, ChevronRight, ChevronLeft, Check, User } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
+import avatar1 from '../assets/avatars/handsome_manager_male.jpg';
+import avatar2 from '../assets/avatars/gorgeous_manager_female.jpg';
+import avatar3 from '../assets/avatars/attractive_engineer_male.jpg';
+import avatar4 from '../assets/avatars/beautiful_engineer_female.jpg';
+import avatar5 from '../assets/avatars/handsome_executive_male.jpg';
+import avatar6 from '../assets/avatars/stunning_executive_female.jpg';
+import avatar7 from '../assets/avatars/handsome_techlead_male.jpg';
+import avatar8 from '../assets/avatars/beautiful_techlead_female.jpg';
+import avatar9 from '../assets/avatars/stunning_pm_female.jpg';
+
 const PREDEFINED_AVATARS = [
-  '/avatar/businessman.webp',
-  '/avatar/secretary.webp',
-  '/avatar/architect.webp',
-  '/avatar/programmer.webp',
-  '/avatar/photographer.webp',
-  '/avatar/teacher.webp',
-  '/avatar/doctor.jpg',
-  '/avatar/chef.jpg',
-  '/avatar/artist.jpg',
+  avatar1.src,
+  avatar2.src,
+  avatar3.src,
+  avatar4.src,
+  avatar5.src,
+  avatar6.src,
+  avatar7.src,
+  avatar8.src,
+  avatar9.src,
 ];
 
 export function DashboardAvatar() {
   const locale = useLocale();
+  const t = useTranslations('Dashboard');
   const { user, updateAvatar } = useAuth();
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [open, setOpen] = React.useState(false);
+  const [currentSlide, setCurrentSlide] = React.useState(0);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
@@ -61,6 +74,14 @@ export function DashboardAvatar() {
 
   if (!user) return null;
 
+  const handlePrev = () => {
+    setCurrentSlide((prev) => (prev === 0 ? PREDEFINED_AVATARS.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentSlide((prev) => (prev === PREDEFINED_AVATARS.length - 1 ? 0 : prev + 1));
+  };
+
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
 
@@ -69,37 +90,50 @@ export function DashboardAvatar() {
       <PopoverTrigger asChild>
         <button className="relative flex items-center justify-center p-1 rounded-full group cursor-pointer border-none bg-transparent outline-none ring-0">
           {/* Static rainbow border */}
-          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity scale-110" />
           
           {/* Avatar container */}
-          <div className="relative z-10 bg-background rounded-full p-[2px]">
-            <Avatar className="size-14 sm:size-16 border-2 border-background">
+          <div className="relative z-10 bg-background rounded-full p-[2px] scale-110 shadow-md">
+            <Avatar className="size-16 sm:size-20 border-2 border-background">
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
               ) : null}
-              <AvatarFallback className="text-xl sm:text-2xl font-bold bg-muted text-muted-foreground">{initial}</AvatarFallback>
+              <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-muted text-muted-foreground">{initial}</AvatarFallback>
             </Avatar>
           </div>
         </button>
       </PopoverTrigger>
       
-      <PopoverContent className="w-64 p-4 rounded-xl shadow-lg border border-border/50" align="start">
+      <PopoverContent className="w-[320px] sm:w-[360px] p-4 rounded-xl shadow-lg border border-border/50" align="start">
         <div className="space-y-4">
-          <h4 className="font-medium text-sm text-center">انتخاب تصویر پروفایل</h4>
+          <h4 className="font-medium text-sm text-center">{t("avatar.selectImage")}</h4>
           
-          <div className="grid grid-cols-3 gap-2">
-            {PREDEFINED_AVATARS.map((url, i) => (
-              <button
-                key={i}
-                onClick={() => saveAvatar(url)}
-                className="rounded-full overflow-hidden border-2 border-transparent hover:border-primary transition-colors focus:outline-none"
+          <div className="flex flex-col items-center justify-center gap-4">
+            <div className="flex items-center justify-between w-full px-1 sm:px-2">
+              <button 
+                onClick={handlePrev}
+                className="size-10 rounded-full bg-secondary/50 border border-border/50 shadow-sm flex items-center justify-center hover:bg-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
               >
-                <img src={url} alt={`Avatar ${i+1}`} className="w-full h-auto bg-muted/30" />
+                <ChevronLeft className="size-5 rtl:rotate-180" />
               </button>
-            ))}
-          </div>
+              
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-inner flex-shrink-0 mx-2">
+                <img 
+                  src={PREDEFINED_AVATARS[currentSlide]} 
+                  alt={`Avatar ${currentSlide + 1}`} 
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                />
+              </div>
+              
+              <button 
+                onClick={handleNext}
+                className="size-10 rounded-full bg-secondary/50 border border-border/50 shadow-sm flex items-center justify-center hover:bg-secondary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <ChevronRight className="size-5 rtl:rotate-180" />
+              </button>
+            </div>
 
-          <div className="h-px w-full bg-border/50 my-2" />
+          </div>
 
           <div className="flex flex-col gap-2">
             <input 
@@ -109,20 +143,47 @@ export function DashboardAvatar() {
               ref={fileInputRef} 
               onChange={handleFileUpload} 
             />
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 w-full text-sm py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors"
+            
+            <div className="flex items-start justify-center gap-1 sm:gap-2">
+              <button
+                onClick={() => saveAvatar(PREDEFINED_AVATARS[currentSlide])}
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-primary/5 text-primary transition-colors text-center"
+              >
+                <div className="p-1.5 rounded-full bg-primary/10 mb-0.5">
+                  <Check className="size-3.5" />
+                </div>
+                {t("avatar.selectThis")}
+              </button>
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-secondary/80 text-secondary-foreground transition-colors text-center"
+              >
+                <div className="p-1.5 rounded-full bg-secondary mb-0.5">
+                  <Upload className="size-3.5" />
+                </div>
+                {t("avatar.uploadNew")}
+              </button>
+              <button 
+                onClick={() => saveAvatar(null)}
+                className="flex flex-col items-center justify-start gap-1 flex-1 text-[10px] sm:text-[11px] py-1.5 px-1 rounded hover:bg-destructive/5 text-destructive transition-colors text-center"
+              >
+                <div className="p-1.5 rounded-full bg-destructive/10 mb-0.5">
+                  <X className="size-3.5" />
+                </div>
+                {t("avatar.noImage")}
+              </button>
+            </div>
+
+            <div className="h-px w-full bg-border/50 my-1" />
+
+            <Link 
+              href="/dashboard/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium text-sm"
             >
-              <Upload className="size-4" />
-              آپلود تصویر جدید
-            </button>
-            <button 
-              onClick={() => saveAvatar(null)}
-              className="flex items-center justify-center gap-2 w-full text-sm py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-            >
-              <X className="size-4" />
-              بدون تصویر (حرف اول نام)
-            </button>
+              <User className="size-4" />
+              {t("avatar.userProfile", { defaultValue: "اطلاعات کاربری" })}
+            </Link>
           </div>
         </div>
       </PopoverContent>

@@ -77,6 +77,18 @@
     --primary-l: 43%;
   }
 
+  .primary-color-blue {
+    --primary-h: 213;
+    --primary-s: 100%;
+    --primary-l: 61%;
+  }
+
+  .primary-color-orange {
+    --primary-h: 19;
+    --primary-s: 97%;
+    --primary-l: 51%;
+  }
+
   /* ---- Dark mode overrides ---- */
   .dark {
     --color-primary: hsl(
@@ -125,5 +137,13 @@
 
   .dark.primary-color-green {
     --primary-l: 48%;
+  }
+
+  .dark.primary-color-blue {
+    --primary-l: 65%;
+  }
+
+  .dark.primary-color-orange {
+    --primary-l: 55%;
   }
 }

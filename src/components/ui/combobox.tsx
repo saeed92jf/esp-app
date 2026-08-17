@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface ComboboxOption { value: string; label: string; }
+export interface ComboboxOption { value: string; label: string; icon?: React.ReactNode; disabled?: boolean; hint?: string; }
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
@@ -58,25 +58,47 @@ export function Combobox({
           disabled={disabled}
           className={cn(
             "group w-full justify-between px-2.5 font-normal bg-white dark:bg-black hover:bg-muted/40 transition-colors",
+            "rtl:text-right",
             className
           )}
         >
-          <span className="truncate">{selected ? selected.label : (value || resolvedPlaceholder)}</span>
+          <div className="flex items-center gap-2 truncate">
+            {selected?.icon && <span className="shrink-0 flex items-center justify-center">{selected.icon}</span>}
+            <span className="truncate">{selected ? selected.label : (value || resolvedPlaceholder)}</span>
+          </div>
           <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
             <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start" dir="rtl">
         <Command>
-          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} />}
+          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} className="rtl:text-right" />}
           <CommandList>
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((opt) => (
-                <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }}>
-                  <Check className={cn("me-2 size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
-                  {opt.label}
+                <CommandItem 
+                  key={opt.value} 
+                  value={opt.value} 
+                  keywords={[opt.label]} 
+                  onSelect={(currentValue) => { 
+                    if (opt.disabled) return;
+                    onChange?.(currentValue === value ? '' : currentValue); 
+                    setOpen(false); 
+                  }} 
+                  disabled={opt.disabled}
+                  className={cn(
+                    "rtl:text-right w-full flex items-center",
+                    opt.disabled && "opacity-40 cursor-not-allowed pointer-events-none"
+                  )}
+                >
+                  <Check className={cn('ms-auto size-4 shrink-0', value === opt.value ? 'opacity-100' : 'opacity-0')} />
+                  <div className="flex-1 flex items-center gap-2 rtl:text-right">
+                    {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
+                    <span className="truncate">{opt.label}</span>
+                    {opt.hint && <span className="ms-auto text-[10px] text-muted-foreground">{opt.hint}</span>}
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>

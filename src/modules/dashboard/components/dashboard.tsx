@@ -15,6 +15,7 @@ import { CalendarWidget } from "./calendar-widget";
 import { ChecklistWidget } from "./checklist-widget";
 import { WidgetShell } from "./widget-shell";
 import { DashboardToolbar } from "./dashboard-toolbar";
+import { CommoditiesWidget } from "./commodities-widget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SettingsSection } from "@/components/layout/settings-section";
 import { DashboardHeader } from "./dashboard-header";
@@ -114,6 +115,9 @@ export function Dashboard() {
 
       case "checklist":
         return <div className="fa-num h-full"><ChecklistWidget items={data.checklist} /></div>;
+
+      case "commodities":
+        return <div className="h-full"><CommoditiesWidget /></div>;
 
       case "settings":
         return (
