@@ -7,13 +7,15 @@
       "personal": "Personal Info",
       "organizational": "Organizational Info",
       "skills": "Skills",
-      "insurance": "Insurance Info"
+      "insurance": "Insurance Info",
+      "education": "Education Info"
     },
     "descriptions": {
       "personal": "Manage your identity and contact information here.",
       "organizational": "Your job position and details in the company structure.",
       "skills": "Register your technical and soft skills here.",
-      "insurance": "Health and social security insurance records."
+      "insurance": "Health and social security insurance records.",
+      "education": "Manage your academic and educational background here."
     },
     "fields": {
       "firstName": "First Name",
@@ -31,11 +33,17 @@
       "provider": "Insurance Provider",
       "type": "Insurance Type",
       "insuranceCode": "Insurance Number",
-      "validUntil": "Valid Until"
+      "validUntil": "Valid Until",
+      "degree": "Degree",
+      "fieldOfStudy": "Field of Study",
+      "university": "University / Institute",
+      "graduationYear": "Graduation Year"
     },
     "actions": {
       "save": "Save Changes",
-      "addSkill": "Add New Skill"
+      "addSkill": "Add New Skill",
+      "home": "Home",
+      "dashboard": "Dashboard"
     }
   }
 }

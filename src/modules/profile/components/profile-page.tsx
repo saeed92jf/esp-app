@@ -84,11 +84,12 @@ export function ProfilePage() {
       </div>
 
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4 mb-8">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 mb-8">
           <TabsTrigger value="personal">{t("tabs.personal", { defaultValue: "اطلاعات شخصی" })}</TabsTrigger>
           <TabsTrigger value="organizational">{t("tabs.organizational", { defaultValue: "اطلاعات سازمانی" })}</TabsTrigger>
           <TabsTrigger value="skills">{t("tabs.skills", { defaultValue: "مهارت‌ها" })}</TabsTrigger>
           <TabsTrigger value="insurance">{t("tabs.insurance", { defaultValue: "اطلاعات بیمه" })}</TabsTrigger>
+          <TabsTrigger value="education">{t("tabs.education", { defaultValue: "اطلاعات تحصیلی" })}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="personal">
@@ -102,7 +103,7 @@ export function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">{t("fields.firstName", { defaultValue: "نام" })}</Label>
+                  <Label htmlFor="firstName" className="rtl:text-right block">{t("fields.firstName", { defaultValue: "نام" })}</Label>
                   <Input 
                     id="firstName" 
                     value={formData.personal.firstName} 
@@ -110,7 +111,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">{t("fields.lastName", { defaultValue: "نام خانوادگی" })}</Label>
+                  <Label htmlFor="lastName" className="rtl:text-right block">{t("fields.lastName", { defaultValue: "نام خانوادگی" })}</Label>
                   <Input 
                     id="lastName" 
                     value={formData.personal.lastName} 
@@ -118,7 +119,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="nationalId">{t("fields.nationalId", { defaultValue: "کد ملی" })}</Label>
+                  <Label htmlFor="nationalId" className="rtl:text-right block">{t("fields.nationalId", { defaultValue: "کد ملی" })}</Label>
                   <Input 
                     id="nationalId" 
                     value={formData.personal.nationalId} 
@@ -126,7 +127,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate">{t("fields.birthDate", { defaultValue: "تاریخ تولد" })}</Label>
+                  <Label htmlFor="birthDate" className="rtl:text-right block">{t("fields.birthDate", { defaultValue: "تاریخ تولد" })}</Label>
                   <Input 
                     id="birthDate" 
                     value={formData.personal.birthDate} 
@@ -134,7 +135,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">{t("fields.phone", { defaultValue: "شماره موبایل" })}</Label>
+                  <Label htmlFor="phone" className="rtl:text-right block">{t("fields.phone", { defaultValue: "شماره موبایل" })}</Label>
                   <Input 
                     id="phone" 
                     value={formData.personal.phone} 
@@ -143,7 +144,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">{t("fields.email", { defaultValue: "پست الکترونیک" })}</Label>
+                  <Label htmlFor="email" className="rtl:text-right block">{t("fields.email", { defaultValue: "پست الکترونیک" })}</Label>
                   <Input 
                     id="email" 
                     value={formData.personal.email} 
@@ -152,7 +153,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address">{t("fields.address", { defaultValue: "آدرس" })}</Label>
+                  <Label htmlFor="address" className="rtl:text-right block">{t("fields.address", { defaultValue: "آدرس" })}</Label>
                   <Input 
                     id="address" 
                     value={formData.personal.address} 
@@ -175,7 +176,7 @@ export function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="department">{t("fields.department", { defaultValue: "دپارتمان / واحد" })}</Label>
+                  <Label htmlFor="department" className="rtl:text-right block">{t("fields.department", { defaultValue: "دپارتمان / واحد" })}</Label>
                   <Input 
                     id="department" 
                     value={formData.organizational.department} 
@@ -184,7 +185,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">{t("fields.role", { defaultValue: "سمت شغلی" })}</Label>
+                  <Label htmlFor="role" className="rtl:text-right block">{t("fields.role", { defaultValue: "سمت شغلی" })}</Label>
                   <Input 
                     id="role" 
                     value={formData.organizational.role} 
@@ -193,7 +194,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="employeeId">{t("fields.employeeId", { defaultValue: "شماره پرسنلی" })}</Label>
+                  <Label htmlFor="employeeId" className="rtl:text-right block">{t("fields.employeeId", { defaultValue: "شماره پرسنلی" })}</Label>
                   <Input 
                     id="employeeId" 
                     value={formData.organizational.employeeId} 
@@ -203,7 +204,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="joinDate">{t("fields.joinDate", { defaultValue: "تاریخ شروع به کار" })}</Label>
+                  <Label htmlFor="joinDate" className="rtl:text-right block">{t("fields.joinDate", { defaultValue: "تاریخ شروع به کار" })}</Label>
                   <Input 
                     id="joinDate" 
                     value={formData.organizational.joinDate} 
@@ -212,7 +213,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="manager">{t("fields.manager", { defaultValue: "مدیر مستقیم" })}</Label>
+                  <Label htmlFor="manager" className="rtl:text-right block">{t("fields.manager", { defaultValue: "مدیر مستقیم" })}</Label>
                   <Input 
                     id="manager" 
                     value={formData.organizational.manager} 
@@ -271,7 +272,7 @@ export function ProfilePage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="provider">{t("fields.provider", { defaultValue: "شرکت بیمه‌گر" })}</Label>
+                  <Label htmlFor="provider" className="rtl:text-right block">{t("fields.provider", { defaultValue: "شرکت بیمه‌گر" })}</Label>
                   <Input 
                     id="provider" 
                     value={formData.insurance.provider} 
@@ -279,7 +280,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="type">{t("fields.type", { defaultValue: "نوع بیمه" })}</Label>
+                  <Label htmlFor="type" className="rtl:text-right block">{t("fields.type", { defaultValue: "نوع بیمه" })}</Label>
                   <Input 
                     id="type" 
                     value={formData.insurance.type} 
@@ -287,7 +288,7 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="insuranceCode">{t("fields.insuranceCode", { defaultValue: "شماره بیمه" })}</Label>
+                  <Label htmlFor="insuranceCode" className="rtl:text-right block">{t("fields.insuranceCode", { defaultValue: "شماره بیمه" })}</Label>
                   <Input 
                     id="insuranceCode" 
                     value={formData.insurance.insuranceCode} 
@@ -296,11 +297,59 @@ export function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="validUntil">{t("fields.validUntil", { defaultValue: "تاریخ اعتبار" })}</Label>
+                  <Label htmlFor="validUntil" className="rtl:text-right block">{t("fields.validUntil", { defaultValue: "تاریخ اعتبار" })}</Label>
                   <Input 
                     id="validUntil" 
                     value={formData.insurance.validUntil} 
                     onChange={(e) => handleChange("insurance", "validUntil", e.target.value)} 
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="education">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("tabs.education", { defaultValue: "اطلاعات تحصیلی" })}</CardTitle>
+              <CardDescription>
+                {t("descriptions.education", { defaultValue: "سوابق تحصیلی و دانشگاهی خود را در این بخش مدیریت کنید." })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="degree" className="rtl:text-right block">{t("fields.degree", { defaultValue: "مدرک تحصیلی" })}</Label>
+                  <Input 
+                    id="degree" 
+                    value={formData.education.degree} 
+                    onChange={(e) => handleChange("education", "degree", e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fieldOfStudy" className="rtl:text-right block">{t("fields.fieldOfStudy", { defaultValue: "رشته تحصیلی" })}</Label>
+                  <Input 
+                    id="fieldOfStudy" 
+                    value={formData.education.fieldOfStudy} 
+                    onChange={(e) => handleChange("education", "fieldOfStudy", e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="university" className="rtl:text-right block">{t("fields.university", { defaultValue: "دانشگاه / موسسه آموزشی" })}</Label>
+                  <Input 
+                    id="university" 
+                    value={formData.education.university} 
+                    onChange={(e) => handleChange("education", "university", e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="graduationYear" className="rtl:text-right block">{t("fields.graduationYear", { defaultValue: "سال فارغ‌التحصیلی" })}</Label>
+                  <Input 
+                    id="graduationYear" 
+                    value={formData.education.graduationYear} 
+                    onChange={(e) => handleChange("education", "graduationYear", e.target.value)} 
+                    className="ltr text-left font-mono"
                   />
                 </div>
               </div>

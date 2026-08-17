@@ -29,6 +29,12 @@ const MOCK_PROFILE: UserProfile = {
     validUntil: "1405/12/29",
     type: "بیمه اجباری",
   },
+  education: {
+    degree: "کارشناسی ارشد",
+    fieldOfStudy: "مهندسی نرم‌افزار",
+    university: "دانشگاه تهران",
+    graduationYear: "1395",
+  },
 };
 
 export class FakeProfileService implements ProfileService {

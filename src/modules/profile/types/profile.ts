@@ -29,9 +29,17 @@ export interface InsuranceInfo {
   type: string;
 }
 
+export interface EducationInfo {
+  degree: string;
+  fieldOfStudy: string;
+  university: string;
+  graduationYear: string;
+}
+
 export interface UserProfile {
   personal: PersonalInfo;
   organizational: OrganizationalInfo;
   skills: Skill[];
   insurance: InsuranceInfo;
+  education: EducationInfo;
 }
