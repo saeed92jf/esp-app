@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useCommodities, IrrMode } from '../hooks/use-commodities';
 import type { CommodityItem } from '../services/commodities.service';
 import { Settings2, TrendingDown, TrendingUp, Minus, Activity, RefreshCw } from 'lucide-react';
@@ -48,6 +48,7 @@ const formatPrice = (price: number) => {
 
 export function CommoditiesWidget() {
   const t = useTranslations('Dashboard.commodities');
+  const locale = useLocale();
   const { commodities, isLoading, irrMode, setIrrMode, manualRate, setManualRate, activeRate, refetch } = useCommodities();
   const [rateInput, setRateInput] = useState(manualRate.toString());
   const [open, setOpen] = useState(false);
@@ -187,6 +188,12 @@ export function CommoditiesWidget() {
     { value: 'ton', label: t('unitTon') },
   ];
 
+  const formattedDate = new Intl.DateTimeFormat(locale === 'fa' ? 'fa-IR' : 'en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(new Date());
+
   return (
     <div className="flex flex-col h-full bg-card rounded-xl rounded-br-none border border-border/50 overflow-hidden relative">
       <div className="px-4 pt-4 pb-3 border-b border-border/50 flex flex-col gap-3">
@@ -195,7 +202,9 @@ export function CommoditiesWidget() {
             <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
               <Activity className="size-4" />
             </div>
-            <h3 className="font-semibold text-sm">{t('title')}</h3>
+            <h3 className="font-semibold text-sm">
+              {t('title')} <span className="text-xs font-normal text-muted-foreground ms-1 hidden sm:inline-block">({formattedDate})</span>
+            </h3>
           </div>
           
           <div className="flex items-center gap-1">
