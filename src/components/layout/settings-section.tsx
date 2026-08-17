@@ -121,7 +121,7 @@ export function SettingsSection() {
           <span>{t("color")}</span>
         </div>
         
-        <div className="flex w-full h-14 rounded-xl overflow-hidden bg-muted/20 border border-border/50 group">
+        <div className="flex w-full h-14 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
           {PRIMARY_COLORS.map((preset) => {
             const active = colorId === preset.id;
             return (
@@ -134,7 +134,7 @@ export function SettingsSection() {
                 animate={{ flex: active ? 2.5 : 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                className="group relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
                 title={tColors(preset.labelKey)}
               >
                 {active && (
@@ -153,7 +153,7 @@ export function SettingsSection() {
                     <Check className="size-3.5 text-white drop-shadow-md" strokeWidth={3} />
                   </motion.div>
                 )}
-                <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none pt-1">
+                <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none pt-1">
                   <span className="text-[11px] font-bold text-white drop-shadow-md whitespace-nowrap">
                     {tColors(preset.labelKey)}
                   </span>
