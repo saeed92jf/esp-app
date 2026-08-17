@@ -39,6 +39,14 @@ export function useCommodities() {
     }
   }, []);
 
+  // Sync default manual rate with real free market rate once loaded
+  // if the user hasn't set a custom manual rate yet.
+  useEffect(() => {
+    if (exchangeRates?.free && !localStorage.getItem('usd-to-irr-rate')) {
+      setManualRateState(exchangeRates.free);
+    }
+  }, [exchangeRates?.free]);
+
   const setIrrMode = (mode: IrrMode) => {
     setIrrModeState(mode);
     localStorage.setItem('irr-mode', mode);

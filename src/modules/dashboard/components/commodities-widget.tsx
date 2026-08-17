@@ -62,7 +62,7 @@ export function CommoditiesWidget() {
   const displayRate = isToman ? Math.round(manualRate / 10) : manualRate;
 
   useEffect(() => {
-    setRateInput(displayRate.toString());
+    setRateInput(displayRate.toLocaleString('en-US'));
   }, [manualRate, isToman]);
 
   const setIsToman = (val: boolean) => {
@@ -71,8 +71,18 @@ export function CommoditiesWidget() {
     // update the input immediately to reflect unit change
     const current = Number(rateInput.replace(/,/g, ''));
     if (!isNaN(current) && current > 0) {
-      setRateInput(val ? Math.round(current / 10).toString() : (current * 10).toString());
+      const newVal = val ? Math.round(current / 10) : current * 10;
+      setRateInput(newVal.toLocaleString('en-US'));
     }
+  };
+
+  const handleRateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    if (!raw) {
+      setRateInput('');
+      return;
+    }
+    setRateInput(Number(raw).toLocaleString('en-US'));
   };
 
   const handleSaveRate = () => {
@@ -176,7 +186,7 @@ export function CommoditiesWidget() {
                         <div className="flex gap-2">
                           <Input 
                             value={rateInput}
-                            onChange={(e) => setRateInput(e.target.value)}
+                            onChange={handleRateChange}
                             className="h-8 text-sm fa-num"
                             placeholder={isToman ? '60000' : '600000'}
                             dir="ltr"
