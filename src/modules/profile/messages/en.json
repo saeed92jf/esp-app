@@ -1,0 +1,41 @@
+{
+  "Profile": {
+    "title": "User Profile",
+    "subtitle": "Manage your personal information and settings",
+    "errorLoading": "Error loading profile data",
+    "tabs": {
+      "personal": "Personal Info",
+      "organizational": "Organizational Info",
+      "skills": "Skills",
+      "insurance": "Insurance Info"
+    },
+    "descriptions": {
+      "personal": "Manage your identity and contact information here.",
+      "organizational": "Your job position and details in the company structure.",
+      "skills": "Register your technical and soft skills here.",
+      "insurance": "Health and social security insurance records."
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "nationalId": "National ID",
+      "birthDate": "Birth Date",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "address": "Home Address",
+      "department": "Department",
+      "role": "Job Title",
+      "employeeId": "Employee ID",
+      "joinDate": "Join Date",
+      "manager": "Direct Manager",
+      "provider": "Insurance Provider",
+      "type": "Insurance Type",
+      "insuranceCode": "Insurance Number",
+      "validUntil": "Valid Until"
+    },
+    "actions": {
+      "save": "Save Changes",
+      "addSkill": "Add New Skill"
+    }
+  }
+}

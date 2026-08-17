@@ -39,6 +39,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const aparatMessages = await loadModuleMsg("aparat");
   const heroFlowMessages = await loadModuleMsg("hero-flow");
   const teamMessages = await loadModuleMsg("team");
+  const profileMessages = await loadModuleMsg("profile");
 
   return {
     locale,
@@ -51,7 +52,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
       welcomeMessages,
       aparatMessages,
       heroFlowMessages,
-      teamMessages
+      teamMessages,
+      profileMessages
     ),
   };
 });

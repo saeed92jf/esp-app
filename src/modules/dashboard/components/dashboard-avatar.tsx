@@ -5,7 +5,8 @@ import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Upload, X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Upload, X, ChevronRight, ChevronLeft, Check, User } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
@@ -151,20 +152,34 @@ export function DashboardAvatar() {
               ref={fileInputRef} 
               onChange={handleFileUpload} 
             />
-            <button 
-              onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors"
+            
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-col items-center justify-center gap-1.5 flex-1 text-xs py-3 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors"
+              >
+                <Upload className="size-4" />
+                {t("avatar.uploadNew")}
+              </button>
+              <button 
+                onClick={() => saveAvatar(null)}
+                className="flex flex-col items-center justify-center gap-1.5 flex-1 text-xs py-3 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+              >
+                <X className="size-4" />
+                {t("avatar.noImage")}
+              </button>
+            </div>
+
+            <div className="h-px w-full bg-border/50 my-1" />
+
+            <Link 
+              href="/dashboard/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium text-sm"
             >
-              <Upload className="size-4" />
-              {t("avatar.uploadNew")}
-            </button>
-            <button 
-              onClick={() => saveAvatar(null)}
-              className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
-            >
-              <X className="size-4" />
-              {t("avatar.noImage")}
-            </button>
+              <User className="size-4" />
+              {t("avatar.userProfile", { defaultValue: "اطلاعات کاربری" })}
+            </Link>
           </div>
         </div>
       </PopoverContent>
