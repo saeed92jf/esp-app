@@ -161,7 +161,7 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
       </div>
 
       {filteredTasks && filteredTasks.length > 0 ? (
-        <ul className="space-y-1 @sm:space-y-1.5 flex-1 min-h-0 overflow-y-auto pe-1 custom-scrollbar -ml-4 @sm:-ml-5 @md:-ml-6 pl-4 @sm:pl-5 @md:pl-6">
+        <ul className="space-y-1 @sm:space-y-1.5 flex-1 min-h-0 overflow-y-auto pe-1 custom-scrollbar -ms-4 @sm:-ms-5 @md:-ms-6 ps-4 @sm:ps-5 @md:ps-6">
           {filteredTasks.map((item) => (
             <li
               key={item.id}
@@ -169,7 +169,7 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
               className="group/task relative flex items-center gap-2 @sm:gap-3 p-1.5 @sm:p-2 transition-all duration-300 cursor-pointer z-10"
             >
               {/* Background Layer */}
-              <div className="absolute inset-y-0 -left-4 @sm:-left-5 @md:-left-6 right-0 bg-muted/30 group-hover/task:bg-muted/60 rounded-r-full rounded-l-none border-l-4 border-transparent group-hover/task:border-primary -z-10 transition-all duration-300 pointer-events-none" />
+              <div className="absolute inset-y-0 -start-4 @sm:-start-5 @md:-start-6 end-0 bg-muted/30 group-hover/task:bg-muted/60 rounded-e-full rounded-s-none border-s-4 border-transparent group-hover/task:border-primary -z-10 transition-all duration-300 pointer-events-none" />
               <div className="mt-1 shrink-0 transition-all duration-300 group-hover/task:scale-110">
                 {item.completed ? (
                   <CheckCircle2 className="size-4 @sm:size-5 text-emerald-500" />
