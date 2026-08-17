@@ -10,15 +10,15 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const PREDEFINED_AVATARS = [
-  '/avatar/businessman.webp',
-  '/avatar/secretary.webp',
-  '/avatar/architect.webp',
-  '/avatar/programmer.webp',
-  '/avatar/photographer.webp',
-  '/avatar/teacher.webp',
-  '/avatar/doctor.jpg',
-  '/avatar/chef.jpg',
-  '/avatar/artist.jpg',
+  "/images/avatars/handsome_manager_male.jpg",
+  "/images/avatars/gorgeous_manager_female.jpg",
+  "/images/avatars/attractive_engineer_male.jpg",
+  "/images/avatars/beautiful_engineer_female.jpg",
+  "/images/avatars/handsome_executive_male.jpg",
+  "/images/avatars/stunning_executive_female.jpg",
+  "/images/avatars/handsome_techlead_male.jpg",
+  "/images/avatars/beautiful_techlead_female.jpg",
+  "/images/avatars/stunning_pm_female.jpg",
 ];
 
 export function DashboardAvatar() {
