@@ -180,7 +180,9 @@
       "iqd": "Iraqi Dinar (IQD)",
       "sar": "Saudi Riyal (SAR)",
       "inr": "Indian Rupee (INR)",
-      "kwd": "Kuwaiti Dinar (KWD)"
+      "kwd": "Kuwaiti Dinar (KWD)",
+      "helpOunce": "Help: One Troy Ounce is equal to 31.103 grams.",
+      "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams."
     }
   }
 }

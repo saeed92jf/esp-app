@@ -19,6 +19,42 @@ import {
 } from 'lucide-react';
 import type { StatCard as StatCardType } from '../services/dashboard.service';
 
+const UNITS: Record<string, string> = {
+  gold: 'unitOz',
+  silver: 'unitOz',
+  geram18: 'unitG',
+  geram24: 'unitG',
+  mesghal: 'unitMesghal',
+  sekee: 'unitPiece',
+  sekeb: 'unitPiece',
+  nim: 'unitPiece',
+  rob: 'unitPiece',
+  wti: 'unitBbl',
+  brent: 'unitBbl',
+  ng: 'unitMbtu',
+  gasoline: 'unitGal',
+  cocoa: 'unitTon',
+  coffee: 'unitLb',
+  cotton: 'unitLb',
+  eur: 'unitCurrency',
+  gbp: 'unitCurrency',
+  cny: 'unitCurrency',
+  aed: 'unitCurrency',
+  try: 'unitCurrency',
+  chf: 'unitCurrency',
+  cad: 'unitCurrency',
+  aud: 'unitCurrency',
+  jpy: 'unitCurrency',
+  rub: 'unitCurrency',
+  iqd: 'unitCurrency',
+  sar: 'unitCurrency',
+  inr: 'unitCurrency',
+  kwd: 'unitCurrency',
+  btc: 'unitCurrency',
+  eth: 'unitCurrency',
+  usdt: 'unitCurrency',
+};
+
 // Map serializable icon names to lucide components.
 const ICONS = {
   users: Users,
@@ -49,6 +85,9 @@ export function StatCard({ stat }: { stat: StatCardType }) {
   const Icon = ICONS[stat.icon];
   const TrendIcon = TREND_ICON[stat.trend];
 
+  const unitKey = UNITS[stat.id];
+  const unitText = unitKey ? t(unitKey) : null;
+
   return (
     <div className="relative overflow-hidden rounded-xl rounded-br-none border border-border/50 bg-card p-1.5 @[140px]:p-3 @sm:p-5 transition-all duration-300 h-full flex flex-col justify-between">
       {/* Decorative gradient blob */}
@@ -65,9 +104,16 @@ export function StatCard({ stat }: { stat: StatCardType }) {
       </div>
 
       <div className="mt-1 @[140px]:mt-3 @sm:mt-4 z-10">
-        <p className="text-sm @[140px]:text-xl @sm:text-2xl font-bold tracking-tight text-foreground leading-none" dir="ltr">
-          {stat.value}
-        </p>
+        <div className="flex items-baseline gap-1.5" dir="ltr">
+          <p className="text-sm @[140px]:text-xl @sm:text-2xl font-bold tracking-tight text-foreground leading-none">
+            {stat.value}
+          </p>
+          {unitText && (
+            <span className="text-[9px] @sm:text-[10px] text-muted-foreground font-medium">
+              {unitText.replace('واحد: ', '').replace('Unit: ', '')}
+            </span>
+          )}
+        </div>
         <p className="block mt-0.5 @sm:mt-1 text-[8px] @[140px]:text-[10px] @sm:text-sm font-medium text-muted-foreground transition-colors duration-300 leading-tight">{t(stat.labelKey)}</p>
       </div>
     </div>

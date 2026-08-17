@@ -325,6 +325,16 @@
     },
     "calendar": {
       "addPlaceholder": "Add new event..."
+    },
+    "miniChart": {
+      "monthlyTrend": "1-Month Trend",
+      "unitDollarPerBarrel": "Unit: $ / Barrel",
+      "unitDollarPerOunce": "Unit: $ / Ounce",
+      "unitDollarPerCoin": "Unit: $ / Coin"
+    },
+    "commodities": {
+      "helpOunce": "Help: One Troy Ounce is equal to 31.103 grams.",
+      "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams."
     }
   },
   "Account": {

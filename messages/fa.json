@@ -325,6 +325,16 @@
     },
     "calendar": {
       "addPlaceholder": "افزودن رویداد جدید..."
+    },
+    "miniChart": {
+      "monthlyTrend": "روند یک ماهه",
+      "unitDollarPerBarrel": "واحد: دلار / بشکه",
+      "unitDollarPerOunce": "واحد: دلار / انس",
+      "unitDollarPerCoin": "واحد: دلار / کوین"
+    },
+    "commodities": {
+      "helpOunce": "راهنما: هر اونس جهانی برابر ۳۱.۱۰۳ گرم است.",
+      "helpMesghal": "راهنما: هر مثقال طلای ایران برابر ۴.۶۰۸ گرم است."
     }
   },
   "Account": {
