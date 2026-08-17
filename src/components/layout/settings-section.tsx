@@ -121,7 +121,7 @@ export function SettingsSection() {
           <span>{t("color")}</span>
         </div>
         
-        <div className="flex w-full h-10 rounded-xl overflow-hidden bg-muted/20 border border-border/50 group">
+        <div className="flex w-full h-14 rounded-xl overflow-hidden bg-muted/20 border border-border/50 group">
           {PRIMARY_COLORS.map((preset) => {
             const active = colorId === preset.id;
             return (
@@ -131,26 +131,36 @@ export function SettingsSection() {
                 onClick={() => setColor(preset.id)}
                 whileHover={{ flex: 4 }}
                 initial={{ flex: 1 }}
-                animate={{ flex: active ? 2 : 1 }}
+                animate={{ flex: active ? 2.5 : 1 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className="relative h-full flex items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
                 title={tColors(preset.labelKey)}
               >
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                  <span className="text-[10px] font-bold text-white drop-shadow-md whitespace-nowrap">
-                    {tColors(preset.labelKey)}
-                  </span>
-                </div>
+                {active && (
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }} 
+                    className="absolute bg-black/15 inset-0 pointer-events-none"
+                  />
+                )}
                 {active && (
                   <motion.div 
                     initial={{ scale: 0 }} 
                     animate={{ scale: 1 }} 
-                    className="absolute bg-black/20 inset-0 flex items-center justify-center pointer-events-none"
+                    className="absolute top-1 right-1 pointer-events-none"
                   >
-                    <Check className="size-4 text-white drop-shadow-lg" strokeWidth={3} />
+                    <Check className="size-3.5 text-white drop-shadow-md" strokeWidth={3} />
                   </motion.div>
                 )}
+                <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none pt-1">
+                  <span className="text-[11px] font-bold text-white drop-shadow-md whitespace-nowrap">
+                    {tColors(preset.labelKey)}
+                  </span>
+                  <span className="text-[9px] font-medium text-white/90 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                    {preset.hex}
+                  </span>
+                </div>
               </motion.button>
             );
           })}
