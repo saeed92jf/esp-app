@@ -93,7 +93,10 @@
       "all": "All"
     },
     "avatar": {
-      "selectImage": "Select Profile Image"
+      "selectImage": "Select Profile Image",
+      "uploadNew": "Upload New Image",
+      "noImage": "No Image (Initials)",
+      "selectThis": "Select this avatar"
     }
   }
 }

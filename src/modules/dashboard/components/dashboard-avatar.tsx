@@ -134,10 +134,10 @@ export function DashboardAvatar() {
 
             <button
               onClick={() => saveAvatar(PREDEFINED_AVATARS[currentSlide])}
-              className="w-full py-2 flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+              className="w-full py-1.5 flex items-center justify-center gap-1.5 border border-primary text-primary bg-primary/5 rounded-md hover:bg-primary/10 transition-colors font-medium text-xs shadow-sm"
             >
-              <Check className="size-4" />
-              انتخاب این آواتار
+              <Check className="size-3.5" />
+              {t("avatar.selectThis")}
             </button>
           </div>
 
@@ -153,17 +153,17 @@ export function DashboardAvatar() {
             />
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 w-full text-sm py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors"
+              className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm py-2 rounded-lg bg-secondary/50 hover:bg-secondary text-secondary-foreground transition-colors"
             >
               <Upload className="size-4" />
-              آپلود تصویر جدید
+              {t("avatar.uploadNew")}
             </button>
             <button 
               onClick={() => saveAvatar(null)}
-              className="flex items-center justify-center gap-2 w-full text-sm py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
+              className="flex items-center justify-center gap-2 w-full text-xs sm:text-sm py-2 rounded-lg hover:bg-destructive/10 text-destructive transition-colors"
             >
               <X className="size-4" />
-              بدون تصویر (حرف اول نام)
+              {t("avatar.noImage")}
             </button>
           </div>
         </div>
