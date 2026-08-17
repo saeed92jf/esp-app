@@ -105,8 +105,24 @@ export function CommoditiesWidget() {
   const formatIrr = (price: number, rate: number, asToman: boolean) => {
     const rawIrr = price * rate;
     const val = asToman ? rawIrr / 10 : rawIrr;
-    if (val > 1000000) return (val / 1000000).toLocaleString('en-US', { maximumFractionDigits: 1 }) + 'M';
-    return val.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    
+    if (val >= 1_000_000_000) {
+      return { value: (val / 1_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'billion' };
+    }
+    if (val >= 1_000_000) {
+      return { value: (val / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'million' };
+    }
+    if (val >= 1000) {
+      return { value: (val / 1000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'thousand' };
+    }
+    return { value: val.toLocaleString('en-US', { maximumFractionDigits: 0 }), suffixKey: null };
+  };
+
+  const formatLargeIrr = (val: number) => {
+    if (val >= 1_000_000_000) return { value: (val / 1_000_000_000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'billion' };
+    if (val >= 1_000_000) return { value: (val / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'million' };
+    if (val >= 1000) return { value: (val / 1000).toLocaleString('en-US', { maximumFractionDigits: 3 }), suffixKey: 'thousand' };
+    return { value: val.toLocaleString('en-US', { maximumFractionDigits: 0 }), suffixKey: null };
   };
 
   const setWeightUnit = (unit: WeightUnit) => {
@@ -246,7 +262,15 @@ export function CommoditiesWidget() {
                           )}
                         </div>
                         <p className="text-sm font-bold fa-num" dir="ltr">
-                          {(isToman ? activeRate / 10 : activeRate).toLocaleString('en-US', { maximumFractionDigits: 0 })} {isToman ? t('toman') : t('rial')}
+                          {(() => {
+                            const val = isToman ? activeRate / 10 : activeRate;
+                            const formatted = formatLargeIrr(val);
+                            return (
+                              <>
+                                {formatted.value} {formatted.suffixKey ? t(formatted.suffixKey) : ''} {isToman ? t('toman') : t('rial')}
+                              </>
+                            );
+                          })()}
                         </p>
                       </div>
                     )}
@@ -386,7 +410,14 @@ export function CommoditiesWidget() {
                           </span>
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-0.5 fa-num">
-                          {formatIrr(price, activeRate, isToman)} {isToman ? t('toman') : t('rial')}
+                          {(() => {
+                            const formatted = formatIrr(price, activeRate, isToman);
+                            return (
+                              <>
+                                {formatted.value} {formatted.suffixKey ? t(formatted.suffixKey) : ''} {isToman ? t('toman') : t('rial')}
+                              </>
+                            );
+                          })()}
                         </p>
                       </div>
                     </div>

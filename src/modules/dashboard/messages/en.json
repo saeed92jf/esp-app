@@ -149,7 +149,10 @@
       "activeRateText": "Current rate: {rate}",
       "unitG": "Gram",
       "unitKg": "Kilogram",
-      "weightUnit": "Metals Weight Unit"
+      "weightUnit": "Metals Weight Unit",
+      "thousand": "Thousand",
+      "million": "Million",
+      "billion": "Billion"
     }
   }
 }

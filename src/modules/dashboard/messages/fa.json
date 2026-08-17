@@ -149,7 +149,10 @@
       "activeRateText": "نرخ فعلی: {rate}",
       "unitG": "گرم",
       "unitKg": "کیلوگرم",
-      "weightUnit": "واحد وزن فلزات"
+      "weightUnit": "واحد وزن فلزات",
+      "thousand": "هزار",
+      "million": "میلیون",
+      "billion": "میلیارد"
     }
   }
 }
