@@ -6,6 +6,15 @@ import { Mail, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
+import mortezaAvatar from "../avatars/morteza-shafiee.webp";
+import saeedAvatar from "../avatars/saeed-jalili-fard.webp";
+import peymanAvatar from "../avatars/peyman-sharifi.webp";
+import pouriaAvatar from "../avatars/pooria-yavari.webp";
+import mohammadSaeedAvatar from "../avatars/mohammad-saeedkhani.webp";
+import behzadAvatar from "../avatars/behzad-saeedi.webp";
+import seyedMohammadAvatar from "../avatars/mohammad-hoseini-fard.webp";
+import sinaAvatar from "../avatars/sina-jahanbakhsh.webp";
+
 interface TeamMember {
   id: string;
   keyName: string;
@@ -17,20 +26,20 @@ interface TeamMember {
 }
 
 const leadershipTeam: TeamMember[] = [
-  { id: "m1", keyName: "morteza", roleKey: "head", github: "morteza-sh", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20", avatar: "/images/team/morteza.jpg" },
+  { id: "m1", keyName: "morteza", roleKey: "head", github: "morteza-sh", email: "shafiei@euroslotpars.com", gradient: "from-blue-500/20 to-cyan-500/20", avatar: mortezaAvatar.src },
 ];
 
 const engineeringTeam: TeamMember[] = [
-  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20", avatar: "/images/team/saeed.jpg" },
-  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20", avatar: "/images/team/peyman.jpg" },
-  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20", avatar: "/images/team/pouria.jpg" },
+  { id: "e1", keyName: "saeed", roleKey: "frontend", github: "saeed92jf", email: "saeed92jf@gmail.com", gradient: "from-violet-500/20 to-fuchsia-500/20", avatar: saeedAvatar.src },
+  { id: "e2", keyName: "peyman", roleKey: "backend", github: "peymansh72", email: "peyman@example.com", gradient: "from-amber-500/20 to-orange-500/20", avatar: peymanAvatar.src },
+  { id: "e3", keyName: "pouria", roleKey: "server", github: "p-yavari", email: "pouria@example.com", gradient: "from-emerald-500/20 to-teal-500/20", avatar: pouriaAvatar.src },
 ];
 
 const contentTeam: TeamMember[] = [
-  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", github: "msaeed-content", email: "msaeed@example.com", gradient: "from-rose-500/20 to-red-500/20", avatar: "/images/team/mohammadsaeed.jpg" },
-  { id: "c2", keyName: "behzad", roleKey: "content", github: "behzad-creative", email: "behzad@example.com", gradient: "from-indigo-500/20 to-blue-500/20", avatar: "/images/team/behzad.jpg" },
-  { id: "c3", keyName: "seyedMohammad", roleKey: "content", github: "smohammad-media", email: "smohammad@example.com", gradient: "from-fuchsia-500/20 to-pink-500/20", avatar: "/images/team/seyedmohammad.jpg" },
-  { id: "c4", keyName: "sina", roleKey: "content", github: "sina-social", email: "sina@example.com", gradient: "from-cyan-500/20 to-sky-500/20", avatar: "/images/team/avatar_sina_new_1786862334366.jpg" },
+  { id: "c1", keyName: "mohammadSaeed", roleKey: "content", github: "msaeed-content", email: "msaeed@example.com", gradient: "from-rose-500/20 to-red-500/20", avatar: mohammadSaeedAvatar.src },
+  { id: "c2", keyName: "behzad", roleKey: "content", github: "behzad-creative", email: "behzad@example.com", gradient: "from-indigo-500/20 to-blue-500/20", avatar: behzadAvatar.src },
+  { id: "c3", keyName: "seyedMohammad", roleKey: "content", github: "smohammad-media", email: "smohammad@example.com", gradient: "from-fuchsia-500/20 to-pink-500/20", avatar: seyedMohammadAvatar.src },
+  { id: "c4", keyName: "sina", roleKey: "content", github: "sina-social", email: "sina@example.com", gradient: "from-cyan-500/20 to-sky-500/20", avatar: sinaAvatar.src },
 ];
 
 const containerVariants: Variants = {
@@ -60,32 +69,49 @@ function MemberCard({ member, isLarge = false }: { member: TeamMember, isLarge?:
       variants={itemVariants}
       className={`relative h-full ${isLarge ? 'md:col-span-2 lg:col-span-4 max-w-sm mx-auto w-full' : 'w-full'}`}
     >
-      <div
-        className="group relative w-full h-full flex flex-col rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-700 ease-in-out"
+      <motion.div
+        initial="rest"
+        whileHover="hover"
+        animate="rest"
+        className="relative w-full rounded-3xl overflow-hidden bg-card border border-border/40 shadow-sm transition-shadow duration-500 hover:shadow-xl hover:border-primary/30 aspect-[4/5] sm:aspect-[3/4] cursor-default"
       >
         
         {/* Background Gradient */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${member.gradient} opacity-10 group-hover:opacity-40 transition-opacity duration-700 ease-in-out pointer-events-none`} />
+        <motion.div 
+          variants={{ rest: { opacity: 0.1 }, hover: { opacity: 0.4 } }}
+          transition={{ duration: 0.5, ease: "easeInOut" }}
+          className={`absolute inset-0 bg-gradient-to-br ${member.gradient} z-0 pointer-events-none`} 
+        />
         
         {/* Abstract Texture Overlay */}
-        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] z-0 pointer-events-none" />
 
         {/* AI Avatar */}
-        <div className={`relative w-full flex-1 min-h-[16rem] overflow-hidden bg-muted/10`}>
-          <Image 
-            src={member.avatar} 
-            alt={t(`members.${member.keyName}`)} 
-            fill
-            className="object-cover object-top opacity-90 group-hover:scale-110 group-hover:rotate-1 group-hover:opacity-100 transition-all duration-[2000ms] ease-out"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+        <div className="absolute inset-0 w-full h-full overflow-hidden bg-muted/10 z-0">
+          <motion.div
+            variants={{ rest: { opacity: 0.9 }, hover: { opacity: 1 } }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="w-full h-full"
+          >
+            <Image 
+              src={member.avatar} 
+              alt={t(`members.${member.keyName}`)} 
+              fill
+              className="object-cover object-top"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </motion.div>
         </div>
 
         {/* Info & Social Panel */}
-        <div className="relative p-5 flex flex-col gap-4 border-t border-border/30 bg-card/80 backdrop-blur-md z-10">
+        <motion.div 
+          variants={{ rest: { y: 0 }, hover: { y: "101%" } }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }} // Buttery smooth custom easing
+          className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-4 border-t border-border/30 bg-card/95 z-10 will-change-transform"
+        >
           <div className="text-center">
-            <h3 className={`font-bold text-foreground mb-1 tracking-tight leading-tight ${isLarge ? 'text-2xl' : 'text-xl'}`}>
-              {t(`members.${member.keyName}`)}
+            <h3 className={`font-bold text-foreground mb-1 tracking-tight leading-tight h-[3.5rem] flex items-center justify-center ${isLarge ? 'text-2xl' : 'text-xl'}`}>
+              <span className="line-clamp-2">{t(`members.${member.keyName}`)}</span>
             </h3>
             <p className="text-sm font-medium text-primary/80">
               {t(`roles.${member.roleKey}`)}
@@ -97,7 +123,7 @@ function MemberCard({ member, isLarge = false }: { member: TeamMember, isLarge?:
               href={`https://github.com/${member.github}`} 
               target="_blank" 
               rel="noreferrer" 
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-500"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-300"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -118,19 +144,18 @@ function MemberCard({ member, isLarge = false }: { member: TeamMember, isLarge?:
             </a>
             <a 
               href={`mailto:${member.email}`} 
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-500"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-background/60 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-all duration-300"
             >
               <Mail className="size-4" />
               <span className="text-xs font-semibold">Email</span>
             </a>
           </div>
-        </div>
+        </motion.div>
 
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
-
 export function TeamClient() {
   const t = useTranslations("Team");
   const locale = useLocale();
