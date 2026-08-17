@@ -103,7 +103,7 @@ const SERVICE_MODES = {
   preferences:   'inherit',  // 🔴 Fake  — تنظیمات در localStorage ذخیره می‌شوند
 
   // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
-  commodities:   'inherit',  // 🟡 Inherit — قیمت‌ها از Yahoo Finance (Next.js API route)
+  commodities:   'real',     // 🟢 REAL   — قیمت‌ها از TGJU (Next.js API route)
   exchangeRates: 'real',     // 🟢 REAL   — نرخ ارز زنده از TGJU، همیشه واقعی
   aparat:        'real',     // 🟢 REAL   — ویدیوهای آپارات، همیشه واقعی
 } as const satisfies Record<string, 'fake' | 'real' | 'inherit'>;
