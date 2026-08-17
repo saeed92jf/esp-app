@@ -22,6 +22,7 @@ export function VideoCard({ video, isActive, onClick }: VideoCardProps) {
   const [hasError, setHasError] = useState(false);
   const poster = video.small_poster || video.big_poster;
   const showImage = poster && !hasError;
+  const t = useTranslations("Aparat");
   const tr = useTranslations("Aparat.time");
 
   // اعمال فرمت زمان به همراه sdate

@@ -29,7 +29,7 @@ export interface CalendarEvent {
   id: string;
   title: string;
   date: string;
-  type: 'meeting' | 'deadline' | 'review' | 'event';
+  type: 'meeting' | 'deadline' | 'review' | 'event' | 'birthday' | 'official' | 'fair';
 }
 
 export interface ChecklistItem {

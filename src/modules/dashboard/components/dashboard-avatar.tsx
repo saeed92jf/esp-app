@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Upload, X } from 'lucide-react';
@@ -23,6 +23,7 @@ const PREDEFINED_AVATARS = [
 
 export function DashboardAvatar() {
   const locale = useLocale();
+  const t = useTranslations('Dashboard');
   const { user, updateAvatar } = useAuth();
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
   const [open, setOpen] = React.useState(false);

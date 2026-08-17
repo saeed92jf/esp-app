@@ -1,6 +1,7 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import { BadgeCheck, Clapperboard, Calendar, Eye, Users } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ChannelInfoBarProps {
   name: string;
@@ -29,6 +30,7 @@ export function ChannelInfoBar({
   searchNode,
   className,
 }: ChannelInfoBarProps) {
+  const t = useTranslations("Aparat");
   const initials = name
     .split(" ")
     .slice(0, 2)
