@@ -71,8 +71,7 @@
         "event": "رویداد",
         "official": "مناسبت‌های رسمی",
         "fair": "نمایشگاه‌ها",
-        "company_event": "رویداد شرکتی",
-        "birthday": "تولد"
+        "company_event": "رویداد شرکتی"
       },
       "filters": {
         "past": "رویدادهای گذشته",

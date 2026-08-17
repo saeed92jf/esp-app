@@ -7,8 +7,8 @@ import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Cake, Plus, ChevronDown } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
+import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Plus, ChevronDown } from "lucide-react";
 
 const TYPE_ICONS = {
   meeting: Users,
@@ -18,7 +18,6 @@ const TYPE_ICONS = {
   official: Flag,
   fair: Store,
   company_event: PartyPopper,
-  birthday: Cake,
 } as const;
 
 const TYPE_COLORS = {
@@ -29,7 +28,6 @@ const TYPE_COLORS = {
   official: "text-purple-500 bg-purple-500/10 dark:bg-purple-500/20",
   fair: "text-cyan-500 bg-cyan-500/10 dark:bg-cyan-500/20",
   company_event: "text-indigo-500 bg-indigo-500/10 dark:bg-indigo-500/20",
-  birthday: "text-pink-500 bg-pink-500/10 dark:bg-pink-500/20",
 } as const;
 
 const TYPE_DOT_COLORS = {
@@ -40,7 +38,6 @@ const TYPE_DOT_COLORS = {
   official: "bg-purple-500",
   fair: "bg-cyan-500",
   company_event: "bg-indigo-500",
-  birthday: "bg-pink-500",
 } as const;
 
 const SOLID_COLORS = {
@@ -51,7 +48,6 @@ const SOLID_COLORS = {
   official: "bg-purple-500 text-white",
   fair: "bg-cyan-500 text-white",
   company_event: "bg-indigo-500 text-white",
-  birthday: "bg-pink-500 text-white",
 } as const;
 
 export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
@@ -147,8 +143,6 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
     // Find unique types for this day
     const typesOnDay = new Set<keyof typeof TYPE_DOT_COLORS>();
     localEvents.forEach(e => {
-      // Do not show badges for birthdays
-      if (e.type === "birthday") return;
       
       const [ey, em, ed] = e.date.split("-").map(Number);
       if (ey === gy && em === gm && ed === gd) {
@@ -181,6 +175,20 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
     setLocalEvents(prev => [...prev, newEvent]);
     setNewEventTitle("");
   };
+
+  
+  const eventTypeOptions = React.useMemo(() => [
+    { value: "event", label: t("types.event") },
+    { value: "official", label: t("types.official") },
+    { value: "fair", label: t("types.fair") },
+    { value: "meeting", label: t("types.meeting") },
+    { value: "company_event", label: t("types.company_event") },
+  ], [t]);
+
+  const filterTypeOptions = React.useMemo(() => [
+    { value: "all", label: t("views.all") },
+    ...eventTypeOptions
+  ], [t, eventTypeOptions]);
 
   return (
     <div className="bg-transparent p-4 @sm:p-5 flex flex-col gap-3 @sm:gap-4 h-full">
@@ -231,19 +239,13 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
                 className="h-9 text-xs border-transparent bg-background shadow-sm hover:border-border focus-visible:ring-1 focus-visible:ring-primary rtl:text-right"
               />
               <div className="flex gap-2">
-                <Select value={newEventType} onValueChange={setNewEventType}>
-                  <SelectTrigger className="h-9 flex-1 text-xs border-transparent bg-background shadow-sm hover:border-border rtl:text-right" dir="rtl">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="z-[9999]" dir="rtl">
-                    <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
-                    <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
-                    <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
-                    <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
-                    <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
-                    <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Combobox 
+                  options={eventTypeOptions}
+                  value={newEventType}
+                  onChange={(val) => setNewEventType(val || "event")}
+                  className="h-9 flex-1 text-xs rtl:text-right"
+                  showSearch={false}
+                />
                 <Button type="submit" variant="default" className="h-9 text-xs px-4 shadow-sm">
                   {t("add")}
                 </Button>
@@ -273,20 +275,13 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
 
       {/* Type Filter (Secondary Tabs) */}
       <div className="px-1 pb-1 pt-1">
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm rtl:text-right" dir="rtl">
-            <SelectValue placeholder={t("views.all")} />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]" dir="rtl">
-            <SelectItem value="all" className="rtl:text-right rtl:justify-end">{t("views.all")}</SelectItem>
-            <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
-            <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
-            <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
-            <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
-            <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
-            <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
-          </SelectContent>
-        </Select>
+        <Combobox 
+          options={filterTypeOptions}
+          value={typeFilter}
+          onChange={(val) => setTypeFilter(val || "all")}
+          className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm rtl:text-right"
+          showSearch={false}
+        />
       </div>
 
       {/* Events list */}

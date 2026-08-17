@@ -69,8 +69,7 @@
         "event": "Event",
         "official": "Official Holiday",
         "fair": "Exhibition",
-        "company_event": "Company Event",
-        "birthday": "Employee Birthday"
+        "company_event": "Company Event"
       },
       "filters": {
         "past": "Past Events",
