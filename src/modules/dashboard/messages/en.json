@@ -126,7 +126,8 @@
         "metals": "Precious Metals",
         "energy": "Energy",
         "forex": "Forex",
-        "crypto": "Crypto"
+        "crypto": "Crypto",
+        "agriculture": "Agriculture"
       },
       "unitCurrency": "USD / Currency",
       "rial": "IRR",
@@ -159,7 +160,21 @@
         "g": "Gram",
         "kg": "Kilogram",
         "ton": "Ton"
-      }
+      },
+      "geram18": "Gold 18k",
+      "mesghal": "Gold Mesghal",
+      "sekee": "Emami Coin",
+      "sekeb": "Azadi Coin",
+      "nim": "Half Coin",
+      "rob": "Quarter Coin",
+      "gasoline": "Gasoline",
+      "cocoa": "Cocoa",
+      "coffee": "Coffee",
+      "cotton": "Cotton",
+      "unitMesghal": "Mesghal",
+      "unitPiece": "Piece",
+      "unitGal": "USD / Gal",
+      "unitLb": "Cent / Lb"
     }
   }
 }

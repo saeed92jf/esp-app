@@ -14,12 +14,18 @@ import { Combobox } from '@/components/ui/combobox';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CATEGORIES = ['metals', 'energy', 'forex', 'crypto'] as const;
+const CATEGORIES = ['metals', 'energy', 'agriculture', 'forex', 'crypto'] as const;
 
 type WeightUnit = 'oz' | 'g' | 'kg' | 'ton';
 
 const UNITS: Record<string, string> = {
   gold: 'unitOz',
+  geram18: 'unitG',
+  mesghal: 'unitMesghal',
+  sekee: 'unitPiece',
+  sekeb: 'unitPiece',
+  nim: 'unitPiece',
+  rob: 'unitPiece',
   silver: 'unitOz',
   platinum: 'unitOz',
   palladium: 'unitOz',
@@ -30,6 +36,10 @@ const UNITS: Record<string, string> = {
   wti: 'unitBbl',
   brent: 'unitBbl',
   ng: 'unitMbtu',
+  gasoline: 'unitGal',
+  cocoa: 'unitTon',
+  coffee: 'unitLb',
+  cotton: 'unitLb',
   eur: 'unitCurrency',
   gbp: 'unitCurrency',
   cny: 'unitCurrency',
@@ -39,6 +49,8 @@ const UNITS: Record<string, string> = {
   eth: 'unitCurrency',
   usdt: 'unitCurrency',
 };
+
+const IRANIAN_METALS = ['geram18', 'mesghal', 'sekee', 'sekeb', 'nim', 'rob'];
 
 const formatPrice = (price: number) => {
   if (price > 1000) return price.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -134,7 +146,10 @@ export function CommoditiesWidget() {
     let price = item.price;
     let unitKey = UNITS[item.id] || 'unitOz';
     
-    if (activeCategory !== 'metals') return { price, unitKey };
+    // Do not apply conversions to non-metals or fixed-unit Iranian metals
+    if (activeCategory !== 'metals' || IRANIAN_METALS.includes(item.id)) {
+      return { price, unitKey };
+    }
 
     let pricePerGram = 0;
     let canConvert = false;
@@ -388,7 +403,7 @@ export function CommoditiesWidget() {
                         "text-sm font-semibold transition-colors duration-200",
                         hoveredId === item.id ? "text-primary" : "text-foreground"
                       )}>
-                        {activeCategory === 'metals' 
+                        {activeCategory === 'metals' && !IRANIAN_METALS.includes(item.id)
                           ? t('metalTitle', { unit: t(`unitNames.${weightUnit}`), metal: t(item.id) }) 
                           : t(item.id)}
                       </p>

@@ -3,6 +3,12 @@ import { NextResponse } from 'next/server';
 const TICKERS = [
   // Metals
   { id: 'gold', tgju: 'ons', category: 'metals' },
+  { id: 'geram18', tgju: 'geram18', category: 'metals', type: 'fiat' },
+  { id: 'mesghal', tgju: 'mesghal', category: 'metals', type: 'fiat' },
+  { id: 'sekee', tgju: 'sekee', category: 'metals', type: 'fiat' },
+  { id: 'sekeb', tgju: 'sekeb', category: 'metals', type: 'fiat' },
+  { id: 'nim', tgju: 'nim', category: 'metals', type: 'fiat' },
+  { id: 'rob', tgju: 'rob', category: 'metals', type: 'fiat' },
   { id: 'silver', tgju: 'silver', category: 'metals' },
   { id: 'platinum', tgju: 'platinum', category: 'metals' },
   { id: 'palladium', tgju: 'palladium', category: 'metals' },
@@ -13,6 +19,11 @@ const TICKERS = [
   { id: 'wti', tgju: 'oil', category: 'energy' },
   { id: 'brent', tgju: 'oil_brent', category: 'energy' },
   { id: 'ng', tgju: 'energy-natural-gas', category: 'energy' },
+  { id: 'gasoline', tgju: 'gasoline', category: 'energy' },
+  // Agriculture
+  { id: 'cocoa', tgju: 'cocoa', category: 'agriculture' },
+  { id: 'coffee', tgju: 'coffee', category: 'agriculture' },
+  { id: 'cotton', tgju: 'commodity-cotton', category: 'agriculture' },
   // Forex (fiat means TGJU returns it in RIAL, needs division by USD)
   { id: 'eur', tgju: 'price_eur', category: 'forex', type: 'fiat' },
   { id: 'gbp', tgju: 'price_gbp', category: 'forex', type: 'fiat' },
