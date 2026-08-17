@@ -31,19 +31,31 @@ export function DashboardHeader({
   setSidebarOpen,
 }: DashboardHeaderProps) {
   const locale = useLocale();
+  const [isScrolled, setIsScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
       <motion.header
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className="sticky top-0 z-50 flex items-center justify-between w-full mb-10 bg-background/60 backdrop-blur-md py-3"
+      className={cn(
+        "sticky top-0 z-50 flex items-center justify-between w-full mb-10 bg-background/60 backdrop-blur-md py-3 transition-shadow duration-300",
+        isScrolled ? "shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] border-b border-border/50" : ""
+      )}
     >
       <div className="flex items-center justify-start gap-0">
-        <div className="flex-shrink-0 origin-left rtl:origin-right mt-2 -mb-8 relative z-50">
+        <div className="flex-shrink-0 origin-left rtl:origin-right -mb-6 relative z-50">
           <DashboardAvatar />
         </div>
-        <div className="flex flex-col rtl:mr-4 ltr:ml-4 pt-4">
+        <div className="flex flex-col rtl:mr-4 ltr:ml-4 pt-1">
           <h1 className="fa-num font-bold tracking-tight text-lg leading-tight capitalize">
             {displayName}
           </h1>

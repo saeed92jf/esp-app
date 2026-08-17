@@ -89,10 +89,10 @@ export function DashboardAvatar() {
       <PopoverTrigger asChild>
         <button className="relative flex items-center justify-center p-1 rounded-full group cursor-pointer border-none bg-transparent outline-none ring-0">
           {/* Static rainbow border */}
-          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity translate-y-2 scale-110" />
+          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity scale-110" />
           
           {/* Avatar container */}
-          <div className="relative z-10 bg-background rounded-full p-[2px] translate-y-2 scale-110 shadow-md">
+          <div className="relative z-10 bg-background rounded-full p-[2px] scale-110 shadow-md">
             <Avatar className="size-16 sm:size-20 border-2 border-background">
               {avatarUrl ? (
                 <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
