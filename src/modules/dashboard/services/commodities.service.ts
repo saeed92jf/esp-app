@@ -12,15 +12,8 @@ export interface CommodityItem {
   error?: boolean;
 }
 
-export interface ExchangeRates {
-  cbi: number;
-  sana: number;
-  free: number;
-}
-
 export interface ICommoditiesService {
   getCommodities(): Promise<CommodityItem[]>;
-  getExchangeRates(): Promise<ExchangeRates>;
 }
 
 const FAKE_COMMODITIES: CommodityItem[] = [
@@ -50,11 +43,6 @@ export class FakeCommoditiesService implements ICommoditiesService {
     await wait(600);
     return FAKE_COMMODITIES;
   }
-
-  async getExchangeRates(): Promise<ExchangeRates> {
-    await wait(400);
-    return { cbi: 420000, sana: 450000, free: 600000 };
-  }
 }
 
 export class RealCommoditiesService implements ICommoditiesService {
@@ -64,12 +52,6 @@ export class RealCommoditiesService implements ICommoditiesService {
     // We are calling our internal Next.js API route to proxy Yahoo Finance
     const res = await fetch('/api/commodities', { next: { revalidate: 60 } });
     if (!res.ok) throw new Error('Failed to fetch commodities');
-    return res.json();
-  }
-
-  async getExchangeRates(): Promise<ExchangeRates> {
-    const res = await fetch('/api/exchange-rates', { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error('Failed to fetch exchange rates');
     return res.json();
   }
 }

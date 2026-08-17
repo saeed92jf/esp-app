@@ -11,30 +11,26 @@ export function useCommodities() {
     refetchInterval: 60000,
   });
 
+  // Exchange rates always use api.exchangeRates which is set to 'real' in SERVICE_MODES
+  // regardless of the global API_MODE — so it always hits TGJU live data
   const { data: exchangeRates, refetch: refetchRates } = useQuery({
     queryKey: ['exchange-rates'],
-    // Exchange rates always come from real TGJU API (third-party source),
-    // regardless of the app's fake/real API mode — same as AparatService.
-    queryFn: async () => {
-      const res = await fetch('/api/exchange-rates');
-      if (!res.ok) throw new Error('Failed to fetch exchange rates');
-      return res.json();
-    },
-    refetchInterval: 300000, // 5 minutes (matches the API cache)
+    queryFn: () => api.exchangeRates.getRates(),
+    refetchInterval: 300000, // 5 minutes
     staleTime: 60000,
   });
 
   const [irrMode, setIrrModeState] = useState<IrrMode>('free');
-  const [manualRate, setManualRateState] = useState<number>(600000);
+  const [manualRate, setManualRateState] = useState<number>(1869000);
 
   useEffect(() => {
     const savedMode = localStorage.getItem('irr-mode') as IrrMode;
     const savedManual = localStorage.getItem('usd-to-irr-rate');
-    
+
     if (savedMode && ['manual', 'cbi', 'sana', 'free'].includes(savedMode)) {
       setIrrModeState(savedMode);
     } else {
-      setIrrModeState('free'); // Default to free market
+      setIrrModeState('free');
       localStorage.setItem('irr-mode', 'free');
     }
 
@@ -59,9 +55,18 @@ export function useCommodities() {
     refetchRates();
   };
 
-  const getActiveRate = () => {
+  const getActiveRate = (): number => {
     if (irrMode === 'manual') return manualRate;
-    if (exchangeRates && exchangeRates[irrMode]) return exchangeRates[irrMode];
+    if (exchangeRates) {
+      const rateMap: Record<IrrMode, number | undefined> = {
+        free: exchangeRates.free,
+        sana: exchangeRates.sana,
+        cbi: exchangeRates.cbi,
+        manual: undefined,
+      };
+      const rate = rateMap[irrMode];
+      if (rate && rate > 0) return rate;
+    }
     return manualRate; // fallback
   };
 
@@ -71,13 +76,13 @@ export function useCommodities() {
     isLoading,
     error,
     refetch,
-    
+
     irrMode,
     setIrrMode,
-    
+
     manualRate,
     setManualRate,
 
-    activeRate: getActiveRate()
+    activeRate: getActiveRate(),
   };
 }
