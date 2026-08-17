@@ -13,11 +13,18 @@ export function useCommodities() {
 
   const { data: exchangeRates, refetch: refetchRates } = useQuery({
     queryKey: ['exchange-rates'],
-    queryFn: () => api.commodities.getExchangeRates(),
-    refetchInterval: 3600000, // 1 hour
+    // Exchange rates always come from real TGJU API (third-party source),
+    // regardless of the app's fake/real API mode — same as AparatService.
+    queryFn: async () => {
+      const res = await fetch('/api/exchange-rates');
+      if (!res.ok) throw new Error('Failed to fetch exchange rates');
+      return res.json();
+    },
+    refetchInterval: 300000, // 5 minutes (matches the API cache)
+    staleTime: 60000,
   });
 
-  const [irrMode, setIrrModeState] = useState<IrrMode>('manual');
+  const [irrMode, setIrrModeState] = useState<IrrMode>('free');
   const [manualRate, setManualRateState] = useState<number>(600000);
 
   useEffect(() => {
