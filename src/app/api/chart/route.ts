@@ -35,8 +35,7 @@ export async function GET(request: Request) {
     const chartPoints = timestamps.map((ts: number, i: number) => {
       const date = new Date(ts * 1000);
       return {
-        // use short date string for label e.g., "Aug 15"
-        labelKey: date.toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' }),
+        labelKey: date.toISOString(),
         value: Number(closes[i]?.toFixed(2) || 0)
       };
     }).filter((p: any) => p.value > 0);
