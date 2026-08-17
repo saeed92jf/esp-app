@@ -41,6 +41,7 @@ export interface ChecklistItem {
 
 export interface DashboardData {
   stats: StatCard[];
+
   chart: ChartPoint[];
   activities: ActivityItem[];
   calendarEvents: CalendarEvent[];
@@ -50,7 +51,7 @@ export interface DashboardData {
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IDashboardService {
-  getByRole(role: UserRole): Promise<DashboardData>;
+  getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData>;
 }
 
 // ─── Fake ─────────────────────────────────────────────────────────────────────
@@ -438,9 +439,46 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
 };
 
 export class FakeDashboardService implements IDashboardService {
-  async getByRole(role: UserRole): Promise<DashboardData> {
+  async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
     await wait(400);
-    return FAKE_DATA[role] ?? FAKE_DATA.customer;
+    const baseData = { ...(FAKE_DATA[role] ?? FAKE_DATA.customer) };
+
+    try {
+      // Fetch live stats
+      const cards = statCards || ['gold', 'gasoline', 'wti', 'sekee', 'eur', 'btc'];
+      const commRes = await fetch('/api/commodities');
+      if (commRes.ok) {
+        const commData = await commRes.json();
+        
+        baseData.stats = cards.map((id, index) => {
+          const item = commData.find((c: any) => c.id === id);
+          if (!item) return baseData.stats[index]; // fallback
+
+          return {
+            id: item.id,
+            labelKey: item.id,
+            value: Number(item.price).toLocaleString('en-US'),
+            delta: `${item.percentChange}%`,
+            trend: item.trend || 'neutral',
+            icon: item.category === 'forex' || item.category === 'crypto' ? 'wallet' : 'activity',
+          };
+        });
+      }
+
+      // Fetch live chart
+      const chartRes = await fetch(`/api/chart?source=${chartSource || 'wti'}`);
+      if (chartRes.ok) {
+        const chartData = await chartRes.json();
+        if (chartData && chartData.length > 0) {
+           baseData.chart = chartData;
+        }
+      }
+
+    } catch (e) {
+      console.error('Failed to fetch live dashboard stats', e);
+    }
+
+    return baseData;
   }
 }
 
@@ -449,9 +487,9 @@ export class FakeDashboardService implements IDashboardService {
 export class RealDashboardService implements IDashboardService {
   constructor(private http: HttpClient) {}
 
-  async getByRole(role: UserRole): Promise<DashboardData> {
+  async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
     return this.http.get<DashboardData>(`/dashboard`, {
-      params: { role },
+      params: { role, statCards: statCards?.join(','), chartSource },
       revalidate: 60, // ۱ دقیقه cache در Next.js
     });
   }

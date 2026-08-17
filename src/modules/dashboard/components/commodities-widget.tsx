@@ -420,7 +420,7 @@ export function CommoditiesWidget() {
                               iqd: 'iq', sar: 'sa', inr: 'in', kwd: 'kw'
                             }[item.id]}.png`} 
                             alt={item.id} 
-                            className="w-7 h-5 rounded-[3px] shadow-sm object-cover opacity-90 border border-black/5"
+                            className="w-8 h-6 rounded border border-border/50 shadow-md object-cover opacity-95 transition-transform hover:scale-105"
                           />
                         </div>
                       )}

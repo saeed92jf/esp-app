@@ -35,7 +35,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
   const t = useTranslations('Dashboard');
 
   const chartData = data.map((p) => ({
-    name: t(`months.${p.labelKey}`),
+    name: p.labelKey,
     value: p.value,
   }));
 

@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 import { DashboardAvatar } from "./dashboard-avatar";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { Link } from "@/i18n/navigation";
-import { Home, Menu, Calendar as CalendarIcon } from "lucide-react";
+import { Home, Menu, Calendar as CalendarIcon, Settings } from "lucide-react";
+import { DashboardSettingsModal } from "./dashboard-settings-modal";
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -32,6 +33,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const locale = useLocale();
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -76,6 +78,13 @@ export function DashboardHeader({
           <Home className="size-4" />
         </Link>
         <button
+          onClick={() => setSettingsOpen(true)}
+          className="flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-primary/10 hover:text-primary transition-all duration-200 p-1.5"
+          title="تنظیمات داشبورد"
+        >
+          <Settings className="size-4" />
+        </button>
+        <button
           onClick={() => setMenuSidebarOpen(!menuSidebarOpen)}
           className={cn(
             "flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-primary/10 hover:text-primary transition-all duration-200 p-1.5",
@@ -96,6 +105,7 @@ export function DashboardHeader({
           <CalendarIcon className="size-4" />
         </button>
       </div>
+      <DashboardSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </motion.header>
   );
 }

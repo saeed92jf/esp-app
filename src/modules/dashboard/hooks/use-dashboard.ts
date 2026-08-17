@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '@/services';
 import type { DashboardData } from '@/services';
 import type { UserRole } from '@/types/auth';
+import { useDashboardSettings } from '../store/use-dashboard-settings';
 
 interface UseDashboardResult {
   data: DashboardData | null;
@@ -20,6 +21,8 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
   const [refetchTick, setRefetchTick] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
+  const { statCards, chartSource } = useDashboardSettings();
+
   useEffect(() => {
     if (!role) {
       setLoading(false);
@@ -34,7 +37,7 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
     setError(null);
 
     api.dashboard
-      .getByRole(role)
+      .getByRole(role, statCards, chartSource)
       .then((result) => {
         if (!ac.signal.aborted) setData(result);
       })
@@ -47,8 +50,10 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
         if (!ac.signal.aborted) setLoading(false);
       });
 
-    return () => ac.abort();
-  }, [role, refetchTick]);
+    return () => {
+      ac.abort();
+    };
+  }, [role, refetchTick, statCards, chartSource]);
 
   return {
     data,
