@@ -233,16 +233,16 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
             />
             <div className="flex gap-2">
               <Select value={newEventType} onValueChange={setNewEventType}>
-                <SelectTrigger className="h-9 flex-1 text-xs">
+                <SelectTrigger className="h-9 flex-1 text-xs rtl:text-right" dir="rtl">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="z-[9999]">
-                  <SelectItem value="event">{t("types.event")}</SelectItem>
-                  <SelectItem value="official">{t("types.official")}</SelectItem>
-                  <SelectItem value="fair">{t("types.fair")}</SelectItem>
-                  <SelectItem value="meeting">{t("types.meeting")}</SelectItem>
-                  <SelectItem value="company_event">{t("types.company_event")}</SelectItem>
-                  <SelectItem value="birthday">{t("types.birthday")}</SelectItem>
+                <SelectContent className="z-[9999]" dir="rtl">
+                  <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
+                  <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
+                  <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
+                  <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
+                  <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
+                  <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
                 </SelectContent>
               </Select>
               <Button type="submit" variant="default" className="h-9">
@@ -274,46 +274,49 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       {/* Type Filter (Secondary Tabs) */}
       <div className="px-1 pb-1 pt-1">
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm">
+          <SelectTrigger className="h-8 text-xs font-semibold w-full bg-background border-border shadow-sm rtl:text-right" dir="rtl">
             <SelectValue placeholder={t("views.all")} />
           </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            <SelectItem value="all">{t("views.all")}</SelectItem>
-            <SelectItem value="official">{t("types.official")}</SelectItem>
-            <SelectItem value="fair">{t("types.fair")}</SelectItem>
-            <SelectItem value="company_event">{t("types.company_event")}</SelectItem>
-            <SelectItem value="birthday">{t("types.birthday")}</SelectItem>
-            <SelectItem value="meeting">{t("types.meeting")}</SelectItem>
-            <SelectItem value="event">{t("types.event")}</SelectItem>
+          <SelectContent className="z-[9999]" dir="rtl">
+            <SelectItem value="all" className="rtl:text-right rtl:justify-end">{t("views.all")}</SelectItem>
+            <SelectItem value="official" className="rtl:text-right rtl:justify-end">{t("types.official")}</SelectItem>
+            <SelectItem value="fair" className="rtl:text-right rtl:justify-end">{t("types.fair")}</SelectItem>
+            <SelectItem value="company_event" className="rtl:text-right rtl:justify-end">{t("types.company_event")}</SelectItem>
+            <SelectItem value="birthday" className="rtl:text-right rtl:justify-end">{t("types.birthday")}</SelectItem>
+            <SelectItem value="meeting" className="rtl:text-right rtl:justify-end">{t("types.meeting")}</SelectItem>
+            <SelectItem value="event" className="rtl:text-right rtl:justify-end">{t("types.event")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Events list */}
-      <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center px-2 mb-2 gap-2">
-        <span className="text-[11px] font-semibold text-muted-foreground shrink-0">
-          {t("eventsCount", { count: filteredEvents.length })}
-        </span>
-        <div className="flex flex-wrap items-center gap-1">
+      {/* Events list header */}
+      <div className="flex flex-col gap-2 px-2 mb-2">
+        {/* Time filters in one row */}
+        <div className="flex items-center justify-between gap-1 bg-muted/30 p-1 rounded-lg">
           <button 
             onClick={() => setTimeFilter("all")}
-            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "all" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
           >
             {t("filters.all")}
           </button>
           <button 
             onClick={() => setTimeFilter("past")}
-            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "past" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "past" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
           >
             {t("filters.past")}
           </button>
           <button 
             onClick={() => setTimeFilter("upcoming")}
-            className={cn("text-[10px] px-2 py-0.5 rounded-full transition-colors font-medium", timeFilter === "upcoming" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80")}
+            className={cn("flex-1 text-[10px] sm:text-xs py-1 rounded-md transition-colors font-medium text-center", timeFilter === "upcoming" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}
           >
             {t("filters.upcoming")}
           </button>
         </div>
+        {/* Count */}
+        <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">
+          {t("eventsCount", { count: filteredEvents.length })}
+        </span>
       </div>
       {filteredEvents.length > 0 ? (
         <ul className="space-y-1.5 flex-1 min-h-[250px] overflow-y-auto pr-1 pb-1 custom-scrollbar">
