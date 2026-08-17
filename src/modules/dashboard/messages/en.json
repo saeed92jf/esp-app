@@ -96,7 +96,8 @@
       "selectImage": "Select Profile Image",
       "uploadNew": "Upload New Image",
       "noImage": "No Image (Initials)",
-      "selectThis": "Select this avatar"
+      "selectThis": "Select this avatar",
+      "userProfile": "User Profile"
     }
   }
 }
