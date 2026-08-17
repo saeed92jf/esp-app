@@ -62,7 +62,7 @@ function parseTgjuRow(row: string[]) {
   if (!row) return null;
 
   const priceStr = row[0].replace(/,/g, '');
-  const price = parseFloat(priceStr);
+  let price = parseFloat(priceStr);
 
   const changeHtml = row[4] || '';
   const percentHtml = row[5] || '';
