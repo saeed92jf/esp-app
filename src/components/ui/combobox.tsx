@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface ComboboxOption { value: string; label: string; }
+export interface ComboboxOption { value: string; label: string; icon?: React.ReactNode; }
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
@@ -62,7 +62,10 @@ export function Combobox({
             className
           )}
         >
-          <span className="truncate">{selected ? selected.label : (value || resolvedPlaceholder)}</span>
+          <div className="flex items-center gap-2 truncate">
+            {selected?.icon && <span className="shrink-0 flex items-center justify-center">{selected.icon}</span>}
+            <span className="truncate">{selected ? selected.label : (value || resolvedPlaceholder)}</span>
+          </div>
           <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
             <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
           </span>
@@ -77,7 +80,10 @@ export function Combobox({
               {options.map((opt) => (
                 <CommandItem key={opt.value} value={opt.value} onSelect={(currentValue) => { onChange?.(currentValue === value ? "" : currentValue); setOpen(false); }} className="rtl:text-right w-full flex items-center">
                   <Check className={cn("ms-auto size-4 shrink-0", value === opt.value ? "opacity-100" : "opacity-0")} />
-                  <span className="flex-1 rtl:text-right">{opt.label}</span>
+                  <div className="flex-1 flex items-center gap-2 rtl:text-right">
+                    {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
+                    <span className="truncate">{opt.label}</span>
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>
