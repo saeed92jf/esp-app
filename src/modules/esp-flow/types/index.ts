@@ -51,6 +51,7 @@ export type DiagramNodeType =
   | 'mistEliminatorNode'
   | 'internalsNode'
   | 'projectDataNode'
+  | 'projectSettingsNode'
   | 'generalDataNode'
   | 'jacketNode'
   | 'regenVacuumSteamoutNode'

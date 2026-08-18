@@ -305,6 +305,14 @@ const PALETTE_ITEMS: PaletteItem[] = [
   // ── Weight calculation nodes (vessel-weight module) ─────────────────
   // Sub-group: Project
   {
+    type: "projectSettingsNode",
+    labelKey: "projectSettingsNode",
+    icon: "settings",
+    category: "weight",
+    subGroup: "project",
+    defaultData: { label: "Project Settings" },
+  },
+  {
     type: "projectDataNode",
     labelKey: "projectDataNode",
     icon: "projectData",
@@ -470,6 +478,7 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   internals: LayersIcon,
   projectData: ClipboardList,
   generalData: FileSliders,
+  settings: Settings,
   jacket: LayersIcon,
   regen: Flame,
   surfacePrep: Paintbrush,
@@ -522,6 +531,7 @@ const LABEL_FALLBACKS: Record<string, string> = {
   mistEliminatorNode: "Mist Eliminator",
   internalsNode: "Internals",
   projectDataNode: "Project Data",
+  projectSettingsNode: "Project Settings",
   generalDataNode: "General Data Body",
   jacketNode: "Jacket",
   regenVacuumSteamoutNode: "Regen / Vacuum / Steam Out",

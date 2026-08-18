@@ -127,6 +127,7 @@
       "mistEliminatorNode": "Mist Eliminator",
       "internalsNode": "Internals",
       "projectDataNode": "Project Data",
+      "projectSettingsNode": "Project Settings",
       "generalDataNode": "General Data Body",
       "jacketNode": "Jacket",
       "regenVacuumSteamoutNode": "Regen / Vacuum / Steam Out",
