@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -131,7 +132,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-2xl h-[85vh] sm:h-[700px] flex flex-col p-0 overflow-hidden">
         <DialogHeader className="px-6 py-4 border-b border-border shrink-0 bg-muted/30">
           <DialogTitle>{t("editorSettings.title")}</DialogTitle>
           <DialogDescription>
@@ -237,160 +238,148 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="weight" className="m-0 space-y-6">
-                  {/* Weight settings */}
-                  <div>
+                <TabsContent value="weight" className="m-0 flex flex-col h-full">
+                  {/* Weight settings Header */}
+                  <div className="mb-4">
                     <SectionTitle>
                       <span className="flex items-center gap-1.5">
                         <Scale className="h-3 w-3" />
                         {safeT(t, "editorSettings.weight_title", "Vessel Weight Calculations")}
                       </span>
                     </SectionTitle>
-                    <div className="space-y-1 mt-2">
-                      <Row label={safeT(t, "editorSettings.weight_enabled", "Enable weight aggregations")}>
-                        <Switch checked={settings.weightCalculationEnabled} onCheckedChange={(v) => set("weightCalculationEnabled", v)} />
-                      </Row>
-                      <Row label={safeT(t, "editorSettings.weight_system", "Measurement System")}>
-                        <ToggleGroup
-                          type="single"
-                          value={settings.weightSystem}
-                          onValueChange={(v) => { if (v) set("weightSystem", v as "metric" | "imperial"); }}
-                          className="justify-start bg-muted p-0.5 rounded-md"
-                        >
-                          <ToggleGroupItem value="metric" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
-                            {safeT(t, "editorSettings.weight_metric", "Metric (kg, mm)")}
-                          </ToggleGroupItem>
-                          <ToggleGroupItem value="imperial" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
-                            {safeT(t, "editorSettings.weight_imperial", "Imperial (lbs, in)")}
-                          </ToggleGroupItem>
-                        </ToggleGroup>
-                      </Row>
-                    </div>
+                  </div>
 
+                  <Accordion type="single" collapsible className="w-full border-t border-border">
                     {/* Job-Specific Parameters */}
-                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
-                      <SectionTitle>
-                        <span className="flex items-center gap-1.5">
-                          <Settings2 className="h-3.5 w-3.5 text-primary" />
+                    <AccordionItem value="job-params" className="border-b border-border/50">
+                      <AccordionTrigger className="hover:no-underline py-4 px-1 text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <Settings2 className="h-4 w-4 text-primary" />
                           {safeT(t, "editorSettings.jobSpecificParams", "Job-Specific Parameters")}
-                        </span>
-                      </SectionTitle>
-                      <div className="space-y-2 mt-4">
-                        <Row label={safeT(t, "editorSettings.roundThicknessToNominal", "Round Thickness to Nearest Nominal Size")}>
-                          <Switch checked={settings.roundThicknessToNominal} onCheckedChange={(v) => set("roundThicknessToNominal", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.increaseBlindFlangeThickness", "Increase Blind Flange Thickness for Reinforcement")}>
-                          <Switch checked={settings.increaseBlindFlangeThickness} onCheckedChange={(v) => set("increaseBlindFlangeThickness", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.printFlangeCalcsForExternalPressure", "Print Flange Calcs for External Pressure")}>
-                          <Switch checked={settings.printFlangeCalcsForExternalPressure} onCheckedChange={(v) => set("printFlangeCalcsForExternalPressure", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.noMDMTCalculations", "No MDMT Calculations")}>
-                          <Switch checked={settings.noMDMTCalculations} onCheckedChange={(v) => set("noMDMTCalculations", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.noMAWPCalculations", "No MAWP Calculations")}>
-                          <Switch checked={settings.noMAWPCalculations} onCheckedChange={(v) => set("noMAWPCalculations", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.metricInputImperialOutput", "Metric Input -> Imperial Output")}>
-                          <Switch checked={settings.metricInputImperialOutput} onCheckedChange={(v) => set("metricInputImperialOutput", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.useCommasInsteadOfDecimals", "Use Commas Instead of Decimals in Numbers")}>
-                          <Switch checked={settings.useCommasInsteadOfDecimals} onCheckedChange={(v) => set("useCommasInsteadOfDecimals", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.allowableTowerDeflection", "Allowable Tower Deflection")}>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              className="h-7 w-20 text-center px-2 py-0 border-primary"
-                              value={settings.allowableTowerDeflection}
-                              onChange={(e) => set("allowableTowerDeflection", parseFloat(e.target.value) || 0)}
-                            />
-                            <span className="text-[11px] text-muted-foreground">{safeT(t, "editorSettings.in_100ft", "in./100ft.")}</span>
-                          </div>
-                        </Row>
-                      </div>
-                    </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 px-1">
+                        <div className="space-y-2">
+                          <Row label={safeT(t, "editorSettings.roundThicknessToNominal", "Round Thickness to Nearest Nominal Size")}>
+                            <Switch checked={settings.roundThicknessToNominal} onCheckedChange={(v) => set("roundThicknessToNominal", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.increaseBlindFlangeThickness", "Increase Blind Flange Thickness for Reinforcement")}>
+                            <Switch checked={settings.increaseBlindFlangeThickness} onCheckedChange={(v) => set("increaseBlindFlangeThickness", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.printFlangeCalcsForExternalPressure", "Print Flange Calcs for External Pressure")}>
+                            <Switch checked={settings.printFlangeCalcsForExternalPressure} onCheckedChange={(v) => set("printFlangeCalcsForExternalPressure", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.noMDMTCalculations", "No MDMT Calculations")}>
+                            <Switch checked={settings.noMDMTCalculations} onCheckedChange={(v) => set("noMDMTCalculations", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.noMAWPCalculations", "No MAWP Calculations")}>
+                            <Switch checked={settings.noMAWPCalculations} onCheckedChange={(v) => set("noMAWPCalculations", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.metricInputImperialOutput", "Metric Input -> Imperial Output")}>
+                            <Switch checked={settings.metricInputImperialOutput} onCheckedChange={(v) => set("metricInputImperialOutput", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.useCommasInsteadOfDecimals", "Use Commas Instead of Decimals in Numbers")}>
+                            <Switch checked={settings.useCommasInsteadOfDecimals} onCheckedChange={(v) => set("useCommasInsteadOfDecimals", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.allowableTowerDeflection", "Allowable Tower Deflection")}>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                className="h-7 w-20 text-center px-2 py-0 border-primary"
+                                value={settings.allowableTowerDeflection}
+                                onChange={(e) => set("allowableTowerDeflection", parseFloat(e.target.value) || 0)}
+                              />
+                              <span className="text-[11px] text-muted-foreground">{safeT(t, "editorSettings.in_100ft", "in./100ft.")}</span>
+                            </div>
+                          </Row>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
                     {/* Nozzle Analysis Directives */}
-                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
-                      <SectionTitle>
-                        <span className="flex items-center gap-1.5">
-                          <Target className="h-3.5 w-3.5 text-primary" />
+                    <AccordionItem value="nozzle-analysis" className="border-b border-border/50">
+                      <AccordionTrigger className="hover:no-underline py-4 px-1 text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <Target className="h-4 w-4 text-primary" />
                           {safeT(t, "editorSettings.nozzleAnalysisDirectives", "Nozzle Analysis Directives")}
-                        </span>
-                      </SectionTitle>
-                      <div className="space-y-2 mt-4">
-                        <Row label={safeT(t, "editorSettings.noCorrosionOnInsideWelds", "No Corrosion on Inside Welds")}>
-                          <Switch checked={settings.noCorrosionOnInsideWelds} onCheckedChange={(v) => set("noCorrosionOnInsideWelds", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.computeIncreasedNozzleThickness", "Compute Increased Nozzle Thickness")}>
-                          <Switch checked={settings.computeIncreasedNozzleThickness} onCheckedChange={(v) => set("computeIncreasedNozzleThickness", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.computeAndPrintAreasForSmallNozzles", "Compute and Print Areas for Small Nozzles")}>
-                          <Switch checked={settings.computeAndPrintAreasForSmallNozzles} onCheckedChange={(v) => set("computeAndPrintAreasForSmallNozzles", v)} />
-                        </Row>
-                      </div>
-                    </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 px-1">
+                        <div className="space-y-2">
+                          <Row label={safeT(t, "editorSettings.noCorrosionOnInsideWelds", "No Corrosion on Inside Welds")}>
+                            <Switch checked={settings.noCorrosionOnInsideWelds} onCheckedChange={(v) => set("noCorrosionOnInsideWelds", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.computeIncreasedNozzleThickness", "Compute Increased Nozzle Thickness")}>
+                            <Switch checked={settings.computeIncreasedNozzleThickness} onCheckedChange={(v) => set("computeIncreasedNozzleThickness", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.computeAndPrintAreasForSmallNozzles", "Compute and Print Areas for Small Nozzles")}>
+                            <Switch checked={settings.computeAndPrintAreasForSmallNozzles} onCheckedChange={(v) => set("computeAndPrintAreasForSmallNozzles", v)} />
+                          </Row>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
                     {/* ASME Directives */}
-                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
-                      <SectionTitle>
-                        <span className="flex items-center gap-1.5">
-                          <BookOpen className="h-3.5 w-3.5 text-primary" />
+                    <AccordionItem value="asme-directives" className="border-b border-border/50">
+                      <AccordionTrigger className="hover:no-underline py-4 px-1 text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-primary" />
                           {safeT(t, "editorSettings.asmeDirectives", "ASME Directives")}
-                        </span>
-                      </SectionTitle>
-                      <div className="space-y-2 mt-4">
-                        <Row label={safeT(t, "editorSettings.useVesselMawpToComputeMdmt", "Use the Vessel MAWP to Compute the MDMT")}>
-                          <Switch checked={settings.useVesselMawpToComputeMdmt} onCheckedChange={(v) => set("useVesselMawpToComputeMdmt", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.doNotUseNozzleMdmtInterpretation", "Do Not Use Nozzle MDMT Interpretation VIII-1-01-37")}>
-                          <Switch checked={settings.doNotUseNozzleMdmtInterpretation} onCheckedChange={(v) => set("doNotUseNozzleMdmtInterpretation", v)} />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.asmeMdmtOption", "ASME VIII-1 MDMT Option")}>
-                          <Combobox
-                            value={settings.asmeMdmtOption}
-                            onChange={(v) => { if (v) set("asmeMdmtOption", v); }}
-                            options={[
-                              { value: "Use Graphs (Fig. UCS-66)", label: safeT(t, "editorSettings.asmeMdmt_useGraphs", "Use Graphs (Fig. UCS-66)") },
-                            ]}
-                            className="w-56"
-                            showSearch={false}
-                          />
-                        </Row>
-                        <Row label={safeT(t, "editorSettings.asmeCodeEdition", "ASME Code Edition")}>
-                          <Combobox
-                            value={settings.asmeCodeEdition}
-                            onChange={(v) => { if (v) set("asmeCodeEdition", v); }}
-                            options={[
-                              { value: "Current", label: safeT(t, "editorSettings.asmeCode_current", "Current") },
-                            ]}
-                            className="w-56"
-                            showSearch={false}
-                          />
-                        </Row>
-                      </div>
-                    </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-4 px-1">
+                        <div className="space-y-2">
+                          <Row label={safeT(t, "editorSettings.useVesselMawpToComputeMdmt", "Use the Vessel MAWP to Compute the MDMT")}>
+                            <Switch checked={settings.useVesselMawpToComputeMdmt} onCheckedChange={(v) => set("useVesselMawpToComputeMdmt", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.doNotUseNozzleMdmtInterpretation", "Do Not Use Nozzle MDMT Interpretation VIII-1-01-37")}>
+                            <Switch checked={settings.doNotUseNozzleMdmtInterpretation} onCheckedChange={(v) => set("doNotUseNozzleMdmtInterpretation", v)} />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.asmeMdmtOption", "ASME VIII-1 MDMT Option")}>
+                            <Combobox
+                              value={settings.asmeMdmtOption}
+                              onChange={(v) => { if (v) set("asmeMdmtOption", v); }}
+                              options={[
+                                { value: "Use Graphs (Fig. UCS-66)", label: safeT(t, "editorSettings.asmeMdmt_useGraphs", "Use Graphs (Fig. UCS-66)") },
+                              ]}
+                              className="w-56"
+                              showSearch={false}
+                            />
+                          </Row>
+                          <Row label={safeT(t, "editorSettings.asmeCodeEdition", "ASME Code Edition")}>
+                            <Combobox
+                              value={settings.asmeCodeEdition}
+                              onChange={(v) => { if (v) set("asmeCodeEdition", v); }}
+                              options={[
+                                { value: "Current", label: safeT(t, "editorSettings.asmeCode_current", "Current") },
+                              ]}
+                              className="w-56"
+                              showSearch={false}
+                            />
+                          </Row>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
 
-                    {/* Export Section */}
-                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
-                      <SectionTitle>
-                        <span className="flex items-center gap-1.5">
-                          <FileDown className="h-3.5 w-3.5 text-primary" />
-                          {safeT(t, "editorSettings.exportDataSheet", "Export Data Sheet")}
-                        </span>
-                      </SectionTitle>
-                      <div className="space-y-4 mt-4">
-                        <Button
-                          variant="default"
-                          className="w-full sm:w-auto"
-                          disabled={isGeneratingPdf}
-                          onClick={handleGeneratePdf}
-                        >
-                          <FileDown className="mr-2 h-4 w-4" />
-                          {isGeneratingPdf ? '...' : safeT(t, "editorSettings.generatePdf", "Generate PDF Report")}
-                        </Button>
-                      </div>
+                  {/* Export Section */}
+                  <div className="mt-8 border-t border-border/50 pt-6">
+                    <SectionTitle>
+                      <span className="flex items-center gap-1.5">
+                        <FileDown className="h-3.5 w-3.5 text-primary" />
+                        {safeT(t, "editorSettings.exportDataSheet", "Export Data Sheet")}
+                      </span>
+                    </SectionTitle>
+                    <div className="mt-4">
+                      <Button
+                        variant="default"
+                        className="w-full sm:w-auto"
+                        disabled={isGeneratingPdf}
+                        onClick={handleGeneratePdf}
+                      >
+                        <FileDown className="mr-2 h-4 w-4" />
+                        {isGeneratingPdf ? '...' : safeT(t, "editorSettings.generatePdf", "Generate PDF Report")}
+                      </Button>
                     </div>
                   </div>
                 </TabsContent>
