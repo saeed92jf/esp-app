@@ -159,7 +159,7 @@ export function PhoneInput({
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
           placeholder={resolvedPlaceholder}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground text-left fa-num"
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-medium px-2 placeholder:text-muted-foreground/50 text-foreground text-left fa-num"
           dir="ltr"
         />
         {isValid && (

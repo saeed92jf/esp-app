@@ -60,7 +60,7 @@ export function Combobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "group w-full justify-between px-2.5 font-normal bg-white dark:bg-black hover:bg-muted/40 transition-colors",
+            "group w-full justify-between px-2.5 font-medium bg-white dark:bg-black hover:bg-muted/40 transition-colors",
             "rtl:text-right",
             className
           )}

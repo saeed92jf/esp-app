@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -130,10 +130,12 @@ function EmailField({
   value,
   onChange,
   errorText,
+  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   errorText: string;
+  placeholder?: string;
 }) {
   const [touched, setTouched] = useState(false);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -156,8 +158,8 @@ function EmailField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => setTouched(true)}
-          placeholder="contact@company.com"
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
+          placeholder={placeholder || "contact@company.com"}
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-medium placeholder:text-muted-foreground text-foreground"
         />
         {isValid && (
           <CheckCircle2 className="size-3.5 shrink-0 text-form-primary" />
@@ -206,7 +208,7 @@ function FileUploadField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Select document / spec file..."
-        className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
+        className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-medium placeholder:text-muted-foreground text-foreground"
       />
       <Button
         type="button"
@@ -224,6 +226,7 @@ function FileUploadField({
 
 // ─── Main Node Component ────────────────────────────────────────────────────
 export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
+  const t = useTranslations("Flow.nodes.projectDataNode");
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
   const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);
@@ -349,8 +352,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.indentNumber || ""}
                 onChange={(e) => patch({ indentNumber: e.target.value })}
-                placeholder="IND-001"
-                className="h-7 text-xs bg-white dark:bg-black font-semibold w-full min-w-0"
+                placeholder={t("placeholders.indentNo")}
+                className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
               />
             </div>
             <div className="col-span-6 space-y-1 min-w-0">
@@ -373,8 +376,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.quotationNo || ""}
                 onChange={(e) => patch({ quotationNo: e.target.value })}
-                placeholder="QT-2026-001"
-                className="h-7 text-xs bg-white dark:bg-black font-sans w-full min-w-0"
+                placeholder={t("placeholders.quotationNo")}
+                className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
               />
             </div>
             <div className="col-span-4 space-y-1 min-w-0">
@@ -382,8 +385,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.rev || ""}
                 onChange={(e) => patch({ rev: e.target.value })}
-                placeholder="0"
-                className="h-7 text-xs bg-white dark:bg-black font-sans text-center w-full min-w-0"
+                placeholder={t("placeholders.rev")}
+                className="h-7 text-xs font-medium bg-white dark:bg-black text-center w-full min-w-0 shadow-none"
               />
             </div>
           </div>
@@ -398,8 +401,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={CUSTOMER_OPTIONS}
                     value={pd.customer || ""}
                     onChange={(v) => patch({ customer: v })}
-                    placeholder="Select customer"
-                    className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                    placeholder={t("placeholders.customer")}
+                    className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
               </div>
@@ -410,8 +413,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={END_USER_OPTIONS}
                     value={pd.endUser || ""}
                     onChange={(v) => patch({ endUser: v })}
-                    placeholder="Select end user"
-                    className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                    placeholder={t("placeholders.endUser")}
+                    className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
               </div>
@@ -424,8 +427,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   options={PLANT_OPTIONS}
                   value={pd.plantProduction || ""}
                   onChange={(v) => patch({ plantProduction: v })}
-                  placeholder="Select plant"
-                  className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                  placeholder={t("placeholders.plant")}
+                  className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                 />
               </div>
             </div>
@@ -437,8 +440,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   type="text"
                   value={pd.projectTitle || ""}
                   onChange={(e) => patch({ projectTitle: e.target.value })}
-                  placeholder="Project title..."
-                  className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
+                  placeholder={t("placeholders.title")}
+                  className="h-full text-xs font-medium flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
                 />
                 <TooltipProvider delayDuration={200}>
                   <Tooltip>
@@ -481,8 +484,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={GENDER_OPTIONS}
                     value={pd.gender || "MR"}
                     onChange={(v) => patch({ gender: v })}
-                    placeholder="Title"
-                    className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                    placeholder={t("placeholders.preparedByTitle")}
+                    className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
               </div>
@@ -491,8 +494,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 <Input
                   value={pd.contactPerson || ""}
                   onChange={(e) => patch({ contactPerson: e.target.value })}
-                  placeholder="Full name"
-                  className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
+                  placeholder={t("placeholders.preparedByName")}
+                  className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                 />
               </div>
             </div>
@@ -585,8 +588,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         options={EQUIPMENT_TYPE_OPTIONS}
                         value={draftType}
                         onChange={(v) => setDraftType(v || "Vessel")}
-                        placeholder="Equipment Type"
-                        className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
+                        placeholder={t("placeholders.equipmentType")}
+                        className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                       />
                     </div>
                   </div>
@@ -598,8 +601,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         setDraftTag(e.target.value);
                         if (addError) setAddError(null);
                       }}
-                      placeholder="e.g. V-101"
-                      className="h-7 text-xs font-semibold bg-white dark:bg-black w-full min-w-0"
+                      placeholder={t("placeholders.tagNo")}
+                      className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                     />
                   </div>
                   <div className="col-span-3 space-y-1 min-w-0">
@@ -609,8 +612,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                       min={1}
                       value={draftQty}
                       onChange={(e) => setDraftQty(e.target.value)}
-                      placeholder="1"
-                      className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
+                      placeholder={t("placeholders.qty")}
+                      className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                     />
                   </div>
                 </div>
@@ -620,8 +623,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   <Textarea
                     value={draftDesc}
                     onChange={(e) => setDraftDesc(e.target.value)}
-                    placeholder="Description / Remarks..."
-                    className="min-h-[54px] text-xs resize-none bg-white dark:bg-black w-full min-w-0"
+                    placeholder={t("placeholders.description")}
+                    className="min-h-[54px] text-xs font-medium resize-none bg-white dark:bg-black w-full min-w-0 shadow-none"
                     rows={2}
                   />
                 </div>
