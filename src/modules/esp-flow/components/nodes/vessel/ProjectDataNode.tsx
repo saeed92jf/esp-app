@@ -653,7 +653,6 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   <PhoneField
                     value={pd.phoneNumber || ""}
                     onChange={(v) => patch({ phoneNumber: v })}
-                    placeholder="021 8888 8888"
                     errorText="Invalid phone number"
                   />
                 </div>
@@ -664,7 +663,6 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   <PhoneField
                     value={pd.mobileNumber || ""}
                     onChange={(v) => patch({ mobileNumber: v })}
-                    placeholder="0912 345 6789"
                     isMobile
                     errorText="Invalid mobile number"
                   />

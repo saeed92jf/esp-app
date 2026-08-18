@@ -71,13 +71,9 @@ export function validateMobile(countryCode: string, mobile: string): boolean {
   return validatePhone(countryCode, mobile);
 }
 
-// Remove leading zeros for country codes that typically drop the trunk prefix (0) internationally
+// Do not auto-remove zeros so that validation can catch them and show errors if needed
 export function cleanRawPhone(countryCode: string, input: string): string {
-  let raw = input.replace(/\D/g, "");
-  if (["IR", "GB", "DE", "AE", "TR"].includes(countryCode)) {
-    raw = raw.replace(/^0+/, "");
-  }
-  return raw;
+  return input.replace(/\D/g, "");
 }
 
 export function applyMask(raw: string, mask?: string): string {
