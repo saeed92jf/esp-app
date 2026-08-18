@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
+import { COUNTRIES, getCountryByCode, validatePhone, validateMobile } from "@/lib/countries";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Tooltip,
@@ -110,15 +111,17 @@ function ProjectDatePicker({
   };
 
   return (
-    <DatePicker
-      value={dateObj}
-      onChange={handleSelect}
-      placeholder={placeholder || "Select date"}
-      isJalali={isJalali}
-      onCalendarTypeChange={onToggleCalendar}
-      size="sm"
-      className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
-    />
+    <div className="w-full min-w-0 flex items-center h-7 rounded-lg transition-colors border-input hover:border-form-primary focus-within:border-form-primary">
+      <DatePicker
+        value={dateObj}
+        onChange={handleSelect}
+        placeholder={placeholder || "Select date"}
+        isJalali={isJalali}
+        onCalendarTypeChange={onToggleCalendar}
+        size="sm"
+        triggerClassName="h-7 text-xs w-full min-w-0 bg-white dark:bg-black rounded-lg border border-input focus-within:border-form-primary hover:border-form-primary shadow-none px-2 text-foreground"
+      />
+    </div>
   );
 }
 
@@ -184,30 +187,73 @@ function PhoneField({
 }) {
   const [touched, setTouched] = useState(false);
   const hasValue = Boolean(value && value.trim().length > 0);
-  const cleaned = value.replace(/[\s\-\(\)]/g, "");
-  const isValid = hasValue && cleaned.length >= 8;
+  
+  const [countryCode, setCountryCode] = useState("IR");
+  const [phoneRaw, setPhoneRaw] = useState(value);
+  
+  React.useEffect(() => {
+    if (value && value.includes(" ")) {
+      const parts = value.split(" ");
+      const maybeDialCode = parts[0];
+      const matchedCountry = COUNTRIES.find(c => c.dialCode === maybeDialCode);
+      if (matchedCountry) {
+        setCountryCode(matchedCountry.code);
+        setPhoneRaw(parts.slice(1).join(" "));
+      } else {
+        setPhoneRaw(value);
+      }
+    } else {
+      setPhoneRaw(value);
+    }
+  }, []);
+
+  const currentCountry = getCountryByCode(countryCode);
+
+  const isValid = hasValue && (isMobile ? validateMobile(countryCode, phoneRaw) : validatePhone(countryCode, phoneRaw));
   const isInvalid = touched && hasValue && !isValid;
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setPhoneRaw(raw);
+    onChange(`${currentCountry.dialCode} ${raw}`);
+  };
+
+  const handleCountryChange = (newCode: string) => {
+    setCountryCode(newCode);
+    const c = getCountryByCode(newCode);
+    onChange(`${c.dialCode} ${phoneRaw}`);
+  };
 
   return (
     <div className="space-y-0.5 w-full min-w-0">
       <div
-        className={`relative flex items-center h-7 w-full min-w-0 rounded-lg border bg-white dark:bg-black px-2 gap-1.5 transition-colors ${
+        className={`relative flex items-center h-7 w-full min-w-0 rounded-lg border bg-white dark:bg-black transition-colors ${
           isInvalid
             ? "border-destructive ring-1 ring-destructive"
             : "border-input focus-within:border-form-primary"
         }`}
       >
-        <Phone className="size-3.5 shrink-0 text-muted-foreground" />
+        <div className="h-full border-r border-border/50 flex items-center shrink-0">
+           <Combobox
+            options={COUNTRIES.map(c => ({ value: c.code, label: `${c.flag} ${c.dialCode}` }))}
+            value={countryCode}
+            onChange={handleCountryChange}
+            className="h-full border-0 shadow-none bg-transparent w-[75px] px-1 text-xs [&>button]:h-full [&>button]:px-1"
+            showSearch={true}
+          />
+        </div>
+        
         <input
           type="tel"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={phoneRaw}
+          onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
-          placeholder={placeholder || (isMobile ? "0912 345 6789" : "021 8888 8888")}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans placeholder:text-muted-foreground text-foreground"
+          placeholder={placeholder || currentCountry.mask || "000 000 0000"}
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground text-foreground rtl:text-right ltr:text-left"
+          dir="ltr"
         />
         {isValid && (
-          <CheckCircle2 className="size-3.5 shrink-0 text-form-primary" />
+          <CheckCircle2 className="size-3.5 shrink-0 text-form-primary mx-2" />
         )}
       </div>
       {isInvalid && (
