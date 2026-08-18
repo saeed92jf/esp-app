@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { COUNTRIES, getCountryByCode, validatePhone, validateMobile } from "@/lib/countries";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Tooltip,
