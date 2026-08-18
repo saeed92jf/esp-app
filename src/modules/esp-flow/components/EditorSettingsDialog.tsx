@@ -98,7 +98,10 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
         toast.error("Directory picker is not supported in this browser.");
       }
     } catch (err: any) {
-      if (err.name !== 'AbortError') console.error(err);
+      if (err.name !== 'AbortError') {
+        console.error(err);
+        toast.error("Failed to open folder picker. If you are in a preview panel, please open the app in a new browser tab.");
+      }
     }
   };
 
@@ -184,7 +187,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
+            <div className="h-full w-full overflow-y-auto">
               <div className="p-6">
                 <TabsContent value="general" className="m-0 space-y-6">
                   {/* Canvas */}
@@ -431,7 +434,7 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                   </div>
                 </TabsContent>
               </div>
-            </ScrollArea>
+            </div>
           </div>
         </Tabs>
       </DialogContent>
