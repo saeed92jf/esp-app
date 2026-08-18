@@ -20,7 +20,7 @@ import {
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
 
-import { COUNTRIES, getCountryByCode, validatePhone, validateMobile, cleanRawPhone, applyMask } from "@/lib/countries";
+import { COUNTRIES, getCountryByCode, validatePhone, validateMobile, cleanRawPhone, applyMask, toEnglishDigits, toPersianDigits } from "@/lib/countries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -202,7 +202,7 @@ function PhoneField({
         setCountryCode(matchedCountry.code);
         const rawPart = parts.slice(1).join(" ");
         const maskToUse = isMobile && matchedCountry.mobileMask ? matchedCountry.mobileMask : matchedCountry.mask;
-        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), maskToUse));
+        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), maskToUse, isFa));
       } else {
         setPhoneRaw(value);
       }
@@ -235,12 +235,12 @@ function PhoneField({
     }
 
     // 3. Apply the mask
-    const formatted = applyMask(rawDigits, maskToUse);
+    const formatted = applyMask(rawDigits, maskToUse, isFa);
     
     setPhoneRaw(formatted);
     
     if (formatted) {
-      onChange(`${currentCountry.dialCode} ${formatted}`);
+      onChange(`${currentCountry.dialCode} ${toEnglishDigits(formatted)}`);
     } else {
       onChange("");
     }
@@ -256,14 +256,14 @@ function PhoneField({
     if (maskToUse) {
       const maxDigits = maskToUse.replace(/\D/g, "").length;
       const truncated = rawDigits.slice(0, maxDigits);
-      finalFormatted = applyMask(truncated, maskToUse);
+      finalFormatted = applyMask(truncated, maskToUse, isFa);
     } else {
-      finalFormatted = rawDigits;
+      finalFormatted = isFa ? toPersianDigits(rawDigits) : rawDigits;
     }
     
     setPhoneRaw(finalFormatted);
     if (finalFormatted) {
-      onChange(`${c.dialCode} ${finalFormatted}`);
+      onChange(`${c.dialCode} ${toEnglishDigits(finalFormatted)}`);
     } else {
       onChange("");
     }
@@ -311,7 +311,7 @@ function PhoneField({
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
           placeholder={placeholder || (isMobile ? (currentCountry.exampleMobile || currentCountry.mobileMask || "000 000 0000") : (currentCountry.examplePhone || currentCountry.mask || "000 000 0000"))}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground rtl:text-right ltr:text-left"
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground rtl:text-right ltr:text-left fa-num"
           dir="ltr"
         />
         {isValid && (

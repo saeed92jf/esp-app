@@ -72,12 +72,28 @@ export function validateMobile(countryCode: string, mobile: string): boolean {
   return validatePhone(countryCode, mobile);
 }
 
-// Do not auto-remove zeros so that validation can catch them and show errors if needed
-export function cleanRawPhone(countryCode: string, input: string): string {
-  return input.replace(/\D/g, "");
+export function toEnglishDigits(str: string): string {
+  const persianDigits = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+  const arabicDigits  = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /٨/g, /٩/g];
+  
+  let result = str;
+  for (let i = 0; i < 10; i++) {
+    result = result.replace(persianDigits[i], i.toString()).replace(arabicDigits[i], i.toString());
+  }
+  return result;
 }
 
-export function applyMask(raw: string, mask?: string): string {
+export function toPersianDigits(str: string): string {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  return str.replace(/[0-9]/g, (w) => persianDigits[parseInt(w)]);
+}
+
+// Do not auto-remove zeros so that validation can catch them and show errors if needed
+export function cleanRawPhone(countryCode: string, input: string): string {
+  return toEnglishDigits(input).replace(/\D/g, "");
+}
+
+export function applyMask(raw: string, mask?: string, isFa: boolean = false): string {
   if (!mask || !raw) return raw;
   let formatted = "";
   let rawIndex = 0;
@@ -90,5 +106,5 @@ export function applyMask(raw: string, mask?: string): string {
       formatted += mask[i];
     }
   }
-  return formatted;
+  return isFa ? toPersianDigits(formatted) : formatted;
 }
