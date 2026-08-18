@@ -8,7 +8,7 @@ export function MTOPanel() {
   const nodes = useVesselWeightStore((s) => s.nodes);
 
   const mtoRows = nodes
-    .filter(n => !n.data?.excludeFromWeight && n.type !== 'vesselRootNode')
+    .filter(n => !n.data?.excludeFromWeight)
     .flatMap(n => {
       const d = n.data as any;
       let status = d.status || 'Preliminary';

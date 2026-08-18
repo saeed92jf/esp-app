@@ -42,7 +42,6 @@ export type DiagramNodeType =
   | 'imageNode'
   | 'svgNode'
   // ── Vessel-weight nodes (from vessel-weight module) ────────────────────
-  | 'vesselRootNode'
   | 'shellNode'
   | 'headNode'
   | 'nozzleNode'
@@ -204,9 +203,7 @@ export interface DiagramNodeData extends Record<string, unknown> {
   /** Degrees, 0-360. See components/nodes/RotateHandle.tsx. */
   rotation?: number;
 
-  // ── Vessel-weight node data (loosely typed; vessel modules own their schemas) ─
-  /** vesselRootNode: global vessel configuration object. */
-  vessel?: Record<string, unknown>;
+  // ── Vessel-weight node data (loosely typed; vessel modules own their schemas) ─vessel?: Record<string, unknown>;
   /** shellNode: array of shell course definitions. */
   courses?: Record<string, unknown>[];
   /** headNode: array of head definitions. */

@@ -74,7 +74,6 @@ export const SHAPE_DEFAULT_SIZE: Record<
   imageNode: { width: 220, height: 160 },
   svgNode: { width: 220, height: 160 },
   // ── Vessel-weight nodes ────────────────────────────────────────────────
-  vesselRootNode: { width: 320, height: 420 },
   shellNode: { width: 360, height: 500 },
   headNode: { width: 360, height: 540 },
   nozzleNode: { width: 380, height: 600 },

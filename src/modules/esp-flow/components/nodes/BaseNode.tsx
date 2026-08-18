@@ -58,7 +58,6 @@ import {
   type BeamShape,
 } from "../../utils/geometry";
 import {
-  VesselRootNodeWrapper,
   ShellNodeWrapper,
   HeadNodeWrapper,
   NozzleNodeWrapper,
@@ -2080,7 +2079,6 @@ export const nodeTypes = {
   imageNode: ImageNode,
   svgNode: ImageNode,
   // ── Vessel-weight nodes ─────────────────────────────────────────
-  vesselRootNode: VesselRootNodeWrapper,
   shellNode: ShellNodeWrapper,
   headNode: HeadNodeWrapper,
   nozzleNode: NozzleNodeWrapper,
@@ -2105,7 +2103,6 @@ export const DRAG_HANDLE_BY_TYPE: Partial<Record<DiagramNodeType, string>> = {
   excelNode: ".table-drag-handle",
   matrixNode: ".table-drag-handle",
   chartNode: ".table-drag-handle",
-  vesselRootNode: ".vessel-drag-handle",
   shellNode: ".vessel-drag-handle",
   headNode: ".vessel-drag-handle",
   nozzleNode: ".vessel-drag-handle",

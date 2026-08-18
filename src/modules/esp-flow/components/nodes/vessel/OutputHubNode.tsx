@@ -44,11 +44,7 @@ export const OutputHubNode = memo(({ id, data, selected }: Props) => {
       if (d.totalFabricatedWeight) fabricated += d.totalFabricatedWeight;
       if (d.rawWeight) raw += d.rawWeight;
       if (d.internalVolume) vol += d.internalVolume;
-      if (n.type === "vesselRootNode") {
-        const v = d.vessel as Record<string, number> | undefined;
-        if (v?.processFluidDensity_kg_m3) opDensity = v.processFluidDensity_kg_m3;
-        if (v?.testFluidDensity_kg_m3) testDensity = v.testFluidDensity_kg_m3;
-      }
+      
       if (n.type === "internalsNode" || n.type === "mistEliminatorNode") {
         if (d.calculatedWeight) internals += d.calculatedWeight;
       }
@@ -67,7 +63,7 @@ export const OutputHubNode = memo(({ id, data, selected }: Props) => {
 
   const handleExportCSV = () => {
     const mtoRows = nodes
-      .filter((n) => !n.data?.excludeFromWeight && n.type !== "vesselRootNode" && n.type !== "outputHubNode")
+      .filter((n) => !n.data?.excludeFromWeight && n.type !== "outputHubNode")
       .map((n) => {
         const d = n.data as any;
         const weight = d.calculatedWeight || d.totalFabricatedWeight || 0;

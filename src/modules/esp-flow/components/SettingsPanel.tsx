@@ -621,7 +621,6 @@ export function SettingsPanel() {
     const data = selectedNode.data;
     const isGroup = selectedNode.type === "groupNode";
     const isVesselNode = [
-      "vesselRootNode",
       "shellNode",
       "headNode",
       "nozzleNode",
@@ -655,7 +654,6 @@ export function SettingsPanel() {
       "excelNode",
       "matrixNode",
       "chartNode",
-      "vesselRootNode",
       "shellNode",
       "headNode",
       "nozzleNode",

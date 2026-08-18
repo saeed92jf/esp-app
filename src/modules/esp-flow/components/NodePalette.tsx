@@ -303,13 +303,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     defaultData: { label: "Beam section (Ix)", beamShape: "rectangle", colorToken: "blue" },
   },
   // ── Weight calculation nodes (vessel-weight module) ─────────────────
-  {
-    type: "vesselRootNode",
-    labelKey: "vesselRootNode",
-    icon: "vesselRoot",
-    category: "weight",
-    defaultData: { label: "Vessel Root" },
-  },
+
   {
     type: "shellNode",
     labelKey: "shellNode",
@@ -500,7 +494,6 @@ const LABEL_FALLBACKS: Record<string, string> = {
   imageNode: "Image",
   svgNode: "Image",
   // vessel-weight
-  vesselRootNode: "Vessel Root",
   shellNode: "Shell Section",
   headNode: "Head",
   nozzleNode: "Nozzle",

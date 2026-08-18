@@ -97,7 +97,7 @@ export const MtoReportNode = memo(({ id, data, selected }: Props) => {
     const items: MtoItem[] = [];
 
     nodes
-      .filter((n) => !n.data?.excludeFromWeight && n.type !== "vesselRootNode" && n.type !== "mtoNode")
+      .filter((n) => !n.data?.excludeFromWeight && n.type !== "mtoNode")
       .forEach((n) => {
         const d = n.data as any;
         const status = d.status || "Calculated";

@@ -15,7 +15,7 @@ export const OutputHubNode = memo(({ id, selected }: NodeProps) => {
   const handleExportCSV = () => {
     // Generate MTO Data
     const mtoRows = nodes
-      .filter(n => !n.data?.excludeFromWeight && n.type !== 'vesselRootNode' && n.type !== 'outputHubNode')
+      .filter(n => !n.data?.excludeFromWeight && n.type !== 'outputHubNode')
       .map(n => {
         const d = n.data as any;
         let weight = d.calculatedWeight || d.totalFabricatedWeight || 0;

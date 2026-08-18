@@ -1,6 +1,6 @@
 "use client";
 
-import { VesselRootNode } from "./vessel/VesselRootNode";
+
 import { ShellNode } from "./vessel/ShellNode";
 import { HeadNode } from "./vessel/HeadNode";
 import { NozzleNode } from "./vessel/NozzleNode";
@@ -17,7 +17,7 @@ import { SurfacePrepNode } from "./vessel/SurfacePrepNode";
 import { MaterialListNode } from "./vessel/MaterialListNode";
 import { MtoReportNode } from "./vessel/MtoReportNode";
 
-export const VesselRootNodeWrapper = VesselRootNode;
+
 export const ShellNodeWrapper = ShellNode;
 export const HeadNodeWrapper = HeadNode;
 export const NozzleNodeWrapper = NozzleNode;

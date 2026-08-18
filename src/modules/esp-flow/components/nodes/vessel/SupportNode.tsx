@@ -43,9 +43,7 @@ export const SupportNode = memo(({ id, data, selected }: Props) => {
   const nodes = useDiagramStore((s) => s.nodes);
 
   const d = data as unknown as SupportNodeData;
-  const rootNode = nodes.find((n) => n.type === "vesselRootNode");
-  const orientation = (rootNode?.data?.vessel as any)?.orientation || "VERTICAL";
-
+  const orientation: string = "VERTICAL"; // Default fallback
   useEffect(() => {
     if (orientation === "HORIZONTAL" && d.supportType !== "SADDLE") {
       update("supportType", "SADDLE");
