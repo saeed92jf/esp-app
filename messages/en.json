@@ -528,7 +528,28 @@
       "attachmentsNode": "Attachments",
       "outputHubNode": "Output Hub",
       "mistEliminatorNode": "Mist Eliminator",
-      "internalsNode": "Internals"
+      "internalsNode": "Internals",
+      "projectDataNode": {
+        "placeholders": {
+          "date": "Select date",
+          "email": "contact@company.com",
+          "document": "Select document / spec file...",
+          "indentNo": "IND-001",
+          "quotationNo": "QT-2026-001",
+          "rev": "0",
+          "customer": "Select customer",
+          "endUser": "Select end user",
+          "plant": "Select plant",
+          "title": "Project title...",
+          "preparedByTitle": "Title",
+          "preparedByName": "Full name",
+          "equipmentType": "Equipment Type",
+          "tagNo": "e.g. V-101",
+          "qty": "1",
+          "description": "Description / Remarks...",
+          "browse": "Browse"
+        }
+      }
     },
     "palette": {
       "search": "Search nodes…",

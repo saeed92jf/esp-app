@@ -519,7 +519,28 @@
       "tableNode": "جدول",
       "excelNode": "اکسل",
       "matrixNode": "ماتریس",
-      "chartNode": "نمودار"
+      "chartNode": "نمودار",
+      "projectDataNode": {
+        "placeholders": {
+          "date": "انتخاب تاریخ",
+          "email": "contact@company.com",
+          "document": "انتخاب سند / فایل مشخصات...",
+          "indentNo": "IND-001",
+          "quotationNo": "QT-2026-001",
+          "rev": "0",
+          "customer": "انتخاب مشتری",
+          "endUser": "انتخاب کاربر نهایی",
+          "plant": "انتخاب سایت (واحد)",
+          "title": "عنوان پروژه...",
+          "preparedByTitle": "عنوان شغلی",
+          "preparedByName": "نام کامل",
+          "equipmentType": "نوع تجهیز",
+          "tagNo": "مثال: V-101",
+          "qty": "1",
+          "description": "توضیحات / ملاحظات...",
+          "browse": "انتخاب فایل"
+        }
+      }
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
