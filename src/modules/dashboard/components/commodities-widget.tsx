@@ -231,13 +231,33 @@ export function CommoditiesWidget() {
     <div className="flex flex-col h-full bg-card rounded-xl rounded-br-none border border-border/50 overflow-hidden relative">
       <div className="px-4 pt-4 pb-3 border-b border-border/50 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <Activity className="size-4" />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                <Activity className="size-4" />
+              </div>
+              <h3 className="font-semibold text-sm">
+                {t('title')} <span className="text-xs font-normal text-muted-foreground ms-1 hidden lg:inline-block">({formattedDate})</span>
+              </h3>
             </div>
-            <h3 className="font-semibold text-sm">
-              {t('title')} <span className="text-xs font-normal text-muted-foreground ms-1 hidden sm:inline-block">({formattedDate})</span>
-            </h3>
+            
+            <div className="hidden sm:flex items-center gap-1.5 bg-muted/40 border border-border/40 rounded-md px-2 py-1 text-[11px]">
+              <span className="text-muted-foreground">{t('usdRate')}:</span>
+              <span className="font-bold fa-num" dir="ltr">
+                {(() => {
+                  const val = isToman ? activeRate / 10 : activeRate;
+                  const formatted = formatLargeIrr(val);
+                  return `${formatted.value} ${formatted.suffixKey ? t(formatted.suffixKey) : ''}`;
+                })()}
+              </span>
+              <span className="text-muted-foreground">{isToman ? t('toman') : t('rial')}</span>
+              {irrMode === 'free' && (
+                <span className="text-[9px] font-medium bg-primary/10 text-primary px-1 py-0.5 rounded leading-none">TGJU</span>
+              )}
+              {irrMode === 'manual' && (
+                <span className="text-[9px] font-medium bg-muted-foreground/15 text-muted-foreground px-1 py-0.5 rounded leading-none">{t('rateModes.manual')}</span>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-1">
