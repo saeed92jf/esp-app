@@ -295,8 +295,8 @@ function PhoneField({
           value={phoneRaw}
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
-          placeholder={placeholder || (isMobile && currentCountry.mobileMask ? currentCountry.mobileMask : currentCountry.mask) || "000 000 0000"}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground text-foreground rtl:text-right ltr:text-left"
+          placeholder={placeholder || (isMobile ? (currentCountry.exampleMobile || currentCountry.mobileMask || "000 000 0000") : (currentCountry.examplePhone || currentCountry.mask || "000 000 0000"))}
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground rtl:text-right ltr:text-left"
           dir="ltr"
         />
         {isValid && (
