@@ -140,7 +140,7 @@ export function PhoneInput({
         className={`relative flex items-center h-7 w-full min-w-0 rounded-lg border bg-white dark:bg-black transition-colors ${
           isInvalid
             ? "border-destructive ring-1 ring-destructive"
-            : "border-input focus-within:border-form-primary"
+            : "border-input focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring"
         }`}
       >
         <div className="h-full border-r border-border/50 flex items-center shrink-0">

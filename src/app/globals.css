@@ -243,6 +243,7 @@ button, input, select, textarea {
   --color-form-primary: var(--form-primary);
   --color-form-primary-hover: var(--form-primary-hover);
   --color-form-primary-foreground: var(--form-primary-foreground);
+  --color-focus-ring: var(--focus-ring);
   --color-form-secondary: var(--form-secondary);
   --color-form-accent: var(--form-accent);
   --color-form-border: var(--form-border);
@@ -307,6 +308,9 @@ button, input, select, textarea {
   --form-primary: #39436a;
   --form-primary-hover: #535a9a;
   --form-primary-foreground: #ffffff;
+  
+  /* Shared focus ring color */
+  --focus-ring: #2563eb;
   --form-secondary: #535a9a;
   --form-accent: #7f60ff;
   --form-border: #d1d5db;
@@ -390,6 +394,9 @@ button, input, select, textarea {
   --form-primary: #535a9a;
   --form-primary-hover: #7f60ff;
   --form-primary-foreground: #ffffff;
+  
+  /* Shared focus ring color */
+  --focus-ring: #3b82f6;
   --form-secondary: #7f60ff;
   --form-accent: #8ba4e4;
   --form-border: #2a3254;
