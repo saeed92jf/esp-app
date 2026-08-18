@@ -60,7 +60,7 @@ export interface ProjectData {
   date?: string;
   dateIsJalali?: boolean;
   quotationNo?: string;
-  rev?: string;
+  rev?: number;
   customer?: string;
   endUser?: string;
   plantProduction?: string;
@@ -74,7 +74,7 @@ export interface ProjectData {
   equipmentType?: string;
   tagNo?: string;
   qty?: number;
-  uploadDocuments?: string;
+  uploadDocuments?: string[];
   description?: string;
   items?: ProjectItem[];
 }
@@ -178,50 +178,83 @@ function EmailField({
 
 
 function FileUploadField({
-  value,
+  files,
   onChange,
   browseText,
   placeholder,
 }: {
-  value: string;
-  onChange: (v: string) => void;
+  files: string[];
+  onChange: (v: string[]) => void;
   browseText: string;
   placeholder?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onChange(file.name);
+    const selected = Array.from(e.target.files || []).map((f) => f.name);
+    if (selected.length > 0) {
+      onChange([...files, ...selected.filter((n) => !files.includes(n))]);
     }
+    // reset so same file can be re-added after removal
+    e.target.value = "";
+  };
+
+  const removeFile = (name: string) => {
+    onChange(files.filter((f) => f !== name));
   };
 
   return (
-    <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
-      <input
-        ref={inputRef}
-        type="file"
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || "Select document / spec file..."}
-        className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-medium placeholder:text-muted-foreground text-foreground"
-      />
-      <Button
-        type="button"
-        size="xs"
-        variant="ghost"
-        onClick={() => inputRef.current?.click()}
-        className="h-6 px-2 text-[10px] font-semibold gap-1 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded"
-      >
-        <FolderOpen className="size-3" />
-        {browseText}
-      </Button>
+    <div className="space-y-1.5 w-full min-w-0">
+      {/* trigger row */}
+      <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
+        <input
+          ref={inputRef}
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          className="hidden"
+        />
+        <span className="h-full text-xs flex-1 min-w-0 flex items-center font-medium text-muted-foreground truncate">
+          {files.length === 0
+            ? (placeholder || "Select files...")
+            : `${files.length} file${files.length > 1 ? "s" : ""} selected`}
+        </span>
+        <Button
+          type="button"
+          size="xs"
+          variant="ghost"
+          onClick={() => inputRef.current?.click()}
+          className="h-6 px-2 text-[10px] font-semibold gap-1 shrink-0 text-muted-foreground hover:text-foreground hover:bg-accent rounded"
+        >
+          <FolderOpen className="size-3" />
+          {browseText}
+        </Button>
+      </div>
+
+      {/* file list */}
+      {files.length > 0 && (
+        <div className="space-y-1">
+          {files.map((name) => (
+            <div
+              key={name}
+              className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/30 px-2 py-1 min-w-0"
+            >
+              <Layers className="size-3 shrink-0 text-form-primary" />
+              <span className="text-[10px] font-medium text-foreground flex-1 min-w-0 truncate">
+                {name}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeFile(name)}
+                className="shrink-0 flex items-center justify-center size-4 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                aria-label="Remove file"
+              >
+                <Trash2 className="size-2.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -385,8 +418,9 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
             <div className="col-span-4 space-y-1 min-w-0">
               <VesselFieldLabel label="Revision" />
               <Input
-                value={pd.rev || ""}
-                onChange={(e) => patch({ rev: e.target.value })}
+                type="number"
+                value={pd.rev ?? ""}
+                onChange={(e) => patch({ rev: e.target.value === "" ? undefined : Number(e.target.value) })}
                 placeholder={t("rev")}
                 className="h-7 text-xs font-medium bg-white dark:bg-black text-center w-full min-w-0 shadow-none"
               />
@@ -544,7 +578,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
             <VesselFieldLabel label="Upload Technical Documents" />
             <div className="nodrag w-full min-w-0">
               <FileUploadField
-                value={pd.uploadDocuments || ""}
+                files={pd.uploadDocuments || []}
                 onChange={(v) => patch({ uploadDocuments: v })}
                 placeholder={t("document")}
                 browseText={t("browse")}
