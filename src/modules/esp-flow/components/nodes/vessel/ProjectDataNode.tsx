@@ -228,7 +228,7 @@ function FileUploadField({
 
 // ─── Main Node Component ────────────────────────────────────────────────────
 export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
-  const t = useTranslations("Flow.nodes.projectDataNode");
+  const t = useTranslations("Flow.nodes.projectDataNode.placeholders");
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
   const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);
@@ -354,7 +354,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.indentNumber || ""}
                 onChange={(e) => patch({ indentNumber: e.target.value })}
-                placeholder={t("placeholders.indentNo")}
+                placeholder={t("indentNo")}
                 className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
               />
             </div>
@@ -366,7 +366,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   onChange={(v) => patch({ date: v })}
                   isJalali={isJalali}
                   onToggleCalendar={(newJalali) => patch({ dateIsJalali: newJalali })}
-                  placeholder={t("placeholders.date")}
+                  placeholder={t("date")}
                 />
               </div>
             </div>
@@ -378,7 +378,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.quotationNo || ""}
                 onChange={(e) => patch({ quotationNo: e.target.value })}
-                placeholder={t("placeholders.quotationNo")}
+                placeholder={t("quotationNo")}
                 className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
               />
             </div>
@@ -387,7 +387,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.rev || ""}
                 onChange={(e) => patch({ rev: e.target.value })}
-                placeholder={t("placeholders.rev")}
+                placeholder={t("rev")}
                 className="h-7 text-xs font-medium bg-white dark:bg-black text-center w-full min-w-0 shadow-none"
               />
             </div>
@@ -403,7 +403,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={CUSTOMER_OPTIONS}
                     value={pd.customer || ""}
                     onChange={(v) => patch({ customer: v })}
-                    placeholder={t("placeholders.customer")}
+                    placeholder={t("customer")}
                     className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
@@ -415,7 +415,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={END_USER_OPTIONS}
                     value={pd.endUser || ""}
                     onChange={(v) => patch({ endUser: v })}
-                    placeholder={t("placeholders.endUser")}
+                    placeholder={t("endUser")}
                     className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
@@ -429,7 +429,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   options={PLANT_OPTIONS}
                   value={pd.plantProduction || ""}
                   onChange={(v) => patch({ plantProduction: v })}
-                  placeholder={t("placeholders.plant")}
+                  placeholder={t("plant")}
                   className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                 />
               </div>
@@ -442,7 +442,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   type="text"
                   value={pd.projectTitle || ""}
                   onChange={(e) => patch({ projectTitle: e.target.value })}
-                  placeholder={t("placeholders.title")}
+                  placeholder={t("title")}
                   className="h-full text-xs font-medium flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
                 />
                 <TooltipProvider delayDuration={200}>
@@ -486,7 +486,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={GENDER_OPTIONS}
                     value={pd.gender || "MR"}
                     onChange={(v) => patch({ gender: v })}
-                    placeholder={t("placeholders.preparedByTitle")}
+                    placeholder={t("preparedByTitle")}
                     className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                   />
                 </div>
@@ -496,7 +496,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 <Input
                   value={pd.contactPerson || ""}
                   onChange={(e) => patch({ contactPerson: e.target.value })}
-                  placeholder={t("placeholders.preparedByName")}
+                  placeholder={t("preparedByName")}
                   className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                 />
               </div>
@@ -508,7 +508,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 <EmailField
                   value={pd.email || ""}
                   onChange={(v) => patch({ email: v })}
-                  placeholder={t("placeholders.email")}
+                  placeholder={t("email")}
                   errorText="Invalid email format"
                 />
               </div>
@@ -546,8 +546,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <FileUploadField
                 value={pd.uploadDocuments || ""}
                 onChange={(v) => patch({ uploadDocuments: v })}
-                placeholder={t("placeholders.document")}
-                browseText={t("placeholders.browse")}
+                placeholder={t("document")}
+                browseText={t("browse")}
               />
             </div>
           </div>
@@ -592,7 +592,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         options={EQUIPMENT_TYPE_OPTIONS}
                         value={draftType}
                         onChange={(v) => setDraftType(v || "Vessel")}
-                        placeholder={t("placeholders.equipmentType")}
+                        placeholder={t("equipmentType")}
                         className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                       />
                     </div>
@@ -605,7 +605,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         setDraftTag(e.target.value);
                         if (addError) setAddError(null);
                       }}
-                      placeholder={t("placeholders.tagNo")}
+                      placeholder={t("tagNo")}
                       className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                     />
                   </div>
@@ -616,7 +616,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                       min={1}
                       value={draftQty}
                       onChange={(e) => setDraftQty(e.target.value)}
-                      placeholder={t("placeholders.qty")}
+                      placeholder={t("qty")}
                       className="h-7 text-xs font-medium bg-white dark:bg-black w-full min-w-0 shadow-none"
                     />
                   </div>
@@ -627,7 +627,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   <Textarea
                     value={draftDesc}
                     onChange={(e) => setDraftDesc(e.target.value)}
-                    placeholder={t("placeholders.description")}
+                    placeholder={t("description")}
                     className="min-h-[54px] text-xs font-medium resize-none bg-white dark:bg-black w-full min-w-0 shadow-none"
                     rows={2}
                   />
