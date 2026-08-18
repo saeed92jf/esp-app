@@ -290,6 +290,27 @@ export interface EditorSettings {
   // ── Vessel Weight Module Settings ─────────────────────────────────────
   weightCalculationEnabled: boolean;
   weightSystem: 'metric' | 'imperial';
+
+  // Job-Specific Parameters
+  roundThicknessToNominal: boolean;
+  increaseBlindFlangeThickness: boolean;
+  printFlangeCalcsForExternalPressure: boolean;
+  noMDMTCalculations: boolean;
+  noMAWPCalculations: boolean;
+  metricInputImperialOutput: boolean;
+  useCommasInsteadOfDecimals: boolean;
+  allowableTowerDeflection: number;
+
+  // Nozzle Analysis Directives
+  noCorrosionOnInsideWelds: boolean;
+  computeIncreasedNozzleThickness: boolean;
+  computeAndPrintAreasForSmallNozzles: boolean;
+
+  // ASME Directives
+  asmeMdmtOption: string;
+  asmeCodeEdition: string;
+  useVesselMawpToComputeMdmt: boolean;
+  doNotUseNozzleMdmtInterpretation: boolean;
 }
 
 export type Language = 'en' | 'fa';

@@ -42,6 +42,21 @@ const DEFAULT_SETTINGS: EditorSettings = {
   collisionAvoidance: true,
   weightCalculationEnabled: true,
   weightSystem: 'metric',
+  roundThicknessToNominal: true,
+  increaseBlindFlangeThickness: false,
+  printFlangeCalcsForExternalPressure: false,
+  noMDMTCalculations: false,
+  noMAWPCalculations: false,
+  metricInputImperialOutput: false,
+  useCommasInsteadOfDecimals: false,
+  allowableTowerDeflection: 6,
+  noCorrosionOnInsideWelds: false,
+  computeIncreasedNozzleThickness: false,
+  computeAndPrintAreasForSmallNozzles: false,
+  asmeMdmtOption: 'Use Graphs (Fig. UCS-66)',
+  asmeCodeEdition: 'Current',
+  useVesselMawpToComputeMdmt: true,
+  doNotUseNozzleMdmtInterpretation: false,
 };
 
 const MAX_HISTORY = 50;

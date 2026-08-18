@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 
 // ── Local sub-components ────────────────────────────────────────────────
 
@@ -216,6 +217,96 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                           </ToggleGroupItem>
                         </ToggleGroup>
                       </Row>
+                    </div>
+
+                    {/* Job-Specific Parameters */}
+                    <div className="mt-6">
+                      <SectionTitle>{safeT(t, "editorSettings.jobSpecificParams", "Job-Specific Parameters")}</SectionTitle>
+                      <div className="space-y-1 mt-2">
+                        <Row label={safeT(t, "editorSettings.roundThicknessToNominal", "Round Thickness to Nearest Nominal Size")}>
+                          <Switch checked={settings.roundThicknessToNominal} onCheckedChange={(v) => set("roundThicknessToNominal", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.increaseBlindFlangeThickness", "Increase Blind Flange Thickness for Reinforcement")}>
+                          <Switch checked={settings.increaseBlindFlangeThickness} onCheckedChange={(v) => set("increaseBlindFlangeThickness", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.printFlangeCalcsForExternalPressure", "Print Flange Calcs for External Pressure")}>
+                          <Switch checked={settings.printFlangeCalcsForExternalPressure} onCheckedChange={(v) => set("printFlangeCalcsForExternalPressure", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.noMDMTCalculations", "No MDMT Calculations")}>
+                          <Switch checked={settings.noMDMTCalculations} onCheckedChange={(v) => set("noMDMTCalculations", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.noMAWPCalculations", "No MAWP Calculations")}>
+                          <Switch checked={settings.noMAWPCalculations} onCheckedChange={(v) => set("noMAWPCalculations", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.metricInputImperialOutput", "Metric Input -> Imperial Output")}>
+                          <Switch checked={settings.metricInputImperialOutput} onCheckedChange={(v) => set("metricInputImperialOutput", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.useCommasInsteadOfDecimals", "Use Commas Instead of Decimals in Numbers")}>
+                          <Switch checked={settings.useCommasInsteadOfDecimals} onCheckedChange={(v) => set("useCommasInsteadOfDecimals", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.allowableTowerDeflection", "Allowable Tower Deflection")}>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              className="h-7 w-20 text-center px-2 py-0 border-primary"
+                              value={settings.allowableTowerDeflection}
+                              onChange={(e) => set("allowableTowerDeflection", parseFloat(e.target.value) || 0)}
+                            />
+                            <span className="text-[11px] text-muted-foreground">{safeT(t, "editorSettings.in_100ft", "in./100ft.")}</span>
+                          </div>
+                        </Row>
+                      </div>
+                    </div>
+
+                    {/* Nozzle Analysis Directives */}
+                    <div className="mt-6">
+                      <SectionTitle>{safeT(t, "editorSettings.nozzleAnalysisDirectives", "Nozzle Analysis Directives")}</SectionTitle>
+                      <div className="space-y-1 mt-2">
+                        <Row label={safeT(t, "editorSettings.noCorrosionOnInsideWelds", "No Corrosion on Inside Welds")}>
+                          <Switch checked={settings.noCorrosionOnInsideWelds} onCheckedChange={(v) => set("noCorrosionOnInsideWelds", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.computeIncreasedNozzleThickness", "Compute Increased Nozzle Thickness")}>
+                          <Switch checked={settings.computeIncreasedNozzleThickness} onCheckedChange={(v) => set("computeIncreasedNozzleThickness", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.computeAndPrintAreasForSmallNozzles", "Compute and Print Areas for Small Nozzles")}>
+                          <Switch checked={settings.computeAndPrintAreasForSmallNozzles} onCheckedChange={(v) => set("computeAndPrintAreasForSmallNozzles", v)} />
+                        </Row>
+                      </div>
+                    </div>
+
+                    {/* ASME Directives */}
+                    <div className="mt-6">
+                      <SectionTitle>{safeT(t, "editorSettings.asmeDirectives", "ASME Directives")}</SectionTitle>
+                      <div className="space-y-1 mt-2">
+                        <Row label={safeT(t, "editorSettings.useVesselMawpToComputeMdmt", "Use the Vessel MAWP to Compute the MDMT")}>
+                          <Switch checked={settings.useVesselMawpToComputeMdmt} onCheckedChange={(v) => set("useVesselMawpToComputeMdmt", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.doNotUseNozzleMdmtInterpretation", "Do Not Use Nozzle MDMT Interpretation VIII-1-01-37")}>
+                          <Switch checked={settings.doNotUseNozzleMdmtInterpretation} onCheckedChange={(v) => set("doNotUseNozzleMdmtInterpretation", v)} />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.asmeMdmtOption", "ASME VIII-1 MDMT Option")}>
+                          <Combobox
+                            value={settings.asmeMdmtOption}
+                            onChange={(v) => { if (v) set("asmeMdmtOption", v); }}
+                            options={[
+                              { value: "Use Graphs (Fig. UCS-66)", label: safeT(t, "editorSettings.asmeMdmt_useGraphs", "Use Graphs (Fig. UCS-66)") },
+                            ]}
+                            className="w-56"
+                            showSearch={false}
+                          />
+                        </Row>
+                        <Row label={safeT(t, "editorSettings.asmeCodeEdition", "ASME Code Edition")}>
+                          <Combobox
+                            value={settings.asmeCodeEdition}
+                            onChange={(v) => { if (v) set("asmeCodeEdition", v); }}
+                            options={[
+                              { value: "Current", label: safeT(t, "editorSettings.asmeCode_current", "Current") },
+                            ]}
+                            className="w-56"
+                            showSearch={false}
+                          />
+                        </Row>
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
