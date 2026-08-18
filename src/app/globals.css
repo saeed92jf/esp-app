@@ -134,8 +134,7 @@ button, input, select, textarea {
   }
 
   ::selection {
-    background-color: var(--color-primary);
-    color: var(--color-white);
+    @apply bg-blue-600 text-white dark:bg-blue-500 dark:text-white;
   }
 
   *:focus-visible {
