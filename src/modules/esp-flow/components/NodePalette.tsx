@@ -303,68 +303,13 @@ const PALETTE_ITEMS: PaletteItem[] = [
     defaultData: { label: "Beam section (Ix)", beamShape: "rectangle", colorToken: "blue" },
   },
   // ── Weight calculation nodes (vessel-weight module) ─────────────────
-
-  {
-    type: "shellNode",
-    labelKey: "shellNode",
-    icon: "shellSection",
-    category: "weight",
-    defaultData: { label: "Shell Section" },
-  },
-  {
-    type: "headNode",
-    labelKey: "headNode",
-    icon: "head",
-    category: "weight",
-    defaultData: { label: "Head" },
-  },
-  {
-    type: "nozzleNode",
-    labelKey: "nozzleNode",
-    icon: "nozzle",
-    category: "weight",
-    defaultData: { label: "Nozzle" },
-  },
-  {
-    type: "supportNode",
-    labelKey: "supportNode",
-    icon: "support",
-    category: "weight",
-    defaultData: { label: "Support" },
-  },
-  {
-    type: "attachmentsNode",
-    labelKey: "attachmentsNode",
-    icon: "attachments",
-    category: "weight",
-    defaultData: { label: "Attachments" },
-  },
-  {
-    type: "outputHubNode",
-    labelKey: "outputHubNode",
-    icon: "outputHub",
-    category: "weight",
-    defaultData: { label: "Output Hub" },
-  },
-  {
-    type: "mistEliminatorNode",
-    labelKey: "mistEliminatorNode",
-    icon: "mistEliminator",
-    category: "weight",
-    defaultData: { label: "Mist Eliminator" },
-  },
-  {
-    type: "internalsNode",
-    labelKey: "internalsNode",
-    icon: "internals",
-    category: "weight",
-    defaultData: { label: "Internals" },
-  },
+  // Sub-group: Project
   {
     type: "projectDataNode",
     labelKey: "projectDataNode",
     icon: "projectData",
     category: "weight",
+    subGroup: "project",
     defaultData: { label: "Project Data" },
   },
   {
@@ -372,20 +317,91 @@ const PALETTE_ITEMS: PaletteItem[] = [
     labelKey: "generalDataNode",
     icon: "generalData",
     category: "weight",
-    defaultData: { label: "General Data Body" },
+    subGroup: "project",
+    defaultData: { label: "General Data" },
+  },
+  // Sub-group: Material
+  {
+    type: "materialListNode",
+    labelKey: "materialListNode",
+    icon: "fileSpreadsheet",
+    category: "weight",
+    subGroup: "material",
+    defaultData: { label: "Material Specification Schedule" },
+  },
+  // Sub-group: Body
+  {
+    type: "shellNode",
+    labelKey: "shellNode",
+    icon: "shellSection",
+    category: "weight",
+    subGroup: "body",
+    defaultData: { label: "Shell Section" },
+  },
+  {
+    type: "headNode",
+    labelKey: "headNode",
+    icon: "head",
+    category: "weight",
+    subGroup: "body",
+    defaultData: { label: "Head" },
+  },
+  {
+    type: "nozzleNode",
+    labelKey: "nozzleNode",
+    icon: "nozzle",
+    category: "weight",
+    subGroup: "body",
+    defaultData: { label: "Nozzle" },
+  },
+  {
+    type: "supportNode",
+    labelKey: "supportNode",
+    icon: "support",
+    category: "weight",
+    subGroup: "body",
+    defaultData: { label: "Support" },
+  },
+  {
+    type: "attachmentsNode",
+    labelKey: "attachmentsNode",
+    icon: "attachments",
+    category: "weight",
+    subGroup: "body",
+    defaultData: { label: "Attachments" },
   },
   {
     type: "jacketNode",
     labelKey: "jacketNode",
     icon: "layers",
     category: "weight",
+    subGroup: "body",
     defaultData: { label: "Jacket" },
   },
+  // Sub-group: Internals
+  {
+    type: "mistEliminatorNode",
+    labelKey: "mistEliminatorNode",
+    icon: "mistEliminator",
+    category: "weight",
+    subGroup: "internals",
+    defaultData: { label: "Mist Eliminator" },
+  },
+  {
+    type: "internalsNode",
+    labelKey: "internalsNode",
+    icon: "internals",
+    category: "weight",
+    subGroup: "internals",
+    defaultData: { label: "Internals" },
+  },
+  // Sub-group: Reports & Outputs
   {
     type: "regenVacuumSteamoutNode",
     labelKey: "regenVacuumSteamoutNode",
     icon: "flame",
     category: "weight",
+    subGroup: "misc",
     defaultData: { label: "Regen / Vacuum / Steam Out" },
   },
   {
@@ -393,20 +409,23 @@ const PALETTE_ITEMS: PaletteItem[] = [
     labelKey: "surfacePrepNode",
     icon: "paintbrush",
     category: "weight",
+    subGroup: "misc",
     defaultData: { label: "Surface Preparation" },
   },
   {
-    type: "materialListNode",
-    labelKey: "materialListNode",
-    icon: "fileSpreadsheet",
+    type: "outputHubNode",
+    labelKey: "outputHubNode",
+    icon: "outputHub",
     category: "weight",
-    defaultData: { label: "Material Specification Schedule" },
+    subGroup: "misc",
+    defaultData: { label: "Output Hub" },
   },
   {
     type: "mtoNode",
     labelKey: "mtoNode",
     icon: "fileSpreadsheet",
     category: "weight",
+    subGroup: "misc",
     defaultData: { label: "Material Take-Off (MTO)" },
   },
 ];
@@ -516,6 +535,14 @@ const CATEGORY_FALLBACKS: Record<PaletteCategory, string> = {
   weight: "Weight calculations",
 };
 
+const WEIGHT_SUBGROUPS: { key: string; label: string }[] = [
+  { key: "project", label: "Project" },
+  { key: "material", label: "Material" },
+  { key: "body", label: "Body" },
+  { key: "internals", label: "Internals" },
+  { key: "misc", label: "Misc / Outputs" },
+];
+
 function safeT(t: ReturnType<typeof useTranslations>, key: string, fallback: string): string {
   try {
     return t(key);
@@ -535,16 +562,27 @@ export function NodePalette() {
   const label = (item: PaletteItem) =>
     safeT(t, `nodes.${item.labelKey}`, LABEL_FALLBACKS[item.labelKey] ?? item.defaultData.label ?? item.type);
 
-  // Filter items by translated label within the active category tab only
-  // (no more "all categories" combined view), then group (single group,
-  // kept as an array for the empty-state / rendering logic below).
+  // For the weight category, build one group per sub-group (in defined order).
+  // For other categories, one flat group as before.
   const grouped = useMemo(() => {
     const q = query.toLowerCase();
     const filtered = PALETTE_ITEMS.filter(
       (item) => item.category === activeCategory && label(item).toLowerCase().includes(q),
     );
     if (filtered.length === 0) return [];
-    return [{ cat: activeCategory, items: filtered }];
+
+    if (activeCategory === "weight") {
+      return WEIGHT_SUBGROUPS
+        .map(({ key, label: sgLabel }) => ({
+          cat: activeCategory,
+          subGroup: key,
+          subGroupLabel: sgLabel,
+          items: filtered.filter((i) => (i as any).subGroup === key),
+        }))
+        .filter((g) => g.items.length > 0);
+    }
+
+    return [{ cat: activeCategory, subGroup: null, subGroupLabel: null, items: filtered }];
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeCategory, t]);
 
@@ -597,44 +635,50 @@ export function NodePalette() {
 
         {/* ── Grouped node list ── */}
         <div className="flex-1 overflow-y-auto p-3">
-          {grouped.map(({ cat, items }) => (
-            <div key={cat} className="mb-4">
-              {/* Dynamic category heading: Flow.palette.<cat> */}
+        {grouped.map(({ cat, subGroup, subGroupLabel, items }) => (
+          <div key={subGroup ?? cat} className="mb-4">
+            {/* Sub-group heading (weight) or category heading (others) */}
+            {subGroupLabel ? (
+              <div className="mb-2 flex items-center gap-2 px-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  {subGroupLabel}
+                </span>
+                <div className="flex-1 border-t border-border/50" />
+              </div>
+            ) : (
               <h3 className="mb-2 px-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                 {safeT(t, `palette.${cat}`, CATEGORY_FALLBACKS[cat])}
               </h3>
+            )}
 
-              <div className="grid grid-cols-2 gap-2">
-                {items.map((item) => {
-                  const Icon = ICONS[item.icon] ?? Square;
-                  return (
-                    <div
-                      key={item.type}
-                      draggable
-                      onDragStart={(e) => onDragStart(e, item)}
-                      title={t("palette.dragToAdd")}
-                      className={cn(
-                        // Base layout
-                        "flex cursor-grab flex-col items-center gap-1.5 rounded-xl",
-                        "border border-border/50 bg-card/40 px-2 py-3 text-center",
-                        // Interaction: subtle bg lift on hover, shadow on active drag
-                        "transition-all duration-300 hover:bg-card/80 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 group",
-                        "active:cursor-grabbing active:shadow-sm active:translate-y-0",
-                      )}
-                    >
-                      {/* Icon: muted-foreground keeps it secondary; primary on hover via group */}
-                      <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
-
-                      {/* Dynamic node label: Flow.nodes.<labelKey> */}
-                      <span className="text-[11px] font-medium leading-tight text-foreground">
-                        {label(item)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+            <div className="grid grid-cols-2 gap-2">
+              {items.map((item) => {
+                const Icon = ICONS[item.icon] ?? Square;
+                return (
+                  <div
+                    key={item.type}
+                    draggable
+                    onDragStart={(e) => onDragStart(e, item)}
+                    title={t("palette.dragToAdd")}
+                    className={cn(
+                      // Base layout
+                      "flex cursor-grab flex-col items-center gap-1.5 rounded-xl",
+                      "border border-border/50 bg-card/40 px-2 py-3 text-center",
+                      // Interaction
+                      "transition-all duration-300 hover:bg-card/80 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 group",
+                      "active:cursor-grabbing active:shadow-sm active:translate-y-0",
+                    )}
+                  >
+                    <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
+                    <span className="text-[11px] font-medium leading-tight text-foreground">
+                      {label(item)}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          </div>
+        ))}
 
           {grouped.length === 0 && activeCategory !== "weight" && (
             <p className="px-1 py-6 text-center text-xs text-muted-foreground">

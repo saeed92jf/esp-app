@@ -296,6 +296,7 @@ export interface PaletteItem {
   icon: string;
   defaultData: Partial<DiagramNodeData>;
   category: PaletteCategory;
+  subGroup?: string;
 }
 
 export type { ColorToken } from '../utils/colors';
