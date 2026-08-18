@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -37,6 +37,9 @@ export function Combobox({
   disabled,
 }: ComboboxProps) {
   const t = useTranslations("Combobox");
+  const locale = useLocale();
+  const isRtl = locale === 'fa' || locale === 'ar';
+  
   const [open, setOpen] = React.useState(false);
   const selected = options.find((o) => o.value === value);
   const resolvedPlaceholder = placeholder ?? (t ? t("placeholder") : "Select...");
@@ -71,7 +74,7 @@ export function Combobox({
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start" dir="rtl">
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start" dir={isRtl ? "rtl" : "ltr"}>
         <Command>
           {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} className="rtl:text-right" />}
           <CommandList>

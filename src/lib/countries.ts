@@ -1,5 +1,6 @@
 export interface Country {
   name: string;
+  nameFa: string;
   code: string;
   dialCode: string;
   flag: string;
@@ -10,29 +11,29 @@ export interface Country {
 }
 
 export const COUNTRIES: Country[] = [
-  { name: "Iran", code: "IR", dialCode: "+98", flag: "🇮🇷", mask: "00 0000 0000", mobileMask: "000 000 0000", examplePhone: "21 6548 9563", exampleMobile: "912 356 6548" },
-  { name: "United States", code: "US", dialCode: "+1", flag: "🇺🇸", mask: "000 000 0000", examplePhone: "201 555 0123" },
-  { name: "United Kingdom", code: "GB", dialCode: "+44", flag: "🇬🇧", mask: "0000 000000" },
-  { name: "Germany", code: "DE", dialCode: "+49", flag: "🇩🇪", mask: "000 0000000" },
-  { name: "France", code: "FR", dialCode: "+33", flag: "🇫🇷", mask: "0 00 00 00 00" },
-  { name: "Italy", code: "IT", dialCode: "+39", flag: "🇮🇹", mask: "000 0000000" },
-  { name: "Spain", code: "ES", dialCode: "+34", flag: "🇪🇸", mask: "000 00 00 00" },
-  { name: "Canada", code: "CA", dialCode: "+1", flag: "🇨🇦", mask: "000 000 0000" },
-  { name: "Australia", code: "AU", dialCode: "+61", flag: "🇦🇺", mask: "000 000 000" },
-  { name: "United Arab Emirates", code: "AE", dialCode: "+971", flag: "🇦🇪", mask: "00 000 0000" },
-  { name: "Turkey", code: "TR", dialCode: "+90", flag: "🇹🇷", mask: "000 000 00 00" },
-  { name: "Iraq", code: "IQ", dialCode: "+964", flag: "🇮🇶", mask: "000 000 0000" },
-  { name: "China", code: "CN", dialCode: "+86", flag: "🇨🇳", mask: "000 0000 0000" },
-  { name: "Japan", code: "JP", dialCode: "+81", flag: "🇯🇵", mask: "00 0000 0000" },
-  { name: "India", code: "IN", dialCode: "+91", flag: "🇮🇳", mask: "00000 00000" },
-  { name: "Russia", code: "RU", dialCode: "+7", flag: "🇷🇺", mask: "000 000-00-00" },
-  { name: "Brazil", code: "BR", dialCode: "+55", flag: "🇧🇷", mask: "00 00000-0000" },
-  { name: "South Korea", code: "KR", dialCode: "+82", flag: "🇰🇷", mask: "00 0000 0000" },
-  { name: "Mexico", code: "MX", dialCode: "+52", flag: "🇲🇽", mask: "000 000 0000" },
-  { name: "Saudi Arabia", code: "SA", dialCode: "+966", flag: "🇸🇦", mask: "00 000 0000" },
-  { name: "Qatar", code: "QA", dialCode: "+974", flag: "🇶🇦", mask: "0000 0000" },
-  { name: "Oman", code: "OM", dialCode: "+968", flag: "🇴🇲", mask: "0000 0000" },
-  { name: "Kuwait", code: "KW", dialCode: "+965", flag: "🇰🇼", mask: "0000 0000" },
+  { name: "Iran", nameFa: "ایران", code: "IR", dialCode: "+98", flag: "🇮🇷", mask: "00 0000 0000", mobileMask: "000 000 0000", examplePhone: "21 6548 9563", exampleMobile: "912 356 6548" },
+  { name: "United States", nameFa: "ایالات متحده", code: "US", dialCode: "+1", flag: "🇺🇸", mask: "000 000 0000", examplePhone: "201 555 0123" },
+  { name: "United Kingdom", nameFa: "انگلستان", code: "GB", dialCode: "+44", flag: "🇬🇧", mask: "0000 000000" },
+  { name: "Germany", nameFa: "آلمان", code: "DE", dialCode: "+49", flag: "🇩🇪", mask: "000 0000000" },
+  { name: "France", nameFa: "فرانسه", code: "FR", dialCode: "+33", flag: "🇫🇷", mask: "0 00 00 00 00" },
+  { name: "Italy", nameFa: "ایتالیا", code: "IT", dialCode: "+39", flag: "🇮🇹", mask: "000 0000000" },
+  { name: "Spain", nameFa: "اسپانیا", code: "ES", dialCode: "+34", flag: "🇪🇸", mask: "000 00 00 00" },
+  { name: "Canada", nameFa: "کانادا", code: "CA", dialCode: "+1", flag: "🇨🇦", mask: "000 000 0000" },
+  { name: "Australia", nameFa: "استرالیا", code: "AU", dialCode: "+61", flag: "🇦🇺", mask: "000 000 000" },
+  { name: "United Arab Emirates", nameFa: "امارات", code: "AE", dialCode: "+971", flag: "🇦🇪", mask: "00 000 0000" },
+  { name: "Turkey", nameFa: "ترکیه", code: "TR", dialCode: "+90", flag: "🇹🇷", mask: "000 000 00 00" },
+  { name: "Iraq", nameFa: "عراق", code: "IQ", dialCode: "+964", flag: "🇮🇶", mask: "000 000 0000" },
+  { name: "China", nameFa: "چین", code: "CN", dialCode: "+86", flag: "🇨🇳", mask: "000 0000 0000" },
+  { name: "Japan", nameFa: "ژاپن", code: "JP", dialCode: "+81", flag: "🇯🇵", mask: "00 0000 0000" },
+  { name: "India", nameFa: "هند", code: "IN", dialCode: "+91", flag: "🇮🇳", mask: "00000 00000" },
+  { name: "Russia", nameFa: "روسیه", code: "RU", dialCode: "+7", flag: "🇷🇺", mask: "000 000-00-00" },
+  { name: "Brazil", nameFa: "برزیل", code: "BR", dialCode: "+55", flag: "🇧🇷", mask: "00 00000-0000" },
+  { name: "South Korea", nameFa: "کره جنوبی", code: "KR", dialCode: "+82", flag: "🇰🇷", mask: "00 0000 0000" },
+  { name: "Mexico", nameFa: "مکزیک", code: "MX", dialCode: "+52", flag: "🇲🇽", mask: "000 000 0000" },
+  { name: "Saudi Arabia", nameFa: "عربستان", code: "SA", dialCode: "+966", flag: "🇸🇦", mask: "00 000 0000" },
+  { name: "Qatar", nameFa: "قطر", code: "QA", dialCode: "+974", flag: "🇶🇦", mask: "0000 0000" },
+  { name: "Oman", nameFa: "عمان", code: "OM", dialCode: "+968", flag: "🇴🇲", mask: "0000 0000" },
+  { name: "Kuwait", nameFa: "کویت", code: "KW", dialCode: "+965", flag: "🇰🇼", mask: "0000 0000" },
 ];
 
 export function getCountryByCode(code: string) {

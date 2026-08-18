@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
+import { useLocale } from "next-intl";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Tooltip,
@@ -184,6 +185,8 @@ function PhoneField({
   errorText: string;
   isMobile?: boolean;
 }) {
+  const locale = useLocale();
+  const isFa = locale === "fa";
   const [touched, setTouched] = useState(false);
   const hasValue = Boolean(value && value.trim().length > 0);
   
@@ -266,19 +269,22 @@ function PhoneField({
     }
   };
 
-  const options = COUNTRIES.map(c => ({
-    value: c.code,
-    label: `${c.name} (${c.dialCode})`,
-    triggerLabel: c.dialCode,
-    searchTerms: [c.name, c.dialCode, c.code],
-    icon: (
-      <img 
-        src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
-        alt={c.name} 
-        className="w-4 h-3 object-cover rounded-[2px]" 
-      />
-    )
-  }));
+  const options = COUNTRIES.map(c => {
+    const displayName = isFa ? c.nameFa : c.name;
+    return {
+      value: c.code,
+      label: `${displayName} (${c.dialCode})`,
+      triggerLabel: c.dialCode,
+      searchTerms: [c.name, c.nameFa, c.dialCode, c.code],
+      icon: (
+        <img 
+          src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+          alt={displayName} 
+          className="w-4 h-3 object-cover rounded-[2px]" 
+        />
+      )
+    };
+  });
 
   return (
     <div className="space-y-0.5 w-full min-w-0 font-sans">
