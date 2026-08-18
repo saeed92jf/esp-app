@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Palette, Workflow, Scale } from "lucide-react";
+import { Palette, Workflow, Scale, Settings2, Target, BookOpen } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
 import type { DiagramEdgeType, EditorSettings } from "../types";
@@ -220,9 +220,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                     </div>
 
                     {/* Job-Specific Parameters */}
-                    <div className="mt-6">
-                      <SectionTitle>{safeT(t, "editorSettings.jobSpecificParams", "Job-Specific Parameters")}</SectionTitle>
-                      <div className="space-y-1 mt-2">
+                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
+                      <SectionTitle>
+                        <span className="flex items-center gap-1.5">
+                          <Settings2 className="h-3.5 w-3.5 text-primary" />
+                          {safeT(t, "editorSettings.jobSpecificParams", "Job-Specific Parameters")}
+                        </span>
+                      </SectionTitle>
+                      <div className="space-y-2 mt-4">
                         <Row label={safeT(t, "editorSettings.roundThicknessToNominal", "Round Thickness to Nearest Nominal Size")}>
                           <Switch checked={settings.roundThicknessToNominal} onCheckedChange={(v) => set("roundThicknessToNominal", v)} />
                         </Row>
@@ -259,9 +264,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                     </div>
 
                     {/* Nozzle Analysis Directives */}
-                    <div className="mt-6">
-                      <SectionTitle>{safeT(t, "editorSettings.nozzleAnalysisDirectives", "Nozzle Analysis Directives")}</SectionTitle>
-                      <div className="space-y-1 mt-2">
+                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
+                      <SectionTitle>
+                        <span className="flex items-center gap-1.5">
+                          <Target className="h-3.5 w-3.5 text-primary" />
+                          {safeT(t, "editorSettings.nozzleAnalysisDirectives", "Nozzle Analysis Directives")}
+                        </span>
+                      </SectionTitle>
+                      <div className="space-y-2 mt-4">
                         <Row label={safeT(t, "editorSettings.noCorrosionOnInsideWelds", "No Corrosion on Inside Welds")}>
                           <Switch checked={settings.noCorrosionOnInsideWelds} onCheckedChange={(v) => set("noCorrosionOnInsideWelds", v)} />
                         </Row>
@@ -275,9 +285,14 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                     </div>
 
                     {/* ASME Directives */}
-                    <div className="mt-6">
-                      <SectionTitle>{safeT(t, "editorSettings.asmeDirectives", "ASME Directives")}</SectionTitle>
-                      <div className="space-y-1 mt-2">
+                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
+                      <SectionTitle>
+                        <span className="flex items-center gap-1.5">
+                          <BookOpen className="h-3.5 w-3.5 text-primary" />
+                          {safeT(t, "editorSettings.asmeDirectives", "ASME Directives")}
+                        </span>
+                      </SectionTitle>
+                      <div className="space-y-2 mt-4">
                         <Row label={safeT(t, "editorSettings.useVesselMawpToComputeMdmt", "Use the Vessel MAWP to Compute the MDMT")}>
                           <Switch checked={settings.useVesselMawpToComputeMdmt} onCheckedChange={(v) => set("useVesselMawpToComputeMdmt", v)} />
                         </Row>
