@@ -85,22 +85,24 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
   const edgeTypeOptions = useEdgeTypeOptions();
   const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
   const [dirHandle, setDirHandle] = React.useState<any>(null);
+  const [pickerError, setPickerError] = React.useState<string | null>(null);
 
   const set = <K extends keyof EditorSettings>(key: K, value: EditorSettings[K]) =>
     updateSettings({ [key]: value });
 
   const handleSelectDirectory = async () => {
     try {
+      setPickerError(null);
       if ('showDirectoryPicker' in window) {
         const handle = await (window as any).showDirectoryPicker({ mode: 'readwrite' });
         setDirHandle(handle);
       } else {
-        toast.error("Directory picker is not supported in this browser.");
+        setPickerError("Directory picker is not supported in this browser. (Safari/Firefox/Mobile)");
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error(err);
-        toast.error("Failed to open folder picker. If you are in a preview panel, please open the app in a new browser tab.");
+        setPickerError("Access denied. If you are in a preview panel, you must open the app in a new browser tab.");
       }
     }
   };
@@ -186,9 +188,9 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             </TabsList>
           </div>
 
-          <div className="flex-1 overflow-hidden">
-            <div className="h-full w-full overflow-y-auto">
-              <div className="p-6">
+          <div className="flex-1 overflow-hidden min-h-0 relative">
+            <div className="absolute inset-0 overflow-y-auto">
+              <div className="p-6 min-h-full">
                 <TabsContent value="general" className="m-0 space-y-6">
                   {/* Canvas */}
                   <div>
@@ -420,6 +422,12 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                           </Button>
                         </div>
                       </div>
+                      
+                      {pickerError && (
+                        <div className="text-[10px] text-destructive bg-destructive/10 p-2 rounded-sm border border-destructive/20">
+                          {pickerError}
+                        </div>
+                      )}
                       
                       <Button
                         variant="default"
