@@ -181,10 +181,12 @@ function FileUploadField({
   value,
   onChange,
   browseText,
+  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   browseText: string;
+  placeholder?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -207,7 +209,7 @@ function FileUploadField({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Select document / spec file..."
+        placeholder={placeholder || "Select document / spec file..."}
         className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-medium placeholder:text-muted-foreground text-foreground"
       />
       <Button
@@ -364,7 +366,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   onChange={(v) => patch({ date: v })}
                   isJalali={isJalali}
                   onToggleCalendar={(newJalali) => patch({ dateIsJalali: newJalali })}
-                  placeholder="Select date"
+                  placeholder={t("placeholders.date")}
                 />
               </div>
             </div>
@@ -506,6 +508,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 <EmailField
                   value={pd.email || ""}
                   onChange={(v) => patch({ email: v })}
+                  placeholder={t("placeholders.email")}
                   errorText="Invalid email format"
                 />
               </div>
@@ -543,7 +546,8 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <FileUploadField
                 value={pd.uploadDocuments || ""}
                 onChange={(v) => patch({ uploadDocuments: v })}
-                browseText="Browse"
+                placeholder={t("placeholders.document")}
+                browseText={t("placeholders.browse")}
               />
             </div>
           </div>
