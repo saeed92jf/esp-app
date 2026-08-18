@@ -475,9 +475,7 @@ export function HeroFlow() {
               {t('desktopOnly')}
             </DialogTitle>
             <DialogDescription className="text-center text-base leading-relaxed">
-              {isRtl 
-                ? "اجرای محیط ESP-Flow نیازمند نمایشگر بزرگتر است و این بخش تنها در نسخه دسکتاپ قابل دسترس می‌باشد. لطفا برای تجربه کامل، از کامپیوتر یا لپ‌تاپ استفاده کنید." 
-                : "The ESP-Flow environment requires a larger display and is only available on the desktop version. Please use a computer or laptop for the full experience."}
+              {t('mobileAlertBody')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 sm:justify-center">
