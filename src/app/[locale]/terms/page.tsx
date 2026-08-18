@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { useTranslations } from "next-intl";
+
 import { Scale, FileSignature, Lightbulb, AlertTriangle } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
 export default async function TermsPage(props: { params: Promise<{ locale: string }> }) {
   const { locale } = await props.params;
   const isFa = locale === "fa";
-  const t = useTranslations("Terms");
+  const t = await getTranslations({ locale, namespace: "Terms" });
 
   const sections = [
     {
