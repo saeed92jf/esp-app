@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
+import { Scale, FileSignature, Lightbulb, AlertTriangle } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { Button } from "@/components/ui/button";
 
 export async function generateMetadata(props: { params: Promise<{ locale: string }> }) {
   const { locale } = await props.params;
@@ -12,51 +15,84 @@ export default async function TermsPage(props: { params: Promise<{ locale: strin
   const isFa = locale === "fa";
   const t = useTranslations("Terms");
 
+  const sections = [
+    {
+      id: "acceptance",
+      icon: FileSignature,
+      title: t("acceptance"),
+      body: t("acceptanceBody"),
+    },
+    {
+      id: "intellectualProperty",
+      icon: Lightbulb,
+      title: t("intellectualProperty"),
+      body: t("intellectualPropertyBody"),
+    },
+    {
+      id: "disclaimer",
+      icon: AlertTriangle,
+      title: t("disclaimer"),
+      body: t("disclaimerBody"),
+    }
+  ];
+
   return (
-    <main className="container mx-auto px-6 py-24 md:py-32 max-w-4xl min-h-screen">
-      <div className="prose prose-neutral dark:prose-invert prose-lg max-w-none">
-        <h1 className="text-4xl font-bold mb-8 text-foreground">
-          {t("title")}
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          {isFa 
-            ? "لطفاً پیش از استفاده از سامانه، این موارد را با دقت مطالعه کنید." 
-            : "Please read these terms carefully before using the platform."}
-        </p>
-
-        <section className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {t("acceptance")}
-          </h2>
-          <p className="text-muted-foreground/80 leading-relaxed">
-            {isFa 
-              ? "ورود و استفاده شما از پلتفرم مهندسی و محاسباتی یورواسلات پارس به معنای پذیرش کامل تمامی شرایط و قوانین مندرج در این صفحه است. در صورت عدم توافق با این قوانین، مجاز به استفاده از خدمات سامانه نخواهید بود."
-              : "By accessing and using the Euroslot Pars engineering and calculation platform, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, you are not authorized to use the services."}
-          </p>
-        </section>
-
-        <section className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {t("intellectualProperty")}
-          </h2>
-          <p className="text-muted-foreground/80 leading-relaxed">
-            {isFa
-              ? "تمامی حقوق مادی و معنوی، طراحی‌ها، کدهای اختصاصی ماژول‌ها و ابزارهای تحلیلیِ این سامانه متعلق به شرکت یورواسلات پارس می‌باشد. هرگونه کپی‌برداری یا استفاده تجاری بدون کسب اجازه کتبی، پیگرد قانونی به همراه خواهد داشت."
-              : "All intellectual property rights, designs, proprietary module code, and analytical tools within this platform belong to Euroslot Pars. Any unauthorized copying or commercial use without written permission will result in legal action."}
-          </p>
-        </section>
-
-        <section className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 text-foreground">
-            {t("disclaimer")}
-          </h2>
-          <p className="text-muted-foreground/80 leading-relaxed">
-            {isFa
-              ? "با وجود آنکه تیم تحقیق و توسعه (R&D) ما تمام تلاش خود را برای دقت ۱۰۰٪ در محاسبات مهندسی به کار گرفته است، نتایج ارائه‌شده صرفاً جهت راهنمایی است و مسئولیت نهایی تایید نقشه‌ها و محاسبات در پروژه‌های واقعی بر عهده مهندس ناظر پروژه می‌باشد."
-              : "Although our R&D team has made every effort to ensure 100% accuracy in engineering calculations, the results provided are for guidance only. The ultimate responsibility for approving drawings and calculations in real-world projects lies with the supervising engineer."}
-          </p>
-        </section>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* Subtle Background Gradients */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -top-[25%] -right-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute -bottom-[25%] -left-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
       </div>
-    </main>
+
+      <main className="container relative mx-auto px-6 py-20 md:py-32 max-w-4xl z-10">
+        
+        {/* Header Section */}
+        <div className="flex flex-col items-center text-center mb-16 space-y-6">
+          <div className="inline-flex items-center justify-center p-4 rounded-3xl bg-primary/10 text-primary mb-2 ring-1 ring-primary/20 shadow-[0_0_40px_rgba(var(--primary),0.1)]">
+            <Scale className="size-10" />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+            {t("title")}
+          </h1>
+          <p className="text-sm md:text-base font-medium px-4 py-1.5 rounded-full bg-muted text-muted-foreground border border-border/50">
+            {t("subtitle")}
+          </p>
+        </div>
+
+        {/* Content Sections */}
+        <div className="space-y-8">
+          {sections.map((section, index) => {
+            const Icon = section.icon;
+            return (
+              <section 
+                key={section.id} 
+                className="group relative flex flex-col md:flex-row gap-6 p-8 rounded-3xl bg-card border border-border/40 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20"
+              >
+                <div className="shrink-0">
+                  <div className="flex items-center justify-center size-12 rounded-2xl bg-primary/5 text-primary group-hover:scale-110 group-hover:bg-primary/10 transition-transform duration-300">
+                    <Icon className="size-6" />
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl md:text-2xl font-bold mb-3 text-foreground group-hover:text-primary transition-colors">
+                    {section.title}
+                  </h2>
+                  <p className="text-base md:text-lg text-muted-foreground/90 leading-relaxed font-light">
+                    {section.body}
+                  </p>
+                </div>
+              </section>
+            );
+          })}
+        </div>
+        
+        {/* Footer Actions */}
+        <div className="mt-16 text-center">
+          <Button asChild variant="outline" className="rounded-full px-8 h-12 text-base">
+            <Link href="/">{isFa ? "بازگشت به صفحه اصلی" : "Back to Home"}</Link>
+          </Button>
+        </div>
+      </main>
+    </div>
   );
 }
