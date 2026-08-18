@@ -114,17 +114,15 @@ function ProjectDatePicker({
   };
 
   return (
-    <div className="w-full min-w-0 flex items-center h-7 rounded-lg transition-colors border-input focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring">
-      <DatePicker
-        value={dateObj}
-        onChange={handleSelect}
-        placeholder={placeholder || "Select date"}
-        isJalali={isJalali}
-        onCalendarTypeChange={onToggleCalendar}
-        size="sm"
-        triggerClassName="h-7 text-xs w-full min-w-0 bg-white dark:bg-black rounded-lg border-transparent shadow-none px-2 text-foreground"
-      />
-    </div>
+    <DatePicker
+      value={dateObj}
+      onChange={handleSelect}
+      placeholder={placeholder || "Select date"}
+      isJalali={isJalali}
+      onCalendarTypeChange={onToggleCalendar}
+      size="sm"
+      triggerClassName="h-7 text-xs font-medium w-full min-w-0 bg-white dark:bg-black hover:bg-muted/40 hover:border-input rounded-lg border border-input shadow-none px-2.5 text-foreground transition-colors"
+    />
   );
 }
 
