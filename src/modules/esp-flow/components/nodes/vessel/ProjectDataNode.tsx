@@ -20,7 +20,7 @@ import {
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
 
-import { COUNTRIES, getCountryByCode, validatePhone, validateMobile } from "@/lib/countries";
+import { COUNTRIES, getCountryByCode, validatePhone, validateMobile, cleanRawPhone, applyMask } from "@/lib/countries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -197,14 +197,15 @@ function PhoneField({
       const matchedCountry = COUNTRIES.find(c => c.dialCode === maybeDialCode);
       if (matchedCountry) {
         setCountryCode(matchedCountry.code);
-        setPhoneRaw(parts.slice(1).join(" "));
+        const rawPart = parts.slice(1).join(" ");
+        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), matchedCountry.mask));
       } else {
         setPhoneRaw(value);
       }
     } else {
       setPhoneRaw(value);
     }
-  }, []);
+  }, [value]);
 
   const currentCountry = getCountryByCode(countryCode);
 
@@ -212,19 +213,63 @@ function PhoneField({
   const isInvalid = touched && hasValue && !isValid;
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    setPhoneRaw(raw);
-    onChange(`${currentCountry.dialCode} ${raw}`);
+    // 1. Clean input (remove non-digits and leading zeros based on country)
+    const rawDigits = cleanRawPhone(countryCode, e.target.value);
+    
+    // 2. Prevent typing more digits than the mask allows (if a mask exists)
+    if (currentCountry.mask) {
+      const maxDigits = currentCountry.mask.replace(/\D/g, "").length;
+      if (rawDigits.length > maxDigits) return; // Ignore extra characters
+    }
+
+    // 3. Apply the mask
+    const formatted = applyMask(rawDigits, currentCountry.mask);
+    
+    setPhoneRaw(formatted);
+    
+    if (formatted) {
+      onChange(`${currentCountry.dialCode} ${formatted}`);
+    } else {
+      onChange("");
+    }
   };
 
   const handleCountryChange = (newCode: string) => {
     setCountryCode(newCode);
     const c = getCountryByCode(newCode);
-    onChange(`${c.dialCode} ${phoneRaw}`);
+    // Re-format the existing phone number with the new country's mask and rules
+    const rawDigits = cleanRawPhone(newCode, phoneRaw);
+    let finalFormatted = "";
+    if (c.mask) {
+      const maxDigits = c.mask.replace(/\D/g, "").length;
+      const truncated = rawDigits.slice(0, maxDigits);
+      finalFormatted = applyMask(truncated, c.mask);
+    } else {
+      finalFormatted = rawDigits;
+    }
+    
+    setPhoneRaw(finalFormatted);
+    if (finalFormatted) {
+      onChange(`${c.dialCode} ${finalFormatted}`);
+    } else {
+      onChange("");
+    }
   };
 
+  const options = COUNTRIES.map(c => ({
+    value: c.code,
+    label: c.dialCode,
+    icon: (
+      <img 
+        src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
+        alt={c.name} 
+        className="w-4 h-3 object-cover rounded-[2px]" 
+      />
+    )
+  }));
+
   return (
-    <div className="space-y-0.5 w-full min-w-0">
+    <div className="space-y-0.5 w-full min-w-0 font-sans">
       <div
         className={`relative flex items-center h-7 w-full min-w-0 rounded-lg border bg-white dark:bg-black transition-colors ${
           isInvalid
@@ -234,10 +279,10 @@ function PhoneField({
       >
         <div className="h-full border-r border-border/50 flex items-center shrink-0">
            <Combobox
-            options={COUNTRIES.map(c => ({ value: c.code, label: `${c.flag} ${c.dialCode}` }))}
+            options={options}
             value={countryCode}
             onChange={handleCountryChange}
-            className="h-full border-0 shadow-none bg-transparent w-[75px] px-1 text-xs [&>button]:h-full [&>button]:px-1"
+            className="h-full border-0 shadow-none bg-transparent w-[85px] px-1 text-xs [&>button]:h-full [&>button]:px-1"
             showSearch={true}
           />
         </div>

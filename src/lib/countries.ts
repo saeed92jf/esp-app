@@ -37,21 +37,21 @@ export function getCountryByCode(code: string) {
 }
 
 export function validatePhone(countryCode: string, phone: string): boolean {
-  if (!phone) return true; // Empty is valid unless marked required elsewhere
+  if (!phone) return true;
   const raw = phone.replace(/\D/g, "");
   if (raw.length === 0) return true;
 
   const lengths: Record<string, number[]> = {
-    "IR": [10, 11], // 9123456789 or 09123456789
+    "IR": [10], // Iran without leading zero is 10 digits
     "US": [10],
-    "GB": [10, 11],
+    "GB": [10], // GB without leading zero is 10
     "DE": [10, 11],
-    "AE": [9],
+    "AE": [8, 9], // AE without 0
     "TR": [10],
     "IQ": [10],
   };
 
-  const validLengths = lengths[countryCode] || [8, 9, 10, 11, 12, 13, 14, 15]; // E.164 max length is 15
+  const validLengths = lengths[countryCode] || [8, 9, 10, 11, 12, 13, 14, 15];
   return validLengths.includes(raw.length);
 }
 
@@ -60,14 +60,35 @@ export function validateMobile(countryCode: string, mobile: string): boolean {
   const raw = mobile.replace(/\D/g, "");
   if (raw.length === 0) return true;
   
-  // Mobile specific validation for Iran
   if (countryCode === "IR") {
-    // 09XXXXXXXXX or 9XXXXXXXXX
-    if (raw.length === 11 && !raw.startsWith("09")) return false;
-    if (raw.length === 10 && !raw.startsWith("9")) return false;
-    return raw.length === 10 || raw.length === 11;
+    // 9XXXXXXXXX (10 digits)
+    return raw.length === 10 && raw.startsWith("9");
   }
   
-  // Fallback to normal phone validation
   return validatePhone(countryCode, mobile);
+}
+
+// Remove leading zeros for country codes that typically drop the trunk prefix (0) internationally
+export function cleanRawPhone(countryCode: string, input: string): string {
+  let raw = input.replace(/\D/g, "");
+  if (["IR", "GB", "DE", "AE", "TR"].includes(countryCode)) {
+    raw = raw.replace(/^0+/, "");
+  }
+  return raw;
+}
+
+export function applyMask(raw: string, mask?: string): string {
+  if (!mask || !raw) return raw;
+  let formatted = "";
+  let rawIndex = 0;
+  for (let i = 0; i < mask.length; i++) {
+    if (rawIndex >= raw.length) break;
+    if (mask[i] === '0') {
+      formatted += raw[rawIndex];
+      rawIndex++;
+    } else {
+      formatted += mask[i];
+    }
+  }
+  return formatted;
 }
