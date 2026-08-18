@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DatePicker } from "@/components/ui/date-picker";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Combobox } from "@/components/ui/combobox";
 import {
@@ -130,12 +130,10 @@ function EmailField({
   value,
   onChange,
   errorText,
-  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   errorText: string;
-  placeholder?: string;
 }) {
   const [touched, setTouched] = useState(false);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -158,7 +156,7 @@ function EmailField({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onBlur={() => setTouched(true)}
-          placeholder={placeholder || "contact@company.com"}
+          placeholder="contact@company.com"
           className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
         />
         {isValid && (
@@ -269,8 +267,6 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
   const patch = (updates: Partial<ProjectData>) => {
     updateNodeData(id, { projectData: { ...pd, ...updates } });
   };
-  
-  const t = useTranslations("Flow.nodes.projectDataNode.placeholders");
 
   const handleAddItem = () => {
     const trimmedTag = draftTag.trim();
@@ -353,7 +349,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.indentNumber || ""}
                 onChange={(e) => patch({ indentNumber: e.target.value })}
-                placeholder={t("placeholders.indentNo")}
+                placeholder="IND-001"
                 className="h-7 text-xs bg-white dark:bg-black font-semibold w-full min-w-0"
               />
             </div>
@@ -365,7 +361,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   onChange={(v) => patch({ date: v })}
                   isJalali={isJalali}
                   onToggleCalendar={(newJalali) => patch({ dateIsJalali: newJalali })}
-                  placeholder={t("placeholders.date")}
+                  placeholder="Select date"
                 />
               </div>
             </div>
@@ -377,7 +373,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.quotationNo || ""}
                 onChange={(e) => patch({ quotationNo: e.target.value })}
-                placeholder={t("placeholders.quotationNo")}
+                placeholder="QT-2026-001"
                 className="h-7 text-xs bg-white dark:bg-black font-sans w-full min-w-0"
               />
             </div>
@@ -386,7 +382,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <Input
                 value={pd.rev || ""}
                 onChange={(e) => patch({ rev: e.target.value })}
-                placeholder={t("placeholders.rev")}
+                placeholder="0"
                 className="h-7 text-xs bg-white dark:bg-black font-sans text-center w-full min-w-0"
               />
             </div>
@@ -402,7 +398,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={CUSTOMER_OPTIONS}
                     value={pd.customer || ""}
                     onChange={(v) => patch({ customer: v })}
-                    placeholder={t("placeholders.customer")}
+                    placeholder="Select customer"
                     className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                   />
                 </div>
@@ -414,7 +410,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={END_USER_OPTIONS}
                     value={pd.endUser || ""}
                     onChange={(v) => patch({ endUser: v })}
-                    placeholder={t("placeholders.endUser")}
+                    placeholder="Select end user"
                     className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                   />
                 </div>
@@ -428,7 +424,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   options={PLANT_OPTIONS}
                   value={pd.plantProduction || ""}
                   onChange={(v) => patch({ plantProduction: v })}
-                  placeholder={t("placeholders.plant")}
+                  placeholder="Select plant"
                   className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                 />
               </div>
@@ -441,7 +437,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   type="text"
                   value={pd.projectTitle || ""}
                   onChange={(e) => patch({ projectTitle: e.target.value })}
-                  placeholder={t("placeholders.title")}
+                  placeholder="Project title..."
                   className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
                 />
                 <TooltipProvider delayDuration={200}>
@@ -485,7 +481,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                     options={GENDER_OPTIONS}
                     value={pd.gender || "MR"}
                     onChange={(v) => patch({ gender: v })}
-                    placeholder={t("placeholders.preparedByTitle")}
+                    placeholder="Title"
                     className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                   />
                 </div>
@@ -495,7 +491,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                 <Input
                   value={pd.contactPerson || ""}
                   onChange={(e) => patch({ contactPerson: e.target.value })}
-                  placeholder={t("placeholders.preparedByName")}
+                  placeholder="Full name"
                   className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
                 />
               </div>
@@ -503,14 +499,13 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
 
             <div className="space-y-1 min-w-0">
               <VesselFieldLabel label="Email Address" />
-                <div className="nodrag w-full min-w-0">
-                  <EmailField
-                    value={pd.email || ""}
-                    onChange={(v) => patch({ email: v })}
-                    placeholder={t("placeholders.email")}
-                    errorText="Invalid email format"
-                  />
-                </div>
+              <div className="nodrag w-full min-w-0">
+                <EmailField
+                  value={pd.email || ""}
+                  onChange={(v) => patch({ email: v })}
+                  errorText="Invalid email format"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -545,7 +540,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
               <FileUploadField
                 value={pd.uploadDocuments || ""}
                 onChange={(v) => patch({ uploadDocuments: v })}
-                browseText={t("placeholders.browse")}
+                browseText="Browse"
               />
             </div>
           </div>
@@ -590,7 +585,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         options={EQUIPMENT_TYPE_OPTIONS}
                         value={draftType}
                         onChange={(v) => setDraftType(v || "Vessel")}
-                        placeholder={t("placeholders.equipmentType")}
+                        placeholder="Equipment Type"
                         className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                       />
                     </div>
@@ -603,7 +598,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                         setDraftTag(e.target.value);
                         if (addError) setAddError(null);
                       }}
-                      placeholder={t("placeholders.tagNo")}
+                      placeholder="e.g. V-101"
                       className="h-7 text-xs font-semibold bg-white dark:bg-black w-full min-w-0"
                     />
                   </div>
@@ -614,7 +609,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                       min={1}
                       value={draftQty}
                       onChange={(e) => setDraftQty(e.target.value)}
-                      placeholder={t("placeholders.qty")}
+                      placeholder="1"
                       className="h-7 text-xs bg-white dark:bg-black w-full min-w-0"
                     />
                   </div>
@@ -625,7 +620,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   <Textarea
                     value={draftDesc}
                     onChange={(e) => setDraftDesc(e.target.value)}
-                    placeholder={t("placeholders.description")}
+                    placeholder="Description / Remarks..."
                     className="min-h-[54px] text-xs resize-none bg-white dark:bg-black w-full min-w-0"
                     rows={2}
                   />

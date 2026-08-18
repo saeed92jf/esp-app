@@ -11,7 +11,8 @@ import {
   validateMobile, 
   cleanRawPhone, 
   applyMask, 
-  toEnglishDigits 
+  toEnglishDigits,
+  toPersianDigits
 } from "@/lib/countries"
 
 export interface PhoneInputProps {
@@ -127,7 +128,10 @@ export function PhoneInput({
     };
   });
 
-  const resolvedPlaceholder = placeholder || (isMobile ? (currentCountry.exampleMobile || currentCountry.mobileMask || "000 000 0000") : (currentCountry.examplePhone || currentCountry.mask || "000 000 0000"));
+  let resolvedPlaceholder = placeholder || (isMobile ? (currentCountry.exampleMobile || currentCountry.mobileMask || "000 000 0000") : (currentCountry.examplePhone || currentCountry.mask || "000 000 0000"));
+  if (isFa) {
+    resolvedPlaceholder = toPersianDigits(resolvedPlaceholder);
+  }
 
   return (
     <div className="space-y-0.5 w-full min-w-0 font-sans">
@@ -154,7 +158,7 @@ export function PhoneInput({
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
           placeholder={resolvedPlaceholder}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground rtl:text-right ltr:text-left"
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground text-left"
           dir="ltr"
         />
         {isValid && (
