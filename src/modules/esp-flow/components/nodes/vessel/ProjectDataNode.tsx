@@ -198,14 +198,15 @@ function PhoneField({
       if (matchedCountry) {
         setCountryCode(matchedCountry.code);
         const rawPart = parts.slice(1).join(" ");
-        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), matchedCountry.mask));
+        const maskToUse = isMobile && matchedCountry.mobileMask ? matchedCountry.mobileMask : matchedCountry.mask;
+        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), maskToUse));
       } else {
         setPhoneRaw(value);
       }
     } else {
       setPhoneRaw(value);
     }
-  }, [value]);
+  }, [value, isMobile]);
 
   const currentCountry = getCountryByCode(countryCode);
 
@@ -217,13 +218,14 @@ function PhoneField({
     const rawDigits = cleanRawPhone(countryCode, e.target.value);
     
     // 2. Prevent typing more digits than the mask allows (if a mask exists)
-    if (currentCountry.mask) {
-      const maxDigits = currentCountry.mask.replace(/\D/g, "").length;
+    const maskToUse = isMobile && currentCountry.mobileMask ? currentCountry.mobileMask : currentCountry.mask;
+    if (maskToUse) {
+      const maxDigits = maskToUse.replace(/\D/g, "").length;
       if (rawDigits.length > maxDigits) return; // Ignore extra characters
     }
 
     // 3. Apply the mask
-    const formatted = applyMask(rawDigits, currentCountry.mask);
+    const formatted = applyMask(rawDigits, maskToUse);
     
     setPhoneRaw(formatted);
     
@@ -240,10 +242,11 @@ function PhoneField({
     // Re-format the existing phone number with the new country's mask and rules
     const rawDigits = cleanRawPhone(newCode, phoneRaw);
     let finalFormatted = "";
-    if (c.mask) {
-      const maxDigits = c.mask.replace(/\D/g, "").length;
+    const maskToUse = isMobile && c.mobileMask ? c.mobileMask : c.mask;
+    if (maskToUse) {
+      const maxDigits = maskToUse.replace(/\D/g, "").length;
       const truncated = rawDigits.slice(0, maxDigits);
-      finalFormatted = applyMask(truncated, c.mask);
+      finalFormatted = applyMask(truncated, maskToUse);
     } else {
       finalFormatted = rawDigits;
     }
@@ -282,7 +285,7 @@ function PhoneField({
             options={options}
             value={countryCode}
             onChange={handleCountryChange}
-            className="h-full border-0 shadow-none bg-transparent w-[85px] px-1 text-xs [&>button]:h-full [&>button]:px-1"
+            className="h-full border-0 shadow-none bg-transparent w-[100px] px-1 text-[11px] [&>button]:h-full [&>button]:px-1"
             showSearch={true}
           />
         </div>
@@ -292,7 +295,7 @@ function PhoneField({
           value={phoneRaw}
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
-          placeholder={placeholder || currentCountry.mask || "000 000 0000"}
+          placeholder={placeholder || (isMobile && currentCountry.mobileMask ? currentCountry.mobileMask : currentCountry.mask) || "000 000 0000"}
           className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground text-foreground rtl:text-right ltr:text-left"
           dir="ltr"
         />

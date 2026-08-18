@@ -4,10 +4,11 @@ export interface Country {
   dialCode: string;
   flag: string;
   mask?: string; // Example: "000 000 0000"
+  mobileMask?: string;
 }
 
 export const COUNTRIES: Country[] = [
-  { name: "Iran", code: "IR", dialCode: "+98", flag: "🇮🇷", mask: "000 000 0000" },
+  { name: "Iran", code: "IR", dialCode: "+98", flag: "🇮🇷", mask: "00 0000 0000", mobileMask: "000 000 0000" },
   { name: "United States", code: "US", dialCode: "+1", flag: "🇺🇸", mask: "000 000 0000" },
   { name: "United Kingdom", code: "GB", dialCode: "+44", flag: "🇬🇧", mask: "0000 000000" },
   { name: "Germany", code: "DE", dialCode: "+49", flag: "🇩🇪", mask: "000 0000000" },
