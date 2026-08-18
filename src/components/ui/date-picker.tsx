@@ -607,7 +607,7 @@ export function DatePicker({
   const sizeClasses = {
     xs: "h-6 text-xs px-2",
     sm: "h-7 text-xs px-2.5",
-    default: "h-8 text-xs md:text-sm px-2.5",
+    default: "h-8 text-sm px-2.5",
     lg: "h-10 text-sm px-3",
   };
 

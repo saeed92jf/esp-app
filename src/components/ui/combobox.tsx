@@ -67,7 +67,7 @@ export function Combobox({
         >
           <div className="flex items-center gap-2 truncate">
             {selected?.icon && <span className="shrink-0 flex items-center justify-center">{selected.icon}</span>}
-            <span className="truncate">{selected ? (selected.triggerLabel || selected.label) : (value || resolvedPlaceholder)}</span>
+            <span className={cn("truncate", !selected && !value && "text-muted-foreground")}>{selected ? (selected.triggerLabel || selected.label) : (value || resolvedPlaceholder)}</span>
           </div>
           <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
             <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
