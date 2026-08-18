@@ -15,6 +15,8 @@ import {
   ChevronUp,
   Info,
   Layers,
+  Calendar,
+  CalendarDays,
 } from "lucide-react";
 
 import { useDiagramStore } from "@/modules/esp-flow/store";
@@ -114,7 +116,7 @@ function ProjectDatePicker({
   return (
     <div className="w-full min-w-0 flex items-center h-7 rounded-lg transition-colors border-input focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring">
       <div className="bg-muted border border-input rounded-l-lg h-7 px-2 flex items-center justify-center shrink-0 border-r-0 z-[1] select-none text-muted-foreground/80 pointer-events-none" style={{ marginLeft: "-1px" }}>
-        {internalIsJalali ? <CalendarDays className="size-3.5" /> : <Calendar className="size-3.5" />}
+        {isJalali ? <CalendarDays className="size-3.5" /> : <Calendar className="size-3.5" />}
       </div>
       <div className="flex-1 min-w-0 nodrag">
         <DatePicker
