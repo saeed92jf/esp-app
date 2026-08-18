@@ -1,6 +1,6 @@
 {
   "Team": {
-    "title": "ESP R&D Team",
+    "title": "ESP R&D TEAM",
     "description": "Meet the innovative minds driving the future of engineering and calculation platforms.",
     "roles": {
       "head": "Head of R&D Team",
@@ -10,7 +10,7 @@
       "content": "Content Creator"
     },
     "sections": {
-      "leadership": "Leadership",
+      "leadership": "Leadership & Team",
       "engineering": "Engineering & Security",
       "content": "Content & Research"
     },
@@ -19,9 +19,9 @@
       "saeed": "Saeed Jalili Fard",
       "peyman": "Peyman Sharifi",
       "pouria": "Pouria Yavari",
-      "mohammadSaeed": "Mohammad Saeed Khani",
+      "mohammadSaeed": "M. Saeed Khani",
       "behzad": "Behzad Saeidi",
-      "seyedMohammad": "Seyed Mohammad Hosseini Fard",
+      "seyedMohammad": "M. Hosseini Fard",
       "sina": "Sina Jahanbakhsh"
     },
     "cta": {
