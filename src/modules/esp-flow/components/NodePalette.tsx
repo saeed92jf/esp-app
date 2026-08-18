@@ -668,8 +668,8 @@ export function NodePalette() {
                       "flex cursor-grab flex-col items-center gap-1.5 rounded-xl",
                       "border border-border/50 bg-card/40 px-2 py-3 text-center",
                       // Interaction
-                      "transition-all duration-300 hover:bg-card/80 hover:border-primary/50 hover:shadow-md hover:-translate-y-0.5 group",
-                      "active:cursor-grabbing active:shadow-sm active:translate-y-0",
+                      "transition-all duration-300 hover:bg-card/80 hover:border-primary/50 hover:shadow-md group",
+                      "active:cursor-grabbing active:shadow-sm",
                     )}
                   >
                     <Icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors duration-300" />
