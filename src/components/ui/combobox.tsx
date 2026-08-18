@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface ComboboxOption { value: string; label: string; icon?: React.ReactNode; disabled?: boolean; hint?: string; }
+export interface ComboboxOption { value: string; label: string; triggerLabel?: string; searchTerms?: string[]; icon?: React.ReactNode; disabled?: boolean; hint?: string; }
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
@@ -64,7 +64,7 @@ export function Combobox({
         >
           <div className="flex items-center gap-2 truncate">
             {selected?.icon && <span className="shrink-0 flex items-center justify-center">{selected.icon}</span>}
-            <span className="truncate">{selected ? selected.label : (value || resolvedPlaceholder)}</span>
+            <span className="truncate">{selected ? (selected.triggerLabel || selected.label) : (value || resolvedPlaceholder)}</span>
           </div>
           <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
             <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
@@ -81,7 +81,7 @@ export function Combobox({
                 <CommandItem 
                   key={opt.value} 
                   value={opt.value} 
-                  keywords={[opt.label]} 
+                  keywords={opt.searchTerms || [opt.label]} 
                   onSelect={(currentValue) => { 
                     if (opt.disabled) return;
                     onChange?.(currentValue === value ? '' : currentValue); 

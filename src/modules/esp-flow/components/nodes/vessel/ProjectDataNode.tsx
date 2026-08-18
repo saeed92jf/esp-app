@@ -214,14 +214,21 @@ function PhoneField({
   const isInvalid = touched && hasValue && !isValid;
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 1. Clean input (remove non-digits and leading zeros based on country)
-    const rawDigits = cleanRawPhone(countryCode, e.target.value);
+    // 1. Clean input (remove non-digits)
+    let rawDigits = cleanRawPhone(countryCode, e.target.value);
     
-    // 2. Prevent typing more digits than the mask allows (if a mask exists)
+    // 2. Prevent typing more digits than the mask allows (if a mask exists), handle copy/paste with leading zero
     const maskToUse = isMobile && currentCountry.mobileMask ? currentCountry.mobileMask : currentCountry.mask;
     if (maskToUse) {
       const maxDigits = maskToUse.replace(/\D/g, "").length;
-      if (rawDigits.length > maxDigits) return; // Ignore extra characters
+      if (rawDigits.length > maxDigits && rawDigits.startsWith("0")) {
+        // If pasted with leading zero, try to remove it
+        rawDigits = rawDigits.slice(1);
+      }
+      if (rawDigits.length > maxDigits) {
+        // Truncate to max digits instead of ignoring
+        rawDigits = rawDigits.slice(0, maxDigits);
+      }
     }
 
     // 3. Apply the mask
@@ -261,7 +268,9 @@ function PhoneField({
 
   const options = COUNTRIES.map(c => ({
     value: c.code,
-    label: c.dialCode,
+    label: `${c.name} (${c.dialCode})`,
+    triggerLabel: c.dialCode,
+    searchTerms: [c.name, c.dialCode, c.code],
     icon: (
       <img 
         src={`https://flagcdn.com/w20/${c.code.toLowerCase()}.png`} 
