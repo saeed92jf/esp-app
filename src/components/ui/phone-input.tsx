@@ -50,14 +50,14 @@ export function PhoneInput({
         setCountryCode(matchedCountry.code);
         const rawPart = parts.slice(1).join(" ");
         const maskToUse = isMobile && matchedCountry.mobileMask ? matchedCountry.mobileMask : matchedCountry.mask;
-        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), maskToUse));
+        setPhoneRaw(applyMask(cleanRawPhone(matchedCountry.code, rawPart), maskToUse, isFa));
       } else {
         setPhoneRaw(value);
       }
     } else {
       setPhoneRaw(value);
     }
-  }, [value, isMobile]);
+  }, [value, isMobile, isFa]);
 
   const currentCountry = getCountryByCode(countryCode);
 
@@ -78,7 +78,7 @@ export function PhoneInput({
       }
     }
 
-    const formatted = applyMask(rawDigits, maskToUse);
+    const formatted = applyMask(rawDigits, maskToUse, isFa);
     
     setPhoneRaw(formatted);
     
@@ -98,9 +98,9 @@ export function PhoneInput({
     if (maskToUse) {
       const maxDigits = maskToUse.replace(/\D/g, "").length;
       const truncated = rawDigits.slice(0, maxDigits);
-      finalFormatted = applyMask(truncated, maskToUse);
+      finalFormatted = applyMask(truncated, maskToUse, isFa);
     } else {
-      finalFormatted = rawDigits;
+      finalFormatted = isFa ? toPersianDigits(rawDigits) : rawDigits;
     }
     
     setPhoneRaw(finalFormatted);
@@ -113,10 +113,11 @@ export function PhoneInput({
 
   const options = COUNTRIES.map(c => {
     const displayName = isFa ? c.nameFa : c.name;
+    const dialCodeDisplay = isFa ? toPersianDigits(c.dialCode) : c.dialCode;
     return {
       value: c.code,
-      label: `${displayName} (${c.dialCode})`,
-      triggerLabel: c.dialCode,
+      label: `${displayName} (${dialCodeDisplay})`,
+      triggerLabel: dialCodeDisplay,
       searchTerms: [c.name, c.nameFa, c.dialCode, c.code],
       icon: (
         <img 
@@ -158,7 +159,7 @@ export function PhoneInput({
           onChange={handlePhoneChange}
           onBlur={() => setTouched(true)}
           placeholder={resolvedPlaceholder}
-          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground text-left"
+          className="h-full text-xs flex-1 min-w-0 bg-transparent border-0 outline-none font-sans px-2 placeholder:text-muted-foreground/50 text-foreground text-left fa-num"
           dir="ltr"
         />
         {isValid && (
