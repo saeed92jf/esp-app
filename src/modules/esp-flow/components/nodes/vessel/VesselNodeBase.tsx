@@ -130,7 +130,7 @@ export function VesselNodeContainer({
         className={cn(
           "rounded-xl border bg-gradient-to-br from-card to-card/50 backdrop-blur-xl text-card-foreground shadow-lg transition-all duration-300 overflow-hidden",
           "border-border/50 hover:border-primary/50 group",
-          "focus-within:border-form-primary focus-within:ring-2 focus-within:ring-form-primary/30",
+          "focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring",
           selected
             ? "border-form-primary ring-2 ring-form-primary ring-offset-2 ring-offset-background shadow-xl shadow-sky-800/15"
             : ""

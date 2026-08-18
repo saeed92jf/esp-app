@@ -112,16 +112,21 @@ function ProjectDatePicker({
   };
 
   return (
-    <div className="w-full min-w-0 flex items-center h-7 rounded-lg transition-colors border-input hover:border-form-primary focus-within:border-form-primary">
-      <DatePicker
-        value={dateObj}
-        onChange={handleSelect}
-        placeholder={placeholder || "Select date"}
-        isJalali={isJalali}
-        onCalendarTypeChange={onToggleCalendar}
-        size="sm"
-        triggerClassName="h-7 text-xs w-full min-w-0 bg-white dark:bg-black rounded-lg border border-input focus-within:border-form-primary hover:border-form-primary shadow-none px-2 text-foreground"
-      />
+    <div className="w-full min-w-0 flex items-center h-7 rounded-lg transition-colors border-input focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring">
+      <div className="bg-muted border border-input rounded-l-lg h-7 px-2 flex items-center justify-center shrink-0 border-r-0 z-[1] select-none text-muted-foreground/80 pointer-events-none" style={{ marginLeft: "-1px" }}>
+        {internalIsJalali ? <CalendarDays className="size-3.5" /> : <Calendar className="size-3.5" />}
+      </div>
+      <div className="flex-1 min-w-0 nodrag">
+        <DatePicker
+          value={dateObj}
+          onChange={handleSelect}
+          placeholder={placeholder || "Select date"}
+          isJalali={isJalali}
+          onCalendarTypeChange={onToggleCalendar}
+          size="sm"
+          triggerClassName="h-7 text-xs w-full min-w-0 bg-white dark:bg-black rounded-lg border-l-0 rounded-l-none shadow-none px-2 text-foreground border-input"
+        />
+      </div>
     </div>
   );
 }
@@ -149,7 +154,7 @@ function EmailField({
         className={`relative flex items-center h-7 w-full min-w-0 rounded-lg border bg-white dark:bg-black px-2 gap-1.5 transition-colors ${
           isInvalid
             ? "border-destructive ring-1 ring-destructive"
-            : "border-input focus-within:border-form-primary"
+            : "border-input focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring"
         }`}
       >
         <Mail className="size-3.5 shrink-0 text-muted-foreground" />
@@ -198,7 +203,7 @@ function FileUploadField({
   };
 
   return (
-    <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-form-primary transition-colors">
+    <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
       <input
         ref={inputRef}
         type="file"
@@ -437,7 +442,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
 
             <div className="space-y-1 min-w-0">
               <VesselFieldLabel label="Project Title" />
-              <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-form-primary transition-colors">
+              <div className="relative flex items-center h-7 w-full min-w-0 rounded-lg border border-input bg-white dark:bg-black pl-2 pr-0.5 gap-1 focus-within:border-focus-ring focus-within:ring-1 focus-within:ring-focus-ring transition-colors">
                 <input
                   type="text"
                   value={pd.projectTitle || ""}
