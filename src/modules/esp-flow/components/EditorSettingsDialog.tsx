@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Keyboard } from "lucide-react";
+import { Palette, Workflow, Scale } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
 import type { DiagramEdgeType, EditorSettings } from "../types";
@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Scale } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // ── Local sub-components ────────────────────────────────────────────────
 
@@ -64,17 +64,7 @@ function useEdgeTypeOptions(): { value: DiagramEdgeType; label: string }[] {
   ];
 }
 
-// Keyboard shortcuts — labelKey maps to Flow.shortcuts.* in translation files
-const SHORTCUT_KEYS = [
-  { labelKey: "undo", combo: "Ctrl/⌘ + Z" },
-  { labelKey: "redo", combo: "Ctrl/⌘ + Shift + Z" },
-  { labelKey: "save", combo: "Ctrl/⌘ + S" },
-  { labelKey: "copy", combo: "Ctrl/⌘ + C" },
-  { labelKey: "paste", combo: "Ctrl/⌘ + V" },
-  { labelKey: "duplicate", combo: "Ctrl/⌘ + D" },
-  { labelKey: "delete", combo: "Delete" },
-  { labelKey: "fitView", combo: "Right-click → Fit view" },
-] as const;
+
 
 // ── EditorSettingsDialog ─────────────────────────────────────────────────
 // NOTE: the "default connection style" control below intentionally uses the
@@ -92,134 +82,147 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-0 overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b border-border shrink-0 bg-muted/30">
           <DialogTitle>{t("editorSettings.title")}</DialogTitle>
           <DialogDescription>
             {t("editorSettings.canvas")} · {t("editorSettings.appearance")} · {t("editorSettings.behavior")}
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[65vh] pe-3">
-          <div className="pb-2">
-            {/* Canvas */}
-            <SectionTitle>{t("editorSettings.canvas")}</SectionTitle>
-            <Row label={t("editorSettings.snapToGrid")}>
-              <Switch checked={settings.snapToGrid} onCheckedChange={(v) => set("snapToGrid", v)} />
-            </Row>
-            {settings.snapToGrid && (
-              <Row label={safeT(t, "editorSettings.gridSize", "Grid size")}>
-                <Combobox
-                  value={String(settings.snapGrid[0])}
-                  onChange={(v) => { if(v) set("snapGrid", [Number(v), Number(v)]); }}
-                  options={[5, 10, 15, 20, 25, 50].map(g => ({ value: String(g), label: `${g}px` }))}
-                  className="w-24"
-                  showSearch={false}
-                />
-              </Row>
-            )}
-            <Row label={t("editorSettings.showMiniMap")}>
-              <Switch checked={settings.showMiniMap} onCheckedChange={(v) => set("showMiniMap", v)} />
-            </Row>
-            <Row label={t("editorSettings.showControls")}>
-              <Switch checked={settings.showControls} onCheckedChange={(v) => set("showControls", v)} />
-            </Row>
-            <Row label={t("editorSettings.background")}>
-              <Combobox
-                value={settings.backgroundVariant}
-                onChange={(v) => { if(v) set("backgroundVariant", v as any); }}
-                options={[
-                  { value: "dots", label: t("editorSettings.bg_dots") },
-                  { value: "lines", label: t("editorSettings.bg_lines") },
-                  { value: "cross", label: t("editorSettings.bg_cross") },
-                  { value: "none", label: t("editorSettings.bg_none") }
-                ]}
-                className="w-40"
-                showSearch={false}
-              />
-            </Row>
-
-            <div className="my-3 h-px bg-border" />
-
-            {/* Appearance */}
-            <SectionTitle>{t("editorSettings.appearance")}</SectionTitle>
-            <Row label={t("editorSettings.colorMode")}>
-              <span className="text-xs text-muted-foreground">
-                {settings.colorMode === "dark" ? t("editorSettings.mode_dark") : t("editorSettings.mode_light")}
-                {" — "}
-                {safeT(t, "editorSettings.colorModeNote", "synced with the site theme")}
-              </span>
-            </Row>
-
-            <div className="my-3 h-px bg-border" />
-
-            {/* Behavior */}
-            <SectionTitle>{t("editorSettings.behavior")}</SectionTitle>
-            <Row label={t("editorSettings.defaultEdgeType")}>
-              <Combobox
-                value={settings.defaultEdgeType}
-                onChange={(v) => { if(v) set("defaultEdgeType", v as DiagramEdgeType); }}
-                options={edgeTypeOptions}
-                className="w-56"
-                showSearch={false}
-              />
-            </Row>
-            <Row label={t("editorSettings.autoSave")}>
-              <Switch checked={settings.autoSave} onCheckedChange={(v) => set("autoSave", v)} />
-            </Row>
-            <Row label={safeT(t, "editorSettings.collisionAvoidance", "Push nodes apart while dragging")}>
-              <Switch checked={settings.collisionAvoidance} onCheckedChange={(v) => set("collisionAvoidance", v)} />
-            </Row>
-
-            <div className="my-3 h-px bg-border" />
-
-            {/* Weight settings */}
-            <SectionTitle>
-              <span className="flex items-center gap-1.5">
-                <Scale className="h-3 w-3" />
-                {safeT(t, "editorSettings.weight_title", "Vessel Weight Calculations")}
-              </span>
-            </SectionTitle>
-            <Row label={safeT(t, "editorSettings.weight_enabled", "Enable weight aggregations")}>
-              <Switch checked={settings.weightCalculationEnabled} onCheckedChange={(v) => set("weightCalculationEnabled", v)} />
-            </Row>
-            <Row label={safeT(t, "editorSettings.weight_system", "Measurement System")}>
-              <ToggleGroup
-                type="single"
-                value={settings.weightSystem}
-                onValueChange={(v) => { if (v) set("weightSystem", v as "metric" | "imperial"); }}
-                className="justify-start bg-muted p-0.5 rounded-md"
-              >
-                <ToggleGroupItem value="metric" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
-                  {safeT(t, "editorSettings.weight_metric", "Metric (kg, mm)")}
-                </ToggleGroupItem>
-                <ToggleGroupItem value="imperial" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
-                  {safeT(t, "editorSettings.weight_imperial", "Imperial (lbs, in)")}
-                </ToggleGroupItem>
-              </ToggleGroup>
-            </Row>
-
-            <div className="my-3 h-px bg-border" />
-
-            {/* Keyboard shortcuts */}
-            <SectionTitle>
-              <span className="flex items-center gap-1.5">
-                <Keyboard className="h-3 w-3" />
-                {t("editorSettings.shortcuts")}
-              </span>
-            </SectionTitle>
-            <div className="space-y-1.5">
-              {SHORTCUT_KEYS.map((shortcut) => (
-                <div key={shortcut.labelKey} className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{t(`shortcuts.${shortcut.labelKey}`)}</span>
-                  <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                    {shortcut.combo}
-                  </kbd>
-                </div>
-              ))}
-            </div>
+        <Tabs orientation="vertical" defaultValue="general" className="flex flex-1 overflow-hidden min-h-[50vh]">
+          <div className="w-56 shrink-0 border-r border-border bg-muted/10 p-3">
+            <TabsList variant="line" className="flex w-full flex-col items-stretch gap-1">
+              <TabsTrigger value="general" className="justify-start gap-2 px-3 py-2">
+                <Workflow className="size-4" />
+                <span className="text-xs">General / Appearance</span>
+              </TabsTrigger>
+              <TabsTrigger value="weight" className="justify-start gap-2 px-3 py-2">
+                <Scale className="size-4" />
+                <span className="text-xs">Vessel Weight</span>
+              </TabsTrigger>
+            </TabsList>
           </div>
-        </ScrollArea>
+
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full">
+              <div className="p-6">
+                <TabsContent value="general" className="m-0 space-y-6">
+                  {/* Canvas */}
+                  <div>
+                    <SectionTitle>{t("editorSettings.canvas")}</SectionTitle>
+                    <div className="space-y-1">
+                      <Row label={t("editorSettings.snapToGrid")}>
+                        <Switch checked={settings.snapToGrid} onCheckedChange={(v) => set("snapToGrid", v)} />
+                      </Row>
+                      {settings.snapToGrid && (
+                        <Row label={safeT(t, "editorSettings.gridSize", "Grid size")}>
+                          <Combobox
+                            value={String(settings.snapGrid[0])}
+                            onChange={(v) => { if(v) set("snapGrid", [Number(v), Number(v)]); }}
+                            options={[5, 10, 15, 20, 25, 50].map(g => ({ value: String(g), label: `${g}px` }))}
+                            className="w-24"
+                            showSearch={false}
+                          />
+                        </Row>
+                      )}
+                      <Row label={t("editorSettings.showMiniMap")}>
+                        <Switch checked={settings.showMiniMap} onCheckedChange={(v) => set("showMiniMap", v)} />
+                      </Row>
+                      <Row label={t("editorSettings.showControls")}>
+                        <Switch checked={settings.showControls} onCheckedChange={(v) => set("showControls", v)} />
+                      </Row>
+                      <Row label={t("editorSettings.background")}>
+                        <Combobox
+                          value={settings.backgroundVariant}
+                          onChange={(v) => { if(v) set("backgroundVariant", v as any); }}
+                          options={[
+                            { value: "dots", label: t("editorSettings.bg_dots") },
+                            { value: "lines", label: t("editorSettings.bg_lines") },
+                            { value: "cross", label: t("editorSettings.bg_cross") },
+                            { value: "none", label: t("editorSettings.bg_none") }
+                          ]}
+                          className="w-40"
+                          showSearch={false}
+                        />
+                      </Row>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-border" />
+
+                  {/* Appearance */}
+                  <div>
+                    <SectionTitle>{t("editorSettings.appearance")}</SectionTitle>
+                    <Row label={t("editorSettings.colorMode")}>
+                      <span className="text-xs text-muted-foreground">
+                        {settings.colorMode === "dark" ? t("editorSettings.mode_dark") : t("editorSettings.mode_light")}
+                        {" — "}
+                        {safeT(t, "editorSettings.colorModeNote", "synced with the site theme")}
+                      </span>
+                    </Row>
+                  </div>
+
+                  <div className="h-px bg-border" />
+
+                  {/* Behavior */}
+                  <div>
+                    <SectionTitle>{t("editorSettings.behavior")}</SectionTitle>
+                    <div className="space-y-1">
+                      <Row label={t("editorSettings.defaultEdgeType")}>
+                        <Combobox
+                          value={settings.defaultEdgeType}
+                          onChange={(v) => { if(v) set("defaultEdgeType", v as DiagramEdgeType); }}
+                          options={edgeTypeOptions}
+                          className="w-56"
+                          showSearch={false}
+                        />
+                      </Row>
+                      <Row label={t("editorSettings.autoSave")}>
+                        <Switch checked={settings.autoSave} onCheckedChange={(v) => set("autoSave", v)} />
+                      </Row>
+                      <Row label={safeT(t, "editorSettings.collisionAvoidance", "Push nodes apart while dragging")}>
+                        <Switch checked={settings.collisionAvoidance} onCheckedChange={(v) => set("collisionAvoidance", v)} />
+                      </Row>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="weight" className="m-0 space-y-6">
+                  {/* Weight settings */}
+                  <div>
+                    <SectionTitle>
+                      <span className="flex items-center gap-1.5">
+                        <Scale className="h-3 w-3" />
+                        {safeT(t, "editorSettings.weight_title", "Vessel Weight Calculations")}
+                      </span>
+                    </SectionTitle>
+                    <div className="space-y-1 mt-2">
+                      <Row label={safeT(t, "editorSettings.weight_enabled", "Enable weight aggregations")}>
+                        <Switch checked={settings.weightCalculationEnabled} onCheckedChange={(v) => set("weightCalculationEnabled", v)} />
+                      </Row>
+                      <Row label={safeT(t, "editorSettings.weight_system", "Measurement System")}>
+                        <ToggleGroup
+                          type="single"
+                          value={settings.weightSystem}
+                          onValueChange={(v) => { if (v) set("weightSystem", v as "metric" | "imperial"); }}
+                          className="justify-start bg-muted p-0.5 rounded-md"
+                        >
+                          <ToggleGroupItem value="metric" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
+                            {safeT(t, "editorSettings.weight_metric", "Metric (kg, mm)")}
+                          </ToggleGroupItem>
+                          <ToggleGroupItem value="imperial" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
+                            {safeT(t, "editorSettings.weight_imperial", "Imperial (lbs, in)")}
+                          </ToggleGroupItem>
+                        </ToggleGroup>
+                      </Row>
+                    </div>
+                  </div>
+                </TabsContent>
+              </div>
+            </ScrollArea>
+          </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
