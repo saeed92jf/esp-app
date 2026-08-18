@@ -270,7 +270,13 @@
       "doNotUseNozzleMdmtInterpretation": "عدم استفاده از تفسیر MDMT نازل VIII-1-01-37",
       "jobSpecificParams": "پارامترهای خاص پروژه",
       "nozzleAnalysisDirectives": "دستورالعمل‌های تحلیل نازل",
-      "asmeDirectives": "دستورالعمل‌های ASME"
+      "jobSpecificParams": "پارامترهای خاص پروژه",
+      "nozzleAnalysisDirectives": "دستورالعمل‌های تحلیل نازل",
+      "exportDataSheet": "خروجی دیتا شیت",
+      "generatePdf": "تولید گزارش PDF",
+      "saveLocation": "محل ذخیره",
+      "browseLocation": "مرور...",
+      "downloadDefault": "دانلود در پوشه پیش‌فرض"
     },
     "shortcuts": {
       "undo": "واگرد",
@@ -299,7 +305,9 @@
     },
     "messages": {
       "savedSuccessfully": "با موفقیت ذخیره شد",
-      "deletedSuccessfully": "حذف شد",
+      "noChangesToSave": "تغییری برای ذخیره نیست",
+      "pdfError": "تولید PDF با خطا مواجه شد",
+      "pdfSuccess": "گزارش PDF با موفقیت تولید شد",
       "importedSuccessfully": "با موفقیت وارد شد",
       "copiedToClipboard": "در کلیپ‌بورد کپی شد",
       "noDiagrams": "هنوز دیاگرامی ذخیره نشده",

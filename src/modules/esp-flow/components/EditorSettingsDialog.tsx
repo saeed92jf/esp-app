@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Palette, Workflow, Scale, Settings2, Target, BookOpen } from "lucide-react";
+import { Palette, Workflow, Scale, Settings2, Target, BookOpen, FileDown } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useDiagramStore } from "../store";
 import type { DiagramEdgeType, EditorSettings } from "../types";
@@ -19,6 +19,9 @@ import { Combobox } from "@/components/ui/combobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { generatePdfReport } from "../utils/pdfGenerator";
 
 // ── Local sub-components ────────────────────────────────────────────────
 
@@ -75,11 +78,56 @@ function useEdgeTypeOptions(): { value: DiagramEdgeType; label: string }[] {
 export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
   const t = useTranslations("Flow");
   const settings = useDiagramStore((s) => s.settings);
+  const nodes = useDiagramStore((s) => s.nodes);
+  const diagramName = useDiagramStore((s) => s.diagramName);
   const updateSettings = useDiagramStore((s) => s.updateSettings);
   const edgeTypeOptions = useEdgeTypeOptions();
+  const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
 
   const set = <K extends keyof EditorSettings>(key: K, value: EditorSettings[K]) =>
     updateSettings({ [key]: value });
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const pdfBuffer = await generatePdfReport({
+        nodes,
+        settings,
+        vesselName: diagramName || "Vessel",
+        plantName: "PDH",
+      });
+
+      const blob = new Blob([pdfBuffer], { type: 'application/pdf' });
+      
+      if ('showSaveFilePicker' in window) {
+        try {
+          const handle = await (window as any).showSaveFilePicker({
+            suggestedName: `${diagramName || 'DataSheet'}.pdf`,
+            types: [{ description: 'PDF Document', accept: { 'application/pdf': ['.pdf'] } }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          toast.success(safeT(t, "messages.pdfSuccess", "PDF report generated successfully"));
+        } catch (err: any) {
+          if (err.name !== 'AbortError') throw err;
+        }
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${diagramName || 'DataSheet'}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success(safeT(t, "messages.pdfSuccess", "PDF report generated successfully"));
+      }
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      toast.error(safeT(t, "messages.pdfError", "Failed to generate PDF"));
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -321,6 +369,27 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
                             showSearch={false}
                           />
                         </Row>
+                      </div>
+                    </div>
+
+                    {/* Export Section */}
+                    <div className="mt-6 rounded-xl border border-border/50 bg-card/30 p-4 shadow-sm transition-colors hover:bg-card/50">
+                      <SectionTitle>
+                        <span className="flex items-center gap-1.5">
+                          <FileDown className="h-3.5 w-3.5 text-primary" />
+                          {safeT(t, "editorSettings.exportDataSheet", "Export Data Sheet")}
+                        </span>
+                      </SectionTitle>
+                      <div className="space-y-4 mt-4">
+                        <Button
+                          variant="default"
+                          className="w-full sm:w-auto"
+                          disabled={isGeneratingPdf}
+                          onClick={handleGeneratePdf}
+                        >
+                          <FileDown className="mr-2 h-4 w-4" />
+                          {isGeneratingPdf ? '...' : safeT(t, "editorSettings.generatePdf", "Generate PDF Report")}
+                        </Button>
                       </div>
                     </div>
                   </div>

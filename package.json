@@ -52,6 +52,8 @@
     "input-otp": "^1.4.2",
     "jalaliday": "^3.1.1",
     "jsonwebtoken": "^9.0.3",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "katex": "^0.17.0",
     "lucide-react": "^1.17.0",
     "markmap-lib": "^0.18.12",

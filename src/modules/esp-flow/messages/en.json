@@ -270,7 +270,12 @@
       "doNotUseNozzleMdmtInterpretation": "Do Not Use Nozzle MDMT Interpretation VIII-1-01-37",
       "jobSpecificParams": "Job-Specific Parameters",
       "nozzleAnalysisDirectives": "Nozzle Analysis Directives",
-      "asmeDirectives": "ASME Directives"
+      "asmeDirectives": "ASME Directives",
+      "exportDataSheet": "Export Data Sheet",
+      "generatePdf": "Generate PDF Report",
+      "saveLocation": "Save Location",
+      "browseLocation": "Browse...",
+      "downloadDefault": "Download to default folder"
     },
     "shortcuts": {
       "undo": "Undo",
@@ -299,6 +304,9 @@
     },
     "messages": {
       "savedSuccessfully": "Saved successfully",
+      "noChangesToSave": "No changes to save",
+      "pdfError": "Failed to generate PDF",
+      "pdfSuccess": "PDF report generated successfully",
       "deletedSuccessfully": "Deleted",
       "importedSuccessfully": "Imported successfully",
       "copiedToClipboard": "Copied to clipboard",
