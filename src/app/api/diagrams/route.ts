@@ -1,6 +1,6 @@
 // src/app/api/diagrams/route.ts
 // Recursively lists every .json diagram file under /public/diagrams (in any
-// subfolder) so the claude-flow Toolbar can offer them as loadable templates
+// subfolder) so the esp-flow Toolbar can offer them as loadable templates
 // in its combobox. Returned paths are relative to public/diagrams and are
 // exactly what you append to "/diagrams/" to fetch the file itself, since
 // everything under /public is already served statically by Next.js.

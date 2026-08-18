@@ -31,7 +31,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
       }))
     ).default;
 
-  const flowMessages = await loadModuleMsg("claude-flow");
+  const flowMessages = await loadModuleMsg("esp-flow");
   const dashboardMessages = await loadModuleMsg("dashboard");
   const authMessages = await loadModuleMsg("auth");
   const homeMessages = await loadModuleMsg("home");

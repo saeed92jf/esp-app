@@ -48,8 +48,13 @@ const BILINGUAL_KEYWORDS: Record<
   string,
   { en: string[]; fa: string[]; descriptionEn?: string; descriptionFa?: string }
 > = {
-  "/claude-flow": {
+  "/esp-flow": {
     en: [
+      "esp flow",
+      "process flow",
+      "diagram",
+      "engineering flow",
+      "simulation",
       "claude flow",
       "vessel",
       "pressure vessel",
@@ -79,6 +84,10 @@ const BILINGUAL_KEYWORDS: Record<
       "mechanical engineering",
     ],
     fa: [
+      "ای اس پی فلو",
+      "جریان فرایند",
+      "شبیه سازی",
+      "دیاگرام مهندسی",
       "کلود فلو",
       "مخزن",
       "مخازن",
@@ -105,18 +114,7 @@ const BILINGUAL_KEYWORDS: Record<
     descriptionEn: "ASME Section VIII Pressure Vessel Design & Interactive Flow",
     descriptionFa: "طراحی و محاسبات جامع مخازن تحت فشار استاندارد ASME",
   },
-  "/esp-flow": {
-    en: [
-      "esp flow",
-      "process flow",
-      "diagram",
-      "engineering flow",
-      "simulation",
-    ],
-    fa: ["ای اس پی فلو", "جریان فرایند", "شبیه سازی", "دیاگرام مهندسی"],
-    descriptionEn: "ESP Process Engineering & Workflow Modeler",
-    descriptionFa: "مدل‌سازی و شبیه‌سازی جریان‌های مهندسی ESP",
-  },
+
   "/weight-flow": {
     en: [
       "weight flow",

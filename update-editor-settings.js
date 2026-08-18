@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = 'src/modules/claude-flow/components/EditorSettingsDialog.tsx';
+const path = 'src/modules/esp-flow/components/EditorSettingsDialog.tsx';
 let content = fs.readFileSync(path, 'utf8');
 
 // Replace Select imports

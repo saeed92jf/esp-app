@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DiagramEditor } from "@/modules/claude-flow/components/DiagramEditor";
+import { DiagramEditor } from "@/modules/esp-flow/components/DiagramEditor";
 
 
 export const metadata: Metadata = {
