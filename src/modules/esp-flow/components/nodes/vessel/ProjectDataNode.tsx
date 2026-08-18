@@ -228,7 +228,7 @@ function FileUploadField({
 
 // ─── Main Node Component ────────────────────────────────────────────────────
 export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
-  const t = useTranslations("Flow.nodes.projectDataNode.placeholders");
+  const t = useTranslations("Flow.projectDataPlaceholders");
   const updateNodeData = useDiagramStore((s) => s.updateNodeData);
   const duplicateSelected = useDiagramStore((s) => s.duplicateSelected);
   const resetNodesToDefault = useDiagramStore((s) => s.resetNodesToDefault);

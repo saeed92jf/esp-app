@@ -529,27 +529,7 @@
       "outputHubNode": "Output Hub",
       "mistEliminatorNode": "Mist Eliminator",
       "internalsNode": "Internals",
-      "projectDataNode": {
-        "placeholders": {
-          "date": "Select date",
-          "email": "contact@company.com",
-          "document": "Select document / spec file...",
-          "indentNo": "IND-001",
-          "quotationNo": "QT-2026-001",
-          "rev": "0",
-          "customer": "Select customer",
-          "endUser": "Select end user",
-          "plant": "Select plant",
-          "title": "Project title...",
-          "preparedByTitle": "Title",
-          "preparedByName": "Full name",
-          "equipmentType": "Equipment Type",
-          "tagNo": "e.g. V-101",
-          "qty": "1",
-          "description": "Description / Remarks...",
-          "browse": "Browse"
-        }
-      }
+      "projectDataNode": "Project Data"
     },
     "palette": {
       "search": "Search nodes…",
@@ -706,6 +686,25 @@
       "positiveIBeamDims": "All four dimensions must be greater than zero.",
       "webWiderThanFlange": "Web thickness can't be larger than the flange width.",
       "flangeTooThick": "Flange thickness is too large for this total height."
+    },
+    "projectDataPlaceholders": {
+      "date": "Select date",
+      "email": "contact@company.com",
+      "document": "Select document / spec file...",
+      "indentNo": "IND-001",
+      "quotationNo": "QT-2026-001",
+      "rev": "0",
+      "customer": "Select customer",
+      "endUser": "Select end user",
+      "plant": "Select plant",
+      "title": "Project title...",
+      "preparedByTitle": "Title",
+      "preparedByName": "Full name",
+      "equipmentType": "Equipment Type",
+      "tagNo": "e.g. V-101",
+      "qty": "1",
+      "description": "Description / Remarks...",
+      "browse": "Browse"
     }
   },
   "Combobox": {
