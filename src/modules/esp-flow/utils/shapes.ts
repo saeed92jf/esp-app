@@ -83,7 +83,6 @@ export const SHAPE_DEFAULT_SIZE: Record<
   mistEliminatorNode: { width: 360, height: 500 },
   internalsNode: { width: 280, height: 200 },
   projectDataNode: { width: 380, height: 560 },
-  projectSettingsNode: { width: 320, height: 260 },
   generalDataNode: { width: 440, height: 760 },
   jacketNode: { width: 480, height: 600 },
   regenVacuumSteamoutNode: { width: 440, height: 520 },
