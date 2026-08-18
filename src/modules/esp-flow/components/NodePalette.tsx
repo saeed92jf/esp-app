@@ -311,7 +311,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "projectData",
     category: "weight",
     subGroup: "project",
-    defaultData: { label: "Project Data" },
+    defaultData: { label: "Project Data", colorToken: "violet" },
   },
   {
     type: "generalDataNode",
@@ -319,7 +319,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "generalData",
     category: "weight",
     subGroup: "project",
-    defaultData: { label: "General Data" },
+    defaultData: { label: "General Data", colorToken: "violet" },
   },
   // Sub-group: Material
   {
@@ -328,7 +328,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "fileSpreadsheet",
     category: "weight",
     subGroup: "material",
-    defaultData: { label: "Material Specification Schedule" },
+    defaultData: { label: "Material Specification Schedule", colorToken: "neutral" },
   },
   // Sub-group: Body
   {
@@ -337,7 +337,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "shellSection",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Shell Section" },
+    defaultData: { label: "Shell Section", colorToken: "blue" },
   },
   {
     type: "headNode",
@@ -345,7 +345,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "head",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Head" },
+    defaultData: { label: "Head", colorToken: "blue" },
   },
   {
     type: "nozzleNode",
@@ -353,7 +353,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "nozzle",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Nozzle" },
+    defaultData: { label: "Nozzle", colorToken: "blue" },
   },
   {
     type: "supportNode",
@@ -361,7 +361,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "support",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Support" },
+    defaultData: { label: "Support", colorToken: "blue" },
   },
   {
     type: "attachmentsNode",
@@ -369,7 +369,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "attachments",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Attachments" },
+    defaultData: { label: "Attachments", colorToken: "blue" },
   },
   {
     type: "jacketNode",
@@ -377,7 +377,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "layers",
     category: "weight",
     subGroup: "body",
-    defaultData: { label: "Jacket" },
+    defaultData: { label: "Jacket", colorToken: "blue" },
   },
   // Sub-group: Internals
   {
@@ -386,7 +386,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "mistEliminator",
     category: "weight",
     subGroup: "internals",
-    defaultData: { label: "Mist Eliminator" },
+    defaultData: { label: "Mist Eliminator", colorToken: "teal" },
   },
   {
     type: "internalsNode",
@@ -394,7 +394,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "internals",
     category: "weight",
     subGroup: "internals",
-    defaultData: { label: "Internals" },
+    defaultData: { label: "Internals", colorToken: "teal" },
   },
   // Sub-group: Reports & Outputs
   {
@@ -403,7 +403,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "flame",
     category: "weight",
     subGroup: "misc",
-    defaultData: { label: "Regen / Vacuum / Steam Out" },
+    defaultData: { label: "Regen / Vacuum / Steam Out", colorToken: "red" },
   },
   {
     type: "surfacePrepNode",
@@ -411,7 +411,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "paintbrush",
     category: "weight",
     subGroup: "misc",
-    defaultData: { label: "Surface Preparation" },
+    defaultData: { label: "Surface Preparation", colorToken: "pink" },
   },
   {
     type: "outputHubNode",
@@ -419,7 +419,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "outputHub",
     category: "weight",
     subGroup: "misc",
-    defaultData: { label: "Output Hub" },
+    defaultData: { label: "Output Hub", colorToken: "green" },
   },
   {
     type: "mtoNode",
@@ -427,7 +427,7 @@ const PALETTE_ITEMS: PaletteItem[] = [
     icon: "fileSpreadsheet",
     category: "weight",
     subGroup: "misc",
-    defaultData: { label: "Material Take-Off (MTO)" },
+    defaultData: { label: "Material Take-Off (MTO)", colorToken: "neutral" },
   },
 ];
 
