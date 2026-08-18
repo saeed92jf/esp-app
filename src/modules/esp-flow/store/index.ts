@@ -40,6 +40,8 @@ const DEFAULT_SETTINGS: EditorSettings = {
   defaultEdgeType: 'smoothstep',
   autoSave: true,
   collisionAvoidance: true,
+  weightCalculationEnabled: true,
+  weightSystem: 'metric',
 };
 
 const MAX_HISTORY = 50;

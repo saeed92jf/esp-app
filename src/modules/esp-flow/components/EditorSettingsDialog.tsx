@@ -16,6 +16,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Scale } from "lucide-react";
 
 // ── Local sub-components ────────────────────────────────────────────────
 
@@ -167,6 +169,34 @@ export function EditorSettingsDialog({ onClose }: { onClose: () => void }) {
             </Row>
             <Row label={safeT(t, "editorSettings.collisionAvoidance", "Push nodes apart while dragging")}>
               <Switch checked={settings.collisionAvoidance} onCheckedChange={(v) => set("collisionAvoidance", v)} />
+            </Row>
+
+            <div className="my-3 h-px bg-border" />
+
+            {/* Weight settings */}
+            <SectionTitle>
+              <span className="flex items-center gap-1.5">
+                <Scale className="h-3 w-3" />
+                {safeT(t, "editorSettings.weight_title", "Vessel Weight Calculations")}
+              </span>
+            </SectionTitle>
+            <Row label={safeT(t, "editorSettings.weight_enabled", "Enable weight aggregations")}>
+              <Switch checked={settings.weightCalculationEnabled} onCheckedChange={(v) => set("weightCalculationEnabled", v)} />
+            </Row>
+            <Row label={safeT(t, "editorSettings.weight_system", "Measurement System")}>
+              <ToggleGroup
+                type="single"
+                value={settings.weightSystem}
+                onValueChange={(v) => { if (v) set("weightSystem", v as "metric" | "imperial"); }}
+                className="justify-start bg-muted p-0.5 rounded-md"
+              >
+                <ToggleGroupItem value="metric" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
+                  {safeT(t, "editorSettings.weight_metric", "Metric (kg, mm)")}
+                </ToggleGroupItem>
+                <ToggleGroupItem value="imperial" className="h-7 px-3 text-[11px] data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm">
+                  {safeT(t, "editorSettings.weight_imperial", "Imperial (lbs, in)")}
+                </ToggleGroupItem>
+              </ToggleGroup>
             </Row>
 
             <div className="my-3 h-px bg-border" />

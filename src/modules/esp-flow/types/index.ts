@@ -287,6 +287,10 @@ export interface EditorSettings {
   /** While dragging a node, nearby nodes get shoved out of the way instead of overlapping.
    *  See https://reactflow.dev/examples/layout/node-collisions */
   collisionAvoidance: boolean;
+
+  // ── Vessel Weight Module Settings ─────────────────────────────────────
+  weightCalculationEnabled: boolean;
+  weightSystem: 'metric' | 'imperial';
 }
 
 export type Language = 'en' | 'fa';
