@@ -46,7 +46,8 @@ export class HttpClient {
     const { body, params, signal, auth = true, revalidate } = options;
 
     // ساخت URL با query params
-    const url = new URL(`${this.baseUrl}${path}`);
+    const base = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:4000');
+    const url = new URL(`${this.baseUrl}${path}`, base);
     if (params) {
       Object.entries(params).forEach(([k, v]) => {
         if (v !== undefined) url.searchParams.set(k, String(v));
@@ -87,9 +88,24 @@ export class HttpClient {
         // خطای HTTP
         if (!res.ok) {
           const payload = await res.json().catch(() => ({})) as Record<string, unknown>;
-          const code = (payload.code as ErrorCode) ?? 'UNKNOWN';
-          const message = (payload.message as string) ?? `HTTP ${res.status}`;
-          const details = payload.details as Record<string, string[]> | undefined;
+          let code = (payload.code as ErrorCode) ?? 'UNKNOWN';
+          
+          let detailStr = typeof payload.detail === 'string' ? payload.detail : undefined;
+          let message = (payload.message as string) ?? detailStr ?? `HTTP ${res.status}`;
+          let details = payload.details as Record<string, string[]> | undefined;
+
+          // FastAPI Validation Error
+          if (res.status === 422 && Array.isArray(payload.detail)) {
+            code = 'VALIDATION_ERROR';
+            message = 'اطلاعات وارد شده نامعتبر است.';
+            details = {};
+            payload.detail.forEach((e: any) => {
+              const field = e.loc?.[e.loc.length - 1] || 'unknown';
+              if (!details![field]) details![field] = [];
+              details![field].push(e.msg);
+            });
+          }
+
           const err = new ApiError(code, message, res.status, details);
 
           if (isRetryable(res.status) && attempt < MAX_RETRIES) {

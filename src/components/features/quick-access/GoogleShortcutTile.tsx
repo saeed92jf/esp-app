@@ -12,6 +12,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { type NavColor } from "@/config/navigation";
+import { useAuthModal } from "@/modules/auth/hooks/use-auth-modal";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 // Solid vibrant background colors matching navigation & search index
 const NAV_COLOR_BG_MAP: Partial<Record<NavColor, string>> = {
@@ -58,8 +60,17 @@ export function GoogleShortcutTile({
   const locale = useLocale();
   const isRtl = locale === "fa";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const { openModal } = useAuthModal();
 
   const navBgClass = resolveNavBg(color);
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!user) {
+      e.preventDefault();
+      openModal();
+    }
+  };
 
   return (
     <div
@@ -120,6 +131,7 @@ export function GoogleShortcutTile({
       {/* Main Clickable Shortcut Link */}
       <Link
         href={href}
+        onClick={handleClick}
         className="flex flex-col items-center justify-start w-full h-full text-center focus:outline-none"
       >
         {/* Google Circular Icon Bubble */}

@@ -42,7 +42,11 @@
       "euroslot": "euroslot",
       "pars": "pars",
       "engineeringPlatform": "Engineering & Calculation Platform"
-    }
+    },
+    "password": "Password",
+    "emailPlaceholder": "name@demo.com",
+    "emailOrMobile": "Email or Mobile",
+    "quickDemoLogin": "Quick Demo Login"
   },
   "LocaleSwitcher": {
     "placeholder": "Select language",
@@ -127,6 +131,8 @@
     "readyToStart": "Sign in to access all features",
     "ctaLogin": "Sign in",
     "ctaRegister": "Create Account",
+    "ctaGuest": "Continue as Guest (Free)",
+    "badge": "Comprehensive Management & Engineering Platform",
     "freeFeatures": "Free Services",
     "premiumFeatures": "Premium Services",
     "cards": {
@@ -164,15 +170,50 @@
       "admin": "Admin",
       "engineer": "Engineer",
       "staff": "Staff",
-      "customer": "Customer"
+      "customer": "Customer",
+      "guest": "Guest"
     },
     "errors": {
       "invalidForm": "Invalid email/mobile or password.",
-      "invalidCredentials": "Account not found. Only test accounts are allowed."
+      "invalidCredentials": "Invalid email/mobile or password.",
+      "emailExists": "An account with this email already exists."
     },
     "emailOrMobile": "Email or Mobile",
     "emailPlaceholder": "name@demo.com",
-    "quickDemoLogin": "Quick Demo Login"
+    "quickDemoLogin": "Quick Demo Login",
+    "forgotPassword": "Forgot password?",
+    "forgotPasswordTitle": "Reset Password",
+    "forgotPasswordSubtitle": "Enter your email to receive a password reset link.",
+    "resetLinkSent": "Reset link sent!",
+    "verifyEmailTitle": "Verify Email",
+    "verifyEmailLoading": "Validating token...",
+    "verifyEmailSuccess": "Your account has been successfully verified!",
+    "verifyEmailFailed": "Account verification failed or token is invalid.",
+    "resetPasswordPageTitle": "Set New Password",
+    "resetPasswordPageSubtitle": "Enter your new password below.",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "passwordsDoNotMatch": "Passwords do not match.",
+    "resetPasswordSuccess": "Your password has been successfully reset.",
+    "resetPasswordFailed": "Invalid or expired token.",
+    "submitResetPassword": "Reset Password",
+    "sendResetLink": "Send reset link",
+    "backToLogin": "Back to login",
+    "passwordStrength": "Password Strength",
+    "strengthWeak": "Weak",
+    "strengthFair": "Fair",
+    "strengthGood": "Good",
+    "strengthStrong": "Strong",
+    "reqLength": "At least 8 characters",
+    "reqUpper": "At least one uppercase letter",
+    "reqLower": "At least one lowercase letter",
+    "reqNumber": "At least one number",
+    "reqSpecial": "At least one special character (@$!%*?&)",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Sign up",
+    "required": "This field is required",
+    "invalidIdentifier": "Invalid email or mobile number",
+    "backToHome": "Back to Home"
   },
   "Menu": {
     "title": "Menu",
@@ -371,6 +412,20 @@
       "openMenu": "Open menu",
       "hideEvents": "Hide Events",
       "upcomingEvents": "Upcoming Events"
+    },
+    "avatar": {
+      "selectImage": "Select Profile Image",
+      "selectThis": "Select This Image",
+      "uploadNew": "Upload New Image",
+      "noImage": "No Image",
+      "userProfile": "User Profile",
+      "logout": "Log Out"
+    },
+    "upsell": {
+      "title": "Pro Access Required",
+      "description": "To use this professional tool and unlock all platform features, please create an account.",
+      "registerButton": "Create Free Account",
+      "cancelButton": "Cancel"
     }
   },
   "Account": {

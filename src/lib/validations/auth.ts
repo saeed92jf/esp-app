@@ -5,13 +5,13 @@ import { z } from 'zod';
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const mobileRe = /^09\d{9}$/;
 
-export const loginSchema = z.object({
+export const getLoginSchema = (t: (key: string) => string) => z.object({
   identifier: z
     .string()
     .trim()
-    .min(1)
-    .refine((v) => emailRe.test(v) || mobileRe.test(v), 'INVALID_IDENTIFIER'),
-  password: z.string().min(4),
+    .min(1, { message: t('required') })
+    .refine((v) => emailRe.test(v) || mobileRe.test(v), { message: t('invalidIdentifier') }),
+  password: z.string().min(1, { message: t('required') }),
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
+export type LoginInput = { identifier: string; password: string };

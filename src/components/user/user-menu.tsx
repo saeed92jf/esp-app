@@ -57,7 +57,7 @@ export function UserMenu({
     await onLogout?.();
 
     // redirect after logout
-    router.replace("/welcome");
+    router.replace("/");
     router.refresh(); // ensures server components update
   }
 

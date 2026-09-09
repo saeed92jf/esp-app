@@ -378,18 +378,9 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'deploys', labelKey:'deploys',         value:'24', delta:'+4',   trend:'up',      icon:'activity'},
     ],
     chart: chart([12,18,15,22,19,25]),
-    activities: [
-      {id:'e1',titleKey:'review',   timeKey:'minutes',count:12,status:'pending'},
-      {id:'e2',titleKey:'deploy',   timeKey:'hours',  count:2, status:'success'},
-      {id:'e3',titleKey:'taskDone', timeKey:'hours',  count:5, status:'success'},
-      {id:'e4',titleKey:'ticket',   timeKey:'days',   count:1, status:'error'  },
-    ],
+    activities: [],
     calendarEvents: [...REAL_EVENTS],
-    checklist: [
-      { id: 'cl1', title: 'Fix auth bug #342', completed: true },
-      { id: 'cl2', title: 'Write tests for dashboard', completed: false },
-      { id: 'cl3', title: 'Update documentation', completed: false }
-    ],
+    checklist: [],
   },
   staff: {
     stats: [
@@ -401,17 +392,9 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'hours', labelKey:'hoursLogged',    value:'32', delta:'+4', trend:'up',   icon:'clock'    },
     ],
     chart: chart([8,12,10,14,11,16]),
-    activities: [
-      {id:'s1',titleKey:'taskDone',timeKey:'minutes',count:8, status:'success'},
-      {id:'s2',titleKey:'ticket',  timeKey:'minutes',count:35,status:'pending'},
-      {id:'s3',titleKey:'newUser', timeKey:'hours',  count:2, status:'success'},
-      {id:'s4',titleKey:'review',  timeKey:'hours',  count:4, status:'pending'},
-    ],
+    activities: [],
     calendarEvents: [...REAL_EVENTS],
-    checklist: [
-      { id: 'cl1', title: 'Respond to 5 tickets', completed: true },
-      { id: 'cl2', title: 'Complete compliance training', completed: false }
-    ],
+    checklist: [],
   },
   customer: {
     stats: [
@@ -423,18 +406,9 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
       { id:'views',   labelKey:'views',    value:'12K',  delta:'+1K',  trend:'up',      icon:'activity'},
     ],
     chart: chart([2,4,3,5,4,6]),
-    activities: [
-      {id:'c1',titleKey:'orderShipped',timeKey:'hours',count:3,status:'success'},
-      {id:'c2',titleKey:'invoicePaid', timeKey:'days', count:1,status:'success'},
-      {id:'c3',titleKey:'ticket',      timeKey:'days', count:2,status:'pending'},
-      {id:'c4',titleKey:'payment',     timeKey:'days', count:4,status:'success'},
-    ],
+    activities: [],
     calendarEvents: [...REAL_EVENTS],
-    checklist: [
-      { id: 'cl1', title: 'Verify email address', completed: true },
-      { id: 'cl2', title: 'Add payment method', completed: false },
-      { id: 'cl3', title: 'Complete profile setup', completed: false }
-    ],
+    checklist: [],
   },
 };
 
@@ -454,10 +428,16 @@ export class FakeDashboardService implements IDashboardService {
           const item = commData.find((c: any) => c.id === id);
           if (!item) return baseData.stats[index]; // fallback
 
+          const rawPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
+          let formattedValue = Number(rawPrice).toLocaleString('en-US');
+          if (item.category === 'iran_gold') {
+            formattedValue = (Number(rawPrice) / 10000000).toLocaleString('en-US', { maximumFractionDigits: 1 });
+          }
+
           return {
             id: item.id,
             labelKey: item.id,
-            value: Number(item.price).toLocaleString('en-US'),
+            value: formattedValue,
             delta: `${item.percentChange}%`,
             trend: item.trend || 'neutral',
             icon: item.category === 'forex' || item.category === 'crypto' ? 'wallet' : 'activity',

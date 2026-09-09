@@ -94,7 +94,7 @@ const http = new HttpClient(API_BASE_URL);
 
 const SERVICE_MODES = {
   // ──────────────────────────────────── Backend سرویس‌های
-  auth:          'inherit',  // 🔴 Fake  — backend احراز هویت هنوز آماده نیست
+  auth:          'real',     // 🟢 REAL  — backend احراز هویت متصل به 192.168.0.171
   dashboard:     'inherit',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
   navigation:    'inherit',  // 🔴 Fake  — منوی ناوبری هنوز static است
   search:        'inherit',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد

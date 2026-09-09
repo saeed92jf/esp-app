@@ -21,5 +21,4 @@ export const PRIMARY_COLORS: readonly PrimaryColorPreset[] = [
   { id: 'orange', labelKey: 'orange', hsl: '19 97% 51%', hex: '#fb5607' },
 ] as const;
 
-export const DEFAULT_PRIMARY_COLOR: PrimaryColorId = 'purple';
-export const PRIMARY_COLOR_STORAGE_KEY = 'app-primary-color';
+export const DEFAULT_PRIMARY_COLOR: PrimaryColorId = 'blue';

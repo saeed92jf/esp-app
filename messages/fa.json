@@ -42,7 +42,11 @@
       "euroslot": "یورواسلات",
       "pars": "پارس",
       "engineeringPlatform": "سامانه یکپارچه مهندسی و محاسبات"
-    }
+    },
+    "password": "رمز عبور",
+    "emailPlaceholder": "name@demo.com یا 0912...",
+    "emailOrMobile": "ایمیل یا موبایل",
+    "quickDemoLogin": "ورود سریع دمو"
   },
   "LocaleSwitcher": {
     "placeholder": "انتخاب زبان",
@@ -125,10 +129,12 @@
     "title": "پلتفرم مدیریت هوشمند",
     "subtitle": "ابزارهای مدرن برای مدیریت پروژه، بازاریابی و آرشیو مستندات در یک فضای یکپارچه.",
     "readyToStart": "برای دسترسی به تمام امکانات وارد شوید",
-    "ctaLogin": "ورود به سیستم",
-    "ctaRegister": "ایجاد حساب کاربری",
-    "freeFeatures": "امکانات رایگان",
-    "premiumFeatures": "امکانات ویژه (نیازمند حساب کاربری)",
+    "ctaRegister": "ثبت نام و شروع",
+    "ctaLogin": "ورود به حساب",
+    "ctaGuest": "ورود بدون حساب (رایگان)",
+    "badge": "پلتفرم جامع مدیریت و مهندسی",
+    "freeFeatures": "خدمات رایگان (عمومی)",
+    "premiumFeatures": "خدمات ویژه (نیاز به حساب کاربری)",
     "cards": {
       "imageGallery": {
         "description": "مشاهده آلبوم تصاویر و دارایی‌های بصری پروژه به‌صورت دسته‌بندی‌شده."
@@ -164,15 +170,50 @@
       "admin": "مدیر",
       "engineer": "مهندس",
       "staff": "کارمند",
-      "customer": "مشتری"
+      "customer": "مشتری",
+      "guest": "مهمان"
     },
     "errors": {
       "invalidForm": "ایمیل/موبایل یا رمز عبور نامعتبر است.",
-      "invalidCredentials": "حساب کاربری یافت نشد. فقط حساب‌های تستی مجاز هستند."
+      "invalidCredentials": "ایمیل/موبایل یا رمز عبور اشتباه است.",
+      "emailExists": "حساب کاربری با این ایمیل قبلاً ثبت شده است."
     },
     "emailOrMobile": "ایمیل یا موبایل",
     "emailPlaceholder": "name@demo.com یا 0912...",
-    "quickDemoLogin": "ورود سریع دمو"
+    "quickDemoLogin": "ورود سریع دمو",
+    "forgotPassword": "فراموشی رمز عبور؟",
+    "forgotPasswordTitle": "بازیابی رمز عبور",
+    "forgotPasswordSubtitle": "ایمیل خود را وارد کنید تا لینک بازیابی ارسال شود.",
+    "resetLinkSent": "لینک بازیابی ارسال شد!",
+    "verifyEmailTitle": "تأیید ایمیل",
+    "verifyEmailLoading": "در حال اعتبارسنجی توکن...",
+    "verifyEmailSuccess": "حساب کاربری شما با موفقیت تأیید شد!",
+    "verifyEmailFailed": "تأیید حساب با خطا مواجه شد یا توکن نامعتبر است.",
+    "resetPasswordPageTitle": "تغییر رمز عبور",
+    "resetPasswordPageSubtitle": "رمز عبور جدید خود را وارد کنید.",
+    "newPassword": "رمز عبور جدید",
+    "confirmPassword": "تکرار رمز عبور",
+    "passwordsDoNotMatch": "رمز عبور و تکرار آن یکسان نیستند.",
+    "resetPasswordSuccess": "رمز عبور شما با موفقیت تغییر کرد.",
+    "resetPasswordFailed": "لینک نامعتبر است یا منقضی شده است.",
+    "submitResetPassword": "ذخیره رمز جدید",
+    "backToLogin": "بازگشت به صفحه ورود",
+    "sendResetLink": "ارسال لینک بازیابی",
+    "passwordStrength": "قدرت رمز عبور",
+    "strengthWeak": "ضعیف",
+    "strengthFair": "متوسط",
+    "strengthGood": "خوب",
+    "strengthStrong": "قوی",
+    "reqLength": "حداقل ۸ کاراکتر",
+    "reqUpper": "حداقل یک حرف بزرگ",
+    "reqLower": "حداقل یک حرف کوچک",
+    "reqNumber": "حداقل یک عدد",
+    "reqSpecial": "حداقل یک کاراکتر خاص (@$!%*?&)",
+    "noAccount": "حساب کاربری ندارید؟",
+    "createAccount": "ثبت‌نام کنید",
+    "required": "این فیلد الزامی است",
+    "invalidIdentifier": "ایمیل یا موبایل وارد شده نامعتبر است",
+    "backToHome": "بازگشت به خانه"
   },
   "Menu": {
     "title": "منو",
@@ -371,6 +412,20 @@
       "openMenu": "باز کردن منو",
       "hideEvents": "بستن رویدادها",
       "upcomingEvents": "رویدادهای پیش رو"
+    },
+    "avatar": {
+      "selectImage": "انتخاب تصویر پروفایل",
+      "selectThis": "انتخاب این تصویر",
+      "uploadNew": "آپلود تصویر جدید",
+      "noImage": "بدون تصویر",
+      "userProfile": "اطلاعات کاربری",
+      "logout": "خروج از حساب"
+    },
+    "upsell": {
+      "title": "دسترسی ویژه (Pro)",
+      "description": "برای استفاده از این ابزار حرفه‌ای و دسترسی به تمامی امکانات پلتفرم، لطفا ثبت‌نام کنید.",
+      "registerButton": "ثبت‌نام رایگان",
+      "cancelButton": "انصراف"
     }
   },
   "Account": {

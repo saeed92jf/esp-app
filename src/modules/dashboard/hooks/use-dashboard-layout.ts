@@ -45,10 +45,8 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "stat-4", x: 8, y: 0, w: 2, h: 2 },
     { i: "stat-5", x: 10, y: 0, w: 2, h: 2 },
     { i: "chart", x: 0, y: 2, w: 12, h: 4 }, // Full width
-    { i: "activity", x: 0, y: 6, w: 6, h: 4 }, // Next row, side-by-side
-    { i: "checklist", x: 6, y: 6, w: 6, h: 4 },
+    { i: "commodities", x: 0, y: 6, w: 12, h: 4 },
     { i: "settings", x: 0, y: 10, w: 12, h: 4 },
-    { i: "commodities", x: 0, y: 14, w: 12, h: 4 },
   ],
   md: [
     { i: "stat-0", x: 0, y: 0, w: 2, h: 2 },
@@ -58,10 +56,8 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "stat-4", x: 8, y: 0, w: 2, h: 2 },
     { i: "stat-5", x: 0, y: 2, w: 2, h: 2 },
     { i: "chart", x: 0, y: 4, w: 10, h: 4 }, // Full width (10 cols)
-    { i: "activity", x: 0, y: 8, w: 5, h: 4 }, // Side-by-side
-    { i: "checklist", x: 5, y: 8, w: 5, h: 4 },
+    { i: "commodities", x: 0, y: 8, w: 10, h: 4 },
     { i: "settings", x: 0, y: 12, w: 10, h: 4 },
-    { i: "commodities", x: 0, y: 16, w: 10, h: 4 },
   ],
   sm: [
     { i: "stat-0", x: 0, y: 0, w: 3, h: 2 },
@@ -71,10 +67,8 @@ const DEFAULT_LAYOUTS: Layouts = {
     { i: "stat-4", x: 0, y: 4, w: 3, h: 2 },
     { i: "stat-5", x: 3, y: 4, w: 3, h: 2 },
     { i: "chart", x: 0, y: 6, w: 6, h: 4 },
-    { i: "activity", x: 0, y: 10, w: 6, h: 4 },
-    { i: "checklist", x: 0, y: 14, w: 6, h: 4 },
-    { i: "settings", x: 0, y: 18, w: 6, h: 3 },
-    { i: "commodities", x: 0, y: 21, w: 6, h: 4 },
+    { i: "commodities", x: 0, y: 10, w: 6, h: 4 },
+    { i: "settings", x: 0, y: 14, w: 6, h: 4 },
   ],
 };
 
@@ -103,8 +97,8 @@ const DEFAULT_VISIBILITY: Record<WidgetId, boolean> = {
   "stat-4": true,
   "stat-5": false, // explicitly hide the 6th stat card by default
   chart: true,
-  activity: true,
-  checklist: true,
+  activity: false,
+  checklist: false,
   commodities: true,
   settings: true,
 };

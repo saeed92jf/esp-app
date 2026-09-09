@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search as SearchIcon, Menu as MenuIcon } from "lucide-react";
+import { Search as SearchIcon, Menu as MenuIcon, Lock } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
@@ -14,14 +14,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { AuthModal } from "@/modules/auth/components/auth-modal";
 
 export function DashboardMenuSidebar() {
   const pathname = usePathname();
   const tSections = useTranslations("Menu.sections");
   const tItems = useTranslations("Menu.items");
   const tMenu = useTranslations("Menu");
+  const { user } = useAuth();
 
   const [query, setQuery] = React.useState("");
+  const [showUpsell, setShowUpsell] = React.useState(false);
 
   const filteredNav = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -120,22 +124,37 @@ export function DashboardMenuSidebar() {
                       {group.items.map((item) => {
                         const ItemIcon = item.icon;
                         const isActive = pathname === item.href;
+                        const isRestricted = !user && !item.free;
+
+                        const handleLinkClick = (e: React.MouseEvent) => {
+                          if (isRestricted) {
+                            e.preventDefault();
+                            setShowUpsell(true);
+                          }
+                        };
 
                         return (
                           <li key={item.href}>
                             <Link
                               href={item.href}
+                              onClick={handleLinkClick}
                               className={cn(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-all duration-200",
+                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-all duration-200 group relative",
                                 isActive
                                   ? "bg-primary/10 text-primary font-medium translate-x-1 rtl:-translate-x-1"
                                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                               )}
                             >
                               {ItemIcon && (
-                                <ItemIcon className="size-4 shrink-0" />
+                                <ItemIcon className={cn("size-4 shrink-0", isRestricted && "opacity-60")} />
                               )}
-                              {tItems(item.labelKey)}
+                              <span className={cn(isRestricted && "opacity-80")}>
+                                {tItems(item.labelKey)}
+                              </span>
+                              
+                              {isRestricted && (
+                                <Lock className="size-3.5 ms-auto opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity" />
+                              )}
                             </Link>
                           </li>
                         );
@@ -148,6 +167,8 @@ export function DashboardMenuSidebar() {
           })}
         </Accordion>
       </nav>
+
+      <AuthModal open={showUpsell} onOpenChange={setShowUpsell} />
     </div>
   );
 }

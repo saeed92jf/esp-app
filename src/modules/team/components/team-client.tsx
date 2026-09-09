@@ -108,6 +108,13 @@ const contentTeam: TeamMember[] = [
   },
 ];
 
+const AVATAR_ASPECT_RATIO = 1536 / 2752;
+const CARD_MAX_HEIGHT = { large: 550, default: 450 } as const;
+
+function cardMaxWidth(maxHeight: number) {
+  return Math.round(maxHeight * AVATAR_ASPECT_RATIO);
+}
+
 // ─── الگوی باینری پس‌زمینه (محاسبه یک‌بار در module) ─────────────────────────
 const BINARY_BG = Array.from({ length: 60 }, (_, row) =>
   Array.from({ length: 220 }, (_, col) =>
@@ -254,30 +261,27 @@ function SocialBtn({
 function MemberCard({
   member,
   isLarge = false,
-  fillHeight = false,
 }: {
   member: TeamMember;
   isLarge?: boolean;
-  fillHeight?: boolean;
 }) {
   const t = useTranslations("Team");
   const locale = useLocale();
+  const maxHeight = isLarge ? CARD_MAX_HEIGHT.large : CARD_MAX_HEIGHT.default;
+  const maxWidth = cardMaxWidth(maxHeight);
 
   return (
     <motion.div
       variants={itemVariants}
-      className={`relative h-full ${
-        isLarge ? "max-w-[280px] mx-auto w-full" : "w-full"
-      }`}
+      className="relative w-full mx-auto"
+      style={{ maxWidth }}
     >
       <motion.div
         initial="rest"
         whileHover="hover"
         animate="rest"
-        style={{ willChange: "transform" }}
-        className={`group relative w-full rounded-2xl overflow-hidden bg-card border border-border/40 shadow-lg hover:shadow-2xl hover:border-primary/40 transition-shadow duration-300 cursor-default ${
-          fillHeight ? "h-full" : "aspect-[4/7] sm:aspect-[4/6.5]"
-        }`}
+        style={{ willChange: "transform", maxHeight }}
+        className="group relative w-full aspect-[1536/2752] rounded-2xl overflow-hidden bg-card border border-border/40 shadow-lg hover:shadow-2xl hover:border-primary/40 transition-shadow duration-300 cursor-default"
       >
         {/* عکس پس‌زمینه */}
         <div className="absolute inset-0 w-full h-full overflow-hidden bg-muted/5">
@@ -397,9 +401,7 @@ export function TeamClient() {
           transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
           className="flex-1 flex items-center justify-center w-full py-4"
         >
-          <div className="w-[220px] sm:w-[260px] h-full max-h-[480px]">
-            <MemberCard member={leadershipTeam[0]} isLarge fillHeight />
-          </div>
+          <MemberCard member={leadershipTeam[0]} isLarge />
         </motion.div>
 
         {/* دکمه اسکرول */}
@@ -418,39 +420,78 @@ export function TeamClient() {
       {/* ═══ Section 2: تیم مهندسی (۳ کارت) ═══ */}
       <section
         ref={section2Ref}
-        className="h-dvh min-h-[580px] flex items-center justify-center px-4 md:px-6 py-20 relative z-10"
+        className="h-dvh min-h-[580px] flex flex-col items-center pt-28 pb-10 px-4 md:px-6 relative z-10"
       >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center"
+        >
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tight mb-3 text-foreground leading-[1.15]">
+            {t("sections.engineering")}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            {t("sections.engineeringDesc")}
+          </p>
+        </motion.div>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
           dir="ltr"
-          className="grid gap-5 grid-cols-1 sm:grid-cols-3 w-full max-w-4xl"
-          style={{ height: "min(calc(100dvh - 160px), 520px)" }}
+          className="flex-1 grid gap-5 grid-cols-1 sm:grid-cols-3 w-full max-w-4xl items-center justify-items-center py-4"
         >
           {engineeringTeam.map((member) => (
-            <MemberCard key={member.id} member={member} fillHeight />
+            <MemberCard key={member.id} member={member} />
           ))}
         </motion.div>
+
+        <motion.button
+          onClick={() => section3Ref.current?.scrollIntoView({ behavior: "smooth" })}
+          animate={{ y: [0, 7, 0] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center gap-1.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors duration-200 cursor-pointer"
+          aria-label="scroll to content team"
+        >
+          <span className="text-[10px] font-semibold tracking-[0.2em] uppercase">scroll</span>
+          <ChevronDown className="h-5 w-5" />
+        </motion.button>
       </section>
 
       {/* ═══ Section 3: تیم محتوا (۴ کارت) ═══ */}
       <section
         ref={section3Ref}
-        className="h-dvh min-h-[580px] flex items-center justify-center px-4 md:px-6 py-20 relative z-10"
+        className="h-dvh min-h-[580px] flex flex-col items-center pt-28 pb-10 px-4 md:px-6 relative z-10"
       >
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="text-center"
+        >
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-tight mb-3 text-foreground leading-[1.15]">
+            {t("sections.content")}
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            {t("sections.contentDesc")}
+          </p>
+        </motion.div>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-40px" }}
           dir="ltr"
-          className="grid gap-5 grid-cols-2 sm:grid-cols-4 w-full max-w-5xl"
-          style={{ height: "min(calc(100dvh - 160px), 480px)" }}
+          className="flex-1 grid gap-5 grid-cols-2 sm:grid-cols-4 w-full max-w-5xl items-center justify-items-center py-4"
         >
           {contentTeam.map((member) => (
-            <MemberCard key={member.id} member={member} fillHeight />
+            <MemberCard key={member.id} member={member} />
           ))}
         </motion.div>
       </section>

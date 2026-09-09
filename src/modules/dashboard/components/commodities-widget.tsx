@@ -63,7 +63,7 @@ const formatPrice = (price: number) => {
 export function CommoditiesWidget() {
   const t = useTranslations('Dashboard.commodities');
   const locale = useLocale();
-  const { commodities, isLoading, irrMode, setIrrMode, manualRate, setManualRate, activeRate, refetch } = useCommodities();
+  const { commodities, isLoading, isFetching, irrMode, setIrrMode, manualRate, setManualRate, activeRate, refetch } = useCommodities();
   const [rateInput, setRateInput] = useState(manualRate.toString());
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('iran_gold');
@@ -264,10 +264,11 @@ export function CommoditiesWidget() {
             <Button 
               variant="ghost" 
               size="icon" 
-              className={cn("size-7", isLoading && "animate-spin")} 
+              className="size-7" 
               onClick={() => refetch()}
+              disabled={isFetching}
             >
-              <RefreshCw className="size-3.5 text-muted-foreground" />
+              <RefreshCw className={cn("size-3.5 text-muted-foreground", isFetching && "animate-spin")} />
             </Button>
             
             <Popover open={open} onOpenChange={setOpen}>
@@ -475,7 +476,13 @@ export function CommoditiesWidget() {
                         </div>
                         <p className="text-[10px] text-muted-foreground mt-0.5 fa-num">
                           {(() => {
-                            const formatted = formatIrr(price, activeRate, isToman);
+                            let formatted;
+                            if (irrMode === 'free' && item.originalPrice !== undefined) {
+                              const exactPrice = isToman ? item.originalPrice / 10 : item.originalPrice;
+                              formatted = formatLargeIrr(exactPrice);
+                            } else {
+                              formatted = formatIrr(price, activeRate, isToman);
+                            }
                             return (
                               <>
                                 {formatted.value} {formatted.suffixKey ? t(formatted.suffixKey) : ''} {isToman ? t('toman') : t('rial')}

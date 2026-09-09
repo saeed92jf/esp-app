@@ -50,16 +50,14 @@ export function Header() {
               className="scale-[0.75] sm:scale-100 origin-right"
             />
           ) : (
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="rounded-full"
-            >
-              <Link href="/login" aria-label={t("login")}>
-                <UserIcon className="text-muted-foreground size-5" />
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm" className="hidden sm:flex text-xs h-8">
+                <Link href="/login">{t("login")}</Link>
+              </Button>
+              <Button asChild size="sm" className="hidden sm:flex text-xs h-8">
+                <Link href="/register">{t("register")}</Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>

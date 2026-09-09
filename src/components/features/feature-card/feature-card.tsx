@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { useAuthModal } from "@/modules/auth/hooks/use-auth-modal";
 
 interface FeatureCardProps {
   href: string;
@@ -16,7 +18,7 @@ interface FeatureCardProps {
   iconBgClassName?: string;
   cardBgClassName?: string;
   barClassName?: string;
-  borderClassName?: string; // ← جایگزین ringClassName
+  borderClassName?: string;
   isRtl?: boolean;
   className?: string;
 }
@@ -36,8 +38,18 @@ export function FeatureCard({
   isRtl = false,
   className,
 }: FeatureCardProps) {
+  const { user } = useAuth();
+  const { openModal } = useAuthModal();
+
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!user) {
+      e.preventDefault();
+      openModal();
+    }
+  };
+
   return (
-    <Link href={href} className={cn("group block h-full", className)}>
+    <Link href={href} onClick={handleClick} className={cn("group block h-full", className)}>
       <Card
         className={cn(
           "relative h-full overflow-hidden shadow-sm",
@@ -66,14 +78,12 @@ export function FeatureCard({
                 "ring-1 ring-border/50 transition-all duration-300 ease-out",
                 "group-hover:scale-105 group-hover:ring-0",
                 "motion-reduce:transform-none motion-reduce:transition-none",
-                // bg: "bg-muted group-hover:bg-sky-500"
                 iconBgClassName ?? "bg-muted",
               )}
             >
               <Icon
                 className={cn(
                   "size-6 transition-colors duration-300",
-                  // "text-sky-500 group-hover:text-white"
                   iconClassName ?? "text-muted-foreground",
                 )}
                 strokeWidth={2}
@@ -89,7 +99,6 @@ export function FeatureCard({
             </p>
           )}
 
-          {/* badge */}
           {badge && (
             <span className="text-xs text-muted-foreground">{badge}</span>
           )}

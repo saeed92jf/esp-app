@@ -4,16 +4,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import { useRouter } from "@/i18n/navigation";
-import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { useRouter, Link } from "@/i18n/navigation";
+import { getLoginSchema, type LoginInput } from "@/lib/validations/auth";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-// این ایمپورت از سرویس شماست که یوزرها در آن تعریف شده‌اند
-import { DEMO_USERS } from "@/modules/auth/services/auth.service";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import {
   Card,
   CardContent,
@@ -32,7 +31,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 
 export default function LoginPage() {
-  const t = useTranslations("Common");
+  const t = useTranslations("Auth");
   const locale = useLocale();
   const router = useRouter();
 
@@ -43,7 +42,7 @@ export default function LoginPage() {
   const isFa = locale === "fa";
 
   const form = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(getLoginSchema(t)),
     defaultValues: {
       identifier: "",
       password: "",
@@ -62,50 +61,30 @@ export default function LoginPage() {
       router.push("/dashboard");
       router.refresh();
     } catch (error: any) {
-      console.error("Login failed:", error);
+      // Use console.log to prevent Next.js dev overlay from catching expected auth errors
+      console.log("Login failed:", error?.message);
+      const isAuthError = error?.status === 401 || error?.status === 400;
       setErrorMsg(
-        error?.message ||
-          (isFa
-            ? "ایمیل/موبایل یا رمز عبور اشتباه است."
-            : "Invalid credentials."),
+        isAuthError
+          ? t("errors.invalidCredentials")
+          : error?.message || t("errors.invalidCredentials")
       );
     } finally {
       setIsLoading(false);
     }
   }
 
-  // متد برای پر کردن سریع فیلدها و اجرای لاگین
-  function handleDemoLogin(demo: (typeof DEMO_USERS)[0]) {
-    form.setValue("identifier", demo.email, {
-      shouldValidate: true,
-      shouldTouch: true,
-    });
-    form.setValue("password", demo.password, {
-      shouldValidate: true,
-      shouldTouch: true,
-    });
 
-    // اجرای لاگین با مقادیر پر شده
-    onSubmit({
-      identifier: demo.email,
-      password: demo.password,
-    });
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="space-y-4 text-center pb-6">
           <div className="flex justify-center mb-2">
-            <Logo className="text-3xl" showText={true} />
+            <Logo className="text-3xl" />
           </div>
           <div className="space-y-1">
             <CardTitle className="text-2xl font-bold">{t("login")}</CardTitle>
-            <CardDescription className="text-sm">
-              {isFa
-                ? "برای ورود به پنل، اطلاعات خود را وارد کنید یا از حساب‌های دمو استفاده نمایید."
-                : "Enter your credentials to access the panel, or use a demo account."}
-            </CardDescription>
           </div>
         </CardHeader>
 
@@ -142,10 +121,14 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t("password")}</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>{t("password")}</FormLabel>
+                        <Link href="/forgot-password" className="text-sm text-primary hover:underline" tabIndex={-1}>
+                          {t("forgotPassword")}
+                        </Link>
+                      </div>
                       <FormControl>
-                        <Input
-                          type="password"
+                        <PasswordInput
                           placeholder="••••••••"
                           autoComplete="current-password"
                           dir="ltr"
@@ -176,35 +159,21 @@ export default function LoginPage() {
                 {t("login")}
               </Button>
 
-              <div className="pt-4 pb-2">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-3 text-muted-foreground font-medium flex items-center gap-1.5">
-                      <KeyRound className="size-3.5" />
-                      {t("quickDemoLogin")}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  {DEMO_USERS.map((demo) => (
-                    <Button
-                      key={demo.user.id}
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleDemoLogin(demo)}
-                      disabled={isLoading}
-                      className="text-xs h-9 hover:bg-primary/5 hover:text-primary transition-colors"
-                    >
-                      {demo.user.role.charAt(0).toUpperCase() +
-                        demo.user.role.slice(1)}
-                    </Button>
-                  ))}
+              <div className="mt-4 flex flex-col sm:flex-row items-center justify-between text-sm gap-4">
+                <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
+                  <span className="rtl:rotate-180">&larr;</span> {t("backToHome")}
+                </Link>
+                <div>
+                  <span className="text-muted-foreground">{t("noAccount")}</span>{" "}
+                  <Link
+                    href="/register"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {t("createAccount")}
+                  </Link>
                 </div>
               </div>
+
             </form>
           </Form>
         </CardContent>

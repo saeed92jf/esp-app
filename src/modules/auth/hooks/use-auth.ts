@@ -46,6 +46,11 @@ export function useAuth() {
       if (raw) {
         let parsed = JSON.parse(raw) as User;
         
+        // Auto-fix malformed cached users from previous unmapped API responses
+        if (!parsed.role) parsed.role = 'customer';
+        if (!parsed.fullName && (parsed as any).full_name) parsed.fullName = (parsed as any).full_name;
+        if (!parsed.fullName) parsed.fullName = parsed.email || 'User';
+        
         // Sync with fake API mock users (so you see new changes without relogging)
         try {
           const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
@@ -65,6 +70,8 @@ export function useAuth() {
         }
 
         store.setUser(parsed);
+      } else {
+        store.setUser(null);
       }
     } catch {
       // ignore
@@ -86,6 +93,8 @@ export function useAuth() {
       store.setIsLoggingIn(false);
     }
   }, []);
+
+
 
   const logout = useCallback(async () => {
     try {

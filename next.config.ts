@@ -39,7 +39,12 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
   },
 
   async rewrites() {
-    return [];
+    return [
+      {
+        source: "/api/real/:path*",
+        destination: "http://192.168.0.171:8080/api/v1/:path*",
+      },
+    ];
   },
 
   async headers() {

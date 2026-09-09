@@ -1,0 +1,1174 @@
+﻿{
+    "openapi":  "3.0.3",
+    "info":  {
+                 "title":  "Engineering ERP Platform",
+                 "description":  "Multi-Tenant Engineering SaaS Platform â License-based modular architecture with dual-gate security.",
+                 "version":  "0.1.0"
+             },
+    "paths":  {
+                  "/api/v1/health":  {
+                                         "get":  {
+                                                     "tags":  [
+                                                                  "Health"
+                                                              ],
+                                                     "summary":  "Liveness probe",
+                                                     "description":  "Returns 200 if the application process is alive.",
+                                                     "operationId":  "health_check_api_v1_health_get",
+                                                     "responses":  {
+                                                                       "200":  {
+                                                                                   "description":  "Successful Response",
+                                                                                   "content":  {
+                                                                                                   "application/json":  {
+                                                                                                                            "schema":  {
+                                                                                                                                           "$ref":  "#/components/schemas/HealthResponse"
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                               }
+                                                                               }
+                                                                   }
+                                                 }
+                                     },
+                  "/api/v1/health/ready":  {
+                                               "get":  {
+                                                           "tags":  [
+                                                                        "Health"
+                                                                    ],
+                                                           "summary":  "Readiness probe",
+                                                           "description":  "Returns 200 only if all critical dependencies (DB, Redis) are reachable.",
+                                                           "operationId":  "readiness_check_api_v1_health_ready_get",
+                                                           "responses":  {
+                                                                             "200":  {
+                                                                                         "description":  "Successful Response",
+                                                                                         "content":  {
+                                                                                                         "application/json":  {
+                                                                                                                                  "schema":  {
+                                                                                                                                                 "$ref":  "#/components/schemas/ReadinessResponse"
+                                                                                                                                             }
+                                                                                                                              }
+                                                                                                     }
+                                                                                     }
+                                                                         }
+                                                       }
+                                           },
+                  "/api/v1/auth/register":  {
+                                                "post":  {
+                                                             "tags":  [
+                                                                          "Authentication"
+                                                                      ],
+                                                             "summary":  "Register a new individual user account",
+                                                             "description":  "Creates a user account and automatically assigns a free-tier subscription with base features. A verification email is sent to confirm the address.",
+                                                             "operationId":  "register_api_v1_auth_register_post",
+                                                             "requestBody":  {
+                                                                                 "content":  {
+                                                                                                 "application/json":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "$ref":  "#/components/schemas/RegisterRequest"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                             },
+                                                                                 "required":  true
+                                                                             },
+                                                             "responses":  {
+                                                                               "201":  {
+                                                                                           "description":  "Successful Response",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/RegisterResponse"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
+                                                                               "422":  {
+                                                                                           "description":  "Validation Error",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       }
+                                                                           }
+                                                         }
+                                            },
+                  "/api/v1/auth/login":  {
+                                             "post":  {
+                                                          "tags":  [
+                                                                       "Authentication"
+                                                                   ],
+                                                          "summary":  "Authenticate and receive a JWT pair",
+                                                          "operationId":  "login_api_v1_auth_login_post",
+                                                          "requestBody":  {
+                                                                              "content":  {
+                                                                                              "application/json":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "$ref":  "#/components/schemas/LoginRequest"
+                                                                                                                                  }
+                                                                                                                   }
+                                                                                          },
+                                                                              "required":  true
+                                                                          },
+                                                          "responses":  {
+                                                                            "200":  {
+                                                                                        "description":  "Successful Response",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/LoginResponse"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    },
+                                                                            "422":  {
+                                                                                        "description":  "Validation Error",
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    }
+                                                                                    }
+                                                                        }
+                                                      }
+                                         },
+                  "/api/v1/auth/refresh":  {
+                                               "post":  {
+                                                            "tags":  [
+                                                                         "Authentication"
+                                                                     ],
+                                                            "summary":  "Rotate the refresh token and receive a new JWT pair",
+                                                            "operationId":  "refresh_tokens_api_v1_auth_refresh_post",
+                                                            "requestBody":  {
+                                                                                "content":  {
+                                                                                                "application/json":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/RefreshRequest"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                            },
+                                                                                "required":  true
+                                                                            },
+                                                            "responses":  {
+                                                                              "200":  {
+                                                                                          "description":  "Successful Response",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+                                                                                                                                                  "$ref":  "#/components/schemas/TokenPair"
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      },
+                                                                              "422":  {
+                                                                                          "description":  "Validation Error",
+                                                                                          "content":  {
+                                                                                                          "application/json":  {
+                                                                                                                                   "schema":  {
+                                                                                                                                                  "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                              }
+                                                                                                                               }
+                                                                                                      }
+                                                                                      }
+                                                                          }
+                                                        }
+                                           },
+                  "/api/v1/auth/logout":  {
+                                              "post":  {
+                                                           "tags":  [
+                                                                        "Authentication"
+                                                                    ],
+                                                           "summary":  "Invalidate tokens and end the session",
+                                                           "operationId":  "logout_api_v1_auth_logout_post",
+                                                           "requestBody":  {
+                                                                               "content":  {
+                                                                                               "application/json":  {
+                                                                                                                        "schema":  {
+                                                                                                                                       "$ref":  "#/components/schemas/LogoutRequest"
+                                                                                                                                   }
+                                                                                                                    }
+                                                                                           },
+                                                                               "required":  true
+                                                                           },
+                                                           "responses":  {
+                                                                             "200":  {
+                                                                                         "description":  "Successful Response",
+                                                                                         "content":  {
+                                                                                                         "application/json":  {
+                                                                                                                                  "schema":  {
+                                                                                                                                                 "additionalProperties":  true,
+                                                                                                                                                 "type":  "object",
+                                                                                                                                                 "title":  "Response Logout Api V1 Auth Logout Post"
+                                                                                                                                             }
+                                                                                                                              }
+                                                                                                     }
+                                                                                     },
+                                                                             "422":  {
+                                                                                         "description":  "Validation Error",
+                                                                                         "content":  {
+                                                                                                         "application/json":  {
+                                                                                                                                  "schema":  {
+                                                                                                                                                 "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                             }
+                                                                                                                              }
+                                                                                                     }
+                                                                                     }
+                                                                         }
+                                                       }
+                                          },
+                  "/api/v1/auth/verify-email":  {
+                                                    "post":  {
+                                                                 "tags":  [
+                                                                              "Authentication"
+                                                                          ],
+                                                                 "summary":  "Verify user email via opaque token",
+                                                                 "operationId":  "verify_email_api_v1_auth_verify_email_post",
+                                                                 "requestBody":  {
+                                                                                     "content":  {
+                                                                                                     "application/json":  {
+                                                                                                                              "schema":  {
+                                                                                                                                             "$ref":  "#/components/schemas/VerifyEmailRequest"
+                                                                                                                                         }
+                                                                                                                          }
+                                                                                                 },
+                                                                                     "required":  true
+                                                                                 },
+                                                                 "responses":  {
+                                                                                   "200":  {
+                                                                                               "description":  "Successful Response",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "additionalProperties":  true,
+                                                                                                                                                       "type":  "object",
+                                                                                                                                                       "title":  "Response Verify Email Api V1 Auth Verify Email Post"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           },
+                                                                                   "422":  {
+                                                                                               "description":  "Validation Error",
+                                                                                               "content":  {
+                                                                                                               "application/json":  {
+                                                                                                                                        "schema":  {
+                                                                                                                                                       "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                   }
+                                                                                                                                    }
+                                                                                                           }
+                                                                                           }
+                                                                               }
+                                                             }
+                                                },
+                  "/api/v1/auth/verify-email/resend":  {
+                                                           "post":  {
+                                                                        "tags":  [
+                                                                                     "Authentication"
+                                                                                 ],
+                                                                        "summary":  "Resend verification email",
+                                                                        "operationId":  "resend_verification_api_v1_auth_verify_email_resend_post",
+                                                                        "requestBody":  {
+                                                                                            "content":  {
+                                                                                                            "application/json":  {
+                                                                                                                                     "schema":  {
+                                                                                                                                                    "$ref":  "#/components/schemas/ResendVerificationRequest"
+                                                                                                                                                }
+                                                                                                                                 }
+                                                                                                        },
+                                                                                            "required":  true
+                                                                                        },
+                                                                        "responses":  {
+                                                                                          "200":  {
+                                                                                                      "description":  "Successful Response",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "additionalProperties":  true,
+                                                                                                                                                              "type":  "object",
+                                                                                                                                                              "title":  "Response Resend Verification Api V1 Auth Verify Email Resend Post"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  },
+                                                                                          "422":  {
+                                                                                                      "description":  "Validation Error",
+                                                                                                      "content":  {
+                                                                                                                      "application/json":  {
+                                                                                                                                               "schema":  {
+                                                                                                                                                              "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                          }
+                                                                                                                                           }
+                                                                                                                  }
+                                                                                                  }
+                                                                                      }
+                                                                    }
+                                                       },
+                  "/api/v1/auth/forgot-password":  {
+                                                       "post":  {
+                                                                    "tags":  [
+                                                                                 "Authentication"
+                                                                             ],
+                                                                    "summary":  "Request a password reset link",
+                                                                    "operationId":  "forgot_password_api_v1_auth_forgot_password_post",
+                                                                    "requestBody":  {
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/ForgotPasswordRequest"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    },
+                                                                                        "required":  true
+                                                                                    },
+                                                                    "responses":  {
+                                                                                      "200":  {
+                                                                                                  "description":  "Successful Response",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "additionalProperties":  true,
+                                                                                                                                                          "type":  "object",
+                                                                                                                                                          "title":  "Response Forgot Password Api V1 Auth Forgot Password Post"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "422":  {
+                                                                                                  "description":  "Validation Error",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              }
+                                                                                  }
+                                                                }
+                                                   },
+                  "/api/v1/auth/reset-password":  {
+                                                      "post":  {
+                                                                   "tags":  [
+                                                                                "Authentication"
+                                                                            ],
+                                                                   "summary":  "Reset password using an opaque token",
+                                                                   "operationId":  "reset_password_api_v1_auth_reset_password_post",
+                                                                   "requestBody":  {
+                                                                                       "content":  {
+                                                                                                       "application/json":  {
+                                                                                                                                "schema":  {
+                                                                                                                                               "$ref":  "#/components/schemas/ResetPasswordRequest"
+                                                                                                                                           }
+                                                                                                                            }
+                                                                                                   },
+                                                                                       "required":  true
+                                                                                   },
+                                                                   "responses":  {
+                                                                                     "200":  {
+                                                                                                 "description":  "Successful Response",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "additionalProperties":  true,
+                                                                                                                                                         "type":  "object",
+                                                                                                                                                         "title":  "Response Reset Password Api V1 Auth Reset Password Post"
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             },
+                                                                                     "422":  {
+                                                                                                 "description":  "Validation Error",
+                                                                                                 "content":  {
+                                                                                                                 "application/json":  {
+                                                                                                                                          "schema":  {
+                                                                                                                                                         "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                     }
+                                                                                                                                      }
+                                                                                                             }
+                                                                                             }
+                                                                                 }
+                                                               }
+                                                  },
+                  "/api/v1/auth/change-password":  {
+                                                       "post":  {
+                                                                    "tags":  [
+                                                                                 "Authentication"
+                                                                             ],
+                                                                    "summary":  "Change password while logged in",
+                                                                    "operationId":  "change_password_api_v1_auth_change_password_post",
+                                                                    "requestBody":  {
+                                                                                        "content":  {
+                                                                                                        "application/json":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/ChangePasswordRequest"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                    },
+                                                                                        "required":  true
+                                                                                    },
+                                                                    "responses":  {
+                                                                                      "200":  {
+                                                                                                  "description":  "Successful Response",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "additionalProperties":  true,
+                                                                                                                                                          "type":  "object",
+                                                                                                                                                          "title":  "Response Change Password Api V1 Auth Change Password Post"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              },
+                                                                                      "422":  {
+                                                                                                  "description":  "Validation Error",
+                                                                                                  "content":  {
+                                                                                                                  "application/json":  {
+                                                                                                                                           "schema":  {
+                                                                                                                                                          "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                      }
+                                                                                                                                       }
+                                                                                                              }
+                                                                                              }
+                                                                                  },
+                                                                    "security":  [
+                                                                                     {
+                                                                                         "HTTPBearer":  [
+
+                                                                                                        ]
+                                                                                     }
+                                                                                 ]
+                                                                }
+                                                   },
+                  "/api/v1/auth/me":  {
+                                          "get":  {
+                                                      "tags":  [
+                                                                   "Authentication"
+                                                               ],
+                                                      "summary":  "Return the currently authenticated user\u0027s profile",
+                                                      "operationId":  "get_me_api_v1_auth_me_get",
+                                                      "responses":  {
+                                                                        "200":  {
+                                                                                    "description":  "Successful Response",
+                                                                                    "content":  {
+                                                                                                    "application/json":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                }
+                                                                                }
+                                                                    },
+                                                      "security":  [
+                                                                       {
+                                                                           "HTTPBearer":  [
+
+                                                                                          ]
+                                                                       }
+                                                                   ]
+                                                  },
+                                          "patch":  {
+                                                        "tags":  [
+                                                                     "Authentication"
+                                                                 ],
+                                                        "summary":  "Update the currently authenticated user\u0027s profile",
+                                                        "operationId":  "update_me_api_v1_auth_me_patch",
+                                                        "requestBody":  {
+                                                                            "content":  {
+                                                                                            "application/json":  {
+                                                                                                                     "schema":  {
+                                                                                                                                    "$ref":  "#/components/schemas/UpdateProfileRequest"
+                                                                                                                                }
+                                                                                                                 }
+                                                                                        },
+                                                                            "required":  true
+                                                                        },
+                                                        "responses":  {
+                                                                          "200":  {
+                                                                                      "description":  "Successful Response",
+                                                                                      "content":  {
+                                                                                                      "application/json":  {
+                                                                                                                               "schema":  {
+                                                                                                                                              "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                          }
+                                                                                                                           }
+                                                                                                  }
+                                                                                  },
+                                                                          "422":  {
+                                                                                      "description":  "Validation Error",
+                                                                                      "content":  {
+                                                                                                      "application/json":  {
+                                                                                                                               "schema":  {
+                                                                                                                                              "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                          }
+                                                                                                                           }
+                                                                                                  }
+                                                                                  }
+                                                                      },
+                                                        "security":  [
+                                                                         {
+                                                                             "HTTPBearer":  [
+
+                                                                                            ]
+                                                                         }
+                                                                     ]
+                                                    }
+                                      },
+                  "/api/v1/catalog/features":  {
+                                                   "get":  {
+                                                               "tags":  [
+                                                                            "Feature Catalog"
+                                                                        ],
+                                                               "summary":  "List all available features and pricing",
+                                                               "description":  "Returns the full catalog of purchasable features sorted by display order.",
+                                                               "operationId":  "list_features_api_v1_catalog_features_get",
+                                                               "parameters":  [
+                                                                                  {
+                                                                                      "name":  "page",
+                                                                                      "in":  "query",
+                                                                                      "required":  false,
+                                                                                      "schema":  {
+                                                                                                     "type":  "integer",
+                                                                                                     "default":  1,
+                                                                                                     "title":  "Page"
+                                                                                                 }
+                                                                                  },
+                                                                                  {
+                                                                                      "name":  "size",
+                                                                                      "in":  "query",
+                                                                                      "required":  false,
+                                                                                      "schema":  {
+                                                                                                     "type":  "integer",
+                                                                                                     "default":  50,
+                                                                                                     "title":  "Size"
+                                                                                                 }
+                                                                                  }
+                                                                              ],
+                                                               "responses":  {
+                                                                                 "200":  {
+                                                                                             "description":  "Successful Response",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/PaginatedFeatureResponse"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         },
+                                                                                 "422":  {
+                                                                                             "description":  "Validation Error",
+                                                                                             "content":  {
+                                                                                                             "application/json":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                         }
+                                                                                         }
+                                                                             }
+                                                           }
+                                               },
+                  "/api/v1/catalog/price":  {
+                                                "post":  {
+                                                             "tags":  [
+                                                                          "Feature Catalog"
+                                                                      ],
+                                                             "summary":  "Calculate price for a feature selection",
+                                                             "description":  "Returns a per-feature price breakdown and total cost for the given feature codes and billing cycle.",
+                                                             "operationId":  "calculate_price_api_v1_catalog_price_post",
+                                                             "requestBody":  {
+                                                                                 "content":  {
+                                                                                                 "application/json":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "$ref":  "#/components/schemas/PriceCalculationRequest"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                             },
+                                                                                 "required":  true
+                                                                             },
+                                                             "responses":  {
+                                                                               "200":  {
+                                                                                           "description":  "Successful Response",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/PriceBreakdown"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       },
+                                                                               "422":  {
+                                                                                           "description":  "Validation Error",
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/HTTPValidationError"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       }
+                                                                                       }
+                                                                           }
+                                                         }
+                                            }
+              },
+    "components":  {
+                       "schemas":  {
+                                       "ChangePasswordRequest":  {
+                                                                     "properties":  {
+                                                                                        "current_password":  {
+                                                                                                                 "type":  "string",
+                                                                                                                 "title":  "Current Password"
+                                                                                                             },
+                                                                                        "new_password":  {
+                                                                                                             "type":  "string",
+                                                                                                             "maxLength":  128,
+                                                                                                             "minLength":  8,
+                                                                                                             "title":  "New Password"
+                                                                                                         }
+                                                                                    },
+                                                                     "type":  "object",
+                                                                     "required":  [
+                                                                                      "current_password",
+                                                                                      "new_password"
+                                                                                  ],
+                                                                     "title":  "ChangePasswordRequest"
+                                                                 },
+                                       "FeatureResponse":  {
+                                                               "properties":  {
+                                                                                  "id":  {
+                                                                                             "type":  "string",
+                                                                                             "format":  "uuid",
+                                                                                             "title":  "Id"
+                                                                                         },
+                                                                                  "code":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Code"
+                                                                                           },
+                                                                                  "title":  {
+                                                                                                "type":  "string",
+                                                                                                "title":  "Title"
+                                                                                            },
+                                                                                  "description":  {
+                                                                                                      "anyOf":  [
+                                                                                                                    {
+                                                                                                                        "type":  "string"
+                                                                                                                    },
+                                                                                                                    {
+                                                                                                                        "type":  "null"
+                                                                                                                    }
+                                                                                                                ],
+                                                                                                      "title":  "Description"
+                                                                                                  },
+                                                                                  "monthly_price":  {
+                                                                                                        "type":  "string",
+                                                                                                        "title":  "Monthly Price"
+                                                                                                    },
+                                                                                  "annual_price":  {
+                                                                                                       "type":  "string",
+                                                                                                       "title":  "Annual Price"
+                                                                                                   },
+                                                                                  "is_free_tier":  {
+                                                                                                       "type":  "boolean",
+                                                                                                       "title":  "Is Free Tier"
+                                                                                                   },
+                                                                                  "sort_order":  {
+                                                                                                     "type":  "integer",
+                                                                                                     "title":  "Sort Order"
+                                                                                                 },
+                                                                                  "usage_type":  {
+                                                                                                     "type":  "string",
+                                                                                                     "title":  "Usage Type"
+                                                                                                 },
+                                                                                  "credit_amount":  {
+                                                                                                        "anyOf":  [
+                                                                                                                      {
+                                                                                                                          "type":  "integer"
+                                                                                                                      },
+                                                                                                                      {
+                                                                                                                          "type":  "null"
+                                                                                                                      }
+                                                                                                                  ],
+                                                                                                        "title":  "Credit Amount"
+                                                                                                    },
+                                                                                  "credit_reset_cycle":  {
+                                                                                                             "anyOf":  [
+                                                                                                                           {
+                                                                                                                               "type":  "string"
+                                                                                                                           },
+                                                                                                                           {
+                                                                                                                               "type":  "null"
+                                                                                                                           }
+                                                                                                                       ],
+                                                                                                             "title":  "Credit Reset Cycle"
+                                                                                                         }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "id",
+                                                                                "code",
+                                                                                "title",
+                                                                                "description",
+                                                                                "monthly_price",
+                                                                                "annual_price",
+                                                                                "is_free_tier",
+                                                                                "sort_order",
+                                                                                "usage_type",
+                                                                                "credit_amount",
+                                                                                "credit_reset_cycle"
+                                                                            ],
+                                                               "title":  "FeatureResponse"
+                                                           },
+                                       "ForgotPasswordRequest":  {
+                                                                     "properties":  {
+                                                                                        "email":  {
+                                                                                                      "type":  "string",
+                                                                                                      "format":  "email",
+                                                                                                      "title":  "Email"
+                                                                                                  }
+                                                                                    },
+                                                                     "type":  "object",
+                                                                     "required":  [
+                                                                                      "email"
+                                                                                  ],
+                                                                     "title":  "ForgotPasswordRequest"
+                                                                 },
+                                       "HTTPValidationError":  {
+                                                                   "properties":  {
+                                                                                      "detail":  {
+                                                                                                     "items":  {
+                                                                                                                   "$ref":  "#/components/schemas/ValidationError"
+                                                                                                               },
+                                                                                                     "type":  "array",
+                                                                                                     "title":  "Detail"
+                                                                                                 }
+                                                                                  },
+                                                                   "type":  "object",
+                                                                   "title":  "HTTPValidationError"
+                                                               },
+                                       "HealthResponse":  {
+                                                              "properties":  {
+                                                                                 "status":  {
+                                                                                                "type":  "string",
+                                                                                                "title":  "Status"
+                                                                                            },
+                                                                                 "app":  {
+                                                                                             "type":  "string",
+                                                                                             "title":  "App"
+                                                                                         },
+                                                                                 "version":  {
+                                                                                                 "type":  "string",
+                                                                                                 "title":  "Version"
+                                                                                             },
+                                                                                 "environment":  {
+                                                                                                     "type":  "string",
+                                                                                                     "title":  "Environment"
+                                                                                                 },
+                                                                                 "timestamp":  {
+                                                                                                   "type":  "string",
+                                                                                                   "title":  "Timestamp"
+                                                                                               }
+                                                                             },
+                                                              "type":  "object",
+                                                              "required":  [
+                                                                               "status",
+                                                                               "app",
+                                                                               "version",
+                                                                               "environment",
+                                                                               "timestamp"
+                                                                           ],
+                                                              "title":  "HealthResponse"
+                                                          },
+                                       "LoginRequest":  {
+                                                            "properties":  {
+                                                                               "email":  {
+                                                                                             "type":  "string",
+                                                                                             "format":  "email",
+                                                                                             "title":  "Email"
+                                                                                         },
+                                                                               "password":  {
+                                                                                                "type":  "string",
+                                                                                                "title":  "Password"
+                                                                                            }
+                                                                           },
+                                                            "type":  "object",
+                                                            "required":  [
+                                                                             "email",
+                                                                             "password"
+                                                                         ],
+                                                            "title":  "LoginRequest"
+                                                        },
+                                       "LoginResponse":  {
+                                                             "properties":  {
+                                                                                "tokens":  {
+                                                                                               "$ref":  "#/components/schemas/TokenPair"
+                                                                                           },
+                                                                                "user":  {
+                                                                                             "$ref":  "#/components/schemas/UserResponse"
+                                                                                         }
+                                                                            },
+                                                             "type":  "object",
+                                                             "required":  [
+                                                                              "tokens",
+                                                                              "user"
+                                                                          ],
+                                                             "title":  "LoginResponse"
+                                                         },
+                                       "LogoutRequest":  {
+                                                             "properties":  {
+                                                                                "refresh_token":  {
+                                                                                                      "type":  "string",
+                                                                                                      "title":  "Refresh Token"
+                                                                                                  }
+                                                                            },
+                                                             "type":  "object",
+                                                             "required":  [
+                                                                              "refresh_token"
+                                                                          ],
+                                                             "title":  "LogoutRequest"
+                                                         },
+                                       "PaginatedFeatureResponse":  {
+                                                                        "properties":  {
+                                                                                           "items":  {
+                                                                                                         "items":  {
+                                                                                                                       "$ref":  "#/components/schemas/FeatureResponse"
+                                                                                                                   },
+                                                                                                         "type":  "array",
+                                                                                                         "title":  "Items"
+                                                                                                     },
+                                                                                           "total":  {
+                                                                                                         "type":  "integer",
+                                                                                                         "title":  "Total"
+                                                                                                     },
+                                                                                           "page":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "title":  "Page"
+                                                                                                    },
+                                                                                           "size":  {
+                                                                                                        "type":  "integer",
+                                                                                                        "title":  "Size"
+                                                                                                    }
+                                                                                       },
+                                                                        "type":  "object",
+                                                                        "required":  [
+                                                                                         "items",
+                                                                                         "total",
+                                                                                         "page",
+                                                                                         "size"
+                                                                                     ],
+                                                                        "title":  "PaginatedFeatureResponse"
+                                                                    },
+                                       "PriceBreakdown":  {
+                                                              "properties":  {
+                                                                                 "feature_codes":  {
+                                                                                                       "items":  {
+                                                                                                                     "type":  "string"
+                                                                                                                 },
+                                                                                                       "type":  "array",
+                                                                                                       "title":  "Feature Codes"
+                                                                                                   },
+                                                                                 "billing_cycle":  {
+                                                                                                       "type":  "string",
+                                                                                                       "title":  "Billing Cycle"
+                                                                                                   },
+                                                                                 "unit_prices":  {
+                                                                                                     "additionalProperties":  {
+                                                                                                                                  "type":  "string"
+                                                                                                                              },
+                                                                                                     "type":  "object",
+                                                                                                     "title":  "Unit Prices"
+                                                                                                 },
+                                                                                 "total":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Total"
+                                                                                           },
+                                                                                 "currency":  {
+                                                                                                  "type":  "string",
+                                                                                                  "title":  "Currency",
+                                                                                                  "default":  "USD"
+                                                                                              }
+                                                                             },
+                                                              "type":  "object",
+                                                              "required":  [
+                                                                               "feature_codes",
+                                                                               "billing_cycle",
+                                                                               "unit_prices",
+                                                                               "total"
+                                                                           ],
+                                                              "title":  "PriceBreakdown"
+                                                          },
+                                       "PriceCalculationRequest":  {
+                                                                       "properties":  {
+                                                                                          "feature_codes":  {
+                                                                                                                "items":  {
+                                                                                                                              "type":  "string"
+                                                                                                                          },
+                                                                                                                "type":  "array",
+                                                                                                                "title":  "Feature Codes"
+                                                                                                            },
+                                                                                          "billing_cycle":  {
+                                                                                                                "type":  "string",
+                                                                                                                "title":  "Billing Cycle"
+                                                                                                            }
+                                                                                      },
+                                                                       "type":  "object",
+                                                                       "required":  [
+                                                                                        "feature_codes",
+                                                                                        "billing_cycle"
+                                                                                    ],
+                                                                       "title":  "PriceCalculationRequest"
+                                                                   },
+                                       "ReadinessResponse":  {
+                                                                 "properties":  {
+                                                                                    "status":  {
+                                                                                                   "type":  "string",
+                                                                                                   "title":  "Status"
+                                                                                               },
+                                                                                    "checks":  {
+                                                                                                   "additionalProperties":  {
+                                                                                                                                "type":  "string"
+                                                                                                                            },
+                                                                                                   "type":  "object",
+                                                                                                   "title":  "Checks"
+                                                                                               },
+                                                                                    "timestamp":  {
+                                                                                                      "type":  "string",
+                                                                                                      "title":  "Timestamp"
+                                                                                                  }
+                                                                                },
+                                                                 "type":  "object",
+                                                                 "required":  [
+                                                                                  "status",
+                                                                                  "checks",
+                                                                                  "timestamp"
+                                                                              ],
+                                                                 "title":  "ReadinessResponse"
+                                                             },
+                                       "RefreshRequest":  {
+                                                              "properties":  {
+                                                                                 "refresh_token":  {
+                                                                                                       "type":  "string",
+                                                                                                       "title":  "Refresh Token"
+                                                                                                   }
+                                                                             },
+                                                              "type":  "object",
+                                                              "required":  [
+                                                                               "refresh_token"
+                                                                           ],
+                                                              "title":  "RefreshRequest"
+                                                          },
+                                       "RegisterRequest":  {
+                                                               "properties":  {
+                                                                                  "email":  {
+                                                                                                "type":  "string",
+                                                                                                "format":  "email",
+                                                                                                "title":  "Email"
+                                                                                            },
+                                                                                  "password":  {
+                                                                                                   "type":  "string",
+                                                                                                   "maxLength":  128,
+                                                                                                   "minLength":  8,
+                                                                                                   "title":  "Password"
+                                                                                               },
+                                                                                  "full_name":  {
+                                                                                                    "type":  "string",
+                                                                                                    "maxLength":  255,
+                                                                                                    "minLength":  2,
+                                                                                                    "title":  "Full Name"
+                                                                                                }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "email",
+                                                                                "password",
+                                                                                "full_name"
+                                                                            ],
+                                                               "title":  "RegisterRequest"
+                                                           },
+                                       "RegisterResponse":  {
+                                                                "properties":  {
+                                                                                   "user":  {
+                                                                                                "$ref":  "#/components/schemas/UserResponse"
+                                                                                            },
+                                                                                   "message":  {
+                                                                                                   "type":  "string",
+                                                                                                   "title":  "Message",
+                                                                                                   "default":  "Registration successful. Please check your email to verify your account."
+                                                                                               }
+                                                                               },
+                                                                "type":  "object",
+                                                                "required":  [
+                                                                                 "user"
+                                                                             ],
+                                                                "title":  "RegisterResponse"
+                                                            },
+                                       "ResendVerificationRequest":  {
+                                                                         "properties":  {
+                                                                                            "email":  {
+                                                                                                          "type":  "string",
+                                                                                                          "format":  "email",
+                                                                                                          "title":  "Email"
+                                                                                                      }
+                                                                                        },
+                                                                         "type":  "object",
+                                                                         "required":  [
+                                                                                          "email"
+                                                                                      ],
+                                                                         "title":  "ResendVerificationRequest"
+                                                                     },
+                                       "ResetPasswordRequest":  {
+                                                                    "properties":  {
+                                                                                       "token":  {
+                                                                                                     "type":  "string",
+                                                                                                     "title":  "Token"
+                                                                                                 },
+                                                                                       "new_password":  {
+                                                                                                            "type":  "string",
+                                                                                                            "maxLength":  128,
+                                                                                                            "minLength":  8,
+                                                                                                            "title":  "New Password"
+                                                                                                        }
+                                                                                   },
+                                                                    "type":  "object",
+                                                                    "required":  [
+                                                                                     "token",
+                                                                                     "new_password"
+                                                                                 ],
+                                                                    "title":  "ResetPasswordRequest"
+                                                                },
+                                       "TokenPair":  {
+                                                         "properties":  {
+                                                                            "access_token":  {
+                                                                                                 "type":  "string",
+                                                                                                 "title":  "Access Token"
+                                                                                             },
+                                                                            "refresh_token":  {
+                                                                                                  "type":  "string",
+                                                                                                  "title":  "Refresh Token"
+                                                                                              },
+                                                                            "token_type":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Token Type",
+                                                                                               "default":  "Bearer"
+                                                                                           },
+                                                                            "expires_in":  {
+                                                                                               "type":  "integer",
+                                                                                               "title":  "Expires In"
+                                                                                           }
+                                                                        },
+                                                         "type":  "object",
+                                                         "required":  [
+                                                                          "access_token",
+                                                                          "refresh_token",
+                                                                          "expires_in"
+                                                                      ],
+                                                         "title":  "TokenPair"
+                                                     },
+                                       "UpdateProfileRequest":  {
+                                                                    "properties":  {
+                                                                                       "full_name":  {
+                                                                                                         "type":  "string",
+                                                                                                         "maxLength":  255,
+                                                                                                         "minLength":  2,
+                                                                                                         "title":  "Full Name"
+                                                                                                     }
+                                                                                   },
+                                                                    "type":  "object",
+                                                                    "required":  [
+                                                                                     "full_name"
+                                                                                 ],
+                                                                    "title":  "UpdateProfileRequest"
+                                                                },
+                                       "UserResponse":  {
+                                                            "properties":  {
+                                                                               "id":  {
+                                                                                          "type":  "string",
+                                                                                          "format":  "uuid",
+                                                                                          "title":  "Id"
+                                                                                      },
+                                                                               "email":  {
+                                                                                             "type":  "string",
+                                                                                             "title":  "Email"
+                                                                                         },
+                                                                               "full_name":  {
+                                                                                                 "type":  "string",
+                                                                                                 "title":  "Full Name"
+                                                                                             },
+                                                                               "status":  {
+                                                                                              "type":  "string",
+                                                                                              "title":  "Status"
+                                                                                          },
+                                                                               "email_verified":  {
+                                                                                                      "type":  "boolean",
+                                                                                                      "title":  "Email Verified"
+                                                                                                  },
+                                                                               "created_at":  {
+                                                                                                  "type":  "string",
+                                                                                                  "format":  "date-time",
+                                                                                                  "title":  "Created At"
+                                                                                              }
+                                                                           },
+                                                            "type":  "object",
+                                                            "required":  [
+                                                                             "id",
+                                                                             "email",
+                                                                             "full_name",
+                                                                             "status",
+                                                                             "email_verified",
+                                                                             "created_at"
+                                                                         ],
+                                                            "title":  "UserResponse"
+                                                        },
+                                       "ValidationError":  {
+                                                               "properties":  {
+                                                                                  "loc":  {
+                                                                                              "items":  {
+                                                                                                            "anyOf":  [
+                                                                                                                          {
+                                                                                                                              "type":  "string"
+                                                                                                                          },
+                                                                                                                          {
+                                                                                                                              "type":  "integer"
+                                                                                                                          }
+                                                                                                                      ]
+                                                                                                        },
+                                                                                              "type":  "array",
+                                                                                              "title":  "Location"
+                                                                                          },
+                                                                                  "msg":  {
+                                                                                              "type":  "string",
+                                                                                              "title":  "Message"
+                                                                                          },
+                                                                                  "type":  {
+                                                                                               "type":  "string",
+                                                                                               "title":  "Error Type"
+                                                                                           }
+                                                                              },
+                                                               "type":  "object",
+                                                               "required":  [
+                                                                                "loc",
+                                                                                "msg",
+                                                                                "type"
+                                                                            ],
+                                                               "title":  "ValidationError"
+                                                           },
+                                       "VerifyEmailRequest":  {
+                                                                  "properties":  {
+                                                                                     "token":  {
+                                                                                                   "type":  "string",
+                                                                                                   "title":  "Token"
+                                                                                               }
+                                                                                 },
+                                                                  "type":  "object",
+                                                                  "required":  [
+                                                                                   "token"
+                                                                               ],
+                                                                  "title":  "VerifyEmailRequest"
+                                                              }
+                                   },
+                       "securitySchemes":  {
+                                               "HTTPBearer":  {
+                                                                  "type":  "http",
+                                                                  "scheme":  "bearer"
+                                                              }
+                                           }
+                   }
+}

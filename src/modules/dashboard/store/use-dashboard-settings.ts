@@ -13,8 +13,8 @@ export interface DashboardSettingsState {
 export const useDashboardSettings = create<DashboardSettingsState>()(
   persist(
     (set) => ({
-      statCards: ['gold', 'gasoline', 'wti', 'sekee', 'eur', 'btc'],
-      chartSource: 'wti', // WTI Crude Oil
+      statCards: ['sekee', 'geram18', 'gold', 'wti', 'eur', 'btc'],
+      chartSource: 'sekee', // Set default chart to sekee
       chartType: 'area',
       setStatCards: (cards) => set({ statCards: cards }),
       setChartSource: (source) => set({ chartSource: source }),

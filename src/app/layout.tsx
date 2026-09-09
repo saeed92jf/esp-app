@@ -1,14 +1,10 @@
 // src/app/layout.tsx
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { TimeProvider } from "@/providers/time-provider";
 import { QueryProvider } from "@/providers/query-provider";
-import {
-  DEFAULT_PRIMARY_COLOR,
-  PRIMARY_COLOR_STORAGE_KEY,
-} from "@/config/settings";
+import { DEFAULT_PRIMARY_COLOR } from "@/config/settings";
 import "./globals.css";
 
 export default async function RootLayout({
@@ -21,11 +17,9 @@ export default async function RootLayout({
   const locale = await getLocale();
   const dir = locale === "fa" ? "rtl" : "ltr";
 
-  // Primary color is read from the cookie on the server (single source of
-  // truth). Applied as a class on <html> => no inline script, no FOUC.
-  const cookieStore = await cookies();
-  const primaryColor =
-    cookieStore.get(PRIMARY_COLOR_STORAGE_KEY)?.value ?? DEFAULT_PRIMARY_COLOR;
+  // Primary color default is rendered on SSR.
+  // The client hook `usePrimaryColor` will sync it with the global fake API state on mount.
+  const primaryColor = DEFAULT_PRIMARY_COLOR;
 
   return (
     <html

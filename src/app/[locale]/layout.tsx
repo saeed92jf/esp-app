@@ -10,6 +10,8 @@ import { PersianDigitsProvider } from '@/components/PersianDigitsProvider';
 import { ConditionalFooter } from '@/components/layout/conditional-footer';
 import { ScrollToTop } from '@/components/layout/scroll-to-top';
 import { routing } from '@/i18n/routing';
+import { PremiumGuard } from '@/components/auth/premium-guard';
+import { AuthModal } from '@/modules/auth/components/auth-modal';
 
 // Locale-aware metadata stays here, since this layout receives `locale`.
 export { generateMetadata, viewport } from '@/app/[locale]/metadata';
@@ -36,7 +38,10 @@ export default async function LocaleLayout({
       <HtmlLangSync locale={locale} />
       <ConditionalHeader />
       <div className="relative flex flex-col min-h-screen">
-        <main className="flex-1">{children}</main>
+        <PremiumGuard>
+          <main className="flex-1">{children}</main>
+        </PremiumGuard>
+        <AuthModal />
         <ConditionalFooter />
       </div>
       <ScrollToTop />

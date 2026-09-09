@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 export type IrrMode = 'manual' | 'cbi' | 'sana' | 'free';
 
 export function useCommodities() {
-  const { data: commodities, error, isLoading, refetch: refetchCommodities } = useQuery({
+  const { data: commodities, error, isLoading, isFetching: isFetchingCommodities, refetch: refetchCommodities } = useQuery({
     queryKey: ['commodities'],
     queryFn: () => api.commodities.getCommodities(),
     refetchInterval: 60000,
@@ -13,7 +13,7 @@ export function useCommodities() {
 
   // Exchange rates always use api.exchangeRates which is set to 'real' in SERVICE_MODES
   // regardless of the global API_MODE — so it always hits TGJU live data
-  const { data: exchangeRates, refetch: refetchRates } = useQuery({
+  const { data: exchangeRates, isFetching: isFetchingRates, refetch: refetchRates } = useQuery({
     queryKey: ['exchange-rates'],
     queryFn: () => api.exchangeRates.getRates(),
     refetchInterval: 300000, // 5 minutes
@@ -82,6 +82,7 @@ export function useCommodities() {
     commodities,
     exchangeRates,
     isLoading,
+    isFetching: isFetchingCommodities || isFetchingRates,
     error,
     refetch,
 

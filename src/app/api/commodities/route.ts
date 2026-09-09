@@ -112,6 +112,7 @@ export async function GET() {
           if (!data) throw new Error('No data');
 
           let { price, change, percentChange, trend } = data;
+          let originalPrice: number | undefined;
 
           // Fiat is returned in Rial by TGJU. We want everything relative to USD.
           // e.g. EUR price in TGJU = 2,159,900. USD = 1,869,000. => Base EUR/USD = 1.155
@@ -123,6 +124,7 @@ export async function GET() {
             // But it's good enough for a dashboard trend indicator.
             const baseChange = (basePrice * percentChange) / 100;
             
+            originalPrice = price; // Keep original raw rial price for dashboard stats
             price = basePrice;
             change = baseChange;
           }
@@ -131,13 +133,14 @@ export async function GET() {
             id: t.id,
             category: t.category,
             price,
+            originalPrice,
             change,
             percentChange,
             trend
           };
         } catch (e) {
           console.error(`Failed to fetch ${t.id} from TGJU`);
-          return { id: t.id, category: t.category, price: 0, change: 0, percentChange: 0, trend: 'neutral', error: true };
+          return { id: t.id, category: t.category, price: 0, originalPrice: 0, change: 0, percentChange: 0, trend: 'neutral', error: true };
         }
       })
     );

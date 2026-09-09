@@ -183,6 +183,12 @@
       "kwd": "Kuwaiti Dinar (KWD)",
       "helpOunce": "Help: One Troy Ounce is equal to 31.103 grams.",
       "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams."
+    },
+    "upsell": {
+      "title": "Login Required",
+      "description": "Please login to access this feature.",
+      "registerButton": "Register / Login",
+      "cancelButton": "Cancel"
     }
   }
 }

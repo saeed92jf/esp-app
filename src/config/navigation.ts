@@ -272,7 +272,6 @@ export interface NavItem {
   /** Optional semantic color token for this nav item. */
   color?: NavColor;
   public?: boolean;
-  welcome?: boolean;
   free?: boolean;
 }
 
@@ -437,7 +436,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: ImageIcon,
         color: "forest",
         public: true,
-        welcome: true,
         free: true,
       },
       {
@@ -446,7 +444,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: Video,
         color: "berry",
         public: true,
-        welcome: true,
         free: true,
       },
       {
@@ -455,7 +452,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: AudioLines,
         color: "grape",
         public: true,
-        welcome: true,
         free: true,
       },
       {
@@ -464,7 +460,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: Library,
         color: "mango",
         public: true,
-        welcome: true,
         free: false,
       },
     ],
@@ -481,7 +476,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: LayoutGrid,
         color: "violet",
         public: true,
-        welcome: true,
         free: false,
       },
       {
@@ -490,7 +484,6 @@ export const NAVIGATION: NavGroup[] = [
         icon: LayoutGrid,
         color: "indigo",
         public: true,
-        welcome: true,
         free: false,
       },
     ],
@@ -504,9 +497,4 @@ export const PRIMARY_NAV: NavItem[] =
 /** All items flagged as public (visible without authentication). */
 export const PUBLIC_NAV_ITEMS: NavItem[] = NAVIGATION.flatMap((group) =>
   group.items.filter((item) => item.public),
-);
-
-/** Items rendered on the Welcome screen for unauthenticated visitors. */
-export const PUBLIC_WELCOME_ITEMS: NavItem[] = NAVIGATION.flatMap((group) =>
-  group.items.filter((item) => item.welcome),
 );

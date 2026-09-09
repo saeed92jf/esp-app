@@ -7,8 +7,10 @@ import { cn } from "@/lib/utils";
 import { DashboardAvatar } from "./dashboard-avatar";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { Link } from "@/i18n/navigation";
-import { Home, Menu, Calendar as CalendarIcon, Settings } from "lucide-react";
+import { Home, Menu, Calendar as CalendarIcon, Settings, LogOut } from "lucide-react";
 import { DashboardSettingsModal } from "./dashboard-settings-modal";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { useRouter } from "@/i18n/navigation";
 
 interface DashboardHeaderProps {
   displayName: string;
@@ -35,6 +37,13 @@ export function DashboardHeader({
   const tDash = useTranslations("Dashboard.header");
   const [isScrolled, setIsScrolled] = React.useState(false);
   const [settingsOpen, setSettingsOpen] = React.useState(false);
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/login");
+  };
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -104,6 +113,13 @@ export function DashboardHeader({
           title={sidebarOpen ? tDash("hideEvents") : tDash("upcomingEvents")}
         >
           <CalendarIcon className="size-4" />
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-center bg-card border border-border/50 rounded-xl shadow-sm hover:bg-destructive/10 hover:text-destructive transition-all duration-200 p-1.5 ms-1"
+          title={tDashboard("avatar.logout")}
+        >
+          <LogOut className="size-4" />
         </button>
       </div>
       <DashboardSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />

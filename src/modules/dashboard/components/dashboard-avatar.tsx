@@ -5,7 +5,7 @@ import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Upload, X, ChevronRight, ChevronLeft, Check, User } from 'lucide-react';
+import { Upload, X, ChevronRight, ChevronLeft, Check, User, LogOut } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -85,23 +85,27 @@ export function DashboardAvatar() {
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
 
+  const avatarButton = (
+    <button className="relative flex items-center justify-center p-1 rounded-full group border-none bg-transparent outline-none ring-0 cursor-pointer">
+      {/* Border */}
+      <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity scale-110" />
+      
+      {/* Avatar container */}
+      <div className="relative z-10 bg-background rounded-full p-[2px] scale-110 shadow-md">
+        <Avatar className="size-16 sm:size-20 border-2 border-background">
+          {avatarUrl ? (
+            <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
+          ) : null}
+          <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-muted text-muted-foreground">{initial}</AvatarFallback>
+        </Avatar>
+      </div>
+    </button>
+  );
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="relative flex items-center justify-center p-1 rounded-full group cursor-pointer border-none bg-transparent outline-none ring-0">
-          {/* Static rainbow border */}
-          <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity scale-110" />
-          
-          {/* Avatar container */}
-          <div className="relative z-10 bg-background rounded-full p-[2px] scale-110 shadow-md">
-            <Avatar className="size-16 sm:size-20 border-2 border-background">
-              {avatarUrl ? (
-                <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
-              ) : null}
-              <AvatarFallback className="text-2xl sm:text-3xl font-bold bg-muted text-muted-foreground">{initial}</AvatarFallback>
-            </Avatar>
-          </div>
-        </button>
+        {avatarButton}
       </PopoverTrigger>
       
       <PopoverContent className="w-[320px] sm:w-[360px] p-4 rounded-xl shadow-lg border border-border/50" align="start">
@@ -182,7 +186,7 @@ export function DashboardAvatar() {
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium text-sm"
             >
               <User className="size-4" />
-              {t("avatar.userProfile", { defaultValue: "اطلاعات کاربری" })}
+              {t("avatar.userProfile")}
             </Link>
           </div>
         </div>

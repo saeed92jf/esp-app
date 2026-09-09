@@ -1,5 +1,5 @@
 // src/app/[locale]/page.tsx
-import { AuthGate } from "@/modules/auth/components/auth-gate";
+
 import { HomeClient } from "@/modules/home/components/home-client";
 
 /**
@@ -8,10 +8,8 @@ import { HomeClient } from "@/modules/home/components/home-client";
  */
 export default function HomePage() {
   return (
-    <AuthGate>
-      <div className="mx-auto w-full max-w-full px-4 py-10">
-        <HomeClient />
-      </div>
-    </AuthGate>
+    <div className="mx-auto w-full max-w-full px-4 py-10">
+      <HomeClient />
+    </div>
   );
 }

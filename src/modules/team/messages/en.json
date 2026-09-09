@@ -12,7 +12,9 @@
     "sections": {
       "leadership": "Leadership & Team",
       "engineering": "Engineering & Security",
-      "content": "Content & Research"
+      "engineeringDesc": "The team that architects, builds, and secures the platform's core infrastructure.",
+      "content": "Content & Research",
+      "contentDesc": "Technical, educational, and brand content that tells our product story to users."
     },
     "members": {
       "morteza": "Morteza Shafiei",

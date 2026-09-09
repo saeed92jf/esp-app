@@ -6,6 +6,7 @@ export interface CommodityItem {
   id: string;
   category: 'iran_gold' | 'global_metals' | 'energy' | 'agriculture' | 'forex' | 'crypto';
   price: number;
+  originalPrice?: number;
   change: number;
   percentChange: number;
   trend: 'up' | 'down' | 'neutral';

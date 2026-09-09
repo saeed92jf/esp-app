@@ -26,6 +26,8 @@ import { FLOW_THEME, type ShapeType } from "./types";
 import { Button } from "@/components/ui/button";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { useAuthModal } from "@/modules/auth/hooks/use-auth-modal";
 import {
   Dialog,
   DialogContent,
@@ -304,6 +306,8 @@ export function HeroFlow() {
   const router = useRouter();
   const isRtl = locale === "fa";
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const { openModal } = useAuthModal();
   const [initialColor, setInitialColor] = useState(FALLBACK_PRIMARY);
   const [isNavigating, setIsNavigating] = useState(false);
   const [showMobileAlert, setShowMobileAlert] = useState(false);
@@ -399,12 +403,15 @@ export function HeroFlow() {
                     target="_blank"
                     className="flex items-center justify-center w-full h-full outline-none"
                     onClick={(e) => {
+                      e.preventDefault();
+                      if (!user) {
+                        openModal();
+                        return;
+                      }
                       if (isMobile) {
-                        e.preventDefault();
                         setShowMobileAlert(true);
                         return;
                       }
-                      e.preventDefault();
                       if (isNavigating) return;
                       setIsNavigating(true);
                       setTimeout(() => {
