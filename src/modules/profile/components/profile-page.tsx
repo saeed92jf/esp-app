@@ -521,7 +521,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('picture')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Camera className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
@@ -539,7 +539,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('name')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.name")}</span>
@@ -555,7 +555,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('nationalId')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Fingerprint className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.nationalId")}</span>
@@ -571,7 +571,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('birthDate')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.birthDate")}</span>
@@ -587,7 +587,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('email')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Mail className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.email")}</span>
@@ -603,7 +603,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('phone')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Phone className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
@@ -619,7 +619,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('address')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <MapPin className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.address")}</span>
@@ -703,7 +703,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('department')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Briefcase className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.department")}</span>
@@ -718,7 +718,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('role')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.role")}</span>
@@ -733,7 +733,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('employeeId')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.employeeId")}</span>
@@ -748,7 +748,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('joinDate')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.joinDate")}</span>
@@ -763,7 +763,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('manager')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.manager")}</span>
@@ -974,7 +974,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('provider')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Shield className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.provider")}</span>
@@ -989,7 +989,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('type')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Activity className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.type")}</span>
@@ -1004,7 +1004,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('insuranceCode')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.insuranceCode")}</span>
@@ -1019,7 +1019,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('validUntil')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.validUntil")}</span>
@@ -1101,7 +1101,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('degree')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <GraduationCap className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.degree")}</span>
@@ -1116,7 +1116,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('fieldOfStudy')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Activity className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.fieldOfStudy")}</span>
@@ -1131,7 +1131,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('university')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <MapPin className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.university")}</span>
@@ -1146,7 +1146,7 @@ export function ProfilePage() {
             className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('graduationYear')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-700 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.graduationYear")}</span>

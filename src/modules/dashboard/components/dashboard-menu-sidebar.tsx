@@ -126,7 +126,7 @@ export function DashboardMenuSidebar() {
                 value={group.id}
                 className="segmented-item border-none"
               >
-                <AccordionTrigger className="hover:bg-muted/50 px-3 py-3 text-sm font-semibold hover:no-underline transition-colors duration-200 outline-none">
+                <AccordionTrigger className="hover:bg-muted/50 px-3 py-3 text-sm font-semibold hover:no-underline transition-colors duration-100 ease-out active:scale-[0.99] transform-gpu outline-none">
                   <span className="flex items-center gap-2">
                     {GroupIcon && <GroupIcon className="size-4 shrink-0 text-muted-foreground" />}
                     {tSections(group.labelKey)}
@@ -154,9 +154,9 @@ export function DashboardMenuSidebar() {
                               href={item.href}
                               onClick={handleLinkClick}
                               className={cn(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-all duration-200 group relative",
+                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-colors duration-100 ease-out active:scale-[0.98] transform-gpu group relative",
                                 isActive
-                                  ? "bg-primary/10 text-primary font-medium translate-x-1 rtl:-translate-x-1"
+                                  ? "bg-primary/10 text-primary font-medium"
                                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                               )}
                             >

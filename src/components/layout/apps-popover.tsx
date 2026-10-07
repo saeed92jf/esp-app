@@ -177,7 +177,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "absolute inset-1 rounded-xl pointer-events-none opacity-0 transition-opacity duration-700 group-hover:duration-[50ms]",
+                        "absolute inset-1 rounded-xl pointer-events-none opacity-0 transition-opacity duration-100 ease-out",
                         isDragOver ? "bg-muted opacity-100 duration-0" : "bg-[#98c1d9]/30 dark:bg-white/[0.12]",
                         !editMode && !isRestricted && "group-hover:opacity-100"
                       )}
@@ -234,7 +234,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
                     <span
                       aria-hidden="true"
                       className={cn(
-                        "absolute inset-1 rounded-xl pointer-events-none opacity-0 transition-opacity duration-700 group-hover:duration-[50ms]",
+                        "absolute inset-1 rounded-xl pointer-events-none opacity-0 transition-opacity duration-100 ease-out",
                         "bg-[#98c1d9]/30 dark:bg-white/[0.12]",
                         !editMode && !isRestricted && "group-hover:opacity-100"
                       )}

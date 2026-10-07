@@ -174,7 +174,7 @@ export function DashboardAvatar() {
                >
                  {/* GPU-accelerated hover layer */}
                  <span className={cn(
-                   "absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-700 group-hover/avatar:opacity-100 group-hover/avatar:duration-[50ms] pointer-events-none",
+                   "absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/avatar:opacity-100 pointer-events-none",
                    statusExpanded ? "rounded-ss-[32px] rounded-es-[6px] rounded-e-none" : "rounded-s-[32px] rounded-e-none"
                  )} aria-hidden="true" />
                  

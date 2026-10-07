@@ -24,6 +24,7 @@ export interface User {
   modulesAccess?: UserModuleAccess[];
   department?: string;
   manager?: string;
+  education?: string;
   educationDegree?: string;
   educationField?: string;
   jobTitle?: string;

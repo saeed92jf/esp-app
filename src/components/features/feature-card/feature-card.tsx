@@ -64,7 +64,7 @@ export function FeatureCard({
         {cardBgClassName && (
           <span 
             className={cn(
-              "absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:duration-[50ms]",
+              "absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100",
               cardBgClassName.replace("group-hover:", "")
             )} 
             aria-hidden="true" 

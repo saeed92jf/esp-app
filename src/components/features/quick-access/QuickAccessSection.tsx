@@ -168,7 +168,7 @@ export function QuickAccessSection({
               className="group relative outline-none text-muted-foreground/40 p-1.5 rounded-full flex items-center justify-center transition-colors group-hover:text-foreground"
               aria-label="Toggle Customize"
             >
-              <span className="absolute inset-0 rounded-full bg-muted/50 opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+              <span className="absolute inset-0 rounded-full bg-muted/50 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
               <div className="relative z-10 flex items-center justify-center pointer-events-none group-hover:text-foreground transition-colors">
                 {editMode ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
               </div>

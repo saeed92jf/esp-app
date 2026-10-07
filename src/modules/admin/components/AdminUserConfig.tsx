@@ -163,7 +163,7 @@ export function AdminUserConfig({
       toast.error(t("enterNewPassword"));
       return;
     }
-    toast.success(t("passwordResetSuccess", { user: selectedUser?.name }));
+    toast.success(t("passwordResetSuccess", { user: selectedUser?.name ?? "" }));
     setNewPassword("");
   };
 
@@ -188,7 +188,7 @@ export function AdminUserConfig({
 
   const handleChangeRole = (val: string) => {
     if (!selectedUser) return;
-    const updatedUser = { ...selectedUser, role: val };
+    const updatedUser: User = { ...selectedUser, role: val as User["role"] };
     const newUsers = users.map(u => u.id === selectedUser.id ? updatedUser : u);
     setUsers(newUsers);
     setSelectedUser(updatedUser);
@@ -270,7 +270,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={roleOptions} 
                 value={selectedUser?.role || 'user'} 
-                onValueChange={handleChangeRole} 
+                onChange={handleChangeRole} 
                 placeholder={t("selectRole")}
                 emptyText={t("noResults")}
                 className="w-[140px] h-10 bg-background border-border/50 rounded-xl rtl:text-right text-xs shadow-sm"
@@ -429,7 +429,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={departmentOptions} 
                 value={newUser.department} 
-                onValueChange={(val) => setNewUser({...newUser, department: val})} 
+                onChange={(val) => setNewUser({...newUser, department: val})} 
                 placeholder={t("selectDepartment")}
                 emptyText={t("noResults")}
                 className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
@@ -440,7 +440,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={roleOptions} 
                 value={newUser.role || ''} 
-                onValueChange={(val) => setNewUser({...newUser, role: val})} 
+                onChange={(val) => setNewUser({...newUser, role: val as User["role"]})} 
                 placeholder={t("selectRole")}
                 emptyText={t("noResults")}
                 className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
@@ -460,7 +460,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={maritalOptions} 
                 value={newUser.maritalStatus || ''} 
-                onValueChange={(val) => setNewUser({...newUser, maritalStatus: val as any})} 
+                onChange={(val) => setNewUser({...newUser, maritalStatus: val as any})} 
                 placeholder={t("selectMaritalStatus")}
                 emptyText={t("noResults")}
                 className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
@@ -478,7 +478,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={insuranceOptions} 
                 value={newUser.insuranceType || ''} 
-                onValueChange={(val) => setNewUser({...newUser, insuranceType: val as any})} 
+                onChange={(val) => setNewUser({...newUser, insuranceType: val as any})} 
                 placeholder={t("selectInsurance")}
                 emptyText={t("noResults")}
                 className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
@@ -489,7 +489,7 @@ export function AdminUserConfig({
               <Combobox 
                 options={degreeOptions} 
                 value={newUser.educationDegree || ''} 
-                onValueChange={(val) => setNewUser({...newUser, educationDegree: val})} 
+                onChange={(val) => setNewUser({...newUser, educationDegree: val})} 
                 placeholder={t("selectDegree")}
                 emptyText={t("noResults")}
                 className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"

@@ -70,7 +70,7 @@ export function GoogleShortcutTile({
       {/* Absolute Hover Background (GPU Accelerated, with visual margin) */}
       <div
         className={cn(
-          "absolute inset-1 sm:inset-1.5 rounded-2xl pointer-events-none transition-opacity duration-700 group-hover:duration-[50ms]",
+          "absolute inset-1 sm:inset-1.5 rounded-2xl pointer-events-none transition-opacity duration-100 ease-out",
           "bg-black/[0.05] dark:bg-white/[0.08] opacity-0 group-hover:opacity-100",
           isMenuOpen && "opacity-100 duration-0"
         )}
