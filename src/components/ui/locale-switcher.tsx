@@ -7,12 +7,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { type Locale } from "@/i18n/routing";
+import { HEADER_ICON_BUTTON_CLASS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
-
-const LOCALES = [
-  { id: "en", label: "EN" },
-  { id: "fa", label: "FA" },
-] as const;
 
 export function LocaleSwitcher({ className }: { className?: string }) {
   const locale = useLocale();
@@ -24,6 +20,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
   const [showFadeIn, setShowFadeIn] = useState(true);
   const [optimisticLocale, setOptimisticLocale] = useState(locale);
   const [mounted, setMounted] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -47,9 +44,6 @@ export function LocaleSwitcher({ className }: { className?: string }) {
     }, 500);
   }
 
-  const [isHovered, setIsHovered] = useState(false);
-  const textNormal = optimisticLocale === "en" ? "English" : "فارسی";
-  const textHover = optimisticLocale === "en" ? "Switch to Persian" : "تبدیل به انگلیسی";
   const shortNormal = optimisticLocale === "en" ? "EN" : "FA";
   const shortHover = optimisticLocale === "en" ? "FA" : "EN";
 
@@ -87,50 +81,28 @@ export function LocaleSwitcher({ className }: { className?: string }) {
         )}
 
       <button
-        className={cn(
-          "relative flex items-center justify-center h-7 w-7 sm:w-auto sm:h-7 sm:px-3 overflow-hidden rounded-full border border-border/80 bg-muted/80 dark:bg-muted/50 backdrop-blur-md hover:border-primary/50 hover:bg-accent text-[12px] font-semibold text-foreground transition-all duration-300 shadow-sm",
-          (isPending || isFadingOut) && "pointer-events-none opacity-50",
-          className
-        )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className={cn(HEADER_ICON_BUTTON_CLASS, "relative group", className)}
+        
         onClick={() => {
           const next = optimisticLocale === "en" ? "fa" : "en";
           handleLocaleChange(next);
         }}
-        role="button"
         aria-label="Toggle Language"
       >
-        <div className="relative flex items-center justify-center w-full h-full">
-          {/* Invisible placeholder ensures button width doesn't jitter on desktop */}
-          <div className="invisible whitespace-nowrap hidden sm:block">
-            {textHover}
-          </div>
-          
-          {/* Animated Texts */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <motion.span
-              initial={false}
-              animate={{ y: isHovered ? -24 : 0, opacity: isHovered ? 0 : 1 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute whitespace-nowrap flex items-center justify-center"
-            >
-              <span className="hidden sm:inline">{textNormal}</span>
-              <span className="sm:hidden">{shortNormal}</span>
-            </motion.span>
-            
-            <motion.span
-              initial={false}
-              animate={{ y: isHovered ? 0 : 24, opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute whitespace-nowrap text-primary flex items-center justify-center"
-            >
-              <span className="hidden sm:inline">{textHover}</span>
-              <span className="sm:hidden">{shortHover}</span>
-            </motion.span>
-          </div>
+        <div className="relative flex items-center justify-center w-full h-full font-bold text-sm font-sans tracking-widest">
+          <span
+            className="absolute transition-all duration-500 ease-out opacity-100 scale-100 group-hover:opacity-0 group-hover:scale-50"
+          >
+            {shortNormal}
+          </span>
+          <span
+            className="absolute transition-all duration-500 ease-out opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100"
+          >
+            {shortHover}
+          </span>
         </div>
       </button>
     </>
   );
 }
+

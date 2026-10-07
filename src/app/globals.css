@@ -17,6 +17,18 @@
   --font-poppins: 'Poppins', system-ui, sans-serif;
   --font-inter: 'Inter', system-ui, sans-serif;
   --font-shabnam: 'Shabnam', system-ui, sans-serif;
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-collapsible-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-collapsible-content-height); }
+    to { height: 0; }
+  }
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -60,11 +72,20 @@ body {
   overflow-x: clip;
   direction: auto;
   font-family: var(--font-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Ensure form controls inherit the global font normally */
 button, input, select, textarea {
   font-family: var(--font-base);
+}
+
+/* Google-like Typography Profile */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 @media (max-width: 320px) {
@@ -199,8 +220,74 @@ button, input, select, textarea {
   }
 }
 
+@layer components {
+  /* Global Stacked/Segmented List Pattern */
+  .segmented-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Small separation */
+  }
+
+  .segmented-item {
+    background-color: var(--background);
+    border-radius: 6px; /* Decreased fillet for middle items */
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* GPU-accelerated hover layer for segmented-item */
+  .segmented-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: #98c1d9;
+    opacity: 0;
+    /* No transition by default for instant snap on/off */
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .segmented-item.no-hover-bg::before {
+    display: none !important;
+  }
+
+  @media (hover: hover) {
+    .segmented-item:not(.no-hover-bg):hover::before {
+      opacity: 0.3;
+    }
+  }
+
+  /* Optional class for slow fade-out effect */
+  .segmented-item.hover-slow-fade::before {
+    transition: opacity 700ms; /* Slow fade-out */
+  }
+  
+  @media (hover: hover) {
+    .segmented-item.hover-slow-fade:not(.no-hover-bg):hover::before {
+      transition-duration: 50ms; /* 50ms fade-in */
+    }
+  }
+
+  /* First item logic */
+  .segmented-list > .segmented-item:first-child {
+    border-start-start-radius: 32px;
+    border-start-end-radius: 32px;
+  }
+
+  /* Last item logic */
+  .segmented-list > .segmented-item:last-child {
+    border-end-start-radius: 32px;
+    border-end-end-radius: 32px;
+  }
+
+  /* Solitary item */
+  .segmented-list > .segmented-item:first-child:last-child {
+    border-radius: 32px;
+  }
+}
+
 @theme inline {
-  --spacing-header: 4rem; /* 64px — matches h-16 in Header */
+  --spacing-header: 4.5rem; /* 72px */
   --spacing-sidebar: 15rem; /* 240px */
   --spacing-content-max: 80rem; /* 1280px */
   --font-heading: var(--font-sans);
@@ -314,11 +401,11 @@ button, input, select, textarea {
   --form-accent: #7f60ff;
   --form-border: #d1d5db;
   --form-muted: #f1f5f9;
-  --foreground: oklch(0.148 0.004 228.8);
+  --foreground: #202124;
   --card: var(--form-node);
-  --card-foreground: oklch(0.148 0.004 228.8);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.148 0.004 228.8);
+  --card-foreground: var(--foreground);
+  --popover: #edf2fa;
+  --popover-foreground: var(--foreground);
   --shape-ring: oklch(56.018% 0.0211 213.652 / 0.637);
 
   /* ---- DYNAMIC PRIMARY (light) ----
@@ -333,8 +420,8 @@ button, input, select, textarea {
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.963 0.002 197.1);
-  --muted-foreground: oklch(0.56 0.021 213.5);
-  --accent: oklch(0.963 0.002 197.1);
+  --muted-foreground: #5f6368;
+  --accent: #98c1d9;
   --accent-foreground: oklch(0.218 0.008 223.9);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.925 0.005 214.3);
@@ -400,11 +487,11 @@ button, input, select, textarea {
   --form-accent: #8ba4e4;
   --form-border: #2a3254;
   --form-muted: #1e243d;
-  --foreground: oklch(0.987 0.002 197.1);
+  --foreground: #e8eaed;
   --card: var(--form-node);
-  --card-foreground: oklch(0.987 0.002 197.1);
+  --card-foreground: var(--foreground);
   --popover: oklch(0.218 0.008 223.9);
-  --popover-foreground: oklch(0.987 0.002 197.1);
+  --popover-foreground: var(--foreground);
   --shape-ring: oklch(98.658% 0.00216 199.99 / 0.616);
 
   /* ---- DYNAMIC PRIMARY (dark) ----
@@ -418,7 +505,7 @@ button, input, select, textarea {
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.275 0.011 216.9);
-  --muted-foreground: oklch(0.723 0.014 214.4);
+  --muted-foreground: #9aa0a6;
   --accent: oklch(0.275 0.011 216.9);
   --accent-foreground: oklch(0.987 0.002 197.1);
   --destructive: oklch(0.704 0.191 22.216);
@@ -492,4 +579,38 @@ button, input, select, textarea {
 /* Fix react-resizable handle in dark mode */
 .dark .react-resizable-handle {
   filter: invert(1) hue-rotate(180deg) opacity(0.8);
+}
+
+/* Apps Popover Custom Scrollbar using Radix ScrollArea */
+[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+[data-radix-scroll-area-viewport] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.apps-radix-scroll [data-slot="scroll-area-scrollbar"],
+.apps-radix-scroll [data-radix-scroll-area-scrollbar] {
+  top: 40px !important;
+  bottom: 40px !important;
+  height: calc(100% - 80px) !important;
+  margin: 0 !important;
+  padding: 0 1px !important;
+  width: 10px !important;
+  background: transparent !important;
+  z-index: 50;
+}
+.apps-radix-scroll [data-slot="scroll-area-thumb"],
+.apps-radix-scroll [data-radix-scroll-area-thumb] {
+  background-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent) !important;
+  border-radius: 10px !important;
+  width: 100% !important;
+  z-index: 50;
+}
+.apps-radix-scroll [data-slot="scroll-area-thumb"]:hover,
+.apps-radix-scroll [data-radix-scroll-area-thumb]:hover {
+  background-color: color-mix(in oklab, var(--muted-foreground) 50%, transparent) !important;
 }

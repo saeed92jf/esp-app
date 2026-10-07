@@ -19,7 +19,8 @@ export interface StatCard {
 export interface ChartPoint  { labelKey: string; value: number; }
 export interface ActivityItem {
   id: string;
-  titleKey: string;
+  titleKey?: string;
+  title?: string;
   timeKey: 'minutes' | 'hours' | 'days';
   count: number;
   status: 'success' | 'pending' | 'error';
@@ -27,7 +28,8 @@ export interface ActivityItem {
 
 export interface CalendarEvent {
   id: string;
-  title: string;
+  titleKey?: string;
+  title?: string;
   date: string;
   type: 'meeting' | 'deadline' | 'review' | 'event' | 'official' | 'fair';
 }
@@ -41,6 +43,7 @@ export interface ChecklistItem {
 
 export interface DashboardData {
   stats: StatCard[];
+  allStats?: StatCard[];
 
   chart: ChartPoint[];
   activities: ActivityItem[];
@@ -67,123 +70,375 @@ const chart = (values: number[]): ChartPoint[] =>
 
 const REAL_EVENTS: CalendarEvent[] = [
   {
-    "id": "fair-2",
-    "title": "نمایشگاه: سی و یکمین نمایشگاه بین المللی مواد شوینده،آرایشی،بهداشتی،سلولزی و ماشین آلات وابسته",
-    "date": "1405-01-29",
+    "id": "fair-1",
+    "title": "نمایشگاه: هشتمین نمایشگاه بین المللی توانمندی های صادراتی جمهوری اسلامی ایران (iran expo) (به تعویق افتاد)",
+    "date": "1405-01-28",
     "type": "fair"
   },
   {
-    "id": "fair-5",
-    "title": "نمایشگاه: ششمین نمایشگاه توانمندی های صادراتی جمهوری اسلامی ایران (iran expo 2024)",
+    "id": "fair-2",
+    "title": "نمایشگاه: چهارمین نمایشگاه بین المللی تجارت با اوراسیا (به تعویق افتاد)",
+    "date": "1405-01-28",
+    "type": "fair"
+  },
+  {
+    "id": "fair-3",
+    "title": "نمایشگاه: رویداد کارو مهارت ایرانی (به تعویق افتاد)",
     "date": "1405-02-08",
     "type": "fair"
   },
   {
-    "id": "fair-8",
-    "title": "نمایشگاه: بیست و هشتمین نمایشگاه بین المللی نفت،گاز،پالایش و پتروشیمی ایران",
+    "id": "fair-4",
+    "title": "نمایشگاه: سی امین نمایشگاه بین المللی نفت گاز پالایش و پتروشیمی (به تعویق افتاد )",
     "date": "1405-02-19",
     "type": "fair"
   },
   {
-    "id": "fair-11",
-    "title": "نمایشگاه: بیست و پنجمین نمایشگاه بین المللی تجهیزات پزشکی،دندانپزشکی، دارویی و آزمایشگاهی (ایران هلث)",
-    "date": "1405-02-29",
+    "id": "fair-5",
+    "title": "نمایشگاه: رویداد ایران زیرساخت",
+    "date": "1405-03-10",
     "type": "fair"
   },
   {
-    "id": "fair-14",
-    "title": "نمایشگاه: یازدهمین نمایشگاه بین المللی حمل و نقل ریلی، صنایع و تجهیزات وابسته",
-    "date": "1405-02-29",
-    "type": "fair"
-  },
-  {
-    "id": "fair-17",
-    "title": "نمایشگاه: بیست و سومین نمایشگاه بین المللی ورزش وتجهیزات ورزشی",
-    "date": "1405-03-08",
-    "type": "fair"
-  },
-  {
-    "id": "fair-20",
-    "title": "نمایشگاه: شانزدهمین نمایشگاه بین المللی درب و پنجره و صنایع وابسته",
-    "date": "1405-03-08",
-    "type": "fair"
-  },
-  {
-    "id": "fair-23",
-    "title": "نمایشگاه: هفتمین نمایشگاه بین المللی شیشه و تجهیزات وابسته",
-    "date": "1405-03-08",
-    "type": "fair"
-  },
-  {
-    "id": "fair-26",
-    "title": "نمایشگاه: سی و یکمین نمایشگاه بین المللی صنایع کشاورزی، مواد غذایی، ماشین آلات و صنایع وابسته",
+    "id": "fair-6",
+    "title": "نمایشگاه: بیست و پنجمین نمایشگاه بین المللی ورزش وتجهیزات ورزشی (به تعویق افتاد)",
     "date": "1405-03-19",
     "type": "fair"
   },
   {
-    "id": "fair-29",
-    "title": "نمایشگاه: نوزدهمین نمایشگاه بین المللی قطعات، لوازم و مجموعه های خودرو",
-    "date": "1405-03-29",
+    "id": "fair-7",
+    "title": "نمایشگاه: سی و سومین نمایشگاه بین المللی صنایع کشاورزی مواد غذایی ماشین آلات و صنایع وابسته",
+    "date": "1405-03-28",
     "type": "fair"
   },
   {
-    "id": "fair-32",
-    "title": "نمایشگاه: چهارمین نمایشگاه بین المللی خدمات، تقویت وتزئین خودرو",
-    "date": "1405-03-29",
-    "type": "fair"
-  },
-  {
-    "id": "fair-35",
-    "title": "نمایشگاه: بیست و هفتمین نمایشگاه بین المللی الکترونیک، کامپیوتر، تجارت الکترونیک ( الکامپ )",
+    "id": "fair-8",
+    "title": "نمایشگاه: بیست و هفتمین نمایشگاه بین المللی تجهیزات پزشکی دندانپزشکی دارویی و آزمایشگاهی (ایران هلث)",
     "date": "1405-04-09",
     "type": "fair"
   },
   {
+    "id": "fair-9",
+    "title": "نمایشگاه: رویداد بین المللی محصولات نهایی پلاستیک (پلیمر)",
+    "date": "1405-04-09",
+    "type": "fair"
+  },
+  {
+    "id": "fair-10",
+    "title": "نمایشگاه: رویداد اکسفا",
+    "date": "1405-04-19",
+    "type": "fair"
+  },
+  {
+    "id": "fair-11",
+    "title": "نمایشگاه: سی و سومین نمایشگاه بین المللی مواد شوینده آرایشی بهداشتی سلولزی و ماشین آلات وابسته",
+    "date": "1405-04-19",
+    "type": "fair"
+  },
+  {
+    "id": "fair-12",
+    "title": "نمایشگاه: چهارمین نمایشگاه تخصصی رستوران فست فود آشپزخانه صنعتی کترینگ و صنایع وابسته",
+    "date": "1405-04-19",
+    "type": "fair"
+  },
+  {
+    "id": "fair-13",
+    "title": "نمایشگاه: دوازدهمین نمایشگاه بین المللی کیف کفش و چرم و صنایع وابسته",
+    "date": "1405-04-19",
+    "type": "fair"
+  },
+  {
+    "id": "fair-14",
+    "title": "نمایشگاه: بیست و یکمین نمایشگاه بین المللی قطعات لوازم و مجموعه های خودرو",
+    "date": "1405-04-29",
+    "type": "fair"
+  },
+  {
+    "id": "fair-15",
+    "title": "نمایشگاه: هجدهمین نمایشگاه بین المللی درب و پنجره و صنایع وابسته",
+    "date": "1405-04-30",
+    "type": "fair"
+  },
+  {
+    "id": "fair-16",
+    "title": "نمایشگاه: سی و پنجمین نمایشگاه بین المللی تخصصی صادراتی صنعت مبلمان",
+    "date": "1405-05-08",
+    "type": "fair"
+  },
+  {
+    "id": "fair-17",
+    "title": "نمایشگاه: نمایشگاه فرآورده های پروتئینی",
+    "date": "1405-05-17",
+    "type": "fair"
+  },
+  {
+    "id": "fair-18",
+    "title": "نمایشگاه: بیست و ششمین نمایشگاه بین المللی صنعت ساختمان",
+    "date": "1405-05-27",
+    "type": "fair"
+  },
+  {
+    "id": "fair-19",
+    "title": "نمایشگاه: بیست و نهمین نمایشگاه بین المللی الکترونیک کامپیوتر تجارت الکترونیک",
+    "date": "1405-06-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-20",
+    "title": "نمایشگاه: سی و سومین نمایشگاه فرش دستباف ایران",
+    "date": "1405-06-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-21",
+    "title": "نمایشگاه: سی و دومین نمایشگاه بین المللی لوستر چراغ های روشنایی و تزئینی",
+    "date": "1405-06-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-22",
+    "title": "نمایشگاه: بیستمین نمایشگاه بین المللی ایران پلاست",
+    "date": "1405-06-17",
+    "type": "fair"
+  },
+  {
+    "id": "fair-23",
+    "title": "نمایشگاه: بیست و پنجمین نمایشگاه بین المللی محصولات مواداولیه و ماشین آلات شیرینی و شکلات",
+    "date": "1405-06-27",
+    "type": "fair"
+  },
+  {
+    "id": "fair-24",
+    "title": "نمایشگاه: هجدهمین نمایشگاه بین المللی صنعت غلات آرد و نان",
+    "date": "1405-06-27",
+    "type": "fair"
+  },
+  {
+    "id": "fair-25",
+    "title": "نمایشگاه: سیزدهمین نمایشگاه بین المللی نوشیدنی ها چای قهوه و صنایع وابسته",
+    "date": "1405-06-27",
+    "type": "fair"
+  },
+  {
+    "id": "fair-26",
+    "title": "نمایشگاه: یازدهمین نمایشگاه بین المللی تجهیزات و فناوری های نوین بهداشت کار ایمنی آتش نشانی مدیریت بحران و امداد و نجات",
+    "date": "1405-07-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-27",
+    "title": "نمایشگاه: بیست و پنجمین نمایشگاه بین المللی تاسیسات و سیستم های سرمایشی و گرمایشی و تهویه مطبوع",
+    "date": "1405-07-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-28",
+    "title": "نمایشگاه: هجدهمین نمایشگاه بین المللی کف پوش ها موکت فرش ماشینی و صنایع وابسته",
+    "date": "1405-07-16",
+    "type": "fair"
+  },
+  {
+    "id": "fair-29",
+    "title": "نمایشگاه: بیست و ششمین نمایشگاه بین المللی لوازم خانگی و ظروف",
+    "date": "1405-07-16",
+    "type": "fair"
+  },
+  {
+    "id": "fair-30",
+    "title": "نمایشگاه: بیست و پنجمین نمایشگاه بین المللی دام و طیور و صنایع وابسته",
+    "date": "1405-07-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-31",
+    "title": "نمایشگاه: چهاردهمین نمایشگاه بین المللی پوشاک ایران",
+    "date": "1405-07-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-32",
+    "title": "نمایشگاه: سی و دومین نمایشگاه بین المللی ماشین آلات مواداولیه منسوجات خانگی ماشین های گلدوزی و محصولات نساجی",
+    "date": "1405-07-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-33",
+    "title": "نمایشگاه: بیست و ششمین نمایشگاه بین المللی صنعت تهران",
+    "date": "1405-08-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-34",
+    "title": "نمایشگاه: بیستمین نمایشگاه بین المللی معدن صنایع معدنی ماشین آلات و تجهیزات معدن راهسازی و صنایع وابسته",
+    "date": "1405-08-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-35",
+    "title": "نمایشگاه: هفدهمین نمایشگاه بین المللی فناوری نانو",
+    "date": "1405-08-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-36",
+    "title": "نمایشگاه: بیست و ششمین نمایشگاه بین المللی صنعت برق و انرژی های تجدید پذیر",
+    "date": "1405-08-16",
+    "type": "fair"
+  },
+  {
+    "id": "fair-37",
+    "title": "نمایشگاه: هفتمین نمایشگاه لیزرفوتونیک و کوانتوم",
+    "date": "1405-08-26",
+    "type": "fair"
+  },
+  {
     "id": "fair-38",
-    "title": "نمایشگاه: سیزدهمین نمایشگاه بین المللی آسانسور و صنایع و تجهیزات وابسته",
-    "date": "1405-04-18",
+    "title": "نمایشگاه: بیست و سومین نمایشگاه بین المللی متالورژی (ایران متافو)",
+    "date": "1405-08-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-39",
+    "title": "نمایشگاه: بیست و دومین نمایشگاه بین المللی تبلیغات برند سازی خدمات بازاریابی و زنجیره صادرات",
+    "date": "1405-09-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-40",
+    "title": "نمایشگاه: دهمین نمایشگاه بین المللی شیلات آبزیان ماهیگیری غذاهای دریایی و صنایع وابسته",
+    "date": "1405-09-06",
     "type": "fair"
   },
   {
     "id": "fair-41",
-    "title": "نمایشگاه: نهمین نمایشگاه بین المللی لوله، اتصالات، شیرآلات بهداشتی، تجهیزات آشپزخانه حمام، سونا، استخر و خدمات وابسته",
-    "date": "1405-04-18",
+    "title": "نمایشگاه: هفدهمین نمایشگاه بین المللی قیر آسفالت عایق ها بتن سیمان و ماشین آلات وابسته",
+    "date": "1405-09-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-42",
+    "title": "نمایشگاه: بیست وششمین نمایشگاه بین المللی رنگ رزین پوشش صنعتی موادکامپوزیت و صنعت آبکاری",
+    "date": "1405-09-06",
+    "type": "fair"
+  },
+  {
+    "id": "fair-43",
+    "title": "نمایشگاه: هشتمین نمایشگاه بین المللی مراکز خرید مجتمع تجاری رویکردهای نوین صنعت خرده فروشی وصنایع وابسته (ریتیل شو)",
+    "date": "1405-09-16",
     "type": "fair"
   },
   {
     "id": "fair-44",
-    "title": "نمایشگاه: بیست و سومین نمایشگاه بین المللی دام و طیور و صنایع وابسته",
-    "date": "1405-04-30",
+    "title": "نمایشگاه: سی و سومین نمایشگاه بین المللی چاپ بسته بندی و ماشین آلات وابسته",
+    "date": "1405-09-16",
+    "type": "fair"
+  },
+  {
+    "id": "fair-45",
+    "title": "نمایشگاه: ششمین نمایشگاه بین المللی ایران ژئو",
+    "date": "1405-09-16",
+    "type": "fair"
+  },
+  {
+    "id": "fair-46",
+    "title": "نمایشگاه: بیست و هفتمین نمایشگاه بین المللی پژوهش فناوری و فن بازار",
+    "date": "1405-09-26",
     "type": "fair"
   },
   {
     "id": "fair-47",
-    "title": "نمایشگاه: سومین نمایشگاه تحول صنعت خودرو",
-    "date": "1405-04-30",
+    "title": "نمایشگاه: هفتمین نمایشگاه بین المللی حمل و نقل لجستیک و صنایع وابسته",
+    "date": "1405-09-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-48",
+    "title": "نمایشگاه: چهاردهمین نمایشگاه تجهیزات و مواد آزمایشگاهی ساخت ایران",
+    "date": "1405-09-26",
+    "type": "fair"
+  },
+  {
+    "id": "fair-49",
+    "title": "نمایشگاه: ششمین نمایشگاه مدیریت پسماند بازیافت ماشین آلات و تجهیزات وابسته",
+    "date": "1405-10-05",
     "type": "fair"
   },
   {
     "id": "fair-50",
-    "title": "نمایشگاه: سی و سومین نمایشگاه بین المللی تخصصی صادراتی صنعت مبلمان",
-    "date": "1405-05-09",
+    "title": "نمایشگاه: نهمین نمایشگاه بین المللی شیشه و صنایع وابسته",
+    "date": "1405-10-05",
+    "type": "fair"
+  },
+  {
+    "id": "fair-51",
+    "title": "نمایشگاه: بیست و چهارمین نمایشگاه بین المللی چوب مواد اولیه ماشین آلات یراق آلات تجهیزات مبلمان و صنایع وابسته",
+    "date": "1405-10-05",
+    "type": "fair"
+  },
+  {
+    "id": "fair-52",
+    "title": "نمایشگاه: دهمین نمایشگاه بین المللی لوله اتصالات شیرآلات بهداشتی تجهیزات آشپزخانه حمام سونا استخر و خدمات وابسته",
+    "date": "1405-10-15",
     "type": "fair"
   },
   {
     "id": "fair-53",
-    "title": "نمایشگاه: هفتمین نمایشگاه بین المللی کاغذ، مقوا، کارتن، فرآورده های سلولزی و ماشین آلات مربوطه",
-    "date": "1405-05-09",
+    "title": "نمایشگاه: بیست و ششمین نمایشگاه بین المللی مخابرات فناوری اطلاعات و اقتصاد دیجیتال (ایران تلکام)",
+    "date": "1405-10-15",
+    "type": "fair"
+  },
+  {
+    "id": "fair-54",
+    "title": "نمایشگاه: سومین نمایشگاه بین المللی تخصصی گوهرسنگ ها ماشین آلات و صنایع وابسته",
+    "date": "1405-10-15",
+    "type": "fair"
+  },
+  {
+    "id": "fair-55",
+    "title": "نمایشگاه: سی امین نمایشگاه بین المللی کاشی و سرامیک چینی و بهداشتی",
+    "date": "1405-10-15",
     "type": "fair"
   },
   {
     "id": "fair-56",
-    "title": "نمایشگاه: بیست و چهارمین نمایشگاه بین المللی لوازم خانگی",
-    "date": "1405-05-19",
+    "title": "نمایشگاه: یازدهمین نمایشگاه بین المللی ماشین آلات و ادوات کشاورزی نهاده ها و سیستم های نوین آبیاری",
+    "date": "1405-10-24",
+    "type": "fair"
+  },
+  {
+    "id": "fair-57",
+    "title": "نمایشگاه: هشتمین نمایشگاه بین المللی ایران سبز",
+    "date": "1405-10-24",
+    "type": "fair"
+  },
+  {
+    "id": "fair-58",
+    "title": "نمایشگاه: پنجمین نمایشگاه تحول خودرو",
+    "date": "1405-10-24",
     "type": "fair"
   },
   {
     "id": "fair-59",
-    "title": "نمایشگاه: شانزدهمین نمایشگاه بین المللی صنعت مالی",
-    "date": "1405-05-19",
+    "title": "نمایشگاه: هفدهمین نمایشگاه بین المللی خانه مدرن معماری داخلی و دکوراسیون (میدکس)",
+    "date": "1405-11-04",
+    "type": "fair"
+  },
+  {
+    "id": "fair-60",
+    "title": "نمایشگاه: بیست و دومین نمایشگاه بین المللی صنعت آب و تأسیسات آب و فاضلاب",
+    "date": "1405-11-04",
+    "type": "fair"
+  },
+  {
+    "id": "fair-61",
+    "title": "نمایشگاه: نوزدهمین نمایشگاه بین المللی گردشگری و صنایع وابسته تهران",
+    "date": "1405-11-14",
+    "type": "fair"
+  },
+  {
+    "id": "fair-62",
+    "title": "نمایشگاه: سی و هشتمین نمایشگاه صنایع دستی",
+    "date": "1405-11-14",
     "type": "fair"
   },
   {
@@ -347,12 +602,11 @@ const REAL_EVENTS: CalendarEvent[] = [
 const FAKE_DATA: Record<UserRole, DashboardData> = {
   admin: {
     stats: [
-      { id:'users',  labelKey:'totalUsers',     value:'12,480', delta:'+8.2%',  trend:'up',      icon:'users'    },
-      { id:'revenue',labelKey:'revenue',         value:'84.5M',  delta:'+12.5%', trend:'up',      icon:'wallet'   },
-      { id:'orders', labelKey:'orders',           value:'3,127',  delta:'-2.1%',  trend:'down',    icon:'package'  },
-      { id:'active', labelKey:'activeSessions',   value:'486',    delta:'+4.0%',  trend:'up',      icon:'activity' },
-      { id:'growth', labelKey:'growth',           value:'15.3%',  delta:'+1.2%',  trend:'up',      icon:'check'    },
-      { id:'bounce', labelKey:'bounceRate',       value:'42%',    delta:'-5.4%',  trend:'down',    icon:'clock'    },
+      { id:'gold',     labelKey:'gold',     value:'—', delta:'—', trend:'neutral', icon:'activity' },
+      { id:'wti',      labelKey:'wti',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'btc',      labelKey:'btc',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'eur',      labelKey:'eur',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'gasoline', labelKey:'gasoline', value:'—', delta:'—', trend:'neutral', icon:'activity' },
     ],
     chart: chart([42,55,48,70,65,82]),
     activities: [
@@ -370,12 +624,11 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
   },
   engineer: {
     stats: [
-      { id:'projects',labelKey:'projects',       value:'8',  delta:'+1',   trend:'up',      icon:'package' },
-      { id:'tickets', labelKey:'openTickets',     value:'14', delta:'-3',   trend:'down',    icon:'wrench'  },
-      { id:'done',    labelKey:'completedTasks',  value:'57', delta:'+9',   trend:'up',      icon:'check'   },
-      { id:'review',  labelKey:'pendingReview',   value:'5',  delta:'0',    trend:'neutral', icon:'clock'   },
-      { id:'bugs',    labelKey:'bugs',            value:'12', delta:'-2',   trend:'down',    icon:'message' },
-      { id:'deploys', labelKey:'deploys',         value:'24', delta:'+4',   trend:'up',      icon:'activity'},
+      { id:'gold',     labelKey:'gold',     value:'—', delta:'—', trend:'neutral', icon:'activity' },
+      { id:'wti',      labelKey:'wti',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'btc',      labelKey:'btc',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'eur',      labelKey:'eur',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'gasoline', labelKey:'gasoline', value:'—', delta:'—', trend:'neutral', icon:'activity' },
     ],
     chart: chart([12,18,15,22,19,25]),
     activities: [],
@@ -384,12 +637,12 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
   },
   staff: {
     stats: [
-      { id:'today', labelKey:'tasksToday',    value:'11', delta:'+2', trend:'up',   icon:'check'    },
-      { id:'done',  labelKey:'completedTasks',value:'38', delta:'+5', trend:'up',   icon:'activity' },
-      { id:'tickets',labelKey:'openTickets',  value:'6',  delta:'-1', trend:'down', icon:'wrench'   },
-      { id:'msgs',  labelKey:'messages',       value:'23', delta:'+7', trend:'up',   icon:'message'  },
-      { id:'meetings',labelKey:'meetings',     value:'4',  delta:'0',  trend:'neutral', icon:'users'},
-      { id:'hours', labelKey:'hoursLogged',    value:'32', delta:'+4', trend:'up',   icon:'clock'    },
+      { id:'today',    labelKey:'tasksToday',    value:'11', delta:'+2', trend:'up',      icon:'check'    },
+      { id:'done',     labelKey:'completedTasks', value:'38', delta:'+5', trend:'up',     icon:'activity' },
+      { id:'tickets',  labelKey:'openTickets',    value:'6',  delta:'-1', trend:'down',   icon:'wrench'   },
+      { id:'msgs',     labelKey:'messages',       value:'23', delta:'+7', trend:'up',     icon:'message'  },
+      { id:'meetings', labelKey:'meetings',       value:'4',  delta:'0',  trend:'neutral',icon:'users'    },
+      { id:'hours',    labelKey:'hoursLogged',    value:'32', delta:'+4', trend:'up',     icon:'clock'    },
     ],
     chart: chart([8,12,10,14,11,16]),
     activities: [],
@@ -398,12 +651,11 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
   },
   customer: {
     stats: [
-      { id:'orders',  labelKey:'myOrders', value:'6',    delta:'+1',   trend:'up',      icon:'package' },
-      { id:'invoices',labelKey:'invoices', value:'4',    delta:'0',    trend:'neutral', icon:'file'    },
-      { id:'support', labelKey:'support',  value:'2',    delta:'-1',   trend:'down',    icon:'wrench'  },
-      { id:'wallet',  labelKey:'wallet',   value:'1.2M', delta:'+3.4%',trend:'up',      icon:'wallet'  },
-      { id:'rewards', labelKey:'rewards',  value:'450',  delta:'+50',  trend:'up',      icon:'check'   },
-      { id:'views',   labelKey:'views',    value:'12K',  delta:'+1K',  trend:'up',      icon:'activity'},
+      { id:'gold',     labelKey:'gold',     value:'—', delta:'—', trend:'neutral', icon:'activity' },
+      { id:'wti',      labelKey:'wti',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'btc',      labelKey:'btc',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'eur',      labelKey:'eur',      value:'—', delta:'—', trend:'neutral', icon:'wallet'   },
+      { id:'gasoline', labelKey:'gasoline', value:'—', delta:'—', trend:'neutral', icon:'activity' },
     ],
     chart: chart([2,4,3,5,4,6]),
     activities: [],
@@ -416,46 +668,90 @@ export class FakeDashboardService implements IDashboardService {
   async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
     await wait(400);
     const baseData = { ...(FAKE_DATA[role] ?? FAKE_DATA.customer) };
+    const cards = statCards || ['gold', 'gasoline', 'wti', 'btc', 'eur'];
 
+    // ── Live commodities (Finnhub + Yahoo Finance) ─────────────────────────
     try {
-      // Fetch live stats
-      const cards = statCards || ['gold', 'gasoline', 'wti', 'sekee', 'eur', 'btc'];
-      const commRes = await fetch('/api/commodities');
+      const commRes = await Promise.race([
+        fetch(`/api/commodities?t=${Date.now()}`, { cache: 'no-store' }),
+        new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
+      ]);
+
       if (commRes.ok) {
         const commData = await commRes.json();
-        
-        baseData.stats = cards.map((id, index) => {
-          const item = commData.find((c: any) => c.id === id);
-          if (!item) return baseData.stats[index]; // fallback
 
-          const rawPrice = item.originalPrice !== undefined ? item.originalPrice : item.price;
-          let formattedValue = Number(rawPrice).toLocaleString('en-US');
-          if (item.category === 'iran_gold') {
-            formattedValue = (Number(rawPrice) / 10000000).toLocaleString('en-US', { maximumFractionDigits: 1 });
+        const ALL_STATS_DEFS = [
+          { id: 'gold',     labelKey: 'gold'     },
+          { id: 'silver',   labelKey: 'silver'   },
+          { id: 'copper',   labelKey: 'copper'   },
+          { id: 'aluminum', labelKey: 'aluminum' },
+          { id: 'wti',      labelKey: 'wti'      },
+          { id: 'brent',    labelKey: 'brent'    },
+          { id: 'gasoline', labelKey: 'gasoline' },
+          { id: 'eur',      labelKey: 'eur'      },
+          { id: 'btc',      labelKey: 'btc'      },
+          { id: 'eth',      labelKey: 'eth'      },
+        ];
+
+        const allStatsMapped = ALL_STATS_DEFS.map((def) => {
+          const item = commData.find((c: any) => c.id === def.id);
+          if (!item || item.error) {
+            return { id: def.id, labelKey: def.labelKey, value: '—', delta: '—', trend: 'neutral', icon: 'activity' } as StatCard;
           }
 
-          return {
-            id: item.id,
-            labelKey: item.id,
-            value: formattedValue,
-            delta: `${item.percentChange}%`,
-            trend: item.trend || 'neutral',
-            icon: item.category === 'forex' || item.category === 'crypto' ? 'wallet' : 'activity',
-          };
-        });
-      }
+          let formattedValue: string;
+          const p = item.price as number;
+          if (p >= 1_000_000) {
+            formattedValue = (p / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + 'M';
+          } else if (p >= 1_000) {
+            formattedValue = p.toLocaleString('en-US', { maximumFractionDigits: 1 });
+          } else if (p >= 1) {
+            formattedValue = p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          } else {
+            formattedValue = p.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+          }
 
-      // Fetch live chart
-      const chartRes = await fetch(`/api/chart?source=${chartSource || 'wti'}`);
+          const pctRaw = Number(item.percentChange ?? 0);
+          return {
+            id: def.id,
+            labelKey: def.labelKey,
+            value: formattedValue,
+            delta: `${pctRaw >= 0 ? '+' : ''}${pctRaw.toFixed(2)}%`,
+            trend: item.trend || 'neutral',
+            icon: def.id === 'btc' || def.id === 'eth' || def.id === 'eur' ? 'wallet' : 'activity',
+          } as StatCard;
+        });
+
+        baseData.allStats = allStatsMapped;
+        baseData.stats = cards
+          .map((id) => allStatsMapped.find((s) => s.id === id) || null)
+          .filter(Boolean) as StatCard[];
+
+        while (baseData.stats.length < 5 && baseData.stats.length < allStatsMapped.length) {
+          const unused = allStatsMapped.find((s) => !baseData.stats.some((b) => b.id === s.id));
+          if (unused) baseData.stats.push(unused);
+          else break;
+        }
+      }
+    } catch {
+      // Silently use fallback data when APIs are unreachable
+    }
+
+    // ── Live chart (Yahoo Finance) ──────────────────────────────────────────
+    try {
+      const chartRes = await Promise.race([
+        fetch(`/api/chart?source=${chartSource || 'wti'}&t=${Date.now()}`, { cache: 'no-store' }),
+        new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
+      ]);
+
       if (chartRes.ok) {
         const chartData = await chartRes.json();
         if (chartData && chartData.length > 0) {
-           baseData.chart = chartData;
+          baseData.chart = chartData;
         }
       }
-
-    } catch (e) {
-      console.error('Failed to fetch live dashboard stats', e);
+    } catch {
+      // Silently use fallback chart data
     }
 
     return baseData;

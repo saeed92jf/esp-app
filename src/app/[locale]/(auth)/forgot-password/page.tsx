@@ -52,7 +52,12 @@ export default function ForgotPasswordPage() {
   return (
     <div className="mx-auto flex min-h-[70dvh] w-full max-w-md flex-col justify-center">
       <div className="mb-8 text-center">
-        <h1 className="mb-2 text-2xl font-bold">{t("forgotPasswordTitle")}</h1>
+        <h1 
+          className="text-4xl sm:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60 pt-2 pb-4"
+          style={{ fontFamily: "var(--font-poppins)" }}
+        >
+          {t("forgotPasswordTitle")}
+        </h1>
       </div>
 
       {!success ? (

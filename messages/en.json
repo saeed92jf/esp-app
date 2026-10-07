@@ -2,7 +2,7 @@
   "Common": {
     "appName": {
       "lead": "Euroslot Pars",
-      "trail": "Web App.",
+      "trail": "CORE",
       "accent": "trail"
     },
     "search": "Search",
@@ -36,7 +36,9 @@
       "removeFromHistory": "Remove from history"
     },
     "quickAccess": {
-      "searchShortcuts": "Search shortcuts..."
+      "searchShortcuts": "Search shortcuts...",
+      "editHint": "Select up to {max} cards",
+      "selectedCount": "{count}/{max}"
     },
     "brand": {
       "euroslot": "euroslot",
@@ -54,14 +56,14 @@
     "empty": "No language found."
   },
   "Metadata": {
-    "title": "Euroslot Pars WebApp.",
+    "title": "Euroslot Pars CORE",
     "description": "Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.",
-    "keywords": "CRM, Project Management, Service Business, ESP Webapp",
-    "ogTitle": "ESP Webapp",
+    "keywords": "CRM, Project Management, Service Business, ESP CORE",
+    "ogTitle": "ESP CORE",
     "ogDescription": "Unified platform for engineering and service businesses"
   },
   "Header": {
-    "brand": "Euroslot Pars Web App.",
+    "brand": "Euroslot Pars CORE",
     "home": "Home",
     "categories": "Categories",
     "about": "About",
@@ -150,7 +152,7 @@
   },
   "Auth": {
     "loggingIn": "Signing in...",
-    "brand": "ESP Web App.",
+    "brand": "ESP CORE",
     "login": "Sign in",
     "register": "Sign up",
     "logout": "Sign out",
@@ -217,6 +219,9 @@
   },
   "Menu": {
     "title": "Menu",
+    "popular": "Your favorites",
+    "appsEditHint": "Drag apps and drop them into Popular",
+    "done": "Done",
     "subtitle": "All item in one menu",
     "open": "open",
     "close": "close",
@@ -292,8 +297,9 @@
     }
   },
   "NotFound": {
-    "description": "The page you are looking for could not be found",
-    "backHome": "Back to Home"
+    "title": "Houston, we have a problem.",
+    "description": "Your spaceship has drifted off course and this page doesn't exist in our galaxy. Don't panic, the route back to base is always open.",
+    "backHome": "Return to Base"
   },
   "Search": {
     "placeholder": "Search",
@@ -307,16 +313,18 @@
     "escape": "Esc to clear"
   },
   "Settings": {
-    "title": "Appearance & Theme",
-    "theme": "Theme",
-    "color": "Primary Color",
+    "desc": "Manage user settings",
     "language": "Language",
+    "languageDesc": "Change system language",
+    "appearance": "Appearance",
+    "appearanceDesc": "Customize the theme and layout settings here.",
+    "theme": "System Theme",
+    "color": "Primary Color",
+    "system": "System",
     "light": "Light",
     "dark": "Dark",
-    "system": "System",
-    "user": "User",
     "mode": "Mode",
-    "themeLocked": "To change the theme, first set the mode to User",
+    "themeLocked": "Theme is locked in system mode",
     "colors": {
       "red": "Red",
       "pink": "Pink",
@@ -325,6 +333,17 @@
       "green": "Green",
       "orange": "Orange"
     }
+  },
+  "Help": {
+    "title": "Help & Support",
+    "description": "Find answers or contact us",
+    "documentation": "Documentation",
+    "support": "Contact Support",
+    "faq": "FAQs",
+    "tutorials": "Video Tutorials",
+    "contact": "Contact Us",
+    "community": "Community",
+    "bugReport": "Report a Bug"
   },
   "Dashboard": {
     "greeting": "Welcome, {name}",
@@ -387,7 +406,8 @@
       "all": "All"
     },
     "calendar": {
-      "addPlaceholder": "Add new event..."
+      "addPlaceholder": "Add new event...",
+      "usefulLinks": "Useful Links"
     },
     "miniChart": {
       "monthlyTrend": "1-Month Trend",
@@ -426,6 +446,11 @@
       "description": "To use this professional tool and unlock all platform features, please create an account.",
       "registerButton": "Create Free Account",
       "cancelButton": "Cancel"
+    },
+    "worldClock": {
+      "title": "World Clock",
+      "edit": "Edit",
+      "done": "Done"
     }
   },
   "Account": {
@@ -812,5 +837,190 @@
     "dataCollectionBody": "Our platform (Euroslot Pars) respects user privacy and only collects data necessary to improve the functionality of our engineering and calculation systems. This may include theme preferences, language settings, and project history.",
     "useOfCookiesBody": "We use cookies to store visual preferences (such as the primary theme color and light/dark mode) and maintain your login state to provide a seamless experience. No sensitive personal data is extracted through this method.",
     "yourRightsBody": "You have the right to view, modify, or delete your data at any time. For any privacy-related questions or requests, you can contact our R&D support team."
+  },
+  "Profile": {
+    "nav": {
+      "home": "Home",
+      "personal": "Personal",
+      "organizational": "Organizational",
+      "skills": "Skills",
+      "insurance": "Insurance",
+      "education": "Education",
+      "settings": "Personal Settings"
+    },
+    "quickActions": {
+      "changeColor": "Change Color",
+      "changeName": "Change Name",
+      "newSkill": "New Skill"
+    },
+    "settings": {
+      "desc": "Customize your language and panel appearance",
+      "language": "System Language",
+      "languageDesc": "Select your preferred dashboard language",
+      "appearance": "Appearance Settings",
+      "appearanceDesc": "Change the theme and primary color"
+    },
+    "tabs": {
+      "insurance": "Insurance Details",
+      "education": "Educational Background"
+    },
+    "fields": {
+      "provider": "Insurance Provider",
+      "type": "Insurance Type",
+      "insuranceCode": "Insurance Code",
+      "validUntil": "Valid Until",
+      "degree": "Degree",
+      "fieldOfStudy": "Field of Study",
+      "university": "University",
+      "graduationYear": "Graduation Year"
+    },
+    "actions": {
+      "save": "Save Changes"
+    },
+    "notSet": "Not Set",
+    "errorLoading": "Error loading user profile"
+  },
+  "Admin": {
+    "personalInfoTitle": "Personal Info",
+    "age": "Age",
+    "yearsOld": "years old",
+    "maritalStatus": "Marital Status",
+    "married": "Married",
+    "single": "Single",
+    "insurance": "Insurance",
+    "socialSecurity": "Social Security",
+    "complementary": "Health",
+    "children": "Children",
+    "child": "child",
+    "education": "Education",
+    "bachelors": "Bachelor's Degree",
+    "skillsTitle": "Skills",
+    "tasksOverview": "Tasks Overview",
+    "checklists": "Checklists",
+    "activities": "Activities",
+    "recentActivities": "Recent Activities",
+    "workingFormat": "Working Format",
+    "addEmployee": "Add Employee",
+    "departments": {
+      "Engineering": "Engineering",
+      "Design": "Design",
+      "Marketing": "Marketing",
+      "Sales": "Sales"
+    },
+    "15members": "{count} members",
+    "daysLabel": "Days",
+    "office": "Office",
+    "factory": "Factory",
+    "mission": "Mission",
+    "leave": "Leave",
+    "user": "User",
+    "todayDate": "Today",
+    "noTasks": "No tasks found",
+    "noActivity": "No recent activities",
+    "ageTitle": "{age}yr old",
+    "ageSub": "Born in {month}, {days} days to birthday",
+    "familyTitle": "{status}",
+    "familySub": "with {count} children",
+    "insuranceTitle": "{type} Ins.",
+    "insuranceSub": "{status} • {plan} Plan, {dependents} dependents",
+    "educationTitle": "{field}",
+    "educationSub": "{degree}",
+    "months": {
+      "farvardin": "April"
+    },
+    "insurancePlans": {
+      "golden": "Golden",
+      "silver": "Silver",
+      "regular": "Regular"
+    },
+    "insuranceStatus": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "daysUnit": "days",
+    "inCompany": "in company",
+    "projectsUnit": "projects",
+    "andWorkExperience": "and {count} work experience",
+    "projectsDone": "Completed",
+    "experienceUnit": "exp.",
+    "workExperience": "Work Experience",
+    "insPlanLabel": "Plan",
+    "insDependentsLabel": "Covered",
+    "personUnit": "ppl",
+    "degrees": {
+      "master": "Master"
+    },
+    "skillLevels": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "expert": "Expert"
+    },
+    "skillCommunication": "Communication",
+    "skillTechnical": "Technical",
+    "skillTeamwork": "Teamwork",
+    "userInfo": "User Info",
+    "userConfig": "User Config",
+    "fillRequiredFields": "Please fill out required fields",
+    "userAddedSuccess": "New user successfully added",
+    "enterNewPassword": "Enter a new password",
+    "passwordResetSuccess": "Password for {user} was successfully reset",
+    "confirmDeleteUser": "Are you sure you want to delete this user?",
+    "userDeletedSuccess": "User successfully deleted",
+    "adminRole": "Administrator",
+    "userRole": "Normal User",
+    "addNewUserTitle": "Add New User",
+    "addNewUserDesc": "Enter the new employee details below.",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "e.g. John Doe",
+    "email": "Email (Username)",
+    "phone": "Phone Number",
+    "department": "Department",
+    "selectDepartment": "Select Department...",
+    "role": "User Role",
+    "selectRole": "Select Role...",
+    "submitAddUser": "Create User",
+    "resetPasswordTitle": "Reset Password",
+    "manageUserSubtitle": "Managing account: {name}",
+    "newPassword": "New Password",
+    "submitResetPassword": "Update Password",
+    "dangerZone": "Danger Zone",
+    "dangerZoneDesc": "Deleting a user is irreversible. Please proceed with caution.",
+    "deleteUserAccount": "Permanently Delete User",
+    "changeUserAccess": "Change Access Level",
+    "roleUpdatedSuccess": "User role updated successfully",
+    "userAge": "Age",
+    "maritalStatusLabel": "Marital Status",
+    "childrenCountLabel": "Children Count",
+    "insuranceTypeLabel": "Insurance Type",
+    "educationFieldLabel": "Field of Study",
+    "educationDegreeLabel": "Degree",
+    "selectDegree": "Select Degree...",
+    "selectInsurance": "Select Insurance...",
+    "selectMaritalStatus": "Select Status...",
+    "maritalStatusOptions": {
+      "single": "Single",
+      "married": "Married"
+    },
+    "insuranceOptions": {
+      "none": "None",
+      "socialSecurity": "Social Security",
+      "complementary": "Complementary"
+    },
+    "degreesOptions": {
+      "diploma": "Diploma",
+      "bachelors": "Bachelors",
+      "master": "Master",
+      "phd": "PhD"
+    },
+    "recentUsers": "Recent Users",
+    "editThisUser": "Edit This User",
+    "cancelEdit": "Cancel / New User",
+    "submitEditUser": "Save Changes",
+    "editUserDesc": "Edit the selected user's information.",
+    "userUpdatedSuccess": "User info updated successfully!",
+    "editUserTitle": "Edit User",
+    "cancel": "Cancel",
+    "noResults": "No results found."
   }
 }

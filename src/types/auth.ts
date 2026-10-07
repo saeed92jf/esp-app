@@ -14,5 +14,6 @@ export interface User {
   avatar?: string;
   role: UserRole;
   imageUrl?: string;
+  primaryColor?: string;
 }
 export type AppUser = User;

@@ -9,6 +9,8 @@ import { create } from 'zustand';
 import { api, ApiError } from '@/services';
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '@/services/core/types';
 import type { User } from '@/types/auth';
+import { usePrimaryColor } from '@/hooks/use-primary-color';
+import { DEFAULT_PRIMARY_COLOR } from '@/config/settings';
 
 interface AuthState {
   user: User | null;
@@ -36,6 +38,7 @@ const useAuthStore = create<AuthState>((set) => ({
 
 export function useAuth() {
   const store = useAuthStore();
+  const { setColor } = usePrimaryColor();
 
   useEffect(() => {
     // Only hydrate once globally
@@ -69,9 +72,14 @@ export function useAuth() {
           parsed.avatar = customAvatar;
         }
 
+        if (parsed.primaryColor) {
+          setColor(parsed.primaryColor as any);
+        }
+
         store.setUser(parsed);
       } else {
         store.setUser(null);
+        setColor(DEFAULT_PRIMARY_COLOR);
       }
     } catch {
       // ignore
@@ -88,6 +96,11 @@ export function useAuth() {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedIn));
       store.setUser(loggedIn);
+      
+      if (loggedIn.primaryColor) {
+        setColor(loggedIn.primaryColor as any);
+      }
+      
       return loggedIn;
     } finally {
       store.setIsLoggingIn(false);
@@ -105,6 +118,7 @@ export function useAuth() {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_USER_KEY);
       store.setUser(null);
+      setColor(DEFAULT_PRIMARY_COLOR);
     }
   }, []);
 

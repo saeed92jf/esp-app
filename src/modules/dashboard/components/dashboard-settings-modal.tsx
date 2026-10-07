@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -5,12 +7,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Combobox } from '@/components/ui/combobox';
 import { useDashboardSettings } from '../store/use-dashboard-settings';
 import { useCommodities } from '../hooks/use-commodities';
-import { Combobox } from '@/components/ui/combobox';
+import { BarChart3, TrendingUp } from 'lucide-react';
 
 interface DashboardSettingsModalProps {
   open: boolean;
@@ -18,68 +20,45 @@ interface DashboardSettingsModalProps {
 }
 
 export function DashboardSettingsModal({ open, onOpenChange }: DashboardSettingsModalProps) {
-  const t = useTranslations('Dashboard.commodities');
-  const tCommon = useTranslations('Dashboard');
+  const t  = useTranslations('Dashboard.commodities');
+  const tD = useTranslations('Dashboard');
+
   const { statCards, chartSource, setStatCards, setChartSource } = useDashboardSettings();
   const { commodities } = useCommodities();
 
   const handleCardChange = (index: number, value: string) => {
-    const newCards = [...statCards] as [string, string, string, string, string, string];
-    newCards[index] = value;
-    setStatCards(newCards);
+    const next = [...statCards] as [string, string, string, string, string, string];
+    next[index] = value;
+    setStatCards(next);
   };
 
   const chartOptions = [
-    { value: 'wti', label: t('wti') },
-    { value: 'brent', label: t('brent') },
-    { value: 'gold', label: t('gold') },
+    { value: 'wti',    label: t('wti')    },
+    { value: 'brent',  label: t('brent')  },
+    { value: 'gold',   label: t('gold')   },
     { value: 'silver', label: t('silver') },
-    { value: 'btc', label: t('btc') },
-    { value: 'eth', label: t('eth') }
+    { value: 'btc',    label: t('btc')    },
+    { value: 'eth',    label: t('eth')    },
   ];
+
+  const commodityOptions = (commodities || []).map(item => ({
+    value: item.id,
+    label: t(item.id),
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]" dir="rtl">
-        <DialogHeader>
-          <DialogTitle className="text-right">تنظیمات داشبورد</DialogTitle>
-          <DialogDescription className="text-right">
-            در این بخش می‌توانید مشخص کنید کدام شاخص‌ها در کارت‌های آمار و نمودار اصلی نمایش داده شوند.
-          </DialogDescription>
+      <DialogContent className="max-w-[480px] p-0 gap-0 overflow-hidden" dir="rtl">
+        <DialogHeader className="p-4 md:p-5 border-b border-border/50 bg-muted/20">
+          <DialogTitle className="text-base font-semibold">تنظیمات آمار داشبورد</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium border-b pb-2">کارت‌های آمار (۶ عدد)</h4>
-            <div className="grid grid-cols-2 gap-4">
-              {statCards.map((cardId, index) => (
-                <div key={index} className="flex flex-col gap-1.5">
-                  <Label htmlFor={`card-${index}`} className="text-xs text-muted-foreground">کارت {index + 1}</Label>
-                  <Combobox
-                    options={(commodities || []).map(item => ({ value: item.id, label: t(item.id) }))}
-                    value={cardId}
-                    onChange={(val: string) => handleCardChange(index, val)}
-                    placeholder="انتخاب شاخص"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium border-b pb-2">نمودار اصلی (Chart)</h4>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="chart-source" className="text-xs text-muted-foreground">منبع داده نمودار (تاریخی)</Label>
-              <Combobox
-                options={chartOptions}
-                value={chartSource}
-                onChange={setChartSource}
-                placeholder="انتخاب شاخص نمودار"
-              />
-            </div>
-          </div>
+        <div className="p-4 md:p-5 min-h-[200px] flex items-center justify-center text-muted-foreground text-sm">
+          {/* Empty per user request */}
+          در حال حاضر تنظیمی وجود ندارد.
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+

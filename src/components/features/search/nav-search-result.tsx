@@ -1,6 +1,7 @@
 // src/components/features/search/nav-search-result.tsx
 import type { NavSearchItem } from '@/lib/navigation-search';
 import { highlightText } from './highlight-text';
+import { AppIcon } from '@/components/ui/app-icon';
 
 /**
  * Domain row renderer for navigation entries.
@@ -14,7 +15,7 @@ export function NavSearchResult(item: NavSearchItem, query: string) {
     <>
       {/* Themed icon chip — follows the primary token, so it's theme-aware. */}
       <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-xl">
-        {Icon ? <Icon className="size-5" /> : null}
+        {Icon ? <AppIcon icon={Icon} className="size-5" /> : null}
       </div>
 
       <div className="min-w-0 flex-1">

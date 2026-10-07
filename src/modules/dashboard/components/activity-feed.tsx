@@ -3,6 +3,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { Activity } from 'lucide-react';
 import type { ActivityItem } from '../services/dashboard.service';
 
 // Status -> dot color & label.
@@ -28,8 +29,13 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
   const t = useTranslations('Dashboard.activity');
 
   return (
-    <div className="bg-card rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 @md:p-6 h-full flex flex-col  ">
-      <h3 className="mb-3 @sm:mb-4 font-semibold text-base @sm:text-lg shrink-0">{t('title')}</h3>
+    <div className="h-full flex flex-col">
+      <div className="flex items-center gap-2 px-2 py-3 mb-2 shrink-0">
+        <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+          <Activity className="size-5 text-primary" />
+        </div>
+        <h3 className="font-semibold text-base text-foreground/80">{t('title')}</h3>
+      </div>
       <ul className="space-y-2 @sm:space-y-3 flex-1 overflow-y-auto pe-1 custom-scrollbar">
         {items.map((item) => {
           const cfg = STATUS_CONFIG[item.status];
@@ -76,3 +82,4 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
     </div>
   );
 }
+

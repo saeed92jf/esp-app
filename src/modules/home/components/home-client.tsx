@@ -26,7 +26,7 @@ import {
   type LucideIcon,
   Plus,
 } from "lucide-react";
-import { NAVIGATION, NAV_COLOR_MAP, type NavColor } from "@/config/navigation";
+import { NAVIGATION, NAV_COLOR_MAP, type NavColor, resolveNavIconGradient } from "@/config/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -285,8 +285,8 @@ export function HomeClient() {
                     icon={feature.icon}
                     title={tItems(feature.labelKey)}
                     description={description}
-                    iconClassName={cn(colorMap.icon, colorMap.iconHover)}
-                    iconBgClassName={colorMap.iconBg}
+                    iconClassName={resolveNavIconGradient(effectiveColor)}
+                    iconBgClassName="bg-muted/60 dark:bg-muted/40"
                     cardBgClassName={colorMap.bg}
                     borderClassName={colorMap.ring}
                     cta={t("features.explore")}

@@ -1,5 +1,5 @@
 import { getRequestConfig } from "next-intl/server";
-import { routing } from "./routing";
+import { routing } from "./routing"; // trigger rebuild 9
 
 function deepMerge(...objects: any[]) {
   const isObject = (obj: any) =>
@@ -39,6 +39,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   const heroFlowMessages = await loadModuleMsg("hero-flow");
   const teamMessages = await loadModuleMsg("team");
   const profileMessages = await loadModuleMsg("profile");
+  const adminMessages = await loadModuleMsg("admin");
 
   return {
     locale,
@@ -51,7 +52,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
       aparatMessages,
       heroFlowMessages,
       teamMessages,
-      profileMessages
+      profileMessages,
+      adminMessages
     ),
   };
 });

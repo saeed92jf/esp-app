@@ -86,3 +86,4 @@ export function HiddenWidgetBadge({ label, icon, onShow }: HiddenWidgetBadgeProp
     </button>
   );
 }
+

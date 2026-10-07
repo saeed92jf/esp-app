@@ -44,6 +44,7 @@ export function FeatureCard({
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!user) {
       e.preventDefault();
+      e.stopPropagation();
       openModal();
     }
   };
@@ -53,13 +54,22 @@ export function FeatureCard({
       <Card
         className={cn(
           "relative h-full overflow-hidden shadow-sm",
-          "border border-border/50 transition-[border-color,background-color,box-shadow,transform] duration-300 ease-out",
+          "border border-border/50 transition-[border-color,box-shadow,transform] duration-300 ease-out",
           "hover:shadow-lg",
           "motion-reduce:transform-none motion-reduce:transition-none",
-          cardBgClassName,
           borderClassName,
         )}
       >
+        {/* GPU-accelerated background hover layer */}
+        {cardBgClassName && (
+          <span 
+            className={cn(
+              "absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:duration-[50ms]",
+              cardBgClassName.replace("group-hover:", "")
+            )} 
+            aria-hidden="true" 
+          />
+        )}
         {barClassName && (
           <span
             className={cn(
@@ -70,7 +80,7 @@ export function FeatureCard({
           />
         )}
 
-        <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+        <CardContent className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
           {Icon && (
             <span
               className={cn(

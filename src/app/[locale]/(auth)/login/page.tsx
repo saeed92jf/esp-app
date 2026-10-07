@@ -58,7 +58,7 @@ export default function LoginPage() {
         // ارسال جداگانه شناسنامه و رمز عبور (طبق امضای سرویس شما)
         await login(data.identifier, data.password);
       }
-      router.push("/dashboard");
+      router.push("/");
       router.refresh();
     } catch (error: any) {
       // Use console.log to prevent Next.js dev overlay from catching expected auth errors
@@ -80,11 +80,18 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
       <Card className="w-full max-w-md shadow-xl border-border/50">
         <CardHeader className="space-y-4 text-center pb-6">
-          <div className="flex justify-center mb-2">
-            <Logo className="text-3xl" />
+          <div className="flex justify-center mb-5">
+            <div className="bg-primary/5 dark:bg-primary/10 px-3 py-1.5 rounded-[10px] border border-primary/10">
+              <Logo className="text-lg" showText={false} />
+            </div>
           </div>
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold">{t("login")}</CardTitle>
+            <CardTitle 
+              className="text-4xl sm:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/60 pt-2 pb-4"
+              style={{ fontFamily: "var(--font-poppins)" }}
+            >
+              {t("login")}
+            </CardTitle>
           </div>
         </CardHeader>
 

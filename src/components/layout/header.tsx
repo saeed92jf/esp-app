@@ -10,7 +10,9 @@ import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { UserMenu } from "../user/user-menu";
+import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
+import { HelpPopover } from "@/components/layout/help-popover";
+import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import { SideMenu } from "@/components/layout/side-menu";
 import { Logo } from "@/components/brand/logo";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
@@ -34,21 +36,18 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-3">
-          <ThemeToggle className="scale-[0.8] sm:scale-90 origin-right" />
-          <LocaleSwitcher className="scale-[0.8] sm:scale-90 origin-center" />
+          <ThemeToggle />
+          <LocaleSwitcher />
           {loading ? (
             <Skeleton className="h-10 w-10 rounded-full" />
           ) : user ? (
-            <UserMenu
-              isAuthenticated
-              name={(locale === "fa" && user.fullNameFa) ? user.fullNameFa : user.fullName}
-              email={user.email}
-              role={user.role}
-              imageUrl={user.avatar || user.imageUrl}
-              size="lg"
-              onLogout={logout}
-              className="scale-[0.75] sm:scale-100 origin-right"
-            />
+            <>
+              <HelpPopover 
+                triggerClassName={HEADER_ICON_BUTTON_CLASS}
+                iconClassName={HEADER_ICON_CLASS}
+              />
+              <DashboardAvatar />
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <Button asChild variant="outline" size="sm" className="hidden sm:flex text-xs h-8">

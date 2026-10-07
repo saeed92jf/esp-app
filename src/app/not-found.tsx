@@ -7,12 +7,12 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <html>
-      <body>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <div
           style={{
             display: "grid",
-            minHeight: "100dvh",
+            minHeight: "100vh",
             placeItems: "center",
             fontFamily: "system-ui, sans-serif",
           }}

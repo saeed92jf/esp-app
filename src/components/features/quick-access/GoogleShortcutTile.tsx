@@ -11,31 +11,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type NavColor } from "@/config/navigation";
+import { type NavColor, resolveNavIconGradient } from "@/config/navigation";
+import { AppIcon } from "@/components/ui/app-icon";
 import { useAuthModal } from "@/modules/auth/hooks/use-auth-modal";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-
-// Solid vibrant background colors matching navigation & search index
-const NAV_COLOR_BG_MAP: Partial<Record<NavColor, string>> = {
-  sky: "bg-sky-500",
-  violet: "bg-violet-500",
-  rose: "bg-rose-500",
-  amber: "bg-amber-500",
-  emerald: "bg-emerald-500",
-  orange: "bg-orange-500",
-  cyan: "bg-cyan-500",
-  pink: "bg-pink-500",
-  indigo: "bg-indigo-500",
-  teal: "bg-teal-500",
-  slate: "bg-slate-500",
-};
-
-function resolveNavBg(color?: NavColor): string {
-  if (!color || !NAV_COLOR_BG_MAP[color]) {
-    return "bg-primary";
-  }
-  return NAV_COLOR_BG_MAP[color];
-}
 
 interface GoogleShortcutTileProps {
   href: string;
@@ -44,6 +23,7 @@ interface GoogleShortcutTileProps {
   title: string;
   onEdit?: () => void;
   onRemove?: (href: string) => void;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   className?: string;
 }
 
@@ -54,6 +34,7 @@ export function GoogleShortcutTile({
   title,
   onEdit,
   onRemove,
+  onClick,
   className,
 }: GoogleShortcutTileProps) {
   const t = useTranslations("Home");
@@ -63,88 +44,50 @@ export function GoogleShortcutTile({
   const { user } = useAuth();
   const { openModal } = useAuthModal();
 
-  const navBgClass = resolveNavBg(color);
+  const navGradientClass = resolveNavIconGradient(color);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (!user) {
       e.preventDefault();
+      e.stopPropagation();
       openModal();
+      return;
+    }
+    if (onClick) {
+      onClick(e);
     }
   };
 
   return (
-    <div
+    <Link
+      href={href}
+      onClick={handleClick}
       className={cn(
-        "group relative flex flex-col items-center justify-start w-[72px] sm:w-[96px] h-[84px] sm:h-[104px] p-1.5 sm:p-2 rounded-2xl select-none transition-colors duration-150",
-        "hover:bg-black/[0.05] dark:hover:bg-white/[0.08]",
-        isMenuOpen && "bg-black/[0.05] dark:bg-white/[0.08]",
+        "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] focus:outline-none text-center",
         className
       )}
     >
-      {/* 3-Dot Action Menu */}
-      {(onEdit || onRemove) && (
-        <div
-          className={cn(
-            "absolute top-1.5 z-20 transition-opacity duration-150",
-            isRtl ? "left-1.5" : "right-1.5",
-            isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex size-6 items-center justify-center rounded-full text-muted-foreground/80 hover:text-foreground hover:bg-black/10 dark:hover:bg-white/20 transition-colors focus:outline-none"
-                aria-label="Shortcut menu"
-              >
-                <MoreVertical className="size-3.5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align={isRtl ? "start" : "end"}
-              className="w-40 rounded-xl bg-popover/95 backdrop-blur-md border border-border shadow-xl p-1 text-xs z-50"
-            >
-              {onEdit && (
-                <DropdownMenuItem
-                  onClick={onEdit}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer text-foreground hover:bg-accent focus:bg-accent"
-                >
-                  <Edit3 className="size-3.5 text-muted-foreground" />
-                  <span>{t("quickAccess.editShortcut")}</span>
-                </DropdownMenuItem>
-              )}
-              {onRemove && (
-                <DropdownMenuItem
-                  onClick={() => onRemove(href)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer text-destructive hover:bg-destructive/10 focus:bg-destructive/10 focus:text-destructive"
-                >
-                  <Trash2 className="size-3.5" />
-                  <span>{t("quickAccess.removeShortcut")}</span>
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      )}
+      {/* Absolute Hover Background (GPU Accelerated, with visual margin) */}
+      <div
+        className={cn(
+          "absolute inset-1 sm:inset-1.5 rounded-2xl pointer-events-none transition-opacity duration-700 group-hover:duration-[50ms]",
+          "bg-black/[0.05] dark:bg-white/[0.08] opacity-0 group-hover:opacity-100",
+          isMenuOpen && "opacity-100 duration-0"
+        )}
+      />
 
-      {/* Main Clickable Shortcut Link */}
-      <Link
-        href={href}
-        onClick={handleClick}
-        className="flex flex-col items-center justify-start w-full h-full text-center focus:outline-none"
-      >
+      {/* Content Container (relative to sit above background) */}
+      <div className="relative flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
         {/* Google Circular Icon Bubble */}
         <div
           className={cn(
-            "flex size-10 sm:size-11 items-center justify-center rounded-full text-white shadow-xs transition-colors duration-150",
-            navBgClass,
-            "group-hover:brightness-95"
+            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800"
           )}
         >
           {Icon && (
-            <Icon
-              className="size-5 text-white stroke-[2]"
+            <AppIcon
+              icon={Icon}
+              className={cn("size-5 sm:size-6", navGradientClass)}
               aria-hidden="true"
             />
           )}
@@ -152,12 +95,12 @@ export function GoogleShortcutTile({
 
         {/* Shortcut Title */}
         <span
-          className="mt-1.5 sm:mt-2 text-[11px] sm:text-[12.5px] font-normal tracking-normal text-foreground/90 text-center leading-tight line-clamp-1 max-w-[64px] sm:max-w-[96px] truncate"
+          className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-normal tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center"
           title={title}
         >
           {title}
         </span>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }

@@ -33,6 +33,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent 
+        onCloseAutoFocus={(e) => e.preventDefault()}
         className={cn("sm:max-w-md overflow-hidden p-0 border-none bg-transparent shadow-2xl", isRtl && "font-vazir fa-num")} 
         dir={isRtl ? "rtl" : "ltr"}
       >

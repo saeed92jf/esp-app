@@ -118,54 +118,53 @@ export function SettingsSection() {
       </div>
 
       {/* ---- Primary color swatches (Modern Hover Panel) ---- */}
-      {isAdmin && (
-        <div className="pt-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-3">
-            <Palette className="size-3.5" />
-            <span>{t("color")}</span>
-          </div>
-          
-          <div className="flex w-full h-20 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
-            {PRIMARY_COLORS.map((preset) => {
-              const active = colorId === preset.id;
-              return (
-                <motion.button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => setColor(preset.id)}
-                  initial="initial"
-                  animate="animate"
-                  whileHover="hover"
-                  variants={{
-                    initial: { flex: 1 },
-                    animate: { flex: 1 },
-                    hover: { flex: 4 }
-                  }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  style={{ backgroundColor: preset.hex }}
-                  className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
-                >
-                  <motion.div 
-                    variants={{
-                      initial: { opacity: 0 },
-                      animate: { opacity: 0 },
-                      hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
-                    }}
-                    className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
-                  >
-                    <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
-                      {tColors(preset.labelKey)}
-                    </span>
-                    <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
-                      {preset.hex}
-                    </span>
-                  </motion.div>
-                </motion.button>
-              );
-            })}
-          </div>
+      {/* ---- Primary color swatches (Modern Hover Panel) ---- */}
+      <div className="pt-2">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-3">
+          <Palette className="size-3.5" />
+          <span>{t("color")}</span>
         </div>
-      )}
+        
+        <div className="flex w-full h-20 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
+          {PRIMARY_COLORS.map((preset) => {
+            const active = colorId === preset.id;
+            return (
+              <motion.button
+                key={preset.id}
+                type="button"
+                onClick={() => setColor(preset.id)}
+                initial="initial"
+                animate="animate"
+                whileHover="hover"
+                variants={{
+                  initial: { flex: 1 },
+                  animate: { flex: 1 },
+                  hover: { flex: 4 }
+                }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                style={{ backgroundColor: preset.hex }}
+                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+              >
+                <motion.div 
+                  variants={{
+                    initial: { opacity: 0 },
+                    animate: { opacity: 0 },
+                    hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
+                  }}
+                  className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
+                >
+                  <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
+                    {tColors(preset.labelKey)}
+                  </span>
+                  <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                    {preset.hex}
+                  </span>
+                </motion.div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

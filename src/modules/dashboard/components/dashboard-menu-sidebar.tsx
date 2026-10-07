@@ -82,15 +82,30 @@ export function DashboardMenuSidebar() {
       </div>
 
       {/* SEARCH */}
-      <div className="relative shrink-0">
-        <SearchIcon className="text-muted-foreground pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2" />
-        <Input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={tMenu("search")}
-          className="ps-9 h-10 bg-background/50 backdrop-blur-sm border-border/50"
-        />
+      <div className="shrink-0 flex flex-col gap-2">
+        <div className="relative">
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+          <Input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={tMenu("search")}
+            className="ps-9 h-10 bg-background/50 backdrop-blur-sm border-border/50"
+          />
+        </div>
+        {/* Keywords */}
+        <div className="flex items-center gap-1.5 flex-wrap px-1">
+          {["projects", "documents", "staff", "attendance"].map(key => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setQuery(tItems(key))}
+              className="text-[10px] px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors border border-border/50"
+            >
+              {tItems(key)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* NAV */}
@@ -100,7 +115,7 @@ export function DashboardMenuSidebar() {
           collapsible
           value={openGroup}
           onValueChange={setOpenGroup}
-          className="space-y-1"
+          className="segmented-list"
         >
           {filteredNav.map((group) => {
             const GroupIcon = group.icon;
@@ -109,9 +124,9 @@ export function DashboardMenuSidebar() {
               <AccordionItem
                 key={group.id}
                 value={group.id}
-                className="border-none"
+                className="segmented-item border-none"
               >
-                <AccordionTrigger className="hover:bg-muted/50 rounded-lg px-3 py-2 text-sm font-semibold hover:no-underline transition-colors duration-200">
+                <AccordionTrigger className="hover:bg-muted/50 px-3 py-3 text-sm font-semibold hover:no-underline transition-colors duration-200 outline-none">
                   <span className="flex items-center gap-2">
                     {GroupIcon && <GroupIcon className="size-4 shrink-0 text-muted-foreground" />}
                     {tSections(group.labelKey)}
@@ -172,3 +187,4 @@ export function DashboardMenuSidebar() {
     </div>
   );
 }
+

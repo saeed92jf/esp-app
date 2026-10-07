@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { Search, ArrowRight, ArrowLeft, type LucideIcon } from "lucide-react";
+import { Search, ArrowRight, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   useSiteSearchItems,
@@ -13,29 +13,10 @@ import {
   normalizeSearchText,
   type NavSearchItem,
 } from "@/lib/navigation-search";
-import { type NavColor } from "@/config/navigation";
+import { type NavColor, resolveNavIconGradient } from "@/config/navigation";
 import { GenericSearchBox } from "@/components/ui/generic-search-box";
-
-const NAV_COLOR_BG_MAP: Partial<Record<NavColor, string>> = {
-  sky: "bg-sky-500",
-  violet: "bg-violet-500",
-  rose: "bg-rose-500",
-  amber: "bg-amber-500",
-  emerald: "bg-emerald-500",
-  orange: "bg-orange-500",
-  cyan: "bg-cyan-500",
-  pink: "bg-pink-500",
-  indigo: "bg-indigo-500",
-  teal: "bg-teal-500",
-  slate: "bg-slate-500",
-};
-
-function resolveNavBg(color?: NavColor): string {
-  if (!color || !NAV_COLOR_BG_MAP[color]) {
-    return "bg-primary";
-  }
-  return NAV_COLOR_BG_MAP[color];
-}
+import { AppIcon } from "@/components/ui/app-icon";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 
 interface GoogleSearchBoxProps {
   className?: string;
@@ -90,15 +71,15 @@ export function GoogleSearchBox({
   };
 
   const renderItem = (item: NavSearchItem, isSelected: boolean, onSelect: () => void) => {
-    const Icon: LucideIcon = item.icon || Search;
-    const navBgClass = resolveNavBg(item.color);
+    const Icon = item.icon;
+    const navGradientClass = resolveNavIconGradient(item.color);
 
     return (
       <div
         key={item.href}
         onClick={onSelect}
         className={cn(
-          "group/result relative me-2.5 flex h-[40px] cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
+          "group/result relative me-2.5 flex h-[52px] cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
           "rounded-s-none rounded-e-full",
           isSelected
             ? "bg-[#e8eaed] dark:bg-[#303134]"
@@ -109,18 +90,22 @@ export function GoogleSearchBox({
           <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
         )}
 
-        <div className="flex min-w-0 flex-1 items-center gap-2.5 ps-1">
+        <div className="flex min-w-0 flex-1 items-center gap-3 ps-1">
           <div
             className={cn(
-              "flex size-6.5 shrink-0 items-center justify-center rounded-lg text-white shadow-xs",
-              navBgClass,
+              "flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800",
+              Icon && navGradientClass,
             )}
           >
-            <Icon className="size-3.5 stroke-[2.2] text-white" />
+            {Icon ? (
+              <AppIcon icon={Icon as unknown as PhosphorIcon} className="size-4" />
+            ) : (
+              <Search className="size-4 text-muted-foreground" />
+            )}
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col text-start">
-            <span className="truncate text-[13px] font-medium leading-tight text-[#202124] dark:text-[#e8eaed]">
+            <span className="truncate text-[13.5px] font-medium leading-snug text-[#202124] dark:text-[#e8eaed]">
               {item.title}
             </span>
             <span className="text-muted-foreground truncate text-[11px] leading-tight">

@@ -7,6 +7,8 @@ import { QueryProvider } from "@/providers/query-provider";
 import { DEFAULT_PRIMARY_COLOR } from "@/config/settings";
 import "./globals.css";
 
+import { PrimaryColorProvider } from "@/providers/primary-color-provider";
+
 export default async function RootLayout({
   children,
 }: {
@@ -42,9 +44,11 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <TimeProvider>{children}</TimeProvider>
-          </QueryProvider>
+          <PrimaryColorProvider>
+            <QueryProvider>
+              <TimeProvider>{children}</TimeProvider>
+            </QueryProvider>
+          </PrimaryColorProvider>
         </ThemeProvider>
       </body>
     </html>

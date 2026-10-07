@@ -11,6 +11,11 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
     remotePatterns: [
       {
         protocol: "https",
+        hostname: "api.dicebear.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
         hostname: "www.aparat.com",
         pathname: "/**",
       },

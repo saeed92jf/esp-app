@@ -12,6 +12,7 @@ import { ScrollToTop } from '@/components/layout/scroll-to-top';
 import { routing } from '@/i18n/routing';
 import { PremiumGuard } from '@/components/auth/premium-guard';
 import { AuthModal } from '@/modules/auth/components/auth-modal';
+import { GlobalConfirmModal } from '@/components/global-confirm-modal';
 
 // Locale-aware metadata stays here, since this layout receives `locale`.
 export { generateMetadata, viewport } from '@/app/[locale]/metadata';
@@ -39,9 +40,10 @@ export default async function LocaleLayout({
       <ConditionalHeader />
       <div className="relative flex flex-col min-h-screen">
         <PremiumGuard>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 flex flex-col">{children}</main>
         </PremiumGuard>
         <AuthModal />
+        <GlobalConfirmModal />
         <ConditionalFooter />
       </div>
       <ScrollToTop />

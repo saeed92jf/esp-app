@@ -120,7 +120,7 @@ export function UserMenu({
 
         <DropdownMenuGroup className="px-1 space-y-1">
           <DropdownMenuItem asChild className="rounded-xl p-3 cursor-pointer transition-colors focus:bg-muted">
-            <Link href="/dashboard" className="flex items-center gap-3">
+            <Link href="/dashboard" target="_blank" className="flex items-center gap-3">
               <LayoutDashboard className="size-5 shrink-0 text-muted-foreground" />
               <span className="font-medium text-sm">{t("dashboard")}</span>
             </Link>

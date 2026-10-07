@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Globe, Menu as MenuIcon, Search as SearchIcon } from "lucide-react";
+import { ChevronDown, Globe, Menu as MenuIcon, Search as SearchIcon } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { NAVIGATION } from "@/config/navigation";
-
+import { NAVIGATION, NAV_COLOR_MAP, resolveNavIconGradient, type NavColor } from "@/config/navigation";
+import { AppIcon } from "@/components/ui/app-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -19,13 +20,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 import { SettingsSection } from "@/components/layout/settings-section";
 
@@ -103,7 +97,7 @@ export function SideMenu() {
 
       <SheetContent
         side={side}
-        className="flex w-75 flex-col gap-0 p-0 sm:w-85"
+        className="flex w-75 flex-col gap-0 p-0 sm:w-85 bg-popover border-border/40 shadow-lg"
       >
         <SheetHeader className="px-5 pt-4 pb-2 text-start">
           <SheetTitle>{tMenu("title")}</SheetTitle>
@@ -111,85 +105,104 @@ export function SideMenu() {
         </SheetHeader>
 
         {/* SEARCH */}
-        <div className="px-4 pb-2">
+        <div className="px-5 pb-4 pt-2">
           <div className="relative">
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2" />
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute inset-s-4 top-1/2 size-4 -translate-y-1/2" />
             <Input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={tMenu("search")}
-              className="ps-9"
+              className="ps-10 h-11 rounded-full text-sm"
             />
           </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-2 py-2">
-          <Accordion
-            type="single"
-            collapsible
-            value={openGroup}
-            onValueChange={setOpenGroup}
-            className="space-y-1"
-          >
-            {filteredNav.map((group) => {
+        <nav className="flex-1 overflow-y-auto px-5 py-2">
+          <div className="flex flex-col gap-[2px]">
+            {filteredNav.map((group, groupIdx) => {
               const GroupIcon = group.icon;
+              const isExpanded = openGroup === group.id;
+              const isFirst = groupIdx === 0;
+              const isLast = groupIdx === filteredNav.length - 1;
+              const colorMeta = NAV_COLOR_MAP[(group.color || "sky") as NavColor];
 
               return (
-                <AccordionItem
+                <div
                   key={group.id}
-                  value={group.id}
-                  className="border-none border-b-0"
+                  className="flex flex-col gap-[2px]"
                 >
-                  <AccordionTrigger className="hover:bg-muted rounded-lg px-3 py-2 text-sm font-semibold hover:no-underline transition-colors duration-100 ease-out">
-                    <span className="flex items-center gap-2">
-                      {GroupIcon && <GroupIcon className="size-4 shrink-0" />}
+                  {/* Section Header */}
+                  <button
+                    type="button"
+                    onClick={() => setOpenGroup(isExpanded ? undefined : group.id)}
+                    className={cn(
+                      "segmented-item group relative flex items-center justify-between gap-3 px-5 py-4 text-sm font-semibold w-full text-foreground/90 outline-none cursor-pointer overflow-hidden",
+                      isFirst ? "rounded-t-[32px]" : "rounded-t-[6px]",
+                      (isLast && !isExpanded) ? "rounded-b-[32px]" : "rounded-b-[6px]"
+                    )}
+                  >
+                    <span className="relative z-10 flex items-center gap-3">
+                      {GroupIcon && <AppIcon icon={GroupIcon} className={cn("size-5 shrink-0", resolveNavIconGradient((group.color || "sky") as NavColor))} />}
                       {tSections(group.labelKey)}
                     </span>
-                  </AccordionTrigger>
+                    <ChevronDown className={cn("relative z-10 size-4 text-muted-foreground transition-transform duration-200", isExpanded && "rotate-180")} />
+                  </button>
 
-                  <AccordionContent className="mx-2 pt-0 pb-2 [&_a]:no-underline">
-                    {/* NORMAL NAV ITEMS */}
-                    {!group.custom && (
-                      <ul className="space-y-1 ms-4">
-                        {group.items.map((item) => {
+                  {/* Items */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && !group.custom && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="flex flex-col gap-[2px]"
+                      >
+                        {group.items.map((item, itemIdx) => {
                           const ItemIcon = item.icon;
                           const isActive = pathname === item.href;
+                          const itemColorMeta = NAV_COLOR_MAP[(item.color || group.color || "sky") as NavColor];
+                          const isLastItem = itemIdx === group.items.length - 1;
 
                           return (
-                            <li key={item.href}>
-                              <Link
-                                href={item.href}
-                                onClick={() => handleOpenChange(false)}
-                                className={cn(
-                                  "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-colors duration-100 ease-out",
-                                  isActive
-                                    ? "bg-primary/10 text-primary font-medium"
-                                    : "bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground",
-                                )}
-                              >
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => handleOpenChange(false)}
+                              className={cn(
+                                "segmented-item group relative flex items-center gap-3 px-5 py-4 text-sm font-normal w-full outline-none no-underline hover:no-underline overflow-hidden",
+                                "rounded-t-[6px]",
+                                (isLast && isLastItem) ? "rounded-b-[32px]" : "rounded-b-[6px]",
+                                isActive
+                                  ? "text-primary"
+                                  : "text-foreground/70 hover:text-foreground",
+                              )}
+                            >
+                              {/* Active state background */}
+                              {isActive && (
+                                <span className="absolute inset-0 bg-[#98c1d9]/20 pointer-events-none" aria-hidden="true" />
+                              )}
+                              <span className="relative z-10 flex items-center gap-3 w-full ms-6">
                                 {ItemIcon && (
-                                  <ItemIcon className="size-4 shrink-0" />
+                                  <AppIcon icon={ItemIcon} className={cn("size-5 shrink-0", resolveNavIconGradient((item.color || group.color || "sky") as NavColor))} />
                                 )}
-                                {tItems(item.labelKey)}
-                              </Link>
-                            </li>
+                                <span className="relative z-10 transition-colors">{tItems(item.labelKey)}</span>
+                              </span>
+                            </Link>
                           );
                         })}
-                      </ul>
+                      </motion.div>
                     )}
-                  </AccordionContent>
-                </AccordionItem>
+                  </AnimatePresence>
+                </div>
               );
             })}
-          </Accordion>
+          </div>
         </nav>
-
-        <div className="text-muted-foreground px-5 pb-3 text-xs">
-          {tMenu("version", { version: "1.0.0" })}
-        </div>
       </SheetContent>
     </Sheet>
   );
 }
+
 

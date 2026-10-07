@@ -2,77 +2,52 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import "./theme-toggle.css";
+import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
+import { SunDim, MoonStars } from "@phosphor-icons/react";
+import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const [isHovered, setIsHovered] = React.useState(false);
 
   React.useEffect(() => setMounted(true), []);
 
   if (!mounted) {
-    // Render a placeholder with the same dimensions to avoid layout shift
-    return <div className="theme-switch" />;
+    return <button className={cn(HEADER_ICON_BUTTON_CLASS, className)} />;
   }
 
   const currentTheme = theme === "system" ? systemTheme : theme;
   const isDark = currentTheme === "dark";
 
   return (
-    <label className={`theme-switch ${className || ""}`}>
-      <input
-        type="checkbox"
-        checked={isDark}
-        onChange={(e) => setTheme(e.target.checked ? "dark" : "light")}
-        aria-label="Toggle Dark Mode"
-      />
-      <div className="theme-slider round">
-        <div className="sun-moon">
-          <svg id="moon-dot-1" className="moon-dot" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="50"></circle>
-          </svg>
-          <svg id="moon-dot-2" className="moon-dot" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="50"></circle>
-          </svg>
-          <svg id="moon-dot-3" className="moon-dot" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="50"></circle>
-          </svg>
-        </div>
-        <div className="stars">
-          <svg id="star-1" className="star" viewBox="0 0 20 20">
-            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-          </svg>
-          <svg id="star-2" className="star" viewBox="0 0 20 20">
-            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-          </svg>
-          <svg id="star-3" className="star" viewBox="0 0 20 20">
-            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-          </svg>
-          <svg id="star-4" className="star" viewBox="0 0 20 20">
-            <path d="M 0 10 C 10 10,10 10 ,0 10 C 10 10 , 10 10 , 10 20 C 10 10 , 10 10 , 20 10 C 10 10 , 10 10 , 10 0 C 10 10,10 10 ,0 10 Z" />
-          </svg>
-        </div>
-        
-        {/* Clouds */}
-        <svg id="cloud-1" className="cloud-dark" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
-        <svg id="cloud-2" className="cloud-dark" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
-        <svg id="cloud-3" className="cloud-dark" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
-        <svg id="cloud-4" className="cloud-light" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
-        <svg id="cloud-5" className="cloud-light" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
-        <svg id="cloud-6" className="cloud-light" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="50"></circle>
-        </svg>
+    <button
+      className={cn(HEADER_ICON_BUTTON_CLASS, "relative group", className)}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
+      aria-label="Toggle Dark Mode"
+    >
+      <div className="relative flex items-center justify-center w-full h-full">
+        <SunDim
+          weight="duotone"
+          className={cn(
+            "absolute transition-all duration-500 ease-out",
+            HEADER_ICON_CLASS,
+            isDark
+              ? "opacity-0 scale-50 -rotate-90 group-hover:opacity-100 group-hover:scale-100 group-hover:rotate-0"
+              : "opacity-100 scale-100 rotate-0 group-hover:opacity-0 group-hover:scale-50 group-hover:-rotate-90"
+          )}
+        />
+        <MoonStars
+          weight="duotone"
+          className={cn(
+            "absolute transition-all duration-500 ease-out",
+            HEADER_ICON_CLASS,
+            isDark
+              ? "opacity-100 scale-100 rotate-0 group-hover:opacity-0 group-hover:scale-50 group-hover:rotate-90"
+              : "opacity-0 scale-50 rotate-90 group-hover:opacity-100 group-hover:scale-100 group-hover:rotate-0"
+          )}
+        />
       </div>
-    </label>
+    </button>
   );
 }

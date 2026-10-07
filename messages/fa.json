@@ -1,9 +1,9 @@
 {
   "Common": {
     "appName": {
-      "lead": "وب اپلیکیشن",
+      "lead": "سامانه منابع و عملیات های مرکزی",
       "trail": "یورو اسلات پارس",
-      "accent": "lead"
+      "accent": "trail"
     },
     "search": "جستجو",
     "searchPlaceholder": "دنبال چی می‌گردی؟",
@@ -36,7 +36,9 @@
       "removeFromHistory": "حذف از تاریخچه"
     },
     "quickAccess": {
-      "searchShortcuts": "جستجوی ابزارها..."
+      "searchShortcuts": "جستجوی ابزارها...",
+      "editHint": "حداکثر {max} کارت انتخاب کنید",
+      "selectedCount": "{count}/{max}"
     },
     "brand": {
       "euroslot": "یورواسلات",
@@ -217,6 +219,9 @@
   },
   "Menu": {
     "title": "منو",
+    "popular": "علاقه‌مندی‌های شما",
+    "appsEditHint": "اپ‌ها را بکشید و در محبوب‌ها رها کنید",
+    "done": "تأیید",
     "subtitle": "همه چیز در یک مکان",
     "open": "منو باز است",
     "close": "منو بسته است",
@@ -292,8 +297,9 @@
     }
   },
   "NotFound": {
-    "description": "صفحه‌ای که دنبالش هستید پیدا نشد",
-    "backHome": "بازگشت به خانه"
+    "title": "اوه نه! در فضا گم شدید.",
+    "description": "سفینه‌ی شما از مسیر خارج شده و این صفحه در کهکشان ما وجود ندارد. نگران نباشید، راه بازگشت به پایگاه همیشه باز است.",
+    "backHome": "بازگشت به پایگاه"
   },
   "Search": {
     "placeholder": "جستجو",
@@ -307,16 +313,18 @@
     "escape": "Esc برای پاک کردن"
   },
   "Settings": {
-    "title": "ظاهر و پوسته",
-    "theme": "پوسته",
-    "color": "رنگ شاخص",
-    "language": "زبان سیستم",
-    "light": "روشن",
-    "dark": "تیره",
+    "desc": "مدیریت تنظیمات کاربری",
+    "language": "زبان",
+    "languageDesc": "زبان سیستم را تغییر دهید",
+    "appearance": "ظاهر سیستم",
+    "appearanceDesc": "تنظیمات مربوط به تم و رنگ‌بندی را اینجا انجام دهید.",
+    "theme": "تم سیستم",
+    "color": "رنگ سازمانی",
     "system": "سیستم",
-    "user": "کاربر",
+    "light": "روشن",
+    "dark": "تاریک",
     "mode": "حالت",
-    "themeLocked": "برای تغییر تم، حالت را روی کاربر قرار دهید",
+    "themeLocked": "تم در حالت سیستم قفل است",
     "colors": {
       "red": "قرمز",
       "pink": "صورتی",
@@ -325,6 +333,17 @@
       "green": "سبز",
       "orange": "نارنجی"
     }
+  },
+  "Help": {
+    "title": "راهنما و پشتیبانی",
+    "description": "یافتن پاسخ یا تماس با ما",
+    "documentation": "مستندات",
+    "support": "تماس با پشتیبانی",
+    "faq": "سوالات متداول",
+    "tutorials": "آموزش‌های ویدیویی",
+    "contact": "تماس با ما",
+    "community": "انجمن کاربران",
+    "bugReport": "گزارش مشکل"
   },
   "Dashboard": {
     "greeting": "خوش آمدید، {name}",
@@ -387,7 +406,8 @@
       "all": "همه"
     },
     "calendar": {
-      "addPlaceholder": "افزودن رویداد جدید..."
+      "addPlaceholder": "افزودن رویداد جدید...",
+      "usefulLinks": "لینک‌های کاربردی"
     },
     "miniChart": {
       "monthlyTrend": "روند یک ماهه",
@@ -426,6 +446,11 @@
       "description": "برای استفاده از این ابزار حرفه‌ای و دسترسی به تمامی امکانات پلتفرم، لطفا ثبت‌نام کنید.",
       "registerButton": "ثبت‌نام رایگان",
       "cancelButton": "انصراف"
+    },
+    "worldClock": {
+      "title": "ساعت جهانی",
+      "edit": "ویرایش",
+      "done": "پایان"
     }
   },
   "Account": {
@@ -800,5 +825,190 @@
     "dataCollectionBody": "پلتفرم ما (یورواسلات پارس) به حریم خصوصی کاربران احترام گذاشته و تنها داده‌هایی را جمع‌آوری می‌کند که برای بهبود عملکرد سامانه محاسباتی و مهندسی ضروری است. این اطلاعات ممکن است شامل تنظیمات تم، زبان انتخابی و تاریخچه پروژه‌ها باشد.",
     "useOfCookiesBody": "ما از کوکی‌ها (Cookies) برای ذخیره‌سازی تنظیمات ظاهری (مانند رنگ اصلی و تم تاریک/روشن) و حفظ وضعیت ورود شما استفاده می‌کنیم تا تجربه‌ای یکپارچه ارائه دهیم. هیچ یک از داده‌های شخصی حساس از این طریق استخراج نمی‌شود.",
     "yourRightsBody": "شما حق دارید هر زمان که مایل بودید داده‌های خود را مشاهده، ویرایش یا حذف کنید. برای هرگونه سوال یا درخواست مرتبط با حریم خصوصی، می‌توانید با تیم پشتیبانی تحقیق و توسعه (R&D) ما تماس بگیرید."
+  },
+  "Profile": {
+    "nav": {
+      "home": "خانه",
+      "personal": "شخصی",
+      "organizational": "سازمانی",
+      "skills": "مهارت‌ها",
+      "insurance": "بیمه",
+      "education": "تحصیلات",
+      "settings": "تنظیمات شخصی"
+    },
+    "quickActions": {
+      "changeColor": "تغییر رنگ",
+      "changeName": "تغییر نام",
+      "newSkill": "مهارت جدید"
+    },
+    "settings": {
+      "desc": "شخصی‌سازی زبان و ظاهر پنل کاربری",
+      "language": "زبان سیستم",
+      "languageDesc": "زبان پیش‌فرض داشبورد را انتخاب کنید",
+      "appearance": "تنظیمات ظاهری",
+      "appearanceDesc": "تم و رنگ سازمانی را تغییر دهید"
+    },
+    "tabs": {
+      "insurance": "جزئیات بیمه",
+      "education": "سوابق تحصیلی"
+    },
+    "fields": {
+      "provider": "سازمان بیمه‌گر",
+      "type": "نوع بیمه",
+      "insuranceCode": "شماره بیمه",
+      "validUntil": "تاریخ اعتبار",
+      "degree": "مدرک تحصیلی",
+      "fieldOfStudy": "رشته تحصیلی",
+      "university": "دانشگاه",
+      "graduationYear": "سال فارغ‌التحصیلی"
+    },
+    "actions": {
+      "save": "ذخیره اطلاعات"
+    },
+    "notSet": "ثبت نشده",
+    "errorLoading": "خطا در دریافت اطلاعات کاربری"
+  },
+  "Admin": {
+    "personalInfoTitle": "اطلاعات فردی",
+    "age": "سن",
+    "yearsOld": "ساله",
+    "maritalStatus": "وضعیت تاهل",
+    "married": "متاهل",
+    "single": "مجرد",
+    "insurance": "وضعیت بیمه",
+    "socialSecurity": "تامین اجتماعی",
+    "complementary": "تکمیلی",
+    "children": "تعداد فرزندان",
+    "child": "فرزند",
+    "education": "مدرک تحصیلی",
+    "bachelors": "کارشناسی",
+    "skillsTitle": "مهارت‌ها",
+    "tasksOverview": "نمای کلی وظایف",
+    "checklists": "چک‌لیست‌ها",
+    "activities": "فعالیت‌ها",
+    "recentActivities": "فعالیت‌های اخیر",
+    "workingFormat": "فرمت کاری",
+    "addEmployee": "افزودن کارمند",
+    "departments": {
+      "Engineering": "مهندسی",
+      "Design": "طراحی",
+      "Marketing": "بازاریابی",
+      "Sales": "فروش"
+    },
+    "15members": "{count} عضو",
+    "daysLabel": "روز",
+    "office": "دفتر",
+    "factory": "کارخانه",
+    "mission": "ماموریت",
+    "leave": "مرخصی",
+    "user": "کاربر",
+    "todayDate": "امروز",
+    "noTasks": "وظیفه‌ای یافت نشد",
+    "noActivity": "فعالیت اخیری یافت نشد",
+    "ageTitle": "{age} ساله",
+    "ageSub": "{month}، {days} روز تا تولد",
+    "familyTitle": "{status}",
+    "familySub": "با {count} فرزند",
+    "insuranceTitle": "بیمه {type}",
+    "insuranceSub": "{status} • طرح {plan} و {dependents} نفر تحت بیمه",
+    "educationTitle": "{field}",
+    "educationSub": "{degree}",
+    "months": {
+      "farvardin": "فروردینی"
+    },
+    "insurancePlans": {
+      "golden": "طلایی",
+      "silver": "نقره‌ای",
+      "regular": "معمولی"
+    },
+    "insuranceStatus": {
+      "active": "فعال",
+      "inactive": "غیرفعال"
+    },
+    "daysUnit": "روز",
+    "inCompany": "در شرکت",
+    "projectsUnit": "پروژه",
+    "andWorkExperience": "و {count} تجربه کاری",
+    "projectsDone": "انجام‌شده",
+    "experienceUnit": "تجربه",
+    "workExperience": "سوابق کاری",
+    "insPlanLabel": "طرح",
+    "insDependentsLabel": "تحت پوشش",
+    "personUnit": "نفر",
+    "degrees": {
+      "master": "کارشناس ارشد"
+    },
+    "skillLevels": {
+      "beginner": "مبتدی",
+      "intermediate": "معمولی",
+      "advanced": "حرفه‌ای",
+      "expert": "متخصص"
+    },
+    "skillCommunication": "ارتباطات",
+    "skillTechnical": "فنی",
+    "skillTeamwork": "کار تیمی",
+    "userInfo": "اطلاعات کاربر",
+    "userConfig": "پیکربندی کاربر",
+    "fillRequiredFields": "لطفاً فیلدهای الزامی را پر کنید",
+    "userAddedSuccess": "کاربر جدید با موفقیت اضافه شد",
+    "enterNewPassword": "رمز عبور جدید را وارد کنید",
+    "passwordResetSuccess": "رمز عبور کاربر {user} با موفقیت تغییر کرد",
+    "confirmDeleteUser": "آیا از حذف این کاربر اطمینان دارید؟",
+    "userDeletedSuccess": "کاربر با موفقیت حذف شد",
+    "adminRole": "مدیر کل",
+    "userRole": "کاربر عادی",
+    "addNewUserTitle": "تعریف کاربر جدید",
+    "addNewUserDesc": "اطلاعات پرسنل جدید را در فرم زیر وارد کنید.",
+    "fullName": "نام و نام خانوادگی",
+    "fullNamePlaceholder": "مثال: علی حسینی",
+    "email": "ایمیل (نام کاربری)",
+    "phone": "شماره تماس",
+    "department": "دپارتمان",
+    "selectDepartment": "انتخاب دپارتمان...",
+    "role": "نقش کاربری",
+    "selectRole": "انتخاب نقش...",
+    "submitAddUser": "ثبت کاربر جدید",
+    "resetPasswordTitle": "تغییر رمز عبور",
+    "manageUserSubtitle": "در حال مدیریت حساب: {name}",
+    "newPassword": "رمز عبور جدید",
+    "submitResetPassword": "بروزرسانی رمز عبور",
+    "dangerZone": "منطقه خطر",
+    "dangerZoneDesc": "حذف کاربرگشت‌پذیر نیست. لطفاً با دقت عمل کنید.",
+    "deleteUserAccount": "حذف دائمی کاربر",
+    "changeUserAccess": "تغییر سطح دسترسی",
+    "roleUpdatedSuccess": "نقش کاربر با موفقیت بروزرسانی شد",
+    "userAge": "سن",
+    "maritalStatusLabel": "وضعیت تاهل",
+    "childrenCountLabel": "تعداد فرزندان",
+    "insuranceTypeLabel": "نوع بیمه",
+    "educationFieldLabel": "رشته تحصیلی",
+    "educationDegreeLabel": "مدرک تحصیلی",
+    "selectDegree": "انتخاب مدرک...",
+    "selectInsurance": "انتخاب بیمه...",
+    "selectMaritalStatus": "انتخاب وضعیت...",
+    "maritalStatusOptions": {
+      "single": "مجرد",
+      "married": "متاهل"
+    },
+    "insuranceOptions": {
+      "none": "بدون بیمه",
+      "socialSecurity": "تامین اجتماعی",
+      "complementary": "تکمیلی"
+    },
+    "degreesOptions": {
+      "diploma": "دیپلم",
+      "bachelors": "کارشناسی",
+      "master": "کارشناسی ارشد",
+      "phd": "دکتری"
+    },
+    "recentUsers": "کاربران اخیر",
+    "editThisUser": "ویرایش این کاربر",
+    "cancelEdit": "انصراف / کاربر جدید",
+    "submitEditUser": "ثبت تغییرات کاربر",
+    "editUserDesc": "ویرایش اطلاعات کاربر انتخاب شده.",
+    "userUpdatedSuccess": "اطلاعات کاربر با موفقیت به‌روزرسانی شد!",
+    "editUserTitle": "ویرایش کاربر",
+    "cancel": "انصراف",
+    "noResults": "نتیجه‌ای یافت نشد."
   }
 }

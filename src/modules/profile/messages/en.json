@@ -15,9 +15,16 @@
       "organizational": "Your job position and details in the company structure.",
       "skills": "Register your technical and soft skills here.",
       "insurance": "Health and social security insurance records.",
-      "education": "Manage your academic and educational background here."
+      "education": "Manage your academic and educational background here.",
+      "nameEdit": "Changes to your name will be reflected across your account.",
+      "addressEdit": "Your home and work addresses are used to personalize your experiences across our products.",
+      "phoneEdit": "Your phone number is used to secure your account and connect with others.",
+      "chooseAvatar": "Choose a default picture or upload your own."
     },
+    "notSet": "Not set",
     "fields": {
+      "profilePicture": "Profile picture",
+      "name": "Name",
       "firstName": "First Name",
       "lastName": "Last Name",
       "nationalId": "National ID",
@@ -37,13 +44,43 @@
       "degree": "Degree",
       "fieldOfStudy": "Field of Study",
       "university": "University / Institute",
-      "graduationYear": "Graduation Year"
+      "graduationYear": "Graduation Year",
+      "skillName": "Skill Name",
+      "level": "Proficiency Level"
     },
     "actions": {
       "save": "Save Changes",
       "addSkill": "Add New Skill",
       "home": "Home",
-      "dashboard": "Dashboard"
-    }
+      "dashboard": "Dashboard",
+      "cancel": "Cancel",
+      "chooseOnMap": "Choose on map",
+      "remove": "Remove",
+      "uploadPicture": "Upload picture",
+      "removePicture": "Remove picture"
+    },
+    "search": "Search Profile Account",
+    "pills": {
+      "password": "My password",
+      "devices": "Devices",
+      "passwordManager": "Password Manager",
+      "activity": "My Activity",
+      "engineering": "Engineering",
+      "technical": "Technical",
+      "documents": "Documents",
+      "media": "Media",
+      "models": "Models",
+      "resources": "Resources",
+      "email": "Email"
+    },
+    "nav": {
+      "home": "Home",
+      "personal": "Personal info",
+      "organizational": "Organizational info",
+      "skills": "Skills",
+      "insurance": "Insurance info",
+      "education": "Education info"
+    },
+    "footerText": "Only you can see your settings. You might also want to review your settings for services you use most to keep your data private and secure."
   }
 }

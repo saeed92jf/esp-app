@@ -34,15 +34,15 @@ function BrandWord({ text }: { text: string }) {
 
 export function Logo({
   className,
-  showText = false,
+  showText = true,
   compact = false,
 }: LogoProps) {
   const locale = useLocale();
-  const t = useTranslations('Common.brand');
-  const isRtl = locale === 'fa';
+  // Logo is always displayed in English (LTR) regardless of the locale
+  const isRtl = false;
 
-  const leadWord = t('euroslot');
-  const trailWord = t('pars');
+  const leadWord = 'EUROSLOT';
+  const trailWord = 'PARS';
   const fullName = `${leadWord} ${trailWord}`;
 
   return (
@@ -52,11 +52,11 @@ export function Logo({
         className
       )}
       role="img"
-      aria-label={`${fullName} ▼`}
+      aria-label={`${fullName} core`}
       dir={isRtl ? 'rtl' : 'ltr'}
     >
-      {/* Relative container ensuring the brand name is 100% mathematically centered on screen */}
-      <div className="relative inline-flex items-center justify-center leading-none">
+      {/* Container for the main brand text + core */}
+      <div className="inline-flex items-center justify-center leading-none">
         {/* Uniform weight typography across the entire name */}
         <div
           className={cn(
@@ -72,67 +72,32 @@ export function Logo({
           <BrandWord text={leadWord} />
           <span className="inline-block w-[0.24em]">&nbsp;</span>
           <BrandWord text={trailWord} />
-        </div>
-
-        {/* Inverted Triangle floating adjacent to the centered name */}
-        <span
-          className={cn(
-            'absolute top-1/2 inline-flex items-center justify-center pointer-events-none select-none',
-            isRtl ? 'start-full me-[0.05em] -translate-y-[30%]' : 'start-full ms-0 -translate-y-[10%]'
-          )}
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="size-[0.55em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.2)]"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+          <span className="inline-block w-[0.24em]">&nbsp;</span>
+          <span 
+            className="bg-clip-text text-transparent pe-[0.05em]"
+            style={{
+              backgroundImage: 'linear-gradient(135deg, var(--color-primary-400, #60a5fa) 0%, var(--color-primary-500, #3b82f6) 40%, var(--color-primary-700, #1d4ed8) 100%)'
+            }}
           >
-            <defs>
-              {/* Dynamic Site Primary Theme Gradient */}
-              <linearGradient
-                id="tri-site-primary-grad-centered"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop
-                  offset="0%"
-                  stopColor="var(--color-primary-400, #60a5fa)"
-                />
-                <stop
-                  offset="40%"
-                  stopColor="var(--color-primary-500, #3b82f6)"
-                />
-                <stop
-                  offset="75%"
-                  stopColor="var(--color-primary-600, #2563eb)"
-                />
-                <stop
-                  offset="100%"
-                  stopColor="var(--color-primary-700, #1d4ed8)"
-                />
-              </linearGradient>
-            </defs>
-            <path
-              d="M10 4h4v6h6v4h-6v6h-4v-6H4v-4h6V4z"
-              fill="url(#tri-site-primary-grad-centered)"
-            />
-          </svg>
-        </span>
+            core
+          </span>
+        </div>
       </div>
 
       {/* Optional Subtitle */}
       {showText && !compact && (
-        <span
+        <div
           className={cn(
-            'mt-[0.25em] text-[0.22em] font-medium tracking-wider text-muted-foreground/90 uppercase text-center',
-            isRtl && 'tracking-normal font-normal text-[0.26em]'
+            'flex justify-between w-full px-[0.5em] mt-[0.6em] mb-[0.2em] py-[0.15em] text-[0.18em] font-medium uppercase text-muted-foreground/80',
+            isRtl && 'font-normal text-[0.2em]'
           )}
         >
-          {t('engineeringPlatform')}
-        </span>
+          {"Central Operations & Resource Environment".split('').map((char, idx) => (
+            <span key={idx} className={char === ' ' ? 'w-[0.4em]' : ''}>
+              {char}
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -94,7 +94,7 @@ const http = new HttpClient(API_BASE_URL);
 
 const SERVICE_MODES = {
   // ──────────────────────────────────── Backend سرویس‌های
-  auth:          'real',     // 🟢 REAL  — backend احراز هویت متصل به 192.168.0.171
+  auth:          'fake',     // 🟢 FAKE  — موقتا برای تست لاگین (سعید جلیلی)
   dashboard:     'inherit',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
   navigation:    'inherit',  // 🔴 Fake  — منوی ناوبری هنوز static است
   search:        'inherit',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
@@ -103,8 +103,8 @@ const SERVICE_MODES = {
   preferences:   'inherit',  // 🔴 Fake  — تنظیمات در localStorage ذخیره می‌شوند
 
   // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
-  commodities:   'real',     // 🟢 REAL   — قیمت‌ها از TGJU (Next.js API route)
-  exchangeRates: 'real',     // 🟢 REAL   — نرخ ارز زنده از TGJU، همیشه واقعی
+  commodities:   'real',     // 🟢 REAL   — کریپتو از Finnhub، کالا/فارکس از Yahoo Finance
+  exchangeRates: 'real',     // 🟢 REAL   — نرخ ارز زنده از Tetherland، همیشه واقعی
   aparat:        'real',     // 🟢 REAL   — ویدیوهای آپارات، همیشه واقعی
 } as const satisfies Record<string, 'fake' | 'real' | 'inherit'>;
 

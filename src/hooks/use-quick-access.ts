@@ -14,9 +14,13 @@ export const ALL_SELECTABLE_ITEMS: NavItem[] = NAVIGATION.filter(
   (g) => g.id !== 'settings' && g.items.length > 0,
 ).flatMap((g) => g.items);
 
-const DEFAULT_HREFS: string[] = ALL_SELECTABLE_ITEMS.slice(0, 5).map(
-  (item) => item.href,
-);
+const DEFAULT_HREFS: string[] = [
+  "/projects",
+  "/employees",
+  "/media/images",
+  "/marketing/campaigns",
+  "/documentArchive/documents",
+];
 
 export function useQuickAccess() {
   const [selectedHrefs, setSelectedHrefs] = useState<string[]>(DEFAULT_HREFS);
@@ -57,7 +61,9 @@ export function useQuickAccess() {
   const toggle = useCallback((href: string) => {
     setSelectedHrefs((prev) => {
       if (prev.includes(href)) return prev.filter((h) => h !== href);
-      if (prev.length >= QUICK_ACCESS_MAX) return prev;
+      if (prev.length >= QUICK_ACCESS_MAX) {
+        return [...prev.slice(1), href];
+      }
       return [...prev, href];
     });
   }, []);

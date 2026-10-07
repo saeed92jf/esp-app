@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, LayoutGrid, History } from "lucide-react";
+import { Search, X, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
@@ -231,23 +231,33 @@ export function GenericSearchBox<T>({
     <div
       ref={containerRef}
       className={cn(
-        "relative mx-auto h-[46px] w-full max-w-2xl sm:h-[48px] z-40",
+        "relative mx-auto h-[48px] w-full max-w-2xl sm:h-[52px] z-40",
         className,
       )}
       dir={isRtl ? "rtl" : "ltr"}
     >
       <div
         className={cn(
-          "bg-background absolute inset-x-0 top-0 select-none overflow-hidden dark:bg-[#202124]",
-          "border-none shadow-[0_3px_12px_rgba(0,0,0,0.22),0_1px_4px_rgba(0,0,0,0.12)] outline-none ring-0 dark:shadow-[0_4px_18px_rgba(0,0,0,0.85),0_1px_4px_rgba(255,255,255,0.06)]",
-          showDropdown ? "rounded-[24px]" : "rounded-full",
+          "absolute inset-x-0 top-0 select-none transition-all duration-300 z-10",
+          showDropdown ? "rounded-[28px]" : "rounded-full"
         )}
       >
-        <div className="relative flex h-[46px] items-center px-3.5 sm:h-[48px] sm:px-4">
+        {/* Continuous Glow Layer: soft primary blending into deep slate (no hard ring) */}
+        <div 
+          className="absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-300 shadow-[0_2px_14px_-2px_color-mix(in_oklab,var(--primary)_22%,transparent),0_10px_30px_-8px_rgba(30,41,59,0.22)] dark:shadow-[0_2px_16px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_12px_32px_-8px_rgba(10,10,10,0.6)]"
+        />
+        {/* Content Container */}
+        <div
+          className={cn(
+            "bg-background relative w-full h-full overflow-hidden dark:bg-[#202124] rounded-[inherit]",
+            "border-none outline-none ring-0 transition-all duration-300"
+          )}
+        >
+        <div className="relative flex h-[48px] items-center px-3.5 sm:h-[52px] sm:px-4">
           {isHistoryPreselected ? (
-            <History className="me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] text-[#9aa0a6] duration-150" />
+            <History className="me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] text-muted-foreground duration-150" />
           ) : (
-            <Search className="me-3 size-5 shrink-0 text-[#9aa0a6]" />
+            <Search className="me-3 size-5 shrink-0 text-muted-foreground/90 stroke-[2.2]" />
           )}
 
           <input
@@ -272,21 +282,30 @@ export function GenericSearchBox<T>({
                     ? "جستجو..."
                     : "Search...")
             }
-            className="text-foreground placeholder:text-muted-foreground/70 flex-1 border-none bg-transparent pe-10 text-start text-[14.5px] font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0 sm:text-[15px]"
+            className="text-foreground placeholder:text-muted-foreground/90 flex-1 border-none bg-transparent pe-10 text-start text-[14.5px] font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0 sm:text-[15px]"
             aria-label="Search"
             autoComplete="off"
             spellCheck="false"
           />
 
-          {showOverallViewButton && (
+          {showOverallViewButton && query.trim() === "" && (
             <button
               type="button"
               onClick={handleOverallViewScroll}
               title={t("searchBox.overallView")}
               aria-label={t("searchBox.overallView")}
-              className="bg-muted hover:bg-muted/80 absolute end-[7px] top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-all duration-150 sm:end-[8px] sm:size-[34px]"
+              className="group/overall absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 sm:end-[7px] sm:size-[38px]"
             >
-              <LayoutGrid className="text-foreground/70 size-4 stroke-[2] sm:size-4.5" />
+              <svg
+                viewBox="0 0 24 24"
+                className="size-[22px] sm:size-6"
+                aria-hidden="true"
+              >
+                <path d="M11 11 L11 3 A8 8 0 0 0 3 11 Z" className="fill-primary" />
+                <path d="M13 11 L21 11 A8 8 0 0 0 13 3 Z" className="fill-primary/80" />
+                <path d="M11 13 L3 13 A8 8 0 0 0 11 21 Z" className="fill-primary/60" />
+                <path d="M13 13 L13 21 A8 8 0 0 0 21 13 Z" className="fill-primary/40" />
+              </svg>
             </button>
           )}
         </div>
@@ -307,7 +326,7 @@ export function GenericSearchBox<T>({
                       setSelectedIndex(-1);
                     }}
                     className={cn(
-                      "group/item relative me-2.5 flex h-[36px] cursor-pointer select-none items-center justify-between transition-colors",
+                      "group/item relative me-2.5 flex h-[44px] cursor-pointer select-none items-center justify-between transition-colors",
                       "rounded-s-none rounded-e-full",
                       isSelected
                         ? "bg-[#e8eaed] dark:bg-[#303134]"
@@ -371,6 +390,7 @@ export function GenericSearchBox<T>({
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

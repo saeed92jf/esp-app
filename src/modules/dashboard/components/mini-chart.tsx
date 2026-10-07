@@ -16,10 +16,13 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceDot,
   type TooltipProps,
 } from 'recharts';
 import { useDashboardSettings } from '../store/use-dashboard-settings';
-import { BarChart2, LineChart as LineChartIcon, AreaChart as AreaChartIcon } from 'lucide-react';
+import { BarChart2, BarChart3, LineChart as LineChartIcon, AreaChart as AreaChartIcon } from 'lucide-react';
+import { Combobox } from '@/components/ui/combobox';
+import { useCommodities } from '../hooks/use-commodities';
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 
@@ -46,40 +49,40 @@ const CustomTick = (props: any) => {
   const match = chartData[payload.value];
   if (!match) return null;
 
-  if (match.isNewMonth) {
-    return (
-      <g transform={`translate(${x},${y})`} className="group cursor-default z-10">
-        {/* Triangle pointing down */}
+  const isFifth = payload.value % 5 === 0 && payload.value !== 0 && payload.value !== 29;
+
+  return (
+    <g transform={`translate(${x},${y})`} className="group cursor-default">
+      {match.isNewMonth && (
         <polygon points="-4,-2 4,-2 0,3" fill="var(--color-primary)" />
+      )}
+      {isFifth ? (
         <text 
           x={0} 
           y={0} 
-          dy={16} 
+          dy={14} 
           textAnchor="middle" 
-          fill="var(--color-primary)" 
+          fill="var(--color-muted-foreground)" 
           fontSize={10} 
           fontWeight="bold"
           fontFamily="inherit"
         >
-          {match.monthStr}
+          {`${match.dayStr} ${match.monthStr}`}
         </text>
-      </g>
-    );
-  }
-
-  return (
-    <g transform={`translate(${x},${y})`} className="group cursor-default">
-      <text 
-        x={0} 
-        y={0} 
-        dy={14} 
-        textAnchor="middle" 
-        fill="var(--color-muted-foreground)" 
-        fontSize={11} 
-        fontFamily="inherit"
-      >
-        {match.dayStr}
-      </text>
+      ) : (
+        <text 
+          x={0} 
+          y={0} 
+          dy={10} 
+          textAnchor="middle" 
+          fill="var(--color-muted-foreground)" 
+          fontSize={16} 
+          fontFamily="inherit"
+          opacity={0.4}
+        >
+          .
+        </text>
+      )}
     </g>
   );
 };
@@ -90,7 +93,20 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
   const t = useTranslations('Dashboard');
   const tCommodities = useTranslations('Dashboard.commodities');
   const locale = useLocale();
-  const { chartSource, chartType, setChartType } = useDashboardSettings();
+  const isFa = locale === 'fa';
+  const { chartSource, chartType, setChartType, setChartSource } = useDashboardSettings();
+
+  const chartOptions = [
+    { label: tCommodities('gold'), value: 'gold' },
+    { label: tCommodities('silver'), value: 'silver' },
+    { label: tCommodities('wti'), value: 'wti' },
+    { label: tCommodities('brent'), value: 'brent' },
+    { label: tCommodities('btc'), value: 'btc' },
+    { label: tCommodities('eth'), value: 'eth' },
+  ];
+
+  const { commodities } = useCommodities();
+  const liveCommodity = commodities?.find(c => c.id === chartSource);
 
   let lastMonth = -1;
   const chartData = data.map((p, index) => {
@@ -120,12 +136,12 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
       monthStr,
       isNewMonth,
       tooltipLabel: `${dayStr} ${monthStr}`,
-      value: p.value,
+      value: (index === data.length - 1 && liveCommodity) ? liveCommodity.price : p.value,
     };
   });
 
-  const max = Math.max(...data.map((d) => d.value), 1);
-  
+  const maxPoint = chartData.reduce((prev, current) => (prev.value > current.value) ? prev : current, chartData[0]);
+  const max = maxPoint?.value || 1;
   const unitText = chartSource === 'wti' || chartSource === 'brent' 
     ? t('miniChart.unitDollarPerBarrel') 
     : chartSource === 'gold' || chartSource === 'silver' 
@@ -138,23 +154,38 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
     <div
       className="bg-card rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 h-full flex flex-col  "
     >
-      <div className="mb-3 @sm:mb-5 flex items-start justify-between">
-        <div>
-          <h3 className="font-semibold text-sm @sm:text-base flex items-center gap-2">
-            <span>{tCommodities(chartSource)}</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">{t('miniChart.monthlyTrend')}</span>
-          </h3>
-          <p className="text-muted-foreground text-[10px] @sm:text-xs mt-1 font-medium">
-            {unitText}
-          </p>
+      <div className="mb-3 @sm:mb-5 flex items-start justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
+            <BarChart3 className="size-4" />
+          </div>
+          <span className="font-semibold text-base text-foreground/80 whitespace-nowrap">
+            {t('miniChart.monthlyTrend')}
+          </span>
+          <div className="hidden sm:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px] ms-2 shrink-0">
+            <span className="text-muted-foreground">{isFa ? 'منبع' : 'Source'}:</span>
+            <span className="font-bold flex items-center gap-1">
+              <a href="https://finance.yahoo.com" target="_blank" className="text-primary hover:underline">Yahoo Finance</a>
+            </span>
+          </div>
+          <div className="w-32 @sm:w-40 ms-2">
+            <Combobox
+              options={chartOptions}
+              value={chartSource}
+              onChange={setChartSource}
+              placeholder={isFa ? "انتخاب..." : "Select..."}
+              searchPlaceholder={isFa ? "جستجو..." : "Search..."}
+              emptyText={isFa ? "یافت نشد." : "Not found."}
+            />
+          </div>
         </div>
         
         <div className="flex flex-col items-end gap-2">
           {/* Peak indicator */}
-          <div className="text-right flex items-baseline gap-1.5">
-            <p className="text-lg @sm:text-2xl font-bold text-primary">{max.toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US')}</p>
-            <span className="text-[10px] text-muted-foreground font-medium me-1">{shortUnit}</span>
-            <p className="text-[9px] @sm:text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{t('peak')}</p>
+          <div className="text-right flex items-baseline gap-1.5 mt-1.5" dir={isFa ? 'rtl' : 'ltr'}>
+            <p className="text-sm @sm:text-base font-bold text-slate-800 dark:text-slate-200">{t('peak')}</p>
+            <p className="text-sm @sm:text-base font-bold text-primary fa-num mx-1">{max.toLocaleString(isFa ? 'fa-IR' : 'en-US')}</p>
+            <span className="text-[10px] text-muted-foreground font-medium">{shortUnit}</span>
           </div>
           
           {/* Chart Type Toggle */}
@@ -205,7 +236,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
       <div className="flex-1 min-h-0" dir="ltr">
         <ResponsiveContainer width="100%" height="100%">
           {chartType === 'area' ? (
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.35} />
@@ -230,6 +261,8 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
               axisLine={false}
               tickLine={false}
               tickCount={4}
+              width={40}
+              tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val}
             />
             <Tooltip content={<CustomTooltip locale={locale} shortUnit={shortUnit} />} cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1.5, strokeDasharray: '4 2' }} />
             <Area
@@ -244,22 +277,52 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
               animationDuration={1200}
               animationEasing="ease-out"
             />
+            {maxPoint && (
+              <ReferenceDot 
+                x={maxPoint.id} 
+                y={maxPoint.value} 
+                r={5} 
+                fill="var(--color-background)" 
+                stroke="var(--color-primary)" 
+                strokeWidth={2.5} 
+              />
+            )}
             </AreaChart>
           ) : chartType === 'line' ? (
-            <LineChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+            <LineChart data={chartData} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.4} vertical={false} />
               <XAxis dataKey="id" tick={<CustomTick chartData={chartData} />} axisLine={false} tickLine={false} dy={6} />
-              <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} width={40} tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val} />
               <Tooltip content={<CustomTooltip locale={locale} shortUnit={shortUnit} />} cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1.5, strokeDasharray: '4 2' }} />
               <Line type="monotone" dataKey="value" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ fill: 'var(--color-primary)', strokeWidth: 0, r: 4 }} activeDot={{ r: 6, fill: 'var(--color-primary)', stroke: 'var(--color-background)', strokeWidth: 2 }} isAnimationActive={true} animationDuration={1200} animationEasing="ease-out" />
+            {maxPoint && (
+              <ReferenceDot 
+                x={maxPoint.id} 
+                y={maxPoint.value} 
+                r={5} 
+                fill="var(--color-background)" 
+                stroke="var(--color-primary)" 
+                strokeWidth={2.5} 
+              />
+            )}
             </LineChart>
           ) : (
-            <BarChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+            <BarChart data={chartData} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.4} vertical={false} />
               <XAxis dataKey="id" tick={<CustomTick chartData={chartData} />} axisLine={false} tickLine={false} dy={6} />
-              <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} />
+              <YAxis tick={{ fontSize: 11, fill: 'var(--color-muted-foreground)', fontFamily: 'inherit' }} axisLine={false} tickLine={false} tickCount={4} width={40} tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : val} />
               <Tooltip content={<CustomTooltip locale={locale} shortUnit={shortUnit} />} cursor={{ fill: 'var(--color-muted)', opacity: 0.2 }} />
               <Bar dataKey="value" fill="var(--color-primary)" radius={[4, 4, 0, 0]} isAnimationActive={true} animationDuration={1200} animationEasing="ease-out" />
+            {maxPoint && (
+              <ReferenceDot 
+                x={maxPoint.id} 
+                y={maxPoint.value} 
+                r={5} 
+                fill="var(--color-background)" 
+                stroke="var(--color-primary)" 
+                strokeWidth={2.5} 
+              />
+            )}
             </BarChart>
           )}
         </ResponsiveContainer>
@@ -267,3 +330,4 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
     </div>
   );
 }
+

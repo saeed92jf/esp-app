@@ -9,9 +9,9 @@ import { Dashboard } from "@/modules/dashboard/components/dashboard";
 export default function HomePage() {
   return (
     <AuthGate>
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
+      <main className="w-full">
         <Dashboard />
-      </div>
+      </main>
     </AuthGate>
   );
 }

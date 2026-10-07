@@ -1,32 +1,32 @@
-import type { LucideIcon } from "lucide-react";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
-  Home,
-  LayoutDashboard,
-  Megaphone,
-  Share2,
-  Mail,
-  BarChart3,
-  FolderKanban,
+  House,
+  Compass,
+  SpeakerHifi,
+  ShareNetwork,
+  PaperPlaneTilt,
+  ChartPolar,
+  Kanban,
   ListChecks,
   Calendar,
-  FileBarChart,
-  LayoutGrid,
+  PresentationChart,
+  GridFour,
   Archive,
   Files,
-  FileSignature,
-  Receipt,
-  FileText,
-  Users,
-  Building2,
-  CalendarCheck,
-  Wallet,
-  Clapperboard,
-  Image as ImageIcon,
-  Video,
-  AudioLines,
-  Library,
-  Settings,
-} from "lucide-react";
+  PenNib,
+  Invoice,
+  Article,
+  UsersThree,
+  Buildings,
+  Fingerprint,
+  PiggyBank,
+  PlayCircle,
+  Image as Images,
+  VideoCamera,
+  Headphones,
+  BookOpenText,
+  Cpu,
+} from "@phosphor-icons/react";
 
 /**
  * Semantic color tokens for navigation items and groups.
@@ -265,10 +265,44 @@ export const NAV_COLOR_MAP: Record<
   },
 };
 
+export const NAV_COLOR_ICON_GRADIENT_MAP: Partial<Record<NavColor, string>> = {
+  rose: "[&_*]:!fill-[url(#grad-rose)]",
+  pink: "[&_*]:!fill-[url(#grad-pink)]",
+  fuchsia: "[&_*]:!fill-[url(#grad-fuchsia)]",
+  purple: "[&_*]:!fill-[url(#grad-purple)]",
+  violet: "[&_*]:!fill-[url(#grad-violet)]",
+  indigo: "[&_*]:!fill-[url(#grad-indigo)]",
+  blue: "[&_*]:!fill-[url(#grad-blue)]",
+  sky: "[&_*]:!fill-[url(#grad-sky)]",
+  cyan: "[&_*]:!fill-[url(#grad-cyan)]",
+  teal: "[&_*]:!fill-[url(#grad-teal)]",
+  emerald: "[&_*]:!fill-[url(#grad-emerald)]",
+  green: "[&_*]:!fill-[url(#grad-green)]",
+  lime: "[&_*]:!fill-[url(#grad-lime)]",
+  yellow: "[&_*]:!fill-[url(#grad-yellow)]",
+  amber: "[&_*]:!fill-[url(#grad-amber)]",
+  orange: "[&_*]:!fill-[url(#grad-orange)]",
+  red: "[&_*]:!fill-[url(#grad-red)]",
+  sunset: "[&_*]:!fill-[url(#grad-sunset)]",
+  ocean: "[&_*]:!fill-[url(#grad-ocean)]",
+  forest: "[&_*]:!fill-[url(#grad-forest)]",
+  berry: "[&_*]:!fill-[url(#grad-berry)]",
+  grape: "[&_*]:!fill-[url(#grad-grape)]",
+  mango: "[&_*]:!fill-[url(#grad-mango)]",
+  slate: "[&_*]:!fill-[url(#grad-slate)]",
+};
+
+export function resolveNavIconGradient(color?: NavColor): string {
+  if (!color || !NAV_COLOR_ICON_GRADIENT_MAP[color]) {
+    return "[&_*]:!fill-[url(#grad-primary)]";
+  }
+  return NAV_COLOR_ICON_GRADIENT_MAP[color]!;
+}
+
 export interface NavItem {
   labelKey: string;
   href: string;
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   /** Optional semantic color token for this nav item. */
   color?: NavColor;
   public?: boolean;
@@ -287,42 +321,42 @@ export interface NavItem {
 export interface NavGroup {
   id: string;
   labelKey: string;
-  icon?: LucideIcon;
+  icon?: PhosphorIcon;
   /** Default color applied to items that don't specify their own color. */
   color?: NavColor;
   items: NavItem[];
-  custom?: "settings";
+  custom?: "Cpu";
 }
 
 export const NAVIGATION: NavGroup[] = [
   {
     id: "marketing",
     labelKey: "marketing",
-    icon: Megaphone,
+    icon: SpeakerHifi,
     color: "rose",
     items: [
       {
         labelKey: "campaigns",
         href: "/marketing/campaigns",
-        icon: Megaphone,
+        icon: SpeakerHifi,
         color: "rose",
       },
       {
         labelKey: "social",
         href: "/marketing/social",
-        icon: Share2,
+        icon: ShareNetwork,
         color: "pink",
       },
       {
         labelKey: "email",
         href: "/marketing/email",
-        icon: Mail,
+        icon: PaperPlaneTilt,
         color: "fuchsia",
       },
       {
         labelKey: "analytics",
         href: "/marketing/analytics",
-        icon: BarChart3,
+        icon: ChartPolar,
         color: "purple",
       },
     ],
@@ -330,13 +364,13 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "projectManagement",
     labelKey: "projectManagement",
-    icon: FolderKanban,
+    icon: Kanban,
     color: "amber",
     items: [
       {
         labelKey: "projects",
         href: "/projects",
-        icon: FolderKanban,
+        icon: Kanban,
         color: "blue",
       },
       {
@@ -354,13 +388,13 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "reports",
         href: "/projects/reports",
-        icon: FileBarChart,
+        icon: PresentationChart,
         color: "teal",
       },
       {
         labelKey: "board",
         href: "/projects/board",
-        icon: LayoutGrid,
+        icon: GridFour,
         color: "emerald",
       },
     ],
@@ -380,19 +414,19 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "contracts",
         href: "/archive/contracts",
-        icon: FileSignature,
+        icon: PenNib,
         color: "lime",
       },
       {
         labelKey: "invoices",
         href: "/archive/invoices",
-        icon: Receipt,
+        icon: Invoice,
         color: "yellow",
       },
       {
         labelKey: "letters",
         href: "/archive/letters",
-        icon: FileText,
+        icon: Article,
         color: "amber",
       },
     ],
@@ -400,26 +434,26 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "employees",
     labelKey: "employees",
-    icon: Users,
+    icon: UsersThree,
     color: "violet",
     items: [
-      { labelKey: "staff", href: "/employees", icon: Users, color: "orange" },
+      { labelKey: "staff", href: "/employees", icon: UsersThree, color: "orange" },
       {
         labelKey: "departments",
         href: "/employees/departments",
-        icon: Building2,
+        icon: Buildings,
         color: "red",
       },
       {
         labelKey: "attendance",
         href: "/employees/attendance",
-        icon: CalendarCheck,
+        icon: Fingerprint,
         color: "sunset",
       },
       {
         labelKey: "payroll",
         href: "/employees/payroll",
-        icon: Wallet,
+        icon: PiggyBank,
         color: "ocean",
       },
     ],
@@ -427,13 +461,13 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "multimedia",
     labelKey: "multimedia",
-    icon: Clapperboard,
+    icon: PlayCircle,
     color: "orange",
     items: [
       {
         labelKey: "imageGallery",
         href: "/media/images",
-        icon: ImageIcon,
+        icon: Images,
         color: "forest",
         public: true,
         free: true,
@@ -441,7 +475,7 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "videos",
         href: "/aparat",
-        icon: Video,
+        icon: VideoCamera,
         color: "berry",
         public: true,
         free: true,
@@ -449,15 +483,15 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "audio",
         href: "/media/audio",
-        icon: AudioLines,
+        icon: Headphones,
         color: "grape",
         public: true,
         free: true,
       },
       {
         labelKey: "mediaLibrary",
-        href: "/media/library",
-        icon: Library,
+        href: "/media/BookOpenText",
+        icon: BookOpenText,
         color: "mango",
         public: true,
         free: false,
@@ -467,13 +501,13 @@ export const NAVIGATION: NavGroup[] = [
   {
     id: "engineering",
     labelKey: "engineering",
-    icon: Settings,
+    icon: Cpu,
     color: "slate",
     items: [
       {
         labelKey: "ESP-Flow",
         href: "/ESP-Flow",
-        icon: LayoutGrid,
+        icon: GridFour,
         color: "violet",
         public: true,
         free: false,
@@ -481,7 +515,7 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "Weight-Flow",
         href: "/Weight-Flow",
-        icon: LayoutGrid,
+        icon: GridFour,
         color: "indigo",
         public: true,
         free: false,

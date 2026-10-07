@@ -1,61 +1,40 @@
 import { NextResponse } from 'next/server';
 
-const TGJU_API = 'https://api.tgju.org/v1/market/indicator/summary-table-data';
+// مهم: از کش‌شدن توسط Next.js جلوگیری می‌کند
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
-const headers = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  'Accept': 'application/json',
-  'X-Requested-With': 'XMLHttpRequest',
-  'Referer': 'https://www.tgju.org/currency'
-};
-
-// Strip HTML tags from tgju change values like <span class="low">3250</span>
-function stripHtml(str: string): string {
-  return str.replace(/<[^>]*>/g, '').replace(/,/g, '').trim();
-}
-
-async function fetchTgjuRate(indicator: string): Promise<{ price: number; prevClose: number } | null> {
-  try {
-    const res = await fetch(`${TGJU_API}/${indicator}?length=1`, {
-      headers,
-      next: { revalidate: 300 } // 5 minutes cache
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const row = data?.data?.[0];
-    if (!row) return null;
-
-    const price = parseInt(row[0].replace(/,/g, ''), 10);
-    const prevClose = parseInt(row[3].replace(/,/g, ''), 10);
-    return { price, prevClose };
-  } catch {
-    return null;
-  }
-}
+const TETHERLAND_API = 'https://api.tetherland.com/currencies';
 
 export async function GET() {
   try {
-    // Fetch Free Market (TGJU - real bazaar rate)
-    const [usd, eur, gbp, aed] = await Promise.all([
-      fetchTgjuRate('price_dollar_rl'),
-      fetchTgjuRate('price_eur'),
-      fetchTgjuRate('price_gbp'),
-      fetchTgjuRate('price_aed'),
-    ]);
-
+    const res = await fetch(TETHERLAND_API, {
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to fetch from Tetherland');
+    }
+    
+    const json = await res.json();
+    const usdt = json?.data?.currencies?.USDT;
+    
+    if (!usdt || !usdt.price) {
+      throw new Error('USDT data not found in Tetherland response');
+    }
+    
+    // Tetherland returns price in Toman, but our app expects Rial for the global store!
+    const priceRial = parseInt(usdt.price, 10) * 10;
+    
     return NextResponse.json({
-      // CBI official rate (fixed, not available publicly - use well-known approximate)
-      cbi: 42000,
-      // Nima/Sana rate (approx 10-15% below bazaar - we estimate from bazaar)
-      sana: usd ? Math.round(usd.price * 0.87) : 450000,
-      // Free market (bazaar) - live from TGJU
-      free: usd?.price ?? 600000,
-      // Extras for display
-      eur: eur?.price ?? null,
-      gbp: gbp?.price ?? null,
-      aed: aed?.price ?? null,
+      cbi: 420000, // official rate in Rial
+      sana: Math.round(priceRial * 0.87),
+      free: priceRial, // live from Tetherland
+      eur: null,
+      gbp: null,
+      aed: null,
       updatedAt: new Date().toISOString(),
-      source: 'tgju'
+      source: 'tetherland'
     });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch exchange rates' }, { status: 500 });

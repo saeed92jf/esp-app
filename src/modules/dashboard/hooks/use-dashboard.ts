@@ -33,7 +33,9 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
     const ac = new AbortController();
     abortRef.current = ac;
 
-    setLoading(true);
+    if (!data) {
+      setLoading(true);
+    }
     setError(null);
 
     api.dashboard
@@ -54,6 +56,16 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
       ac.abort();
     };
   }, [role, refetchTick, statCards, chartSource]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        setRefetchTick(t => t + 1);
+      }
+    }, 30_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   return {
     data,

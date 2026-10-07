@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Avatar as AvatarPrimitive } from 'radix-ui';
+import Image from "next/image";
 
 import { cn } from '@/lib/utils';
 
@@ -24,20 +25,27 @@ function Avatar({
     />
   );
 }
-
 function AvatarImage({
   className,
+  src,
+  alt,
   ...props
 }: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+  if (!src || typeof src !== 'string') return null;
+
   return (
-    <AvatarPrimitive.Image
-      data-slot="avatar-image"
-      className={cn(
-        'aspect-square size-full rounded-full object-cover',
-        className,
-      )}
-      {...props}
-    />
+    <AvatarPrimitive.Image asChild src={src} {...props}>
+      <Image
+        src={src as string}
+        alt={alt || "Avatar"}
+        fill
+        sizes="50px"
+        className={cn(
+          'aspect-square size-full rounded-full object-cover',
+          className,
+        )}
+      />
+    </AvatarPrimitive.Image>
   );
 }
 

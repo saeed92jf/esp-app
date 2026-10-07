@@ -1,57 +1,72 @@
 const fs = require('fs');
 
-const faPath = 'src/modules/dashboard/messages/fa.json';
-const enPath = 'src/modules/dashboard/messages/en.json';
+const faPath = 'd:/esp-app/messages/fa.json';
+const enPath = 'd:/esp-app/messages/en.json';
 
-let faObj = JSON.parse(fs.readFileSync(faPath, 'utf8'));
-let enObj = JSON.parse(fs.readFileSync(enPath, 'utf8'));
+const adminFa = {
+  "tasksOverview": "مرور وظایف",
+  "checklists": "چک لیست امروز",
+  "activities": "فعالیت‌های انجام شده",
+  "todayDate": "امروز",
+  "rateTask": "ارزیابی مدیر:",
+  "newTaskPlaceholder": "افزودن تسک جدید...",
+  "noTasks": "هیچ تسکی برای امروز یافت نشد.",
+  "noActivity": "هیچ فعالیت اخیری یافت نشد.",
+  "manager": "مدیر",
+  "user": "کاربر",
+  "timeTracking": "پیگیری زمان",
+  "workingFormat": "فرمت کاری",
+  "daysLabel": "روز",
+  "office": "دفتر",
+  "factory": "کارخانه",
+  "site": "سایت",
+  "bankingApp": "اپلیکیشن بانکی",
+  "buildResponsiveLayout": "طراحی چیدمان واکنش‌گرا",
+  "debugApiIntegration": "دیباگ ارتباط با API",
+  "sat": "ش",
+  "sun": "ی",
+  "mon": "د",
+  "tue": "س",
+  "wed": "چ",
+  "thu": "پ",
+  "fri": "ج"
+};
 
-// fa updates
-if (faObj.Dashboard.calendar) {
-  faObj.Dashboard.calendar.filters.past = "گذشته";
-  faObj.Dashboard.calendar.filters.upcoming = "پیش‌رو";
-  faObj.Dashboard.calendar.filters.all = "همه";
-  faObj.Dashboard.calendar.addPlaceholder = "رویداد جدید";
-  faObj.Dashboard.calendar.types.official = "رسمی";
-  faObj.Dashboard.calendar.types.company_event = "شرکتی";
-  faObj.Dashboard.calendar.types.fair = "نمایشگاه";
-}
+const adminEn = {
+  "tasksOverview": "Tasks Overview",
+  "checklists": "Today's Checklist",
+  "activities": "Completed Activities",
+  "todayDate": "Today",
+  "rateTask": "Manager Rating:",
+  "newTaskPlaceholder": "Add new task...",
+  "noTasks": "No tasks found for today.",
+  "noActivity": "No recent activities found.",
+  "manager": "Manager",
+  "user": "User",
+  "timeTracking": "Time Tracking",
+  "workingFormat": "Working Format",
+  "daysLabel": "Days",
+  "office": "Office",
+  "factory": "Factory",
+  "site": "Site",
+  "bankingApp": "Banking App",
+  "buildResponsiveLayout": "Build Responsive Layout",
+  "debugApiIntegration": "Debug API Integration",
+  "sat": "Sa",
+  "sun": "Su",
+  "mon": "Mo",
+  "tue": "Tu",
+  "wed": "We",
+  "thu": "Th",
+  "fri": "Fr"
+};
 
-if (faObj.Dashboard.checklist) {
-  faObj.Dashboard.checklist.addPlaceholder = "تسک جدید";
-}
+let fa = JSON.parse(fs.readFileSync(faPath, 'utf8'));
+fa.Admin = { ...(fa.Admin || {}), ...adminFa };
+fs.writeFileSync(faPath, JSON.stringify(fa, null, 2));
 
-if (faObj.Dashboard.avatar) {
-  faObj.Dashboard.avatar.selectImage = "تصویر پروفایل";
-  faObj.Dashboard.avatar.uploadNew = "آپلود";
-  faObj.Dashboard.avatar.noImage = "بدون تصویر";
-  faObj.Dashboard.avatar.selectThis = "انتخاب";
-  faObj.Dashboard.avatar.userProfile = "پروفایل";
-}
+let en = JSON.parse(fs.readFileSync(enPath, 'utf8'));
+en.Admin = { ...(en.Admin || {}), ...adminEn };
+fs.writeFileSync(enPath, JSON.stringify(en, null, 2));
 
-// en updates
-if (enObj.Dashboard.calendar) {
-  enObj.Dashboard.calendar.filters.past = "Past";
-  enObj.Dashboard.calendar.filters.upcoming = "Upcoming";
-  enObj.Dashboard.calendar.filters.all = "All";
-  enObj.Dashboard.calendar.addPlaceholder = "New event";
-  enObj.Dashboard.calendar.types.official = "Official";
-  enObj.Dashboard.calendar.types.company_event = "Company";
-  enObj.Dashboard.calendar.types.fair = "Exhibition";
-}
-
-if (enObj.Dashboard.checklist) {
-  enObj.Dashboard.checklist.addPlaceholder = "New task";
-}
-
-if (enObj.Dashboard.avatar) {
-  enObj.Dashboard.avatar.selectImage = "Profile Image";
-  enObj.Dashboard.avatar.uploadNew = "Upload";
-  enObj.Dashboard.avatar.noImage = "No Image";
-  enObj.Dashboard.avatar.selectThis = "Select";
-  enObj.Dashboard.avatar.userProfile = "Profile";
-}
-
-fs.writeFileSync(faPath, JSON.stringify(faObj, null, 2), 'utf8');
-fs.writeFileSync(enPath, JSON.stringify(enObj, null, 2), 'utf8');
-console.log("Translations updated");
+console.log("Translations added successfully!");

@@ -21,7 +21,7 @@ export async function generateMetadata({
     keywords: t('keywords'),
     authors: [{ name: 'ESP Team' }],
     icons: {
-      icon: '/favicon.ico',
+      icon: '/favicon.ico?v=2',
     },
     openGraph: {
       title: t('ogTitle'),

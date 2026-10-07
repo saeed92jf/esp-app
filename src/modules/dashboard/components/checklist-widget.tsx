@@ -68,14 +68,19 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
   }, [tasks, activeTab]);
 
   return (
-    <div className="bg-card rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 @md:p-6 flex flex-col h-full min-h-0 fa-num">
+    <div className="flex flex-col h-full min-h-0 fa-num">
       
       {/* Header / Toggle */}
       <div 
-        className="mb-3 @sm:mb-4 flex items-center justify-between cursor-pointer select-none group" 
+        className="flex items-center justify-between cursor-pointer select-none group px-2 py-3 mb-2" 
         onClick={() => setIsFormVisible(!isFormVisible)}
       >
-        <h3 className="font-semibold text-base @sm:text-lg shrink-0">{t("title")}</h3>
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+            <CheckSquare className="size-5 text-primary" />
+          </div>
+          <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("title")}</h3>
+        </div>
         <span className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground group-hover:text-foreground">
           {isFormVisible ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </span>
@@ -207,3 +212,4 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
     </div>
   );
 }
+

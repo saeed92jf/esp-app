@@ -8,48 +8,40 @@ export function Footer() {
 
   return (
     <footer className="fa-num w-full mt-24 border-t border-border/40 bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto px-6 py-4">
+      <div className="w-full px-6 md:px-12 py-6">
         
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-6">
           
-          {/* --- Line 1: Logo & Credit --- */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            
-            {/* Logo */}
-            <Link href="/" aria-label="Home" className="focus:outline-none md:w-1/3">
-              <Logo className="text-2xl text-foreground/80 hover:text-foreground transition-colors duration-300" showText={false} />
+          {/* --- Line 1: Logo Centered --- */}
+          <div className="flex justify-center items-center w-full">
+            <Link href="/" aria-label="Home" className="focus:outline-none">
+              <Logo className="text-3xl text-foreground/80 hover:text-foreground transition-colors duration-300" showText={false} />
             </Link>
+          </div>
 
-            {/* Navigation Links (Pushed down with mt-4 and colored #999) */}
-            <nav className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-[12px] font-normal mt-2 md:mt-3 md:w-1/3">
-              <Link href="/privacy" className="text-[#999] hover:text-foreground transition-colors duration-300">
+          {/* --- Line 2: Links & Copyright (Full width, opposite ends) --- */}
+          <div className="border-t border-border/30 pt-4 flex flex-col-reverse md:flex-row items-center justify-between gap-4 w-full">
+            
+            {/* Copyright */}
+            <p className="text-[11px] text-muted-foreground/60 tracking-wider">
+              <span>© <bdi>2024-{year}</bdi> </span>
+              <span className="font-medium text-muted-foreground/70">EUROSLOT PARS</span>
+              <span> | {tCommon('footer.allRightsReserved')}</span>
+            </p>
+
+            {/* Navigation Links */}
+            <nav className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-[12px] font-normal">
+              <Link href="/privacy" className="text-muted-foreground/80 hover:text-foreground transition-colors duration-300">
                 {tCommon('footer.privacyPolicy')}
               </Link>
-              <Link href="/terms" className="text-[#999] hover:text-foreground transition-colors duration-300">
+              <Link href="/terms" className="text-muted-foreground/80 hover:text-foreground transition-colors duration-300">
                 {tCommon('footer.termsOfUse')}
               </Link>
-              <Link href="/sitemap" className="text-[#999] hover:text-foreground transition-colors duration-300">
+              <Link href="/sitemap" className="text-muted-foreground/80 hover:text-foreground transition-colors duration-300">
                 {tCommon('footer.sitemap')}
               </Link>
             </nav>
 
-            {/* Designed By */}
-            <div className="text-[12px] text-muted-foreground/80 flex items-center justify-center md:justify-end gap-1.5 font-medium md:w-1/3">
-              <span>{tCommon('footer.designedBy')}</span>
-              <Link href="/team" target="_blank" rel="noreferrer" className="font-semibold text-foreground/80 hover:text-primary transition-colors duration-300">
-                {tCommon('footer.rdTeam')}
-              </Link>
-            </div>
-
-          </div>
-
-          {/* --- Line 2: Copyright --- */}
-          <div className="border-t border-border/30 pt-4 flex justify-center">
-            <p className="text-[11px] text-muted-foreground/60 tracking-wider text-center">
-              <span>© <bdi>{year}</bdi> </span>
-              <span className="font-medium text-muted-foreground/70">{tCommon('appName.lead')} {tCommon('appName.trail')}</span>
-              <span> | {tCommon('footer.allRightsReserved')}</span>
-            </p>
           </div>
 
         </div>
