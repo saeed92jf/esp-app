@@ -895,7 +895,7 @@ export function ProfilePage() {
           
           <div 
             className="relative outline-none segmented-item shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px]">
-             <span className="absolute inset-0 bg-muted/40 opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-muted/40 opacity-0 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
 
              <div className="flex items-center gap-2 text-primary font-medium">
                 <Plus className="size-5 shrink-0" />
@@ -1334,7 +1334,7 @@ export function ProfilePage() {
                   )}
                 >
                   {!isActive && (
-                    <span className="absolute inset-0 bg-muted/60 rounded-full opacity-0 transition-opacity duration-700 group-hover:opacity-100 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+                    <span className="absolute inset-0 bg-muted/60 rounded-full opacity-0 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
                   )}
                   <Icon className={cn("size-5 shrink-0 relative z-10", isActive ? "text-primary" : "text-muted-foreground")} />
                   <span className="relative z-10">{t(item.labelKey)}</span>

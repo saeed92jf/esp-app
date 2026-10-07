@@ -1,22 +1,42 @@
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { Logo } from '@/components/brand/logo';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function Footer() {
   const tCommon = useTranslations('Common');
+  const tHeader = useTranslations('Header');
   const year = new Date().getFullYear();
 
   return (
-    <footer className="fa-num w-full mt-24 border-t border-border/40 bg-background/80 backdrop-blur-md">
+    <footer className="fa-num w-full mt-24 bg-background/80 backdrop-blur-md">
       <div className="w-full px-6 md:px-12 py-6">
         
         <div className="flex flex-col gap-6">
           
-          {/* --- Line 1: Logo Centered --- */}
+          {/* --- Line 1: Logo Centered with Tooltip --- */}
           <div className="flex justify-center items-center w-full">
-            <Link href="/" aria-label="Home" className="focus:outline-none">
-              <Logo className="text-3xl text-foreground/80 hover:text-foreground transition-colors duration-300" showText={false} />
-            </Link>
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/"
+                    aria-label={tHeader('home')}
+                    className="focus:outline-none opacity-60 hover:opacity-100 transition-opacity duration-300 cursor-pointer select-none"
+                  >
+                    <Logo className="text-xl sm:text-2xl" showText={false} />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
+                  {tHeader('home')}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {/* --- Line 2: Links & Copyright (Full width, opposite ends) --- */}

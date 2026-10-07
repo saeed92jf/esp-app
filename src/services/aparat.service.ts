@@ -228,7 +228,15 @@ export class AparatService implements IAparatService {
     ]);
 
     if (!profileData || typeof profileData !== "object" || !("profile" in (profileData as object))) {
-      throw new Error(`Profile not found: ${username}`);
+      return {
+        username,
+        name: decodeEntities(username),
+        avatar: "",
+        followers: "0",
+        videoCount: 0,
+        official: false,
+        cover_src: null,
+      };
     }
     
     const p = (profileData as any).profile;
@@ -256,8 +264,11 @@ export class AparatService implements IAparatService {
     const data = await proxyGet<unknown>(
       `profilecategories/username/${username}`,
       signal,
-    );
-    return ((data as any).profilecategories || []).map((c: any) => ({
+    ).catch((e) => {
+      if (e && e.name === "AbortError") throw e;
+      return null;
+    });
+    return ((data as any)?.profilecategories || []).map((c: any) => ({
       cat_id: toInt(c.id || c.cat_id),
       cat_name: decodeEntities(String(c.name || c.cat_name || "")),
       cat_cnt: toInt(c.cnt || c.cat_cnt),
@@ -327,7 +338,11 @@ export class AparatService implements IAparatService {
     let nextPath: string | null =
       `videoByUser/username/${username}/perpage/${PER_PAGE}`;
     while (nextPath && !signal.aborted) {
-      const data = await proxyGet<unknown>(nextPath, signal);
+      const data = await proxyGet<unknown>(nextPath, signal).catch((e) => {
+        if (e && e.name === "AbortError") throw e;
+        return null;
+      });
+      if (!data) break;
       const rawVideos =
         pickKey<Record<string, unknown>[]>(data, "videoByUser") ?? [];
       yield rawVideos.map((raw) => normalizeVideo(raw));

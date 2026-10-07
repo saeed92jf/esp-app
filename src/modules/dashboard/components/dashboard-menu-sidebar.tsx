@@ -117,25 +117,25 @@ export function DashboardMenuSidebar() {
           onValueChange={setOpenGroup}
           className="segmented-list"
         >
-          {filteredNav.map((group) => {
+          {filteredNav.map((group, groupIdx) => {
             const GroupIcon = group.icon;
 
             return (
               <AccordionItem
                 key={group.id}
                 value={group.id}
-                className="segmented-item border-none"
+                className="border-none flex flex-col gap-[2px]"
               >
-                <AccordionTrigger className="hover:bg-muted/50 px-3 py-3 text-sm font-semibold hover:no-underline transition-colors duration-100 ease-out active:scale-[0.99] transform-gpu outline-none">
-                  <span className="flex items-center gap-2">
-                    {GroupIcon && <GroupIcon className="size-4 shrink-0 text-muted-foreground" />}
-                    {tSections(group.labelKey)}
+                <AccordionTrigger className="segmented-item relative flex items-center justify-between px-4 py-3.5 text-sm font-semibold hover:no-underline outline-none cursor-pointer">
+                  <span className="relative z-10 flex items-center gap-3">
+                    {GroupIcon && <GroupIcon className="size-4.5 shrink-0 text-muted-foreground" />}
+                    <span>{tSections(group.labelKey)}</span>
                   </span>
                 </AccordionTrigger>
 
                 <AccordionContent className="pt-1 pb-2 [&_a]:no-underline">
                   {!group.custom && (
-                    <ul className="space-y-1 pl-4 rtl:pr-4 rtl:pl-0 border-l rtl:border-r rtl:border-l-0 border-border/50 ml-4 rtl:mr-4 rtl:ml-0 mt-1">
+                    <ul className="flex flex-col gap-[2px] ps-2 rtl:pe-2">
                       {group.items.map((item) => {
                         const ItemIcon = item.icon;
                         const isActive = pathname === item.href;
@@ -149,26 +149,26 @@ export function DashboardMenuSidebar() {
                         };
 
                         return (
-                          <li key={item.href}>
+                          <li key={item.href} className="segmented-item flex flex-col overflow-hidden rounded-xl">
                             <Link
                               href={item.href}
                               onClick={handleLinkClick}
                               className={cn(
-                                "flex items-center gap-2 rounded-lg px-3 py-2 text-sm no-underline hover:no-underline transition-colors duration-100 ease-out active:scale-[0.98] transform-gpu group relative",
+                                "relative flex items-center gap-3 px-4 py-3 text-sm no-underline hover:no-underline outline-none transition-colors w-full",
                                 isActive
                                   ? "bg-primary/10 text-primary font-medium"
-                                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                  : "text-foreground/80"
                               )}
                             >
                               {ItemIcon && (
-                                <ItemIcon className={cn("size-4 shrink-0", isRestricted && "opacity-60")} />
+                                <ItemIcon className={cn("relative z-10 size-4.5 shrink-0", isRestricted && "opacity-60")} />
                               )}
-                              <span className={cn(isRestricted && "opacity-80")}>
+                              <span className={cn("relative z-10 text-sm font-medium", isRestricted && "opacity-80")}>
                                 {tItems(item.labelKey)}
                               </span>
                               
                               {isRestricted && (
-                                <Lock className="size-3.5 ms-auto opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity" />
+                                <Lock className="relative z-10 size-3.5 ms-auto opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity" />
                               )}
                             </Link>
                           </li>

@@ -99,6 +99,7 @@
       "eyebrow": "Features",
       "title": "Built for every team",
       "subtitle": "Pick a category to explore.",
+      "guide": "💡 Guide: Click any card for quick access & details.",
       "all": "All",
       "explore": "Explore"
     },
@@ -217,6 +218,26 @@
     "invalidIdentifier": "Invalid email or mobile number",
     "backToHome": "Back to Home"
   },
+  "Plans": {
+    "title": "Plans & Subscriptions",
+    "subtitle": "Manage your access level and active subscriptions",
+    "testingNotice": "Under testing until further notice; you currently have full access to all features.",
+    "currentPlan": "Subscription Status",
+    "activeStatus": "Active (Test Full Access)",
+    "proTitle": "Euroslot Pars Pro Tier",
+    "proDesc": "Unlimited access to all engineering modules, 3D modeling, and management system.",
+    "proFeature1": "Full access to ESP-Flow & Weight-Flow modules",
+    "proFeature2": "Full access to document archive, contracts, and invoices",
+    "proFeature3": "CAD, vector, and industrial diagram exports",
+    "proFeature4": "Dedicated support and cloud synchronization",
+    "proActivatedNote": "✓ Activated for your account (Test Period)",
+    "freeTitle": "Public Tier",
+    "freeDesc": "Access to public sections, video showcase, and online view.",
+    "freeFeature1": "View public videos and media gallery",
+    "freeFeature2": "Limited access to basic tools",
+    "freeFooterNote": "Base Tier",
+    "backHome": "Back to Home"
+  },
   "Menu": {
     "title": "Menu",
     "popular": "Your favorites",
@@ -228,6 +249,12 @@
     "search": "Search",
     "version": "V:1.01",
     "noResults": "No results",
+    "mainNavigation": "Main Menu",
+    "mainNavigationDesc": "Quick access to all features",
+    "getFullAccess": "Get Full Access",
+    "profileLink": "Profile Management",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
     "sections": {
       "main": "Main",
       "marketing": "Marketing",

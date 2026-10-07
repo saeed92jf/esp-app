@@ -158,7 +158,7 @@ export function DashboardAvatar() {
           <div className="segmented-list w-full">
             {/* Top Block (Avatar + Name) */}
             <div className={cn(
-              "segmented-item no-hover-bg relative flex items-stretch w-full z-10 transition-all duration-300", 
+              "segmented-item no-hover-bg relative flex items-stretch w-full z-10 transition-all duration-150 ease-out overflow-hidden", 
               statusExpanded ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
             )}>
                {/* Avatar Container (Clickable for Profile) */}
@@ -167,16 +167,10 @@ export function DashboardAvatar() {
                  target="_blank"
                  onClick={() => setOpen(false)}
                  title={t("avatar.userProfile") || "ویرایش پروفایل"}
-                 className={cn(
-                   "relative shrink-0 flex items-center justify-center p-4 outline-none group/avatar",
-                   statusExpanded ? "rounded-ss-[32px] rounded-es-[6px] rounded-e-none" : "rounded-s-[32px] rounded-e-none"
-                 )}
+                 className="relative shrink-0 flex items-center justify-center p-4 outline-none group/avatar bg-transparent"
                >
-                 {/* GPU-accelerated hover layer */}
-                 <span className={cn(
-                   "absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/avatar:opacity-100 pointer-events-none",
-                   statusExpanded ? "rounded-ss-[32px] rounded-es-[6px] rounded-e-none" : "rounded-s-[32px] rounded-e-none"
-                 )} aria-hidden="true" />
+                 {/* GPU-accelerated instant hover layer */}
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/avatar:opacity-100 group-hover/avatar:duration-0 pointer-events-none" aria-hidden="true" />
                  
                  <div className="relative z-10 shrink-0 flex items-center justify-center p-1 rounded-full">
                    <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-90" />
@@ -201,16 +195,10 @@ export function DashboardAvatar() {
                {/* Name & Email (Clickable for Status Expansion) */}
                <button 
                  onClick={() => setStatusExpanded(!statusExpanded)}
-                 className={cn(
-                   "group/btn relative flex flex-1 items-center justify-between text-start overflow-hidden w-full p-4 ps-2 outline-none",
-                   statusExpanded ? "rounded-se-[32px] rounded-ee-[6px] rounded-s-none" : "rounded-e-[32px] rounded-s-none"
-                 )}
+                 className="group/btn relative flex flex-1 items-center justify-between text-start overflow-hidden w-full p-4 ps-2 outline-none bg-transparent"
                >
-                 {/* GPU-accelerated hover layer */}
-                 <span className={cn(
-                   "absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-700 group-hover/btn:opacity-100 group-hover/btn:duration-[50ms] pointer-events-none",
-                   statusExpanded ? "rounded-se-[32px] rounded-ee-[6px] rounded-s-none" : "rounded-e-[32px] rounded-s-none"
-                 )} aria-hidden="true" />
+                 {/* GPU-accelerated instant hover layer */}
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover/btn:opacity-100 group-hover/btn:duration-0 pointer-events-none" aria-hidden="true" />
                  
                  <div className="relative z-10 flex flex-col items-start overflow-hidden w-full gap-0.5">
                    <h2 className="text-base sm:text-lg font-semibold truncate leading-tight w-full text-start">{nameToUse}</h2>
@@ -231,7 +219,7 @@ export function DashboardAvatar() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  transition={{ duration: 0.1, ease: "easeOut" }}
                   className="flex flex-col w-full gap-[2px] overflow-hidden"
                 >
                   {/* Tags Section (Separated block, showing popover background above and below) */}

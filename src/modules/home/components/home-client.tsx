@@ -3,21 +3,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, useScroll, useTransform, type Variants } from "motion/react";
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } },
-};
-
-const staggerContainer: Variants = {
-  hidden: {},
-  show: {
-    transition: {
-      staggerChildren: 0.08,
-    },
-  },
-};
-
 import {
   Mail,
   Rocket,
@@ -38,6 +23,20 @@ import { FeatureCard } from "@/components/features/feature-card/feature-card";
 import { QuickAccessSection } from "@/components/features/quick-access";
 import { FullWidth, Container } from "@/components/layout/container";
 import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
+
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.15, ease: "easeOut" } },
+};
+
+const staggerContainer: Variants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.04,
+    },
+  },
+};
 
 function resolveIconClass(color?: NavColor): string {
   return NAV_COLOR_MAP[color ?? "slate"]?.icon ?? NAV_COLOR_MAP.slate.icon;
@@ -81,6 +80,7 @@ export function HomeClient() {
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [isQuickAccessEditing, setIsQuickAccessEditing] = useState(false);
 
   const { scrollY } = useScroll();
   const exploreOpacity = useTransform(scrollY, [0, 150], [1, 0]);
@@ -127,7 +127,7 @@ export function HomeClient() {
         <div className="relative flex min-h-[100dvh] -mt-[64px] w-full flex-col items-center justify-center pt-[64px] pb-20 text-center">
           <Container>
             <motion.div
-              initial="hidden"
+              initial={false}
               animate="show"
               variants={staggerContainer}
               className="relative mx-auto w-full flex flex-col items-center"
@@ -152,31 +152,33 @@ export function HomeClient() {
               </div>
 
               <div className="mt-7 sm:mt-9 w-full">
-                <QuickAccessSection />
+                <QuickAccessSection onEditModeChange={setIsQuickAccessEditing} />
               </div>
             </motion.div>
           </Container>
 
           {/* Minimal Animated Scroll Indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1, duration: 1 }}
-            className="absolute bottom-10 lg:bottom-14 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
-          >
+          {!isQuickAccessEditing && (
             <motion.div
-              style={{ opacity: exploreOpacity }}
-              className="flex flex-col items-center text-muted-foreground/50 hover:text-foreground transition-colors cursor-pointer pointer-events-auto"
-              onClick={() => {
-                document.getElementById("hero-flow-section")?.scrollIntoView({ behavior: "smooth" });
-              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.3 }}
+              className="absolute bottom-6 lg:bottom-10 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
             >
-              <span className="text-[11px] uppercase tracking-[0.2em] font-medium mb-2">
-                {t('features.explore')}
-              </span>
-              <ChevronDown className="size-5 animate-bounce stroke-[1.5]" />
+              <motion.div
+                style={{ opacity: exploreOpacity }}
+                className="flex flex-col items-center text-muted-foreground/50 hover:text-foreground transition-colors cursor-pointer pointer-events-auto"
+                onClick={() => {
+                  document.getElementById("hero-flow-section")?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <span className="text-[11px] uppercase tracking-[0.2em] font-medium mb-2">
+                  {t('features.explore')}
+                </span>
+                <ChevronDown className="size-5 animate-bounce stroke-[1.5]" />
+              </motion.div>
             </motion.div>
-          </motion.div>
+          )}
         </div>
 
         {/* The Animated Mesh/Globe below the fold */}
@@ -219,6 +221,9 @@ export function HomeClient() {
             <motion.p variants={fadeUp} className="text-muted-foreground mx-auto mt-2 max-w-2xl">
               {t("features.subtitle")}
             </motion.p>
+            <motion.div variants={fadeUp} className="mx-auto mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+              <span>{t("features.guide")}</span>
+            </motion.div>
           </motion.div>
 
           <motion.div 

@@ -63,25 +63,16 @@ export function GoogleShortcutTile({
       href={href}
       onClick={handleClick}
       className={cn(
-        "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] focus:outline-none text-center",
+        "segmented-item group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] focus:outline-none text-center rounded-2xl overflow-hidden active:scale-95 transition-transform duration-100 transform-gpu",
         className
       )}
     >
-      {/* Absolute Hover Background (GPU Accelerated, with visual margin) */}
-      <div
-        className={cn(
-          "absolute inset-1 sm:inset-1.5 rounded-2xl pointer-events-none transition-opacity duration-100 ease-out",
-          "bg-black/[0.05] dark:bg-white/[0.08] opacity-0 group-hover:opacity-100",
-          isMenuOpen && "opacity-100 duration-0"
-        )}
-      />
-
-      {/* Content Container (relative to sit above background) */}
-      <div className="relative flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
+      {/* Content Container (relative z-10 to sit above GPU segmented-item background) */}
+      <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
         {/* Google Circular Icon Bubble */}
         <div
           className={cn(
-            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800"
+            "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs"
           )}
         >
           {Icon && (
@@ -95,7 +86,7 @@ export function GoogleShortcutTile({
 
         {/* Shortcut Title */}
         <span
-          className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-normal tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center"
+          className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-medium tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center"
           title={title}
         >
           {title}
