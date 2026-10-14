@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 
 export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassName?: string; iconClassName?: string }) {
   const [open, setOpen] = useState(false);
@@ -15,6 +17,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
   const [anchorEdge, setAnchorEdge] = useState<"left" | "right">("right");
   const [isExpanded, setIsExpanded] = useState(true);
   const t = useTranslations("Help");
+  const tHeader = useTranslations("Header");
   const locale = useLocale();
   const dir = locale === "fa" ? "rtl" : "ltr";
 
@@ -55,16 +58,25 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
       }
       setOpen(val);
     }}>
-      <PopoverTrigger asChild>
-        <Button 
-          ref={triggerRef}
-          variant="ghost" 
-          size="icon" 
-          className={cn("rounded-full text-zinc-700 dark:text-zinc-300 hover:text-foreground hover:bg-muted hidden sm:inline-flex size-8 sm:size-10", triggerClassName)}
-        >
-          <HelpCircle className={cn("size-4 sm:size-5", iconClassName)} />
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button 
+                ref={triggerRef}
+                variant="ghost" 
+                size="icon" 
+                className={cn("hidden sm:inline-flex", triggerClassName || HEADER_ICON_BUTTON_CLASS)}
+              >
+                <HelpCircle className={cn(iconClassName || HEADER_ICON_CLASS)} />
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={8}>
+            {tHeader("help")}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
       <PopoverAnchor className={cn("fixed top-[72px] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-4 sm:left-6" : "right-4 sm:right-6")} />
       
@@ -97,7 +109,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             >
               <div className="relative z-10 flex items-center gap-4">
                 <div className="flex items-center justify-center size-14">
-                  <span className="text-6xl font-black text-primary mb-1">?</span>
+                  <span className="text-6xl font-black text-blue-500 dark:text-blue-400 mb-1">?</span>
                 </div>
                 <div className="flex flex-col items-start gap-1 pe-4">
                   <h3 className="font-extrabold text-xl text-foreground tracking-tight">{t("title")}</h3>
@@ -161,9 +173,9 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
           
           {/* Footer */}
           <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground mt-4 mb-2">
-             <Link href="/dashboard/help/community" onClick={() => setOpen(false)} className="hover:text-foreground transition-colors">{t("community")}</Link>
+             <Link href="/dashboard/help/community" onClick={() => setOpen(false)} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("community")}</Link>
              <span>•</span>
-             <Link href="/dashboard/help/bug" onClick={() => setOpen(false)} className="hover:text-foreground transition-colors">{t("bugReport")}</Link>
+             <Link href="/dashboard/help/bug" onClick={() => setOpen(false)} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("bugReport")}</Link>
           </div>
         </div>
       </PopoverContent>

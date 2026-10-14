@@ -14,6 +14,8 @@ import {
   ReactFlowProvider,
   useReactFlow,
   Position,
+  useNodesInitialized,
+  useStore,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { useLocale, useTranslations } from "next-intl";
@@ -193,6 +195,11 @@ function FlowInner({
   const { fitView, getViewport, setViewport } = useReactFlow();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const isReadyRef = useRef(false);
+  const mountTime = useRef(Date.now());
+  const nodesInitialized = useNodesInitialized();
+  const flowWidth = useStore((s) => s.width);
+  const flowHeight = useStore((s) => s.height);
 
   useEffect(() => {
     setNodes(buildNodes(t, isRtl, initialColor));
@@ -203,54 +210,78 @@ function FlowInner({
     if (timerRef.current) clearTimeout(timerRef.current);
 
     timerRef.current = setTimeout(() => {
-      // 1. Center the nodes first without animation (with maxZoom to prevent them from becoming too large)
-      fitView({ 
+      // 1. Center the nodes first without animation
+      Promise.resolve(fitView({ 
         duration: 0, 
         padding: window.innerWidth >= 1024 ? 0.05 : 0.1,
         maxZoom: window.innerWidth >= 1024 ? 1.3 : 1.2
+      })).then(() => {
+        // 2. Read new viewport and shift to keep it in the empty half of the screen
+        setTimeout(() => {
+          const isInitialPhase = Date.now() - mountTime.current < 2000;
+          const duration = (!isInitialPhase && isReadyRef.current) ? 800 : 0;
+          
+          if (window.innerWidth >= 1024) {
+            const { x, y, zoom } = getViewport();
+            const shiftXFa = window.innerWidth * 0.17; // shift for Persian (more to the left)
+            const shiftXEn = window.innerWidth * 0.16; // shift for English (more to the right)
+            const shiftY = window.innerWidth * 0.08; // lower down
+            setViewport(
+              { x: isRtl ? x - shiftXFa : x + shiftXEn, y: y - shiftY, zoom },
+              { duration }
+            );
+          } else if (window.innerWidth >= 640) {
+            const { x, y, zoom } = getViewport();
+            const shiftY = window.innerHeight * 0.12; 
+            setViewport({ x, y: y - shiftY, zoom }, { duration });
+          } else {
+            const { x, y, zoom } = getViewport();
+            const shiftY = window.innerHeight * 0.28; 
+            setViewport({ x, y: y - shiftY, zoom }, { duration });
+          }
+          
+          if (!isReadyRef.current) {
+            isReadyRef.current = true;
+            // Keep the canvas hidden for an additional 600ms to ensure all background layout shifts (fonts, scrollbars, etc.) are completed before fading in
+            setTimeout(() => {
+              setIsReady(true);
+            }, 600);
+          }
+        }, 100); // Give React Flow store 100ms to update after fitView
       });
-      
-      // 2. Read new viewport and shift to keep it in the empty half of the screen
-      setTimeout(() => {
-        if (window.innerWidth >= 1024) {
-          const { x, y, zoom } = getViewport();
-          const shiftX = window.innerWidth * 0.22; // shift ~22vw horizontally
-          // Tie vertical shift to width so it scales down on narrower screens, preventing nodes from flying off top
-          const shiftY = window.innerWidth * 0.12; 
-          setViewport(
-            { x: isRtl ? x - shiftX : x + shiftX, y: y - shiftY, zoom },
-            { duration: isReady ? 800 : 0 }
-          );
-        } else if (window.innerWidth >= 640) {
-          // On tablets, grid is 2 columns, cards take less vertical space.
-          const { x, y, zoom } = getViewport();
-          const shiftY = window.innerHeight * 0.12; 
-          setViewport(
-            { x, y: y - shiftY, zoom },
-            { duration: isReady ? 800 : 0 }
-          );
-        } else {
-          // On mobile screens, grid is 1 column (very tall). Shift nodes UP more so they don't get visually covered.
-          const { x, y, zoom } = getViewport();
-          const shiftY = window.innerHeight * 0.28; 
-          setViewport(
-            { x, y: y - shiftY, zoom },
-            { duration: isReady ? 800 : 0 }
-          );
-        }
-        if (!isReady) setIsReady(true);
-      }, 50);
     }, 150);
-  }, [fitView, getViewport, setViewport, isRtl, isReady]);
+  }, [fitView, getViewport, setViewport, isRtl]);
+
+  const lastSizeRef = useRef({ 
+    w: typeof window !== 'undefined' ? window.innerWidth : 0, 
+    h: typeof window !== 'undefined' ? window.innerHeight : 0 
+  });
 
   useEffect(() => {
-    window.addEventListener("resize", handleResize);
-    handleResize(); // Trigger on mount
+    if (!nodesInitialized || !flowWidth || !flowHeight) return;
+    
+    const onResize = () => {
+      if (window.innerWidth !== lastSizeRef.current.w || window.innerHeight !== lastSizeRef.current.h) {
+        lastSizeRef.current = { w: window.innerWidth, h: window.innerHeight };
+        handleResize();
+      }
+    };
+    
+    window.addEventListener("resize", onResize);
+    handleResize(); 
+    
+    // Fallback: trigger after fonts load
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        setTimeout(handleResize, 100);
+      });
+    }
+    
     return () => {
-      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("resize", onResize);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [handleResize]);
+  }, [handleResize, nodesInitialized, flowWidth, flowHeight]);
 
   const onConnect = useCallback(
     (params: Connection) =>
@@ -275,8 +306,6 @@ function FlowInner({
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
-      fitView
-      fitViewOptions={{ padding: 0.1 }}
       zoomOnScroll={false}
       zoomOnPinch={false}
       zoomOnDoubleClick={false}
@@ -342,7 +371,7 @@ export function HeroFlow() {
   return (
     <div
       dir={isRtl ? "rtl" : "ltr"}
-      className="fa-num relative flex flex-col min-h-[100dvh] w-full overflow-x-hidden bg-background select-none"
+      className="fa-num relative flex flex-col h-full min-h-full w-full overflow-hidden bg-background select-none justify-center items-center"
       style={
         {
           "--theme": FLOW_THEME.color,
@@ -360,7 +389,7 @@ export function HeroFlow() {
         <div className="absolute bottom-[5%] left-[20%] w-[50%] h-[30%] rounded-full blur-[100px]" style={{ backgroundColor: "color-mix(in srgb, var(--theme) 10%, transparent)" }} />
       </div>
 
-      <div className="w-full max-w-[100vw] overflow-x-hidden flex flex-col min-h-screen relative z-10 pointer-events-none">
+      <div className="w-full max-w-[100vw] overflow-hidden flex flex-col h-full min-h-0 relative z-10 pointer-events-none justify-center items-center">
         
         {/* REACT FLOW CANVAS: Normal flow on mobile (top), Absolute full-screen on desktop */}
         {!isMobile && (
@@ -373,9 +402,9 @@ export function HeroFlow() {
           </div>
         )}
 
-        <div className="flex-1 container mx-auto px-6 md:px-12 flex flex-col justify-center py-12 gap-8 lg:gap-12 relative z-10">
-          <div className="w-full h-auto pointer-events-none -mt-12 lg:-mt-28">
-            <div className="relative flex flex-col items-center lg:items-start justify-center gap-6 w-full md:w-[80%] lg:w-[45%] xl:w-[50%] max-w-2xl pointer-events-auto p-4 sm:p-6 lg:p-8 z-20">
+        <div className="container mx-auto px-6 md:px-12 flex flex-col justify-center items-center gap-6 lg:gap-8 relative z-10 my-auto">
+          <div className="w-full h-auto pointer-events-none">
+            <div className="relative flex flex-col items-center lg:items-start justify-center gap-4 w-full md:w-[70%] lg:w-[38%] xl:w-[42%] max-w-xl pointer-events-auto p-2 sm:p-3 lg:p-4 z-20">
               <div 
                 className="absolute inset-[-10%] z-[-1] backdrop-blur-sm"
                 style={{
@@ -395,7 +424,7 @@ export function HeroFlow() {
               <div className="mt-2 flex flex-wrap justify-center lg:justify-start items-center gap-4">
                 <Button
                   asChild
-                  className="group relative overflow-hidden rounded-full h-16 px-8 py-2 text-foreground text-base font-bold border-transparent !transition-colors !translate-y-0 !scale-100"
+                  className="group relative overflow-hidden rounded-full h-16 px-8 py-2 text-foreground text-base font-bold border-0 transition-all duration-300 hover:text-white hover:shadow-lg hover:shadow-primary/20"
                   style={{ backgroundColor: "color-mix(in srgb, var(--theme) 15%, transparent)" }}
                 >
                   <Link 
@@ -421,27 +450,13 @@ export function HeroFlow() {
                     }}
                   >
                     <span 
-                      className={`absolute start-0 top-0 bottom-0 z-0 !transition-[width] overflow-hidden ${
-                        isNavigating 
-                          ? "!w-full !duration-200 !ease-out" 
-                          : "!w-0 group-hover:!w-full group-hover:!duration-[3000ms] group-hover:!ease-linear !duration-300 !ease-out"
+                      className={`absolute inset-0 z-0 transition-opacity duration-300 ease-out ${
+                        isNavigating ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                       }`} 
-                      style={{ backgroundColor: "var(--theme)", boxShadow: "inset 0 0 10px rgba(255,255,255,0.2)" }}
-                    >
-                      <span className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none" />
-                    </span>
+                      style={{ backgroundColor: "var(--theme)" }}
+                    />
                     
-                    <span className="relative z-10 tracking-wide text-foreground">
-                      {t("tryNow")}
-                    </span>
-
-                    <span 
-                      className={`absolute inset-0 z-20 flex items-center justify-center tracking-wide text-white !transition-[clip-path] pointer-events-none ${
-                        isNavigating 
-                          ? "![clip-path:inset(0_0_0_0)] !duration-200 !ease-out" 
-                          : (isRtl ? "![clip-path:inset(0_0_0_100%)]" : "![clip-path:inset(0_100%_0_0)]") + " group-hover:![clip-path:inset(0_0_0_0)] group-hover:!duration-[3000ms] group-hover:!ease-linear !duration-300 !ease-out"
-                      }`}
-                    >
+                    <span className="relative z-10 tracking-wide">
                       {t("tryNow")}
                     </span>
                   </Link>
@@ -450,18 +465,18 @@ export function HeroFlow() {
             </div>
           </div>
 
-          <div className="pointer-events-none w-full z-30 pb-4 lg:pb-0 mt-4 lg:mt-16 xl:mt-24">
+          <div className="pointer-events-none w-full pb-2 lg:pb-0 mt-3 lg:mt-5 xl:mt-6">
           <div className="relative grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 w-full pointer-events-none">
-            <div 
-              className="absolute inset-[-10%] z-[-1] backdrop-blur-sm pointer-events-none"
-              style={{
-                WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 70%)",
-                maskImage: "radial-gradient(ellipse at center, black 40%, transparent 70%)"
-              }}
-            />
             {modules.map((mod, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center gap-1 p-2 sm:p-5 pointer-events-none h-full">
-                <div className="text-(--theme) mb-1 sm:mb-2 opacity-80 mix-blend-multiply dark:mix-blend-screen shrink-0 scale-75 sm:scale-100">
+              <div key={idx} className="relative z-20 flex flex-col items-center text-center gap-1 p-2 sm:p-5 pointer-events-auto h-full">
+                <div 
+                  className="absolute inset-[-10%] z-[-1] backdrop-blur-sm"
+                  style={{
+                    WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 70%)",
+                    maskImage: "radial-gradient(ellipse at center, black 40%, transparent 70%)"
+                  }}
+                />
+                <div className="text-(--theme) mb-1 sm:mb-2 opacity-80 shrink-0 scale-75 sm:scale-100">
                   {mod.icon}
                 </div>
                 <div className="text-sm sm:text-lg font-bold text-(--theme) leading-tight">{mod.title}</div>

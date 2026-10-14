@@ -9,6 +9,7 @@
     "searchPlaceholder": "What are you looking for?",
     "login": "Login",
     "register": "Sign up",
+    "createAccount": "Create Account",
     "loading": "Loading...",
     "noResults": "No results found.",
     "language": "Language",
@@ -33,7 +34,8 @@
     },
     "searchBox": {
       "overallView": "Overall Features View",
-      "removeFromHistory": "Remove from history"
+      "removeFromHistory": "Remove from history",
+      "aiMode": "AI Mode (Coming Soon)"
     },
     "quickAccess": {
       "searchShortcuts": "Search shortcuts...",
@@ -69,7 +71,11 @@
     "about": "About",
     "contact": "Contact",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "help": "Help",
+    "apps": "Apps",
+    "theme": "Theme",
+    "language": "Language"
   },
   "Home": {
     "meta": {
@@ -81,6 +87,23 @@
       "subtitle": "Powerful tools to help you work smarter, not harder.",
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
     },
+    "guestTabs": {
+      "modules": "Modules",
+      "insights": "Insights",
+      "featured": "Featured",
+      "support": "Support",
+      "latest": "Featured",
+      "discover": "Support",
+      "modulesDesc": "Access Modules",
+      "insightsDesc": "Scientific & Technical Insights",
+      "featuredDesc": "Featured Modules & Simulation",
+      "supportDesc": "Technical Support & Contact",
+      "latestDesc": "Featured Modules & Simulation",
+      "discoverDesc": "Technical Support & Contact"
+    },
+    "guestDockTitle": "Join our platform for full access to engineering calculation tools",
+    "createAccountLong": "Create Free Account",
+    "loginLong": "Sign In to Account",
     "quickAccess": {
       "customize": "Customize",
       "customizeLabel": "Customize Quick Access",
@@ -88,6 +111,145 @@
       "capReached": "Maximum {max} items allowed",
       "reset": "Reset to defaults",
       "done": "Done"
+    },
+    "didYouKnow": {
+      "eyebrow": "Engineering & Industrial Insights",
+      "title": "Did You Know?",
+      "subtitle": "Fascinating scientific insights, ASME standards, and fluid mechanics principles.",
+      "prev": "Previous Insight",
+      "next": "Next Insight",
+      "readMore": "Learn More",
+      "cards": {
+        "card1": {
+          "category": "Pressure Vessel Mechanics",
+          "tag": "ASME Design",
+          "title": "Why do cylindrical pipes and vessels always rupture longitudinally?",
+          "description": "In thin-walled cylindrical shells, circumferential (hoop) stress is exactly twice the longitudinal stress. When internal pressure exceeds limits, the vessel invariably bursts along its length rather than circumference.",
+          "formula": "σ_hoop = 2 × σ_long = (P × D) / (2 × t)",
+          "ref": "ASME BPVC Sec VIII-1"
+        },
+        "card2": {
+          "category": "Fluid Dynamics & Separation",
+          "tag": "Vortex Dynamics",
+          "title": "98% particulate separation achieved with zero moving parts!",
+          "description": "Industrial hydrocyclones transform fluid pressure into extreme rotational velocity, generating centrifugal accelerations thousands of times greater than gravity to separate dense solids within milliseconds.",
+          "formula": "F_c = m × v² / r ≫ F_gravity",
+          "ref": "Bradley: The Hydrocyclone"
+        },
+        "card3": {
+          "category": "Thermodynamics & Hydraulics",
+          "tag": "API 610 Standard",
+          "title": "Cavitation: when microscopic vapor bubbles pit hardened steel!",
+          "description": "When local pressure drops below saturation vapor pressure, microbubbles form and violently collapse upon entering higher pressure zones. The resulting micro-jets exceed 10,000 bar, rapidly eroding titanium impellers.",
+          "formula": "NPSH_a > NPSH_r + 0.5m",
+          "ref": "ISO 13709 / API 610"
+        },
+        "card4": {
+          "category": "Transient Hydraulics & Pipelines",
+          "tag": "Joukowsky Equation",
+          "title": "Instant valve closure and devastating water hammer shockwaves!",
+          "description": "Rapid valve closure converts the kinetic energy of a flowing liquid into acoustic pressure shockwaves, generating instantaneous surge pressures up to 50 bar that can rupture pipelines.",
+          "formula": "ΔP = ρ × a × Δv (Joukowsky)",
+          "ref": "Crane Technical Paper 410"
+        },
+        "card5": {
+          "category": "Structural Dynamics & Aerodynamics",
+          "tag": "Strouhal Dynamics",
+          "title": "Tacoma Narrows collapse: the deadly dance of Karman vortex shedding!",
+          "description": "Fluid flow past cylindrical structures sheds alternating vortices. When the vortex shedding frequency locks onto the natural structural frequency, catastrophic flow-induced vibration (VIV) resonance occurs.",
+          "formula": "f_shed = (St × v) / D (St ≈ 0.2)",
+          "ref": "Blevins: Flow-Induced Vibration"
+        },
+        "card6": {
+          "category": "Process Thermodynamics & Cryogenics",
+          "tag": "JT Expansion Valve",
+          "title": "Cooling gas to -60°C simply by passing through a throttling valve!",
+          "description": "During adiabatic throttling without external work, real gases like methane experience significant temperature drops due to intermolecular attractive forces, eliminating the need for electric refrigeration chillers.",
+          "formula": "μ_JT = (∂T / ∂P)_h > 0",
+          "ref": "Perry's Chemical Engineers' Handbook"
+        },
+        "card7": {
+          "category": "Sour Gas Metallurgy",
+          "tag": "NACE MR0175 Standard",
+          "title": "Hydrogen embrittlement: catastrophic sour gas pipe failure without warning!",
+          "description": "In the presence of wet H2S, monatomic hydrogen diffuses into steel crystal lattices, creating localized high-pressure pockets that cause sudden brittle fracture well below yield strength.",
+          "formula": "Hardness ≤ 22 HRC (NACE Limit)",
+          "ref": "NACE MR0175 / ISO 15156"
+        },
+        "card8": {
+          "category": "Multiphase Piping & Transport",
+          "tag": "Slug Flow Regime",
+          "title": "Massive liquid slug impacts threatening piping elbows at high velocity!",
+          "description": "In oil and gas transport pipelines, stratified flows can transition into dangerous slug regimes where liquid pistons weighing multiple tons strike pipe elbows at high velocities.",
+          "formula": "F_impact = ρ_liq × A × v_slug²",
+          "ref": "Beggs & Brill Multiphase Flow"
+        },
+        "card9": {
+          "category": "Heat Transfer & Exchangers",
+          "tag": "TEMA Standards",
+          "title": "Why counter-flow always outperforms co-current flow in heat exchangers?",
+          "description": "Counter-current heat exchangers maintain a uniform temperature difference across their entire length, allowing the cold fluid exit temperature to surpass the hot fluid exit temperature.",
+          "formula": "LMTD_counter > LMTD_parallel",
+          "ref": "TEMA 10th Ed. Standards"
+        },
+        "card10": {
+          "category": "Pressure Relief & Safety Valves",
+          "tag": "API 520 Standard",
+          "title": "Sonic limit: why mass flow rate cannot exceed the sonic velocity threshold!",
+          "description": "When the downstream to upstream pressure ratio drops below the critical ratio, gas velocity at the nozzle throat reaches Mach 1 (speed of sound), choking mass flow regardless of further downstream pressure drops.",
+          "formula": "P_crit / P_up = [2/(k+1)]^(k/(k-1))",
+          "ref": "API Standard 520 Part I"
+        }
+      }
+    },
+    "supportSection": {
+      "eyebrow": "Support & Direct Contact",
+      "title": "Technical Engineering Support",
+      "subtitle": "We are here to assist you through every calculation and engineering workflow",
+      "description": "Our engineering and development team is ready to answer questions, guide module calculations, and address your technical inquiries and industrial requirements.",
+      "emailLabel": "Support Contact Email",
+      "email": "support@esp-app.com",
+      "copyEmail": "Copy Email",
+      "copied": "Copied",
+      "sendEmail": "Send Email",
+      "responseTime": "Fast response within 12 hours",
+      "features": {
+        "guidance": "Dedicated Module Guidance",
+        "customization": "Custom Feature Requests",
+        "feedback": "Technical Inquiries & Feedback"
+      }
+    },
+    "discoverSection": {
+      "eyebrow": "Innovation & Discovery Center",
+      "title": "Discover Next-Gen Engineering Capabilities",
+      "subtitle": "An integrated suite of calculation engines, dynamic simulations, and oil & gas design standards.",
+      "cta": "Explore Module",
+      "items": {
+        "item1": {
+          "title": "Pressure Vessel Design",
+          "subtitle": "ASME Sec VIII Div 1 & 2",
+          "desc": "Shell thickness calculations, torispherical heads, nozzle reinforcement, and flanges under internal and external pressure.",
+          "badge": "Global Standard"
+        },
+        "item2": {
+          "title": "Hydraulic & Pipeline Simulation",
+          "subtitle": "Fluid & Piping Dynamics",
+          "desc": "Frictional head loss, water hammer analysis, two-phase gas-liquid sizing, and control valve optimization.",
+          "badge": "Dynamic Analysis"
+        },
+        "item3": {
+          "title": "Intelligent MTO & Center of Gravity",
+          "subtitle": "MTO & Weight Engineering",
+          "desc": "Automated material take-off, foundation load balancing, and heavy-lift rigging verification for refinery equipment.",
+          "badge": "High Precision"
+        },
+        "item4": {
+          "title": "Unit Converter & Metallurgy Library",
+          "subtitle": "Engineering Utilities",
+          "desc": "Instant access to steam property tables, ASME Section II Part D alloy database, and comprehensive unit conversion.",
+          "badge": "Utility Suite"
+        }
+      }
     },
     "stats": {
       "clients": "Happy Clients",
@@ -102,6 +264,44 @@
       "guide": "💡 Guide: Click any card for quick access & details.",
       "all": "All",
       "explore": "Explore"
+    },
+    "freeBanners": {
+      "title": "Platform Modules & Tools",
+      "subtitle": "Explore free, advanced, and engineering specialized suites of ESP.",
+      "badges": {
+        "free": "Free",
+        "accountRequired": "Account Required",
+        "accessRequired": "Access Required"
+      },
+      "launch": "Launch Module",
+      "prev": "Previous slide",
+      "next": "Next slide",
+      "modules": {
+        "espFlow": {
+          "title": "ESP-Flow Studio",
+          "tagline": "Visual Node-Based Process Modeler",
+          "description": "Interactive visual engineering environment for mapping process logic, data flows, and industrial algorithms directly in your browser.",
+          "chip1": "Drag & Drop Canvas",
+          "chip2": "Real-Time Node Links",
+          "chip3": "Zero Installation"
+        },
+        "vesselWeight": {
+          "title": "Weight-Flow Calculator",
+          "tagline": "Pressure Vessel Engineering Suite",
+          "description": "Precise mechanical calculation and weight estimation for ASME pressure vessels, shells, dished heads, nozzles, and structural materials.",
+          "chip1": "ASME Standards",
+          "chip2": "Shells & Dished Heads",
+          "chip3": "Instant Weight Estimation"
+        },
+        "aparatAcademy": {
+          "title": "ESP Video Academy",
+          "tagline": "Industrial & Technical Video Hub",
+          "description": "Comprehensive video tutorials, software walkthroughs, industrial design courses, and recorded technical webinars with instant streaming.",
+          "chip1": "HD Video Tutorials",
+          "chip2": "Engineering Guides",
+          "chip3": "Free Instant Streaming"
+        }
+      }
     },
     "newsletter": {
       "title": "Stay in the loop",
@@ -154,8 +354,10 @@
   "Auth": {
     "loggingIn": "Signing in...",
     "brand": "ESP CORE",
-    "login": "Sign in",
-    "register": "Sign up",
+    "login": "Sign In",
+    "register": "Get Started",
+    "loginTooltip": "Log in",
+    "registerTooltip": "Create account",
     "logout": "Sign out",
     "submit": "submit",
     "loginSubtitle": "Sign in to your account to continue",
@@ -226,7 +428,7 @@
     "activeStatus": "Active (Test Full Access)",
     "proTitle": "Euroslot Pars Pro Tier",
     "proDesc": "Unlimited access to all engineering modules, 3D modeling, and management system.",
-    "proFeature1": "Full access to ESP-Flow & Weight-Flow modules",
+    "proFeature1": "Full access to ESP-Flow module",
     "proFeature2": "Full access to document archive, contracts, and invoices",
     "proFeature3": "CAD, vector, and industrial diagram exports",
     "proFeature4": "Dedicated support and cloud synchronization",
@@ -252,6 +454,7 @@
     "mainNavigation": "Main Menu",
     "mainNavigationDesc": "Quick access to all features",
     "getFullAccess": "Get Full Access",
+    "dashboardLink": "Dashboard",
     "profileLink": "Profile Management",
     "privacy": "Privacy Policy",
     "terms": "Terms & Conditions",
@@ -291,8 +494,7 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "ESP-Flow": "ESP-Flow",
-      "Claud-Flow": "Claude Flow",
-      "Weight-Flow": "Weight Flow"
+      "Claud-Flow": "Claude Flow"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -319,8 +521,7 @@
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
       "ESP-Flow": "ESP-Flow",
-      "Claud-Flow": "Claude Flow",
-      "Weight-Flow": "Weight Flow"
+      "Claud-Flow": "Claude Flow"
     }
   },
   "NotFound": {
@@ -373,6 +574,7 @@
     "bugReport": "Report a Bug"
   },
   "Dashboard": {
+    "profile": "Profile",
     "greeting": "Welcome, {name}",
     "themeSettings": "Theme Settings",
     "chartTitle": "6-month trend",
@@ -458,7 +660,9 @@
       "closeMenu": "Close menu",
       "openMenu": "Open menu",
       "hideEvents": "Hide Events",
-      "upcomingEvents": "Upcoming Events"
+      "upcomingEvents": "Upcoming Events",
+      "utility": "Utility",
+      "calendar": "Calendar"
     },
     "avatar": {
       "selectImage": "Select Profile Image",
@@ -987,7 +1191,10 @@
     "skillTechnical": "Technical",
     "skillTeamwork": "Teamwork",
     "userInfo": "User Info",
+    "usersTable": "Users Table",
     "userConfig": "User Config",
+    "sidebarReq": "Requests",
+    "sidebarSettings": "Settings",
     "fillRequiredFields": "Please fill out required fields",
     "userAddedSuccess": "New user successfully added",
     "enterNewPassword": "Enter a new password",
@@ -1048,6 +1255,18 @@
     "userUpdatedSuccess": "User info updated successfully!",
     "editUserTitle": "Edit User",
     "cancel": "Cancel",
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "viewCards": "Cards",
+    "viewList": "List",
+    "personnelCode": "Personnel Code",
+    "statusLabel": "Work Status",
+    "categoryAll": "All",
+    "categoryPersonal": "Personal",
+    "categoryWorkFinance": "Work & Finance",
+    "categoryCharts": "Charts",
+    "workingFormatBreakdown": "Working Format",
+    "skillsBreakdown": "Skills Assessment",
+    "monthlySalary": "Monthly Salary",
+    "statsAndPerformance": "Stats & Performance"
   }
 }

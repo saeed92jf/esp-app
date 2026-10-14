@@ -136,8 +136,7 @@ export function GoogleSearchBox({
       onSelect={(item) => router.push(item.href)}
       onQueryChange={setQuery}
       onOpenChange={onOpenChange}
-      showOverallViewButton={true}
-      onOverallViewClick={onOverviewClick}
+      showAiModeButton={true}
       placeholder={
         placeholder || (isRtl
           ? "جستجو در ابزارها، محاسبات، مخازن تحت فشار..."

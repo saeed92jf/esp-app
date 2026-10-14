@@ -17,6 +17,10 @@
   --font-poppins: 'Poppins', system-ui, sans-serif;
   --font-inter: 'Inter', system-ui, sans-serif;
   --font-shabnam: 'Shabnam', system-ui, sans-serif;
+  --font-open-sans: 'Open Sans', system-ui, sans-serif;
+  --font-anta: 'Anta', sans-serif;
+  --font-righteous: 'Righteous', cursive, sans-serif;
+  --font-math: 'LatinModernMath', 'NotoSansMath', 'Cambria Math', serif;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -97,6 +101,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  background-color: var(--background);
 }
 
 /* Ensure form controls inherit the global font normally */
@@ -243,6 +248,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @layer components {
+  .bg-panel {
+    background-color: var(--panel-bg);
+  }
+  .bg-popup {
+    background-color: var(--popup-bg);
+  }
+
   /* Global Stacked/Segmented List Pattern */
   .segmented-list {
     display: flex;
@@ -251,10 +263,14 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .segmented-item {
-    background-color: var(--background);
+    background-color: #ffffff !important;
     border-radius: 6px; /* Decreased fillet for middle items */
     overflow: hidden;
     position: relative;
+  }
+
+  .dark .segmented-item {
+    background-color: var(--card) !important;
   }
 
   /* GPU-accelerated ultra-smooth hover layer for segmented-item */
@@ -262,12 +278,16 @@ h1, h2, h3, h4, h5, h6 {
     content: "";
     position: absolute;
     inset: 0;
-    background-color: var(--accent);
+    background-color: #98c1d9;
     opacity: 0;
     transition: opacity 100ms cubic-bezier(0.16, 1, 0.3, 1);
     will-change: opacity;
     pointer-events: none;
     z-index: 0;
+  }
+
+  .dark .segmented-item::before {
+    background-color: #98c1d9;
   }
 
   .segmented-item.no-hover-bg::before {
@@ -276,8 +296,11 @@ h1, h2, h3, h4, h5, h6 {
 
   @media (hover: hover) {
     .segmented-item:not(.no-hover-bg):hover::before {
-      opacity: 0.25;
+      opacity: 0.3;
       transition-duration: 0ms !important; /* Instant snap-on on mouseenter */
+    }
+    .dark .segmented-item:not(.no-hover-bg):hover::before {
+      opacity: 0.3;
     }
   }
 
@@ -291,16 +314,27 @@ h1, h2, h3, h4, h5, h6 {
     border-start-start-radius: 32px;
     border-start-end-radius: 32px;
   }
+  .segmented-list.padded-ends > .segmented-item:first-child {
+    padding-top: 1.25rem !important; /* pt-5 */
+  }
 
   /* Last item logic */
   .segmented-list > .segmented-item:last-child {
     border-end-start-radius: 32px;
     border-end-end-radius: 32px;
   }
+  .segmented-list.padded-ends > .segmented-item:last-child {
+    padding-bottom: 1.25rem !important; /* pb-5 */
+  }
 
   /* Solitary item */
-  .segmented-list > .segmented-item:first-child:last-child {
-    border-radius: 32px;
+  .segmented-list > .segmented-item:first-child:last-child,
+  .segmented-list > .segmented-item:only-child {
+    border-radius: 32px !important;
+    border-start-start-radius: 32px !important;
+    border-start-end-radius: 32px !important;
+    border-end-start-radius: 32px !important;
+    border-end-end-radius: 32px !important;
   }
 }
 
@@ -338,10 +372,15 @@ h1, h2, h3, h4, h5, h6 {
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
+  --color-popover-bg: var(--popover-bg);
+  --color-popup: var(--popup-bg);
+  --color-popup-bg: var(--popup-bg);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-panel: var(--panel-bg);
+  --color-panel-bg: var(--panel-bg);
   --color-form: var(--form);
   --color-form-node: var(--form-node);
   --color-form-primary: var(--form-primary);
@@ -383,6 +422,9 @@ h1, h2, h3, h4, h5, h6 {
 
 :root {
   --background: oklch(1 0 0);
+  --panel-bg: #f0f3f8;
+  --popup-bg: #e9eff6;
+  --popover-bg: var(--popup-bg);
 
   /* ============================================
      GLOBAL FORM THEME PALETTE
@@ -419,11 +461,11 @@ h1, h2, h3, h4, h5, h6 {
   --form-accent: #7f60ff;
   --form-border: #d1d5db;
   --form-muted: #f1f5f9;
-  --foreground: #202124;
+  --foreground: oklch(0.148 0.004 228.8);
   --card: var(--form-node);
-  --card-foreground: var(--foreground);
-  --popover: #edf2fa;
-  --popover-foreground: var(--foreground);
+  --card-foreground: oklch(0.148 0.004 228.8);
+  --popover: var(--popover-bg);
+  --popover-foreground: oklch(0.148 0.004 228.8);
   --shape-ring: oklch(56.018% 0.0211 213.652 / 0.637);
 
   /* ---- DYNAMIC PRIMARY (light) ----
@@ -438,8 +480,8 @@ h1, h2, h3, h4, h5, h6 {
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
   --muted: oklch(0.963 0.002 197.1);
-  --muted-foreground: #5f6368;
-  --accent: #98c1d9;
+  --muted-foreground: oklch(0.56 0.021 213.5);
+  --accent: oklch(0.963 0.002 197.1);
   --accent-foreground: oklch(0.218 0.008 223.9);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.925 0.005 214.3);
@@ -469,6 +511,9 @@ h1, h2, h3, h4, h5, h6 {
 
 .dark {
   --background: oklch(0.148 0.004 228.8);
+  --panel-bg: #141824;
+  --popup-bg: oklch(0.218 0.008 223.9);
+  --popover-bg: var(--popup-bg);
 
   /* ============================================
      GLOBAL FORM DARK PALETTE
@@ -505,11 +550,11 @@ h1, h2, h3, h4, h5, h6 {
   --form-accent: #8ba4e4;
   --form-border: #2a3254;
   --form-muted: #1e243d;
-  --foreground: #e8eaed;
+  --foreground: oklch(0.987 0.002 197.1);
   --card: var(--form-node);
-  --card-foreground: var(--foreground);
-  --popover: oklch(0.218 0.008 223.9);
-  --popover-foreground: var(--foreground);
+  --card-foreground: oklch(0.987 0.002 197.1);
+  --popover: var(--popover-bg);
+  --popover-foreground: oklch(0.987 0.002 197.1);
   --shape-ring: oklch(98.658% 0.00216 199.99 / 0.616);
 
   /* ---- DYNAMIC PRIMARY (dark) ----
@@ -523,7 +568,7 @@ h1, h2, h3, h4, h5, h6 {
   --secondary: oklch(0.274 0.006 286.033);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.275 0.011 216.9);
-  --muted-foreground: #9aa0a6;
+  --muted-foreground: oklch(0.723 0.014 214.4);
   --accent: oklch(0.275 0.011 216.9);
   --accent-foreground: oklch(0.987 0.002 197.1);
   --destructive: oklch(0.704 0.191 22.216);
@@ -567,36 +612,74 @@ h1, h2, h3, h4, h5, h6 {
    GLOBAL SCROLLBAR STYLES (DARK/LIGHT AWARE)
    ============================================ */
 
-* {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent) transparent;
+/* Firefox: native thin scrollbar without buttons */
+@supports (-moz-appearance: none) {
+  *,
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent) transparent;
+  }
 }
 
-*::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Chromium / WebKit (Chrome, Edge, Safari): Custom styled scrollbar with NO arrow buttons */
+*::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-*::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
 
-*::-webkit-scrollbar-thumb {
-  background-color: color-mix(in oklab, var(--muted-foreground) 30%, transparent);
-  border-radius: 10px;
+*::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
+  border-radius: 9999px;
 }
 
-*::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
 }
 
-*::-webkit-scrollbar-corner {
+/* Completely remove top/bottom scrollbar arrows in WebKit */
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button:single-button,
+*::-webkit-scrollbar-button:vertical:decrement,
+*::-webkit-scrollbar-button:vertical:increment,
+*::-webkit-scrollbar-button:horizontal:decrement,
+*::-webkit-scrollbar-button:horizontal:increment,
+.custom-scrollbar::-webkit-scrollbar-button,
+.custom-scrollbar::-webkit-scrollbar-button:single-button,
+.custom-scrollbar::-webkit-scrollbar-button:vertical:decrement,
+.custom-scrollbar::-webkit-scrollbar-button:vertical:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-corner,
+.custom-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
 }
 
 /* Fix react-resizable handle in dark mode */
 .dark .react-resizable-handle {
   filter: invert(1) hue-rotate(180deg) opacity(0.8);
+}
+
+/* Smooth react-grid-layout transitions: only animate transform to eliminate bounce/lag on container resize */
+.react-grid-layout {
+  transition: none !important;
+}
+.react-grid-item {
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform !important;
 }
 
 /* Apps Popover Custom Scrollbar using Radix ScrollArea */
@@ -608,6 +691,20 @@ h1, h2, h3, h4, h5, h6 {
 [data-radix-scroll-area-viewport] {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+}
+
+/* Global Radix ScrollArea styling */
+[data-slot="scroll-area-scrollbar"] {
+  width: 8px !important;
+  background: transparent !important;
+}
+[data-slot="scroll-area-thumb"] {
+  background-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) !important;
+  border-radius: 9999px !important;
+  transition: background-color 150ms ease;
+}
+[data-slot="scroll-area-thumb"]:hover {
+  background-color: color-mix(in oklab, var(--muted-foreground) 55%, transparent) !important;
 }
 
 .apps-radix-scroll [data-slot="scroll-area-scrollbar"],

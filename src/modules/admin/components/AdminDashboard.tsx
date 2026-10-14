@@ -5,17 +5,19 @@ import { useTranslations } from "next-intl";
 import { AdminFakeService } from "../services/admin.fake.service";
 import { User, PendingRequest } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
-import { Plus, ShieldAlert, Settings } from "lucide-react";
+import { ShieldAlert, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { NAVIGATION } from "@/config/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { AppHeader } from "@/components/layout/app-header";
 
 import { AdminSidebar } from "./AdminSidebar";
-import { AdminHeader } from "./AdminHeader";
 import { AdminProfileStats } from "./AdminProfileStats";
 import { AdminTasksTime } from "./AdminTasksTime";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserConfig } from "./AdminUserConfig";
+import { AdminUsersTable } from "./AdminUsersTable";
 
 export function AdminDashboard() {
   const t = useTranslations("Admin");
@@ -25,10 +27,9 @@ export function AdminDashboard() {
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'add' | 'requests' | 'settings'>('home');
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'settings'>('home');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -46,7 +47,6 @@ export function AdminDashboard() {
     setLoading(false);
   };
 
-  const adminUser = users.find((u) => u.role === "admin");
   const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
 
   const handleToggleModuleAccess = (moduleId: string, checked: boolean) => {
@@ -119,105 +119,111 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen w-full bg-background p-0 m-0 font-sans rtl">
-      <div className="flex w-full h-full bg-card rounded-none border-none shadow-none overflow-hidden relative">
-        
+    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+      {/* Top Header */}
+      <AppHeader
+        tag={t("title")}
+        onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
+        isMenuOpen={sidebarOpen}
+        logoHref="/"
+        position="absolute"
+      />
+
+      <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
+        {/* Sidebar Navigation */}
         <AdminSidebar 
-          isSidebarExpanded={isSidebarExpanded}
-          setIsSidebarExpanded={setIsSidebarExpanded}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          adminUser={adminUser}
         />
 
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-          
-          <AdminHeader 
-            users={users}
-            selectedUser={selectedUser}
-            setSelectedUser={setSelectedUser}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            setActiveTab={setActiveTab}
-            activeTab={activeTab}
-          />
-
-          <div className="flex-1 overflow-hidden px-8 pb-8 pt-4 scrollbar-hide">
-            {loading ? (
-              <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
-                <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
-                <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
-                <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
-              </div>
-            ) : activeTab === 'home' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
-                
-                {selectedUser && (
-                  <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
-                    <AdminProfileStats selectedUser={selectedUser} />
-                  </div>
-                )}
-                
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 p-4 sm:p-6 lg:p-8">
+          {loading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
+              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
+              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
+              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
+            </div>
+          ) : activeTab === 'home' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
+              
+              {selectedUser && (
                 <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
-                  <AdminTasksTime 
-                    selectedUser={selectedUser}
-                    users={users}
-                    setUsers={setUsers}
-                    setSelectedUser={setSelectedUser}
-                  />
+                  <AdminProfileStats selectedUser={selectedUser} />
                 </div>
-
-                <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
-                  <AdminHeatmapModules 
-                    selectedUser={selectedUser}
-                    availableModules={availableModules}
-                    tMenu={tMenu}
-                    handleToggleModuleAccess={handleToggleModuleAccess}
-                    handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-                  />
-                </div>
-
+              )}
+              
+              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
+                <AdminTasksTime 
+                  selectedUser={selectedUser}
+                  users={users}
+                  setUsers={setUsers}
+                  setSelectedUser={setSelectedUser}
+                />
               </div>
-            ) : null}
 
-            {!loading && activeTab === 'add' && (
-              <AdminUserConfig 
-                selectedUser={selectedUser}
-                users={users}
-                setUsers={setUsers}
-                setSelectedUser={setSelectedUser}
-                availableModules={availableModules}
-                tMenu={tMenu}
-                handleToggleModuleAccess={handleToggleModuleAccess}
-                handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-              />
-            )}
-
-            {!loading && activeTab === 'requests' && (
-              <div className="flex items-center justify-center h-full">
-                <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
-                  <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <ShieldAlert size={32} />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-2">{t("tabReqTitle")}</h2>
-                  <p className="text-muted-foreground mb-8">{t("tabReqDesc")}</p>
-                </div>
+              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
+                <AdminHeatmapModules 
+                  selectedUser={selectedUser}
+                  availableModules={availableModules}
+                  tMenu={tMenu}
+                  handleToggleModuleAccess={handleToggleModuleAccess}
+                  handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                />
               </div>
-            )}
 
-            {!loading && activeTab === 'settings' && (
-              <div className="flex items-center justify-center h-full">
-                <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
-                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Settings size={32} />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-2">{t("tabSettingsTitle")}</h2>
-                  <p className="text-muted-foreground mb-8">{t("tabSettingsDesc")}</p>
+            </div>
+          ) : null}
+
+          {!loading && activeTab === 'usersTable' && (
+            <AdminUsersTable 
+              users={users}
+              setUsers={setUsers}
+              selectedUser={selectedUser}
+              setSelectedUser={setSelectedUser}
+              setActiveTab={setActiveTab}
+            />
+          )}
+
+          {!loading && activeTab === 'add' && (
+            <AdminUserConfig 
+              selectedUser={selectedUser}
+              users={users}
+              setUsers={setUsers}
+              setSelectedUser={setSelectedUser}
+              availableModules={availableModules}
+              tMenu={tMenu}
+              handleToggleModuleAccess={handleToggleModuleAccess}
+              handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+            />
+          )}
+
+          {!loading && activeTab === 'requests' && (
+            <div className="flex items-center justify-center h-full">
+              <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
+                <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <ShieldAlert size={32} />
                 </div>
+                <h2 className="text-2xl font-bold mb-2">{t("tabReqTitle")}</h2>
+                <p className="text-muted-foreground mb-8">{t("tabReqDesc")}</p>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
+          )}
+
+          {!loading && activeTab === 'settings' && (
+            <div className="flex items-center justify-center h-full">
+              <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
+                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Settings size={32} />
+                </div>
+                <h2 className="text-2xl font-bold mb-2">{t("tabSettingsTitle")}</h2>
+                <p className="text-muted-foreground mb-8">{t("tabSettingsDesc")}</p>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

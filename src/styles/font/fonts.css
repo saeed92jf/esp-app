@@ -359,3 +359,65 @@
   font-style: italic;
   font-display: swap;
 }
+
+/* ============================================
+   Anta Font (public/fonts/Anta)
+   ============================================ */
+@font-face {
+  font-family: 'Anta';
+  src: url('/fonts/Anta/Anta-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   Righteous Font (public/fonts/Righteous)
+   ============================================ */
+@font-face {
+  font-family: 'Righteous';
+  src: url('/fonts/Righteous/Righteous-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Explicit Utility Classes */
+.font-anta {
+  font-family: 'Anta', sans-serif;
+}
+
+.font-righteous {
+  font-family: 'Righteous', cursive, sans-serif;
+}
+
+/* ============================================
+   Latin Modern Math Font (public/fonts/LatinModernMath)
+   Traditional LaTeX Mathematical Serif Typesetting
+   ============================================ */
+@font-face {
+  font-family: 'LatinModernMath';
+  src: url('/fonts/LatinModernMath/latinmodern-math.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ============================================
+   Noto Sans Math Font (public/fonts/NotoSansMath)
+   ============================================ */
+@font-face {
+  font-family: 'NotoSansMath';
+  src: url('/fonts/NotoSansMath/NotoSansMath-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-math-latin {
+  font-family: 'LatinModernMath', 'NotoSansMath', 'Cambria Math', 'Times New Roman', serif;
+}
+
+.font-math-noto {
+  font-family: 'NotoSansMath', 'LatinModernMath', sans-serif;
+}

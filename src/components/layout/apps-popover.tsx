@@ -13,6 +13,8 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { AppIcon } from "@/components/ui/app-icon";
 import { IconGradients } from "@/components/ui/icon-gradients";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 
 export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassName?: string; iconClassName?: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +24,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
   const { user } = useAuth();
   const t = useTranslations("Menu");
   const tItems = useTranslations("Menu.items");
+  const tHeader = useTranslations("Header");
   const locale = useLocale();
   const dir = locale === "fa" ? "rtl" : "ltr";
 
@@ -92,11 +95,25 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
       }
     }}>
       <IconGradients />
-      <PopoverTrigger asChild>
-        <Button ref={triggerRef} variant="ghost" size="icon" className={cn("rounded-full text-zinc-700 dark:text-zinc-300 hover:text-foreground hover:bg-muted hidden sm:inline-flex size-8 sm:size-10", triggerClassName)}>
-          <Grip className={cn("size-4 sm:size-5", iconClassName)} />
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                ref={triggerRef}
+                variant="ghost"
+                size="icon"
+                className={cn("hidden sm:inline-flex", triggerClassName || HEADER_ICON_BUTTON_CLASS)}
+              >
+                <Grip className={cn(iconClassName || HEADER_ICON_CLASS)} />
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={8}>
+            {tHeader("apps")}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
       <PopoverAnchor className={cn("fixed top-[72px] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-4 sm:left-6" : "right-4 sm:right-6")} />
       

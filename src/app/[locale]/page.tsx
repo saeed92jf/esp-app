@@ -8,7 +8,7 @@ import { HomeClient } from "@/modules/home/components/home-client";
  */
 export default function HomePage() {
   return (
-    <div className="mx-auto w-full max-w-full px-4 py-10">
+    <div className="w-full max-w-full h-[var(--home-height,calc(100dvh-var(--header-height)-var(--footer-height)))] max-h-[var(--home-height,calc(100dvh-var(--header-height)-var(--footer-height)))] overflow-hidden">
       <HomeClient />
     </div>
   );

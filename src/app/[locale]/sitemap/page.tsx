@@ -9,7 +9,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: string
 
 export default function SitemapPage() {
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[64px] z-10 bg-background">
+    <div className="fixed inset-x-0 bottom-0 top-[var(--header-height)] z-10 bg-background">
       <SitemapClient />
     </div>
   );

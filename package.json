@@ -11,7 +11,13 @@
     "start": "next start -H 0.0.0.0 -p 4000",
     "start:local": "next start -p 4000",
     "lint": "eslint",
-    "clean": "rimraf .next"
+    "clean": "rimraf .next",
+    "test": "playwright test",
+    "test:ui": "playwright test",
+    "test:watch": "tsx scripts/test-scheduler.ts --watch",
+    "test:schedule": "tsx scripts/test-scheduler.ts --schedule",
+    "test:quick": "tsx scripts/test-scheduler.ts --quick",
+    "test:report": "playwright show-report test-results/playwright-report"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -37,6 +43,7 @@
     "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.2",
+    "@types/leaflet": "^1.9.22",
     "@xyflow/react": "^12.11.1",
     "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
@@ -56,6 +63,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "katex": "^0.17.0",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.17.0",
     "markmap-lib": "^0.18.12",
     "markmap-view": "^0.18.12",
@@ -90,6 +98,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/dagre": "^0.7.54",
     "@types/jsonwebtoken": "^9.0.10",
@@ -106,6 +115,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   },
   "engines": {

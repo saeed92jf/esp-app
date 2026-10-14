@@ -9,6 +9,11 @@
       "subtitle": "Powerful tools to help you work smarter, not harder.",
       "searchPlaceholder": "Search"
     },
+    "guestTabs": {
+      "lastModule": "Our Last Module",
+      "tryFreeModules": "Explore Modules",
+      "didYouKnow": "Did You Know?"
+    },
     "quickAccess": {
       "customize": "Customize Shortcuts",
       "customizeLabel": "Customize Quick Access",
@@ -22,6 +27,44 @@
       "cancel": "Cancel",
       "save": "Save"
     },
+    "didYouKnow": {
+      "eyebrow": "Engineering & Industrial Insights",
+      "title": "Did You Know?",
+      "subtitle": "Fascinating scientific insights, ASME standards, and fluid mechanics principles.",
+      "prev": "Previous Insight",
+      "next": "Next Insight",
+      "readMore": "Learn More",
+      "cards": {
+        "card1": {
+          "category": "Pressure Vessel Mechanics",
+          "tag": "ASME Design",
+          "title": "Why do cylindrical pipes and vessels always rupture longitudinally?",
+          "description": "In thin-walled cylindrical shells, circumferential (hoop) stress is exactly twice the longitudinal stress. When internal pressure exceeds limits, the vessel invariably bursts along its length rather than circumference!",
+          "formula": "σ_hoop = 2 × σ_long = (P × D) / (2 × t)"
+        },
+        "card2": {
+          "category": "Fluid Dynamics & Separation",
+          "tag": "Vortex Dynamics",
+          "title": "98% particulate separation achieved with zero moving parts!",
+          "description": "Industrial hydrocyclones transform fluid pressure into extreme rotational velocity, generating centrifugal accelerations thousands of times greater than gravity to separate dense solids within milliseconds.",
+          "formula": "F_c = m × v² / r ≫ F_gravity"
+        },
+        "card3": {
+          "category": "Thermodynamics & Multiphase Flow",
+          "tag": "Cavitation Dynamics",
+          "title": "Cavitation: when microscopic vapor bubbles pit hardened steel!",
+          "description": "When local pressure drops below saturation vapor pressure, microbubbles form and violently collapse upon entering higher pressure zones. The resulting micro-jets exceed 1,000 atmospheres, eroding titanium impellers.",
+          "formula": "P_collapse > 10,000 bar | T_peak ≈ 5,000 K"
+        },
+        "card4": {
+          "category": "Materials Science & Heat Transfer",
+          "tag": "Nanofluids",
+          "title": "Regime transitions and 40% thermal conductivity surges via nanofluids",
+          "description": "Re ≈ 2300 marks the onset of turbulent flow. Suspending less than 1% volumetric concentration of metallic oxide nanoparticles can elevate heat exchanger transfer coefficients by up to 40% with minimal viscosity penalty.",
+          "formula": "Re = (ρ × v × D) / μ | k_nano > 1.4 × k_base"
+        }
+      }
+    },
     "stats": {
       "clients": "Happy Clients",
       "projects": "Successful Projects",
@@ -34,6 +77,44 @@
       "subtitle": "Pick a category to explore.",
       "all": "All",
       "explore": "Explore"
+    },
+    "freeBanners": {
+      "title": "Platform Modules & Tools",
+      "subtitle": "Explore free, advanced, and engineering specialized suites of ESP.",
+      "badges": {
+        "free": "Free",
+        "accountRequired": "Account Required",
+        "accessRequired": "Access Required"
+      },
+      "launch": "Launch Module",
+      "prev": "Previous slide",
+      "next": "Next slide",
+      "modules": {
+        "espFlow": {
+          "title": "ESP-Flow Studio",
+          "tagline": "Visual Node-Based Process Modeler",
+          "description": "Interactive visual engineering environment for mapping process logic, data flows, and industrial algorithms directly in your browser.",
+          "chip1": "Drag & Drop Canvas",
+          "chip2": "Real-Time Node Links",
+          "chip3": "Zero Installation"
+        },
+        "vesselWeight": {
+          "title": "Weight-Flow Calculator",
+          "tagline": "Pressure Vessel Engineering Suite",
+          "description": "Precise mechanical calculation and weight estimation for ASME pressure vessels, shells, dished heads, nozzles, and structural materials.",
+          "chip1": "ASME Standards",
+          "chip2": "Shells & Dished Heads",
+          "chip3": "Instant Weight Estimation"
+        },
+        "aparatAcademy": {
+          "title": "ESP Video Academy",
+          "tagline": "Industrial & Technical Video Hub",
+          "description": "Comprehensive video tutorials, software walkthroughs, industrial design courses, and recorded technical webinars with instant streaming.",
+          "chip1": "HD Video Tutorials",
+          "chip2": "Engineering Guides",
+          "chip3": "Free Instant Streaming"
+        }
+      }
     },
     "newsletter": {
       "title": "Stay in the loop",

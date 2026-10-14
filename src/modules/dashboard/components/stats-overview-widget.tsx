@@ -118,7 +118,7 @@ export function StatsOverviewWidget({
   };
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300">
       {/* Header */}
       <div className="px-4 py-3 flex items-center justify-between w-full">
         <div className="flex items-center gap-2 flex-wrap pe-12">
@@ -138,10 +138,10 @@ export function StatsOverviewWidget({
           <button 
             onClick={handleToggleEditing}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition-all ms-2",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-2",
               isEditing 
-                ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-md shadow-primary/20" 
-                : "bg-muted/30 hover:bg-muted/60 text-muted-foreground border-border/50 hover:text-foreground"
+                ? "border-primary/40 bg-white dark:bg-card text-primary ring-1 ring-primary/20" 
+                : "border-border/50 bg-white dark:bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
             )}
           >
             {isEditing ? <Check className="size-3" /> : <Edit3 className="size-3" />}

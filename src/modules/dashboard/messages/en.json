@@ -52,6 +52,7 @@
     }
   },
   "Dashboard": {
+    "title": "Dashboard",
     "statsOverview": "Stats Overview",
     "selectStats": "Select Cards",
     "greeting": "Welcome, {name}",
@@ -137,6 +138,17 @@
         "all": "All"
       },
       "empty": "No upcoming events",
+      "emptyTitle": "No events found for this period",
+      "emptyDesc": "No events match the selected date or current filter criteria.",
+      "filtersLabel": "Filters",
+      "selectedDateLabel": "Selected date:",
+      "viewMonth": "View full month",
+      "clearFilters": "Clear filters",
+      "quickAddEvent": "New event",
+      "upcomingNearby": "Upcoming events:",
+      "suggestions": "Smart Suggestions",
+      "viewUpcomingFairs": "View all upcoming exhibitions",
+      "fairsSuggestionTitle": "Specialized & International Exhibitions",
       "addPlaceholder": "New event",
       "add": "Add",
       "eventsCount": "{count} events found",

@@ -1,0 +1,22 @@
+/* ============================================
+   LAYOUT TOKENS - CSS Variables & Tailwind Theme
+   Centralized dimensions for Header, Footer, and Home Viewport
+   ============================================ */
+
+:root {
+  --header-height: 4rem;      /* 64px - AppHeader standard height */
+  --footer-height: 2.75rem;   /* 44px - sm:h-11 Footer standard height */
+  --home-height: calc(100dvh - var(--header-height) - var(--footer-height));
+}
+
+@media (max-width: 639px) {
+  :root {
+    --footer-height: 2.5rem;  /* 40px - h-10 Footer mobile height */
+  }
+}
+
+@theme {
+  --spacing-header: var(--header-height);
+  --spacing-footer: var(--footer-height);
+  --spacing-home: var(--home-height);
+}

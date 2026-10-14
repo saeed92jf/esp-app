@@ -1,9 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
 import { UserProfile } from "../types/profile";
+
+const LocationPickerMap = dynamic(
+  () => import("./location-picker-map"),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-80 bg-muted/40 rounded-2xl border border-border/50 flex flex-col items-center justify-center gap-2 animate-pulse">
+        <span className="size-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+);
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -24,14 +37,18 @@ import { SettingsSection } from "@/components/layout/settings-section";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
+import { AppHeader } from "@/components/layout/app-header";
 import { useTheme } from "next-themes";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
 import { PRIMARY_COLORS } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { Combobox } from "@/components/ui/combobox";
-import { AppsPopover } from "@/components/layout/apps-popover";
-import { HelpPopover } from "@/components/layout/help-popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Cog,
   Wrench,
@@ -263,7 +280,7 @@ export function ProfilePage() {
           }}
         />
         {/* Avatar Core */}
-        <div className="relative z-10 bg-background rounded-full p-0.5 shadow-sm transition-shadow">
+        <div className="relative z-10 bg-white dark:bg-card rounded-full p-0.5 shadow-sm transition-shadow">
           <Avatar className="size-24 sm:size-32">
             <AvatarFallback className="text-6xl sm:text-7xl font-bold bg-zinc-800 dark:bg-zinc-700 text-white">{initial}</AvatarFallback>
           </Avatar>
@@ -271,7 +288,7 @@ export function ProfilePage() {
 
         <motion.button 
           onClick={() => { setActiveTab("personal"); setEditingField("picture"); }}
-          className="absolute bottom-1 -end-1 sm:bottom-2 sm:-end-2 z-20 size-8 sm:size-10 bg-background border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground shadow-sm transition-colors cursor-pointer"
+          className="absolute bottom-1 -end-1 sm:bottom-2 sm:-end-2 z-20 size-8 sm:size-10 bg-white dark:bg-card border border-border rounded-full flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground shadow-sm transition-colors cursor-pointer"
           variants={{
             rest: { scale: 1 },
             hover: { scale: 1.1 }
@@ -296,7 +313,7 @@ export function ProfilePage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search")} 
-            className="w-full ps-12 rtl:pr-12 rtl:pl-4 text-start rtl:text-right h-14 rounded-full bg-background border-border shadow-sm text-base focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 transition-all hover:shadow-md"
+            className="w-full ps-12 rtl:pr-12 rtl:pl-4 text-start rtl:text-right h-14 rounded-full bg-white dark:bg-card border border-border/80 shadow-sm text-base focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 transition-all hover:shadow-md"
             dir="auto"
           />
         </div>
@@ -307,7 +324,7 @@ export function ProfilePage() {
         <Button
           variant="outline"
           onClick={() => { setActiveTab("personal"); setEditingField("name"); }}
-          className="rounded-full px-5 h-10 border-border/60 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
+          className="rounded-full px-5 h-10 bg-white dark:bg-card border border-border/70 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
         >
           <span dir="auto" className="flex items-center gap-2">
             <UserPh className="size-4 text-muted-foreground" />
@@ -318,7 +335,7 @@ export function ProfilePage() {
         <Button
           variant="outline"
           onClick={() => setActiveTab("skills")}
-          className="rounded-full px-5 h-10 border-border/60 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
+          className="rounded-full px-5 h-10 bg-white dark:bg-card border border-border/70 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
         >
           <span dir="auto" className="flex items-center gap-2">
             <SparklePh className="size-4 text-muted-foreground" />
@@ -329,7 +346,7 @@ export function ProfilePage() {
         <Button
           variant="outline"
           onClick={() => { setActiveTab("settings"); setEditingField("primaryColor"); }}
-          className="rounded-full px-5 h-10 border-border/60 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
+          className="rounded-full px-5 h-10 bg-white dark:bg-card border border-border/70 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
         >
           <span dir="auto" className="flex items-center gap-2">
             <Palette className="size-4 text-muted-foreground" />
@@ -373,8 +390,7 @@ export function ProfilePage() {
                       <div className={cn("relative z-10 w-full h-full flex items-center justify-center", preset.colorClass)}>
                         <Icon className="size-6 sm:size-8" weight="duotone" />
                       </div>
-                      {/* GPU Hover Span (placed after to be on top of the opaque background) */}
-                      <span className="absolute inset-0 z-20 bg-foreground/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-hover:duration-[50ms] pointer-events-none" aria-hidden="true" />
+                      <span className="absolute inset-0 z-20 bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" aria-hidden="true" />
                     </button>
                   );
                 })}
@@ -462,21 +478,53 @@ export function ProfilePage() {
           description = t("descriptions.addressEdit");
           content = (
             <div className="space-y-6 max-w-2xl">
-               <div className="space-y-2">
-                 <Label htmlFor="address" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.address")}</Label>
-                 <Input id="address" value={formData.personal.address} onChange={(e) => handleChange("personal", "address", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" autoFocus />
-               </div>
-               {/* Map Placeholder */}
-               <div className="w-full h-48 bg-muted/50 border border-border/50 rounded-2xl mt-4 flex items-center justify-center relative overflow-hidden">
-                 <Map className="size-8 text-muted-foreground/30 absolute" />
-                 <div className="absolute inset-0 bg-[url('https://maps.gstatic.com/tactile/map_monk/map_water_pattern.png')] opacity-10 mix-blend-multiply"></div>
-                 <div className="z-10 flex flex-col items-center gap-2">
-                   <div className="flex gap-2">
-                     <Button size="sm" className="rounded-full shadow-md font-medium" disabled>{t("actions.chooseOnMap")}</Button>
-                     <Button size="sm" variant="secondary" className="rounded-full shadow-md font-medium bg-background text-foreground" disabled>{t("actions.remove")}</Button>
-                   </div>
-                 </div>
-               </div>
+              <div className="space-y-2">
+                <Label htmlFor="address" className="rtl:text-right block font-medium text-muted-foreground">
+                  {t("fields.address")}
+                </Label>
+                <Input 
+                  id="address" 
+                  value={formData.personal.address} 
+                  onChange={(e) => handleChange("personal", "address", e.target.value)} 
+                  className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                  placeholder={t("actions.searchOnMap")}
+                  autoFocus 
+                />
+              </div>
+
+              {/* Real Interactive Location Picker Map */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="size-4 text-primary" />
+                    <span className="text-xs font-semibold text-foreground/90">
+                      {t("actions.chooseOnMap")}
+                    </span>
+                  </div>
+                  {formData.personal.address && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleChange("personal", "address", "")}
+                      className="h-7 px-2.5 text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg gap-1"
+                    >
+                      <Trash className="size-3" />
+                      <span>{t("actions.remove")}</span>
+                    </Button>
+                  )}
+                </div>
+
+                <LocationPickerMap
+                  initialAddress={formData.personal.address}
+                  onLocationSelect={(_lat, _lng, address) => {
+                    handleChange("personal", "address", address);
+                  }}
+                  onRemove={() => {
+                    handleChange("personal", "address", "");
+                  }}
+                />
+              </div>
             </div>
           );
           break;
@@ -494,7 +542,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{description}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
                {content}
 
                <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
@@ -518,10 +566,10 @@ export function ProfilePage() {
           
           {/* Profile Picture */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('picture')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Camera className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
@@ -536,10 +584,10 @@ export function ProfilePage() {
 
           {/* Name */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('name')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.name")}</span>
@@ -552,10 +600,10 @@ export function ProfilePage() {
 
           {/* National ID */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('nationalId')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Fingerprint className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.nationalId")}</span>
@@ -568,10 +616,10 @@ export function ProfilePage() {
 
           {/* Birthday */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('birthDate')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.birthDate")}</span>
@@ -584,10 +632,10 @@ export function ProfilePage() {
 
           {/* Email */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('email')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Mail className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.email")}</span>
@@ -600,10 +648,10 @@ export function ProfilePage() {
 
           {/* Phone */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('phone')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Phone className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
@@ -616,10 +664,10 @@ export function ProfilePage() {
 
           {/* Address */}
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('address')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <MapPin className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.address")}</span>
@@ -667,7 +715,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.organizational")}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
                 <div className="space-y-2">
                   <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
@@ -700,10 +748,10 @@ export function ProfilePage() {
         
         <div className="segmented-list mb-10">
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('department')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Briefcase className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.department")}</span>
@@ -715,10 +763,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('role')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.role")}</span>
@@ -730,10 +778,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('employeeId')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.employeeId")}</span>
@@ -745,10 +793,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('joinDate')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.joinDate")}</span>
@@ -760,10 +808,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('manager')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.manager")}</span>
@@ -804,7 +852,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.skills")}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
                <div className="space-y-6 max-w-lg">
                  <div className="space-y-2">
                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
@@ -868,12 +916,12 @@ export function ProfilePage() {
               <div 
                 key={skill.id}
                 className={cn(
-                  "bg-background overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]",
-                    /* NOTE: manual span needed if cn() is used */
+                  "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]",
                   roundedClass
                 )}
                 onClick={() => setEditingField('skill_' + skill.id)}
               >
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
                  <div className="flex items-center gap-4 w-1/3">
                     <Star className="size-5 text-muted-foreground shrink-0" />
                     <span className="text-sm font-medium text-foreground truncate">{skill.name}</span>
@@ -894,8 +942,8 @@ export function ProfilePage() {
           })}
           
           <div 
-            className="relative outline-none segmented-item shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px]">
-             <span className="absolute inset-0 bg-muted/40 opacity-0 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+            className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px]">
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
 
              <div className="flex items-center gap-2 text-primary font-medium">
                 <Plus className="size-5 shrink-0" />
@@ -939,7 +987,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.insurance")}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
                 <div className="space-y-2">
                   <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
@@ -971,10 +1019,10 @@ export function ProfilePage() {
         
         <div className="segmented-list mb-10">
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('provider')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Shield className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.provider")}</span>
@@ -986,10 +1034,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('type')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Activity className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.type")}</span>
@@ -1001,10 +1049,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('insuranceCode')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.insuranceCode")}</span>
@@ -1016,10 +1064,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('validUntil')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.validUntil")}</span>
@@ -1066,7 +1114,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.education")}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
                 <div className="space-y-2">
                   <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
@@ -1098,10 +1146,10 @@ export function ProfilePage() {
         
         <div className="segmented-list mb-10">
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('degree')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <GraduationCap className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.degree")}</span>
@@ -1113,10 +1161,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('fieldOfStudy')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Activity className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.fieldOfStudy")}</span>
@@ -1128,10 +1176,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('university')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <MapPin className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.university")}</span>
@@ -1143,10 +1191,10 @@ export function ProfilePage() {
           </div>
 
           <div 
-            className="segmented-item shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('graduationYear')}
           >
-             <span className="absolute inset-0 bg-muted/40 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.graduationYear")}</span>
@@ -1190,7 +1238,7 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{tSettings("appearanceDesc")}</p>
             
-            <div className="bg-background border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
                 {editingField === 'primaryColor' && isAdmin && (
                   <div className="flex flex-col gap-3">
@@ -1249,11 +1297,12 @@ export function ProfilePage() {
         <div className="segmented-list mb-10">
           <div 
             className={cn(
-              "bg-background rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]",
+              "segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]",
               isAdmin ? "cursor-pointer group relative outline-none" : "opacity-60 cursor-not-allowed"
             )}
             onClick={() => isAdmin && setEditingField('primaryColor')}
           >
+             {isAdmin && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Palette className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{tSettings("color")}</span>
@@ -1277,83 +1326,98 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-muted/60 font-sans w-full overflow-hidden relative">
-      {/* Top Google-style Header */}
-      <header dir="ltr" className="absolute top-0 left-0 right-0 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 shrink-0 bg-background/50 backdrop-blur-2xl z-40 border-none shadow-none">
-         <div className="flex items-center gap-4">
-           <Button 
-             variant="ghost" 
-             size="icon" 
-             className="md:hidden"
-             onClick={() => setSidebarOpen(!sidebarOpen)}
-           >
-             <Menu className="size-5 text-muted-foreground" />
-           </Button>
-           <div 
-             dir="ltr"
-             className="flex items-center gap-[0.3em] cursor-default select-none transition-colors duration-150 font-semibold italic text-xl sm:text-2xl" 
-             style={{ fontFamily: "'Open Sans', sans-serif" }}
-           >
-             <span className="text-zinc-800 dark:text-zinc-200">esp core</span>
-             <span className="text-primary">account</span>
-           </div>
-         </div>
-         <div className="flex items-center gap-1 sm:gap-2">
-            <ThemeToggle />
-            <LocaleSwitcher />
-            <HelpPopover />
-            <AppsPopover />
-            <div className="ml-2 rtl:mr-2 flex items-center">
-              <DashboardAvatar />
-            </div>
-         </div>
-      </header>
+    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+      {/* Top Header */}
+      <AppHeader
+        tag={t("title")}
+        onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
+        isMenuOpen={sidebarOpen}
+        logoHref="/"
+        position="absolute"
+      />
       
       <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
-        {/* Sidebar Navigation */}
-        <aside className={cn(
-          "w-64 flex flex-col overflow-y-auto py-6 px-3 border-e border-border/40 shrink-0 h-full bg-background absolute md:relative z-30 transition-transform duration-300 ease-in-out",
-          sidebarOpen ? "translate-x-0 rtl:translate-x-0" : "-translate-x-full rtl:translate-x-full md:translate-x-0 md:rtl:translate-x-0"
-        )}>
-          <nav className="flex flex-col gap-1 w-full">
-            {NAV_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setSidebarOpen(false);
-                  }}
-                  className={cn(
-                    "group relative flex items-center gap-4 px-4 py-3.5 rounded-full text-sm font-medium transition-colors duration-200 outline-none",
-                    isActive 
-                      ? "bg-primary/10 text-primary" 
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {!isActive && (
-                    <span className="absolute inset-0 bg-muted/60 rounded-full opacity-0 transition-opacity duration-100 ease-out pointer-events-none" aria-hidden="true" />
-                  )}
-                  <Icon className={cn("size-5 shrink-0 relative z-10", isActive ? "text-primary" : "text-muted-foreground")} />
-                  <span className="relative z-10">{t(item.labelKey)}</span>
-                </button>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Overlay for mobile sidebar */}
+        {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-background/50 backdrop-blur-sm z-20 md:hidden"
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
+            aria-hidden="true"
           />
         )}
 
+        {/* Sidebar Navigation */}
+        <aside className={cn(
+          "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none",
+          "absolute md:relative start-0 top-0",
+          sidebarOpen 
+            ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none" 
+            : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
+        )}>
+          <TooltipProvider delayDuration={150}>
+            <nav className="flex flex-col gap-2.5 w-full items-start">
+              {NAV_ITEMS.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                const label = t(item.labelKey);
+
+                const buttonElement = (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(item.id);
+                    }}
+                    className={cn(
+                      "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
+                      sidebarOpen
+                        ? "w-full h-[42px]"
+                        : "w-[42px] h-[42px]",
+                      isActive 
+                        ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30" 
+                        : "bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60"
+                    )}
+                    aria-label={label}
+                  >
+                    {/* Fixed-Position Icon Wrapper: Dead-center in 42px circle and stays pinned on expand/collapse */}
+                    <div className="aspect-square h-full shrink-0 flex items-center justify-center">
+                      <Icon className={cn("size-5 shrink-0 transition-colors duration-150", isActive ? "text-white" : "text-foreground/60 group-hover:text-foreground")} />
+                    </div>
+
+                    {/* Label: Smooth horizontal expansion & collapse without shifting the icon */}
+                    <span className={cn(
+                      "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none",
+                      isActive ? "font-semibold text-white" : "font-medium text-foreground/75 group-hover:text-foreground",
+                      sidebarOpen
+                        ? "opacity-100 max-w-[170px] pe-4 ps-1.5"
+                        : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
+                    )}>
+                      {label}
+                    </span>
+                  </button>
+                );
+
+                if (!sidebarOpen) {
+                  return (
+                    <Tooltip key={item.id}>
+                      <TooltipTrigger asChild>
+                        {buttonElement}
+                      </TooltipTrigger>
+                      <TooltipContent side={locale === "fa" ? "left" : "right"} className="text-xs font-medium">
+                        {label}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+
+                return buttonElement;
+              })}
+            </nav>
+          </TooltipProvider>
+        </aside>
+
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-muted/60 h-full w-full relative z-10">
+        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :

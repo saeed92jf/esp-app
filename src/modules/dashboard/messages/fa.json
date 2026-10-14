@@ -52,6 +52,7 @@
     }
   },
   "Dashboard": {
+    "title": "داشبورد",
     "statsOverview": "نمای کلی آمارها",
     "selectStats": "انتخاب کارت‌ها",
     "greeting": "خوش آمدید، {name}",
@@ -146,6 +147,17 @@
         "year": "سال"
       },
       "empty": "رویدادی وجود ندارد",
+      "emptyTitle": "رویدادی برای این بازه یافت نشد",
+      "emptyDesc": "برای فیلترهای انتخابی یا این تاریخ رویدادی ثبت نشده است.",
+      "filtersLabel": "فیلترها",
+      "selectedDateLabel": "تاریخ انتخابی:",
+      "viewMonth": "مشاهده کل ماه",
+      "clearFilters": "پاک کردن فیلترها",
+      "quickAddEvent": "ثبت رویداد جدید",
+      "upcomingNearby": "نزدیک‌ترین رویدادها:",
+      "suggestions": "پیشنهادات هوشمند",
+      "viewUpcomingFairs": "مشاهده تمام نمایشگاه‌های پیش‌رو",
+      "fairsSuggestionTitle": "نمایشگاه‌های تخصصی و بین‌المللی",
       "eventsCount": "{count} رویداد یافت شد",
       "fairs": {
         "fair-1": "هشتمین نمایشگاه بین المللی توانمندی های صادراتی جمهوری اسلامی ایران expo iran)به تعویق افتاد)",

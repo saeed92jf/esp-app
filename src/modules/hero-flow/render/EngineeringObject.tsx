@@ -100,6 +100,13 @@ export function EngineeringObject({
   // Manual rotation from slider
   const rotY = (rotation * Math.PI) / 180;
 
+  // Failsafe to fix Canvas aspect ratio on initial load
+  useEffect(() => {
+    const t1 = setTimeout(() => window.dispatchEvent(new Event("resize")), 800);
+    const t2 = setTimeout(() => window.dispatchEvent(new Event("resize")), 1800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
   return (
     <div className="absolute inset-0">
       <Canvas

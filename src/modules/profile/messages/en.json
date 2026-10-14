@@ -1,6 +1,6 @@
 {
   "Profile": {
-    "title": "User Profile",
+    "title": "Account",
     "subtitle": "Manage your personal information and settings",
     "errorLoading": "Error loading profile data",
     "tabs": {
@@ -57,7 +57,14 @@
       "chooseOnMap": "Choose on map",
       "remove": "Remove",
       "uploadPicture": "Upload picture",
-      "removePicture": "Remove picture"
+      "removePicture": "Remove picture",
+      "searchOnMap": "Search address on map...",
+      "myLocation": "My current location",
+      "fetchingAddress": "Fetching address...",
+      "mapHint": "Click on map or drag marker to select location",
+      "expandMap": "Expand map",
+      "collapseMap": "Collapse map",
+      "coordinates": "Coordinates:"
     },
     "search": "Search Profile Account",
     "pills": {

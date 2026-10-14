@@ -10,11 +10,13 @@ import { Check, X, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "motion/react";
 import { IconGradients } from "@/components/ui/icon-gradients";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuickAccessSectionProps {
   className?: string;
   maxItems?: number;
   onEditModeChange?: (editing: boolean) => void;
+  onHydrated?: () => void;
 }
 
 const fadeUp: Variants = {
@@ -26,9 +28,11 @@ export function QuickAccessSection({
   className,
   maxItems = QUICK_ACCESS_MAX,
   onEditModeChange,
+  onHydrated,
 }: QuickAccessSectionProps) {
   const tItems = useTranslations("Menu.items");
   const t = useTranslations("Common");
+  const tHome = useTranslations("Home");
   const [editMode, setEditMode] = useState(false);
 
   const handleToggleEditMode = () => {
@@ -47,6 +51,12 @@ export function QuickAccessSection({
     reset,
     selectedHrefs,
   } = useQuickAccess();
+
+  React.useEffect(() => {
+    if (hydrated) {
+      onHydrated?.();
+    }
+  }, [hydrated, onHydrated]);
 
   return (
     <section
@@ -84,13 +94,10 @@ export function QuickAccessSection({
                 <div
                   key={i}
                   className={cn(
-                    "flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] p-3 sm:p-4 rounded-2xl animate-pulse",
-                    isMobileHidden && "hidden sm:flex"
+                    "w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] p-3 sm:p-4",
+                    isMobileHidden && "hidden sm:block"
                   )}
-                >
-                  <div className="size-10 sm:size-12 rounded-full bg-slate-100 dark:bg-slate-800" />
-                  <div className="mt-2 sm:mt-3 h-3 w-14 rounded-md bg-slate-100 dark:bg-slate-800" />
-                </div>
+                />
               );
             })
           ) : (
@@ -152,16 +159,25 @@ export function QuickAccessSection({
         {/* Customize Toggle Button */}
         {hydrated && (
           <div className="mt-4 w-full flex flex-col items-center">
-            <button
-              onClick={handleToggleEditMode}
-              className="group relative outline-none text-muted-foreground/40 p-1.5 rounded-full flex items-center justify-center transition-colors group-hover:text-foreground"
-              aria-label="Toggle Customize"
-            >
-              <span className="absolute inset-0 rounded-full bg-muted/50 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
-              <div className="relative z-10 flex items-center justify-center pointer-events-none group-hover:text-foreground transition-colors">
-                {editMode ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-              </div>
-            </button>
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleToggleEditMode}
+                    className="group relative outline-none text-muted-foreground/40 p-1.5 rounded-full flex items-center justify-center transition-colors group-hover:text-foreground"
+                    aria-label="Toggle Customize"
+                  >
+                    <span className="absolute inset-0 rounded-full bg-muted/50 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
+                    <div className="relative z-10 flex items-center justify-center pointer-events-none group-hover:text-foreground transition-colors">
+                      {editMode ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4} className="text-xs font-medium shadow-md">
+                  {editMode ? tHome("quickAccess.done") : tHome("quickAccess.customize")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         )}
       </div>

@@ -14,7 +14,6 @@ export type WidgetId =
   | "bourse"
   | "events-manager"
   | "world-clock"
-  | "system-status"
   | "settings";
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -25,56 +24,50 @@ const MIN_SIZES: Record<WidgetId, { minW: number; minH: number }> = {
   commodities: { minW: 3, minH: 6 },
   bourse: { minW: 4, minH: 8 },
   "events-manager": { minW: 6, minH: 10 },
-  "world-clock": { minW: 3, minH: 4 },
-  "system-status": { minW: 3, minH: 4 },
+  "world-clock": { minW: 3, minH: 6 },
   settings: { minW: 2, minH: 4 },
 };
 
 const DEFAULT_LAYOUTS: Layouts = {
   lg: [
-    { i: "events-manager", x: 0, y: 0, w: 12, h: 10 },
-    { i: "world-clock", x: 0, y: 10, w: 6, h: 7 },
-    { i: "system-status", x: 6, y: 10, w: 6, h: 7 },
-    { i: "stats-overview", x: 0, y: 17, w: 12, h: 5 },
-    { i: "commodities", x: 0, y: 22, w: 12, h: 8 },
-    { i: "bourse", x: 0, y: 30, w: 12, h: 10 },
-    { i: "chart", x: 0, y: 40, w: 12, h: 6 },
+    { i: "commodities", x: 0, y: 0, w: 6, h: 8 },
+    { i: "chart", x: 6, y: 0, w: 6, h: 8 },
+    { i: "stats-overview", x: 0, y: 8, w: 12, h: 5 },
+    { i: "events-manager", x: 0, y: 13, w: 12, h: 10 },
+    { i: "world-clock", x: 0, y: 23, w: 12, h: 6 },
+    { i: "bourse", x: 0, y: 29, w: 12, h: 10 },
   ],
   md: [
-    { i: "events-manager", x: 0, y: 0, w: 10, h: 10 },
-    { i: "world-clock", x: 0, y: 10, w: 5, h: 7 },
-    { i: "system-status", x: 5, y: 10, w: 5, h: 7 },
-    { i: "stats-overview", x: 0, y: 17, w: 10, h: 5 },
-    { i: "commodities", x: 0, y: 22, w: 10, h: 8 },
-    { i: "bourse", x: 0, y: 30, w: 10, h: 10 },
-    { i: "chart", x: 0, y: 40, w: 10, h: 6 },
+    { i: "commodities", x: 0, y: 0, w: 5, h: 8 },
+    { i: "chart", x: 5, y: 0, w: 5, h: 8 },
+    { i: "stats-overview", x: 0, y: 8, w: 10, h: 5 },
+    { i: "events-manager", x: 0, y: 13, w: 10, h: 10 },
+    { i: "world-clock", x: 0, y: 23, w: 10, h: 6 },
+    { i: "bourse", x: 0, y: 29, w: 10, h: 10 },
   ],
   sm: [
-    { i: "world-clock", x: 0, y: 0, w: 3, h: 7 },
-    { i: "settings", x: 3, y: 0, w: 3, h: 7 },
-    { i: "stats-overview", x: 0, y: 7, w: 6, h: 7 },
-    { i: "events-manager", x: 0, y: 14, w: 6, h: 12 },
-    { i: "commodities", x: 0, y: 26, w: 6, h: 8 },
-    { i: "bourse", x: 0, y: 34, w: 6, h: 10 },
-    { i: "chart", x: 0, y: 44, w: 6, h: 6 },
+    { i: "commodities", x: 0, y: 0, w: 6, h: 8 },
+    { i: "chart", x: 0, y: 8, w: 6, h: 8 },
+    { i: "stats-overview", x: 0, y: 16, w: 6, h: 6 },
+    { i: "events-manager", x: 0, y: 22, w: 6, h: 12 },
+    { i: "world-clock", x: 0, y: 34, w: 6, h: 6 },
+    { i: "bourse", x: 0, y: 40, w: 6, h: 10 },
   ],
   xs: [
-    { i: "world-clock", x: 0, y: 0, w: 4, h: 7 },
-    { i: "settings", x: 0, y: 7, w: 4, h: 7 },
-    { i: "stats-overview", x: 0, y: 14, w: 4, h: 8 },
-    { i: "events-manager", x: 0, y: 22, w: 4, h: 12 },
-    { i: "commodities", x: 0, y: 34, w: 4, h: 10 },
+    { i: "commodities", x: 0, y: 0, w: 4, h: 9 },
+    { i: "chart", x: 0, y: 9, w: 4, h: 8 },
+    { i: "stats-overview", x: 0, y: 17, w: 4, h: 8 },
+    { i: "events-manager", x: 0, y: 25, w: 4, h: 12 },
+    { i: "world-clock", x: 0, y: 37, w: 4, h: 7 },
     { i: "bourse", x: 0, y: 44, w: 4, h: 12 },
-    { i: "chart", x: 0, y: 56, w: 4, h: 6 },
   ],
   xxs: [
-    { i: "world-clock", x: 0, y: 0, w: 2, h: 7 },
-    { i: "settings", x: 0, y: 7, w: 2, h: 7 },
-    { i: "stats-overview", x: 0, y: 14, w: 2, h: 10 },
-    { i: "events-manager", x: 0, y: 24, w: 2, h: 14 },
-    { i: "commodities", x: 0, y: 38, w: 2, h: 12 },
-    { i: "bourse", x: 0, y: 50, w: 2, h: 14 },
-    { i: "chart", x: 0, y: 64, w: 2, h: 6 },
+    { i: "commodities", x: 0, y: 0, w: 2, h: 10 },
+    { i: "chart", x: 0, y: 10, w: 2, h: 8 },
+    { i: "stats-overview", x: 0, y: 18, w: 2, h: 10 },
+    { i: "events-manager", x: 0, y: 28, w: 2, h: 14 },
+    { i: "world-clock", x: 0, y: 42, w: 2, h: 7 },
+    { i: "bourse", x: 0, y: 49, w: 2, h: 14 },
   ],
 };
 
@@ -96,18 +89,17 @@ const enforceConstraints = (layouts: Layouts): Layouts => {
 const CONSTRAINED_DEFAULT = enforceConstraints(DEFAULT_LAYOUTS);
 
 const DEFAULT_VISIBILITY: Record<WidgetId, boolean> = {
-  "stats-overview": true,
+  "stats-overview": false,
   chart: true,
   commodities: true,
   bourse: true,
   "events-manager": true,
-  "world-clock": true,
-  "system-status": true,
-  settings: true,
+  "world-clock": false,
+  settings: false,
 };
 
-const STORAGE_KEY_LAYOUTS = "dashboard-layouts-v34"; 
-const STORAGE_KEY_VISIBILITY = "dashboard-visibility-v30";
+const STORAGE_KEY_LAYOUTS = "dashboard-layouts-v38"; 
+const STORAGE_KEY_VISIBILITY = "dashboard-visibility-v34";
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 

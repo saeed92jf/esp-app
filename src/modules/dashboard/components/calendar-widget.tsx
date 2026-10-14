@@ -74,9 +74,9 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
   };
 
   return (
-    <div className="bg-transparent px-4 pt-2 pb-4 @sm:px-5 @sm:pt-3 @sm:pb-5 flex flex-col gap-4 h-full">
+    <div className="flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 gap-4 w-full fa-num">
       {/* Header */}
-      <div className="flex items-center gap-2 px-2 pt-2">
+      <div className="flex items-center gap-2 px-1">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <CalendarIcon className="size-5 text-primary" />
         </div>
@@ -84,7 +84,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       </div>
 
       {/* Inline Calendar */}
-      <div className="bg-background/40 rounded-xl border border-border/40 p-3 relative">
+      <div className="bg-white dark:bg-card rounded-2xl border border-border/40 p-2.5 relative shadow-xs">
         <DatePicker
           mode="inline"
           value={selectedDate}
@@ -101,7 +101,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
       </div>
       
       {filteredEvents.length > 0 ? (
-        <ul className="space-y-1.5 flex-1 min-h-[150px] overflow-y-auto pr-1 pb-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <ul className="segmented-list padded-ends flex-1 min-h-[150px] overflow-y-auto pe-1 custom-scrollbar">
           {filteredEvents.map((event) => {
             const typeKey = event.type as keyof typeof TYPE_ICONS;
             const Icon = (TYPE_ICONS[typeKey] || CalendarIcon) as any;
@@ -110,7 +110,7 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
             return (
               <li 
                 key={event.id} 
-                className="flex items-start justify-between gap-3 p-2.5 transition-colors group relative hover:opacity-80"
+                className="segmented-item flex items-start justify-between gap-3 p-2.5 border-none bg-background cursor-pointer group relative"
               >
                 <div className="flex items-start gap-2.5 min-w-0 w-full">
                   <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", colorClass)}>

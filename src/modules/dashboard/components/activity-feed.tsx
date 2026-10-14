@@ -29,20 +29,20 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
   const t = useTranslations('Dashboard.activity');
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center gap-2 px-2 py-3 mb-2 shrink-0">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
+      <div className="flex items-center gap-2 px-1 mb-4 shrink-0">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <Activity className="size-5 text-primary" />
         </div>
         <h3 className="font-semibold text-base text-foreground/80">{t('title')}</h3>
       </div>
-      <ul className="space-y-2 @sm:space-y-3 flex-1 overflow-y-auto pe-1 custom-scrollbar">
-        {items.map((item) => {
+      <ul className="segmented-list padded-ends flex-1 overflow-y-auto pe-1 custom-scrollbar">
+        {items.map((item, index) => {
           const cfg = STATUS_CONFIG[item.status];
           return (
             <li
               key={item.id}
-              className="group flex items-start gap-2 @sm:gap-3 p-2 @sm:p-2.5 rounded-xl hover:bg-muted/40 transition-all duration-300 cursor-default"
+              className="segmented-item flex items-start gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-background cursor-default group border-none"
             >
               {/* Animated status dot */}
               <span className="relative mt-1.5 shrink-0">

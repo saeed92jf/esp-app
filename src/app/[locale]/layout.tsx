@@ -37,10 +37,10 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <PersianDigitsProvider enabled={locale === 'fa'} />
       <HtmlLangSync locale={locale} />
-      <ConditionalHeader />
-      <div className="relative flex flex-col min-h-screen">
+      <div className="relative flex flex-col min-h-dvh">
+        <ConditionalHeader />
         <PremiumGuard>
-          <main className="flex-1 flex flex-col">{children}</main>
+          <main className="flex-1 flex flex-col min-h-0">{children}</main>
         </PremiumGuard>
         <AuthModal />
         <GlobalConfirmModal />

@@ -53,19 +53,15 @@ export function FeatureCard({
     <Link href={href} onClick={handleClick} className={cn("group block h-full", className)}>
       <Card
         className={cn(
-          "relative h-full overflow-hidden shadow-sm",
-          "border border-border/50 transition-[border-color,box-shadow,transform] duration-300 ease-out",
-          "hover:shadow-lg",
-          "motion-reduce:transform-none motion-reduce:transition-none",
+          "relative h-full overflow-hidden shadow-sm border border-border/50",
           borderClassName,
         )}
       >
-        {/* GPU-accelerated background hover layer */}
         {cardBgClassName && (
           <span 
             className={cn(
-              "absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100",
-              cardBgClassName.replace("group-hover:", "")
+              "absolute inset-0 z-0 pointer-events-none",
+              cardBgClassName
             )} 
             aria-hidden="true" 
           />
@@ -82,21 +78,13 @@ export function FeatureCard({
 
         <CardContent className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
           {Icon && (
-            <span
-              className={cn(
-                "flex size-12 items-center justify-center rounded-xl",
-                "ring-1 ring-border/50 transition-all duration-300 ease-out",
-                "group-hover:scale-105 group-hover:ring-0",
-                "motion-reduce:transform-none motion-reduce:transition-none",
-                iconBgClassName ?? "bg-muted",
-              )}
-            >
+            <span className="flex items-center justify-center mb-2 sm:mb-3">
               <Icon
                 className={cn(
-                  "size-6 transition-colors duration-300",
+                  "size-12",
                   iconClassName ?? "text-muted-foreground",
                 )}
-                strokeWidth={2}
+                strokeWidth={1.5}
               />
             </span>
           )}
@@ -114,7 +102,7 @@ export function FeatureCard({
           )}
 
           {cta && (
-            <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 transition-opacity duration-300 ease-out group-hover:opacity-100">
+            <span className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100">
               {cta}
               <ArrowRight className={cn("size-4", isRtl && "rotate-180")} />
             </span>

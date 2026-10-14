@@ -47,7 +47,7 @@ export function BourseWidget() {
   }, [fetchBourse]);
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-2xl shadow-sm border border-border/40 overflow-hidden relative">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl shadow-sm border border-border/40 overflow-hidden relative">
       <div className="flex items-center justify-between p-4 border-b border-border/30 bg-muted/10 shrink-0">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-primary/10 rounded-xl">

@@ -46,4 +46,12 @@ certificates
 /docs/tailwind-v4-cheatsheet.html
 
 # agent
-.agents         
+.agents
+
+# test results & reports
+/playwright-report/
+/test-results/
+
+# graphify cache
+graphify-out/cache/
+graphify-out/2026-*/

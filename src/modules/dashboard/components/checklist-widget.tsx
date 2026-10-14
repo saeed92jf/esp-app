@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations } from "next-intl";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Circle, CheckCircle2, ChevronDown, ChevronUp, X, Plus } from "lucide-react";
 import type { ChecklistItem } from "../services/dashboard.service";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,6 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
   const [tasks, setTasks] = React.useState<ChecklistItem[]>(items || []);
   const [newTaskTitle, setNewTaskTitle] = React.useState("");
   const [newTaskCategory, setNewTaskCategory] = React.useState("");
-  const [isFormVisible, setIsFormVisible] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("all");
 
   const categories = React.useMemo(() => {
@@ -53,6 +52,8 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
       title: newTaskTitle.trim(),
       completed: false,
       category: cat || undefined,
+      createdAt: new Intl.DateTimeFormat('fa-IR').format(new Date()),
+      createdBy: 'user',
     };
     setTasks(prev => [newTask, ...prev]);
     setNewTaskTitle("");
@@ -68,27 +69,19 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
   }, [tasks, activeTab]);
 
   return (
-    <div className="flex flex-col h-full min-h-0 fa-num">
+    <div className="flex flex-col h-full min-h-0 fa-num bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
       
-      {/* Header / Toggle */}
-      <div 
-        className="flex items-center justify-between cursor-pointer select-none group px-2 py-3 mb-2" 
-        onClick={() => setIsFormVisible(!isFormVisible)}
-      >
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-primary/10 rounded-xl shrink-0">
-            <CheckSquare className="size-5 text-primary" />
-          </div>
-          <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("title")}</h3>
+      {/* Header */}
+      <div className="flex items-center gap-2 px-1 mb-4">
+        <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+          <CheckSquare className="size-5 text-primary" />
         </div>
-        <span className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground group-hover:text-foreground">
-          {isFormVisible ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-        </span>
+        <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("title")}</h3>
       </div>
 
       {/* Add Task Form */}
-      {isFormVisible && (
-        <form onSubmit={addTask} className="mb-4 flex flex-col @sm:flex-row items-center gap-2">
+      <form onSubmit={addTask} className="mb-4">
+        <div className="flex flex-col @sm:flex-row items-center gap-2">
           <Input 
             type="text" 
             value={newTaskCategory}
@@ -112,12 +105,13 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
               <Plus className="size-5" />
             </Button>
           </div>
-        </form>
-      )}
+        </div>
+      </form>
 
       {/* Category Tabs */}
-      <div className="flex items-center gap-1.5 mb-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1 relative">
-        <button
+      <motion.div layout className="flex items-center gap-1.5 mb-3 overflow-x-auto custom-scrollbar pb-1 -mx-1 px-1 relative">
+        <motion.button
+          layout
           onClick={() => setActiveTab("all")}
           className={cn(
             "relative px-3 py-1 text-[11px] @sm:text-xs font-semibold whitespace-nowrap transition-colors rounded-full outline-none",
@@ -128,16 +122,18 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
         >
           {activeTab === "all" && (
             <motion.div
+              layout
               layoutId="checklist-category-tab"
               className="absolute inset-0 bg-primary shadow-sm rounded-full"
               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             />
           )}
           <span className="relative z-10">{t('all')}</span>
-        </button>
+        </motion.button>
         
         {categories.map((cat) => (
-          <button
+          <motion.button
+            layout
             key={cat}
             onClick={() => setActiveTab(cat)}
             className={cn(
@@ -161,20 +157,18 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
             >
               <X className="size-3" />
             </span>
-          </button>
+          </motion.button>
         ))}
-      </div>
+      </motion.div>
 
       {filteredTasks && filteredTasks.length > 0 ? (
-        <ul className="space-y-1 @sm:space-y-1.5 flex-1 min-h-0 overflow-y-auto pe-1 custom-scrollbar -ms-4 @sm:-ms-5 @md:-ms-6 ps-4 @sm:ps-5 @md:ps-6">
+        <ul className="segmented-list padded-ends flex-1 min-h-0 overflow-y-auto pe-1 custom-scrollbar pb-2">
           {filteredTasks.map((item) => (
             <li
               key={item.id}
               onClick={() => toggleTask(item.id)}
-              className="group/task relative flex items-center gap-2 @sm:gap-3 p-1.5 @sm:p-2 transition-all duration-300 cursor-pointer z-10"
+              className="segmented-item group/task relative flex items-center gap-2 @sm:gap-3 p-2.5 @sm:p-3 bg-background cursor-pointer z-10 border-none"
             >
-              {/* Background Layer */}
-              <div className="absolute inset-y-0 -start-4 @sm:-start-5 @md:-start-6 end-0 bg-muted/30 group-hover/task:bg-muted/60 rounded-e-full rounded-s-none border-s-4 border-transparent group-hover/task:border-primary -z-10 transition-all duration-300 pointer-events-none" />
               <div className="mt-1 shrink-0 transition-all duration-300 group-hover/task:scale-110">
                 {item.completed ? (
                   <CheckCircle2 className="size-4 @sm:size-5 text-emerald-500" />
@@ -193,6 +187,12 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
                 >
                   {item.title}
                 </p>
+                {(item.createdAt || item.createdBy) && (
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground opacity-60">
+                    {item.createdAt && <span>{item.createdAt}</span>}
+                    {item.createdBy && <span>({item.createdBy})</span>}
+                  </div>
+                )}
               </div>
               <button
                 onClick={(e) => deleteTask(e, item.id)}

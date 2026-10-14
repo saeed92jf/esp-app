@@ -79,8 +79,10 @@ function SettingsDropdown({
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-normal border transition-all duration-150",
-          open ? "border-primary/40 bg-primary/10 text-primary" : "border-border/50 bg-muted/30 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+          "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-normal border shadow-xs transition-colors duration-150",
+          open
+            ? "border-primary/40 bg-white dark:bg-card text-primary ring-1 ring-primary/20"
+            : "border-border/50 bg-white dark:bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
         )}
       >
         <Settings2 className="size-3" />
@@ -210,11 +212,11 @@ export function MarketControlBar({ onRefreshAll, isRefreshing }: MarketControlBa
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      className="shrink-0 flex items-center justify-between flex-wrap gap-3 px-3 py-2 bg-card border border-border/50 rounded-xl w-full"
+      className="shrink-0 flex items-center justify-between flex-wrap gap-2.5 p-1.5 bg-panel dark:bg-card/40 border border-border/50 rounded-xl w-full"
       dir={isFa ? 'rtl' : 'ltr'}
     >
       {/* Active Rate Display */}
-      <div className="flex items-center gap-1.5 text-sm bg-muted/20 border border-border/40 px-3 py-1.5 rounded-lg shrink-0">
+      <div className="flex items-center gap-1.5 text-sm bg-white dark:bg-card border border-border/50 shadow-xs px-3 py-1.5 rounded-md shrink-0">
         <span className="text-muted-foreground text-xs">{isFa ? "نرخ تبدیل دلار به ریال" : "USD to IRR Rate"}:</span>
         <span className="font-bold text-primary fa-num">{rateDisplay} {unit}</span>
         <span className="text-xs text-muted-foreground font-medium ms-1 flex items-center gap-1">

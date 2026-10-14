@@ -19,20 +19,18 @@ export function SourcesWidget({ locale }: { locale: string }) {
   ];
 
   return (
-    <AccordionItem value="sources" className="bg-card rounded-xl border-none overflow-hidden px-4 mb-2">
-      <AccordionTrigger className="hover:no-underline py-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-            <Database className="size-4" />
-          </div>
-          <h3 className="font-semibold text-base text-foreground/80">
+    <AccordionItem value="sources" className="rounded-xl border-none overflow-hidden">
+      <AccordionTrigger className="hover:no-underline py-3">
+        <div className="flex items-center gap-2 px-1">
+          <Database className="size-5 text-muted-foreground" />
+          <h3 className="font-semibold text-sm text-foreground/80">
             {t('reliableStats')}
           </h3>
         </div>
       </AccordionTrigger>
 
       <AccordionContent>
-        <div className="segmented-list pb-2" dir={isFa ? 'rtl' : 'ltr'}>
+        <div className="segmented-list padded-ends pb-2" dir={isFa ? 'rtl' : 'ltr'}>
           {sources.map((s, i) => {
             const Icon = s.icon;
             return (
@@ -45,7 +43,7 @@ export function SourcesWidget({ locale }: { locale: string }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="segmented-item flex items-center gap-3 p-3 border-none bg-background/50 hover:bg-muted/80 text-foreground transition-all duration-200 group w-full no-underline hover:no-underline"
+                className="segmented-item flex items-center gap-3 p-3 border-none bg-background text-foreground transition-all duration-200 group w-full no-underline hover:no-underline"
               >
                 <div className={cn("p-2 rounded-lg", s.bg, s.color)}>
                   <Icon className="size-4" />

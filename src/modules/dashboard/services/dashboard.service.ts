@@ -39,6 +39,8 @@ export interface ChecklistItem {
   title: string;
   completed: boolean;
   category?: string;
+  createdAt?: string;
+  createdBy?: 'admin' | 'user';
 }
 
 export interface DashboardData {
@@ -617,9 +619,9 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
     ],
     calendarEvents: [...REAL_EVENTS],
     checklist: [
-      { id: 'cl1', title: 'Review Q3 Financials', completed: true },
-      { id: 'cl2', title: 'Approve new hires', completed: false },
-      { id: 'cl3', title: 'Update security policies', completed: false }
+      { id: 'cl1', title: 'Review Q3 Financials', completed: true, createdAt: '1402/07/15', createdBy: 'admin' },
+      { id: 'cl2', title: 'Approve new hires', completed: false, createdAt: '1402/07/16', createdBy: 'user' },
+      { id: 'cl3', title: 'Update security policies', completed: false, createdAt: '1402/07/17', createdBy: 'admin' }
     ],
   },
   engineer: {
@@ -666,92 +668,44 @@ const FAKE_DATA: Record<UserRole, DashboardData> = {
 
 export class FakeDashboardService implements IDashboardService {
   async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
-    await wait(400);
     const baseData = { ...(FAKE_DATA[role] ?? FAKE_DATA.customer) };
     const cards = statCards || ['gold', 'gasoline', 'wti', 'btc', 'eur'];
+    
+    // Set default fallback stats so StatsOverviewWidget has the initial shape
+    // (Live data will be overlaid dynamically by StatsOverviewWidget via useCommodities hook)
+    const ALL_STATS_DEFS = [
+      { id: 'gold',     labelKey: 'gold'     },
+      { id: 'silver',   labelKey: 'silver'   },
+      { id: 'copper',   labelKey: 'copper'   },
+      { id: 'aluminum', labelKey: 'aluminum' },
+      { id: 'wti',      labelKey: 'wti'      },
+      { id: 'brent',    labelKey: 'brent'    },
+      { id: 'gasoline', labelKey: 'gasoline' },
+      { id: 'eur',      labelKey: 'eur'      },
+      { id: 'btc',      labelKey: 'btc'      },
+      { id: 'eth',      labelKey: 'eth'      },
+    ];
 
-    // ── Live commodities (Finnhub + Yahoo Finance) ─────────────────────────
-    try {
-      const commRes = await Promise.race([
-        fetch(`/api/commodities?t=${Date.now()}`, { cache: 'no-store' }),
-        new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
-      ]);
+    const allStatsMapped = ALL_STATS_DEFS.map((def) => {
+      return {
+        id: def.id,
+        labelKey: def.labelKey,
+        value: '—',
+        delta: '—',
+        trend: 'neutral',
+        icon: def.id === 'btc' || def.id === 'eth' || def.id === 'eur' ? 'wallet' : 'activity',
+      } as StatCard;
+    });
 
-      if (commRes.ok) {
-        const commData = await commRes.json();
+    baseData.allStats = allStatsMapped;
+    baseData.stats = cards
+      .map((id) => allStatsMapped.find((s) => s.id === id) || null)
+      .filter(Boolean) as StatCard[];
 
-        const ALL_STATS_DEFS = [
-          { id: 'gold',     labelKey: 'gold'     },
-          { id: 'silver',   labelKey: 'silver'   },
-          { id: 'copper',   labelKey: 'copper'   },
-          { id: 'aluminum', labelKey: 'aluminum' },
-          { id: 'wti',      labelKey: 'wti'      },
-          { id: 'brent',    labelKey: 'brent'    },
-          { id: 'gasoline', labelKey: 'gasoline' },
-          { id: 'eur',      labelKey: 'eur'      },
-          { id: 'btc',      labelKey: 'btc'      },
-          { id: 'eth',      labelKey: 'eth'      },
-        ];
-
-        const allStatsMapped = ALL_STATS_DEFS.map((def) => {
-          const item = commData.find((c: any) => c.id === def.id);
-          if (!item || item.error) {
-            return { id: def.id, labelKey: def.labelKey, value: '—', delta: '—', trend: 'neutral', icon: 'activity' } as StatCard;
-          }
-
-          let formattedValue: string;
-          const p = item.price as number;
-          if (p >= 1_000_000) {
-            formattedValue = (p / 1_000_000).toLocaleString('en-US', { maximumFractionDigits: 2 }) + 'M';
-          } else if (p >= 1_000) {
-            formattedValue = p.toLocaleString('en-US', { maximumFractionDigits: 1 });
-          } else if (p >= 1) {
-            formattedValue = p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          } else {
-            formattedValue = p.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
-          }
-
-          const pctRaw = Number(item.percentChange ?? 0);
-          return {
-            id: def.id,
-            labelKey: def.labelKey,
-            value: formattedValue,
-            delta: `${pctRaw >= 0 ? '+' : ''}${pctRaw.toFixed(2)}%`,
-            trend: item.trend || 'neutral',
-            icon: def.id === 'btc' || def.id === 'eth' || def.id === 'eur' ? 'wallet' : 'activity',
-          } as StatCard;
-        });
-
-        baseData.allStats = allStatsMapped;
-        baseData.stats = cards
-          .map((id) => allStatsMapped.find((s) => s.id === id) || null)
-          .filter(Boolean) as StatCard[];
-
-        while (baseData.stats.length < 5 && baseData.stats.length < allStatsMapped.length) {
-          const unused = allStatsMapped.find((s) => !baseData.stats.some((b) => b.id === s.id));
-          if (unused) baseData.stats.push(unused);
-          else break;
-        }
-      }
-    } catch {
-      // Silently use fallback data when APIs are unreachable
-    }
-
-    // ── Live chart (Yahoo Finance) ──────────────────────────────────────────
-    try {
-      const chartRes = await Promise.race([
-        fetch(`/api/chart?source=${chartSource || 'wti'}&t=${Date.now()}`, { cache: 'no-store' }),
-        new Promise<Response>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000)),
-      ]);
-
-      if (chartRes.ok) {
-        const chartData = await chartRes.json();
-        if (chartData && chartData.length > 0) {
-          baseData.chart = chartData;
-        }
-      }
-    } catch {
-      // Silently use fallback chart data
+    while (baseData.stats.length < 5 && baseData.stats.length < allStatsMapped.length) {
+      const unused = allStatsMapped.find((s) => !baseData.stats.some((b) => b.id === s.id));
+      if (unused) baseData.stats.push(unused);
+      else break;
     }
 
     return baseData;

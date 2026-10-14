@@ -112,7 +112,7 @@ export function StatCard({ stat }: { stat: StatCardType }) {
   return (
     <motion.div 
       animate={cardControls}
-      className="relative overflow-hidden rounded-xl border border-border/50 bg-card p-1.5 @[140px]:p-3 @sm:p-4 transition-all duration-300 h-full flex flex-col justify-between group"
+      className="relative overflow-hidden rounded-xl border border-border/50 bg-background p-1.5 @[140px]:p-3 @sm:p-4 transition-all duration-300 h-full flex flex-col justify-between group"
     >
       {/* Decorative blob */}
       <div className="pointer-events-none absolute -end-4 -top-4 h-10 w-10 @[140px]:-end-6 @[140px]:-top-6 @[140px]:h-16 @[140px]:w-16 @sm:h-20 @sm:w-20 rounded-full bg-primary/5 transition-all duration-500 group-hover:scale-110" />

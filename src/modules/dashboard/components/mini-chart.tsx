@@ -152,7 +152,7 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
 
   return (
     <div
-      className="bg-card rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 h-full flex flex-col  "
+      className="bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 h-full flex flex-col"
     >
       <div className="mb-3 @sm:mb-5 flex items-start justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">

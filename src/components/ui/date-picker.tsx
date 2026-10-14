@@ -656,7 +656,7 @@ export function DatePicker({
       </PopoverTrigger>
       <PopoverContent
         className={cn(
-          "w-[315px] p-4 shadow-2xl rounded-2xl bg-gradient-to-br from-card to-card/50 backdrop-blur-xl border border-border/50 z-50",
+          "w-[315px] p-4 shadow-2xl rounded-2xl bg-popover border border-border/50 z-50",
           className
         )}
         align="start"

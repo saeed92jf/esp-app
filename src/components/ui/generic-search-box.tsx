@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, History } from "lucide-react";
+import { Search, X, History, Sparkles } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
@@ -21,6 +22,7 @@ export interface GenericSearchBoxProps<T> {
   onSelect: (item: T) => void;
   onQueryChange?: (query: string) => void;
   onOpenChange?: (open: boolean) => void;
+  showAiModeButton?: boolean;
   showOverallViewButton?: boolean;
   onOverallViewClick?: () => void;
   renderResultsHeader?: (count: number, query: string) => React.ReactNode;
@@ -37,6 +39,7 @@ export function GenericSearchBox<T>({
   onSelect,
   onQueryChange,
   onOpenChange,
+  showAiModeButton,
   showOverallViewButton,
   onOverallViewClick,
   renderResultsHeader,
@@ -226,6 +229,7 @@ export function GenericSearchBox<T>({
   };
 
   const isHistoryPreselected = !showResultsMode && selectedIndex >= 0;
+  const hasAiMode = showAiModeButton ?? showOverallViewButton;
 
   return (
     <div
@@ -239,7 +243,7 @@ export function GenericSearchBox<T>({
       <div
         className={cn(
           "absolute inset-x-0 top-0 select-none transition-all duration-300 z-10",
-          showDropdown ? "rounded-[28px]" : "rounded-full"
+          "rounded-[28px]"
         )}
       >
         {/* Continuous Glow Layer: soft primary blending into deep slate (no hard ring) */}
@@ -288,25 +292,26 @@ export function GenericSearchBox<T>({
             spellCheck="false"
           />
 
-          {showOverallViewButton && query.trim() === "" && (
-            <button
-              type="button"
-              onClick={handleOverallViewScroll}
-              title={t("searchBox.overallView")}
-              aria-label={t("searchBox.overallView")}
-              className="group/overall absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 sm:end-[7px] sm:size-[38px]"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="size-[22px] sm:size-6"
-                aria-hidden="true"
-              >
-                <path d="M11 11 L11 3 A8 8 0 0 0 3 11 Z" className="fill-primary" />
-                <path d="M13 11 L21 11 A8 8 0 0 0 13 3 Z" className="fill-primary/80" />
-                <path d="M11 13 L3 13 A8 8 0 0 0 11 21 Z" className="fill-primary/60" />
-                <path d="M13 13 L13 21 A8 8 0 0 0 21 13 Z" className="fill-primary/40" />
-              </svg>
-            </button>
+          {hasAiMode && query.trim() === "" && (
+            <TooltipProvider delayDuration={0}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-disabled="true"
+                    tabIndex={-1}
+                    aria-label={t("searchBox.aiMode")}
+                    title=""
+                    className="group/ai absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-default items-center justify-center rounded-full text-muted-foreground/60 transition-colors duration-200 hover:text-foreground/80 hover:bg-slate-100 dark:hover:bg-slate-800 sm:end-[7px] sm:size-[38px]"
+                  >
+                    <Sparkles className="size-[20px] sm:size-[22px] stroke-[1.8] text-muted-foreground/75 group-hover/ai:text-primary transition-colors duration-200" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
+                  {t("searchBox.aiMode")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
 
@@ -342,25 +347,35 @@ export function GenericSearchBox<T>({
                         {item}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeHistory(item);
-                        if (selectedIndex === idx) {
-                          setSelectedIndex(-1);
-                        }
-                      }}
-                      title={t("searchBox.removeFromHistory")}
-                      className={cn(
-                        "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#70757a] transition-all hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
-                        isSelected
-                          ? "opacity-100"
-                          : "opacity-0 group-hover/item:opacity-100",
-                      )}
-                    >
-                      <X className="size-3.5 stroke-[2]" />
-                    </button>
+                    <TooltipProvider delayDuration={0}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeHistory(item);
+                              if (selectedIndex === idx) {
+                                setSelectedIndex(-1);
+                              }
+                            }}
+                            aria-label={t("searchBox.removeFromHistory")}
+                            title=""
+                            className={cn(
+                              "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#70757a] transition-all hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
+                              isSelected
+                                ? "opacity-100"
+                                : "opacity-0 group-hover/item:opacity-100",
+                            )}
+                          >
+                            <X className="size-3.5 stroke-[2]" />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
+                          {t("searchBox.removeFromHistory")}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 );
               })}

@@ -78,11 +78,11 @@ export function HiddenWidgetBadge({ label, icon, onShow }: HiddenWidgetBadgeProp
     <button
       type="button"
       onClick={onShow}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50 border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted hover:border-primary/40 transition-all duration-200 text-xs font-medium group"
+      className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/70 dark:bg-card/60 backdrop-blur-sm border border-border/50 text-muted-foreground hover:text-foreground hover:bg-white/95 dark:hover:bg-card/90 hover:border-primary/40 shadow-xs transition-colors duration-150 text-sm font-medium group"
     >
       <span className="text-primary/70 group-hover:text-primary transition-colors">{icon}</span>
       {label}
-      <Eye className="size-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <Eye className="size-4 opacity-0 group-hover:opacity-100 transition-opacity" />
     </button>
   );
 }

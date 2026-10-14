@@ -24,6 +24,7 @@ const WIDGET_META: Record<string, { label: string; labelEn: string; icon: React.
   "engineering-tools": { label: "ابزار مهندسی", labelEn: "Eng Tools",      icon: Wrench },
   "events-manager": { label: "رویدادهای رسمی", labelEn: "Events",         icon: Calendar },
   bourse:    { label: "بورس",              labelEn: "Bourse",         icon: TrendingUp },
+  "world-clock": { label: "ساعت جهانی",    labelEn: "World Clock",    icon: Clock },
 };
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -49,20 +50,25 @@ export function DashboardToolbar({
     <div className="flex items-center justify-between gap-2 flex-wrap min-h-[32px]">
       
       {/* ── Left: hidden widget restore pills ─────── */}
-      <div className="flex-1">
-        <AnimatePresence mode="popLayout">
-          {hiddenWidgets.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="flex items-center gap-2 flex-wrap"
-            >
-              <span className="text-[10px] text-muted-foreground font-medium flex items-center gap-1">
-                <LayoutDashboard className="size-3" />
-                {t("hidden")}:
-              </span>
-              {hiddenWidgets.map((id) => {
+      <div className="flex-1 flex items-center gap-3">
+        <span className="text-sm text-muted-foreground font-semibold flex items-center gap-1.5 shrink-0">
+          <LayoutDashboard className="size-4 text-primary/70" />
+          {t("hidden")}:
+        </span>
+        <div className="flex items-center gap-2 flex-wrap flex-1 min-h-[32px]">
+          <AnimatePresence mode="popLayout">
+            {hiddenWidgets.length === 0 ? (
+              <motion.span
+                key="empty"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                className="text-xs text-muted-foreground/60 italic self-center"
+              >
+                {locale === "fa" ? "موردی مخفی نیست" : "None"}
+              </motion.span>
+            ) : (
+              hiddenWidgets.map((id) => {
                 const meta = WIDGET_META[id];
                 if (!meta) return null;
                 const Icon = meta.icon as any;
@@ -76,15 +82,15 @@ export function DashboardToolbar({
                   >
                     <HiddenWidgetBadge
                       label={locale === "fa" ? meta.label : meta.labelEn}
-                      icon={<Icon className="size-3.5" />}
+                      icon={<Icon className="size-4" />}
                       onShow={() => onShow(id)}
                     />
                   </motion.div>
                 );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              })
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* ── Right: reset button ─────── */}
@@ -93,7 +99,7 @@ export function DashboardToolbar({
         onClick={onReset}
         whileTap={{ scale: 0.97 }}
         title={t("resetDashboard")}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground border border-border/40 hover:border-border/80 hover:bg-muted/40 transition-all duration-200 font-medium shrink-0 ms-auto"
+        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-foreground bg-white/70 dark:bg-card/60 backdrop-blur-sm hover:bg-white/95 dark:hover:bg-card/90 border border-border/50 transition-colors duration-150 font-medium shrink-0 ms-auto shadow-xs"
       >
         <RotateCcw className="size-3" />
         {t("reset")}

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search as SearchIcon, Menu as MenuIcon, Lock } from "lucide-react";
+import { Search as SearchIcon, Lock } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
@@ -75,9 +75,6 @@ export function DashboardMenuSidebar() {
     <div className="bg-transparent p-4 @sm:p-5 flex flex-col gap-3 @sm:gap-4 h-full @container">
       {/* HEADER */}
       <div className="flex items-center gap-2 @sm:gap-3 shrink-0">
-        <div className="p-2 @sm:p-2.5 bg-primary/10 rounded-xl shrink-0">
-          <MenuIcon className="size-4 @sm:size-5 text-primary" />
-        </div>
         <h3 className="font-semibold text-base @sm:text-lg">{tMenu("title")}</h3>
       </div>
 

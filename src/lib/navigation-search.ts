@@ -115,29 +115,7 @@ const BILINGUAL_KEYWORDS: Record<
     descriptionFa: "طراحی و محاسبات جامع مخازن تحت فشار استاندارد ASME",
   },
 
-  "/weight-flow": {
-    en: [
-      "weight flow",
-      "weights",
-      "vessel weight",
-      "center of gravity",
-      "cg",
-      "empty weight",
-      "operating weight",
-      "hydrotest weight",
-    ],
-    fa: [
-      "محاسبه وزن",
-      "توزیع وزن",
-      "مرکز ثقل",
-      "وزن خالی",
-      "وزن عملیاتی",
-      "تست هیدروستاتیک",
-      "هیدروتست",
-    ],
-    descriptionEn: "Vessel Weight, CG & Hydrostatic Test Calculations",
-    descriptionFa: "محاسبات توزیع وزن، مرکز ثقل و تست هیدرواستاتیک مخازن",
-  },
+
   "/standards": {
     en: [
       "standards",

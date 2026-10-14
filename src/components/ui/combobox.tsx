@@ -11,7 +11,7 @@ export interface ComboboxOption { value: string; label: string; triggerLabel?: s
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
-interface ComboboxProps {
+export interface ComboboxProps {
   options: ComboboxOption[];
   value?: string;
   onChange?: (value: string) => void;
@@ -19,6 +19,7 @@ interface ComboboxProps {
   searchPlaceholder?: string;
   emptyText?: string;
   className?: string;
+  popoverClassName?: string;
   showSearch?: boolean;
   searchThreshold?: number;
   disabled?: boolean;
@@ -32,6 +33,7 @@ export function Combobox({
   searchPlaceholder,
   emptyText,
   className,
+  popoverClassName,
   showSearch,
   searchThreshold = COMBOBOX_SEARCH_THRESHOLD,
   disabled,
@@ -60,21 +62,28 @@ export function Combobox({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "group w-full justify-between px-2.5 font-medium bg-white dark:bg-black hover:bg-muted/40 transition-colors",
+            "group w-full justify-between px-2.5 font-medium bg-white dark:bg-card hover:bg-muted/40 transition-colors active:scale-100",
             "rtl:text-right",
             className
           )}
         >
-          <div className="flex items-center gap-2 truncate">
+          <div className="flex items-center gap-2 truncate min-w-0">
             {selected?.icon && <span className="shrink-0 flex items-center justify-center">{selected.icon}</span>}
             <span className={cn("truncate", !selected && !value && "text-muted-foreground")}>{selected ? (selected.triggerLabel || selected.label) : (value || resolvedPlaceholder)}</span>
           </div>
-          <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground">
-            <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-form-primary")} />
+          <span className="ms-1.5 flex size-5 items-center justify-center rounded text-muted-foreground/60 transition-colors group-hover:text-foreground hover:bg-accent/80 hover:text-foreground shrink-0">
+            <ChevronDown className={cn("size-3.5 shrink-0 transition-transform duration-200", open && "rotate-180 text-primary")} />
           </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[--radix-popover-trigger-width] p-0 z-[100]" align="start" dir={isRtl ? "rtl" : "ltr"}>
+      <PopoverContent 
+        className={cn(
+          "w-[--radix-popover-trigger-width] min-w-[140px] p-0 z-[100] rounded-xl border border-border/50 shadow-md data-open:zoom-in-100 data-closed:zoom-out-100",
+          popoverClassName
+        )} 
+        align="start" 
+        dir={isRtl ? "rtl" : "ltr"}
+      >
         <Command>
           {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} className="rtl:text-right" />}
           <CommandList>
@@ -92,16 +101,16 @@ export function Combobox({
                   }} 
                   disabled={opt.disabled}
                   className={cn(
-                    "rtl:text-right w-full flex items-center",
+                    "rtl:text-right w-full flex items-center justify-between gap-2 px-2.5 py-1.5",
                     opt.disabled && "opacity-40 cursor-not-allowed pointer-events-none"
                   )}
                 >
-                  <Check className={cn('ms-auto size-4 shrink-0', value === opt.value ? 'opacity-100' : 'opacity-0')} />
-                  <div className="flex-1 flex items-center gap-2 rtl:text-right">
+                  <div className="flex-1 flex items-center gap-2 rtl:text-right min-w-0">
                     {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
                     <span className="truncate">{opt.label}</span>
                     {opt.hint && <span className="ms-auto text-[10px] text-muted-foreground">{opt.hint}</span>}
                   </div>
+                  <Check className={cn('ms-auto size-3.5 shrink-0 text-primary', value === opt.value ? 'opacity-100' : 'opacity-0')} />
                 </CommandItem>
               ))}
             </CommandGroup>

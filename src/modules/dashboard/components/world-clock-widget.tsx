@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Globe, Settings2, Check } from "lucide-react";
+import { Globe, Edit3, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -22,14 +22,30 @@ export function WorldClockWidget() {
   const locale = useLocale();
   const isFa = locale === "fa";
 
-  const [selectedIds, setSelectedIds] = React.useState<string[]>(["thr", "lon"]);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>(["thr", "lon", "nyc", "bei"]);
   const [isEditing, setIsEditing] = React.useState(false);
   const [now, setNow] = React.useState(new Date());
+  const [timeOffset, setTimeOffset] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
+    fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC")
+      .then(res => res.json())
+      .then(data => {
+        const internetTime = new Date(data.dateTime + "Z").getTime();
+        const localTime = Date.now();
+        setTimeOffset(internetTime - localTime);
+        setNow(new Date(Date.now() + (internetTime - localTime)));
+      })
+      .catch(() => {
+        setTimeOffset(0);
+      });
   }, []);
+
+  React.useEffect(() => {
+    if (timeOffset === null) return;
+    const timer = setInterval(() => setNow(new Date(Date.now() + timeOffset)), 1000);
+    return () => clearInterval(timer);
+  }, [timeOffset]);
 
   const toggleClock = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -37,10 +53,10 @@ export function WorldClockWidget() {
         setSelectedIds(selectedIds.filter((x) => x !== id));
       }
     } else {
-      if (selectedIds.length < 2) {
+      if (selectedIds.length < 4) {
         setSelectedIds([...selectedIds, id]);
       } else {
-        setSelectedIds([selectedIds[1], id]); // Keep the second, replace the first
+        setSelectedIds([...selectedIds.slice(1), id]); // Keep the rest, replace the oldest
       }
     }
   };
@@ -48,26 +64,24 @@ export function WorldClockWidget() {
   const selectedClocks = TIMEZONES.filter((tz) => selectedIds.includes(tz.id));
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between w-full">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-            <Globe className="size-4" />
-          </div>
-          <h3 className="font-semibold text-base text-foreground/80">{t("title")}</h3>
+      <div className="flex items-center gap-2 px-1 mb-2">
+        <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+          <Globe className="size-5 text-primary" />
         </div>
+        <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("title")}</h3>
 
         <button
           onClick={() => setIsEditing(!isEditing)}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition-all ms-2",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-2",
             isEditing
-              ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 shadow-md shadow-primary/20"
-              : "bg-muted/30 hover:bg-muted/60 text-muted-foreground border-border/50 hover:text-foreground"
+              ? "border-primary/40 bg-white dark:bg-card text-primary ring-1 ring-primary/20"
+              : "border-border/50 bg-white dark:bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
           )}
         >
-          {isEditing ? <Check className="size-3" /> : <Settings2 className="size-3" />}
+          {isEditing ? <Check className="size-3" /> : <Edit3 className="size-3" />}
           <span>{isEditing ? t("done") : t("edit")}</span>
         </button>
       </div>
@@ -143,7 +157,7 @@ export function WorldClockWidget() {
                 return (
                   <div
                     key={clock.id}
-                    className="flex-1 w-full bg-background/50 border border-border/40 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/30 hover:bg-primary/5 transition-all shadow-sm"
+                    className="flex-1 w-full bg-background border border-border/40 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center relative overflow-hidden group shadow-sm"
                   >
                     <div className="absolute top-2 end-2 text-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-[1px] group-hover:blur-none">
                       {clock.flag}
@@ -156,14 +170,14 @@ export function WorldClockWidget() {
                       <span className="text-3xl font-bold text-foreground/80 fa-num tracking-tight tabular-nums">
                         {formatterTime.format(now)}
                       </span>
-                      <div className="flex flex-col items-center gap-2 mt-3 bg-muted/30 p-2 sm:px-3 sm:py-2.5 rounded-xl w-full">
-                        <span className="text-[10px] text-foreground/90 font-medium fa-num leading-relaxed">
+                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 mt-3 bg-muted/30 p-2 sm:px-3 sm:py-2.5 rounded-xl w-full">
+                        <span className="text-xs sm:text-sm text-foreground/90 font-medium fa-num leading-relaxed">
                           {formatterDateShamsi.format(now)}
                         </span>
-                        <span className="text-[10px] text-muted-foreground/80 font-medium fa-num leading-relaxed">
+                        <span className="text-[11px] sm:text-xs text-muted-foreground/80 font-medium fa-num leading-relaxed">
                           {formatterDateQamari.format(now)}
                         </span>
-                        <span className="text-[9px] text-muted-foreground/60 font-medium fa-num leading-relaxed">
+                        <span className="text-[10px] sm:text-[11px] text-muted-foreground/60 font-medium fa-num leading-relaxed">
                           {formatterDateMiladi.format(now)}
                         </span>
                       </div>

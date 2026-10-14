@@ -15,7 +15,7 @@ import { CalendarWidget } from "./calendar-widget";
 import { ChecklistWidget } from "./checklist-widget";
 import { WidgetShell } from "./widget-shell";
 import { WorldClockWidget } from "./world-clock-widget";
-import { SystemStatusWidget } from "./system-status-widget";
+import { UnitConverterWidget } from "./unit-converter-widget";
 import { DashboardToolbar } from "./dashboard-toolbar";
 import { AppIcon } from "@/components/ui/app-icon";
 import { CommoditiesWidget } from "./commodities-widget";
@@ -32,8 +32,14 @@ import { EventsManagerWidget } from "./events-manager-widget";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { Menu, Home, Calendar as CalendarIcon, Settings, Link as LinkIcon, CheckSquare, Activity } from "lucide-react";
+import { Home, Calendar as CalendarIcon, Settings, Link as LinkIcon, CheckSquare, Activity, ArrowRightLeft } from "lucide-react";
 import { Accordion } from "@/components/ui/accordion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
@@ -48,24 +54,13 @@ export function Dashboard() {
   const { isFetching: isFetchingMarket, refetch: refetchMarket } = useCommodities();
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const isAdmin = user?.role?.toLowerCase() === "admin";
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const [linksSidebarOpen, setLinksSidebarOpen] = React.useState(false);
-  const [toolsTab, setToolsTab] = React.useState<'links' | 'checklist' | 'activity'>('links');
+  const [toolsTab, setToolsTab] = React.useState<'calendar' | 'converter' | 'links' | 'checklist' | 'activity'>('calendar');
   const [dashboardTab, setDashboardTab] = React.useState<'market' | 'admin'>('admin');
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setIsScrolled(e.currentTarget.scrollTop > 10);
-  };
-
-  const toggleSidebar = (open: boolean) => {
-    setSidebarOpen(open);
-    if (open) setLinksSidebarOpen(false);
-  };
-  
-  const toggleLinksSidebar = (open: boolean) => {
-    setLinksSidebarOpen(open);
-    if (open) setSidebarOpen(false);
   };
 
   const handleRefreshAll = React.useCallback(async () => {
@@ -85,28 +80,76 @@ export function Dashboard() {
     reset,
   } = useDashboardLayout(isAdmin);
 
-  // ── Loading ──
+  // ── Auth Check ──
   if (!user) return null;
 
-  if (loading) {
-    return (
-      <div className="flex flex-col w-full h-screen overflow-hidden relative">
-        <header className="z-[60] absolute top-0 left-0 right-0 flex items-center justify-between w-full bg-background/50 backdrop-blur-2xl px-4 sm:px-6 py-2 sm:py-3 transition-all duration-300 border-none shadow-none">
-          <div className="flex items-center justify-start gap-3">
-             <Skeleton className="size-10 rounded-full" />
-             <Skeleton className="h-6 w-32 rounded-lg" />
+  const displayName =
+    locale === "fa" && user?.fullNameFa ? user.fullNameFa : user?.fullName;
+
+  // ─── Filter by Tab ────────────────────────────────────────────────────────
+  const MARKET_WIDGETS = ['stats-overview', 'commodities', 'chart'];
+  const ADMIN_WIDGETS = ['events-manager', 'world-clock'];
+
+  const tabFilteredWidgets = visibleWidgets.filter(id => 
+    dashboardTab === 'market' ? MARKET_WIDGETS.includes(id) : ADMIN_WIDGETS.includes(id)
+  );
+  
+  // ─── Render widget content by id ─────────────────────────────────────────
+
+  const renderWidgetContent = (id: string) => {
+    if (!data) return null;
+    switch (id) {
+      case "stats-overview": {
+        return (
+          <div className="h-full">
+            <StatsOverviewWidget 
+              stats={data.stats} 
+              allStats={data.allStats || data.stats} 
+              onToggleExpand={(expanded) => setWidgetExpanded("stats-overview", expanded)}
+            />
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Skeleton className="size-8 rounded-full hidden sm:block" />
-            <Skeleton className="size-8 rounded-full hidden sm:block" />
-            <Skeleton className="w-10 h-10 sm:w-14 sm:h-14 rounded-full" />
-          </div>
-        </header>
-        
+        );
+      }
+
+      case "chart":
+        return <div className="fa-num h-full"><MiniChart data={data.chart} /></div>;
+
+      case "events-manager":
+        return <div className="h-full"><EventsManagerWidget events={data.calendarEvents} /></div>;
+
+      case "world-clock":
+        return <div className="h-full"><WorldClockWidget /></div>;
+
+      case "commodities":
+        return <div className="h-full"><CommoditiesWidget /></div>;
+
+      case "sources":
+        return <div className="h-full"><SourcesWidget locale={locale} /></div>;
+
+      case "engineering-tools":
+        return <div className="h-full"><EngineeringToolsWidget locale={locale} /></div>;
+
+
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex flex-col w-full h-screen overflow-hidden relative group/dashboard bg-white dark:bg-background">
+      {/* Edge Handles have been moved into the sidebar wrappers */}
+
+      <DashboardHeader 
+        isScrolled={isScrolled}
+        sidebarOpen={linksSidebarOpen}
+        setSidebarOpen={setLinksSidebarOpen}
+      />
+
+      {loading ? (
         <div className="flex flex-1 w-full relative overflow-hidden pt-[72px]">
           <div className="flex-1 w-full h-full min-w-0 pb-8 px-6 sm:px-12 lg:px-20 pt-6">
             <div className="mx-auto w-full max-w-[1280px]">
-              
               {/* Tabs Skeleton */}
               <div className="flex items-center justify-start gap-8 mb-6 border-b border-border/40 pb-2">
                 <Skeleton className="h-4 w-12" />
@@ -130,172 +173,126 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <div className="bg-destructive/10 text-destructive rounded-xl border border-dashed p-6 text-center">
-          <p className="font-medium">
-            {error?.message ?? "خطا در بارگذاری داشبورد"}
-          </p>
-          <button onClick={refetch} className="text-primary mt-2 text-sm underline">
-            تلاش مجدد
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const displayName =
-    locale === "fa" && user?.fullNameFa ? user.fullNameFa : user?.fullName;
-
-  // ─── Filter by Tab ────────────────────────────────────────────────────────
-  const MARKET_WIDGETS = ['stats-overview', 'commodities', 'chart'];
-  const ADMIN_WIDGETS = ['events-manager', 'world-clock', 'system-status'];
-
-  const tabFilteredWidgets = visibleWidgets.filter(id => 
-    dashboardTab === 'market' ? MARKET_WIDGETS.includes(id) : ADMIN_WIDGETS.includes(id)
-  );
-  
-  // ─── Render widget content by id ─────────────────────────────────────────
-
-  const renderWidgetContent = (id: string) => {
-    switch (id) {
-      case "stats-overview": {
-        return (
-          <div className="h-full">
-            <StatsOverviewWidget 
-              stats={data.stats} 
-              allStats={data.allStats || data.stats} 
-              onToggleExpand={(expanded) => setWidgetExpanded("stats-overview", expanded)}
-            />
+      ) : error || !data ? (
+        <div className="flex flex-1 w-full relative overflow-hidden pt-[72px] items-center justify-center">
+          <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="bg-destructive/10 text-destructive rounded-xl border border-dashed p-6 text-center">
+              <p className="font-medium">
+                {error?.message ?? "خطا در بارگذاری داشبورد"}
+              </p>
+              <button onClick={refetch} className="text-primary mt-2 text-sm underline">
+                تلاش مجدد
+              </button>
+            </div>
           </div>
-        );
-      }
-
-      case "chart":
-        return <div className="fa-num h-full"><MiniChart data={data.chart} /></div>;
-
-      case "events-manager":
-        return <div className="h-full"><EventsManagerWidget events={data.calendarEvents} /></div>;
-
-      case "world-clock":
-        return <div className="h-full"><WorldClockWidget /></div>;
-
-      case "system-status":
-        return <div className="h-full"><SystemStatusWidget /></div>;
-
-      case "commodities":
-        return <div className="h-full"><CommoditiesWidget /></div>;
-
-      case "sources":
-        return <div className="h-full"><SourcesWidget locale={locale} /></div>;
-
-      case "engineering-tools":
-        return <div className="h-full"><EngineeringToolsWidget locale={locale} /></div>;
-
-
-
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="flex flex-col w-full h-screen overflow-hidden relative group/dashboard">
-      {/* Edge Handles have been moved into the sidebar wrappers */}
-
-      <DashboardHeader 
-        displayName={displayName}
-        userRole={user.role}
-        tAuth={tAuth}
-        tDashboard={t}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={toggleSidebar}
-        linksSidebarOpen={linksSidebarOpen}
-        setLinksSidebarOpen={toggleLinksSidebar}
-        isScrolled={isScrolled}
-      />
-
-      <div className="flex flex-1 w-full h-full relative pt-[72px] overflow-hidden">
-        {/* ── Links Sidebar (Opposite side) ── */}
-        <motion.div
-          initial={false}
-          animate={{ width: linksSidebarOpen ? 424 : 0 }}
-          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-          className="flex-shrink-0 relative h-full z-[10] border-r border-border/10 rtl:border-r-0 rtl:border-l"
-        >
-          <div className="w-full h-full overflow-hidden bg-transparent shadow-none pt-4 pb-4">
-            <div className="flex h-full w-[424px] pe-4 ps-0 gap-4">
-                {/* ── Side Rail (Icons) ── */}
-                <div className="w-[52px] shrink-0 flex flex-col items-center py-2 gap-2 h-fit relative ms-4">
-                  {[
-                    { id: 'links', icon: LinkIcon, title: t("calendar.usefulLinks") },
-                    { id: 'checklist', icon: CheckSquare, title: t("checklist.title") },
-                    { id: 'activity', icon: Activity, title: t("activity.title") }
-                  ].map((tab) => {
-                    const isActive = toolsTab === tab.id;
-                    const Icon = tab.icon;
-                    return (
+        </div>
+      ) : (
+        <div className="flex flex-1 w-full h-full relative pt-[72px] overflow-hidden bg-white dark:bg-background">
+        {/* ── Utility Sidebar ── */}
+        <div className="flex-shrink-0 flex h-full z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent">
+          {/* ── Side Rail (Icons) ── */}
+          <TooltipProvider delayDuration={150}>
+            <div className="w-[58px] sm:w-[90px] shrink-0 flex flex-col items-center py-4 gap-2.5 h-full relative z-20">
+              {/* Tool Icons */}
+              {[
+                { id: 'calendar', icon: CalendarIcon, title: t("header.calendar") },
+                { id: 'converter', icon: ArrowRightLeft, title: locale === 'fa' ? "مبدل واحد" : "Unit Converter" },
+                { id: 'links', icon: LinkIcon, title: t("calendar.usefulLinks") },
+                { id: 'checklist', icon: CheckSquare, title: t("checklist.title") },
+                { id: 'activity', icon: Activity, title: t("activity.title") }
+              ].map((tab) => {
+                const isActive = linksSidebarOpen && toolsTab === tab.id;
+                const Icon = tab.icon;
+                const tooltipSide = locale === "fa" ? "left" : "right";
+                return (
+                  <Tooltip key={tab.id}>
+                    <TooltipTrigger asChild>
                       <button 
-                        key={tab.id}
-                        onClick={() => setToolsTab(tab.id as any)}
-                        title={tab.title}
+                        type="button"
+                        onClick={() => {
+                          setToolsTab(tab.id as any);
+                          setLinksSidebarOpen(true);
+                        }}
                         className={cn(
-                          "relative p-2.5 rounded-xl transition-colors duration-200 w-10 h-10 flex items-center justify-center outline-none",
-                          isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                          "relative rounded-full transition-colors duration-150 size-[34px] sm:size-[42px] flex items-center justify-center outline-none cursor-pointer select-none",
+                          isActive
+                            ? "text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/40 hover:border-border/80"
                         )}
+                        aria-label={tab.title}
                       >
                         {isActive && (
                           <motion.div
                             layoutId="active-tool-tab"
-                            className="absolute inset-0 bg-primary shadow-sm rounded-xl"
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            className="absolute inset-0 bg-primary shadow-xs rounded-full"
+                            transition={{
+                              type: "spring",
+                              stiffness: 520,
+                              damping: 32,
+                              mass: 0.5,
+                            }}
                           />
                         )}
-                        <AppIcon icon={Icon} className="size-5 relative z-10" />
+                        <AppIcon icon={Icon} className="size-5 relative z-10 transition-transform duration-150 active:scale-95" />
                       </button>
-                    );
-                  })}
-                </div>
-
-                {/* ── Tab Content ── */}
-                <div className="w-[360px] h-full overflow-y-auto custom-scrollbar flex flex-col pe-4 pb-4">
-                  {toolsTab === 'links' && (
-                    <>
-                      <div className="flex items-center gap-2 px-2 py-3 mb-2">
-                        <div className="p-2 bg-primary/10 rounded-xl shrink-0">
-                          <LinkIcon className="size-5 text-primary" />
-                        </div>
-                        <h3 className="font-semibold text-lg">{t("calendar.usefulLinks")}</h3>
-                      </div>
-                      <Accordion type="single" collapsible defaultValue="sources" className="w-full space-y-4">
-                        <SourcesWidget locale={locale} />
-                        <EngineeringToolsWidget locale={locale} />
-                      </Accordion>
-                    </>
-                  )}
-                  {toolsTab === 'checklist' && (
-                    <div className="h-full fa-num"><ChecklistWidget items={data.checklist} /></div>
-                  )}
-                  {toolsTab === 'activity' && (
-                    <div className="h-full fa-num"><ActivityFeed items={data.activities} /></div>
-                  )}
-                </div>
-              </div>
+                    </TooltipTrigger>
+                    <TooltipContent side={tooltipSide} className="text-xs font-medium">
+                      {tab.title}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
-        </motion.div>
+          </TooltipProvider>
+
+          {/* ── Expanding Drawer Content ── */}
+          <motion.div
+            initial={false}
+            animate={{ 
+              width: linksSidebarOpen ? 400 : 0,
+              opacity: linksSidebarOpen ? 1 : 0
+            }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden h-full flex flex-col bg-transparent"
+          >
+            <div className="w-[400px] h-full overflow-y-auto custom-scrollbar p-3.5 pe-2.5 pb-6 flex flex-col">
+              {toolsTab === 'calendar' && (
+                <div className="h-full fa-num"><CalendarWidget events={data.calendarEvents} /></div>
+              )}
+              {toolsTab === 'links' && (
+                <div className="flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
+                  <div className="flex items-center gap-2 px-1 mb-4 shrink-0">
+                    <div className="p-2 bg-primary/10 rounded-xl shrink-0">
+                      <LinkIcon className="size-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("calendar.usefulLinks")}</h3>
+                  </div>
+                  <Accordion type="single" collapsible defaultValue="sources" className="w-full flex-1 overflow-y-auto custom-scrollbar pe-1">
+                    <SourcesWidget locale={locale} />
+                    <EngineeringToolsWidget locale={locale} />
+                  </Accordion>
+                </div>
+              )}
+              {toolsTab === 'converter' && (
+                <div className="h-full"><UnitConverterWidget /></div>
+              )}
+              {toolsTab === 'checklist' && (
+                <div className="h-full fa-num"><ChecklistWidget items={data.checklist} /></div>
+              )}
+              {toolsTab === 'activity' && (
+                <div className="h-full fa-num"><ActivityFeed items={data.activities} /></div>
+              )}
+            </div>
+          </motion.div>
+        </div>
 
         {/* ── Center Content (Scrollable) ── */}
         <div 
-          className="flex-1 w-full h-full overflow-y-auto custom-scrollbar"
+          className="flex-1 w-full h-full overflow-y-auto custom-scrollbar bg-white dark:bg-background"
           onScroll={handleScroll}
         >
-          <div className="min-w-0 pb-8 px-6 sm:px-12 lg:px-20 pt-6">
-            <div className="mx-auto w-full max-w-[1280px]">
+          <div className="min-w-0 pb-8 pt-6 px-3 sm:px-6 lg:px-8">
+            <div className="mx-auto w-full max-w-[1240px]">
 
 
 
@@ -333,7 +330,7 @@ export function Dashboard() {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="mb-4 p-2 bg-card border border-border/50 rounded-xl"
+            className="mb-4 p-2 bg-panel dark:bg-card/40 border border-border/50 rounded-xl"
             dir={locale === 'fa' ? 'rtl' : 'ltr'}
           >
             <DashboardToolbar
@@ -349,7 +346,7 @@ export function Dashboard() {
       {/* ── Reset button (always visible, subtle) ── */}
       {hiddenWidgets.length === 0 && (
         <div 
-          className="mb-4 p-2 bg-card border border-border/50 rounded-xl"
+          className="mb-4 p-2 bg-panel dark:bg-card/40 border border-border/50 rounded-xl"
           dir={locale === 'fa' ? 'rtl' : 'ltr'}
         >
           <DashboardToolbar
@@ -411,21 +408,8 @@ export function Dashboard() {
           </div>{/* /min-w-0 */}
 
         </div>{/* /center container */}
-
-      {/* ── Calendar Sidebar ── */}
-      <motion.div
-        initial={false}
-        animate={{ width: sidebarOpen ? 360 : 0 }}
-        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-        className="flex-shrink-0 relative h-full z-[10] border-l border-border/10 rtl:border-l-0 rtl:border-r"
-      >
-        <div className="w-full h-full overflow-hidden bg-transparent shadow-none pt-4 pb-4">
-          <div className="w-[360px] h-full overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-              <CalendarWidget events={data.calendarEvents} />
-            </div>
-          </div>
-      </motion.div>
-      </div>{/* /main wrapper */}
+      </div>
+      )}
 
     </div>
   );

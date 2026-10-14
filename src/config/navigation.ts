@@ -26,6 +26,8 @@ import {
   Headphones,
   BookOpenText,
   Cpu,
+  Graph,
+  TreeStructure,
 } from "@phosphor-icons/react";
 
 /**
@@ -507,16 +509,8 @@ export const NAVIGATION: NavGroup[] = [
       {
         labelKey: "ESP-Flow",
         href: "/ESP-Flow",
-        icon: GridFour,
+        icon: TreeStructure,
         color: "violet",
-        public: true,
-        free: false,
-      },
-      {
-        labelKey: "Weight-Flow",
-        href: "/Weight-Flow",
-        icon: GridFour,
-        color: "indigo",
         public: true,
         free: false,
       },

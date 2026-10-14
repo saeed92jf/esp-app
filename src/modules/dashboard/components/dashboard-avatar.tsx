@@ -5,11 +5,13 @@ import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Upload, X, ChevronRight, ChevronLeft, Check, User, LogOut, Pencil, ChevronDown, Circle, Home, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { HEADER_ICON_BUTTON_CLASS } from '@/lib/constants';
 
 import avatar1 from '../assets/avatars/Avatar (1).webp';
 import avatar2 from '../assets/avatars/Avatar (2).webp';
@@ -48,7 +50,7 @@ export function DashboardAvatar() {
   const t = useTranslations('Dashboard');
   const { user, updateAvatar, logout } = useAuth();
   const router = useRouter();
-  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = React.useState<string | null>(() => user?.avatar || null);
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const [anchorEdge, setAnchorEdge] = React.useState<"left" | "right">("right");
@@ -102,21 +104,30 @@ export function DashboardAvatar() {
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
 
   const avatarButton = (
-    <button ref={triggerRef} className={cn(
-      "relative flex items-center justify-center rounded-full group outline-none cursor-pointer transition-all",
-      "ring-[1.5px] ring-offset-[1.5px] ring-offset-background",
-      open ? "ring-primary" : "ring-primary/40 hover:ring-primary/80"
-    )}>
-      <div className="relative z-10 bg-background rounded-full shadow-sm">
-        <Avatar className="size-7 sm:size-9">
+    <button
+      ref={triggerRef}
+      title=""
+      className={cn(
+        HEADER_ICON_BUTTON_CLASS,
+        "p-0 group outline-none cursor-pointer transition-all relative",
+        open && "ring-2 ring-primary ring-offset-1 ring-offset-background"
+      )}
+    >
+      <div className="relative size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
+        <Avatar className="size-full rounded-full overflow-hidden">
           {avatarUrl ? (
-            <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
+            <AvatarImage src={avatarUrl} alt={user.fullName} title="" className="object-cover" />
           ) : null}
-          <AvatarFallback className="text-sm sm:text-base font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
+          <AvatarFallback className="text-xs sm:text-sm font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
             <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
           </AvatarFallback>
         </Avatar>
-        <div className={cn("absolute bottom-0 right-0 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border-[1.5px] border-background z-20", STATUSES[status].color)} />
+        <span
+          className={cn(
+            "absolute bottom-0 end-0 size-2.5 sm:size-3 rounded-full border-2 border-background z-20 pointer-events-none",
+            STATUSES[status].color
+          )}
+        />
       </div>
     </button>
   );
@@ -130,9 +141,19 @@ export function DashboardAvatar() {
       setOpen(val);
       if (!val) setStatusExpanded(false);
     }}>
-      <PopoverTrigger asChild>
-        {avatarButton}
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              {avatarButton}
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" sideOffset={8} className="flex flex-col items-start gap-1 py-1.5 px-3">
+            <span className="font-semibold text-xs truncate max-w-[200px]">{nameToUse}</span>
+            <span className="opacity-90 text-[11px] truncate max-w-[200px]" dir="ltr">{user.email || user.mobile}</span>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       
       <PopoverAnchor className={cn("fixed top-[72px] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-4 sm:left-6" : "right-4 sm:right-6")} />
       
@@ -166,7 +187,6 @@ export function DashboardAvatar() {
                  href="/dashboard/profile?tab=personal"
                  target="_blank"
                  onClick={() => setOpen(false)}
-                 title={t("avatar.userProfile") || "ویرایش پروفایل"}
                  className="relative shrink-0 flex items-center justify-center p-4 outline-none group/avatar bg-transparent"
                >
                  {/* GPU-accelerated instant hover layer */}
@@ -245,34 +265,18 @@ export function DashboardAvatar() {
                     ))}
                   </div>
 
-                   {/* Dashboard Button */}
+                  {/* Manage Account Button */}
                   <div className="segmented-item flex flex-col overflow-hidden">
                     <Link 
-                       href="/dashboard" 
+                       href="/dashboard/profile" 
                        target="_blank"
                        onClick={() => setOpen(false)}
                        className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
                     >
-                       <Home className="relative z-10 size-5 transition-colors" />
-                       <span className="relative z-10 transition-colors">{t("avatar.dashboard")}</span>
+                       <User className="relative z-10 size-5 transition-colors" />
+                       <span className="relative z-10 transition-colors">{t("avatar.userProfile")}</span>
                     </Link>
                   </div>
-
-                  {/* Admin Panel Button */}
-                  {user.role === 'admin' && (
-                    <div className="segmented-item flex flex-col overflow-hidden">
-                      <Link 
-                         href="/admin" 
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         onClick={() => setOpen(false)}
-                         className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
-                      >
-                         <Settings className="relative z-10 size-5 transition-colors" />
-                         <span className="relative z-10 transition-colors">{t("avatar.adminPanel")}</span>
-                      </Link>
-                    </div>
-                  )}
 
                   {/* Sign Out Button (Sharp flat top, rounded bottom) */}
                   <div className="segmented-item flex flex-col overflow-hidden rounded-b-[32px]">
@@ -294,24 +298,46 @@ export function DashboardAvatar() {
             </AnimatePresence>
           </div>
 
-          {/* Manage Account Card */}
-          <div className="segmented-item flex flex-col overflow-hidden mt-3 rounded-[32px]">
-            <Link 
-               href="/dashboard/profile" 
-               target="_blank"
-               onClick={() => setOpen(false)}
-               className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
-            >
-               <User className="relative z-10 size-5 transition-colors" />
-               <span className="relative z-10 transition-colors">{t("avatar.userProfile")}</span>
-            </Link>
+          {/* Navigation Items (Dashboard & Admin Panel) */}
+          <div className="segmented-list w-full mt-3">
+            {/* Dashboard Button */}
+            <div className={cn(
+              "segmented-item flex flex-col overflow-hidden",
+              user.role === 'admin' ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
+            )}>
+              <Link 
+                 href="/dashboard" 
+                 target="_blank"
+                 onClick={() => setOpen(false)}
+                 className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
+              >
+                 <Home className="relative z-10 size-5 transition-colors" />
+                 <span className="relative z-10 transition-colors">{t("avatar.dashboard")}</span>
+              </Link>
+            </div>
+
+            {/* Admin Panel Button */}
+            {user.role === 'admin' && (
+              <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
+                <Link 
+                   href="/admin" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   onClick={() => setOpen(false)}
+                   className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"
+                >
+                   <Settings className="relative z-10 size-5 transition-colors" />
+                   <span className="relative z-10 transition-colors">{t("avatar.adminPanel")}</span>
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
           <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground my-4">
-             <Link href="#" className="hover:text-foreground">{t("avatar.privacy")}</Link>
+             <Link href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("avatar.privacy")}</Link>
              <span>•</span>
-             <Link href="#" className="hover:text-foreground">{t("avatar.terms")}</Link>
+             <Link href="#" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("avatar.terms")}</Link>
           </div>
         </div>
       </PopoverContent>
