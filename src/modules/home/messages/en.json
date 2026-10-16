@@ -14,10 +14,18 @@
       "dictionaryDesc": "Technical glossary, field jargon, metallurgy and standards",
       "insights": "Insights",
       "insightsDesc": "Scientific insights and principles",
-      "featured": "Featured",
-      "featuredDesc": "Simulation and featured suites",
+      "featured": "Modules",
+      "featuredDesc": "Showcase of our latest and most important modules",
       "support": "Support",
       "supportDesc": "Direct technical support"
+    },
+    "featuredCard": {
+      "badge": "Coming Soon",
+      "title": "We showcase our latest and most important modules here",
+      "subtitle": "Advanced engineering calculation suites and specialized Euro Slot modules will be featured here.",
+      "tagPiping": "Piping Calculations",
+      "tagMaterials": "Materials & Standards",
+      "tagSimulation": "Process Simulation"
     },
     "quickAccess": {
       "customize": "Customize Shortcuts",

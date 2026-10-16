@@ -90,12 +90,20 @@
     "guestTabs": {
       "dictionary": "Dictionary",
       "insights": "Insights",
-      "featured": "Featured",
+      "featured": "Modules",
       "support": "Support",
       "dictionaryDesc": "Technical glossary, field jargon, metallurgy and standards",
       "insightsDesc": "Scientific & Technical Insights",
-      "featuredDesc": "Featured Modules & Simulation",
+      "featuredDesc": "Showcase of our latest and most important modules",
       "supportDesc": "Technical Support & Contact"
+    },
+    "featuredCard": {
+      "badge": "Coming Soon",
+      "title": "We showcase our latest and most important modules here",
+      "subtitle": "Advanced engineering calculation suites and specialized Euro Slot modules will be featured here.",
+      "tagPiping": "Piping Calculations",
+      "tagMaterials": "Materials & Standards",
+      "tagSimulation": "Process Simulation"
     },
     "guestDockTitle": "Join our platform for full access to engineering calculation tools",
     "createAccountLong": "Create Free Account",

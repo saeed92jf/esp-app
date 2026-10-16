@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
-  Sparkles,
+  Boxes,
   BookA,
   Lightbulb,
   Headphones,
@@ -16,7 +16,7 @@ import { Logo } from "@/components/brand/logo";
 import { SiteSearch } from "@/components/features/search/site-search";
 import { QuickAccessSection } from "@/components/features/quick-access";
 import { Container } from "@/components/layout/container";
-import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
+import { FeaturedModulesCard } from "@/modules/home/components/featured-modules-card";
 import { HomeSidebar } from "@/modules/home/components/home-sidebar";
 import { useHomeSidebar } from "@/modules/home/hooks/use-home-sidebar";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
@@ -45,6 +45,7 @@ type GuestTab = "dictionary" | "insights" | "featured" | "support";
 
 export function HomeClient() {
   const t = useTranslations("Home");
+  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const isRtl = locale === "fa";
 
@@ -94,7 +95,7 @@ export function HomeClient() {
       id: "featured" as const,
       label: t("guestTabs.featured"),
       ariaLabel: t("guestTabs.featuredDesc"),
-      icon: Sparkles,
+      icon: Boxes,
       onClick: () => setActiveGuestTab("featured"),
     },
     {
@@ -212,7 +213,7 @@ export function HomeClient() {
                     </motion.div>
                   )}
 
-                  {/* TAB 3: FEATURED (HeroFlow Interactive Canvas / Featured Simulation) */}
+                  {/* TAB 3: FEATURED (Showcase of latest and most important modules) */}
                   {activeGuestTab === "featured" && (
                     <motion.div
                       key="featured"
@@ -220,9 +221,9 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full relative overflow-hidden flex items-center justify-center pb-2 sm:pb-3"
+                      className="w-full h-full relative overflow-hidden flex items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4"
                     >
-                      <HeroFlow />
+                      <FeaturedModulesCard />
                     </motion.div>
                   )}
 
@@ -242,8 +243,8 @@ export function HomeClient() {
                 </AnimatePresence>
               </div>
 
-              {/* Bottom Navigation Dock & Action Bar (Cleanly Placed BELOW the Content) */}
-              <div className="shrink-0 w-full border-t border-border/50 bg-card/85 dark:bg-[#0c0e14]/90 backdrop-blur-xl py-2 sm:py-2.5 px-3 sm:px-6 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+              {/* Bottom Navigation Dock & Action Bar (Cleanly Placed BELOW Content, No Top Border, Transparent Background) */}
+              <div className="shrink-0 w-full bg-transparent py-2 sm:py-2.5 px-3 sm:px-6 z-30">
                 <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
                   {/* Left/Start: Welcome Navigation Tabs */}
                   <div className="flex items-center justify-center shrink-0">
@@ -253,34 +254,29 @@ export function HomeClient() {
                         selectedId={activeGuestTab}
                         onSelect={(val) => setActiveGuestTab(val as GuestTab)}
                         size="sm"
-                        className="shadow-xs border border-border/60 bg-muted/40"
+                        className="shadow-none border border-border/60 bg-muted/40"
                       />
                     </MultiButtonGroup>
                   </div>
 
-                  {/* Center: Friendly Invitation Tagline (Hidden on mobile for compact layout) */}
-                  <p className="hidden lg:block text-xs font-medium text-muted-foreground/80 text-center truncate max-w-md select-none">
-                    {t("guestDockTitle")}
-                  </p>
-
-                  {/* Right/End: High-Quality Flat Auth Action Buttons */}
-                  <div className="flex items-center justify-center gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
+                  {/* Right/End: Flat, Shadowless Auth Buttons Without Primary or Blue Colors */}
+                  <div className="flex items-center justify-center gap-2 shrink-0 w-full sm:w-auto">
                     {/* Login Link */}
                     <Link
                       href="/login"
-                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground/85 hover:text-foreground px-3.5 sm:px-4 text-xs font-semibold border border-border/50 shadow-2xs transition-all active:scale-95"
+                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground px-3.5 sm:px-4 text-xs font-medium border border-border/60 shadow-none transition-colors active:scale-95"
                     >
                       <LogIn className="size-3.5 text-muted-foreground" />
-                      <span>{t("loginLong")}</span>
+                      <span>{tCommon("login")}</span>
                     </Link>
 
-                    {/* Create Account Link (Primary Glow Pill) */}
+                    {/* Create Account Link (Neutral Monochromatic Flat) */}
                     <Link
                       href="/register"
-                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 sm:px-5 text-xs font-bold shadow-xs shadow-primary/25 transition-all active:scale-95"
+                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-foreground text-background hover:bg-foreground/90 px-3.5 sm:px-4 text-xs font-semibold border border-transparent shadow-none transition-colors active:scale-95"
                     >
                       <UserPlus className="size-3.5" />
-                      <span>{t("createAccountLong")}</span>
+                      <span>{tCommon("register")}</span>
                     </Link>
                   </div>
                 </div>

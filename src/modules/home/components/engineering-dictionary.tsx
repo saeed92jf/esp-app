@@ -6,29 +6,27 @@ import {
   Search,
   Sparkles,
   BookA,
-  BookOpen,
   Copy,
   Check,
   X,
   Shuffle,
-  ShieldCheck,
   Lightbulb,
-  ExternalLink,
-  Layers,
-  Wrench,
-  Activity,
-  Flame,
-  CheckCircle2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import {
-  ENGINEERING_TERMS,
-  DICTIONARY_CATEGORIES,
-  type DictionaryTerm,
+  getDictionaryCategories,
+  getDictionaryTerms,
+  type DictionaryItem,
 } from "../data/engineering-dictionary-data";
 
 interface EngineeringDictionaryProps {
@@ -40,10 +38,18 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
   const locale = useLocale();
   const isRtl = locale === "fa";
 
+  // Load completely separate, independent datasets for Persian vs English
+  const allTerms = useMemo(() => getDictionaryTerms(locale), [locale]);
+  const categories = useMemo(() => getDictionaryCategories(locale), [locale]);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [activeModalTerm, setActiveModalTerm] = useState<DictionaryTerm | null>(null);
+  const [activeModalTerm, setActiveModalTerm] = useState<DictionaryItem | null>(null);
+
+  const handleOpenModal = (term: DictionaryItem) => {
+    setActiveModalTerm(term);
+  };
 
   // Daily Term Algorithm (deterministic based on day of year, with manual shuffle ability)
   const [dailyIndex, setDailyIndex] = useState(0);
@@ -54,21 +60,23 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
     const diff = now.getTime() - start.getTime();
     const oneDay = 1000 * 60 * 60 * 24;
     const dayOfYear = Math.floor(diff / oneDay);
-    setDailyIndex(dayOfYear % ENGINEERING_TERMS.length);
-  }, []);
+    setDailyIndex(dayOfYear % (allTerms.length || 1));
+  }, [allTerms.length]);
 
   const dailyTerm = useMemo(() => {
-    return ENGINEERING_TERMS[dailyIndex] || ENGINEERING_TERMS[0];
-  }, [dailyIndex]);
+    return allTerms[dailyIndex] || allTerms[0];
+  }, [allTerms, dailyIndex]);
 
   const handleShuffleDaily = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setDailyIndex((prev) => (prev + 1 + Math.floor(Math.random() * (ENGINEERING_TERMS.length - 2))) % ENGINEERING_TERMS.length);
+    setDailyIndex((prev) => (prev + 1 + Math.floor(Math.random() * (allTerms.length - 2))) % allTerms.length);
   };
 
-  const handleCopy = (term: DictionaryTerm, e?: React.MouseEvent) => {
+  const handleCopy = (term: DictionaryItem, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const textToCopy = `${term.termEn} (${term.termFa})\n\n${term.shortDescFa}\n${term.shortDescEn}\n\nنکته کلیدی: ${term.keyTipFa}${term.standards?.length ? `\nاستانداردها: ${term.standards.join(", ")}` : ""}`;
+    const textToCopy = isRtl
+      ? `${term.term}${term.secondaryTerm ? ` (${term.secondaryTerm})` : ""}${term.abbreviation ? ` [${term.abbreviation}]` : ""}\n\n${term.shortDesc}\n\nنکته مهندسی: ${term.keyTip}${term.standards?.length ? `\nاستانداردها: ${term.standards.join(", ")}` : ""}`
+      : `${term.term}${term.abbreviation ? ` [${term.abbreviation}]` : ""}\n\n${term.shortDesc}\n\nKey Engineering Tip: ${term.keyTip}${term.standards?.length ? `\nStandards: ${term.standards.join(", ")}` : ""}`;
     navigator.clipboard.writeText(textToCopy);
     setCopiedId(term.id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -78,7 +86,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
   const filteredTerms = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
 
-    return ENGINEERING_TERMS.filter((item) => {
+    return allTerms.filter((item) => {
       // Category match
       if (selectedCategory !== "all" && item.category !== selectedCategory) {
         return false;
@@ -87,19 +95,18 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
       // Search match
       if (!q) return true;
 
-      const inEn = item.termEn.toLowerCase().includes(q);
-      const inFa = item.termFa.toLowerCase().includes(q);
-      const inDescFa = item.shortDescFa.toLowerCase().includes(q);
-      const inDescEn = item.shortDescEn.toLowerCase().includes(q);
+      const inTerm = item.term.toLowerCase().includes(q);
+      const inSecondary = item.secondaryTerm?.toLowerCase().includes(q);
+      const inDesc = item.shortDesc.toLowerCase().includes(q);
       const inAbbr = item.abbreviation?.toLowerCase().includes(q);
-      const inTags = item.tags.some((t) => t.toLowerCase().includes(q));
+      const inTags = item.tags.some((tg) => tg.toLowerCase().includes(q));
       const inStandards = item.standards?.some((s) => s.toLowerCase().includes(q));
 
-      return inEn || inFa || inDescFa || inDescEn || inAbbr || inTags || inStandards;
+      return inTerm || inSecondary || inDesc || inAbbr || inTags || inStandards;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [allTerms, searchQuery, selectedCategory]);
 
-  const getCategoryTheme = (category: DictionaryTerm["category"]) => {
+  const getCategoryTheme = (category: DictionaryItem["category"]) => {
     switch (category) {
       case "materials":
         return {
@@ -129,6 +136,8 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
     }
   };
 
+  const modalTheme = activeModalTerm ? getCategoryTheme(activeModalTerm.category) : null;
+
   return (
     <div
       className={cn(
@@ -157,7 +166,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
             <Badge variant="outline" className="text-xs font-medium py-1 px-3 bg-muted/50 border-border/60">
               <span className="font-semibold text-primary fa-num">{filteredTerms.length}</span>
               <span className="mx-1 text-muted-foreground">/</span>
-              <span className="text-muted-foreground fa-num">{ENGINEERING_TERMS.length} {t("all")}</span>
+              <span className="text-muted-foreground fa-num">{allTerms.length} {t("all")}</span>
             </Badge>
           </div>
         </div>
@@ -166,7 +175,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
       {/* 2. Daily Suggestion Card (Term of the Day) */}
       <div className="shrink-0 mb-3">
         <div
-          onClick={() => setActiveModalTerm(dailyTerm)}
+          onClick={() => handleOpenModal(dailyTerm)}
           className="relative group cursor-pointer overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-primary/10 via-card to-card p-3.5 sm:p-4.5 shadow-sm hover:shadow-md transition-all duration-200"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -180,7 +189,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                     {t("dailyWord")}
                   </span>
                   <Badge variant="outline" className={cn("text-[10px] py-0 px-2 leading-tight h-5", getCategoryTheme(dailyTerm.category).pill)}>
-                    {isRtl ? dailyTerm.categoryFa : dailyTerm.categoryEn}
+                    {dailyTerm.categoryName}
                   </Badge>
                   {dailyTerm.standards?.[0] && (
                     <span className="text-[10px] text-muted-foreground/80 font-mono bg-muted/60 px-1.5 py-0.5 rounded">
@@ -190,14 +199,16 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                 </div>
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <h3 className="text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                    {dailyTerm.termEn}
+                    {dailyTerm.term}
                   </h3>
-                  <span className="text-xs sm:text-sm font-semibold text-muted-foreground">
-                    — {dailyTerm.termFa}
-                  </span>
+                  {isRtl && dailyTerm.secondaryTerm && (
+                    <span className="text-xs sm:text-sm font-semibold text-muted-foreground font-sans" dir="ltr">
+                      — {dailyTerm.secondaryTerm}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-muted-foreground/90 line-clamp-1 mt-1 leading-relaxed">
-                  {isRtl ? dailyTerm.shortDescFa : dailyTerm.shortDescEn}
+                  {dailyTerm.shortDesc}
                 </p>
               </div>
             </div>
@@ -253,7 +264,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
 
         {/* Categories Bar */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {DICTIONARY_CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const isSelected = selectedCategory === cat.id;
             return (
               <button
@@ -266,7 +277,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                     : "bg-card hover:bg-muted text-muted-foreground hover:text-foreground border-border/60"
                 )}
               >
-                <span>{isRtl ? cat.labelFa : cat.labelEn}</span>
+                <span>{cat.label}</span>
                 {cat.id !== "all" && (
                   <span
                     className={cn(
@@ -292,7 +303,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
             </div>
             <h4 className="text-sm font-bold text-foreground">{t("noResults")}</h4>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-              عبارت دیگری جستجو کنید یا فیلتر دسته‌بندی را تغییر دهید.
+              {isRtl ? "عبارت دیگری جستجو کنید یا فیلتر دسته‌بندی را تغییر دهید." : "Try searching with different keywords or switch the category filter."}
             </p>
             {searchQuery && (
               <Button
@@ -313,7 +324,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
               return (
                 <div
                   key={term.id}
-                  onClick={() => setActiveModalTerm(term)}
+                  onClick={() => handleOpenModal(term)}
                   className="group relative flex flex-col justify-between p-3.5 sm:p-4 rounded-2xl border border-border/70 hover:border-primary/40 bg-card/90 dark:bg-[#0e1017]/90 hover:bg-card shadow-2xs hover:shadow-sm transition-all duration-200 cursor-pointer"
                 >
                   <div>
@@ -325,7 +336,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                           className={cn("text-[10px] py-0 px-2 font-medium leading-none h-5 border shadow-2xs", theme.pill)}
                         >
                           <span className={cn("size-1.5 rounded-full mr-1.5", theme.dot)} />
-                          {isRtl ? term.categoryFa : term.categoryEn}
+                          {term.categoryName}
                         </Badge>
                         {term.abbreviation && (
                           <span className="text-[10px] font-mono font-semibold text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded border border-border/40">
@@ -338,7 +349,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                         type="button"
                         onClick={(e) => handleCopy(term, e)}
                         className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-colors cursor-pointer"
-                        title="کپی مشخصات واژه"
+                        title={isRtl ? "کپی مشخصات واژه" : "Copy Term Details"}
                       >
                         {copiedId === term.id ? (
                           <Check className="size-3.5 text-emerald-500" />
@@ -348,19 +359,21 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                       </button>
                     </div>
 
-                    {/* Term Titles: English prominently & Persian counterpart */}
+                    {/* Term Titles: Locale-sensitive Independent Prominence */}
                     <div className="space-y-0.5 mb-2">
                       <h4 className="text-sm sm:text-base font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">
-                        {term.termEn}
+                        {term.term}
                       </h4>
-                      <div className="text-xs font-semibold text-muted-foreground">
-                        {term.termFa}
-                      </div>
+                      {isRtl && term.secondaryTerm && (
+                        <div className="text-xs font-semibold text-muted-foreground font-sans" dir="ltr">
+                          {term.secondaryTerm}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Bilingual Descriptions */}
+                    {/* Short Description */}
                     <p className="text-xs text-muted-foreground/90 leading-relaxed line-clamp-2 mb-2">
-                      {isRtl ? term.shortDescFa : term.shortDescEn}
+                      {term.shortDesc}
                     </p>
                   </div>
 
@@ -370,7 +383,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                       <Lightbulb className="size-3.5 text-amber-500 shrink-0 mt-0.5" />
                       <span className="line-clamp-2">
                         <strong className="text-foreground">{t("fieldTip")} </strong>
-                        {isRtl ? term.keyTipFa : term.keyTipEn}
+                        {term.keyTip}
                       </span>
                     </div>
 
@@ -394,62 +407,62 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
         )}
       </div>
 
-      {/* 5. Detailed Modal on Card Click */}
+      {/* 5. Deep Detail Modal Dialog */}
       <Dialog open={Boolean(activeModalTerm)} onOpenChange={(open) => !open && setActiveModalTerm(null)}>
-        {activeModalTerm && (
-          <DialogContent className={cn("sm:max-w-lg max-h-[90vh] overflow-y-auto", isRtl && "font-vazir fa-num")}>
-            <DialogHeader className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <Badge variant="outline" className={cn("text-xs py-0.5 px-2.5 font-medium", getCategoryTheme(activeModalTerm.category).pill)}>
-                  {isRtl ? activeModalTerm.categoryFa : activeModalTerm.categoryEn}
+        {activeModalTerm && modalTheme && (
+          <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-5 sm:p-6" dir={isRtl ? "rtl" : "ltr"}>
+            {/* Modal Header */}
+            <DialogHeader className={cn("space-y-1.5 pb-3 border-b border-border/50", isRtl ? "text-right" : "text-left")}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant="outline" className={cn("text-[10px] py-0 px-2 font-medium h-5", modalTheme.pill)}>
+                  <span className={cn("size-1.5 rounded-full mr-1.5", modalTheme.dot)} />
+                  {activeModalTerm.categoryName}
                 </Badge>
                 {activeModalTerm.abbreviation && (
-                  <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-muted">
+                  <span className="text-[10px] font-mono font-semibold text-muted-foreground bg-muted px-2 py-0.5 rounded border border-border/40">
                     {activeModalTerm.abbreviation}
                   </span>
                 )}
               </div>
               <DialogTitle className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                {activeModalTerm.termEn}
+                {activeModalTerm.term}
               </DialogTitle>
-              <DialogDescription className="text-base font-semibold text-primary/90">
-                {activeModalTerm.termFa}
-              </DialogDescription>
+              {isRtl && activeModalTerm.secondaryTerm && (
+                <DialogDescription className="text-sm font-semibold text-muted-foreground font-sans" dir="ltr">
+                  {activeModalTerm.secondaryTerm}
+                </DialogDescription>
+              )}
             </DialogHeader>
 
-            <div className="space-y-4 pt-2">
-              {/* Persian Detailed Explanation */}
-              <div className="space-y-1">
-                <span className="text-xs font-bold text-muted-foreground uppercase">توضیح فارسی (مفهوم و کاربرد):</span>
-                <p className="text-sm text-foreground/90 leading-relaxed bg-muted/30 p-3 rounded-xl border border-border/50">
-                  {activeModalTerm.shortDescFa}
+            <div className="space-y-4 pt-3">
+              {/* Primary Independent Definition */}
+              <div className="space-y-1.5">
+                <span className="text-xs font-bold text-muted-foreground uppercase">
+                  {isRtl ? "توضیح تخصصی و مفهوم کاربردی:" : "Technical & Practical Definition:"}
+                </span>
+                <p className="text-sm text-foreground/90 leading-relaxed bg-muted/40 p-3.5 rounded-2xl border border-border/50">
+                  {activeModalTerm.shortDesc}
                 </p>
               </div>
 
-              {/* English Explanation */}
-              <div className="space-y-1" dir="ltr">
-                <span className="text-xs font-bold text-muted-foreground uppercase">English Practical Definition:</span>
-                <p className="text-sm text-foreground/90 leading-relaxed bg-muted/30 p-3 rounded-xl border border-border/50 font-sans">
-                  {activeModalTerm.shortDescEn}
-                </p>
-              </div>
-
-              {/* Key Practical Tip / Field Secret */}
-              <div className="space-y-1">
+              {/* Key Practical Tip / Field Experience */}
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
                   <Lightbulb className="size-4" />
-                  <span>فوت‌وفن کارگاهی و تجربه میدانی:</span>
+                  <span>{isRtl ? "فوت‌وفن کارگاهی و تجربه میدانی:" : "Field Engineering Experience & Tip:"}</span>
                 </div>
-                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-xs sm:text-sm text-foreground/90 leading-relaxed">
-                  {isRtl ? activeModalTerm.keyTipFa : activeModalTerm.keyTipEn}
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs sm:text-sm text-foreground/90 leading-relaxed">
+                  {activeModalTerm.keyTip}
                 </div>
               </div>
 
-              {/* Standards Tags */}
+              {/* Standards Tags (Universal Engineering Codes) */}
               {activeModalTerm.standards && activeModalTerm.standards.length > 0 && (
                 <div className="space-y-1.5">
-                  <span className="text-xs font-bold text-muted-foreground">استانداردهای مهندسی مرجع:</span>
-                  <div className="flex flex-wrap gap-1.5">
+                  <span className="text-xs font-bold text-muted-foreground">
+                    {isRtl ? "استانداردهای مهندسی مرجع:" : "Governing Engineering Standards:"}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5" dir="ltr">
                     {activeModalTerm.standards.map((std, sIdx) => (
                       <span key={sIdx} className="text-xs font-mono px-2.5 py-1 rounded-lg bg-card border border-border/60 text-foreground">
                         {std}
@@ -460,12 +473,12 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
               )}
 
               {/* Modal Bottom Actions */}
-              <div className="flex items-center justify-between pt-2 border-t border-border/50">
+              <div className="flex items-center justify-between pt-3 border-t border-border/50">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleCopy(activeModalTerm)}
-                  className="rounded-xl text-xs gap-1.5"
+                  className="rounded-xl text-xs gap-1.5 shadow-none"
                 >
                   {copiedId === activeModalTerm.id ? (
                     <>
@@ -475,7 +488,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                   ) : (
                     <>
                       <Copy className="size-3.5 text-muted-foreground" />
-                      <span>کپی اطلاعات واژه</span>
+                      <span>{isRtl ? "کپی اطلاعات واژه" : "Copy Term Info"}</span>
                     </>
                   )}
                 </Button>
@@ -484,9 +497,9 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                   variant="default"
                   size="sm"
                   onClick={() => setActiveModalTerm(null)}
-                  className="rounded-xl text-xs"
+                  className="rounded-xl text-xs shadow-none"
                 >
-                  بستن
+                  {isRtl ? "بستن" : "Close"}
                 </Button>
               </div>
             </div>
