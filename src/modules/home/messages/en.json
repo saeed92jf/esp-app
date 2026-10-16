@@ -10,9 +10,14 @@
       "searchPlaceholder": "Search"
     },
     "guestTabs": {
-      "lastModule": "Our Last Module",
-      "tryFreeModules": "Explore Modules",
-      "didYouKnow": "Did You Know?"
+      "dictionary": "Dictionary",
+      "dictionaryDesc": "Technical glossary, field jargon, metallurgy and standards",
+      "insights": "Insights",
+      "insightsDesc": "Scientific insights and principles",
+      "featured": "Featured",
+      "featuredDesc": "Simulation and featured suites",
+      "support": "Support",
+      "supportDesc": "Direct technical support"
     },
     "quickAccess": {
       "customize": "Customize Shortcuts",
@@ -78,43 +83,18 @@
       "all": "All",
       "explore": "Explore"
     },
-    "freeBanners": {
-      "title": "Platform Modules & Tools",
-      "subtitle": "Explore free, advanced, and engineering specialized suites of ESP.",
-      "badges": {
-        "free": "Free",
-        "accountRequired": "Account Required",
-        "accessRequired": "Access Required"
-      },
-      "launch": "Launch Module",
-      "prev": "Previous slide",
-      "next": "Next slide",
-      "modules": {
-        "espFlow": {
-          "title": "ESP-Flow Studio",
-          "tagline": "Visual Node-Based Process Modeler",
-          "description": "Interactive visual engineering environment for mapping process logic, data flows, and industrial algorithms directly in your browser.",
-          "chip1": "Drag & Drop Canvas",
-          "chip2": "Real-Time Node Links",
-          "chip3": "Zero Installation"
-        },
-        "vesselWeight": {
-          "title": "Weight-Flow Calculator",
-          "tagline": "Pressure Vessel Engineering Suite",
-          "description": "Precise mechanical calculation and weight estimation for ASME pressure vessels, shells, dished heads, nozzles, and structural materials.",
-          "chip1": "ASME Standards",
-          "chip2": "Shells & Dished Heads",
-          "chip3": "Instant Weight Estimation"
-        },
-        "aparatAcademy": {
-          "title": "ESP Video Academy",
-          "tagline": "Industrial & Technical Video Hub",
-          "description": "Comprehensive video tutorials, software walkthroughs, industrial design courses, and recorded technical webinars with instant streaming.",
-          "chip1": "HD Video Tutorials",
-          "chip2": "Engineering Guides",
-          "chip3": "Free Instant Streaming"
-        }
-      }
+    "dictionary": {
+      "title": "Engineering Dictionary & Field Insights",
+      "subtitle": "Practical terminology, site jargon, metallurgy, NDT inspection tests, and field experience",
+      "searchPlaceholder": "Search terms, standards (ASME, API), abbreviations (NPSH, PWHT, RT) or materials...",
+      "dailyWord": "Engineering Term of the Day",
+      "randomWord": "Random Term",
+      "all": "terms",
+      "fieldTip": "Field Pro Tip:",
+      "standards": "Standards:",
+      "copied": "Term and details copied to clipboard",
+      "noResults": "No matching terms found",
+      "clearSearch": "Clear search"
     },
     "newsletter": {
       "title": "Stay in the loop",

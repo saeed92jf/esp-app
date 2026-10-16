@@ -10,7 +10,7 @@ export const getLoginSchema = (t: (key: string) => string) => z.object({
     .string()
     .trim()
     .min(1, { message: t('required') })
-    .refine((v) => emailRe.test(v) || mobileRe.test(v), { message: t('invalidIdentifier') }),
+    .refine((v) => emailRe.test(v) || mobileRe.test(v) || ['saeed', 'guest', 'gust'].includes(v.toLowerCase()), { message: t('invalidIdentifier') }),
   password: z.string().min(1, { message: t('required') }),
 });
 

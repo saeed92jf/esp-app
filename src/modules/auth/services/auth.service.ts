@@ -51,9 +51,24 @@ const DEMO_USERS = [
       fullNameFa: "سعید جلیلی فرد",
       email: "saeed@demo.com",
       mobile: "09120000000",
-      avatar: "",
+      avatar: "/team/saeed-jalili-fard.webp",
       role: "admin" as UserRole,
       primaryColor: "rose",
+    },
+  },
+  {
+    email: "guest@demo.com",
+    mobile: "09120000001",
+    password: "guest",
+    user: {
+      id: "u-guest",
+      fullName: "Guest User",
+      fullNameFa: "کاربر مهمان (Gust)",
+      email: "guest@demo.com",
+      mobile: "09120000001",
+      avatar: "/avatar/male-01.webp",
+      role: "customer" as UserRole,
+      primaryColor: "blue",
     },
   },
 ];
@@ -63,9 +78,27 @@ export class FakeAuthService implements IAuthService {
   async login({ identifier, password }: LoginPayload): Promise<LoginResult> {
     await wait(FAKE_DELAY);
     const id = identifier.trim().toLowerCase();
-    const match = DEMO_USERS.find(
-      (c) => (c.email === id || c.mobile === id) && c.password === password,
-    );
+    const isSaeed = id === "saeed@demo.com" || id === "saeed" || id === "09120000000";
+    const isGuest =
+      id === "guest@demo.com" ||
+      id === "gust@demo.com" ||
+      id === "guest" ||
+      id === "gust" ||
+      id === "09120000001";
+
+    const match = DEMO_USERS.find((c) => {
+      if (c.user.id === "u-saeed" && isSaeed) {
+        return c.password === password;
+      }
+      if (c.user.id === "u-guest" && isGuest) {
+        return password === "guest" || password === "gust";
+      }
+      return (
+        (c.email === id || c.mobile === id) &&
+        (c.password === password || (c.user.id === "u-guest" && (password === "guest" || password === "gust")))
+      );
+    });
+
     if (!match)
       throw new ApiError(
         "INVALID_CREDENTIALS",

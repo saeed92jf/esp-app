@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
   Sparkles,
-  Layers,
+  BookA,
   Lightbulb,
   Headphones,
   UserPlus,
@@ -20,7 +20,7 @@ import { HeroFlow } from "@/modules/hero-flow/HeroFlow";
 import { HomeSidebar } from "@/modules/home/components/home-sidebar";
 import { useHomeSidebar } from "@/modules/home/hooks/use-home-sidebar";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-import { FreeModulesBanner } from "@/modules/home/components/free-modules-banner";
+import { EngineeringDictionary } from "@/modules/home/components/engineering-dictionary";
 import { DidYouKnowSection } from "@/modules/home/components/did-you-know-section";
 import { SupportSection } from "@/modules/home/components/support-section";
 import { MultiButton, MultiButtonGroup } from "@/components/ui/multi-button";
@@ -41,7 +41,7 @@ const staggerContainer: Variants = {
   },
 };
 
-type GuestTab = "modules" | "insights" | "featured" | "support";
+type GuestTab = "dictionary" | "insights" | "featured" | "support";
 
 export function HomeClient() {
   const t = useTranslations("Home");
@@ -73,16 +73,15 @@ export function HomeClient() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isQuickAccessEditing, setIsQuickAccessEditing] = useState(false);
 
-  const [activeGuestTab, setActiveGuestTab] = useState<GuestTab>("modules");
-  const [isRegisterHovered, setIsRegisterHovered] = useState(false);
+  const [activeGuestTab, setActiveGuestTab] = useState<GuestTab>("dictionary");
 
   const guestTabs = useMemo(() => [
     {
-      id: "modules" as const,
-      label: t("guestTabs.modules"),
-      ariaLabel: t("guestTabs.modulesDesc"),
-      icon: Layers,
-      onClick: () => setActiveGuestTab("modules"),
+      id: "dictionary" as const,
+      label: t("guestTabs.dictionary"),
+      ariaLabel: t("guestTabs.dictionaryDesc"),
+      icon: BookA,
+      onClick: () => setActiveGuestTab("dictionary"),
     },
     {
       id: "insights" as const,
@@ -183,19 +182,19 @@ export function HomeClient() {
             /* ======================================================== */
             <div className="relative w-full h-full flex flex-col overflow-hidden">
               {/* Tab Content Display Area */}
-              <div className="flex-1 min-h-0 w-full h-full overflow-hidden relative">
+              <div className="flex-1 min-h-0 w-full overflow-hidden relative">
                 <AnimatePresence mode="wait">
-                  {/* TAB 1: MODULES (Free & Featured Modules Banner) */}
-                  {activeGuestTab === "modules" && (
+                  {/* TAB 1: DICTIONARY (Specialized Engineering Dictionary & Daily Tips) */}
+                  {activeGuestTab === "dictionary" && (
                     <motion.div
-                      key="modules"
+                      key="dictionary"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-center pb-20 sm:pb-24 px-2 sm:px-4 overflow-hidden"
+                      className="w-full h-full flex flex-col items-center justify-start pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
                     >
-                      <FreeModulesBanner />
+                      <EngineeringDictionary />
                     </motion.div>
                   )}
 
@@ -207,7 +206,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-center pb-20 sm:pb-24 px-2 sm:px-4 overflow-hidden"
+                      className="w-full h-full flex flex-col items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
                     >
                       <DidYouKnowSection />
                     </motion.div>
@@ -221,7 +220,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full relative overflow-hidden flex items-center justify-center pb-12"
+                      className="w-full h-full relative overflow-hidden flex items-center justify-center pb-2 sm:pb-3"
                     >
                       <HeroFlow />
                     </motion.div>
@@ -235,7 +234,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-center pb-20 sm:pb-24 px-2 sm:px-4 overflow-hidden"
+                      className="w-full h-full flex flex-col items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
                     >
                       <SupportSection />
                     </motion.div>
@@ -243,90 +242,45 @@ export function HomeClient() {
                 </AnimatePresence>
               </div>
 
-              {/* Floating Bottom Navigation Dock (MultiButtonGroup Tabs + Large Animated Auth Buttons) */}
-              {/* Floating Bottom Navigation Dock (Compact MultiButton Tabs + Title + Larger Flat Auth Buttons) */}
-              <div className="fixed bottom-[calc(var(--footer-height)+0.75rem)] inset-x-0 z-40 flex flex-col items-center justify-center pointer-events-none px-4">
-                <div className="pointer-events-auto flex flex-col items-center gap-2 sm:gap-2.5">
-                  {/* Row 1: Welcome Showcase Navigation Tabs (Compact MultiButton with bottom margin) */}
-                  <div className="flex flex-col items-center mb-3 sm:mb-4">
+              {/* Bottom Navigation Dock & Action Bar (Cleanly Placed BELOW the Content) */}
+              <div className="shrink-0 w-full border-t border-border/50 bg-card/85 dark:bg-[#0c0e14]/90 backdrop-blur-xl py-2 sm:py-2.5 px-3 sm:px-6 z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="w-full max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4">
+                  {/* Left/Start: Welcome Navigation Tabs */}
+                  <div className="flex items-center justify-center shrink-0">
                     <MultiButtonGroup>
                       <MultiButton
                         items={guestTabs}
                         selectedId={activeGuestTab}
                         onSelect={(val) => setActiveGuestTab(val as GuestTab)}
                         size="sm"
-                        className="shadow-none border-0"
+                        className="shadow-xs border border-border/60 bg-muted/40"
                       />
                     </MultiButtonGroup>
                   </div>
 
-                  {/* Row 2: Longer Engaging Title under MultiButton */}
-                  <p className="text-xs sm:text-[13px] font-medium text-muted-foreground/85 text-center max-w-lg tracking-tight select-none py-0.5 px-2">
+                  {/* Center: Friendly Invitation Tagline (Hidden on mobile for compact layout) */}
+                  <p className="hidden lg:block text-xs font-medium text-muted-foreground/80 text-center truncate max-w-md select-none">
                     {t("guestDockTitle")}
                   </p>
 
-                  {/* Row 3: Larger Flat Auth Action Buttons (Visibly bigger than MultiButton, Non-Primary, Flat) */}
-                  <div className="flex items-center gap-3">
-                    {/* Create Account / Sign Up Button (With Animated Filling & Emptying Bounce Background) */}
-                    <Link
-                      href="/register"
-                      onMouseEnter={() => setIsRegisterHovered(true)}
-                      onMouseLeave={() => setIsRegisterHovered(false)}
-                      className="relative isolate inline-flex h-11 sm:h-12 items-center justify-center gap-2.5 overflow-hidden rounded-full bg-slate-200/60 dark:bg-slate-800/60 px-6 sm:px-7 text-xs sm:text-sm font-semibold border-0 shadow-none ring-0 select-none cursor-pointer"
-                    >
-                      {/* Background Animated Filling & Emptying layer */}
-                      <motion.span
-                        aria-hidden="true"
-                        className="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#18181b] dark:bg-slate-100"
-                        initial={false}
-                        animate={{
-                          scale: isRegisterHovered ? 1 : 0,
-                          opacity: isRegisterHovered ? 1 : 0,
-                        }}
-                        transition={{
-                          scale: isRegisterHovered
-                            ? {
-                                type: "spring",
-                                stiffness: 420,
-                                damping: 24,
-                                mass: 0.5,
-                              }
-                            : {
-                                duration: 0.2,
-                                ease: [0.4, 0, 0.2, 1],
-                              },
-                          opacity: {
-                            duration: isRegisterHovered ? 0.18 : 0.14,
-                          },
-                        }}
-                      />
-                      <UserPlus
-                        className={cn(
-                          "size-4 sm:size-[18px] shrink-0 transition-colors duration-200",
-                          isRegisterHovered
-                            ? "text-white dark:text-slate-950"
-                            : "text-foreground dark:text-slate-200"
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "tracking-tight transition-colors duration-200",
-                          isRegisterHovered
-                            ? "text-white dark:text-slate-950"
-                            : "text-foreground dark:text-slate-200"
-                        )}
-                      >
-                        {t("createAccountLong")}
-                      </span>
-                    </Link>
-
-                    {/* Login Button (Simple Flat Hover - Larger) */}
+                  {/* Right/End: High-Quality Flat Auth Action Buttons */}
+                  <div className="flex items-center justify-center gap-2 sm:gap-2.5 shrink-0 w-full sm:w-auto">
+                    {/* Login Link */}
                     <Link
                       href="/login"
-                      className="group relative inline-flex h-11 sm:h-12 items-center justify-center gap-2.5 rounded-full bg-slate-200/40 dark:bg-slate-800/40 px-6 sm:px-7 text-xs sm:text-sm font-medium text-muted-foreground border-0 shadow-none ring-0 transition-colors duration-200 hover:bg-slate-950/[0.08] dark:hover:bg-white/[0.08] hover:text-foreground"
+                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground/85 hover:text-foreground px-3.5 sm:px-4 text-xs font-semibold border border-border/50 shadow-2xs transition-all active:scale-95"
                     >
-                      <LogIn className="size-4 sm:size-[18px] shrink-0 text-muted-foreground transition-colors duration-200 group-hover:text-foreground" />
-                      <span className="tracking-tight">{t("loginLong")}</span>
+                      <LogIn className="size-3.5 text-muted-foreground" />
+                      <span>{t("loginLong")}</span>
+                    </Link>
+
+                    {/* Create Account Link (Primary Glow Pill) */}
+                    <Link
+                      href="/register"
+                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-3.5 sm:px-5 text-xs font-bold shadow-xs shadow-primary/25 transition-all active:scale-95"
+                    >
+                      <UserPlus className="size-3.5" />
+                      <span>{t("createAccountLong")}</span>
                     </Link>
                   </div>
                 </div>

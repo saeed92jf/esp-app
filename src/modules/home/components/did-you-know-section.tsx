@@ -350,8 +350,6 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
         "w-full max-w-5xl mx-auto flex flex-col items-center select-none my-auto",
         className
       )}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
     >
       {/* 1. Header with Catchy Title & Carousel Controls (Width aligned to center card) */}
       <div className="w-[96%] sm:w-[88%] md:w-[82%] px-2 sm:px-3 mx-auto flex items-center justify-between mb-2 sm:mb-3 shrink-0">
@@ -387,7 +385,22 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
         </div>
       </div>
 
-      {/* 2. Embla Cards Track with side fade mask & generous shadow breathing room */}
+      {/* 2. Timer Progress Line Above Cards */}
+      <div
+        dir={isRtl ? "rtl" : "ltr"}
+        className="w-[96%] sm:w-[88%] md:w-[82%] px-2 sm:px-3 mx-auto mb-2 sm:mb-2.5 shrink-0"
+      >
+        <div className="h-1 sm:h-1.5 w-full bg-muted/60 dark:bg-muted/30 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-none shadow-[0_0_8px_var(--primary)]"
+            style={{
+              width: `${Math.min(100, Math.max(0, progress))}%`,
+            }}
+          />
+        </div>
+      </div>
+
+      {/* 3. Embla Cards Track with side fade mask & generous shadow breathing room */}
       <div className="relative w-full">
         <div
           className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)]"
@@ -402,35 +415,19 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
                 key={card.id}
                 className="min-w-0 shrink-0 grow-0 basis-[96%] sm:basis-[88%] md:basis-[82%] px-2 sm:px-3"
               >
-                {/* Outer Card Wrapper with exact rounded-2xl sm:rounded-3xl fillet */}
+                {/* Card Container with exact rounded fillet and card-only hover pause */}
                 <div
                   className={cn(
                     "relative w-full h-[310px] sm:h-[335px] md:h-[350px] rounded-2xl sm:rounded-3xl transition-all duration-300",
+                    "border bg-card/95 dark:bg-[#0e1017]/95 backdrop-blur-2xl p-5 sm:p-7 md:p-8 flex flex-col justify-center overflow-hidden",
                     isActive
-                      ? "p-[2.5px] shadow-xl shadow-slate-950/15 dark:shadow-[0_16px_36px_-10px_rgba(0,0,0,0.7)] opacity-100 scale-100"
-                      : "p-px opacity-55 scale-[0.98]"
+                      ? "border-primary/25 shadow-xl shadow-slate-950/15 dark:shadow-[0_16px_36px_-10px_rgba(0,0,0,0.7)] opacity-100 scale-100"
+                      : "border-border/40 opacity-55 scale-[0.98]",
+                    card.borderAccent
                   )}
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
                 >
-                  {/* Border Progress Ring for Active Card / Subtle Border for Inactive (Concentric Fillet) */}
-                  {isActive ? (
-                    <div
-                      className="absolute inset-0 rounded-2xl sm:rounded-3xl pointer-events-none overflow-hidden"
-                      style={{
-                        background: `conic-gradient(from 0deg at 50% 50%, var(--primary) 0%, var(--primary) ${progress}%, color-mix(in srgb, var(--primary) 18%, transparent) ${progress}%, color-mix(in srgb, var(--primary) 18%, transparent) 100%)`,
-                        filter: "drop-shadow(0 0 6px var(--primary))",
-                      }}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 rounded-2xl sm:rounded-3xl pointer-events-none bg-border/40" />
-                  )}
-
-                  {/* Card Content Interior with exact concentric fillet */}
-                  <div
-                    className={cn(
-                      "relative size-full rounded-[calc(1rem-2.5px)] sm:rounded-[calc(1.5rem-2.5px)] bg-card/95 dark:bg-[#0e1017]/95 backdrop-blur-2xl p-5 sm:p-7 md:p-8 flex flex-col justify-center overflow-hidden transition-all duration-300",
-                      card.borderAccent
-                    )}
-                  >
                     {/* Glowing Aura */}
                     <div
                       className={cn(
@@ -514,9 +511,8 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
         </div>
       </div>
     </div>
