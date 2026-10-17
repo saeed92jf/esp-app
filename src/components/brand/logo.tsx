@@ -27,7 +27,7 @@ function BrandWord({ text }: { text: string }) {
   return (
     <span
       className={cn(
-        'inline select-none bg-clip-text text-transparent uppercase font-sans font-bold',
+        'inline-flex items-center leading-none select-none bg-clip-text text-transparent uppercase font-sans font-bold',
         'bg-gradient-to-br from-[#444444] to-[#111111] dark:from-[#f4f4f5] dark:to-[#d4d4d8]'
       )}
     >
@@ -76,11 +76,10 @@ export function Logo({
               <BrandWord text={trailWord} />
             </>
           )}
-          <span className="inline-block w-[0.24em]">&nbsp;</span>
           <span 
-            className="bg-clip-text text-transparent uppercase font-sans font-bold"
+            className="ms-[0.25em] inline-flex items-center justify-center font-sans font-bold uppercase tracking-[0.06em] leading-none px-[0.26em] py-[0.08em] rounded-none text-white border border-white/20 dark:border-transparent bg-gradient-logo shadow-2xs select-none self-center"
             style={{
-              backgroundImage: 'linear-gradient(135deg, var(--color-primary-400, #60a5fa) 0%, var(--color-primary-500, #3b82f6) 40%, var(--color-primary-700, #1d4ed8) 100%)'
+              backgroundImage: 'var(--gradient-logo)'
             }}
           >
             CORE

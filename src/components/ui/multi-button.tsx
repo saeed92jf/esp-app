@@ -42,6 +42,7 @@ export type MultiButtonProps = MultiButtonRootProps & {
   variant?: MultiButtonVariant;
   size?: MultiButtonSize;
   syncWidthTo?: MultiButtonItem[];
+  expandSelected?: boolean;
 };
 
 export type CompactMultiButtonProps = MultiButtonProps & {
@@ -78,7 +79,7 @@ const SIZE_CONFIG: Record<
     icon: "size-3.5",
     text: "text-[11px]",
     baseItemWidth: 54,
-    expandBonus: 68,
+    expandBonus: 72,
     expandedFlex: 2.6,
     collapsedFlex: 0.8,
   },
@@ -87,8 +88,8 @@ const SIZE_CONFIG: Record<
     icon: "size-4",
     text: "text-xs",
     baseItemWidth: 60,
-    expandBonus: 74,
-    expandedFlex: 2.7,
+    expandBonus: 82,
+    expandedFlex: 2.8,
     collapsedFlex: 0.8,
   },
   lg: {
@@ -96,8 +97,8 @@ const SIZE_CONFIG: Record<
     icon: "size-[18px]",
     text: "text-xs sm:text-sm",
     baseItemWidth: 68,
-    expandBonus: 82,
-    expandedFlex: 2.8,
+    expandBonus: 92,
+    expandedFlex: 3.0,
     collapsedFlex: 0.8,
   },
 };
@@ -167,6 +168,7 @@ const MultiButton = React.forwardRef<HTMLDivElement, MultiButtonProps>(
       gooey = false,
       variant = "outline",
       size = "md",
+      expandSelected = true,
       className,
       style,
       ...props
@@ -201,7 +203,7 @@ const MultiButton = React.forwardRef<HTMLDivElement, MultiButtonProps>(
           {items.map((item, index) => {
             const isSelected = selectedId === item.id;
             const isHovered = hoveredId === item.id;
-            const isExpanded = isHovered;
+            const isExpanded = isHovered || (expandSelected && isSelected && hoveredId === null);
             const Icon = item.icon;
 
             return (

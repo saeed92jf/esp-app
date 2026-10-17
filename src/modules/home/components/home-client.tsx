@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
-  Boxes,
   BookA,
   Lightbulb,
   Headphones,
   UserPlus,
   LogIn,
 } from "lucide-react";
+import { SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
 import { SiteSearch } from "@/components/features/search/site-search";
@@ -74,16 +74,14 @@ export function HomeClient() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isQuickAccessEditing, setIsQuickAccessEditing] = useState(false);
 
-  const [activeGuestTab, setActiveGuestTab] = useState<GuestTab>("dictionary");
+  const [activeGuestTab, setActiveGuestTab] = useState<GuestTab>("insights");
+  const guestScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    guestScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  }, [activeGuestTab]);
 
   const guestTabs = useMemo(() => [
-    {
-      id: "dictionary" as const,
-      label: t("guestTabs.dictionary"),
-      ariaLabel: t("guestTabs.dictionaryDesc"),
-      icon: BookA,
-      onClick: () => setActiveGuestTab("dictionary"),
-    },
     {
       id: "insights" as const,
       label: t("guestTabs.insights"),
@@ -92,10 +90,17 @@ export function HomeClient() {
       onClick: () => setActiveGuestTab("insights"),
     },
     {
+      id: "dictionary" as const,
+      label: t("guestTabs.dictionary"),
+      ariaLabel: t("guestTabs.dictionaryDesc"),
+      icon: BookA,
+      onClick: () => setActiveGuestTab("dictionary"),
+    },
+    {
       id: "featured" as const,
       label: t("guestTabs.featured"),
       ariaLabel: t("guestTabs.featuredDesc"),
-      icon: Boxes,
+      icon: SquaresFour,
       onClick: () => setActiveGuestTab("featured"),
     },
     {
@@ -114,24 +119,24 @@ export function HomeClient() {
       <HomeSidebar />
 
       <div className="relative flex w-full h-full">
-        {/* Animated Spacer pushing the content aside */}
+        {/* Animated Spacer pushing the content aside on desktop ONLY */}
         <motion.div
           initial={false}
           animate={{
-            width: isOpen ? (isMobile ? 300 : 340) : 0,
+            width: isOpen && !isMobile ? 340 : 0,
           }}
           transition={{
             duration: 0.3,
             ease: [0.16, 1, 0.3, 1],
           }}
-          className="shrink-0 overflow-hidden pointer-events-none"
+          className="shrink-0 overflow-hidden pointer-events-none hidden sm:block"
           aria-hidden="true"
         />
 
         {/* Center content container */}
-        <div className="flex-1 min-w-0 h-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-hidden flex flex-col">
-          {/* Backdrop click catcher when sidebar is open */}
-          {isOpen && (
+        <div className="flex-1 min-w-0 h-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-y-auto custom-scrollbar flex flex-col">
+          {/* Backdrop click catcher when sidebar is open on desktop */}
+          {isOpen && !isMobile && (
             <div
               onClick={close}
               className="absolute inset-0 z-50 cursor-pointer"
@@ -143,7 +148,7 @@ export function HomeClient() {
             /* ======================================================== */
             /* 1. AUTHENTICATED USER VIEW (HERO + SEARCH + QUICK ACCESS) */
             /* ======================================================== */
-            <div className="relative flex h-full w-full flex-col items-center justify-center text-center pb-6 sm:pb-8 overflow-hidden">
+            <div className="relative flex min-h-full min-h-[500px] sm:min-h-[540px] w-full flex-col items-center justify-center text-center py-6 sm:py-8 my-auto">
               <Container>
                 <motion.div
                   initial="hidden"
@@ -153,7 +158,7 @@ export function HomeClient() {
                 >
                   <div className="w-full max-w-2xl flex flex-col items-center">
                     {/* Google-Inspired Logo */}
-                    <motion.div variants={fadeUp} className="mb-6 sm:mb-8 flex justify-center w-full">
+                    <motion.div variants={fadeUp} className="mb-4 sm:mb-5 flex justify-center w-full">
                       <Logo
                         className="text-xl sm:text-2xl md:text-3xl lg:text-[34px]"
                         subtitleClassName="text-[0.32em] sm:text-[0.36em] font-semibold"
@@ -170,8 +175,8 @@ export function HomeClient() {
                     </motion.div>
                   </div>
 
-                  {/* Quick Access Shortcuts */}
-                  <motion.div variants={fadeUp} className="mt-7 sm:mt-9 w-full">
+                  {/* Quick Access Shortcuts - Brought slightly lower relative to search */}
+                  <motion.div variants={fadeUp} className="mt-5 sm:mt-6 w-full">
                     <QuickAccessSection onEditModeChange={setIsQuickAccessEditing} />
                   </motion.div>
                 </motion.div>
@@ -183,7 +188,10 @@ export function HomeClient() {
             /* ======================================================== */
             <div className="relative w-full h-full flex flex-col overflow-hidden">
               {/* Tab Content Display Area */}
-              <div className="flex-1 min-h-0 w-full overflow-hidden relative">
+              <div
+                ref={guestScrollRef}
+                className="flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar relative flex flex-col overscroll-contain"
+              >
                 <AnimatePresence mode="wait">
                   {/* TAB 1: DICTIONARY (Specialized Engineering Dictionary & Daily Tips) */}
                   {activeGuestTab === "dictionary" && (
@@ -193,7 +201,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-start pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
+                      className="w-full min-h-full flex flex-col items-center justify-start pt-0 pb-8 px-2 sm:px-4"
                     >
                       <EngineeringDictionary />
                     </motion.div>
@@ -207,7 +215,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
+                      className="w-full min-h-full flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
                     >
                       <DidYouKnowSection />
                     </motion.div>
@@ -221,7 +229,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full relative overflow-hidden flex items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4"
+                      className="w-full min-h-full relative flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
                     >
                       <FeaturedModulesCard />
                     </motion.div>
@@ -235,7 +243,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full h-full flex flex-col items-center justify-center pb-2 sm:pb-3 px-2 sm:px-4 overflow-hidden"
+                      className="w-full min-h-full flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
                     >
                       <SupportSection />
                     </motion.div>
@@ -253,7 +261,7 @@ export function HomeClient() {
                         items={guestTabs}
                         selectedId={activeGuestTab}
                         onSelect={(val) => setActiveGuestTab(val as GuestTab)}
-                        size="sm"
+                        size="md"
                         className="shadow-none border border-border/60 bg-muted/40"
                       />
                     </MultiButtonGroup>
@@ -264,7 +272,7 @@ export function HomeClient() {
                     {/* Login Link */}
                     <Link
                       href="/login"
-                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground px-3.5 sm:px-4 text-xs font-medium border border-border/60 shadow-none transition-colors active:scale-95"
+                      className="flex-1 sm:flex-none inline-flex h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-muted/60 hover:bg-muted text-foreground px-3.5 sm:px-4 text-xs font-medium border border-border/60 shadow-none transition-colors active:scale-95"
                     >
                       <LogIn className="size-3.5 text-muted-foreground" />
                       <span>{tCommon("login")}</span>
@@ -273,7 +281,7 @@ export function HomeClient() {
                     {/* Create Account Link (Neutral Monochromatic Flat) */}
                     <Link
                       href="/register"
-                      className="flex-1 sm:flex-none inline-flex h-8 sm:h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-xl bg-foreground text-background hover:bg-foreground/90 px-3.5 sm:px-4 text-xs font-semibold border border-transparent shadow-none transition-colors active:scale-95"
+                      className="flex-1 sm:flex-none inline-flex h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90 px-3.5 sm:px-4 text-xs font-semibold border border-transparent shadow-none transition-colors active:scale-95"
                     >
                       <UserPlus className="size-3.5" />
                       <span>{tCommon("register")}</span>

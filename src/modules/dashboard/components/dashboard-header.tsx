@@ -31,7 +31,7 @@ export function DashboardHeader({
 
   return (
     <AppHeader
-      tag={t("title")}
+      tag="Dashboard"
       onToggleMenu={toggle}
       isMenuOpen={isOpen}
       logoHref="/"

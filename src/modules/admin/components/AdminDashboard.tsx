@@ -122,7 +122,7 @@ export function AdminDashboard() {
     <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
       {/* Top Header */}
       <AppHeader
-        tag={t("title")}
+        tag="Admin"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"

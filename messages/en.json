@@ -88,9 +88,9 @@
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'..."
     },
     "guestTabs": {
-      "dictionary": "Dictionary",
+      "dictionary": "Technical Dictionary",
       "insights": "Insights",
-      "featured": "Modules",
+      "featured": "Featured",
       "support": "Support",
       "dictionaryDesc": "Technical glossary, field jargon, metallurgy and standards",
       "insightsDesc": "Scientific & Technical Insights",
@@ -98,12 +98,9 @@
       "supportDesc": "Technical Support & Contact"
     },
     "featuredCard": {
-      "badge": "Coming Soon",
-      "title": "We showcase our latest and most important modules here",
-      "subtitle": "Advanced engineering calculation suites and specialized Euro Slot modules will be featured here.",
-      "tagPiping": "Piping Calculations",
-      "tagMaterials": "Materials & Standards",
-      "tagSimulation": "Process Simulation"
+      "badge": "Modules Showcase",
+      "title": "Specialized Engineering Modules & Analytical Suites",
+      "subtitle": "Engineering calculations, project data access, task management, and more."
     },
     "guestDockTitle": "Join our platform for full access to engineering calculation tools",
     "createAccountLong": "Create Free Account",
@@ -114,7 +111,10 @@
       "customizeHint": "{selected} of {max} selected",
       "capReached": "Maximum {max} items allowed",
       "reset": "Reset to defaults",
-      "done": "Done"
+      "done": "Done",
+      "delete": "Delete",
+      "editCards": "Edit Cards",
+      "expand": "Expand"
     },
     "didYouKnow": {
       "eyebrow": "Engineering & Industrial Insights",
@@ -270,17 +270,25 @@
       "explore": "Explore"
     },
     "dictionary": {
-      "title": "Engineering Dictionary & Field Insights",
-      "subtitle": "Practical terminology, site jargon, metallurgy, NDT inspection tests, and field experience",
-      "searchPlaceholder": "Search terms, standards (ASME, API), abbreviations (NPSH, PWHT, RT) or materials...",
+      "title": "Technical Dictionary",
+      "subtitle": "Terminology, standards and field engineering tips",
+      "searchPlaceholder": "Search terms...",
+      "allCategories": "All Categories",
       "dailyWord": "Engineering Term of the Day",
       "randomWord": "Random Term",
       "all": "terms",
-      "fieldTip": "Field Pro Tip:",
+      "fieldTip": "Golden Tip:",
       "standards": "Standards:",
       "copied": "Term and details copied to clipboard",
       "noResults": "No matching terms found",
-      "clearSearch": "Clear search"
+      "clearSearch": "Clear search",
+      "copyInfo": "Copy Term Info",
+      "close": "Close",
+      "definitionTitle": "Technical & Practical Definition",
+      "keyTipTitle": "Golden Field Engineering Tip",
+      "standardsTitle": "Governing Engineering Standards",
+      "noResultsHint": "Try searching with different keywords or switch the category filter.",
+      "copyTerm": "Copy Term Details"
     },
     "newsletter": {
       "title": "Stay in the loop",
@@ -334,7 +342,9 @@
     "loggingIn": "Signing in...",
     "brand": "ESP CORE",
     "login": "Sign In",
-    "register": "Get Started",
+    "register": "Sign Up",
+    "loginTitle": "Sign In",
+    "registerTitle": "Create an Account",
     "loginTooltip": "Log in",
     "registerTooltip": "Create account",
     "logout": "Sign out",
@@ -427,6 +437,7 @@
     "subtitle": "All item in one menu",
     "open": "open",
     "close": "close",
+    "loginRequired": "Please sign in to access the menu",
     "search": "Search",
     "version": "V:1.01",
     "noResults": "No results",
@@ -553,6 +564,7 @@
     "bugReport": "Report a Bug"
   },
   "Dashboard": {
+    "title": "Dashboard",
     "profile": "Profile",
     "greeting": "Welcome, {name}",
     "themeSettings": "Theme Settings",

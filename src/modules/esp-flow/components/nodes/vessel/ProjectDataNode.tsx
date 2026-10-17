@@ -479,7 +479,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                   placeholder={t("title")}
                   className="h-full text-xs font-medium flex-1 min-w-0 bg-transparent border-0 outline-none placeholder:text-muted-foreground text-foreground"
                 />
-                <TooltipProvider delayDuration={200}>
+                <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button
@@ -710,7 +710,7 @@ export const ProjectDataNode = memo(({ id, data, selected }: Props) => {
                                 </span>
                               </div>
                               {item.description && (
-                                <TooltipProvider delayDuration={200}>
+                                <TooltipProvider>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <span className="text-[10px] text-muted-foreground truncate block max-w-[200px] cursor-help">

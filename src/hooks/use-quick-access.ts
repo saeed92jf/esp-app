@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/services';
 import { NAVIGATION, type NavItem } from '@/config/navigation';
 
-export const QUICK_ACCESS_MAX = 8;
+export const QUICK_ACCESS_MAX = 7;
 
 export const ALL_SELECTABLE_ITEMS: NavItem[] = NAVIGATION.filter(
   (g) => g.id !== 'settings' && g.items.length > 0,

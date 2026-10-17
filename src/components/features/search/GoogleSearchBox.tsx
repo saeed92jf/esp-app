@@ -82,8 +82,8 @@ export function GoogleSearchBox({
           "group/result relative me-2.5 flex h-[52px] cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
           "rounded-s-none rounded-e-full",
           isSelected
-            ? "bg-[#e8eaed] dark:bg-[#303134]"
-            : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80",
+            ? "bg-zinc-100 dark:bg-zinc-100"
+            : "hover:bg-zinc-100/80 dark:hover:bg-zinc-100/80",
         )}
       >
         {isSelected && (
@@ -93,28 +93,28 @@ export function GoogleSearchBox({
         <div className="flex min-w-0 flex-1 items-center gap-3 ps-1">
           <div
             className={cn(
-              "flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800",
+              "flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100",
               Icon && navGradientClass,
             )}
           >
             {Icon ? (
               <AppIcon icon={Icon as unknown as PhosphorIcon} className="size-4" />
             ) : (
-              <Search className="size-4 text-muted-foreground" />
+              <Search className="size-4 text-zinc-500" />
             )}
           </div>
 
           <div className="flex min-w-0 flex-1 flex-col text-start">
-            <span className="truncate text-[13.5px] font-medium leading-snug text-[#202124] dark:text-[#e8eaed]">
+            <span className="truncate text-[13.5px] font-medium leading-snug text-[#202124]">
               {item.title}
             </span>
-            <span className="text-muted-foreground truncate text-[11px] leading-tight">
+            <span className="text-zinc-500 truncate text-[11px] leading-tight">
               {item.section}
             </span>
           </div>
         </div>
 
-        <div className="text-muted-foreground/45 shrink-0 pe-2 ms-1">
+        <div className="text-zinc-400 shrink-0 pe-2 ms-1">
           {isRtl ? (
             <ArrowLeft className="size-3.5" />
           ) : (
@@ -137,6 +137,7 @@ export function GoogleSearchBox({
       onQueryChange={setQuery}
       onOpenChange={onOpenChange}
       showAiModeButton={true}
+      darkFlatWhite={true}
       placeholder={
         placeholder || (isRtl
           ? "جستجو در ابزارها، محاسبات، مخازن تحت فشار..."

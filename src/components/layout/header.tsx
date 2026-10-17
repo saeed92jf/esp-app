@@ -6,6 +6,7 @@ import { SignIn } from "@phosphor-icons/react";
 import { Link } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -28,7 +29,7 @@ export function Header() {
   const { user, loading } = useAuth();
 
   const rightActions = (
-    <div className="flex items-center gap-2 sm:gap-2.5">
+    <div className="flex items-center gap-1.5 sm:gap-2.5">
       <ThemeToggle />
       <LocaleSwitcher />
       {loading ? (
@@ -43,10 +44,10 @@ export function Header() {
         </>
       ) : (
         <TooltipProvider>
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href="/login" className={`${HEADER_ICON_BUTTON_CLASS} hidden sm:flex`}>
+                <Link href="/login" className={cn(HEADER_ICON_BUTTON_CLASS, "flex")} aria-label={t("loginTooltip")}>
                   <SignIn className={HEADER_ICON_CLASS} weight="bold" />
                 </Link>
               </TooltipTrigger>

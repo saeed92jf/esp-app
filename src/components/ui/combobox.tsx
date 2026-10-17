@@ -7,7 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-export interface ComboboxOption { value: string; label: string; triggerLabel?: string; searchTerms?: string[]; icon?: React.ReactNode; disabled?: boolean; hint?: string; }
+export interface ComboboxOption {
+  value: string;
+  label: string;
+  triggerLabel?: string;
+  searchTerms?: string[];
+  icon?: React.ReactNode;
+  disabled?: boolean;
+  hint?: string;
+  hintClassName?: string;
+}
 
 export const COMBOBOX_SEARCH_THRESHOLD = 10;
 
@@ -20,6 +29,7 @@ export interface ComboboxProps {
   emptyText?: string;
   className?: string;
   popoverClassName?: string;
+  hintClassName?: string;
   showSearch?: boolean;
   searchThreshold?: number;
   disabled?: boolean;
@@ -34,6 +44,7 @@ export function Combobox({
   emptyText,
   className,
   popoverClassName,
+  hintClassName,
   showSearch,
   searchThreshold = COMBOBOX_SEARCH_THRESHOLD,
   disabled,
@@ -101,16 +112,32 @@ export function Combobox({
                   }} 
                   disabled={opt.disabled}
                   className={cn(
-                    "rtl:text-right w-full flex items-center justify-between gap-2 px-2.5 py-1.5",
+                    "group rtl:text-right w-full flex items-center justify-between gap-2 px-2.5 py-1.5 cursor-pointer",
                     opt.disabled && "opacity-40 cursor-not-allowed pointer-events-none"
                   )}
                 >
                   <div className="flex-1 flex items-center gap-2 rtl:text-right min-w-0">
                     {opt.icon && <span className="shrink-0 flex items-center justify-center">{opt.icon}</span>}
                     <span className="truncate">{opt.label}</span>
-                    {opt.hint && <span className="ms-auto text-[10px] text-muted-foreground">{opt.hint}</span>}
+                    {opt.hint && (
+                      <span
+                        className={cn(
+                          "ms-auto text-[11px] font-semibold px-1.5 py-0.5 rounded-md transition-colors duration-150 shrink-0 select-none",
+                          "text-muted-foreground/80 bg-muted/60 dark:bg-muted/30",
+                          "group-hover:text-white group-hover:bg-white/20",
+                          "group-hover/command-item:text-white group-hover/command-item:bg-white/20",
+                          "group-data-[selected=true]:text-white group-data-[selected=true]:bg-white/20",
+                          "group-data-selected/command-item:text-white group-data-selected/command-item:bg-white/20",
+                          isRtl && "fa-num",
+                          hintClassName,
+                          opt.hintClassName
+                        )}
+                      >
+                        {opt.hint}
+                      </span>
+                    )}
                   </div>
-                  <Check className={cn('ms-auto size-3.5 shrink-0 text-primary', value === opt.value ? 'opacity-100' : 'opacity-0')} />
+                  <Check className={cn('ms-auto size-3.5 shrink-0 text-primary group-hover:text-white group-data-[selected=true]:text-white group-data-selected/command-item:text-white', value === opt.value ? 'opacity-100' : 'opacity-0')} />
                 </CommandItem>
               ))}
             </CommandGroup>

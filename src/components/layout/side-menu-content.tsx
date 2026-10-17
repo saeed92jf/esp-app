@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { ChevronDown, LayoutDashboard, Search as SearchIcon, ShieldCheck, User, X } from "lucide-react";
 import { Compass } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "motion/react";
@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { NAVIGATION } from "@/config/navigation";
 import { AppIcon } from "@/components/ui/app-icon";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface SideMenuContentProps {
   onClose?: () => void;
@@ -19,10 +20,13 @@ export interface SideMenuContentProps {
 
 export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuContentProps) {
   const pathname = usePathname();
+  const locale = useLocale();
+  const dir = locale === "fa" ? "rtl" : "ltr";
   const tMenu = useTranslations("Menu");
   const tSections = useTranslations("Menu.sections");
   const tItems = useTranslations("Menu.items");
 
+  const [isScrolled, setIsScrolled] = useState(false);
   const [query, setQuery] = useState("");
   const [menuExpanded, setMenuExpanded] = useState(true);
   const [openGroup, setOpenGroup] = useState<string | undefined>(undefined);
@@ -71,34 +75,76 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden">
-      {/* Top Header Row with Close (X) button */}
-      {showCloseButton && (
-        <div className="flex items-center justify-end px-1 pb-1 shrink-0">
-          <button
+    <div className="relative flex flex-col h-full w-full overflow-hidden bg-popover">
+      {/* Sticky Header with centered Navigation Title on scroll & concentric Close Button */}
+      <div 
+        className={cn(
+          "absolute top-0 inset-x-0 z-30 flex items-center h-[46px] sm:h-[50px] transition-colors duration-200 pointer-events-auto",
+          isScrolled 
+            ? "bg-[#dfe7f3] dark:bg-popover/95 dark:backdrop-blur-md border-b border-border/50" 
+            : "bg-popover border-b border-transparent"
+        )}
+      >
+        {/* Centered Navigation Title with Compass icon (slides/fades in on scroll) */}
+        <div className="absolute inset-0 flex items-center justify-center px-12 pointer-events-none">
+          <div className="flex items-center gap-2 max-w-full">
+            <div 
+              className={cn(
+                "transition-all duration-300 ease-out shrink-0 flex items-center justify-center",
+                isScrolled 
+                  ? "opacity-100 scale-100 translate-y-0" 
+                  : "opacity-0 scale-90 translate-y-2 pointer-events-none"
+              )}
+            >
+              <Compass className="size-5 sm:size-5.5 text-primary shrink-0" weight="fill" />
+            </div>
+            <span 
+              className={cn(
+                "text-sm font-semibold text-foreground truncate min-w-0 text-center transition-opacity duration-300 ease-out",
+                isScrolled 
+                  ? "opacity-100" 
+                  : "opacity-0 pointer-events-none"
+              )}
+            >
+              {tMenu("mainNavigation")}
+            </span>
+          </div>
+        </div>
+
+        {/* Concentric Close Button (nested fillet: R_inner = R_outer - d) */}
+        {showCloseButton && (
+          <button 
             type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors cursor-pointer outline-none"
+            onClick={onClose} 
+            className="absolute top-[6px] end-[6px] size-8.5 sm:size-9 rounded-[16px] sm:rounded-[20px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-[#98c1d9]/30 transition-colors z-20 cursor-pointer outline-none"
             aria-label={tMenu("close") || "بستن"}
           >
-            <X className="size-5" />
+            <X className="size-4.5" />
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Main Navigation Scroll Area */}
-      <nav className="flex-1 overflow-y-auto px-0.5 py-1 custom-scrollbar [scrollbar-gutter:stable]">
-        {/* Search Input */}
-        <div className="relative mb-3 shrink-0">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute inset-s-6 top-1/2 size-5 -translate-y-1/2" />
-          <Input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={tMenu("search")}
-            className="ps-14 pe-6 h-[52px] rounded-[28px] text-[15px] font-normal placeholder:text-zinc-600 dark:placeholder:text-zinc-400 bg-white dark:bg-zinc-900 border-border/40 shadow-none focus-visible:ring-1"
-          />
-        </div>
+      {/* Main Navigation Scroll Area with popup-scroll for scrollbar thumb positioning */}
+      <ScrollArea
+        className="w-full flex-1 min-h-0 popup-scroll"
+        dir={dir}
+        type="auto"
+        onViewportScroll={(e) => {
+          setIsScrolled(e.currentTarget.scrollTop > 8);
+        }}
+      >
+        <div className="flex flex-col w-full p-3.5 sm:p-4 pt-[50px] sm:pt-[54px]">
+          {/* Search Input */}
+          <div className="relative mb-3 shrink-0">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute inset-s-6 top-1/2 size-5 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={tMenu("search")}
+              className="ps-14 pe-6 h-[52px] rounded-[22px] sm:rounded-[26px] text-[15px] font-normal placeholder:text-zinc-600 dark:placeholder:text-zinc-400 bg-white dark:bg-black border-border/40 shadow-none focus-visible:ring-1"
+            />
+          </div>
 
         <div className="segmented-list w-full">
           {/* Main Navigation Header Button */}
@@ -107,7 +153,7 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
             onClick={handleToggleMenuExpanded}
             className={cn(
               "segmented-item group relative flex items-center justify-between gap-3.5 px-5 py-4.5 sm:py-5 text-start w-full outline-none cursor-pointer overflow-hidden transition-all duration-150 ease-out",
-              menuExpanded ? "rounded-t-[28px] rounded-b-[6px]" : "rounded-[28px]"
+              menuExpanded ? "rounded-t-[22px] sm:rounded-t-[26px] rounded-b-[6px]" : "rounded-[22px] sm:rounded-[26px]"
             )}
           >
             <span className="relative z-10 flex items-center gap-3.5 overflow-hidden">
@@ -225,7 +271,7 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                 })}
 
                 {/* Get Full Access Action */}
-                <div className="segmented-item flex flex-col overflow-hidden rounded-b-[28px] rounded-t-[6px]">
+                <div className="segmented-item flex flex-col overflow-hidden rounded-b-[22px] sm:rounded-b-[26px] rounded-t-[6px]">
                   <Link
                     href="/plans"
                     onClick={handleLinkClick}
@@ -241,7 +287,7 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
         </div>
 
         {/* Dashboard Pill Button */}
-        <div className="segmented-item flex flex-col overflow-hidden mt-3 rounded-[28px]">
+        <div className="segmented-item flex flex-col overflow-hidden mt-3 rounded-[22px] sm:rounded-[26px]">
           <Link
             href="/dashboard"
             onClick={handleLinkClick}
@@ -270,7 +316,8 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
             {tMenu("terms")}
           </Link>
         </div>
-      </nav>
-    </div>
-  );
+      </div>
+    </ScrollArea>
+  </div>
+);
 }

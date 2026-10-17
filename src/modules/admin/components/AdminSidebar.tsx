@@ -56,7 +56,7 @@ export function AdminSidebar({
             : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
         )}
       >
-        <TooltipProvider delayDuration={150}>
+        <TooltipProvider>
           <nav className="flex flex-col gap-2.5 w-full items-start">
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;

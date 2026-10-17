@@ -2,15 +2,13 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { motion, type Variants } from "motion/react";
 import { useQuickAccess, QUICK_ACCESS_MAX, ALL_SELECTABLE_ITEMS } from "@/hooks/use-quick-access";
-import { NAVIGATION, type NavColor } from "@/config/navigation";
+import { NAVIGATION, type NavColor, resolveNavIconGradient } from "@/config/navigation";
 import { GoogleShortcutTile } from "./GoogleShortcutTile";
-import { Check, X, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react";
+import { AppIcon } from "@/components/ui/app-icon";
+import { Check, Plus, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence } from "motion/react";
 import { IconGradients } from "@/components/ui/icon-gradients";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuickAccessSectionProps {
   className?: string;
@@ -18,11 +16,6 @@ interface QuickAccessSectionProps {
   onEditModeChange?: (editing: boolean) => void;
   onHydrated?: () => void;
 }
-
-const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 30 } },
-};
 
 export function QuickAccessSection({
   className,
@@ -61,47 +54,71 @@ export function QuickAccessSection({
   return (
     <section
       aria-label="Quick Access Shortcuts"
-      className={cn("w-full max-w-4xl mx-auto select-none mt-6 sm:mt-8", className)}
+      className={cn("w-full max-w-4xl mx-auto select-none mt-1 sm:mt-1.5", className)}
     >
       <IconGradients />
       <div className="flex flex-col items-center justify-center w-full">
-        {/* Edit Mode Hint */}
+        {/* ======================================================== */}
+        {/* EDIT MODE TOOLBAR                                        */}
+        {/* ======================================================== */}
         {hydrated && editMode && (
-          <div className="overflow-hidden fa-num mb-3 flex items-center gap-2 rounded-full bg-slate-100 py-1 ps-3.5 pe-1 text-xs text-muted-foreground dark:bg-slate-800/80">
-            <span>{t("quickAccess.editHint", { max: maxItems })}</span>
-            <span
-              className={cn(
-                "rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums transition-colors",
-                isFull
-                  ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
-                  : "bg-primary/10 text-primary",
-              )}
-            >
-              {t("quickAccess.selectedCount", {
-                count: selectedHrefs.length,
-                max: maxItems,
-              })}
-            </span>
+          <div className="w-full flex items-center justify-between gap-3 mb-3.5 px-2 sm:px-4">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground fa-num">
+              <span>{t("quickAccess.editHint", { max: maxItems })}</span>
+              <span
+                className={cn(
+                  "rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums transition-colors",
+                  isFull
+                    ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                    : "bg-primary/10 text-primary"
+                )}
+              >
+                {t("quickAccess.selectedCount", {
+                  count: selectedHrefs.length,
+                  max: maxItems,
+                })}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={reset}
+                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/60 cursor-pointer"
+              >
+                <RotateCcw className="size-3" />
+                <span>{tHome("quickAccess.reset")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleEditMode}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-primary text-primary-foreground text-xs font-semibold shadow-xs hover:bg-primary/90 transition-colors cursor-pointer"
+              >
+                <Check className="size-3.5 stroke-[2.5]" />
+                <span>{tHome("quickAccess.done")}</span>
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Main Items Area */}
-        <div className="flex flex-wrap items-center justify-center gap-0 w-full">
-          {!hydrated ? (
-            Array.from({ length: 5 }).map((_, i) => {
-              const isMobileHidden = i >= 3;
-              return (
+        {/* ======================================================== */}
+        {/* ITEMS DISPLAY AREA                                       */}
+        {/* ======================================================== */}
+        {!hydrated ? (
+          <div className="w-full overflow-x-auto no-scrollbar py-1">
+            <div className="flex flex-nowrap items-center justify-center min-w-max mx-auto gap-0">
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className={cn(
-                    "w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] p-3 sm:p-4",
-                    isMobileHidden && "hidden sm:block"
-                  )}
+                  className="w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] p-3 sm:p-4 shrink-0"
                 />
-              );
-            })
-          ) : (
-            (editMode ? ALL_SELECTABLE_ITEMS : items).map((item, index) => {
+              ))}
+            </div>
+          </div>
+        ) : editMode ? (
+          /* EDIT MODE: All selectable items with oscillation for inactive cards */
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full">
+            {ALL_SELECTABLE_ITEMS.map((item, index) => {
               let title = item.labelKey;
               try {
                 title = tItems(item.labelKey);
@@ -111,73 +128,145 @@ export function QuickAccessSection({
                 g.items.some((i) => i.href === item.href)
               );
               const effectiveColor = (item.color ?? group?.color ?? "sky") as NavColor;
+              const navGradientClass = resolveNavIconGradient(effectiveColor);
               const isItemSelected = isSelected(item.href);
-              const isMobileHidden = !editMode && index >= 3;
 
               return (
                 <div
                   key={item.href}
-                  className={cn(
-                    "relative",
-                    editMode && "cursor-pointer",
-                    isMobileHidden && "hidden sm:block"
-                  )}
-                  onClick={(e) => {
-                    if (editMode) {
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => toggle(item.href)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
                       toggle(item.href);
                     }
                   }}
+                  style={
+                    !isItemSelected
+                      ? { animationDelay: `${(index % 7) * 0.2}s` }
+                      : undefined
+                  }
+                  className={cn(
+                    "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] text-center rounded-[12px] sm:rounded-[14px] cursor-pointer transition-all duration-150 select-none overflow-hidden",
+                    isItemSelected
+                      ? "border-2 border-primary bg-primary/[0.08] dark:bg-primary/[0.16] shadow-xs"
+                      : "animate-oscillate border-2 border-dashed border-border/90 dark:border-border/70 hover:border-primary/60 bg-muted/20 dark:bg-muted/30 hover:bg-muted/40"
+                  )}
+                  title={title}
                 >
-                  <div className={cn(
-                    "transition-opacity duration-75", 
-                    editMode && !isItemSelected && "opacity-40"
-                  )}>
-                    <GoogleShortcutTile
-                      href={editMode ? "#" : item.href}
-                      icon={item.icon}
-                      color={effectiveColor}
-                      title={title}
-                      onClick={(e) => {
-                        if (editMode) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                  </div>
-                  {editMode && isItemSelected && (
-                    <div className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 bg-emerald-500 text-white rounded-full p-0.5 shadow-md z-10 scale-90">
-                      <Check className="size-3 stroke-[3]" />
+                  {/* GPU-accelerated instant hover layer (matching .segmented-item color & speed) */}
+                  <span 
+                    className="absolute inset-0 rounded-[inherit] bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 group-hover:duration-0 pointer-events-none" 
+                    aria-hidden="true" 
+                  />
+
+                  {/* Selection Indicator Badge */}
+                  {isItemSelected ? (
+                    <div className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 size-5 sm:size-5.5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs z-20">
+                      <Check className="size-3 stroke-[2.5]" />
+                    </div>
+                  ) : (
+                    <div className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 size-5 sm:size-5.5 rounded-full bg-background text-foreground/90 border border-border/80 flex items-center justify-center shadow-xs z-20">
+                      <Plus className="size-3 stroke-[2.2]" />
                     </div>
                   )}
+
+                  {/* Card Content */}
+                  <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
+                    <div
+                      className={cn(
+                        "flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs transition-colors",
+                        isItemSelected && "bg-primary/10 dark:bg-primary/20"
+                      )}
+                    >
+                      {item.icon && (
+                        <AppIcon
+                          icon={item.icon}
+                          className={cn("size-5 sm:size-6", navGradientClass)}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
+
+                    <span
+                      className={cn(
+                        "mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-medium tracking-normal leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center",
+                        isItemSelected
+                          ? "text-foreground font-semibold"
+                          : "text-foreground/80 font-medium"
+                      )}
+                    >
+                      {title}
+                    </span>
+                  </div>
                 </div>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
+        ) : (
+          /* NORMAL MODE: User's shortcuts + "Expand" tile as the final item in ONE single row */
+          <div className="w-full overflow-x-auto no-scrollbar py-1">
+            <div className="flex flex-nowrap items-center justify-center min-w-max mx-auto gap-0">
+              {items.map((item) => {
+                let title = item.labelKey;
+                try {
+                  title = tItems(item.labelKey);
+                } catch {}
 
-        {/* Customize Toggle Button */}
-        {hydrated && (
-          <div className="mt-4 w-full flex flex-col items-center">
-            <TooltipProvider delayDuration={100}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleToggleEditMode}
-                    className="group relative outline-none text-muted-foreground/40 p-1.5 rounded-full flex items-center justify-center transition-colors group-hover:text-foreground"
-                    aria-label="Toggle Customize"
+                const group = NAVIGATION.find((g) =>
+                  g.items.some((i) => i.href === item.href)
+                );
+                const effectiveColor = (item.color ?? group?.color ?? "sky") as NavColor;
+
+                return (
+                  <GoogleShortcutTile
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    color={effectiveColor}
+                    title={title}
+                    onEdit={handleToggleEditMode}
+                    onRemove={removeShortcut}
+                  />
+                );
+              })}
+
+              {/* Expand Card (styled identically to shortcuts, opens edit mode) */}
+              <div
+                key="expand-tile"
+                role="button"
+                tabIndex={0}
+                onClick={handleToggleEditMode}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleToggleEditMode();
+                  }
+                }}
+                className="group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] shrink-0 focus:outline-none text-center rounded-[12px] sm:rounded-[14px] overflow-hidden bg-transparent active:scale-95 transition-transform duration-150 transform-gpu cursor-pointer"
+                aria-label={tHome("quickAccess.expand")}
+              >
+                {/* GPU-accelerated instant hover layer (matching .segmented-item color & speed) */}
+                <span 
+                  className="absolute inset-0 rounded-[inherit] bg-[#98c1d9]/30 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 group-hover:duration-0 pointer-events-none" 
+                  aria-hidden="true" 
+                />
+
+                <div className="relative z-10 flex flex-col items-center justify-start w-full h-full pt-3 sm:pt-4 pointer-events-none">
+                  <div className="flex size-10 sm:size-12 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800/90 shadow-xs group-hover:bg-slate-200/80 dark:group-hover:bg-slate-700/80 transition-colors">
+                    <Plus className="size-5 sm:size-6 text-muted-foreground group-hover:text-foreground transition-colors stroke-[2.2]" />
+                  </div>
+                  <span
+                    className="mt-2 sm:mt-3 text-[11px] sm:text-[12.5px] font-medium tracking-normal text-foreground/90 leading-tight block w-full max-w-[60px] sm:max-w-[76px] truncate text-center group-hover:text-foreground transition-colors"
+                    title={tHome("quickAccess.expand")}
                   >
-                    <span className="absolute inset-0 rounded-full bg-muted/50 opacity-0 transition-opacity duration-100 ease-out group-hover:opacity-100 pointer-events-none" aria-hidden="true" />
-                    <div className="relative z-10 flex items-center justify-center pointer-events-none group-hover:text-foreground transition-colors">
-                      {editMode ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-                    </div>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={4} className="text-xs font-medium shadow-md">
-                  {editMode ? tHome("quickAccess.done") : tHome("quickAccess.customize")}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    {tHome("quickAccess.expand")}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>

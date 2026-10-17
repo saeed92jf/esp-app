@@ -191,7 +191,7 @@ export function Dashboard() {
         {/* ── Utility Sidebar ── */}
         <div className="flex-shrink-0 flex h-full z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent">
           {/* ── Side Rail (Icons) ── */}
-          <TooltipProvider delayDuration={150}>
+          <TooltipProvider>
             <div className="w-[58px] sm:w-[90px] shrink-0 flex flex-col items-center py-4 gap-2.5 h-full relative z-20">
               {/* Tool Icons */}
               {[
@@ -249,13 +249,13 @@ export function Dashboard() {
           <motion.div
             initial={false}
             animate={{ 
-              width: linksSidebarOpen ? 400 : 0,
+              width: linksSidebarOpen ? (typeof window !== 'undefined' && window.innerWidth < 640 ? Math.min(340, window.innerWidth - 68) : 400) : 0,
               opacity: linksSidebarOpen ? 1 : 0
             }}
             transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="overflow-hidden h-full flex flex-col bg-transparent"
+            className="overflow-hidden h-full flex flex-col bg-card sm:bg-transparent max-w-[calc(100vw-64px)] z-20"
           >
-            <div className="w-[400px] h-full overflow-y-auto custom-scrollbar p-3.5 pe-2.5 pb-6 flex flex-col">
+            <div className="w-[calc(100vw-68px)] max-w-[400px] sm:w-[400px] h-full overflow-y-auto custom-scrollbar p-3 sm:p-3.5 pe-2.5 pb-6 flex flex-col">
               {toolsTab === 'calendar' && (
                 <div className="h-full fa-num"><CalendarWidget events={data.calendarEvents} /></div>
               )}
@@ -285,6 +285,15 @@ export function Dashboard() {
             </div>
           </motion.div>
         </div>
+
+        {/* Mobile backdrop for drawer */}
+        {linksSidebarOpen && (
+          <div
+            onClick={() => setLinksSidebarOpen(false)}
+            className="fixed inset-0 z-15 bg-black/40 backdrop-blur-xs sm:hidden"
+            aria-hidden="true"
+          />
+        )}
 
         {/* ── Center Content (Scrollable) ── */}
         <div 

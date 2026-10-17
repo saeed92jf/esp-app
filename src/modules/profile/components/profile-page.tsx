@@ -1329,7 +1329,7 @@ export function ProfilePage() {
     <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
       {/* Top Header */}
       <AppHeader
-        tag={t("title")}
+        tag="Account"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -1354,7 +1354,7 @@ export function ProfilePage() {
             ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none" 
             : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
         )}>
-          <TooltipProvider delayDuration={150}>
+          <TooltipProvider>
             <nav className="flex flex-col gap-2.5 w-full items-start">
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;

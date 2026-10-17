@@ -26,6 +26,7 @@ export interface GenericSearchBoxProps<T> {
   showOverallViewButton?: boolean;
   onOverallViewClick?: () => void;
   renderResultsHeader?: (count: number, query: string) => React.ReactNode;
+  darkFlatWhite?: boolean;
 }
 
 export function GenericSearchBox<T>({
@@ -43,6 +44,7 @@ export function GenericSearchBox<T>({
   showOverallViewButton,
   onOverallViewClick,
   renderResultsHeader,
+  darkFlatWhite = false,
 }: GenericSearchBoxProps<T>) {
   const locale = useLocale();
   const t = useTranslations('Common');
@@ -246,22 +248,30 @@ export function GenericSearchBox<T>({
           "rounded-[28px]"
         )}
       >
-        {/* Continuous Glow Layer: soft primary blending into deep slate (no hard ring) */}
+        {/* Continuous Glow Layer: soft primary blending into deep slate in light mode, no shadow in dark mode */}
         <div 
-          className="absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-300 shadow-[0_2px_14px_-2px_color-mix(in_oklab,var(--primary)_22%,transparent),0_10px_30px_-8px_rgba(30,41,59,0.22)] dark:shadow-[0_2px_16px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_12px_32px_-8px_rgba(10,10,10,0.6)]"
+          className={cn(
+            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-300",
+            "shadow-[0_2px_14px_-2px_color-mix(in_oklab,var(--primary)_22%,transparent),0_10px_30px_-8px_rgba(30,41,59,0.22)]",
+            darkFlatWhite
+              ? "dark:shadow-none"
+              : "dark:shadow-[0_2px_16px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_12px_32px_-8px_rgba(10,10,10,0.6)]"
+          )}
         />
         {/* Content Container */}
         <div
           className={cn(
-            "bg-background relative w-full h-full overflow-hidden dark:bg-[#202124] rounded-[inherit]",
-            "border-none outline-none ring-0 transition-all duration-300"
+            darkFlatWhite
+              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 border-none outline-none ring-0 shadow-none"
+              : "bg-background dark:bg-[#202124] text-foreground border-none outline-none ring-0",
+            "relative w-full h-full overflow-hidden rounded-[inherit] transition-all duration-300"
           )}
         >
         <div className="relative flex h-[48px] items-center px-3.5 sm:h-[52px] sm:px-4">
           {isHistoryPreselected ? (
-            <History className="me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] text-muted-foreground duration-150" />
+            <History className={cn("me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] duration-150", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
           ) : (
-            <Search className="me-3 size-5 shrink-0 text-muted-foreground/90 stroke-[2.2]" />
+            <Search className={cn("me-3 size-5 shrink-0 stroke-[2.2]", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
           )}
 
           <input
@@ -286,14 +296,19 @@ export function GenericSearchBox<T>({
                     ? "جستجو..."
                     : "Search...")
             }
-            className="text-foreground placeholder:text-muted-foreground/90 flex-1 border-none bg-transparent pe-10 text-start text-[14.5px] font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0 sm:text-[15px]"
+            className={cn(
+              "flex-1 border-none bg-transparent pe-10 text-start text-[14.5px] font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0 sm:text-[15px]",
+              darkFlatWhite
+                ? "text-foreground dark:text-zinc-900 placeholder:text-muted-foreground/90 dark:placeholder:text-zinc-500"
+                : "text-foreground placeholder:text-muted-foreground/90"
+            )}
             aria-label="Search"
             autoComplete="off"
             spellCheck="false"
           />
 
           {hasAiMode && query.trim() === "" && (
-            <TooltipProvider delayDuration={0}>
+            <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -302,9 +317,14 @@ export function GenericSearchBox<T>({
                     tabIndex={-1}
                     aria-label={t("searchBox.aiMode")}
                     title=""
-                    className="group/ai absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-default items-center justify-center rounded-full text-muted-foreground/60 transition-colors duration-200 hover:text-foreground/80 hover:bg-slate-100 dark:hover:bg-slate-800 sm:end-[7px] sm:size-[38px]"
+                    className={cn(
+                      "group/ai absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-default items-center justify-center rounded-full transition-colors duration-200 sm:end-[7px] sm:size-[38px]",
+                      darkFlatWhite
+                        ? "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:text-zinc-600 dark:hover:text-zinc-900 dark:hover:bg-zinc-100"
+                        : "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    )}
                   >
-                    <Sparkles className="size-[20px] sm:size-[22px] stroke-[1.8] text-muted-foreground/75 group-hover/ai:text-primary transition-colors duration-200" />
+                    <Sparkles className={cn("size-[20px] sm:size-[22px] stroke-[1.8] transition-colors duration-200", darkFlatWhite ? "text-muted-foreground/75 group-hover/ai:text-primary dark:text-zinc-600 dark:group-hover/ai:text-primary" : "text-muted-foreground/75 group-hover/ai:text-primary")} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
@@ -334,8 +354,8 @@ export function GenericSearchBox<T>({
                       "group/item relative me-2.5 flex h-[44px] cursor-pointer select-none items-center justify-between transition-colors",
                       "rounded-s-none rounded-e-full",
                       isSelected
-                        ? "bg-[#e8eaed] dark:bg-[#303134]"
-                        : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80",
+                        ? (darkFlatWhite ? "bg-[#e8eaed] dark:bg-[#e8eaed]" : "bg-[#e8eaed] dark:bg-[#303134]")
+                        : (darkFlatWhite ? "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80" : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80"),
                     )}
                   >
                     {isSelected && (
@@ -343,11 +363,11 @@ export function GenericSearchBox<T>({
                     )}
                     <div className="flex min-w-0 flex-1 items-center gap-3 pe-9 ps-4">
                       <History className="size-4.5 shrink-0 stroke-[1.8] text-[#9aa0a6]" />
-                      <span className="truncate text-start text-[14px] font-normal text-[#202124] dark:text-[#e8eaed]">
+                      <span className={cn("truncate text-start text-[14px] font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-[#202124] dark:text-[#e8eaed]")}>
                         {item}
                       </span>
                     </div>
-                    <TooltipProvider delayDuration={0}>
+                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <button
@@ -362,7 +382,10 @@ export function GenericSearchBox<T>({
                             aria-label={t("searchBox.removeFromHistory")}
                             title=""
                             className={cn(
-                              "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full text-[#70757a] transition-all hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
+                              "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full transition-all",
+                              darkFlatWhite
+                                ? "text-[#70757a] hover:bg-black/10 dark:text-[#70757a] dark:hover:bg-black/10"
+                                : "text-[#70757a] hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
                               isSelected
                                 ? "opacity-100"
                                 : "opacity-0 group-hover/item:opacity-100",
@@ -394,7 +417,7 @@ export function GenericSearchBox<T>({
             )}
 
             {showResultsMode && filteredResults.length === 0 && (
-              <div className="px-6 py-5 text-center text-muted-foreground">
+              <div className={cn("px-6 py-5 text-center", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")}>
                 <Search className="mx-auto mb-1.5 size-6 opacity-40" />
                 <p className="text-xs">
                   {isRtl

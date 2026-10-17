@@ -13,6 +13,7 @@ import { routing } from '@/i18n/routing';
 import { PremiumGuard } from '@/components/auth/premium-guard';
 import { AuthModal } from '@/modules/auth/components/auth-modal';
 import { GlobalConfirmModal } from '@/components/global-confirm-modal';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Locale-aware metadata stays here, since this layout receives `locale`.
 export { generateMetadata, viewport } from '@/app/[locale]/metadata';
@@ -37,16 +38,18 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <PersianDigitsProvider enabled={locale === 'fa'} />
       <HtmlLangSync locale={locale} />
-      <div className="relative flex flex-col min-h-dvh">
-        <ConditionalHeader />
-        <PremiumGuard>
-          <main className="flex-1 flex flex-col min-h-0">{children}</main>
-        </PremiumGuard>
-        <AuthModal />
-        <GlobalConfirmModal />
-        <ConditionalFooter />
-      </div>
-      <ScrollToTop />
+      <TooltipProvider>
+        <div className="relative flex flex-col min-h-dvh">
+          <ConditionalHeader />
+          <PremiumGuard>
+            <main className="flex-1 flex flex-col min-h-0">{children}</main>
+          </PremiumGuard>
+          <AuthModal />
+          <GlobalConfirmModal />
+          <ConditionalFooter />
+        </div>
+        <ScrollToTop />
+      </TooltipProvider>
     </NextIntlClientProvider>
   );
 }

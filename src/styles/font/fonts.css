@@ -398,7 +398,7 @@
 @font-face {
   font-family: 'LatinModernMath';
   src: url('/fonts/LatinModernMath/latinmodern-math.otf') format('opentype');
-  font-weight: normal;
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
@@ -409,13 +409,16 @@
 @font-face {
   font-family: 'NotoSansMath';
   src: url('/fonts/NotoSansMath/NotoSansMath-Regular.ttf') format('truetype');
-  font-weight: normal;
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 .font-math-latin {
   font-family: 'LatinModernMath', 'NotoSansMath', 'Cambria Math', 'Times New Roman', serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-math-noto {

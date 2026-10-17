@@ -87,7 +87,7 @@ export function DashboardMenuSidebar() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={tMenu("search")}
-            className="ps-9 h-10 bg-background/50 backdrop-blur-sm border-border/50"
+            className="ps-9 h-10 bg-white dark:bg-black backdrop-blur-sm border-border/50"
           />
         </div>
         {/* Keywords */}
@@ -106,7 +106,7 @@ export function DashboardMenuSidebar() {
       </div>
 
       {/* NAV */}
-      <nav className="flex-1 overflow-y-auto custom-scrollbar -mx-2 px-2">
+      <nav className="flex-1 overflow-y-auto custom-scrollbar -mx-2 ps-2 pe-3">
         <Accordion
           type="single"
           collapsible

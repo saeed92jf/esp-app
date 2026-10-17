@@ -46,8 +46,9 @@
     );
     --gradient-logo: linear-gradient(
       135deg,
-      var(--color-primary-500),
-      var(--color-primary-600)
+      var(--color-primary-400, #60a5fa) 0%,
+      var(--color-primary-500, #3b82f6) 40%,
+      var(--color-primary-700, #1d4ed8) 100%
     );
     --text-gradient-primary: linear-gradient(
       135deg,
@@ -149,6 +150,12 @@
       135deg,
       var(--color-primary-500),
       var(--color-primary-600)
+    );
+    --gradient-logo: linear-gradient(
+      135deg,
+      var(--color-primary-400, #3b82f6) 0%,
+      var(--color-primary-300, #2563eb) 40%,
+      var(--color-primary-200, #1d4ed8) 100%
     );
     --text-gradient-primary: linear-gradient(
       135deg,

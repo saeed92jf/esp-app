@@ -638,7 +638,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                         className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                       />
                     </div>
-                    <TooltipProvider delayDuration={200}>
+                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -681,7 +681,7 @@ export const GeneralDataNode = memo(({ id, data, selected }: Props) => {
                         className="h-7 text-xs w-full min-w-0 bg-white dark:bg-black"
                       />
                     </div>
-                    <TooltipProvider delayDuration={200}>
+                    <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button

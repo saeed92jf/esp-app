@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Headphones, Mail, Copy, Check, Send } from "lucide-react";
+import { Headset } from "@phosphor-icons/react";
+import { Mail, Copy, Check, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -28,7 +29,7 @@ export function SupportSection({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative w-full max-w-xl mx-auto flex flex-col items-center justify-center px-4 select-none my-auto",
+        "relative w-full max-w-2xl mx-auto flex flex-col items-center justify-center px-4 select-none my-auto shrink-0",
         className
       )}
     >
@@ -37,13 +38,13 @@ export function SupportSection({ className }: { className?: string }) {
         {/* Subtle Ambient Radial Glow */}
         <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full blur-3xl opacity-40 bg-gradient-to-b from-primary/30 to-cyan-500/10" />
 
-        {/* Minimalist Icon Badge */}
-        <div className="size-12 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shadow-xs">
-          <Headphones className="size-6" />
+        {/* Large, Bold, Solid-Filled Icon - Standalone with NO background container */}
+        <div className="flex items-center justify-center pt-1">
+          <Headset weight="fill" className="size-14 sm:size-16 text-primary shrink-0 drop-shadow-md" />
         </div>
 
         {/* Title & Short Clean Description */}
-        <div className="space-y-1.5 max-w-md">
+        <div className="space-y-1.5 max-w-lg">
           <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
             {t("title")}
           </h2>
@@ -53,12 +54,12 @@ export function SupportSection({ className }: { className?: string }) {
         </div>
 
         {/* Interactive Email Bar */}
-        <div className="w-full max-w-md flex flex-col sm:flex-row items-center justify-between gap-2.5 p-2 sm:p-2.5 rounded-2xl bg-muted/50 dark:bg-muted/20 border border-border/60">
-          <div className="flex items-center gap-2.5 px-3 py-1">
+        <div className="w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-2.5 p-2 sm:p-2.5 rounded-2xl bg-muted/50 dark:bg-muted/20 border border-border/60">
+          <div className="flex items-center gap-2.5 px-3 py-1 shrink-0">
             <Mail className="size-4 text-primary shrink-0" />
             <span
               dir="ltr"
-              className="font-mono text-xs sm:text-sm font-semibold text-foreground select-all tracking-tight"
+              className="font-sans text-xs sm:text-sm font-semibold text-foreground/90 select-all tracking-normal whitespace-nowrap"
             >
               {supportEmail}
             </span>

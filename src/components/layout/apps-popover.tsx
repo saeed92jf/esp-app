@@ -115,18 +115,18 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
         </Tooltip>
       </TooltipProvider>
       
-      <PopoverAnchor className={cn("fixed top-[72px] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-4 sm:left-6" : "right-4 sm:right-6")} />
+      <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
       
       <PopoverContent 
         align={anchorEdge === "left" ? (dir === "rtl" ? "end" : "start") : (dir === "rtl" ? "start" : "end")}
         side="bottom"
         sideOffset={0}
-        collisionPadding={16}
-        className="w-[calc(100vw-32px)] sm:w-[380px] p-0 bg-popover rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
+        collisionPadding={12}
+        className="w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
       >
-        <ScrollArea className="h-[55vh] w-full apps-radix-scroll" type="always">
+        <ScrollArea className="w-full flex-1 min-h-0 apps-radix-scroll" dir={dir} type="auto">
           <div className="p-3">
-            <div className="bg-white/90 dark:bg-white/10 rounded-[20px] p-4 mb-3">
+            <div className="bg-white dark:bg-black rounded-[20px] p-4 mb-3 border border-border/40">
               <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="font-semibold text-base sm:text-lg text-foreground">{t("popular")}</h3>
               {editMode ? (

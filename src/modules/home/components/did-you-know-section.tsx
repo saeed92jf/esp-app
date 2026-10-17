@@ -1,255 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import useEmblaCarousel from "embla-carousel-react";
 import {
   ChevronLeft,
   ChevronRight,
-  Gauge,
-  Atom,
-  Zap,
-  Activity,
-  Wind,
-  Snowflake,
-  ShieldAlert,
-  Layers,
-  Repeat,
-  Volume2,
   BookOpen,
   ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-interface DidYouKnowCard {
-  id:
-    | "card1"
-    | "card2"
-    | "card3"
-    | "card4"
-    | "card5"
-    | "card6"
-    | "card7"
-    | "card8"
-    | "card9"
-    | "card10";
-  icon: typeof Gauge;
-  accent: string;
-  glowGradient: string;
-  borderAccent: string;
-  link: string;
-}
-
-const CARDS: DidYouKnowCard[] = [
-  {
-    id: "card1",
-    icon: Gauge,
-    accent: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25",
-    glowGradient: "from-blue-500/15 via-cyan-500/10 to-transparent",
-    borderAccent: "hover:border-blue-500/40",
-    link: "https://en.wikipedia.org/wiki/Cylinder_stress",
-  },
-  {
-    id: "card2",
-    icon: Atom,
-    accent: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25",
-    glowGradient: "from-emerald-500/15 via-teal-500/10 to-transparent",
-    borderAccent: "hover:border-emerald-500/40",
-    link: "https://en.wikipedia.org/wiki/Hydrocyclone",
-  },
-  {
-    id: "card3",
-    icon: Zap,
-    accent: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25",
-    glowGradient: "from-amber-500/15 via-orange-500/10 to-transparent",
-    borderAccent: "hover:border-amber-500/40",
-    link: "https://en.wikipedia.org/wiki/Cavitation",
-  },
-  {
-    id: "card4",
-    icon: Activity,
-    accent: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25",
-    glowGradient: "from-rose-500/15 via-pink-500/10 to-transparent",
-    borderAccent: "hover:border-rose-500/40",
-    link: "https://en.wikipedia.org/wiki/Water_hammer",
-  },
-  {
-    id: "card5",
-    icon: Wind,
-    accent: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/25",
-    glowGradient: "from-cyan-500/15 via-sky-500/10 to-transparent",
-    borderAccent: "hover:border-cyan-500/40",
-    link: "https://en.wikipedia.org/wiki/K%C3%A1rm%C3%A1n_vortex_street",
-  },
-  {
-    id: "card6",
-    icon: Snowflake,
-    accent: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/25",
-    glowGradient: "from-teal-500/15 via-cyan-500/10 to-transparent",
-    borderAccent: "hover:border-teal-500/40",
-    link: "https://en.wikipedia.org/wiki/Joule%E2%80%93Thomson_effect",
-  },
-  {
-    id: "card7",
-    icon: ShieldAlert,
-    accent: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/25",
-    glowGradient: "from-orange-500/15 via-amber-500/10 to-transparent",
-    borderAccent: "hover:border-orange-500/40",
-    link: "https://en.wikipedia.org/wiki/Hydrogen_embrittlement",
-  },
-  {
-    id: "card8",
-    icon: Layers,
-    accent: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/25",
-    glowGradient: "from-indigo-500/15 via-violet-500/10 to-transparent",
-    borderAccent: "hover:border-indigo-500/40",
-    link: "https://en.wikipedia.org/wiki/Two-phase_flow",
-  },
-  {
-    id: "card9",
-    icon: Repeat,
-    accent: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/25",
-    glowGradient: "from-violet-500/15 via-purple-500/10 to-transparent",
-    borderAccent: "hover:border-violet-500/40",
-    link: "https://en.wikipedia.org/wiki/Logarithmic_mean_temperature_difference",
-  },
-  {
-    id: "card10",
-    icon: Volume2,
-    accent: "bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/25",
-    glowGradient: "from-fuchsia-500/15 via-pink-500/10 to-transparent",
-    borderAccent: "hover:border-fuchsia-500/40",
-    link: "https://en.wikipedia.org/wiki/Choked_flow",
-  },
-];
+import {
+  getDidYouKnowCards,
+  type DidYouKnowCardItem,
+} from "../data/did-you-know-data";
 
 const AUTOPLAY_DURATION_MS = 6500;
-
-function MathFormula({ cardId }: { cardId: DidYouKnowCard["id"] }) {
-  switch (cardId) {
-    case "card1":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span><i>σ</i><sub className="text-[11px] sm:text-xs md:text-[13px]">hoop</sub></span>
-          <span>=</span>
-          <span>2<i>σ</i><sub className="text-[11px] sm:text-xs md:text-[13px]">long</sub></span>
-          <span>=</span>
-          <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-            <span className="border-b border-current pb-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]"><i>P</i> · <i>D</i></span>
-            <span className="pt-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]">2<i>t</i></span>
-          </span>
-        </span>
-      );
-    case "card2":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span><i>F</i><sub className="text-[11px] sm:text-xs md:text-[13px]">c</sub></span>
-          <span>=</span>
-          <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-            <span className="border-b border-current pb-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]"><i>m</i> · <i>v</i><sup className="text-[10px] sm:text-[11px] md:text-xs">2</sup></span>
-            <span className="pt-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]"><i>r</i></span>
-          </span>
-          <span>≫</span>
-          <span><i>F</i><sub className="text-[11px] sm:text-xs md:text-[13px]">gravity</sub></span>
-        </span>
-      );
-    case "card3":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span>NPSH<sub className="text-[11px] sm:text-xs md:text-[13px]">a</sub></span>
-          <span>&gt;</span>
-          <span>NPSH<sub className="text-[11px] sm:text-xs md:text-[13px]">r</sub> + 0.5 m</span>
-        </span>
-      );
-    case "card4":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span>Δ<i>P</i></span>
-          <span>=</span>
-          <span><i>ρ</i> · <i>a</i> · Δ<i>v</i></span>
-          <span className="text-[11px] sm:text-xs opacity-60 font-sans tracking-normal ml-0.5">(Joukowsky)</span>
-        </span>
-      );
-    case "card5":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span><i>f</i><sub className="text-[11px] sm:text-xs md:text-[13px]">shed</sub></span>
-          <span>=</span>
-          <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-            <span className="border-b border-current pb-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]"><i>St</i> · <i>v</i></span>
-            <span className="pt-[1px] px-1 text-[12px] sm:text-[14px] md:text-[15px]"><i>D</i></span>
-          </span>
-          <span className="text-[11px] sm:text-xs opacity-60 font-sans tracking-normal ml-0.5">(<i>St</i> ≈ 0.2)</span>
-        </span>
-      );
-    case "card6":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span><i>μ</i><sub className="text-[11px] sm:text-xs md:text-[13px]">JT</sub></span>
-          <span>=</span>
-          <span className="inline-flex items-center">
-            <span className="text-base sm:text-lg leading-none font-light">(</span>
-            <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-              <span className="border-b border-current pb-[1px] px-0.5 text-[12px] sm:text-[14px] md:text-[15px]">∂<i>T</i></span>
-              <span className="pt-[1px] px-0.5 text-[12px] sm:text-[14px] md:text-[15px]">∂<i>P</i></span>
-            </span>
-            <span className="text-base sm:text-lg leading-none font-light">)</span>
-            <sub className="text-[11px] sm:text-xs md:text-[13px] -ml-0.5"><i>h</i></sub>
-          </span>
-          <span>&gt;</span>
-          <span>0</span>
-        </span>
-      );
-    case "card7":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span>Hardness ≤ 22 HRC</span>
-          <span className="text-[11px] sm:text-xs opacity-60 font-sans tracking-normal ml-0.5">(NACE Limit)</span>
-        </span>
-      );
-    case "card8":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span><i>F</i><sub className="text-[11px] sm:text-xs md:text-[13px]">impact</sub></span>
-          <span>=</span>
-          <span><i>ρ</i><sub className="text-[11px] sm:text-xs md:text-[13px]">liq</sub> · <i>A</i> · <i>v</i><sub className="text-[11px] sm:text-xs md:text-[13px]">slug</sub><sup className="text-[10px] sm:text-[11px] md:text-xs">2</sup></span>
-        </span>
-      );
-    case "card9":
-      return (
-        <span className="inline-flex items-center gap-1.5 font-['LatinModernMath',serif]">
-          <span>LMTD<sub className="text-[11px] sm:text-xs md:text-[13px]">counter</sub></span>
-          <span>&gt;</span>
-          <span>LMTD<sub className="text-[11px] sm:text-xs md:text-[13px]">parallel</sub></span>
-        </span>
-      );
-    case "card10":
-      return (
-        <span className="inline-flex items-center gap-1 font-['LatinModernMath',serif]">
-          <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-            <span className="border-b border-current pb-[1px] px-1 text-[11px] sm:text-[13px] md:text-[14px]"><i>P</i><sub className="text-[9px] sm:text-[10px]">crit</sub></span>
-            <span className="pt-[1px] px-1 text-[11px] sm:text-[13px] md:text-[14px]"><i>P</i><sub className="text-[9px] sm:text-[10px]">up</sub></span>
-          </span>
-          <span>=</span>
-          <span className="inline-flex items-center">
-            <span className="text-base sm:text-lg leading-none font-light">[</span>
-            <span className="inline-flex flex-col items-center align-middle text-center leading-none mx-0.5">
-              <span className="border-b border-current pb-[1px] px-1 text-[11px] sm:text-[13px] md:text-[14px]">2</span>
-              <span className="pt-[1px] px-1 text-[11px] sm:text-[13px] md:text-[14px]"><i>k</i> + 1</span>
-            </span>
-            <span className="text-base sm:text-lg leading-none font-light">]</span>
-            <sup className="inline-flex flex-col items-center text-[9px] sm:text-[10px] md:text-[11px] leading-none -mt-2.5 ml-0.5">
-              <span className="border-b border-current pb-[0.5px]"><i>k</i></span>
-              <span className="pt-[0.5px]"><i>k</i> − 1</span>
-            </sup>
-          </span>
-        </span>
-      );
-    default:
-      return null;
-  }
-}
 
 interface DidYouKnowSectionProps {
   className?: string;
@@ -259,6 +26,54 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
   const t = useTranslations("Home.didYouKnow");
   const locale = useLocale();
   const isRtl = locale === "fa";
+
+const STORAGE_KEY = "esp_dyk_seen_ids_v2";
+
+  // Initial cards for SSR, then non-repeating cycle randomization on mount
+  const initialCards = useMemo(() => getDidYouKnowCards(locale), [locale]);
+  const [cards, setCards] = useState<DidYouKnowCardItem[]>(initialCards);
+
+  // Non-repeating random cycle: Unseen cards appear first until ALL cards have been shown once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      let seenIds: string[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(seenIds)) seenIds = [];
+
+      const all = getDidYouKnowCards(locale);
+      const allIds = new Set(all.map((c) => c.id));
+      seenIds = seenIds.filter((id) => allIds.has(id));
+
+      // When all cards have been seen once, start a fresh new cycle
+      if (seenIds.length >= all.length) {
+        seenIds = [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+      }
+
+      const unseen = all.filter((c) => !seenIds.includes(c.id));
+      const seen = all.filter((c) => seenIds.includes(c.id));
+
+      // Shuffle unseen cards randomly for this session
+      const shuffledUnseen = [...unseen].sort(() => Math.random() - 0.5);
+      // Seen cards follow behind to maintain full carousel length
+      const shuffledSeen = [...seen].sort(() => Math.random() - 0.5);
+
+      const finalDeck = [...shuffledUnseen, ...shuffledSeen];
+      setCards(finalDeck);
+
+      // Record the initial card as viewed in this session
+      if (finalDeck.length > 0) {
+        const firstId = finalDeck[0].id;
+        if (!seenIds.includes(firstId)) {
+          seenIds.push(firstId);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(seenIds));
+        }
+      }
+    } catch {
+      const randomSeed = Math.floor(Math.random() * 1000000) + 1;
+      setCards(getDidYouKnowCards(locale, randomSeed));
+    }
+  }, [locale]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -280,19 +95,29 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
     emblaApi?.scrollNext();
   }, [emblaApi]);
 
-  const scrollTo = useCallback(
-    (index: number) => {
-      emblaApi?.scrollTo(index);
-    },
-    [emblaApi]
-  );
-
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
+    const index = emblaApi.selectedScrollSnap();
+    setSelectedIndex(index);
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
-  }, [emblaApi]);
+
+    // Track viewed card in localStorage so it won't repeat at the top until all cards are viewed
+    try {
+      const currentCard = cards[index];
+      if (currentCard) {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        let seenIds: string[] = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(seenIds)) seenIds = [];
+        if (!seenIds.includes(currentCard.id)) {
+          seenIds.push(currentCard.id);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(seenIds));
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [emblaApi, cards]);
 
   const [progress, setProgress] = useState(0);
 
@@ -347,12 +172,12 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
   return (
     <div
       className={cn(
-        "w-full max-w-5xl mx-auto flex flex-col items-center select-none my-auto",
+        "w-full max-w-5xl mx-auto flex flex-col items-center select-none my-auto shrink-0",
         className
       )}
     >
       {/* 1. Header with Catchy Title & Carousel Controls (Width aligned to center card) */}
-      <div className="w-[96%] sm:w-[88%] md:w-[82%] px-2 sm:px-3 mx-auto flex items-center justify-between mb-2 sm:mb-3 shrink-0">
+      <div className="w-[94%] sm:w-[86%] md:w-[80%] lg:w-[75%] max-w-4xl px-2 sm:px-3 mx-auto flex items-center justify-between mb-2 sm:mb-2.5 shrink-0">
         <div>
           <h2 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground">
             {t("title")}
@@ -388,7 +213,7 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
       {/* 2. Timer Progress Line Above Cards */}
       <div
         dir={isRtl ? "rtl" : "ltr"}
-        className="w-[96%] sm:w-[88%] md:w-[82%] px-2 sm:px-3 mx-auto mb-2 sm:mb-2.5 shrink-0"
+        className="w-[94%] sm:w-[86%] md:w-[80%] lg:w-[75%] max-w-4xl px-2 sm:px-3 mx-auto mb-2 sm:mb-2.5 shrink-0"
       >
         <div className="h-1 sm:h-1.5 w-full bg-muted/60 dark:bg-muted/30 rounded-full overflow-hidden">
           <div
@@ -406,28 +231,38 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
           className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)]"
           ref={emblaRef}
         >
-          <div className="flex w-full touch-pan-y pt-2 pb-12 sm:pb-14">
-          {CARDS.map((card, index) => {
-            const isActive = index === selectedIndex;
+          <div className="flex w-full touch-pan-y pt-2.5 sm:pt-3 pb-7 sm:pb-9">
+            {cards.map((card, index) => {
+              const isActive = index === selectedIndex;
 
-            return (
-              <div
-                key={card.id}
-                className="min-w-0 shrink-0 grow-0 basis-[96%] sm:basis-[88%] md:basis-[82%] px-2 sm:px-3"
-              >
-                {/* Card Container with exact rounded fillet and card-only hover pause */}
+              return (
                 <div
+                  key={card.id}
                   className={cn(
-                    "relative w-full h-[310px] sm:h-[335px] md:h-[350px] rounded-2xl sm:rounded-3xl transition-all duration-300",
-                    "border bg-card/95 dark:bg-[#0e1017]/95 backdrop-blur-2xl p-5 sm:p-7 md:p-8 flex flex-col justify-center overflow-hidden",
-                    isActive
-                      ? "border-primary/25 shadow-xl shadow-slate-950/15 dark:shadow-[0_16px_36px_-10px_rgba(0,0,0,0.7)] opacity-100 scale-100"
-                      : "border-border/40 opacity-55 scale-[0.98]",
-                    card.borderAccent
+                    "min-w-0 shrink-0 grow-0 basis-[94%] sm:basis-[86%] md:basis-[80%] lg:basis-[75%] max-w-4xl px-2 sm:px-3",
+                    // Inactive (cut-off side) cards ignore pointer events completely so only the active card responds to hover
+                    !isActive && "pointer-events-none"
                   )}
-                  onMouseEnter={() => setIsPaused(true)}
-                  onMouseLeave={() => setIsPaused(false)}
                 >
+                  {/* Card Container: Only active card takes hover border and holds autoplay */}
+                  <div
+                    className={cn(
+                      "relative w-full h-[285px] sm:h-[310px] md:h-[325px] rounded-2xl sm:rounded-3xl transition-all duration-300",
+                      "border bg-card/95 dark:bg-[#0e1017]/95 backdrop-blur-2xl p-4.5 sm:p-6 md:p-7 flex flex-col justify-between overflow-hidden",
+                      isActive
+                        ? cn(
+                            "border-primary/25 shadow-md shadow-slate-950/10 dark:shadow-[0_6px_20px_-4px_rgba(0,0,0,0.65)] opacity-100 scale-100 pointer-events-auto",
+                            card.borderAccent
+                          )
+                        : "border-border/40 opacity-50 scale-[0.98] pointer-events-none select-none"
+                    )}
+                    onMouseEnter={() => {
+                      if (isActive) setIsPaused(true);
+                    }}
+                    onMouseLeave={() => {
+                      if (isActive) setIsPaused(false);
+                    }}
+                  >
                     {/* Glowing Aura */}
                     <div
                       className={cn(
@@ -436,55 +271,55 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
                       )}
                     />
 
-                    {/* Card Content Column - Vertically Centered */}
-                    <div className="w-full flex flex-col justify-center gap-3.5 sm:gap-4 relative z-10 my-auto">
-                      {/* Top: Category Tag (No icon, generous border padding) & Slide Counter (Correct Sans font 2/10) */}
+                    {/* Card Content Column - Vertically Spaced & Responsive */}
+                    <div className="w-full flex flex-col justify-between h-full relative z-10">
+                      {/* Top: Category Tag & Slide Counter */}
                       <div className="flex items-center justify-between gap-3 shrink-0">
                         <div className="flex items-center gap-2 sm:gap-2.5">
                           <Badge
                             variant="outline"
                             className={cn(
-                              "h-auto py-2 px-4 sm:py-2.5 sm:px-5 text-xs sm:text-[13px] font-semibold rounded-full border shadow-2xs leading-none",
+                              "h-auto py-1.5 px-3.5 sm:py-2 sm:px-4.5 text-xs sm:text-[13px] font-semibold rounded-full border shadow-2xs leading-none",
                               card.accent
                             )}
                           >
-                            <span>{t(`cards.${card.id}.category`)}</span>
+                            <span>{card.category}</span>
                           </Badge>
-                          <span className="hidden sm:inline-flex items-center h-auto text-xs sm:text-[13px] font-medium text-muted-foreground px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-muted/60 border border-border/50 leading-none">
-                            {t(`cards.${card.id}.tag`)}
+                          <span className="hidden sm:inline-flex items-center h-auto text-xs sm:text-[13px] font-medium text-muted-foreground px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-muted/60 border border-border/50 leading-none">
+                            {card.tag}
                           </span>
                         </div>
 
-                        {/* Slide Counter: Standard Sans font with Tabular Nums & proper LTR direction (e.g. 2/10) */}
+                        {/* Slide Counter (e.g. 1 / 52) */}
                         <div
                           dir="ltr"
-                          className="fa-num text-xs sm:text-sm font-sans font-semibold text-muted-foreground/90 bg-muted/50 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-border/50 tabular-nums select-none flex items-center justify-center"
+                          className="fa-num text-xs sm:text-sm font-sans font-semibold text-muted-foreground/90 bg-muted/50 px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full border border-border/50 tabular-nums select-none flex items-center justify-center"
                         >
                           <span>{index + 1}</span>
                           <span className="mx-0.5 sm:mx-1 text-muted-foreground/45 font-normal">/</span>
-                          <span>{CARDS.length}</span>
+                          <span>{cards.length}</span>
                         </div>
                       </div>
 
                       {/* Middle: Question Hook & Detailed Scientific Fact */}
-                      <div className="space-y-2 sm:space-y-2.5">
-                        <h3 className="text-base sm:text-xl md:text-2xl font-bold tracking-tight text-foreground leading-snug">
-                          {t(`cards.${card.id}.title`)}
+                      <div className="space-y-1.5 sm:space-y-2 my-auto py-1">
+                        <h3 className="text-sm sm:text-lg md:text-xl font-bold tracking-tight text-foreground leading-snug line-clamp-2">
+                          {card.title}
                         </h3>
 
-                        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-4">
-                          {t(`cards.${card.id}.description`)}
+                        <p className="text-xs sm:text-[13px] md:text-sm text-muted-foreground leading-relaxed line-clamp-3 sm:line-clamp-4">
+                          {card.description}
                         </p>
                       </div>
 
-                      {/* Bottom: Scientific Formula (Icon removed, generous white pill, larger readable font) & External Reference Link */}
-                      <div className="pt-2.5 shrink-0 flex items-center justify-between gap-2.5 border-t border-border/40 min-h-[50px]">
-                        {/* Formula Container: No icon, larger space, pure white pill */}
-                        <div className="inline-flex items-center px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800 shadow-xs min-w-0 max-w-[70%] sm:max-w-[74%]">
+                      {/* Bottom: Scientific Formula & External Reference Link */}
+                      <div className="pt-2 sm:pt-2.5 shrink-0 flex items-center justify-between gap-2.5 border-t border-border/40 min-h-[44px]">
+                        {/* Formula Container: Generous white/dark pill */}
+                        <div className="inline-flex items-center px-3.5 py-1.5 sm:px-4.5 sm:py-2 rounded-xl sm:rounded-2xl bg-white dark:bg-slate-950 border border-slate-200/90 dark:border-slate-800 shadow-xs min-w-0 max-w-[65%] sm:max-w-[72%]">
                           <div
                             dir="ltr"
                             translate="no"
-                            className="truncate text-sm sm:text-base md:text-[18px] font-normal tracking-wide text-black dark:text-white select-all antialiased flex items-center"
+                            className="truncate text-xs sm:text-[13px] md:text-sm font-normal tracking-wide text-black dark:text-white select-all antialiased flex items-center"
                             style={{
                               fontFamily: "'LatinModernMath', 'NotoSansMath', 'Cambria Math', serif",
                               textRendering: "geometricPrecision",
@@ -492,19 +327,20 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
                               MozOsxFontSmoothing: "grayscale",
                             }}
                           >
-                            <MathFormula cardId={card.id} />
+                            <span>{card.formula}</span>
                           </div>
                         </div>
 
+                        {/* Reference Link */}
                         <a
                           href={card.link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-2 px-2.5 sm:px-3 rounded-xl hover:bg-muted/70 shrink-0 border border-border/50 hover:border-border cursor-pointer shadow-2xs"
-                          title={t(`cards.${card.id}.ref`)}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors py-1.5 px-2.5 sm:py-2 sm:px-3 rounded-xl hover:bg-muted/70 shrink-0 border border-border/50 hover:border-border cursor-pointer shadow-2xs"
+                          title={card.ref}
                         >
                           <BookOpen className="size-3.5 text-primary/80 shrink-0" />
-                          <span className="truncate max-w-[95px] sm:max-w-[135px]">{t(`cards.${card.id}.ref`)}</span>
+                          <span className="truncate max-w-[95px] sm:max-w-[135px]">{card.ref}</span>
                           <ExternalLink className="size-3 opacity-70 shrink-0" />
                         </a>
                       </div>
@@ -513,26 +349,8 @@ export function DidYouKnowSection({ className }: DidYouKnowSectionProps) {
                 </div>
               );
             })}
+          </div>
         </div>
-      </div>
-    </div>
-
-      {/* 3. Pagination Dots (Indicator Group for 10 Slides) */}
-      <div className="flex items-center justify-center gap-1.5 shrink-0 mt-1 sm:mt-1.5 pb-0.5">
-        {CARDS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => scrollTo(i)}
-            aria-label={`Slide ${i + 1}`}
-            className={cn(
-              "h-1.5 sm:h-2 rounded-full transition-all duration-300 outline-none cursor-pointer",
-              i === selectedIndex
-                ? "w-5 sm:w-6 bg-primary shadow-xs shadow-primary/40"
-                : "w-1.5 sm:w-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
-            )}
-          />
-        ))}
       </div>
     </div>
   );

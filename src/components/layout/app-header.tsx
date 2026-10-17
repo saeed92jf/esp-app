@@ -56,7 +56,7 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "z-[60] top-0 left-0 right-0 w-full h-[var(--header-height)] flex items-center justify-between px-3 sm:px-6 shrink-0 bg-transparent backdrop-blur-2xl border-none shadow-none",
+        "z-[60] top-0 left-0 right-0 w-full h-[var(--header-height)] flex items-center justify-between px-2.5 sm:px-6 shrink-0 bg-transparent backdrop-blur-2xl border-none shadow-none",
         position === 'sticky' && "sticky",
         position === 'absolute' && "absolute",
         position === 'fixed' && "fixed",
@@ -87,14 +87,14 @@ export function AppHeader({
           dir="ltr"
           className="flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0"
         >
-          <Logo compact short={logoShort} className="text-base sm:text-xl" />
+          <Logo compact short={logoShort} className="text-[13px] sm:text-[15px]" />
         </Link>
 
-        {/* Optional Page Tag in Simple Font (NOT logo font) */}
+        {/* Centralized Page Tag: UPPERCASE, bold, no dot, inline with logo */}
         {tag && (
-          <div className="flex items-center shrink-0">
-            <span className="ms-2 sm:ms-3 px-3 sm:px-3.5 py-1 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold tracking-wide text-foreground bg-muted/90 dark:bg-muted/60 border border-border/80 shadow-xs select-none font-sans uppercase">
-              {tag}
+          <div className="inline-flex items-center shrink-0 select-none ms-1.5 sm:ms-2.5 self-center leading-none" dir="ltr">
+            <span className="font-sans font-bold uppercase tracking-[0.06em] text-[11px] sm:text-[15px] leading-none text-foreground select-none max-w-[100px] sm:max-w-none truncate">
+              {typeof tag === "string" ? tag.replace(/^\.+/, "").toUpperCase() : tag}
             </span>
           </div>
         )}
@@ -103,7 +103,7 @@ export function AppHeader({
       </div>
 
       {/* ── Right Side: Controls & User Menu ── */}
-      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 origin-right rtl:origin-left">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 origin-right rtl:origin-left">
         {rightActions ? (
           rightActions
         ) : (
@@ -115,7 +115,7 @@ export function AppHeader({
               iconClassName={HEADER_ICON_CLASS}
             />
             <AppsPopover
-              triggerClassName={HEADER_ICON_BUTTON_CLASS}
+              triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden xs:inline-flex")}
               iconClassName={HEADER_ICON_CLASS}
             />
             <DashboardAvatar />
