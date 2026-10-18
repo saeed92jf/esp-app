@@ -152,7 +152,7 @@ export function QuickAccessSection({
                     "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] text-center rounded-[12px] sm:rounded-[14px] cursor-pointer transition-[border-color,background-color,box-shadow] duration-150 select-none overflow-hidden",
                     isItemSelected
                       ? "border-2 border-primary bg-primary/[0.08] dark:bg-primary/[0.16] shadow-xs"
-                      : "animate-oscillate border-2 border-dashed border-border/90 dark:border-border/70 hover:border-primary/60 bg-muted/20 dark:bg-muted/30 hover:bg-muted/40"
+                      : "animate-oscillate border-2 border-dashed border-border/90 dark:border-border/70 hover:border-primary/70 dark:hover:border-primary bg-muted/20 dark:bg-muted/30 hover:bg-muted/40 dark:hover:bg-muted/50"
                   )}
                   title={title}
                 >
@@ -168,7 +168,7 @@ export function QuickAccessSection({
                       <Check className="size-3 stroke-[2.5]" />
                     </div>
                   ) : (
-                    <div className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 size-5 sm:size-5.5 rounded-full bg-background text-foreground/90 border border-border/80 flex items-center justify-center shadow-xs z-20">
+                    <div className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 size-5 sm:size-5.5 rounded-full bg-background text-foreground/90 border border-border/80 group-hover:border-primary/70 dark:group-hover:border-primary group-hover:text-primary flex items-center justify-center shadow-xs z-20 transition-colors">
                       <Plus className="size-3 stroke-[2.2]" />
                     </div>
                   )}
