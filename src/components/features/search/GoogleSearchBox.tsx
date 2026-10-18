@@ -21,6 +21,8 @@ interface GoogleSearchBoxProps {
   onSubmitSearch?: (query: string) => void;
   compact?: boolean;
   darkFlatWhite?: boolean;
+  showAiModeButton?: boolean;
+  showClearButton?: boolean;
 }
 
 export function GoogleSearchBox({
@@ -33,6 +35,8 @@ export function GoogleSearchBox({
   onSubmitSearch,
   compact = false,
   darkFlatWhite = true,
+  showAiModeButton,
+  showClearButton,
 }: GoogleSearchBoxProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -77,10 +81,13 @@ export function GoogleSearchBox({
     isSelected: boolean,
     onSelect: () => void
   ) => {
+    const isItemEn = /[a-zA-Z]/.test(item.text) && !/[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(item.text);
+
     return (
       <div
         key={item.text}
         onClick={onSelect}
+        dir={isItemEn ? "ltr" : isRtl ? "rtl" : "ltr"}
         className={cn(
           "group/sugg relative w-full flex cursor-pointer select-none items-center justify-between px-3 sm:px-3.5 transition-colors",
           compact ? "h-[38px] text-[13.5px]" : "h-[44px] text-[14px]",
@@ -105,7 +112,9 @@ export function GoogleSearchBox({
         </div>
 
         <div className="text-zinc-400 dark:text-zinc-500 shrink-0 pe-1 ms-2 opacity-0 group-hover/sugg:opacity-100 transition-opacity">
-          {isRtl ? (
+          {isItemEn ? (
+            <ArrowUpRight className="size-3.5" />
+          ) : isRtl ? (
             <ArrowUpLeft className="size-3.5" />
           ) : (
             <ArrowUpRight className="size-3.5" />
@@ -114,6 +123,9 @@ export function GoogleSearchBox({
       </div>
     );
   };
+
+  const finalShowAiModeButton = showAiModeButton !== undefined ? showAiModeButton : !compact;
+  const finalShowClearButton = showClearButton !== undefined ? showClearButton : compact;
 
   return (
     <GenericSearchBox
@@ -127,7 +139,8 @@ export function GoogleSearchBox({
       onSubmitSearch={handleSubmitSearch}
       onQueryChange={handleQueryChange}
       onOpenChange={onOpenChange}
-      showAiModeButton={true}
+      showAiModeButton={finalShowAiModeButton}
+      showClearButton={finalShowClearButton}
       darkFlatWhite={darkFlatWhite}
       compact={compact}
       value={value}

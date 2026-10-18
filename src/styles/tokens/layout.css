@@ -5,13 +5,13 @@
 
 :root {
   --header-height: 4rem;      /* 64px - AppHeader standard height */
-  --footer-height: 2.75rem;   /* 44px - sm:h-11 Footer standard height */
+  --footer-height: 3.5rem;    /* 56px - Two-row Footer standard height (Location 24px + Copyright/Links 32px) */
   --home-height: calc(100dvh - var(--header-height) - var(--footer-height));
 }
 
 @media (max-width: 639px) {
   :root {
-    --footer-height: 2.5rem;  /* 40px - h-10 Footer mobile height */
+    --footer-height: 3.5rem;  /* 56px - Footer mobile height */
   }
 }
 

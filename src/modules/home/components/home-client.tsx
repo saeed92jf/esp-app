@@ -79,6 +79,9 @@ export function HomeClient() {
 
   useEffect(() => {
     guestScrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
   }, [activeGuestTab]);
 
   const guestTabs = useMemo(() => [
@@ -114,11 +117,11 @@ export function HomeClient() {
 
 
   return (
-    <div className="relative w-full h-[var(--home-height,calc(100dvh-var(--header-height)-var(--footer-height)))] max-h-[var(--home-height,calc(100dvh-var(--header-height)-var(--footer-height)))] overflow-hidden select-none">
+    <div className="relative w-full flex-1 flex flex-col min-h-[var(--home-height)] select-none">
       {/* Docked Inline Home Sidebar */}
       <HomeSidebar />
 
-      <div className="relative flex w-full h-full">
+      <div className="relative flex w-full flex-1">
         {/* Animated Spacer pushing the content aside on desktop ONLY */}
         <motion.div
           initial={false}
@@ -134,7 +137,7 @@ export function HomeClient() {
         />
 
         {/* Center content container */}
-        <div className="flex-1 min-w-0 h-full transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative overflow-y-auto custom-scrollbar flex flex-col">
+        <div className="flex-1 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
           {/* Backdrop click catcher when sidebar is open on desktop */}
           {isOpen && !isMobile && (
             <div
@@ -148,7 +151,7 @@ export function HomeClient() {
             /* ======================================================== */
             /* 1. AUTHENTICATED USER VIEW (HERO + SEARCH + QUICK ACCESS) */
             /* ======================================================== */
-            <div className="relative flex min-h-full min-h-[500px] sm:min-h-[540px] w-full flex-col items-center justify-center text-center py-6 sm:py-8 my-auto">
+            <div className="relative flex flex-1 w-full flex-col items-center justify-center text-center py-3 sm:py-5 my-auto min-h-0">
               <Container>
                 <motion.div
                   initial="hidden"
@@ -184,13 +187,13 @@ export function HomeClient() {
             </div>
           ) : (
             /* ======================================================== */
-            /* 2. GUEST / UNAUTHENTICATED SHOWCASE (4 FULL-HEIGHT TABS) */
+            /* 2. GUEST / UNAUTHENTICATED SHOWCASE (4 TABS)             */
             /* ======================================================== */
-            <div className="relative w-full h-full flex flex-col overflow-hidden">
+            <div className="relative w-full flex-1 flex flex-col">
               {/* Tab Content Display Area */}
               <div
                 ref={guestScrollRef}
-                className="flex-1 min-h-0 w-full overflow-y-auto custom-scrollbar relative flex flex-col overscroll-contain"
+                className="flex-1 w-full relative flex flex-col"
               >
                 <AnimatePresence mode="wait">
                   {/* TAB 1: DICTIONARY (Specialized Engineering Dictionary & Daily Tips) */}
@@ -201,7 +204,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full min-h-full flex flex-col items-center justify-start pt-0 pb-8 px-2 sm:px-4"
+                      className="w-full flex-1 flex flex-col items-center justify-start pt-0 pb-8 px-2 sm:px-4"
                     >
                       <EngineeringDictionary />
                     </motion.div>
@@ -215,7 +218,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full min-h-full flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
+                      className="w-full flex-1 flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
                     >
                       <DidYouKnowSection />
                     </motion.div>
@@ -229,7 +232,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full min-h-full relative flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
+                      className="w-full flex-1 relative flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
                     >
                       <FeaturedModulesCard />
                     </motion.div>
@@ -243,7 +246,7 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full min-h-full flex flex-col items-center justify-start pt-3 pb-8 px-2 sm:px-4"
+                      className="w-full flex-1 flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
                     >
                       <SupportSection />
                     </motion.div>

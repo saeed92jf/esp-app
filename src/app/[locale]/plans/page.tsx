@@ -11,7 +11,7 @@ export default function PlansPage() {
   const isRtl = locale === "fa";
 
   return (
-    <div className="min-h-screen bg-background text-foreground py-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-start">
+    <div className="min-h-full flex-1 bg-background text-foreground py-12 sm:py-16 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-start">
       <div className="max-w-4xl w-full mx-auto flex flex-col items-center text-center">
 
         {/* Page Header */}

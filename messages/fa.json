@@ -35,7 +35,9 @@
     "searchBox": {
       "overallView": "نمای کلی امکانات و کارت‌ها",
       "removeFromHistory": "حذف از تاریخچه",
-      "aiMode": "حالت هوش مصنوعی (به‌زودی)"
+      "aiMode": "حالت هوش مصنوعی (به‌زودی)",
+      "aiModeButton": "حالت AI",
+      "aiModeUnavailable": "خارج از دسترس"
     },
     "quickAccess": {
       "searchShortcuts": "جستجوی ابزارها...",
@@ -114,7 +116,7 @@
       "done": "تأیید",
       "delete": "حذف",
       "editCards": "ویرایش کارت‌ها",
-      "expand": "Expand"
+      "expand": "گسترش"
     },
     "didYouKnow": {
       "eyebrow": "دانستنی‌های مهندسی و صنعتی",
@@ -554,8 +556,15 @@
   },
   "Dashboard": {
     "title": "Dashboard",
+    "profile": "پروفایل",
     "greeting": "خوش آمدید، {name}",
     "themeSettings": "تنظیمات ظاهر",
+    "tabs": {
+      "tasks": "وظایف",
+      "custom": "کاستوم",
+      "administrative": "اداری",
+      "market": "بازار"
+    },
     "chartTitle": "روند ۶ ماهه",
     "chartSubtitle": "بر اساس داده‌های نمونه",
     "stats": {
@@ -661,6 +670,71 @@
       "title": "ساعت جهانی",
       "edit": "ویرایش",
       "done": "پایان"
+    },
+    "schematic": {
+      "title": "استودیو شماتیک و چیدمان داشبورد",
+      "subtitle": "شماتیک بصری قرارگیری ماژول‌ها در تب‌ها و سایدبار ابزارها",
+      "settingsButton": "تنظیمات و شماتیک ماژول‌ها",
+      "allModulesCount": "ماژول یکپارچه",
+      "schematicView": "نمای شماتیک معماری",
+      "matrixView": "ماتریس توزیع جامع",
+      "searchModules": "جستجو در تمام ماژول‌ها و ابزارها...",
+      "quickPresets": "الگوهای آماده",
+      "presetDefaultTasks": "پیش‌فرض مدیریت کارها",
+      "presetMarketAnalysis": "تحلیل بازار و سرمایه",
+      "presetAdminTools": "پنل اداری و عمومی",
+      "presetCleanSlate": "پاکسازی کامل",
+      "viewZone": "نمایش بخش",
+      "allTabsBlueprint": "شماتیک کل تب‌ها",
+      "schematicInstruction": "کارت‌ها را بین تب‌ها منتقل کنید یا به سایدبار پین نمایید",
+      "slideRailZoneTitle": "سایدبار ابزارهای اسلایدی (منوی کشویی)",
+      "slideRailZoneDesc": "دسترسی سریع و فوری به ابزارها از هر کجای داشبورد",
+      "pinnedToolsCount": "ابزار پین شده",
+      "addToolToRail": "افزودن به سایدبار",
+      "unpinFromRail": "حذف از سایدبار",
+      "selectToolToPin": "انتخاب ابزار برای پین‌کردن به سایدبار",
+      "activeTabNow": "تب باز در صفحه",
+      "cardsCount": "کارت ماژول",
+      "addModule": "افزودن ماژول",
+      "noModulesInTab": "هیچ ماژولی در این تب قرار نگرفته است",
+      "addFirstModule": "افزودن اولین ماژول",
+      "removeFromTab": "حذف از این تب",
+      "moveTo": "انتقال به",
+      "pinToRail": "پین به سایدبار اسلایدی",
+      "pickModuleForTab": "انتخاب ماژول برای قرارگیری در این تب",
+      "cancel": "انصراف",
+      "categories": {
+        "all": "همه",
+        "tasks": "کارها و برنامه‌ریزی",
+        "tools": "ابزارها و یادداشت",
+        "market": "مالی و بازار",
+        "administrative": "اداری و عمومی"
+      },
+      "moduleName": "نام و مشخصات ماژول",
+      "slideRail": "سایدبار کنار",
+      "active": "فعال",
+      "pinned": "پین شده",
+      "inTab": "ماژول در تب",
+      "inSlideRail": "ابزار در سایدبار",
+      "totalPlacements": "توزیع فعال در کل تب‌ها",
+      "resetCurrentTab": "بازنشانی تب فعلی",
+      "resetAllTabs": "بازنشانی کل داشبورد",
+      "confirmAndSave": "ذخیره و تایید چیدمان",
+      "openStudio": "استودیو شماتیک ماژول‌ها",
+      "emptyTabTitle": "هیچ ماژولی در محتوای وسط این تب فعال نیست",
+      "emptyTabDesc": "می‌توانید از استودیو شماتیک ماژول‌های دلخواه را به این تب اضافه کنید.",
+      "moveToTab": "انتقال به",
+      "pinTooltip": "پین به سایدبار",
+      "unpinTooltip": "حذف از سایدبار",
+      "removeTooltip": "حذف از این تب",
+      "selectPresetWorkspace": "انتخاب چیدمان آماده...",
+      "presetWorkspace": "چیدمان آماده",
+      "presetAllInOne": "چیدمان جامع و یکپارچه",
+      "slideRailSubtitle": "دسترسی سریع از همه تب‌ها",
+      "noPinnedTools": "هیچ ابزاری در سایدبار پین نشده است",
+      "moveToTargetTab": "انتقال به تب",
+      "activeTabStats": "ماژول‌های تب فعلی",
+      "allCatalogStats": "کل ماژول‌های سامانه"
     }
   },
   "Account": {
@@ -709,6 +783,7 @@
     "uncategorized": "دسته‌بندی‌نشده",
     "videosCount": "{loaded} از {total} ویدیو",
     "loadingMore": "در حال بارگذاری {count} ویدیوی دیگر...",
+    "loadingMoreVideos": "در حال بارگذاری {count} ویدیوی دیگر...",
     "allLoaded": "هر {count} ویدیو با موفقیت بارگذاری شد",
     "views": "",
     "noVideos": "ویدیویی موجود نیست",
@@ -810,7 +885,16 @@
       "excelNode": "اکسل",
       "matrixNode": "ماتریس",
       "chartNode": "نمودار",
-      "projectDataNode": "اطلاعات پروژه"
+      "projectDataNode": "اطلاعات پروژه",
+      "vesselRootNode": "مخزن تحت فشار (ریشه)",
+      "shellNode": "بخش پوسته (Shell)",
+      "headNode": "کلگی (Head)",
+      "nozzleNode": "نازل (Nozzle)",
+      "supportNode": "پایه و نگهدارنده (Support)",
+      "attachmentsNode": "اتصالات جانبی (Attachments)",
+      "outputHubNode": "هاب خروجی داده",
+      "mistEliminatorNode": "مه‌گیر (Mist Eliminator)",
+      "internalsNode": "اجزای داخلی (Internals)"
     },
     "palette": {
       "search": "جستجوی گره‌ها…",
@@ -819,7 +903,10 @@
       "shapes": "اشکال",
       "dragToAdd": "بکشید به بوم",
       "containers": "نگهدارنده",
-      "compute": "محاسبه"
+      "compute": "محاسبه",
+      "diagram": "دیاگرام",
+      "weight": "محاسبات وزن",
+      "weightComingSoon": "گره‌های محاسبه وزن به‌زودی اضافه می‌شوند."
     },
     "settings": {
       "label": "برچسب",

@@ -75,14 +75,29 @@ export interface ISearchService {
   getSuggestions(query: string, locale?: string): Promise<SearchSuggestion[]>;
 }
 
+/**
+ * Detects whether a string contains Persian / Arabic characters
+ */
+export function isPersianQuery(text: string): boolean {
+  return /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+}
+
+/**
+ * Detects whether a string is an English query (contains latin letters and no Persian characters)
+ */
+export function isEnglishQuery(text: string): boolean {
+  return /[a-zA-Z]/.test(text) && !isPersianQuery(text);
+}
+
 export class FakeSearchService implements ISearchService {
   /**
-   * Generates fast, high-quality Google-style autocomplete suggestions
+   * Generates fast, high-quality Google-style autocomplete suggestions (language-aware)
    */
   async getSuggestions(query: string, locale = "fa"): Promise<SearchSuggestion[]> {
     const raw = query.trim();
     if (!raw) return [];
 
+    const isEn = isEnglishQuery(raw);
     const normalizedQuery = normalizeSearchText(raw);
     if (!normalizedQuery) return [];
 
@@ -91,10 +106,16 @@ export class FakeSearchService implements ISearchService {
     const suggestions: SearchSuggestion[] = [];
 
     // Helper to evaluate and add a phrase
-    const considerPhrase = (phrase: string, cat?: SearchCategory, catLabel?: string) => {
+    const considerPhrase = (phrase?: string, cat?: SearchCategory, catLabel?: string) => {
+      if (!phrase) return;
       const cleanPhrase = phrase.trim();
       const normPhrase = normalizeSearchText(cleanPhrase);
       if (!normPhrase || seen.has(normPhrase.toLowerCase())) return;
+
+      // Filter by language match (English queries get English suggestions, Persian gets Persian)
+      const phraseIsEn = isEnglishQuery(cleanPhrase);
+      if (isEn && !phraseIsEn) return;
+      if (!isEn && phraseIsEn) return;
 
       // Check if all query tokens match this phrase
       const allTokensMatch = queryTokens.every((token) => normPhrase.includes(token));
@@ -108,26 +129,29 @@ export class FakeSearchService implements ISearchService {
       });
     };
 
-    // 1. Check our curated high-relevance suggestions lexicon
+    // 1. Check our curated high-relevance suggestions lexicon (language-matched)
     for (const phrase of SEARCH_SUGGESTIONS_LEXICON) {
       considerPhrase(phrase);
       if (suggestions.length >= 8) break;
     }
 
-    // 2. If we need more, check titles and secondary terms from all items
+    // 2. If we need more, check titles in the matching language first
     if (suggestions.length < 8) {
       for (const item of ALL_SEARCH_ITEMS) {
-        considerPhrase(item.title, item.category);
-        if (item.titleEn) considerPhrase(item.titleEn, item.category);
+        if (isEn) {
+          if (item.titleEn) considerPhrase(item.titleEn, item.category);
+        } else {
+          considerPhrase(item.title, item.category);
+        }
         if (suggestions.length >= 8) break;
       }
     }
 
-    // 3. If still needed, look into item keywords
+    // 3. If still needed, look into item keywords matching language
     if (suggestions.length < 8) {
       for (const item of ALL_SEARCH_ITEMS) {
         for (const kw of item.keywords) {
-          if (kw.length > 3) {
+          if (kw.length > 2) {
             considerPhrase(kw, item.category);
             if (suggestions.length >= 8) break;
           }
@@ -161,6 +185,7 @@ export class FakeSearchService implements ISearchService {
       };
     }
 
+    const isEn = isEnglishQuery(rawQuery);
     const normalizedQuery = normalizeSearchText(rawQuery);
     const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
 
@@ -178,7 +203,7 @@ export class FakeSearchService implements ISearchService {
     }
     const allSearchTokens = Array.from(expandedTokens);
 
-    // Score each item in the universal catalog
+    // Score each item in the universal catalog (Google-style language prioritization)
     const scoredItems: SearchItem[] = [];
 
     for (const item of ALL_SEARCH_ITEMS) {
@@ -190,48 +215,97 @@ export class FakeSearchService implements ISearchService {
 
       let score = 0;
 
-      // 1. Exact phrase match
-      if (normTitle.includes(normalizedQuery)) {
-        score += 150;
-      } else if (normTitleEn.includes(normalizedQuery)) {
-        score += 140;
-      }
-
-      // 2. Query token matches in title
-      for (const token of queryTokens) {
-        if (normTitle.startsWith(token) || normTitle.includes(` ${token}`)) {
+      if (isEn) {
+        // ── ENGLISH SEARCH QUERY SCORING ──
+        // 1. Exact phrase match in English title
+        if (normTitleEn && normTitleEn.includes(normalizedQuery)) {
+          score += 220;
+        } else if (normTitle.includes(normalizedQuery)) {
           score += 60;
-        } else if (normTitle.includes(token)) {
-          score += 40;
         }
-        if (normTitleEn.includes(token)) {
-          score += 35;
-        }
-      }
 
-      // 3. Token matches in keywords
-      for (const token of queryTokens) {
-        const matchingKw = normKeywords.find((k) => k === token || k.includes(token));
-        if (matchingKw) {
-          score += matchingKw === token ? 45 : 25;
+        // 2. Query token matches in English title
+        for (const token of queryTokens) {
+          if (normTitleEn.startsWith(token) || normTitleEn.includes(` ${token}`)) {
+            score += 80;
+          } else if (normTitleEn.includes(token)) {
+            score += 55;
+          }
+          if (normTitle.includes(token)) {
+            score += 20;
+          }
         }
-      }
 
-      // 4. Token matches in snippet / description
-      for (const token of queryTokens) {
-        if (normSnippet.includes(token) || normSnippetEn.includes(token)) {
-          score += 15;
+        // 3. Token matches in keywords
+        for (const token of queryTokens) {
+          const matchingKw = normKeywords.find((k) => k === token || k.includes(token));
+          if (matchingKw) {
+            score += matchingKw === token ? 50 : 30;
+          }
         }
-      }
 
-      // 5. Cross-language expanded token matches
-      for (const expToken of allSearchTokens) {
-        if (normTitle.includes(expToken) || normTitleEn.includes(expToken)) {
-          score += 25;
-        } else if (normKeywords.some((k) => k.includes(expToken))) {
-          score += 15;
-        } else if (normSnippet.includes(expToken)) {
-          score += 8;
+        // 4. Token matches in English snippet
+        for (const token of queryTokens) {
+          if (normSnippetEn && normSnippetEn.includes(token)) {
+            score += 30;
+          } else if (normSnippet.includes(token)) {
+            score += 10;
+          }
+        }
+
+        // 5. Cross-language expanded token matches
+        for (const expToken of allSearchTokens) {
+          if (normTitleEn.includes(expToken)) {
+            score += 25;
+          } else if (normTitle.includes(expToken)) {
+            score += 12;
+          }
+        }
+      } else {
+        // ── PERSIAN SEARCH QUERY SCORING ──
+        // 1. Exact phrase match in Persian title
+        if (normTitle.includes(normalizedQuery)) {
+          score += 220;
+        } else if (normTitleEn && normTitleEn.includes(normalizedQuery)) {
+          score += 60;
+        }
+
+        // 2. Query token matches in Persian title
+        for (const token of queryTokens) {
+          if (normTitle.startsWith(token) || normTitle.includes(` ${token}`)) {
+            score += 80;
+          } else if (normTitle.includes(token)) {
+            score += 55;
+          }
+          if (normTitleEn.includes(token)) {
+            score += 20;
+          }
+        }
+
+        // 3. Token matches in keywords
+        for (const token of queryTokens) {
+          const matchingKw = normKeywords.find((k) => k === token || k.includes(token));
+          if (matchingKw) {
+            score += matchingKw === token ? 50 : 30;
+          }
+        }
+
+        // 4. Token matches in Persian snippet
+        for (const token of queryTokens) {
+          if (normSnippet.includes(token)) {
+            score += 30;
+          } else if (normSnippetEn && normSnippetEn.includes(token)) {
+            score += 10;
+          }
+        }
+
+        // 5. Cross-language expanded token matches
+        for (const expToken of allSearchTokens) {
+          if (normTitle.includes(expToken)) {
+            score += 25;
+          } else if (normTitleEn.includes(expToken)) {
+            score += 12;
+          }
         }
       }
 
@@ -261,8 +335,11 @@ export class FakeSearchService implements ISearchService {
         ? scoredItems
         : scoredItems.filter((item) => item.category === category);
 
-    // Generate related searches (like Google)
+    // Generate related searches matching query language (Google style)
     const relatedSearches = SEARCH_SUGGESTIONS_LEXICON.filter((p) => {
+      const phraseIsEn = isEnglishQuery(p);
+      if (isEn !== phraseIsEn) return false;
+
       const norm = normalizeSearchText(p);
       return (
         norm !== normalizedQuery &&

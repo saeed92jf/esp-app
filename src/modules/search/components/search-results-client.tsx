@@ -149,6 +149,8 @@ export function SearchResultsClient() {
             <div className="flex-1 max-w-2xl min-w-0">
               <GoogleSearchBox
                 compact
+                showAiModeButton={false}
+                showClearButton={true}
                 initialQuery={query}
                 onSubmitSearch={handleSearchSubmit}
                 placeholder={t("placeholder")}
@@ -343,7 +345,7 @@ export function SearchResultsClient() {
 }
 
 /**
- * Individual Google Search Result Card
+ * Individual Google Search Result Card (Language-adaptive based on query)
  */
 function SearchResultCard({
   item,
@@ -358,14 +360,45 @@ function SearchResultCard({
   isRtl: boolean;
   t: (key: string) => string;
 }) {
-  const displayTitle = locale === "en" && item.titleEn ? item.titleEn : item.title;
-  const displaySnippet = locale === "en" && item.snippetEn ? item.snippetEn : item.snippet;
+  const isQueryEn = /[a-zA-Z]/.test(query) && !/[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(query);
+  const isQueryFa = /[\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(query);
+  const showEnglish = isQueryEn || (locale === "en" && !isQueryFa);
+
+  const displayTitle = showEnglish && item.titleEn ? item.titleEn : item.title;
+  const displaySnippet = showEnglish && item.snippetEn ? item.snippetEn : item.snippet;
   const displayBreadcrumbs =
-    locale === "en" && item.breadcrumbsEn ? item.breadcrumbsEn : item.breadcrumbs;
-  const displayBadge = locale === "en" && item.badgeEn ? item.badgeEn : item.badge;
+    showEnglish && item.breadcrumbsEn && item.breadcrumbsEn.length > 0
+      ? item.breadcrumbsEn
+      : item.breadcrumbs;
+  const displayBadge = showEnglish && item.badgeEn ? item.badgeEn : item.badge;
+
+  const actionLabel = showEnglish
+    ? item.category === "modules"
+      ? "Open Tool"
+      : item.category === "videos"
+      ? "Watch Video"
+      : item.category === "tasks"
+      ? "View Project"
+      : "View in Dictionary"
+    : item.category === "modules"
+    ? t("openModule")
+    : item.category === "videos"
+    ? t("openVideo")
+    : item.category === "tasks"
+    ? t("openProject")
+    : t("openTerm");
+
+  const standardLabel = showEnglish ? "Standard" : t("standard");
+  const cardDir = showEnglish ? "ltr" : isRtl ? "rtl" : "ltr";
 
   return (
-    <article className="group/card flex flex-col w-full">
+    <article
+      dir={cardDir}
+      className={cn(
+        "group/card flex flex-col w-full text-start",
+        showEnglish ? "text-left" : isRtl ? "text-right" : "text-left"
+      )}
+    >
       {/* 1. Breadcrumbs / URL Source Line */}
       <div className="flex items-center gap-1.5 text-[12.5px] text-[#70757a] dark:text-[#9aa0a6] mb-1">
         <span className="size-2 rounded-full bg-primary/70 shrink-0" aria-hidden="true" />
@@ -411,7 +444,7 @@ function SearchResultCard({
 
         {item.metadata?.standard && (
           <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-            {t("standard")}: {item.metadata.standard}
+            {standardLabel}: {item.metadata.standard}
           </span>
         )}
 
@@ -431,16 +464,10 @@ function SearchResultCard({
           href={item.href}
           className="ms-auto inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:underline group-hover/card:text-primary/90"
         >
-          <span>
-            {item.category === "modules"
-              ? t("openModule")
-              : item.category === "videos"
-              ? t("openVideo")
-              : item.category === "tasks"
-              ? t("openProject")
-              : t("openTerm")}
-          </span>
-          {isRtl ? (
+          <span>{actionLabel}</span>
+          {showEnglish ? (
+            <ArrowRight className="size-3" />
+          ) : isRtl ? (
             <ArrowLeft className="size-3" />
           ) : (
             <ArrowRight className="size-3" />

@@ -34,6 +34,105 @@ export interface CalendarEvent {
   type: 'meeting' | 'deadline' | 'review' | 'event' | 'official' | 'fair';
 }
 
+export interface TaskComment {
+  id: string;
+  authorName: string;
+  authorRole: string;
+  authorAvatar?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface TaskAttachment {
+  id: string;
+  name: string;
+  size: string;
+  type: string;
+  uploadedAt: string;
+  url?: string;
+}
+
+export interface DashboardTask {
+  id: string;
+  title: string;
+  description?: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  category: string;
+  createdBy: 'manager' | 'user';
+  creatorName: string;
+  assignedToName: string;
+  dueDate?: string;
+  completedAt?: string;
+  completionExplanation?: string;
+  isManagerDefined: boolean;
+  comments: TaskComment[];
+  attachments: TaskAttachment[];
+  notificationSent?: boolean;
+  emailSent?: boolean;
+}
+
+export type ChecklistPeriod = 'daily' | 'weekly' | 'monthly' | 'periodic';
+
+export interface DetailedChecklistItem {
+  id: string;
+  title: string;
+  completed: boolean;
+  period: ChecklistPeriod;
+  category: string;
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  createdAt: string;
+  dueDate?: string;
+}
+
+export interface DailyRoutine {
+  id: string;
+  title: string;
+  timeSlot: string;
+  period: 'morning' | 'midday' | 'evening';
+  streakDays: number;
+  completedToday: boolean;
+  category?: string;
+}
+
+export interface DashboardNote {
+  id: string;
+  title: string;
+  content: string;
+  color: 'yellow' | 'blue' | 'emerald' | 'rose' | 'purple' | 'slate';
+  isPinned: boolean;
+  tags: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CustomLink {
+  id: string;
+  title: string;
+  url: string;
+  isInternal: boolean;
+  category: string;
+  description?: string;
+  createdAt: string;
+}
+
+export interface DashboardNotificationItem {
+  id: string;
+  title: string;
+  description: string;
+  type: 'manager_task' | 'event' | 'routine' | 'system';
+  date: string;
+  read: boolean;
+  taskId?: string;
+  emailPreview?: {
+    subject: string;
+    from: string;
+    to: string;
+    body: string;
+    sentAt: string;
+  };
+}
+
 export interface ChecklistItem {
   id: string;
   title: string;
@@ -51,6 +150,12 @@ export interface DashboardData {
   activities: ActivityItem[];
   calendarEvents: CalendarEvent[];
   checklist: ChecklistItem[];
+  tasks?: DashboardTask[];
+  detailedChecklist?: DetailedChecklistItem[];
+  routines?: DailyRoutine[];
+  notes?: DashboardNote[];
+  customLinks?: CustomLink[];
+  notifications?: DashboardNotificationItem[];
 }
 
 // ─── Interface ────────────────────────────────────────────────────────────────
@@ -601,6 +706,214 @@ const REAL_EVENTS: CalendarEvent[] = [
   }
 ];
 
+const SAMPLE_TASKS: DashboardTask[] = [
+  {
+    id: "task-m1",
+    title: "بازرسی و کنترل کیفیت خروجی پمپ‌های ESP ایستگاه اهواز",
+    description: "بررسی تلرانس‌های مکانیکی، بالانس دینامیکی روتورها و تست هیدرواستاتیک پوسته‌ها قبل از بسته‌بندی نهایی.",
+    status: "in_progress",
+    priority: "urgent",
+    category: "کنترل کیفیت",
+    createdBy: "manager",
+    creatorName: "مهندس شریفی (مدیر فنی)",
+    assignedToName: "سعید جلیلی",
+    dueDate: "1405/02/10",
+    isManagerDefined: true,
+    notificationSent: true,
+    emailSent: true,
+    comments: [
+      {
+        id: "c1",
+        authorName: "مهندس شریفی",
+        authorRole: "مدیر فنی",
+        content: "سعید جان، گزارش تست ارتعاشات را به همراه تاییدیه آزمایشگاه متالورژی لطفاً ضمیمه کن.",
+        createdAt: "1405/02/05 - 10:30"
+      },
+      {
+        id: "c2",
+        authorName: "سعید جلیلی",
+        authorRole: "کارشناس ارشد مهندسی",
+        content: "سلام مهندس، سنسورهای پایش لرزش کالیبره شدند و تست مرحله اول موفقیت‌آمیز بود. فایل نتایج ضمیمه شد.",
+        createdAt: "1405/02/05 - 14:15"
+      }
+    ],
+    attachments: [
+      {
+        id: "att-1",
+        name: "Inspection_Sheet_Pump_ESP_Rev2.pdf",
+        size: "1.8 MB",
+        type: "application/pdf",
+        uploadedAt: "1405/02/05"
+      }
+    ]
+  },
+  {
+    id: "task-m2",
+    title: "ارزیابی فنی پروپوزال فلومترهای مغناطیسی پروژه عسلویه",
+    description: "تطبیق مشخصات فنی کاتالوگ با Data Sheet استاندارد کارفرما (POGC) و اعلام نظر نهایی.",
+    status: "pending",
+    priority: "high",
+    category: "ابزار دقیق",
+    createdBy: "manager",
+    creatorName: "دکتر رادمنش (مدیر پروژه‌ها)",
+    assignedToName: "سعید جلیلی",
+    dueDate: "1405/02/15",
+    isManagerDefined: true,
+    notificationSent: true,
+    emailSent: true,
+    comments: [],
+    attachments: [
+      {
+        id: "att-2",
+        name: "POGC_Flowmeter_Spec_V3.pdf",
+        size: "3.2 MB",
+        type: "application/pdf",
+        uploadedAt: "1405/02/06"
+      }
+    ]
+  },
+  {
+    id: "task-u1",
+    title: "به‌روزرسانی نمودارهای سایزینگ ماژول ESP-Flow",
+    description: "افزودن منحنی‌های راندمان برای گاز مایع و بررسی ضرایب تصحیح ویسکوزیته سیال.",
+    status: "completed",
+    priority: "medium",
+    category: "توسعه نرم‌افزار",
+    createdBy: "user",
+    creatorName: "سعید جلیلی",
+    assignedToName: "سعید جلیلی",
+    dueDate: "1405/02/02",
+    completedAt: "1405/02/02",
+    completionExplanation: "تمامی منحنی‌ها با شبیه‌ساز عددی و دیتاست‌های صنعتی تطبیق و تست شدند.",
+    isManagerDefined: false,
+    comments: [],
+    attachments: []
+  },
+  {
+    id: "task-m3",
+    title: "تنظیم گزارش عدم انطباق (NCR) کابل‌های قدرت ارسالی",
+    description: "ثبت گزارش رسمی عدم انطباق برای روکش کابل‌های تغذیه ارسالی از تامین‌کننده و هماهنگی جهت بازگشت محموله.",
+    status: "in_progress",
+    priority: "high",
+    category: "تامین و بازرگانی",
+    createdBy: "manager",
+    creatorName: "مهندس شریفی (مدیر فنی)",
+    assignedToName: "سعید جلیلی",
+    dueDate: "1405/02/08",
+    isManagerDefined: true,
+    notificationSent: true,
+    emailSent: true,
+    comments: [],
+    attachments: []
+  }
+];
+
+const SAMPLE_DETAILED_CHECKLIST: DetailedChecklistItem[] = [
+  { id: "dcl-1", title: "بررسی پارامترهای تله‌متری پمپ‌های چاه شماره ۴ و ۷", completed: true, period: "daily", category: "پایش", priority: "high", createdAt: "1405/02/01" },
+  { id: "dcl-2", title: "پشتیبان‌گیری از دیتابیس محاسبات هیدرولیک", completed: false, period: "daily", category: "داده‌ها", priority: "medium", createdAt: "1405/02/02" },
+  { id: "dcl-3", title: "ثبت ساعات کارکرد تجهیزات پایلوت در کارگاه", completed: false, period: "daily", category: "کارگاه", priority: "low", createdAt: "1405/02/03" },
+  { id: "dcl-4", title: "جلسه هماهنگی تیم مهندسی مکانیک و ابزار دقیق", completed: true, period: "weekly", category: "جلسات", priority: "high", createdAt: "1405/02/01" },
+  { id: "dcl-5", title: "بررسی موجودی قطعات یدکی پمپ ESP در انبار مرکزی", completed: false, period: "weekly", category: "انبار", priority: "medium", createdAt: "1405/02/02" },
+  { id: "dcl-6", title: "ارسال گزارش هفتگی پیشرفت به کارفرما", completed: false, period: "weekly", category: "گزارشات", priority: "high", createdAt: "1405/02/03" },
+  { id: "dcl-7", title: "کالیبراسیون دوره‌ای سنسورهای فشار و جریان", completed: false, period: "monthly", category: "تجهیزات", priority: "high", createdAt: "1405/02/01" },
+  { id: "dcl-8", title: "بررسی و تسویه فاکتورهای آزمایشگاه‌های متالورژی همکار", completed: true, period: "monthly", category: "مالی", priority: "medium", createdAt: "1405/02/01" },
+  { id: "dcl-9", title: "ممیزی دوره‌ای استانداردهای HSE کارخانه", completed: false, period: "periodic", category: "ایمنی", priority: "urgent", createdAt: "1405/01/15" },
+  { id: "dcl-10", title: "تمدید لایسنس نرم‌افزارهای شبیه‌سازی مهندسی", completed: true, period: "periodic", category: "نرم‌افزار", priority: "medium", createdAt: "1405/01/20" }
+];
+
+const SAMPLE_ROUTINES: DailyRoutine[] = [
+  { id: "r-1", title: "بررسی ایمیل‌ها و اولویت‌بندی پیام‌های دریافتی کارفرما", timeSlot: "08:15", period: "morning", streakDays: 12, completedToday: true, category: "مکاتبات" },
+  { id: "r-2", title: "بررسی نرخ‌های لحظه‌ای ارز، فلزات و انرژی برای محاسبات هزینه", timeSlot: "08:45", period: "morning", streakDays: 8, completedToday: true, category: "بازار" },
+  { id: "r-3", title: "پایش زنده نتایج تست بنچ پمپ ESP در آزمایشگاه", timeSlot: "11:30", period: "midday", streakDays: 15, completedToday: false, category: "تست فنی" },
+  { id: "r-4", title: "استندآپ ۱۰ دقیقه‌ای تیم فنی و هماهنگی کارها", timeSlot: "12:00", period: "midday", streakDays: 5, completedToday: true, category: "تیم" },
+  { id: "r-5", title: "ثبت گزارش روزانه اقدامات مهندسی در پرتال سازمانی", timeSlot: "16:15", period: "evening", streakDays: 9, completedToday: false, category: "گزارشات" },
+  { id: "r-6", title: "بررسی و نهایی‌سازی چک‌لیست و اولویت‌های فردا", timeSlot: "16:45", period: "evening", streakDays: 14, completedToday: false, category: "برنامه‌ریزی" }
+];
+
+const SAMPLE_NOTES: DashboardNote[] = [
+  {
+    id: "n-1",
+    title: "فرمول‌های تصحیح ویسکوزیته در سیالات چندفازی",
+    content: "در دبی‌های بالاتر از ۱۲۰۰ بشکه، ضریب اصلاح ویسکوزیته باید با فرمول Beggs-Brill محاسبه شود تا افت هد پمپ دقیق محاسبه گردد.",
+    color: "blue",
+    isPinned: true,
+    tags: ["محاسبات", "ESP-Flow", "هیدرولیک"],
+    createdAt: "1405/02/01"
+  },
+  {
+    id: "n-2",
+    title: "نکات جلسه هیئت مدیره در خصوص توسعه خط پمپ",
+    content: "تاکید بر تحویل به‌موقع سفارش‌های ایستگاه اهواز و آغاز فاز طراحی روتورهای مقاوم در برابر H2S بالا.",
+    color: "yellow",
+    isPinned: true,
+    tags: ["جلسه", "توسعه", "مدیریت"],
+    createdAt: "1405/02/03"
+  },
+  {
+    id: "n-3",
+    title: "تلفن‌های تماس سوپروایزر چاه میدان نفتی آزادگان",
+    content: "مهندس ناصری: ۰۹۱۲۳۴۵۶۷۸۹ - هماهنگی آزمایش نمونه نفت خام و تحویل بسته‌های مانیتورینگ دمای پایین چاه.",
+    color: "emerald",
+    isPinned: false,
+    tags: ["تماس", "آزادگان"],
+    createdAt: "1405/02/04"
+  },
+  {
+    id: "n-4",
+    title: "درایو اشتراکی نقشه‌های CAD پوسته پمپ",
+    content: "فایل‌های سه‌بعدی مرحله نهایی در مسیر شِر شبکه /Engineering/Drawings/ESP_Rev4 قرار گرفت.",
+    color: "purple",
+    isPinned: false,
+    tags: ["CAD", "نقشه"],
+    createdAt: "1405/02/05"
+  }
+];
+
+const SAMPLE_CUSTOM_LINKS: CustomLink[] = [
+  { id: "lnk-1", title: "شبیه‌ساز و سایزینگ پمپ (ESP-Flow)", url: "/esp-flow", isInternal: true, category: "ابزارهای مهندسی", description: "ماژول طراحی هیدرولیک و آنالیز چاه", createdAt: "1405/01/10" },
+  { id: "lnk-2", title: "مدیریت پروژه‌ها و قراردادها", url: "/projects", isInternal: true, category: "اداری و مالی", description: "سیستم رصد پیشرفت و مدارک فنی", createdAt: "1405/01/10" },
+  { id: "lnk-3", title: "سامانه حضور و غیاب پرسنل", url: "/attendance", isInternal: true, category: "منابع انسانی", description: "ثبت تردد، مرخصی‌ها و ماموریت‌ها", createdAt: "1405/01/10" },
+  { id: "lnk-4", title: "آرشیو اسناد و استانداردهای مهندسی", url: "/documents", isInternal: true, category: "مستندات", description: "دسترسی به مدارک API و IPS", createdAt: "1405/01/10" },
+  { id: "lnk-5", title: "پرتال خبری شبکه نفت و انرژی (شانا)", url: "https://shana.ir", isInternal: false, category: "پرتال‌های خارجی", description: "اخبار رسمی صنعت نفت و گاز ایران", createdAt: "1405/01/12" },
+  { id: "lnk-6", title: "سامانه معاملاتی تتر لند (نرخ لحظه‌ای ارز)", url: "https://tetherland.com", isInternal: false, category: "مالی و ارزی", description: "مرجع استعلام نرخ تتر و ارزهای دیجیتال", createdAt: "1405/01/15" },
+  { id: "lnk-7", title: "سامانه جامع تجارت ایران (NTSW)", url: "https://ntsw.ir", isInternal: false, category: "بازرگانی", description: "ثبت سفارشات مواد اولیه و قطعات وارداتی", createdAt: "1405/01/15" }
+];
+
+const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [
+  {
+    id: "notif-1",
+    title: "تسک سازمانی جدید از طرف مهندس شریفی",
+    description: "بازرسی و کنترل کیفیت خروجی پمپ‌های ESP ایستگاه اهواز برای شما تعریف شد.",
+    type: "manager_task",
+    date: "امروز - ۰۹:۱۵",
+    read: false,
+    taskId: "task-m1",
+    emailPreview: {
+      subject: "[Euroslot Pars] تسک جدید: بازرسی و کنترل کیفیت خروجی پمپ‌های ESP اهواز",
+      from: "sharifi@euroslotpars.com (مدیر فنی)",
+      to: "saeed.jalili@euroslotpars.com",
+      sentAt: "1405/02/05 - 09:15",
+      body: "جناب آقای مهندس سعید جلیلی، با سلام؛ تسک فوق توسط مدیریت فنی برای شما تخصیص یافت. لطفاً با توجه به زمان‌بندی تحویل ایستگاه اهواز، کنترل کیفیت قطعات را در اولویت کاری قرار دهید."
+    }
+  },
+  {
+    id: "notif-2",
+    title: "رویداد مهم تقویم کاری امروز",
+    description: "جلسه فنی با نمایندگان شرکت مناطق نفت‌خیز جنوب، ساعت ۱۴:۰۰ در سالن کنفرانس.",
+    type: "event",
+    date: "امروز - ۰۸:۰۰",
+    read: false
+  },
+  {
+    id: "notif-3",
+    title: "یادآوری روتین روزانه",
+    description: "ثبت گزارش روزانه اقدامات مهندسی در سیستم تا پایان ساعت کاری الزامی است.",
+    type: "routine",
+    date: "امروز - ۱۶:۰۰",
+    read: true
+  }
+];
+
 const FAKE_DATA: Record<UserRole, DashboardData> = {
   admin: {
     stats: [
@@ -707,6 +1020,13 @@ export class FakeDashboardService implements IDashboardService {
       if (unused) baseData.stats.push(unused);
       else break;
     }
+
+    baseData.tasks = SAMPLE_TASKS;
+    baseData.detailedChecklist = SAMPLE_DETAILED_CHECKLIST;
+    baseData.routines = SAMPLE_ROUTINES;
+    baseData.notes = SAMPLE_NOTES;
+    baseData.customLinks = SAMPLE_CUSTOM_LINKS;
+    baseData.notifications = SAMPLE_NOTIFICATIONS;
 
     return baseData;
   }

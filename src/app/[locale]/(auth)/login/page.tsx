@@ -77,16 +77,16 @@ export default function LoginPage() {
 
 
   return (
-    <div className="flex flex-1 items-center justify-center p-4 py-8 sm:py-12 bg-muted/30">
-      <Card className="w-full max-w-md shadow-xl border-border/50">
-        <CardHeader className="space-y-3.5 text-center pb-5">
-          <div className="flex justify-center mb-3">
-            <div className="bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/10">
-              <Logo className="text-sm sm:text-[15px]" showText={false} />
+    <div className="w-full flex-1 h-[var(--home-height)] max-h-[var(--home-height)] flex items-center justify-center p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-transparent">
+      <Card className="w-full max-w-md shadow-xl border-border/40 bg-card/85 dark:bg-card/75 backdrop-blur-md rounded-2xl py-3.5 sm:py-4 gap-3 sm:gap-3.5 my-auto shrink-0">
+        <CardHeader className="space-y-1.5 text-center pb-2">
+          <div className="flex justify-center mb-1">
+            <div className="bg-primary/5 dark:bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
+              <Logo className="text-[11px] sm:text-[12px]" showText={false} />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <div className="space-y-1">
+            <CardTitle className="text-2xl sm:text-[28px] md:text-3xl font-extrabold tracking-tight text-foreground">
               {t("loginTitle")}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground">
@@ -97,14 +97,14 @@ export default function LoginPage() {
 
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-              <div className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-3.5">
+              <div className="space-y-2.5 sm:space-y-3">
                 <FormField
                   control={form.control}
                   name="identifier"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-xs sm:text-sm">
                         {t("emailOrMobile")}
                       </FormLabel>
                       <FormControl>
@@ -115,10 +115,11 @@ export default function LoginPage() {
                           autoComplete="username"
                           dir="ltr"
                           disabled={isLoading}
+                          className="h-9 sm:h-9.5 text-sm"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
@@ -127,10 +128,10 @@ export default function LoginPage() {
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <FormLabel>{t("password")}</FormLabel>
-                        <Link href="/forgot-password" className="text-sm text-primary hover:underline" tabIndex={-1}>
+                        <FormLabel className="text-xs sm:text-sm">{t("password")}</FormLabel>
+                        <Link href="/forgot-password" className="text-xs text-primary hover:underline" tabIndex={-1}>
                           {t("forgotPassword")}
                         </Link>
                       </div>
@@ -140,17 +141,18 @@ export default function LoginPage() {
                           autoComplete="current-password"
                           dir="ltr"
                           disabled={isLoading}
+                          className="h-9 sm:h-9.5 text-sm"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
               </div>
 
               {errorMsg && (
-                <div className="text-sm font-medium text-destructive text-center bg-destructive/10 p-2.5 rounded-md border border-destructive/20">
+                <div className="text-xs sm:text-sm font-medium text-destructive text-center bg-destructive/10 p-2 rounded-md border border-destructive/20">
                   {errorMsg}
                 </div>
               )}
@@ -158,15 +160,15 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-11 text-base"
+                className="w-full h-9.5 sm:h-10 text-sm sm:text-base font-semibold"
               >
                 {isLoading ? (
-                  <Loader2 className="mr-2 size-5 animate-spin" />
+                  <Loader2 className="mr-2 size-4 sm:size-5 animate-spin" />
                 ) : null}
                 {t("login")}
               </Button>
 
-              <div className="mt-4 flex flex-col sm:flex-row items-center justify-between text-sm gap-4">
+              <div className="mt-3 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm gap-2.5">
                 <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
                   <span className="rtl:rotate-180">&larr;</span> {t("backToHome")}
                 </Link>

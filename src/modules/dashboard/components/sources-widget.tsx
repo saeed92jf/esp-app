@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'motion/react';
 import { ExternalLink, Database, Activity, Coins, CalendarDays, LineChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 export function SourcesWidget({ locale }: { locale: string }) {
   const t = useTranslations('Dashboard.commodities');
@@ -19,52 +19,54 @@ export function SourcesWidget({ locale }: { locale: string }) {
   ];
 
   return (
-    <AccordionItem value="sources" className="rounded-xl border-none overflow-hidden">
-      <AccordionTrigger className="hover:no-underline py-3">
-        <div className="flex items-center gap-2 px-1">
-          <Database className="size-5 text-muted-foreground" />
-          <h3 className="font-semibold text-sm text-foreground/80">
-            {t('reliableStats')}
-          </h3>
-        </div>
-      </AccordionTrigger>
+    <Accordion type="single" collapsible defaultValue="sources" className="w-full">
+      <AccordionItem value="sources" className="rounded-xl border-none overflow-hidden">
+        <AccordionTrigger className="hover:no-underline py-3">
+          <div className="flex items-center gap-2 px-1">
+            <Database className="size-5 text-muted-foreground" />
+            <h3 className="font-semibold text-sm text-foreground/80">
+              {t('reliableStats')}
+            </h3>
+          </div>
+        </AccordionTrigger>
 
-      <AccordionContent>
-        <div className="segmented-list padded-ends pb-2" dir={isFa ? 'rtl' : 'ltr'}>
-          {sources.map((s, i) => {
-            const Icon = s.icon;
-            return (
-              <motion.a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={s.label}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="segmented-item flex items-center gap-3 p-3 border-none bg-background text-foreground transition-all duration-200 group w-full no-underline hover:no-underline"
-              >
-                <div className={cn("p-2 rounded-lg", s.bg, s.color)}>
-                  <Icon className="size-4" />
-                </div>
-                
-                <div className="flex flex-col flex-1 min-w-0">
-                  <span className={cn("text-sm font-medium text-foreground/80 fa-num truncate", isFa ? "text-right" : "text-left")}>
-                    {s.label}
-                  </span>
-                  <span className={cn("text-[10px] text-muted-foreground truncate", isFa ? "text-right" : "text-left")}>
-                    {s.desc}
-                  </span>
-                </div>
+        <AccordionContent>
+          <div className="segmented-list padded-ends pb-2" dir={isFa ? 'rtl' : 'ltr'}>
+            {sources.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <motion.a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={s.label}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="segmented-item flex items-center gap-3 p-3 border-none bg-background text-foreground transition-all duration-200 group w-full no-underline hover:no-underline"
+                >
+                  <div className={cn("p-2 rounded-lg", s.bg, s.color)}>
+                    <Icon className="size-4" />
+                  </div>
+                  
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className={cn("text-sm font-medium text-foreground/80 fa-num truncate", isFa ? "text-right" : "text-left")}>
+                      {s.label}
+                    </span>
+                    <span className={cn("text-[10px] text-muted-foreground truncate", isFa ? "text-right" : "text-left")}>
+                      {s.desc}
+                    </span>
+                  </div>
 
-                <ExternalLink className="size-4 opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
-              </motion.a>
-            );
-          })}
-        </div>
-      </AccordionContent>
-    </AccordionItem>
+                  <ExternalLink className="size-4 opacity-40 group-hover:opacity-100 transition-opacity shrink-0" />
+                </motion.a>
+              );
+            })}
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }
 

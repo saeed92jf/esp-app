@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -88,16 +89,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-1 items-center justify-center p-4 py-8 sm:py-12 bg-muted/30">
-      <Card className="w-full max-w-md shadow-xl border-border/50">
-        <CardHeader className="space-y-3.5 text-center pb-5">
-          <div className="flex justify-center mb-3">
-            <div className="bg-primary/5 dark:bg-primary/10 px-2.5 py-1 rounded-lg border border-primary/10">
-              <Logo className="text-sm sm:text-[15px]" showText={false} />
+    <div className="w-full flex-1 h-[var(--home-height)] max-h-[var(--home-height)] flex items-center justify-center p-2.5 sm:p-4 overflow-y-auto custom-scrollbar bg-transparent">
+      <Card className="w-full max-w-md shadow-xl border-border/40 bg-card/85 dark:bg-card/75 backdrop-blur-md rounded-2xl py-3 sm:py-3.5 gap-2.5 sm:gap-3 my-auto shrink-0">
+        <CardHeader className="space-y-1.5 text-center pb-1.5">
+          <div className="flex justify-center mb-1">
+            <div className="bg-primary/5 dark:bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
+              <Logo className="text-[11px] sm:text-[12px]" showText={false} />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <CardTitle className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <div className="space-y-0.5">
+            <CardTitle className="text-2xl sm:text-[28px] md:text-3xl font-extrabold tracking-tight text-foreground">
               {t("registerTitle")}
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground">
@@ -107,10 +108,10 @@ export default function RegisterPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">{t("fullName")}</Label>
+          <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3">
+            <div className="space-y-2 sm:space-y-2.5">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs sm:text-sm">{t("fullName")}</Label>
                 <Input
                   id="name"
                   type="text"
@@ -119,11 +120,12 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   disabled={isSubmitting}
+                  className="h-8.5 sm:h-9 text-xs sm:text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">{t("email")}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-xs sm:text-sm">{t("email")}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -133,11 +135,12 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isSubmitting}
+                  className="h-8.5 sm:h-9 text-xs sm:text-sm"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">{t("password")}</Label>
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-xs sm:text-sm">{t("password")}</Label>
                 <PasswordInput
                   id="password"
                   placeholder="••••••••"
@@ -147,20 +150,21 @@ export default function RegisterPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isSubmitting}
+                  className="h-8.5 sm:h-9 text-xs sm:text-sm"
                 />
               </div>
 
               {/* Password Strength UI */}
               {password.length > 0 && (
-                <div className="bg-muted/50 p-3 rounded-lg border border-border/50 space-y-3">
-                  <div className="flex justify-between items-center text-xs">
+                <div className="bg-muted/40 p-2 rounded-lg border border-border/40 space-y-1.5">
+                  <div className="flex justify-between items-center text-[11px] sm:text-xs">
                     <span className="font-medium text-muted-foreground">{t("passwordStrength")}</span>
                     <span className={`font-semibold ${strengthScore === 5 ? 'text-green-500' : 'text-foreground'}`}>
                       {getStrengthText()}
                     </span>
                   </div>
                   
-                  <div className="flex gap-1 h-1.5 w-full">
+                  <div className="flex gap-1 h-1 w-full">
                     {[0, 1, 2, 3, 4].map((index) => (
                       <div
                         key={index}
@@ -171,18 +175,26 @@ export default function RegisterPage() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-0.5">
                     {reqs.map((req) => {
                       const pass = req.test(password);
                       return (
-                        <div key={req.id} className={`flex items-center gap-1.5 text-xs transition-colors duration-300 ${pass ? 'text-green-600 dark:text-green-500' : 'text-muted-foreground'}`}>
+                        <span
+                          key={req.id}
+                          className={cn(
+                            "inline-flex items-center gap-1 text-[10px] sm:text-[10.5px] px-1.5 py-0.5 rounded transition-colors",
+                            pass
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                              : "bg-muted/60 text-muted-foreground"
+                          )}
+                        >
                           {pass ? (
-                            <CheckCircle2 className="size-3.5" />
+                            <CheckCircle2 className="size-3 shrink-0" />
                           ) : (
-                            <Circle className="size-3.5" />
+                            <Circle className="size-3 shrink-0 opacity-60" />
                           )}
                           <span>{req.label}</span>
-                        </div>
+                        </span>
                       );
                     })}
                   </div>
@@ -191,24 +203,24 @@ export default function RegisterPage() {
             </div>
 
             {formError && (
-              <div className="text-sm font-medium text-destructive bg-destructive/10 p-2.5 rounded-md border border-destructive/20 text-center">
+              <div className="text-xs sm:text-sm font-medium text-destructive bg-destructive/10 p-2 rounded-md border border-destructive/20 text-center">
                 {formError}
               </div>
             )}
 
             <Button
               type="submit"
-              className="w-full h-11"
+              className="w-full h-9 sm:h-9.5 text-sm sm:text-base font-semibold"
               disabled={isSubmitting || !isPasswordValid}
             >
               {isSubmitting ? (
-                <Loader2 className="mr-2 size-5 animate-spin" />
+                <Loader2 className="mr-2 size-4 sm:size-5 animate-spin" />
               ) : null}
               {t("register")}
             </Button>
           </form>
 
-          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between text-sm gap-4">
+          <div className="mt-2.5 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm gap-2">
             <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
               <span className="rtl:rotate-180">&larr;</span> {t("backToHome")}
             </Link>

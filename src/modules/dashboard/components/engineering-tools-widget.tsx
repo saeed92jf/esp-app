@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { motion } from 'motion/react';
 import { Wrench, ExternalLink, Calculator, Droplets, BookOpen, Scaling } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 export function EngineeringToolsWidget({ locale }: { locale: string }) {
   const t = useTranslations('Dashboard.commodities');
@@ -55,7 +55,8 @@ export function EngineeringToolsWidget({ locale }: { locale: string }) {
   ];
 
   return (
-    <AccordionItem value="tools" className="rounded-xl border-none overflow-hidden">
+    <Accordion type="single" collapsible defaultValue="tools" className="w-full">
+      <AccordionItem value="tools" className="rounded-xl border-none overflow-hidden">
       <AccordionTrigger className="hover:no-underline py-3">
         <div className="flex items-center gap-2 px-1">
           <Wrench className="size-5 text-muted-foreground" />
@@ -101,6 +102,7 @@ export function EngineeringToolsWidget({ locale }: { locale: string }) {
         </div>
       </AccordionContent>
     </AccordionItem>
+  </Accordion>
   );
 }
 

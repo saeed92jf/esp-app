@@ -37,7 +37,7 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
   ];
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background">
+    <div className="relative min-h-full flex-1 flex flex-col overflow-hidden bg-background">
       {/* Subtle Background Gradients */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute -top-[25%] -left-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />

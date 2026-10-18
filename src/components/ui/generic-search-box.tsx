@@ -2,10 +2,24 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, X, History, Sparkles } from "lucide-react";
+import { Search, X, History, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useSearchHistory } from "@/hooks/use-search-history";
+
+function AiModeIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={cn("size-3.5 sm:size-4 shrink-0", className)}
+    >
+      <path d="M12 2.5C12 7.75 16.25 12 21.5 12C16.25 12 12 16.25 12 21.5C12 16.25 7.75 12 2.5 12C7.75 12 12 7.75 12 2.5Z" />
+    </svg>
+  );
+}
 
 export interface GenericSearchBoxProps<T> {
   className?: string;
@@ -23,6 +37,7 @@ export interface GenericSearchBoxProps<T> {
   onQueryChange?: (query: string) => void;
   onOpenChange?: (open: boolean) => void;
   showAiModeButton?: boolean;
+  showClearButton?: boolean;
   showOverallViewButton?: boolean;
   onOverallViewClick?: () => void;
   renderResultsHeader?: (count: number, query: string) => React.ReactNode;
@@ -45,6 +60,7 @@ export function GenericSearchBox<T>({
   onQueryChange,
   onOpenChange,
   showAiModeButton,
+  showClearButton,
   showOverallViewButton,
   onOverallViewClick,
   renderResultsHeader,
@@ -258,7 +274,13 @@ export function GenericSearchBox<T>({
   };
 
   const isHistoryPreselected = !showResultsMode && selectedIndex >= 0;
-  const hasAiMode = showAiModeButton ?? showOverallViewButton;
+  const hasAiMode = showAiModeButton ?? (showOverallViewButton || false);
+  const shouldShowClear = showClearButton !== undefined
+    ? showClearButton
+    : (compact || !hasAiMode);
+  const aiInteractiveColor = darkFlatWhite
+    ? "text-zinc-700 dark:text-zinc-800 group-hover/ai:text-black dark:group-hover/ai:text-black"
+    : "text-zinc-700 dark:text-zinc-200 group-hover/ai:text-zinc-950 dark:group-hover/ai:text-white";
 
   return (
     <div
@@ -272,17 +294,14 @@ export function GenericSearchBox<T>({
     >
       <div
         className={cn(
-          "absolute inset-x-0 top-0 select-none z-10 transition-shadow duration-150",
-          compact ? "rounded-[22px]" : "rounded-[28px]",
-          showDropdown
-            ? (compact ? "shadow-md" : "shadow-lg")
-            : "shadow-none"
+          "absolute inset-x-0 top-0 select-none z-10",
+          compact ? "rounded-[22px]" : "rounded-[28px]"
         )}
       >
         {/* Continuous Glow Layer: refined soft shadow (prominent in hero, subtle in search page) */}
         <div 
           className={cn(
-            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-150",
+            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none",
             compact
               ? "shadow-[0_1px_4px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)]"
               : "shadow-[0_2px_10px_-1px_rgba(0,0,0,0.08),0_8px_24px_-4px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)]",
@@ -357,7 +376,14 @@ export function GenericSearchBox<T>({
                     : "Search...")
             }
             className={cn(
-              "flex-1 border-none bg-transparent pe-10 text-start font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0",
+              "flex-1 border-none bg-transparent text-start font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0",
+              hasAiMode
+                ? shouldShowClear && query.trim().length > 0
+                  ? (compact ? "pe-28 sm:pe-30" : "pe-32 sm:pe-36")
+                  : (compact ? "pe-20 sm:pe-22" : "pe-24 sm:pe-28")
+                : shouldShowClear && query.trim().length > 0
+                  ? (compact ? "pe-9 sm:pe-10" : "pe-10 sm:pe-12")
+                  : (compact ? "pe-3" : "pe-4"),
               compact ? "text-[13.5px] sm:text-[14px]" : "text-[14.5px] sm:text-[15px]",
               darkFlatWhite
                 ? "text-foreground dark:text-zinc-900 placeholder:text-muted-foreground/90 dark:placeholder:text-zinc-500"
@@ -368,7 +394,7 @@ export function GenericSearchBox<T>({
             spellCheck="false"
           />
 
-          {query.trim().length > 0 && (
+          {shouldShowClear && query.trim().length > 0 && (
             <button
               type="button"
               tabIndex={-1}
@@ -383,8 +409,8 @@ export function GenericSearchBox<T>({
               className={cn(
                 "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors cursor-pointer",
                 compact
-                  ? "end-[8px] size-6 sm:size-7"
-                  : "end-[10px] size-7 sm:size-8",
+                  ? (hasAiMode ? "end-[78px] sm:end-[84px] size-6 sm:size-7" : "end-[8px] size-6 sm:size-7")
+                  : (hasAiMode ? "end-[94px] sm:end-[102px] size-7 sm:size-8" : "end-[10px] size-7 sm:size-8"),
                 darkFlatWhite
                   ? "text-zinc-400 hover:text-zinc-700 hover:bg-black/5 dark:text-zinc-500 dark:hover:text-zinc-900 dark:hover:bg-black/10"
                   : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
@@ -394,31 +420,81 @@ export function GenericSearchBox<T>({
             </button>
           )}
 
-          {hasAiMode && query.trim() === "" && (
-            <TooltipProvider>
+          {hasAiMode && (
+            <TooltipProvider delayDuration={150}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button
+                  <motion.button
+                    layout
                     type="button"
-                    aria-disabled="true"
                     tabIndex={-1}
-                    aria-label={t("searchBox.aiMode")}
-                    title=""
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onSubmitSearch && query.trim()) {
+                        addToHistory(query.trim());
+                        setIsFocused(false);
+                        onSubmitSearch(query.trim());
+                      } else if (onOverallViewClick) {
+                        onOverallViewClick();
+                      } else if (inputRef.current) {
+                        inputRef.current.focus();
+                        setIsFocused(true);
+                      }
+                    }}
+                    aria-label={t("searchBox.aiModeUnavailable")}
                     className={cn(
-                      "group/ai absolute top-1/2 flex -translate-y-1/2 cursor-default items-center justify-center rounded-full transition-colors duration-200",
+                      "group/ai absolute flex items-center gap-1.5 rounded-full cursor-pointer select-none overflow-hidden",
+                      showDropdown ? "flex-row-reverse" : "flex-row",
                       compact
-                        ? "end-[4px] size-7 sm:end-[6px] sm:size-8"
-                        : "end-[6px] size-9 sm:end-[7px] sm:size-[38px]",
+                        ? "inset-y-1.5 end-1.5 px-2.5 text-[11px]"
+                        : "inset-y-1.5 end-1.5 sm:inset-y-2 sm:end-2 px-3 sm:px-3.5 text-[12px] sm:text-[12.5px]",
                       darkFlatWhite
-                        ? "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:text-zinc-600 dark:hover:text-zinc-900 dark:hover:bg-zinc-100"
-                        : "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        ? "bg-zinc-100 hover:bg-zinc-200/90 dark:bg-zinc-100 dark:hover:bg-zinc-200/90 text-zinc-700 dark:text-zinc-800 border border-zinc-300 dark:border-zinc-300 shadow-2xs hover:shadow-xs active:scale-98"
+                        : "bg-muted/80 hover:bg-muted text-foreground/85 hover:text-foreground border border-border/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 dark:text-zinc-200 dark:hover:text-white dark:border-zinc-700/80 shadow-2xs hover:shadow-xs active:scale-98"
                     )}
+                    transition={{ layout: { duration: 0.2, ease: "easeInOut" } }}
                   >
-                    <Sparkles className={cn(compact ? "size-[16px] sm:size-[18px]" : "size-[20px] sm:size-[22px]", "stroke-[1.8] transition-colors duration-200", darkFlatWhite ? "text-muted-foreground/75 group-hover/ai:text-primary dark:text-zinc-600 dark:group-hover/ai:text-primary" : "text-muted-foreground/75 group-hover/ai:text-primary")} />
-                  </button>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {showDropdown ? (
+                        <motion.span
+                          key="tailless-arrow"
+                          initial={{ opacity: 0, scale: 0.4, rotate: isRtl ? 30 : -30 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.4, rotate: isRtl ? -30 : 30 }}
+                          transition={{ duration: 0.16, ease: "easeOut" }}
+                          className="inline-flex shrink-0 items-center justify-center"
+                        >
+                          {isRtl ? (
+                            <ChevronLeft className={cn("size-3.5 sm:size-4 shrink-0 stroke-[2.6] transition-colors", aiInteractiveColor)} />
+                          ) : (
+                            <ChevronRight className={cn("size-3.5 sm:size-4 shrink-0 stroke-[2.6] transition-colors", aiInteractiveColor)} />
+                          )}
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="ai-mode-icon"
+                          initial={{ opacity: 0, scale: 0.4, rotate: isRtl ? -30 : 30 }}
+                          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                          exit={{ opacity: 0, scale: 0.4, rotate: isRtl ? 30 : -30 }}
+                          transition={{ duration: 0.16, ease: "easeOut" }}
+                          className="inline-flex shrink-0 items-center justify-center"
+                        >
+                          <AiModeIcon className={cn("transition-colors", aiInteractiveColor)} />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    <motion.span
+                      layout
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className={cn("font-semibold tracking-tight leading-none transition-colors", aiInteractiveColor)}
+                    >
+                      {t("searchBox.aiModeButton")}
+                    </motion.span>
+                  </motion.button>
                 </TooltipTrigger>
-                <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
-                  {t("searchBox.aiMode")}
+                <TooltipContent side="top" sideOffset={10} className="text-xs font-medium shadow-md">
+                  {t("searchBox.aiModeUnavailable")}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

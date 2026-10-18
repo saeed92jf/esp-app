@@ -12,11 +12,15 @@ export function SiteSearch({
   onOpenChange,
   onOverviewClick,
   placeholder,
+  showAiModeButton = true,
+  showClearButton = false,
 }: {
   className?: string;
   onOpenChange?: (open: boolean) => void;
   onOverviewClick?: () => void;
   placeholder?: string;
+  showAiModeButton?: boolean;
+  showClearButton?: boolean;
 }) {
   return (
     <GoogleSearchBox
@@ -24,6 +28,9 @@ export function SiteSearch({
       onOpenChange={onOpenChange}
       onOverviewClick={onOverviewClick}
       placeholder={placeholder}
+      compact={false}
+      showAiModeButton={showAiModeButton}
+      showClearButton={showClearButton}
     />
   );
 }

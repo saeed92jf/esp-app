@@ -97,7 +97,7 @@ export function UnitConverterWidget() {
   }, [activeCategory]);
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container">
       {/* Header */}
       <div className="flex items-center gap-2 px-1 mb-4 shrink-0 border-b border-border/40 pb-3">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
@@ -117,7 +117,7 @@ export function UnitConverterWidget() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-2 sm:grid-cols-3 gap-2 h-full overflow-y-auto custom-scrollbar pe-1 pb-2 content-start"
+              className="grid grid-cols-2 @[380px]:grid-cols-3 @[600px]:grid-cols-4 gap-2 h-full overflow-y-auto custom-scrollbar pe-1 pb-2 content-start"
             >
               {CONVERTER_CATEGORIES.map((cat) => {
                 const Icon = cat.icon;
@@ -144,10 +144,10 @@ export function UnitConverterWidget() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col gap-3 flex-1 overflow-hidden relative h-full"
+              className="flex flex-col @[540px]:flex-row gap-3 flex-1 overflow-hidden relative h-full"
             >
               {/* Top Bar with Back Button */}
-              <div className="flex items-center gap-2 shrink-0 px-1">
+              <div className="flex items-center gap-2 shrink-0 px-1 @[540px]:hidden">
                 <button 
                   onClick={() => setActiveCategory(null)} 
                   className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl transition-colors border border-transparent hover:border-border/40"
@@ -160,7 +160,7 @@ export function UnitConverterWidget() {
               </div>
           
               {/* Primary Input Card */}
-              <div className="flex flex-col p-3.5 bg-primary text-primary-foreground rounded-xl relative shadow-sm shrink-0 border border-transparent" dir="ltr">
+              <div className="flex flex-col p-3.5 bg-primary text-primary-foreground rounded-xl relative shadow-sm shrink-0 border border-transparent @[540px]:w-[240px]" dir="ltr">
                 <div className="flex items-center justify-between mb-3">
                   {/* Icon of the category */}
                   {(() => {

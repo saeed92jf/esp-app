@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
-import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Filter, CalendarX2, CalendarDays, RotateCcw, Plus, Sparkles, ArrowLeft } from "lucide-react";
+import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Filter, CalendarX2, CalendarDays, RotateCcw, Plus, Sparkles, ArrowLeft, Search as SearchIcon } from "lucide-react";
 
 const TYPE_ICONS = {
   meeting: Users,
@@ -51,6 +51,7 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
   const [viewMode, setViewMode] = React.useState<"year"|"month"|"week"|"day">("day");
   const [typeFilter, setTypeFilter] = React.useState<string>("all");
   const [timeFilter, setTimeFilter] = React.useState<"all"|"past"|"upcoming">("all");
+  const [searchQuery, setSearchQuery] = React.useState("");
 
   React.useEffect(() => {
     if (events) setLocalEvents(events);
@@ -61,6 +62,15 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
   }, [localEvents]);
 
   const filteredEvents = React.useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      const result = localEvents.filter(e => {
+        const matchesQuery = (e.title?.toLowerCase() || "").includes(q) || e.date.includes(q);
+        const matchesType = typeFilter === "all" || e.type === typeFilter;
+        return matchesQuery && matchesType;
+      });
+      return [...result].sort((a, b) => a.date.localeCompare(b.date));
+    }
     let result = localEvents;
 
     // Apply Time Filter (always active)
@@ -215,6 +225,27 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
 
         {/* Column 2: Events List */}
         <div className="flex-1 p-4 flex flex-col gap-3 min-h-0 overflow-hidden lg:border-x border-border/30">
+          {/* Annual Events Search Bar */}
+          <div className="relative w-full shrink-0">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
+            <Input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("searchPlaceholder")}
+              className="ps-9 pe-8 h-9 text-xs bg-white dark:bg-card border-border/50 shadow-xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+
           {/* Filters Bar (Fixed at top) */}
           <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-border/30 shrink-0">
             {/* Filter Icon at start of row */}

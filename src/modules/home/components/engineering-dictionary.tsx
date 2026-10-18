@@ -232,12 +232,12 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
     <TooltipProvider>
       <div
         className={cn(
-          "w-full max-w-5xl mx-auto flex flex-col min-h-full px-2 sm:px-4 my-auto shrink-0",
+          "w-full max-w-5xl mx-auto flex flex-col px-2 sm:px-4 shrink-0",
           className
         )}
       >
       {/* 1 & 2. Sticky Header: Title, Stats, Search Bar & Category Combobox */}
-      <div className="sticky top-0 z-20 shrink-0 w-full bg-background/95 dark:bg-[#0c0d12]/95 backdrop-blur-md pt-3 sm:pt-4 pb-3 sm:pb-3.5 border-b border-border/40 mb-3 sm:mb-4">
+      <div className="sticky top-[var(--header-height)] z-20 shrink-0 w-full bg-background/95 dark:bg-[#0c0d12]/95 backdrop-blur-md pt-3 sm:pt-4 pb-3 sm:pb-3.5 border-b border-border/40 mb-3 sm:mb-4">
         {/* Title & Stats */}
         <div className="flex items-center justify-between gap-3 mb-2.5 sm:mb-3">
           <div>

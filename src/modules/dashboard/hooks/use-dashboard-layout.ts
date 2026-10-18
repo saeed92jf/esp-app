@@ -2,274 +2,342 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-export type Layouts = Record<string, any>;
+import {
+  TabId,
+  MODULES_REGISTRY,
+  DEFAULT_TAB_WIDGETS,
+  DEFAULT_TAB_LAYOUTS,
+  getModuleMeta,
+} from "../config/modules-registry";
+
+export type Layouts = Record<string, any[]>;
 export type Layout = any;
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+const STORAGE_KEY_TAB_LAYOUTS = "dashboard_tab_layouts_v5";
+const STORAGE_KEY_TAB_WIDGETS = "dashboard_tab_widgets_v5";
 
-export type WidgetId =
-  | "stats-overview"
-  | "chart"
-  | "commodities"
-  | "bourse"
-  | "events-manager"
-  | "world-clock"
-  | "settings";
-
-// ─── Defaults ─────────────────────────────────────────────────────────────────
-
-const MIN_SIZES: Record<WidgetId, { minW: number; minH: number }> = {
-  "stats-overview": { minW: 3, minH: 4 },
-  chart: { minW: 4, minH: 6 },
-  commodities: { minW: 3, minH: 6 },
-  bourse: { minW: 4, minH: 8 },
-  "events-manager": { minW: 6, minH: 10 },
-  "world-clock": { minW: 3, minH: 6 },
-  settings: { minW: 2, minH: 4 },
+const enforceItemConstraints = (item: any) => {
+  const meta = getModuleMeta(item.i);
+  const minW = meta ? meta.minW : 2;
+  const minH = meta ? meta.minH : 2;
+  return {
+    ...item,
+    minW,
+    minH,
+  };
 };
 
-const DEFAULT_LAYOUTS: Layouts = {
-  lg: [
-    { i: "commodities", x: 0, y: 0, w: 6, h: 8 },
-    { i: "chart", x: 6, y: 0, w: 6, h: 8 },
-    { i: "stats-overview", x: 0, y: 8, w: 12, h: 5 },
-    { i: "events-manager", x: 0, y: 13, w: 12, h: 10 },
-    { i: "world-clock", x: 0, y: 23, w: 12, h: 6 },
-    { i: "bourse", x: 0, y: 29, w: 12, h: 10 },
-  ],
-  md: [
-    { i: "commodities", x: 0, y: 0, w: 5, h: 8 },
-    { i: "chart", x: 5, y: 0, w: 5, h: 8 },
-    { i: "stats-overview", x: 0, y: 8, w: 10, h: 5 },
-    { i: "events-manager", x: 0, y: 13, w: 10, h: 10 },
-    { i: "world-clock", x: 0, y: 23, w: 10, h: 6 },
-    { i: "bourse", x: 0, y: 29, w: 10, h: 10 },
-  ],
-  sm: [
-    { i: "commodities", x: 0, y: 0, w: 6, h: 8 },
-    { i: "chart", x: 0, y: 8, w: 6, h: 8 },
-    { i: "stats-overview", x: 0, y: 16, w: 6, h: 6 },
-    { i: "events-manager", x: 0, y: 22, w: 6, h: 12 },
-    { i: "world-clock", x: 0, y: 34, w: 6, h: 6 },
-    { i: "bourse", x: 0, y: 40, w: 6, h: 10 },
-  ],
-  xs: [
-    { i: "commodities", x: 0, y: 0, w: 4, h: 9 },
-    { i: "chart", x: 0, y: 9, w: 4, h: 8 },
-    { i: "stats-overview", x: 0, y: 17, w: 4, h: 8 },
-    { i: "events-manager", x: 0, y: 25, w: 4, h: 12 },
-    { i: "world-clock", x: 0, y: 37, w: 4, h: 7 },
-    { i: "bourse", x: 0, y: 44, w: 4, h: 12 },
-  ],
-  xxs: [
-    { i: "commodities", x: 0, y: 0, w: 2, h: 10 },
-    { i: "chart", x: 0, y: 10, w: 2, h: 8 },
-    { i: "stats-overview", x: 0, y: 18, w: 2, h: 10 },
-    { i: "events-manager", x: 0, y: 28, w: 2, h: 14 },
-    { i: "world-clock", x: 0, y: 42, w: 2, h: 7 },
-    { i: "bourse", x: 0, y: 49, w: 2, h: 14 },
-  ],
-};
-
-const enforceConstraints = (layouts: Layouts): Layouts => {
+const enforceLayoutConstraints = (layouts: Layouts): Layouts => {
   const result: Layouts = {};
   for (const bp in layouts) {
-    result[bp] = layouts[bp].map((item: any) => {
-      const constraints = MIN_SIZES[item.i as WidgetId] || { minW: 2, minH: 2 };
-      return {
-        ...item,
-        minW: constraints.minW,
-        minH: constraints.minH,
-      };
-    });
+    result[bp] = (layouts[bp] || []).map(enforceItemConstraints);
   }
   return result;
 };
 
-const CONSTRAINED_DEFAULT = enforceConstraints(DEFAULT_LAYOUTS);
+export function useDashboardLayout(initialTab: TabId = "tasks") {
+  const [currentTab, setCurrentTab] = useState<TabId>(initialTab);
 
-const DEFAULT_VISIBILITY: Record<WidgetId, boolean> = {
-  "stats-overview": false,
-  chart: true,
-  commodities: true,
-  bourse: true,
-  "events-manager": true,
-  "world-clock": false,
-  settings: false,
-};
-
-const STORAGE_KEY_LAYOUTS = "dashboard-layouts-v38"; 
-const STORAGE_KEY_VISIBILITY = "dashboard-visibility-v34";
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
-
-export function useDashboardLayout(adminMode = false) {
-  const [layouts, setLayouts] = useState<Layouts>(() => {
-    if (typeof window === "undefined") return CONSTRAINED_DEFAULT;
+  // Tab widgets (which widgets are present in each tab's center grid)
+  const [tabWidgets, setTabWidgets] = useState<Record<TabId, string[]>>(() => {
+    if (typeof window === "undefined") return DEFAULT_TAB_WIDGETS;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_LAYOUTS);
-      if (!saved) return CONSTRAINED_DEFAULT;
+      const saved = localStorage.getItem(STORAGE_KEY_TAB_WIDGETS);
+      if (!saved) return DEFAULT_TAB_WIDGETS;
       const parsed = JSON.parse(saved);
-      const merged: Layouts = {};
-      const breakpoints = ['lg', 'md', 'sm'];
-      
-      breakpoints.forEach(bp => {
-        const savedBp = parsed[bp] || [];
-        const defaultBp = CONSTRAINED_DEFAULT[bp] || [];
-        const savedIds = new Set(savedBp.map((l: any) => l.i));
-        const missingDefs = defaultBp.filter((l: any) => !savedIds.has(l.i));
-        merged[bp] = [...savedBp, ...missingDefs];
+      return {
+        tasks: parsed.tasks || DEFAULT_TAB_WIDGETS.tasks,
+        custom: parsed.custom || DEFAULT_TAB_WIDGETS.custom,
+        administrative: parsed.administrative || DEFAULT_TAB_WIDGETS.administrative,
+        market: parsed.market || DEFAULT_TAB_WIDGETS.market,
+      };
+    } catch {
+      return DEFAULT_TAB_WIDGETS;
+    }
+  });
+
+  // Tab layouts (coordinates for widgets in each tab)
+  const [tabLayouts, setTabLayouts] = useState<Record<TabId, Layouts>>(() => {
+    if (typeof window === "undefined") {
+      const init: Record<TabId, Layouts> = {
+        tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
+        custom: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.custom),
+        administrative: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.administrative),
+        market: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.market),
+      };
+      return init;
+    }
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_TAB_LAYOUTS);
+      if (!saved) {
+        return {
+          tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
+          custom: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.custom),
+          administrative: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.administrative),
+          market: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.market),
+        };
+      }
+      const parsed = JSON.parse(saved);
+      return {
+        tasks: enforceLayoutConstraints(parsed.tasks || DEFAULT_TAB_LAYOUTS.tasks),
+        custom: enforceLayoutConstraints(parsed.custom || DEFAULT_TAB_LAYOUTS.custom),
+        administrative: enforceLayoutConstraints(parsed.administrative || DEFAULT_TAB_LAYOUTS.administrative),
+        market: enforceLayoutConstraints(parsed.market || DEFAULT_TAB_LAYOUTS.market),
+      };
+    } catch {
+      return {
+        tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
+        custom: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.custom),
+        administrative: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.administrative),
+        market: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.market),
+      };
+    }
+  });
+
+  // Persist to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_TAB_WIDGETS, JSON.stringify(tabWidgets));
+    } catch {}
+  }, [tabWidgets]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_TAB_LAYOUTS, JSON.stringify(tabLayouts));
+    } catch {}
+  }, [tabLayouts]);
+
+  // Layout change from react-grid-layout for current tab
+  const onLayoutChange = useCallback(
+    (currentLayout: any, allLayouts: any) => {
+      setTabLayouts((prev) => {
+        const currentTabLayout = prev[currentTab] || {};
+        const merged: Layouts = {};
+        const breakpoints = ["lg", "md", "sm"] as const;
+
+        breakpoints.forEach((bp) => {
+          const newLayoutForBp = allLayouts[bp] || [];
+          const existingLayoutForBp = currentTabLayout[bp] || [];
+
+          const newLayoutIds = new Set(newLayoutForBp.map((l: any) => l.i));
+          const preservedLayouts = existingLayoutForBp.filter(
+            (l: any) => !newLayoutIds.has(l.i)
+          );
+
+          merged[bp] = [...newLayoutForBp, ...preservedLayouts].map(
+            enforceItemConstraints
+          );
+        });
+
+        return {
+          ...prev,
+          [currentTab]: merged,
+        };
       });
-      
-      return enforceConstraints(merged);
-    } catch {
-      return CONSTRAINED_DEFAULT;
-    }
-  });
+    },
+    [currentTab]
+  );
 
-  const [visibility, setVisibility] = useState<Record<string, boolean>>(() => {
-    if (typeof window === "undefined") return DEFAULT_VISIBILITY;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_VISIBILITY);
-      if (!saved) return DEFAULT_VISIBILITY;
-      return { ...DEFAULT_VISIBILITY, ...JSON.parse(saved) };
-    } catch {
-      return DEFAULT_VISIBILITY;
-    }
-  });
+  // Add widget to a specific tab
+  const addWidgetToTab = useCallback(
+    (tabId: TabId, widgetId: string) => {
+      setTabWidgets((prev) => {
+        const currentList = prev[tabId] || [];
+        if (currentList.includes(widgetId)) return prev;
+        return {
+          ...prev,
+          [tabId]: [...currentList, widgetId],
+        };
+      });
 
-  const [expandedWidgets, setExpandedWidgets] = useState<Record<string, boolean>>({});
+      setTabLayouts((prev) => {
+        const currentTabLayout = prev[tabId] || {};
+        const meta = getModuleMeta(widgetId);
+        const breakpoints = ["lg", "md", "sm"] as const;
+        const updated: Layouts = {};
 
-  // Persist to localStorage on change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_LAYOUTS, JSON.stringify(layouts));
-    } catch {}
-  }, [layouts]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_VISIBILITY, JSON.stringify(visibility));
-    } catch {}
-  }, [visibility]);
-
-
-  // Update layouts from react-grid-layout
-  const onLayoutChange = useCallback((currentLayout: any, allLayouts: any) => {
-    setLayouts(prev => {
-      const merged: Layouts = {};
-      const breakpoints = ['lg', 'md', 'sm'] as const;
-      
-      breakpoints.forEach(bp => {
-        const newLayoutForBp = allLayouts[bp] || [];
-        
-        // Strip out the dynamic expansion offset before saving to our pure base layout
-        const normalizedLayoutForBp = newLayoutForBp.map((l: any) => {
-          if (expandedWidgets[l.i]) {
-            return { ...l, h: Math.max(1, l.h - 4) };
+        breakpoints.forEach((bp) => {
+          const bpItems = currentTabLayout[bp] || [];
+          // If already in layout, keep it
+          if (bpItems.some((it) => it.i === widgetId)) {
+            updated[bp] = bpItems;
+            return;
           }
-          return l;
+
+          const maxY = bpItems.reduce((acc, it) => Math.max(acc, (it.y || 0) + (it.h || 0)), 0);
+          const maxCols = bp === "lg" ? 12 : bp === "md" ? 10 : 6;
+          const w = meta ? Math.min(meta.defaultW, maxCols) : maxCols;
+          const h = meta ? meta.defaultH : 8;
+          const minW = meta ? meta.minW : 3;
+          const minH = meta ? meta.minH : 4;
+
+          updated[bp] = [
+            ...bpItems,
+            {
+              i: widgetId,
+              x: 0,
+              y: maxY,
+              w,
+              h,
+              minW,
+              minH,
+            },
+          ];
         });
 
-        const existingLayoutForBp = prev[bp] || [];
-        
-        // Keep widgets that were in prev but are missing in allLayouts (because they are hidden)
-        const newLayoutIds = new Set(normalizedLayoutForBp.map((l: any) => l.i));
-        const preservedLayouts = existingLayoutForBp.filter((l: any) => !newLayoutIds.has(l.i));
-        
-        merged[bp] = [...normalizedLayoutForBp, ...preservedLayouts];
+        return {
+          ...prev,
+          [tabId]: updated,
+        };
       });
-      return merged;
-    });
-  }, [expandedWidgets]);
+    },
+    []
+  );
 
-  // Toggle widget visibility — when re-showing, restore default layout size
-  const toggleVisible = useCallback((id: string) => {
-    setVisibility((prev) => {
-      const wasHidden = prev[id] === false;
-      const next = { ...prev, [id]: !prev[id] };
+  // Remove widget from a specific tab
+  const removeWidgetFromTab = useCallback(
+    (tabId: TabId, widgetId: string) => {
+      setTabWidgets((prev) => {
+        const currentList = prev[tabId] || [];
+        return {
+          ...prev,
+          [tabId]: currentList.filter((id) => id !== widgetId),
+        };
+      });
 
-      // If we're showing a previously hidden widget, restore its default size
-      if (wasHidden) {
-        setLayouts((prevLayouts) => {
-          const restored: Layouts = {};
-          const breakpoints = ['lg', 'md', 'sm'] as const;
-          breakpoints.forEach(bp => {
-            const current = prevLayouts[bp] || [];
-            const defaultForBp = CONSTRAINED_DEFAULT[bp] || [];
-            const defaultItem = defaultForBp.find((l: any) => l.i === id);
-            // Remove old entry for this widget and add the default one
-            const filtered = current.filter((l: any) => l.i !== id);
-            if (defaultItem) {
-              restored[bp] = [...filtered, { ...defaultItem }];
-            } else {
-              restored[bp] = filtered;
-            }
-          });
-          return restored;
+      setTabLayouts((prev) => {
+        const currentTabLayout = prev[tabId] || {};
+        const breakpoints = ["lg", "md", "sm"] as const;
+        const updated: Layouts = {};
+
+        breakpoints.forEach((bp) => {
+          const bpItems = currentTabLayout[bp] || [];
+          updated[bp] = bpItems.filter((it) => it.i !== widgetId);
         });
+
+        return {
+          ...prev,
+          [tabId]: updated,
+        };
+      });
+    },
+    []
+  );
+
+  // Toggle widget in a specific tab
+  const toggleWidgetInTab = useCallback(
+    (tabId: TabId, widgetId: string) => {
+      const isVisible = (tabWidgets[tabId] || []).includes(widgetId);
+      if (isVisible) {
+        removeWidgetFromTab(tabId, widgetId);
+      } else {
+        addWidgetToTab(tabId, widgetId);
       }
-      return next;
+    },
+    [tabWidgets, addWidgetToTab, removeWidgetFromTab]
+  );
+
+  // Reset a specific tab
+  const resetTab = useCallback((tabId: TabId) => {
+    setTabWidgets((prev) => ({
+      ...prev,
+      [tabId]: DEFAULT_TAB_WIDGETS[tabId] || [],
+    }));
+
+    setTabLayouts((prev) => ({
+      ...prev,
+      [tabId]: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS[tabId] || {}),
+    }));
+  }, []);
+
+  // Reset all tabs to factory defaults
+  const resetAllTabs = useCallback(() => {
+    setTabWidgets(DEFAULT_TAB_WIDGETS);
+    setTabLayouts({
+      tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
+      custom: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.custom),
+      administrative: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.administrative),
+      market: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.market),
     });
-  }, []);
-
-  const updateWidgetHeight = useCallback((id: string, height: number) => {
-    setLayouts((prev) => {
-      const updated: Layouts = {};
-      const breakpoints = ['lg', 'md', 'sm'] as const;
-      breakpoints.forEach(bp => {
-        updated[bp] = (prev[bp] || []).map((l: any) => 
-          l.i === id ? { ...l, h: height } : l
-        );
-      });
-      return updated;
-    });
-  }, []);
-
-  const setWidgetExpanded = useCallback((id: string, expanded: boolean) => {
-    setExpandedWidgets(prev => ({ ...prev, [id]: expanded }));
-  }, []);
-
-  // Reset to defaults
-  const reset = useCallback(() => {
-    setLayouts(DEFAULT_LAYOUTS);
-    setVisibility(DEFAULT_VISIBILITY);
     try {
-      localStorage.removeItem(STORAGE_KEY_LAYOUTS);
-      localStorage.removeItem(STORAGE_KEY_VISIBILITY);
+      localStorage.removeItem(STORAGE_KEY_TAB_WIDGETS);
+      localStorage.removeItem(STORAGE_KEY_TAB_LAYOUTS);
     } catch {}
   }, []);
 
-  // Lists of widget IDs based on visibility and admin rules
-  const allWidgetIds = Object.keys(DEFAULT_VISIBILITY) as WidgetId[];
-  
-  const visibleWidgets = allWidgetIds.filter((id) => {
-    if (id === "settings" && !adminMode) return false;
-    return visibility[id] !== false;
-  });
+  // Apply a preset of widgets to a specific tab
+  const applyPreset = useCallback(
+    (tabId: TabId, presetWidgetIds: string[]) => {
+      setTabWidgets((prev) => ({
+        ...prev,
+        [tabId]: presetWidgetIds,
+      }));
 
-  const hiddenWidgets = allWidgetIds.filter((id) => {
-    if (id === "settings" && !adminMode) return false;
-    return visibility[id] === false;
-  });
+      // Rebuild layouts for the preset
+      setTabLayouts((prev) => {
+        const breakpoints = ["lg", "md", "sm"] as const;
+        const updated: Layouts = {};
 
-  const dynamicLayouts: Layouts = {};
-  for (const bp in layouts) {
-    dynamicLayouts[bp] = (layouts[bp] || []).map((l: any) => {
-      if (expandedWidgets[l.i]) {
-        return { ...l, h: l.h + 4 }; 
-      }
-      return l;
-    });
-  }
+        breakpoints.forEach((bp) => {
+          let currentY = 0;
+          const maxCols = bp === "lg" ? 12 : bp === "md" ? 10 : 6;
+
+          const items = presetWidgetIds.map((wId) => {
+            const meta = getModuleMeta(wId);
+            const w = meta ? Math.min(meta.defaultW, maxCols) : maxCols;
+            const h = meta ? meta.defaultH : 8;
+            const minW = meta ? meta.minW : 3;
+            const minH = meta ? meta.minH : 4;
+
+            const item = {
+              i: wId,
+              x: 0,
+              y: currentY,
+              w,
+              h,
+              minW,
+              minH,
+            };
+            currentY += h;
+            return item;
+          });
+
+          updated[bp] = items;
+        });
+
+        return {
+          ...prev,
+          [tabId]: updated,
+        };
+      });
+    },
+    []
+  );
+
+  // Active and Hidden widgets for the CURRENT tab
+  const activeWidgets = tabWidgets[currentTab] || [];
+  const hiddenWidgets = MODULES_REGISTRY.map((m) => m.id).filter(
+    (id) => !activeWidgets.includes(id)
+  );
+
+  const currentLayouts = tabLayouts[currentTab] || { lg: [], md: [], sm: [] };
 
   return {
-    layouts: dynamicLayouts,
-    visibleWidgets,
+    currentTab,
+    setCurrentTab,
+    layouts: currentLayouts,
+    tabLayouts,
+    tabWidgets,
+    visibleWidgets: activeWidgets,
     hiddenWidgets,
     onLayoutChange,
-    toggleVisible,
-    setWidgetExpanded,
-    reset,
+    addWidgetToTab,
+    removeWidgetFromTab,
+    toggleWidgetInTab,
+    toggleVisible: (widgetId: string) => toggleWidgetInTab(currentTab, widgetId),
+    resetTab: () => resetTab(currentTab),
+    resetAllTabs,
+    reset: () => resetTab(currentTab),
+    applyPreset: (tabId: TabId, presetIds: string[]) => applyPreset(tabId, presetIds),
   };
 }

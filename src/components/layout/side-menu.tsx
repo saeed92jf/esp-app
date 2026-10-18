@@ -99,7 +99,7 @@ export function SideMenu() {
         side={side}
         belowHeader={true}
         showCloseButton={false}
-        className="flex w-[min(320px,calc(100vw-28px))] sm:w-85 flex-col gap-0 p-0 bg-popover rounded-none border-border/40 shadow-xl overflow-hidden"
+        className="bottom-[calc(var(--footer-height)+10px)] data-[side=left]:bottom-[calc(var(--footer-height)+10px)] data-[side=left]:h-[calc(100dvh-var(--header-height)-var(--footer-height)-10px)] data-[side=right]:bottom-[calc(var(--footer-height)+10px)] data-[side=right]:h-[calc(100dvh-var(--header-height)-var(--footer-height)-10px)] flex w-[min(320px,calc(100vw-28px))] sm:w-85 flex-col gap-0 p-0 bg-popover rounded-none border-border/40 shadow-xl overflow-hidden"
       >
         <SideMenuContent onClose={() => setOpen(false)} />
       </SheetContent>
