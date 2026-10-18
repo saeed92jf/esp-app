@@ -4,8 +4,8 @@
 import { usePathname } from '@/i18n/navigation';
 import { Header } from './header';
 
-// Routes where the global header must never appear (full-screen flow editors & dashboards).
-const HIDDEN_PREFIXES = ['/ESP-Flow', '/dashboard', '/team', '/admin'];
+// Routes where the global header must never appear (full-screen flow editors, dashboards, and dedicated search header).
+const HIDDEN_PREFIXES = ['/ESP-Flow', '/dashboard', '/team', '/admin', '/search'];
 
 /**
  * Decides header visibility by ROUTE, not by auth state.
