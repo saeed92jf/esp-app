@@ -82,19 +82,18 @@ export function GoogleSearchBox({
         key={item.text}
         onClick={onSelect}
         className={cn(
-          "group/sugg relative me-2.5 flex cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
-          compact ? "h-[40px] text-[13.5px]" : "h-[46px] text-[14px]",
-          "rounded-s-none rounded-e-full",
+          "group/sugg relative w-full flex cursor-pointer select-none items-center justify-between px-3 sm:px-3.5 transition-colors",
+          compact ? "h-[38px] text-[13.5px]" : "h-[44px] text-[14px]",
           isSelected
             ? "bg-[#e8eaed] dark:bg-[#e8eaed]"
             : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80"
         )}
       >
         {isSelected && (
-          <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
+          <span className="absolute inset-y-0 start-0 w-[3.5px] bg-[#1a73e8]" />
         )}
 
-        <div className="flex min-w-0 flex-1 items-center gap-3 ps-1">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <Search className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[2] text-[#9aa0a6] dark:text-[#70757a]")} />
           <span className="truncate text-start font-normal leading-normal text-[#202124] dark:text-[#202124]">
             <HighlightMatch
@@ -105,7 +104,7 @@ export function GoogleSearchBox({
           </span>
         </div>
 
-        <div className="text-zinc-400 dark:text-zinc-500 shrink-0 pe-2 ms-2 opacity-0 group-hover/sugg:opacity-100 transition-opacity">
+        <div className="text-zinc-400 dark:text-zinc-500 shrink-0 pe-1 ms-2 opacity-0 group-hover/sugg:opacity-100 transition-opacity">
           {isRtl ? (
             <ArrowUpLeft className="size-3.5" />
           ) : (

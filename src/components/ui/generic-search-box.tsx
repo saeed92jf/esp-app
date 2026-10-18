@@ -310,7 +310,7 @@ export function GenericSearchBox<T>({
                     ? (darkFlatWhite ? "border-zinc-300 dark:border-zinc-300" : "border-border/90 dark:border-zinc-700")
                     : "border-transparent shadow-none"
                 ),
-            "relative w-full h-full overflow-hidden rounded-[inherit] transition-colors duration-150"
+            "relative w-full overflow-hidden rounded-[inherit] transition-colors duration-150"
           )}
         >
         <div
@@ -322,7 +322,7 @@ export function GenericSearchBox<T>({
           )}
         >
           {isHistoryPreselected ? (
-            <History className={cn("shrink-0 animate-in fade-in-50 stroke-[1.8] duration-150", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
+            <History className={cn("shrink-0 stroke-[1.8]", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
           ) : (
             <button
               type="button"
@@ -434,7 +434,7 @@ export function GenericSearchBox<T>({
         </div>
 
         {showDropdown && (
-          <div className="space-y-0.5 overflow-y-auto custom-scrollbar max-h-[60vh] pb-3 pt-0.5 animate-in fade-in-50 duration-100 sm:pb-3.5 border-t border-border/30 dark:border-zinc-200/60 mx-1">
+          <div className="w-full space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[60vh] pt-1 pb-5 sm:pb-6 border-t border-border/30 dark:border-zinc-200/60">
             {!showResultsMode &&
               history.map((item, idx) => {
                 const isSelected = idx === selectedIndex;
@@ -453,18 +453,17 @@ export function GenericSearchBox<T>({
                       }
                     }}
                     className={cn(
-                      "group/item relative me-2.5 flex cursor-pointer select-none items-center justify-between transition-colors",
-                      compact ? "h-[40px] text-[13.5px]" : "h-[44px] text-[14px]",
-                      "rounded-s-none rounded-e-full",
+                      "group/item relative w-full flex cursor-pointer select-none items-center justify-between px-3 sm:px-3.5 transition-colors",
+                      compact ? "h-[38px] text-[13.5px]" : "h-[44px] text-[14px]",
                       isSelected
                         ? (darkFlatWhite ? "bg-[#e8eaed] dark:bg-[#e8eaed]" : "bg-[#e8eaed] dark:bg-[#303134]")
                         : (darkFlatWhite ? "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80" : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80"),
                     )}
                   >
                     {isSelected && (
-                      <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
+                      <span className="absolute inset-y-0 start-0 w-[3.5px] bg-[#1a73e8]" />
                     )}
-                    <div className="flex min-w-0 flex-1 items-center gap-3 pe-9 ps-4">
+                    <div className="flex min-w-0 flex-1 items-center gap-3 pe-8">
                       <History className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[1.8] text-[#9aa0a6]")} />
                       <span className={cn("truncate text-start font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-[#202124] dark:text-[#e8eaed]")}>
                         {item}
@@ -485,7 +484,7 @@ export function GenericSearchBox<T>({
                             aria-label={t("searchBox.removeFromHistory")}
                             title=""
                             className={cn(
-                              "absolute end-[6px] top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full transition-all",
+                              "absolute end-3 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full transition-all",
                               darkFlatWhite
                                 ? "text-[#70757a] hover:bg-black/10 dark:text-[#70757a] dark:hover:bg-black/10"
                                 : "text-[#70757a] hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
@@ -507,7 +506,7 @@ export function GenericSearchBox<T>({
               })}
 
             {showResultsMode && filteredResults.length > 0 && (
-              <div className="space-y-0.5">
+              <div className="w-full space-y-0.5">
                 {renderResultsHeader?.(filteredResults.length, query)}
                 {filteredResults.map((item, idx) => (
                   <React.Fragment key={getItemKey(item as T)}>
@@ -522,7 +521,7 @@ export function GenericSearchBox<T>({
             {showResultsMode && filteredResults.length === 0 && (
               <div
                 className={cn(
-                  "px-6 py-5 text-center transition-colors",
+                  "px-6 pt-5 pb-6 text-center transition-colors",
                   darkFlatWhite
                     ? "text-[#70757a] dark:text-[#70757a]"
                     : "text-muted-foreground"
