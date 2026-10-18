@@ -1259,5 +1259,30 @@
     "skillsBreakdown": "Skills Assessment",
     "monthlySalary": "Monthly Salary",
     "statsAndPerformance": "Stats & Performance"
+  },
+  "Search": {
+    "title": "Search Results",
+    "placeholder": "Search platform, tools, projects, videos, and dictionary...",
+    "resultsStats": "About {count} results ({time} seconds)",
+    "tabs": {
+      "all": "All",
+      "modules": "Tools & Modules",
+      "tasks": "Projects & Tasks",
+      "videos": "Videos",
+      "dictionary": "Dictionary & Docs"
+    },
+    "noResultsTitle": "No results found for \"{query}\".",
+    "noResultsSuggestions": "Suggestions to improve your search:",
+    "suggestion1": "Make sure all words are spelled correctly.",
+    "suggestion2": "Try different or more general keywords.",
+    "suggestion3": "Try searching in English or Persian (fully bilingual).",
+    "suggestion4": "Use the \"All\" tab to check across every category.",
+    "relatedSearches": "Related searches",
+    "openModule": "Open Tool",
+    "openVideo": "Watch Video",
+    "openProject": "View Project",
+    "openTerm": "View in Dictionary",
+    "standard": "Standard",
+    "clear": "Clear"
   }
 }

@@ -27,6 +27,7 @@ export interface GenericSearchBoxProps<T> {
   onOverallViewClick?: () => void;
   renderResultsHeader?: (count: number, query: string) => React.ReactNode;
   darkFlatWhite?: boolean;
+  onSubmitSearch?: (query: string) => void;
 }
 
 export function GenericSearchBox<T>({
@@ -45,6 +46,7 @@ export function GenericSearchBox<T>({
   onOverallViewClick,
   renderResultsHeader,
   darkFlatWhite = false,
+  onSubmitSearch,
 }: GenericSearchBoxProps<T>) {
   const locale = useLocale();
   const t = useTranslations('Common');
@@ -191,6 +193,11 @@ export function GenericSearchBox<T>({
           setIsNavigatingHistory(false);
           setHasSubmittedHistory(true);
           setSelectedIndex(-1);
+          if (onSubmitSearch) {
+            addToHistory(query.trim());
+            setIsFocused(false);
+            onSubmitSearch(query.trim());
+          }
         }
       }
     } else {
@@ -212,6 +219,10 @@ export function GenericSearchBox<T>({
         e.preventDefault();
         if (selectedIndex >= 0 && filteredResults[selectedIndex]) {
           handleSelect(filteredResults[selectedIndex] as T);
+        } else if (onSubmitSearch && query.trim()) {
+          addToHistory(query.trim());
+          setIsFocused(false);
+          onSubmitSearch(query.trim());
         } else if (filteredResults.length > 0) {
           handleSelect(filteredResults[0] as T);
         }
@@ -271,7 +282,21 @@ export function GenericSearchBox<T>({
           {isHistoryPreselected ? (
             <History className={cn("me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] duration-150", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
           ) : (
-            <Search className={cn("me-3 size-5 shrink-0 stroke-[2.2]", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => {
+                if (onSubmitSearch && query.trim()) {
+                  addToHistory(query.trim());
+                  setIsFocused(false);
+                  onSubmitSearch(query.trim());
+                }
+              }}
+              className="cursor-pointer focus:outline-none"
+              aria-label="Search"
+            >
+              <Search className={cn("me-3 size-5 shrink-0 stroke-[2.2]", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
+            </button>
           )}
 
           <input
@@ -349,6 +374,10 @@ export function GenericSearchBox<T>({
                       setIsNavigatingHistory(false);
                       setHasSubmittedHistory(true);
                       setSelectedIndex(-1);
+                      if (onSubmitSearch) {
+                        setIsFocused(false);
+                        onSubmitSearch(item);
+                      }
                     }}
                     className={cn(
                       "group/item relative me-2.5 flex h-[44px] cursor-pointer select-none items-center justify-between transition-colors",

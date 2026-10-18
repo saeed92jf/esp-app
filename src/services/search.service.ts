@@ -40,6 +40,8 @@ export interface ISearchService {
 
 // ─── Fake ─────────────────────────────────────────────────────────────────────
 
+import { universalSearchService } from "@/modules/search/services/search.service";
+
 export class FakeSearchService implements ISearchService {
   async search({
     query,
@@ -48,29 +50,22 @@ export class FakeSearchService implements ISearchService {
     limit = 20,
   }: SearchPayload): Promise<SearchResponse> {
     const q = query.toLowerCase().trim();
-    if (q.length < 2) return { results: [], total: 0, query };
+    if (q.length < 1) return { results: [], total: 0, query };
 
-    // جستجو در navigation
-    const navResults: SearchResult[] = NAV_SEARCH_SOURCE.filter(
-      (item) =>
-        item.labelKey.toLowerCase().includes(q) ||
-        item.sectionLabelKey.toLowerCase().includes(q) ||
-        item.href.toLowerCase().includes(q),
-    ).map((item) => ({
+    const uniRes = await universalSearchService.search(q, "all", locale);
+    const results: SearchResult[] = uniRes.results.map((item) => ({
       href: item.href,
-      title: item.labelKey, // در real server ترجمه‌شده می‌آید
-      section: item.sectionLabelKey,
-      type: "navigation" as const,
-      icon: item.icon,
+      title: item.title,
+      section: item.breadcrumbs[item.breadcrumbs.length - 1] || item.category,
+      type: (item.category === "modules" ? "navigation" : item.category === "tasks" ? "project" : "document") as SearchResult["type"],
+      excerpt: item.snippet,
     }));
 
-    const results = types
-      ? navResults.filter((r) => types.includes(r.type))
-      : navResults;
+    const filtered = types ? results.filter((r) => types.includes(r.type)) : results;
 
     return {
-      results: results.slice(0, limit),
-      total: results.length,
+      results: filtered.slice(0, limit),
+      total: filtered.length,
       query,
     };
   }
