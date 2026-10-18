@@ -37,7 +37,6 @@ import { PeriodicChecklistWidget } from "./tasks/periodic-checklist-widget";
 import { DailyRoutinesWidget } from "./tasks/daily-routines-widget";
 import { NotesWidget } from "./notes/notes-widget";
 import { CustomLinksWidget } from "./links/custom-links-widget";
-import { DailyNotificationsModal } from "./notifications/daily-notifications-modal";
 import { DashboardControlHubModal } from "./control-hub/dashboard-control-hub-modal";
 import { DashboardSchematicStudioModal } from "./schematic/dashboard-schematic-studio-modal";
 import {
@@ -85,7 +84,6 @@ export function Dashboard() {
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   // Modals state
-  const [notificationsOpen, setNotificationsOpen] = React.useState(false);
   const [isSlideCustomizerOpen, setIsSlideCustomizerOpen] = React.useState(false);
   const [isControlHubOpen, setIsControlHubOpen] = React.useState(false);
   const [isSchematicOpen, setIsSchematicOpen] = React.useState(false);
@@ -415,8 +413,16 @@ export function Dashboard() {
         isScrolled={isScrolled}
         sidebarOpen={linksSidebarOpen}
         setSidebarOpen={setLinksSidebarOpen}
-        onOpenNotifications={() => setNotificationsOpen(true)}
+        notifications={data?.notifications}
+        tasks={data?.tasks}
         unreadNotificationsCount={unreadCount}
+        currentTab={dashboardTab}
+        onChangeTab={handleTabChange}
+        tabWidgets={tabWidgets}
+        onToggleWidgetInTab={toggleWidgetInTab}
+        slideRailItems={slideRailItems}
+        onToggleSlideRailItem={handleToggleSlideRailItem}
+        onResetCurrentTab={resetTab}
         onOpenSettings={() => setIsSchematicOpen(true)}
       />
 
@@ -754,12 +760,6 @@ export function Dashboard() {
       )}
 
       {/* ── Modals ── */}
-      <DailyNotificationsModal
-        open={notificationsOpen}
-        onOpenChange={setNotificationsOpen}
-        notifications={data?.notifications}
-        tasks={data?.tasks}
-      />
 
       <SlideMenuCustomizerModal
         open={isSlideCustomizerOpen}

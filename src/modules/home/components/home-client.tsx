@@ -204,9 +204,9 @@ export function HomeClient() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      className="w-full flex-1 flex flex-col items-center justify-start pt-0 pb-8 px-2 sm:px-4"
+                      className="w-full flex-1 flex flex-col items-center justify-between pt-0 pb-2 px-2 sm:px-4 h-full min-h-0"
                     >
-                      <EngineeringDictionary />
+                      <EngineeringDictionary className="flex-1 h-full min-h-0" />
                     </motion.div>
                   )}
 

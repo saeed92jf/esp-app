@@ -107,7 +107,19 @@
       "keyTipTitle": "Golden Field Engineering Tip",
       "standardsTitle": "Governing Engineering Standards",
       "noResultsHint": "Try searching with different keywords or switch the category filter.",
-      "copyTerm": "Copy Term Details"
+      "copyTerm": "Copy Term Details",
+      "firstPage": "First Page",
+      "prevPage": "Previous Page",
+      "nextPage": "Next Page",
+      "lastPage": "Last Page",
+      "page": "Page",
+      "of": "of",
+      "offsetRange": "Offset: {from} to {to} of {total} terms",
+      "activePage": "Active Page {page}",
+      "paginatedMode": "Paginated Mode (2 Fixed Cards)",
+      "scrollMode": "Bounded Scroll Mode",
+      "scrollModeHint": "Internal box scroll",
+      "showingAll": "Showing all {count} terms"
     },
     "newsletter": {
       "title": "Stay in the loop",

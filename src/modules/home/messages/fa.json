@@ -107,7 +107,19 @@
       "keyTipTitle": "نکته طلایی و فوت‌وفن کارگاهی",
       "standardsTitle": "استانداردهای مهندسی مرجع",
       "noResultsHint": "عبارت دیگری جستجو کنید یا فیلتر دسته‌بندی را تغییر دهید.",
-      "copyTerm": "کپی مشخصات واژه"
+      "copyTerm": "کپی مشخصات واژه",
+      "firstPage": "صفحه اول",
+      "prevPage": "صفحه قبل",
+      "nextPage": "صفحه بعد",
+      "lastPage": "صفحه آخر",
+      "page": "صفحه",
+      "of": "از",
+      "offsetRange": "افست: {from} تا {to} از {total} واژه",
+      "activePage": "صفحه فعال {page}",
+      "paginatedMode": "حالت صفحه‌ای (۲ کارت ثابت)",
+      "scrollMode": "حالت اسکرول محدود",
+      "scrollModeHint": "اسکرول داخلی کادر",
+      "showingAll": "نمایش تمام {count} واژه"
     },
     "newsletter": {
       "title": "همراه ما بمانید",
