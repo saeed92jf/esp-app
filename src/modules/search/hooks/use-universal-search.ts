@@ -84,26 +84,44 @@ export function useUniversalSearch(options: UseUniversalSearchOptions = {}) {
   };
 }
 
-export function useSearchSuggestions(query: string) {
+export function useSearchSuggestions(query: string, delay = 140) {
   const locale = useLocale();
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
+  const [, startTransition] = useTransition();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
     const trimmed = query.trim();
     if (trimmed.length < 1) {
       setSuggestions([]);
       return;
     }
 
-    let active = true;
-    universalSearchService.getSuggestions(trimmed, locale).then((list) => {
-      if (active) setSuggestions(list);
-    });
+    // Debounce to prevent lag/stutter during fast typing or rapid backspacing
+    timerRef.current = setTimeout(() => {
+      let active = true;
+      universalSearchService.getSuggestions(trimmed, locale).then((list) => {
+        if (active) {
+          startTransition(() => {
+            setSuggestions(list);
+          });
+        }
+      });
+      return () => {
+        active = false;
+      };
+    }, delay);
 
     return () => {
-      active = false;
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
     };
-  }, [query, locale]);
+  }, [query, locale, delay]);
 
   return suggestions;
 }

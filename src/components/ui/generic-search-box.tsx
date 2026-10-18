@@ -64,8 +64,10 @@ export function GenericSearchBox<T>({
   useEffect(() => {
     if (value !== undefined) {
       setInternalQuery(value);
+    } else if (initialQuery !== undefined) {
+      setInternalQuery(initialQuery);
     }
-  }, [value]);
+  }, [value, initialQuery]);
 
   const [isFocused, setIsFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -270,15 +272,15 @@ export function GenericSearchBox<T>({
     >
       <div
         className={cn(
-          "absolute inset-x-0 top-0 select-none transition-all duration-300 z-10",
+          "absolute inset-x-0 top-0 select-none z-10 transition-shadow duration-150",
           compact ? "rounded-[22px]" : "rounded-[28px]",
-          showDropdown && "shadow-md border border-black/10 dark:border-white/15"
+          showDropdown ? "shadow-md" : "shadow-none"
         )}
       >
         {/* Continuous Glow Layer: refined soft shadow with reduced thickness */}
         <div 
           className={cn(
-            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-300",
+            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-150",
             compact
               ? "shadow-[0_1px_4px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)]"
               : "shadow-[0_1px_8px_-1px_color-mix(in_oklab,var(--primary)_12%,transparent),0_4px_12px_-4px_rgba(30,41,59,0.12)]",
@@ -289,17 +291,26 @@ export function GenericSearchBox<T>({
                 : "dark:shadow-[0_2px_10px_-2px_color-mix(in_oklab,var(--primary)_15%,transparent),0_4px_14px_-4px_rgba(10,10,10,0.4)]"
           )}
         />
-        {/* Content Container */}
+        {/* Content Container: border is always 1px to eliminate any layout shift */}
         <div
           className={cn(
             darkFlatWhite
               ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0"
               : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0",
             compact
-              ? "border border-border/70 dark:border-transparent shadow-2xs"
-              : "border-none shadow-none",
-            showDropdown && "shadow-md border-border/70 dark:border-zinc-300",
-            "relative w-full h-full overflow-hidden rounded-[inherit] transition-all duration-200"
+              ? cn(
+                  "border shadow-2xs",
+                  showDropdown
+                    ? (darkFlatWhite ? "border-zinc-300 dark:border-zinc-300" : "border-border/90 dark:border-zinc-700")
+                    : "border-border/70 dark:border-transparent"
+                )
+              : cn(
+                  "border",
+                  showDropdown
+                    ? (darkFlatWhite ? "border-zinc-300 dark:border-zinc-300" : "border-border/90 dark:border-zinc-700")
+                    : "border-transparent shadow-none"
+                ),
+            "relative w-full h-full overflow-hidden rounded-[inherit] transition-colors duration-150"
           )}
         >
         <div

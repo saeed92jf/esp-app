@@ -45,8 +45,10 @@ export function GoogleSearchBox({
   React.useEffect(() => {
     if (value !== undefined) {
       setInternalQuery(value);
+    } else if (initialQuery !== undefined) {
+      setInternalQuery(initialQuery);
     }
-  }, [value]);
+  }, [value, initialQuery]);
 
   // Live Google-style autocomplete suggestions
   const suggestions = useSearchSuggestions(query);

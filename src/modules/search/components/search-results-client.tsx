@@ -59,24 +59,29 @@ export function SearchResultsClient() {
     initialCategory: urlCategory,
   });
 
-  const [inputVal, setInputVal] = useState(urlQuery);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Sync state if URL changes externally
   useEffect(() => {
     if (urlQuery !== query) {
       setQuery(urlQuery);
-      setInputVal(urlQuery);
     }
   }, [urlQuery]);
 
   const handleSearchSubmit = (searchQuery?: string) => {
-    const raw = typeof searchQuery === "string" ? searchQuery : inputVal;
-    const trimmed = raw.trim();
+    const trimmed = searchQuery?.trim() || query.trim();
     if (!trimmed) return;
 
     setQuery(trimmed);
-    setInputVal(trimmed);
     startTransition(() => {
       const params = new URLSearchParams();
       params.set("q", trimmed);
@@ -96,7 +101,6 @@ export function SearchResultsClient() {
   };
 
   const handleRelatedClick = (term: string) => {
-    setInputVal(term);
     setQuery(term);
     startTransition(() => {
       const params = new URLSearchParams();
@@ -117,9 +121,14 @@ export function SearchResultsClient() {
   return (
     <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 1. HEADER (Borderless, Logo fixed at standard offset)       */}
+      {/* 1. HEADER (Borderless at top, line attaches upon scrolling)  */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 h-[64px] bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md">
+      <header
+        className={cn(
+          "sticky top-0 z-40 h-[64px] bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md transition-colors duration-150",
+          isScrolled ? "border-b border-border/60" : "border-b border-transparent"
+        )}
+      >
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
           {/* Start Section: Positioned Logo + Search Box */}
           <div className="flex items-center flex-1 min-w-0">
@@ -140,8 +149,7 @@ export function SearchResultsClient() {
             <div className="flex-1 max-w-2xl min-w-0">
               <GoogleSearchBox
                 compact
-                value={inputVal}
-                onQueryChange={setInputVal}
+                initialQuery={query}
                 onSubmitSearch={handleSearchSubmit}
                 placeholder={t("placeholder")}
                 className="w-full max-w-2xl"
