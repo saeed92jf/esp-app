@@ -417,9 +417,28 @@ export function GenericSearchBox<T>({
             )}
 
             {showResultsMode && filteredResults.length === 0 && (
-              <div className={cn("px-6 py-5 text-center", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")}>
-                <Search className="mx-auto mb-1.5 size-6 opacity-40" />
-                <p className="text-xs">
+              <div
+                className={cn(
+                  "px-6 py-5 text-center transition-colors",
+                  darkFlatWhite
+                    ? "text-[#70757a] dark:text-[#70757a]"
+                    : "text-muted-foreground"
+                )}
+              >
+                <Search
+                  className={cn(
+                    "mx-auto mb-1.5 size-6",
+                    darkFlatWhite
+                      ? "text-[#70757a] opacity-50 dark:text-[#70757a] dark:opacity-50"
+                      : "opacity-40"
+                  )}
+                />
+                <p
+                  className={cn(
+                    "text-xs font-normal",
+                    darkFlatWhite && "text-[#70757a] dark:text-[#70757a]"
+                  )}
+                >
                   {isRtl
                     ? `هیچ نتیجه‌ای برای "${query}" یافت نشد.`
                     : `No results found for "${query}".`}
