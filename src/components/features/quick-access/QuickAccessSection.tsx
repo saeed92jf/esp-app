@@ -117,7 +117,7 @@ export function QuickAccessSection({
           </div>
         ) : editMode ? (
           /* EDIT MODE: All selectable items with oscillation for inactive cards */
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full animate-in fade-in-50 duration-200">
             {ALL_SELECTABLE_ITEMS.map((item, index) => {
               let title = item.labelKey;
               try {
@@ -145,11 +145,11 @@ export function QuickAccessSection({
                   }}
                   style={
                     !isItemSelected
-                      ? { animationDelay: `${(index % 7) * 0.2}s` }
+                      ? { animationDelay: `-${((index % 7) * 0.22).toFixed(2)}s` }
                       : undefined
                   }
                   className={cn(
-                    "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] text-center rounded-[12px] sm:rounded-[14px] cursor-pointer transition-all duration-150 select-none overflow-hidden",
+                    "group relative flex flex-col items-center justify-start w-[84px] sm:w-[104px] h-[96px] sm:h-[116px] text-center rounded-[12px] sm:rounded-[14px] cursor-pointer transition-[border-color,background-color,box-shadow] duration-150 select-none overflow-hidden",
                     isItemSelected
                       ? "border-2 border-primary bg-primary/[0.08] dark:bg-primary/[0.16] shadow-xs"
                       : "animate-oscillate border-2 border-dashed border-border/90 dark:border-border/70 hover:border-primary/60 bg-muted/20 dark:bg-muted/30 hover:bg-muted/40"

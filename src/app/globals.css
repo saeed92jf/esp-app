@@ -826,6 +826,9 @@ h1, h2, h3, h4, h5, h6 {
 .animate-oscillate {
   animation: smooth-oscillate 1.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Hide scrollbar cross-browser */
