@@ -6,7 +6,7 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="fa-num fixed bottom-0 inset-x-0 h-[var(--footer-height)] z-30 bg-background/85 dark:bg-background/90 backdrop-blur-md flex items-center justify-between px-3 sm:px-8 text-xs select-none">
+    <footer className="fa-num w-full mt-auto relative border-t border-border/40 min-h-[var(--footer-height)] bg-background/85 dark:bg-background/90 backdrop-blur-md flex items-center justify-between px-3 sm:px-8 text-xs select-none">
       {/* Copyright */}
       <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-300 tracking-wider truncate font-medium shrink-0">
         <span>© <bdi>2024-{year}</bdi> </span>

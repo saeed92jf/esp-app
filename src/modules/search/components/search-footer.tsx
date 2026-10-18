@@ -1,9 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import {
+  detectClientIp,
+  resolveLocationFromIp,
+} from "../services/hardware-location.service";
 
 interface SearchFooterProps {
   startOffsetClass: string;
@@ -11,38 +15,30 @@ interface SearchFooterProps {
 
 export function SearchFooter({ startOffsetClass }: SearchFooterProps) {
   const t = useTranslations("Search");
-  const [locationKey, setLocationKey] = useState<"headOffice" | "factory">("headOffice");
+  const locale = useLocale();
   const [ipAddress, setIpAddress] = useState<string>("192.168.10.45");
 
   useEffect(() => {
     let isMounted = true;
-    // Attempt real client IP retrieval; fallback smoothly on timeout or intranet
-    fetch("https://api.ipify.org?format=json", { signal: AbortSignal.timeout(2000) })
-      .then((res) => res.json())
-      .then((data) => {
-        if (isMounted && data?.ip) {
-          setIpAddress(data.ip);
-        }
-      })
-      .catch(() => {
-        // Intranet or offline fallback
-      });
+    detectClientIp().then((ip) => {
+      if (isMounted && ip) {
+        setIpAddress(ip);
+      }
+    });
 
     return () => {
       isMounted = false;
     };
   }, []);
 
-  const handleToggleLocation = () => {
-    setLocationKey((prev) => (prev === "headOffice" ? "factory" : "headOffice"));
-  };
-
+  // Resolve location from the Hardware IP Database
+  const resolved = resolveLocationFromIp(ipAddress, locale);
   const currentYear = new Date().getFullYear();
 
   return (
     <footer className="mt-auto w-full border-t border-border/40 bg-slate-100/70 dark:bg-[#171717]/80 text-[#70757a] dark:text-[#9aa0a6] text-[12px] sm:text-[13px] transition-colors select-none">
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 1. TOP ROW: Location based on IP (Google Style)              */}
+      {/* 1. TOP ROW: Location based on Hardware IP Database           */}
       {/* ──────────────────────────────────────────────────────────── */}
       <div className="w-full px-2.5 sm:px-6 py-2.5 sm:py-3 border-b border-border/30 dark:border-zinc-800/80">
         <div className="flex items-center">
@@ -56,11 +52,12 @@ export function SearchFooter({ startOffsetClass }: SearchFooterProps) {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
               </span>
-              <span>
-                {locationKey === "headOffice"
-                  ? t("footer.headOffice")
-                  : t("footer.factory")}
-              </span>
+              <span>{resolved.locationName}</span>
+              {resolved.department && (
+                <span className="text-muted-foreground font-normal text-[11px] sm:text-xs">
+                  ({resolved.department})
+                </span>
+              )}
             </span>
 
             <span className="opacity-30">•</span>
@@ -69,26 +66,15 @@ export function SearchFooter({ startOffsetClass }: SearchFooterProps) {
             <span className="text-muted-foreground text-[11.5px] sm:text-xs fa-num">
               {t("footer.fromYourIp")} ({ipAddress})
             </span>
-
-            <span className="opacity-30">•</span>
-
-            {/* Change Location Action */}
-            <button
-              type="button"
-              onClick={handleToggleLocation}
-              className="text-[#1a73e8] dark:text-[#8ab4f8] hover:underline cursor-pointer font-medium text-[11.5px] sm:text-xs"
-            >
-              {t("footer.updateLocation")}
-            </button>
           </div>
         </div>
       </div>
 
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 2. BOTTOM ROW: Useful Links & Copyright                     */}
+      {/* 2. BOTTOM ROW: Useful Links & Copyright (Expanded Height)    */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full px-2.5 sm:px-6 py-2.5 sm:py-3">
-        <div className="flex items-center">
+      <div className="w-full px-2.5 sm:px-6 py-3.5 sm:py-4.5 min-h-[48px] sm:min-h-[52px] flex items-center">
+        <div className="flex items-center w-full">
           {/* Spacer to align vertically with Search Box and Results */}
           <div className={cn("hidden sm:block", startOffsetClass)} aria-hidden="true" />
 
