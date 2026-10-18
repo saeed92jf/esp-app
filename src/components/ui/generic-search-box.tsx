@@ -274,42 +274,34 @@ export function GenericSearchBox<T>({
         className={cn(
           "absolute inset-x-0 top-0 select-none z-10 transition-shadow duration-150",
           compact ? "rounded-[22px]" : "rounded-[28px]",
-          showDropdown ? "shadow-md" : "shadow-none"
+          showDropdown
+            ? (compact ? "shadow-md" : "shadow-lg")
+            : "shadow-none"
         )}
       >
-        {/* Continuous Glow Layer: refined soft shadow with reduced thickness */}
+        {/* Continuous Glow Layer: refined soft shadow (prominent in hero, subtle in search page) */}
         <div 
           className={cn(
             "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-150",
             compact
               ? "shadow-[0_1px_4px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)]"
-              : "shadow-[0_1px_8px_-1px_color-mix(in_oklab,var(--primary)_12%,transparent),0_4px_12px_-4px_rgba(30,41,59,0.12)]",
+              : "shadow-[0_2px_10px_-1px_rgba(0,0,0,0.08),0_8px_24px_-4px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)]",
             darkFlatWhite
-              ? "dark:shadow-none"
+              ? compact
+                ? "dark:shadow-none"
+                : "dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.35)]"
               : compact
                 ? "dark:shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
-                : "dark:shadow-[0_2px_10px_-2px_color-mix(in_oklab,var(--primary)_15%,transparent),0_4px_14px_-4px_rgba(10,10,10,0.4)]"
+                : "dark:shadow-[0_4px_20px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_8px_28px_-4px_rgba(0,0,0,0.6)]"
           )}
         />
-        {/* Content Container: border is always 1px to eliminate any layout shift */}
+        {/* Content Container: border is always present in both open and closed states */}
         <div
           className={cn(
             darkFlatWhite
-              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0"
-              : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0",
-            compact
-              ? cn(
-                  "border shadow-2xs",
-                  showDropdown
-                    ? (darkFlatWhite ? "border-zinc-300 dark:border-zinc-300" : "border-border/90 dark:border-zinc-700")
-                    : "border-border/70 dark:border-transparent"
-                )
-              : cn(
-                  "border",
-                  showDropdown
-                    ? (darkFlatWhite ? "border-zinc-300 dark:border-zinc-300" : "border-border/90 dark:border-zinc-700")
-                    : "border-transparent shadow-none"
-                ),
+              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0 border border-zinc-300 dark:border-zinc-300"
+              : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0 border border-border/90 dark:border-zinc-700",
+            compact ? "shadow-2xs" : "shadow-none",
             "relative w-full overflow-hidden rounded-[inherit] transition-colors duration-150"
           )}
         >
