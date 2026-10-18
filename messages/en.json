@@ -519,17 +519,6 @@
     "description": "Your spaceship has drifted off course and this page doesn't exist in our galaxy. Don't panic, the route back to base is always open.",
     "backHome": "Return to Base"
   },
-  "Search": {
-    "placeholder": "Search",
-    "results": "Search Results",
-    "recent": "Recent",
-    "clear": "Clear",
-    "noResults": "No results for \"{query}\"",
-    "tryDifferent": "Try different keywords",
-    "navigate": "to navigate",
-    "select": "Enter to select",
-    "escape": "Esc to clear"
-  },
   "Settings": {
     "desc": "Manage user settings",
     "language": "Language",
@@ -1263,6 +1252,8 @@
   "Search": {
     "title": "Search Results",
     "placeholder": "Search platform, tools, projects, videos, and dictionary...",
+    "results": "Search Results",
+    "recent": "Recent searches",
     "resultsStats": "About {count} results ({time} seconds)",
     "tabs": {
       "all": "All",
@@ -1271,18 +1262,34 @@
       "videos": "Videos",
       "dictionary": "Dictionary & Docs"
     },
+    "noResults": "No results found for \"{query}\"",
     "noResultsTitle": "No results found for \"{query}\".",
     "noResultsSuggestions": "Suggestions to improve your search:",
+    "tryDifferent": "Try different keywords",
     "suggestion1": "Make sure all words are spelled correctly.",
     "suggestion2": "Try different or more general keywords.",
     "suggestion3": "Try searching in English or Persian (fully bilingual).",
     "suggestion4": "Use the \"All\" tab to check across every category.",
+    "navigate": "to navigate",
+    "select": "Enter to select",
+    "escape": "Esc to clear",
     "relatedSearches": "Related searches",
     "openModule": "Open Tool",
     "openVideo": "Watch Video",
     "openProject": "View Project",
     "openTerm": "View in Dictionary",
     "standard": "Standard",
-    "clear": "Clear"
+    "clear": "Clear",
+    "footer": {
+      "headOffice": "Tehran Head Office",
+      "factory": "Garmsar Manufacturing Plant",
+      "fromYourIp": "From your IP address",
+      "updateLocation": "Change location",
+      "help": "Help",
+      "feedback": "Send feedback",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "sitemap": "Sitemap"
+    }
   }
 }

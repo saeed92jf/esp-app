@@ -18,8 +18,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { SideMenu } from "@/components/layout/side-menu";
 import { GoogleSearchBox } from "@/components/features/search/GoogleSearchBox";
+import { SearchFooter } from "./search-footer";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { HelpPopover } from "@/components/layout/help-popover";
@@ -115,17 +115,18 @@ export function SearchResultsClient() {
   ];
 
   return (
-    <div className="min-h-screen bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
+    <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 1. HEADER (SideMenu + Logo + Search Box + Controls)         */}
+      {/* 1. HEADER (Borderless, Logo fixed at standard offset)       */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 h-[64px] border-b border-border/60 bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md">
+      <header className="sticky top-0 z-40 h-[64px] bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md">
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
-          {/* Start Section: SideMenu + Logo + Search Box */}
+          {/* Start Section: Positioned Logo + Search Box */}
           <div className="flex items-center flex-1 min-w-0">
-            {/* SideMenu + Logo at identical standard fixed position */}
-            <div className={cn("flex items-center gap-1.5 sm:gap-2.5", START_OFFSET_CLASS)}>
-              <SideMenu />
+            {/* Logo positioned with exact offset as if SideMenu button were present */}
+            <div className={cn("flex items-center", START_OFFSET_CLASS)}>
+              {/* Invisible spacer matching SideMenu button size + gap */}
+              <div className="w-[32px] sm:w-[36px] me-1.5 sm:me-2.5 shrink-0" aria-hidden="true" />
               <Link
                 href="/"
                 dir="ltr"
@@ -174,9 +175,9 @@ export function SearchResultsClient() {
       </header>
 
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 2. CATEGORY TABS (Vertically aligned with Search Box)       */}
+      {/* 2. CATEGORY TABS (With top margin, aligned with Search Box)  */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="border-b border-border/60 bg-background/80 dark:bg-[#141414]/80 backdrop-blur-sm">
+      <div className="mt-2.5 sm:mt-3.5 border-b border-border/60 bg-background/80 dark:bg-[#141414]/80 backdrop-blur-sm">
         <div className="w-full px-2.5 sm:px-6">
           <div className="flex items-center">
             {/* Spacer to align categories vertically with search box */}
@@ -233,7 +234,7 @@ export function SearchResultsClient() {
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 3. RESULTS AREA (Vertically aligned with Search Box)        */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <main className="w-full px-2.5 sm:px-6 py-5">
+      <main className="w-full flex-1 px-2.5 sm:px-6 py-5">
         <div className="flex items-start">
           {/* Spacer to align results vertically with search box */}
           <div className={cn("hidden sm:block", START_OFFSET_CLASS)} aria-hidden="true" />
@@ -324,6 +325,11 @@ export function SearchResultsClient() {
         </div>
       </div>
     </main>
+
+    {/* ──────────────────────────────────────────────────────────── */}
+    {/* 4. FOOTER (Non-fixed, IP Location & Useful Links)            */}
+    {/* ──────────────────────────────────────────────────────────── */}
+    <SearchFooter startOffsetClass={START_OFFSET_CLASS} />
   </div>
 );
 }

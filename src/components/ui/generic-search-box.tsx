@@ -272,17 +272,21 @@ export function GenericSearchBox<T>({
         className={cn(
           "absolute inset-x-0 top-0 select-none transition-all duration-300 z-10",
           compact ? "rounded-[22px]" : "rounded-[28px]",
-          showDropdown && "shadow-xl border border-black/10 dark:border-white/15"
+          showDropdown && "shadow-md border border-black/10 dark:border-white/15"
         )}
       >
-        {/* Continuous Glow Layer: soft primary blending into deep slate in light mode, no shadow in dark mode */}
+        {/* Continuous Glow Layer: refined soft shadow with reduced thickness */}
         <div 
           className={cn(
             "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-300",
-            "shadow-[0_2px_14px_-2px_color-mix(in_oklab,var(--primary)_22%,transparent),0_10px_30px_-8px_rgba(30,41,59,0.22)]",
+            compact
+              ? "shadow-[0_1px_4px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)]"
+              : "shadow-[0_1px_8px_-1px_color-mix(in_oklab,var(--primary)_12%,transparent),0_4px_12px_-4px_rgba(30,41,59,0.12)]",
             darkFlatWhite
               ? "dark:shadow-none"
-              : "dark:shadow-[0_2px_16px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_12px_32px_-8px_rgba(10,10,10,0.6)]"
+              : compact
+                ? "dark:shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
+                : "dark:shadow-[0_2px_10px_-2px_color-mix(in_oklab,var(--primary)_15%,transparent),0_4px_14px_-4px_rgba(10,10,10,0.4)]"
           )}
         />
         {/* Content Container */}
@@ -292,9 +296,9 @@ export function GenericSearchBox<T>({
               ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0"
               : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0",
             compact
-              ? "border border-border/80 dark:border-transparent shadow-xs"
+              ? "border border-border/70 dark:border-transparent shadow-2xs"
               : "border-none shadow-none",
-            showDropdown && "shadow-xl border-border/80 dark:border-zinc-300",
+            showDropdown && "shadow-md border-border/70 dark:border-zinc-300",
             "relative w-full h-full overflow-hidden rounded-[inherit] transition-all duration-200"
           )}
         >
