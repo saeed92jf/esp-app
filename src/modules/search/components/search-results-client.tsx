@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { HighlightMatch } from "@/components/ui/highlight-match";
 import { cn } from "@/lib/utils";
 import { useUniversalSearch } from "../hooks/use-universal-search";
 import type { SearchCategory, SearchItem } from "../types/search.types";
@@ -245,6 +246,7 @@ export function SearchResultsClient() {
                 <SearchResultCard
                   key={item.id}
                   item={item}
+                  query={response.query}
                   locale={locale}
                   isRtl={isRtl}
                   t={t}
@@ -313,11 +315,13 @@ export function SearchResultsClient() {
  */
 function SearchResultCard({
   item,
+  query,
   locale,
   isRtl,
   t,
 }: {
   item: SearchItem;
+  query: string;
   locale: string;
   isRtl: boolean;
   t: (key: string) => string;
@@ -348,13 +352,21 @@ function SearchResultCard({
           href={item.href}
           className="text-[#1a0dab] dark:text-[#8ab4f8] hover:underline focus:outline-none focus:underline"
         >
-          {displayTitle}
+          <HighlightMatch
+            text={displayTitle}
+            query={query}
+            highlightClassName="bg-primary/10 dark:bg-primary/20 text-[#1a0dab] dark:text-[#8ab4f8] font-bold px-0.5 rounded-xs"
+          />
         </Link>
       </h3>
 
       {/* 3. Snippet / Excerpt */}
       <p className="mt-1 text-[13.5px] sm:text-[14px] leading-relaxed text-[#4d5156] dark:text-[#bdc1c6]">
-        {displaySnippet}
+        <HighlightMatch
+          text={displaySnippet}
+          query={query}
+          highlightClassName="font-semibold text-foreground dark:text-white bg-black/5 dark:bg-white/10 px-0.5 rounded-xs"
+        />
       </p>
 
       {/* 4. Badges & Meta Chips */}

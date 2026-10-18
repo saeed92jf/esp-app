@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Search, ArrowUpRight, ArrowUpLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GenericSearchBox } from "@/components/ui/generic-search-box";
+import { HighlightMatch } from "@/components/ui/highlight-match";
 import { useSearchSuggestions } from "@/modules/search/hooks/use-universal-search";
 import type { SearchSuggestion } from "@/modules/search/types/search.types";
 
@@ -62,8 +63,12 @@ export function GoogleSearchBox({
 
         <div className="flex min-w-0 flex-1 items-center gap-3 ps-1">
           <Search className="size-4.5 shrink-0 stroke-[2] text-[#9aa0a6] dark:text-[#70757a]" />
-          <span className="truncate text-start text-[14px] font-medium leading-normal text-[#202124] dark:text-[#202124]">
-            {item.text}
+          <span className="truncate text-start text-[14px] font-normal leading-normal text-[#202124] dark:text-[#202124]">
+            <HighlightMatch
+              text={item.text}
+              query={query}
+              highlightClassName="font-semibold text-[#1a73e8] dark:text-[#1a73e8] bg-blue-50 dark:bg-blue-900/30 px-1 py-0.5 rounded-xs"
+            />
           </span>
         </div>
 
