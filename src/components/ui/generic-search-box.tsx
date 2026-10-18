@@ -28,6 +28,9 @@ export interface GenericSearchBoxProps<T> {
   renderResultsHeader?: (count: number, query: string) => React.ReactNode;
   darkFlatWhite?: boolean;
   onSubmitSearch?: (query: string) => void;
+  value?: string;
+  initialQuery?: string;
+  compact?: boolean;
 }
 
 export function GenericSearchBox<T>({
@@ -47,12 +50,23 @@ export function GenericSearchBox<T>({
   renderResultsHeader,
   darkFlatWhite = false,
   onSubmitSearch,
+  value,
+  initialQuery,
+  compact = false,
 }: GenericSearchBoxProps<T>) {
   const locale = useLocale();
   const t = useTranslations('Common');
   const isRtl = locale === "fa";
 
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState(initialQuery ?? value ?? "");
+  const query = value !== undefined ? value : internalQuery;
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setInternalQuery(value);
+    }
+  }, [value]);
+
   const [isFocused, setIsFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isNavigatingHistory, setIsNavigatingHistory] = useState(false);
@@ -104,7 +118,7 @@ export function GenericSearchBox<T>({
       if (e.key === "Escape") {
         const now = Date.now();
         if (now - lastEscapeTimeRef.current < 900) {
-          setQuery("");
+          setInternalQuery("");
           onQueryChange?.("");
           setSelectedIndex(-1);
           setIsNavigatingHistory(false);
@@ -115,7 +129,7 @@ export function GenericSearchBox<T>({
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, []);
+  }, [onQueryChange]);
 
   const handleSelect = useCallback(
     (item: T) => {
@@ -132,7 +146,7 @@ export function GenericSearchBox<T>({
   );
 
   const applySelectedTerm = useCallback((term: string) => {
-    setQuery(term);
+    setInternalQuery(term);
     onQueryChange?.(term);
     requestAnimationFrame(() => {
       if (inputRef.current) {
@@ -141,7 +155,7 @@ export function GenericSearchBox<T>({
         inputRef.current.setSelectionRange(len, len);
       }
     });
-  }, []);
+  }, [onQueryChange]);
 
   const handleEscapePress = useCallback(() => {
     const now = Date.now();
@@ -149,7 +163,7 @@ export function GenericSearchBox<T>({
     lastEscapeTimeRef.current = now;
 
     if (isDoubleEscape || !showDropdown) {
-      setQuery("");
+      setInternalQuery("");
       onQueryChange?.("");
       setSelectedIndex(-1);
       setIsNavigatingHistory(false);
@@ -160,7 +174,7 @@ export function GenericSearchBox<T>({
       setSelectedIndex(-1);
       setIsNavigatingHistory(false);
     }
-  }, [showDropdown]);
+  }, [showDropdown, onQueryChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
@@ -248,7 +262,8 @@ export function GenericSearchBox<T>({
     <div
       ref={containerRef}
       className={cn(
-        "relative mx-auto h-[48px] w-full max-w-2xl sm:h-[52px] z-40",
+        "relative w-full z-40",
+        compact ? "h-[40px] sm:h-[42px]" : "mx-auto h-[48px] max-w-2xl sm:h-[52px]",
         className,
       )}
       dir={isRtl ? "rtl" : "ltr"}
@@ -256,7 +271,8 @@ export function GenericSearchBox<T>({
       <div
         className={cn(
           "absolute inset-x-0 top-0 select-none transition-all duration-300 z-10",
-          "rounded-[28px]"
+          compact ? "rounded-[22px]" : "rounded-[28px]",
+          showDropdown && "shadow-xl border border-black/10 dark:border-white/15"
         )}
       >
         {/* Continuous Glow Layer: soft primary blending into deep slate in light mode, no shadow in dark mode */}
@@ -273,14 +289,25 @@ export function GenericSearchBox<T>({
         <div
           className={cn(
             darkFlatWhite
-              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 border-none outline-none ring-0 shadow-none"
-              : "bg-background dark:bg-[#202124] text-foreground border-none outline-none ring-0",
-            "relative w-full h-full overflow-hidden rounded-[inherit] transition-all duration-300"
+              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0"
+              : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0",
+            compact
+              ? "border border-border/80 dark:border-transparent shadow-xs"
+              : "border-none shadow-none",
+            showDropdown && "shadow-xl border-border/80 dark:border-zinc-300",
+            "relative w-full h-full overflow-hidden rounded-[inherit] transition-all duration-200"
           )}
         >
-        <div className="relative flex h-[48px] items-center px-3.5 sm:h-[52px] sm:px-4">
+        <div
+          className={cn(
+            "relative flex items-center",
+            compact
+              ? "h-[40px] px-3 sm:h-[42px] sm:px-3.5"
+              : "h-[48px] px-3.5 sm:h-[52px] sm:px-4"
+          )}
+        >
           {isHistoryPreselected ? (
-            <History className={cn("me-3 size-5 shrink-0 animate-in fade-in-50 stroke-[1.8] duration-150", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
+            <History className={cn("shrink-0 animate-in fade-in-50 stroke-[1.8] duration-150", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
           ) : (
             <button
               type="button"
@@ -295,7 +322,7 @@ export function GenericSearchBox<T>({
               className="cursor-pointer focus:outline-none"
               aria-label="Search"
             >
-              <Search className={cn("me-3 size-5 shrink-0 stroke-[2.2]", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
+              <Search className={cn("shrink-0 stroke-[2.2]", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
             </button>
           )}
 
@@ -304,8 +331,9 @@ export function GenericSearchBox<T>({
             type="text"
             value={query}
             onChange={(e) => {
-              setQuery(e.target.value);
-              onQueryChange?.(e.target.value);
+              const nextVal = e.target.value;
+              setInternalQuery(nextVal);
+              onQueryChange?.(nextVal);
               setIsFocused(true);
               setSelectedIndex(-1);
               setIsNavigatingHistory(false);
@@ -322,7 +350,8 @@ export function GenericSearchBox<T>({
                     : "Search...")
             }
             className={cn(
-              "flex-1 border-none bg-transparent pe-10 text-start text-[14.5px] font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0 sm:text-[15px]",
+              "flex-1 border-none bg-transparent pe-10 text-start font-normal leading-normal outline-none focus:placeholder-transparent focus:ring-0",
+              compact ? "text-[13.5px] sm:text-[14px]" : "text-[14.5px] sm:text-[15px]",
               darkFlatWhite
                 ? "text-foreground dark:text-zinc-900 placeholder:text-muted-foreground/90 dark:placeholder:text-zinc-500"
                 : "text-foreground placeholder:text-muted-foreground/90"
@@ -331,6 +360,32 @@ export function GenericSearchBox<T>({
             autoComplete="off"
             spellCheck="false"
           />
+
+          {query.trim().length > 0 && (
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => {
+                setInternalQuery("");
+                onQueryChange?.("");
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+              }}
+              aria-label="Clear search"
+              className={cn(
+                "absolute top-1/2 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors cursor-pointer",
+                compact
+                  ? "end-[8px] size-6 sm:size-7"
+                  : "end-[10px] size-7 sm:size-8",
+                darkFlatWhite
+                  ? "text-zinc-400 hover:text-zinc-700 hover:bg-black/5 dark:text-zinc-500 dark:hover:text-zinc-900 dark:hover:bg-black/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+              )}
+            >
+              <X className={cn(compact ? "size-3.5" : "size-4", "stroke-[2]")} />
+            </button>
+          )}
 
           {hasAiMode && query.trim() === "" && (
             <TooltipProvider>
@@ -343,13 +398,16 @@ export function GenericSearchBox<T>({
                     aria-label={t("searchBox.aiMode")}
                     title=""
                     className={cn(
-                      "group/ai absolute end-[6px] top-1/2 flex size-9 -translate-y-1/2 cursor-default items-center justify-center rounded-full transition-colors duration-200 sm:end-[7px] sm:size-[38px]",
+                      "group/ai absolute top-1/2 flex -translate-y-1/2 cursor-default items-center justify-center rounded-full transition-colors duration-200",
+                      compact
+                        ? "end-[4px] size-7 sm:end-[6px] sm:size-8"
+                        : "end-[6px] size-9 sm:end-[7px] sm:size-[38px]",
                       darkFlatWhite
                         ? "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:text-zinc-600 dark:hover:text-zinc-900 dark:hover:bg-zinc-100"
                         : "text-muted-foreground/60 hover:text-foreground/80 hover:bg-slate-100 dark:hover:bg-slate-800"
                     )}
                   >
-                    <Sparkles className={cn("size-[20px] sm:size-[22px] stroke-[1.8] transition-colors duration-200", darkFlatWhite ? "text-muted-foreground/75 group-hover/ai:text-primary dark:text-zinc-600 dark:group-hover/ai:text-primary" : "text-muted-foreground/75 group-hover/ai:text-primary")} />
+                    <Sparkles className={cn(compact ? "size-[16px] sm:size-[18px]" : "size-[20px] sm:size-[22px]", "stroke-[1.8] transition-colors duration-200", darkFlatWhite ? "text-muted-foreground/75 group-hover/ai:text-primary dark:text-zinc-600 dark:group-hover/ai:text-primary" : "text-muted-foreground/75 group-hover/ai:text-primary")} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" sideOffset={8} className="text-xs font-medium shadow-md">
@@ -361,7 +419,7 @@ export function GenericSearchBox<T>({
         </div>
 
         {showDropdown && (
-          <div className="space-y-0.5 overflow-y-auto custom-scrollbar max-h-[60vh] pb-3 pt-0.5 animate-in fade-in-50 duration-100 sm:pb-3.5">
+          <div className="space-y-0.5 overflow-y-auto custom-scrollbar max-h-[60vh] pb-3 pt-0.5 animate-in fade-in-50 duration-100 sm:pb-3.5 border-t border-border/30 dark:border-zinc-200/60 mx-1">
             {!showResultsMode &&
               history.map((item, idx) => {
                 const isSelected = idx === selectedIndex;
@@ -369,7 +427,7 @@ export function GenericSearchBox<T>({
                   <div
                     key={`hist-${idx}`}
                     onClick={() => {
-                      setQuery(item);
+                      setInternalQuery(item);
                       onQueryChange?.(item);
                       setIsNavigatingHistory(false);
                       setHasSubmittedHistory(true);
@@ -380,7 +438,8 @@ export function GenericSearchBox<T>({
                       }
                     }}
                     className={cn(
-                      "group/item relative me-2.5 flex h-[44px] cursor-pointer select-none items-center justify-between transition-colors",
+                      "group/item relative me-2.5 flex cursor-pointer select-none items-center justify-between transition-colors",
+                      compact ? "h-[40px] text-[13.5px]" : "h-[44px] text-[14px]",
                       "rounded-s-none rounded-e-full",
                       isSelected
                         ? (darkFlatWhite ? "bg-[#e8eaed] dark:bg-[#e8eaed]" : "bg-[#e8eaed] dark:bg-[#303134]")
@@ -391,8 +450,8 @@ export function GenericSearchBox<T>({
                       <span className="absolute inset-y-0 start-0 w-[4px] bg-[#1a73e8]" />
                     )}
                     <div className="flex min-w-0 flex-1 items-center gap-3 pe-9 ps-4">
-                      <History className="size-4.5 shrink-0 stroke-[1.8] text-[#9aa0a6]" />
-                      <span className={cn("truncate text-start text-[14px] font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-[#202124] dark:text-[#e8eaed]")}>
+                      <History className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[1.8] text-[#9aa0a6]")} />
+                      <span className={cn("truncate text-start font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-[#202124] dark:text-[#e8eaed]")}>
                         {item}
                       </span>
                     </div>

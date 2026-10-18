@@ -15,29 +15,59 @@ interface GoogleSearchBoxProps {
   onOpenChange?: (open: boolean) => void;
   onOverviewClick?: () => void;
   placeholder?: string;
+  initialQuery?: string;
+  value?: string;
+  onQueryChange?: (query: string) => void;
+  onSubmitSearch?: (query: string) => void;
+  compact?: boolean;
+  darkFlatWhite?: boolean;
 }
 
 export function GoogleSearchBox({
   className,
   onOpenChange,
   placeholder,
+  initialQuery = "",
+  value,
+  onQueryChange,
+  onSubmitSearch,
+  compact = false,
+  darkFlatWhite = true,
 }: GoogleSearchBoxProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
   const router = useRouter();
 
-  const [query, setQuery] = useState("");
+  const [internalQuery, setInternalQuery] = useState(initialQuery || value || "");
+  const query = value !== undefined ? value : internalQuery;
   const [, startTransition] = useTransition();
+
+  React.useEffect(() => {
+    if (value !== undefined) {
+      setInternalQuery(value);
+    }
+  }, [value]);
 
   // Live Google-style autocomplete suggestions
   const suggestions = useSearchSuggestions(query);
 
+  const handleQueryChange = (newVal: string) => {
+    if (value === undefined) {
+      setInternalQuery(newVal);
+    }
+    onQueryChange?.(newVal);
+  };
+
   const handleSubmitSearch = (searchQuery: string) => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
-    startTransition(() => {
-      router.push(`/search?q=${encodeURIComponent(trimmed)}`);
-    });
+    if (onSubmitSearch) {
+      onSubmitSearch(trimmed);
+    } else {
+      startTransition(() => {
+        router.push(`/search?q=${encodeURIComponent(trimmed)}`);
+      });
+    }
   };
 
   const renderSuggestionItem = (
@@ -50,7 +80,8 @@ export function GoogleSearchBox({
         key={item.text}
         onClick={onSelect}
         className={cn(
-          "group/sugg relative me-2.5 flex h-[46px] cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
+          "group/sugg relative me-2.5 flex cursor-pointer select-none items-center justify-between px-3.5 transition-colors",
+          compact ? "h-[40px] text-[13.5px]" : "h-[46px] text-[14px]",
           "rounded-s-none rounded-e-full",
           isSelected
             ? "bg-[#e8eaed] dark:bg-[#e8eaed]"
@@ -62,8 +93,8 @@ export function GoogleSearchBox({
         )}
 
         <div className="flex min-w-0 flex-1 items-center gap-3 ps-1">
-          <Search className="size-4.5 shrink-0 stroke-[2] text-[#9aa0a6] dark:text-[#70757a]" />
-          <span className="truncate text-start text-[14px] font-normal leading-normal text-[#202124] dark:text-[#202124]">
+          <Search className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[2] text-[#9aa0a6] dark:text-[#70757a]")} />
+          <span className="truncate text-start font-normal leading-normal text-[#202124] dark:text-[#202124]">
             <HighlightMatch
               text={item.text}
               query={query}
@@ -93,10 +124,13 @@ export function GoogleSearchBox({
       getItemKey={(item) => item.text}
       onSelect={(item) => handleSubmitSearch(item.text)}
       onSubmitSearch={handleSubmitSearch}
-      onQueryChange={setQuery}
+      onQueryChange={handleQueryChange}
       onOpenChange={onOpenChange}
       showAiModeButton={true}
-      darkFlatWhite={true}
+      darkFlatWhite={darkFlatWhite}
+      compact={compact}
+      value={value}
+      initialQuery={initialQuery}
       placeholder={
         placeholder ||
         (isRtl

@@ -18,6 +18,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { SideMenu } from "@/components/layout/side-menu";
+import { GoogleSearchBox } from "@/components/features/search/GoogleSearchBox";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { HelpPopover } from "@/components/layout/help-popover";
@@ -30,6 +32,8 @@ import { HighlightMatch } from "@/components/ui/highlight-match";
 import { cn } from "@/lib/utils";
 import { useUniversalSearch } from "../hooks/use-universal-search";
 import type { SearchCategory, SearchItem } from "../types/search.types";
+
+const START_OFFSET_CLASS = "sm:w-[185px] md:w-[200px] shrink-0";
 
 export function SearchResultsClient() {
   const t = useTranslations("Search");
@@ -66,12 +70,13 @@ export function SearchResultsClient() {
     }
   }, [urlQuery]);
 
-  const handleSearchSubmit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const trimmed = inputVal.trim();
+  const handleSearchSubmit = (searchQuery?: string) => {
+    const raw = typeof searchQuery === "string" ? searchQuery : inputVal;
+    const trimmed = raw.trim();
     if (!trimmed) return;
 
     setQuery(trimmed);
+    setInputVal(trimmed);
     startTransition(() => {
       const params = new URLSearchParams();
       params.set("q", trimmed);
@@ -112,69 +117,39 @@ export function SearchResultsClient() {
   return (
     <div className="min-h-screen bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 1. HEADER (Logo + Search Box in header + Controls)          */}
+      {/* 1. HEADER (SideMenu + Logo + Search Box + Controls)         */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 h-[64px] border-b border-border/60 bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md">
-        <div className="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6">
-          {/* Logo on start side */}
-          <Link
-            href="/"
-            dir="ltr"
-            className="flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0"
-          >
-            <Logo compact short className="text-[13px] sm:text-[15px]" />
-          </Link>
-
-          {/* Search Box in header (Center) */}
-          <form
-            onSubmit={handleSearchSubmit}
-            className="relative flex-1 max-w-2xl min-w-0"
-          >
-            <div
-              className={cn(
-                "relative flex h-[40px] sm:h-[42px] w-full items-center rounded-full px-3.5 transition-all duration-200",
-                "border border-border/80 bg-slate-50 dark:bg-[#202124] shadow-xs",
-                "focus-within:border-primary/50 focus-within:bg-background dark:focus-within:bg-[#202124] focus-within:shadow-md"
-              )}
-            >
-              <input
-                type="text"
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder={t("placeholder")}
-                className="flex-1 min-w-0 bg-transparent text-[13.5px] sm:text-[14px] font-normal outline-none placeholder:text-muted-foreground/75"
-                autoComplete="off"
-                spellCheck="false"
-              />
-
-              {inputVal.trim().length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setInputVal("");
-                    setQuery("");
-                  }}
-                  className="flex size-6 items-center justify-center rounded-full text-muted-foreground/70 hover:bg-black/10 dark:hover:bg-white/10 hover:text-foreground transition-colors cursor-pointer shrink-0"
-                  title={t("clear")}
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-
-              <span className="mx-1.5 h-4 w-[1px] bg-border/70 shrink-0" aria-hidden="true" />
-
-              <button
-                type="submit"
-                className="flex size-7 shrink-0 items-center justify-center rounded-full text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                title={t("title")}
+      <header className="sticky top-0 z-40 h-[64px] border-b border-border/60 bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md">
+        <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
+          {/* Start Section: SideMenu + Logo + Search Box */}
+          <div className="flex items-center flex-1 min-w-0">
+            {/* SideMenu + Logo at identical standard fixed position */}
+            <div className={cn("flex items-center gap-1.5 sm:gap-2.5", START_OFFSET_CLASS)}>
+              <SideMenu />
+              <Link
+                href="/"
+                dir="ltr"
+                className="flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0"
               >
-                <Search className="size-4 stroke-[2.2]" />
-              </button>
+                <Logo compact short className="text-[13px] sm:text-[15px]" />
+              </Link>
             </div>
-          </form>
 
-          {/* Controls on end side */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Header Search Box: Starts right after logo with slight distance, identical capabilities to hero home */}
+            <div className="flex-1 max-w-2xl min-w-0">
+              <GoogleSearchBox
+                compact
+                value={inputVal}
+                onQueryChange={setInputVal}
+                onSubmitSearch={handleSearchSubmit}
+                placeholder={t("placeholder")}
+                className="w-full max-w-2xl"
+              />
+            </div>
+          </div>
+
+          {/* End Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 origin-right rtl:origin-left">
             <ThemeToggle />
             <LocaleSwitcher />
             {user ? (
@@ -199,76 +174,85 @@ export function SearchResultsClient() {
       </header>
 
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 2. CATEGORY TABS (Directly under header, aligned with Logo) */}
+      {/* 2. CATEGORY TABS (Vertically aligned with Search Box)       */}
       {/* ──────────────────────────────────────────────────────────── */}
       <div className="border-b border-border/60 bg-background/80 dark:bg-[#141414]/80 backdrop-blur-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <nav
-            aria-label="Search Categories"
-            className="flex space-x-1 sm:space-x-2 overflow-x-auto no-scrollbar rtl:space-x-reverse"
-          >
-            {categoryTabs.map((tab) => {
-              const isActive = category === tab.id;
-              const count = response.categoryCounts[tab.id] ?? 0;
-              const Icon = tab.icon;
+        <div className="w-full px-2.5 sm:px-6">
+          <div className="flex items-center">
+            {/* Spacer to align categories vertically with search box */}
+            <div className={cn("hidden sm:block", START_OFFSET_CLASS)} aria-hidden="true" />
 
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => handleCategoryChange(tab.id)}
-                  className={cn(
-                    "group relative flex shrink-0 items-center gap-1.5 py-2.5 px-3 text-[13px] sm:text-[13.5px] font-medium transition-colors cursor-pointer select-none",
-                    isActive
-                      ? "text-[#1a73e8] dark:text-[#8ab4f8]"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Icon className="size-4 stroke-[2]" />
-                  <span>{tab.label}</span>
-                  {count > 0 && (
-                    <span
-                      className={cn(
-                        "ms-0.5 rounded-full px-1.5 py-0.2 text-[11px] tabular-nums font-semibold fa-num transition-colors",
-                        isActive
-                          ? "bg-primary/10 text-primary dark:text-[#8ab4f8]"
-                          : "bg-muted text-muted-foreground group-hover:bg-muted/80"
-                      )}
-                    >
-                      {count}
-                    </span>
-                  )}
+            <nav
+              aria-label="Search Categories"
+              className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto no-scrollbar rtl:space-x-reverse"
+            >
+              {categoryTabs.map((tab) => {
+                const isActive = category === tab.id;
+                const count = response.categoryCounts[tab.id] ?? 0;
+                const Icon = tab.icon;
 
-                  {/* Google Blue Underline Indicator */}
-                  {isActive && (
-                    <span className="absolute inset-x-0 bottom-0 h-[2.5px] rounded-t-full bg-[#1a73e8] dark:bg-[#8ab4f8]" />
-                  )}
-                </button>
-              );
-            })}
-          </nav>
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(tab.id)}
+                    className={cn(
+                      "group relative flex shrink-0 items-center gap-1.5 py-2.5 px-3 text-[13px] sm:text-[13.5px] font-medium transition-colors cursor-pointer select-none",
+                      isActive
+                        ? "text-[#1a73e8] dark:text-[#8ab4f8]"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="size-4 stroke-[2]" />
+                    <span>{tab.label}</span>
+                    {count > 0 && (
+                      <span
+                        className={cn(
+                          "ms-0.5 rounded-full px-1.5 py-0.2 text-[11px] tabular-nums font-semibold fa-num transition-colors",
+                          isActive
+                            ? "bg-primary/10 text-primary dark:text-[#8ab4f8]"
+                            : "bg-muted text-muted-foreground group-hover:bg-muted/80"
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+
+                    {/* Google Blue Underline Indicator */}
+                    {isActive && (
+                      <span className="absolute inset-x-0 bottom-0 h-[2.5px] rounded-t-full bg-[#1a73e8] dark:bg-[#8ab4f8]" />
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
         </div>
       </div>
 
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 3. RESULTS AREA (Full width, starting directly under Logo)   */}
+      {/* 3. RESULTS AREA (Vertically aligned with Search Box)        */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 py-5">
-        <div className="w-full max-w-5xl">
-          {/* Search Stats Line (Google Style) */}
-          <div className="mb-4 text-[13px] text-[#70757a] dark:text-[#9aa0a6] select-none fa-num">
-            {isSearching ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-primary animate-ping" />
-                در حال جستجو...
-              </span>
-            ) : response.query.trim().length > 0 ? (
-              t("resultsStats", {
-                count: response.total,
-                time: response.executionTime,
-              })
-            ) : null}
-          </div>
+      <main className="w-full px-2.5 sm:px-6 py-5">
+        <div className="flex items-start">
+          {/* Spacer to align results vertically with search box */}
+          <div className={cn("hidden sm:block", START_OFFSET_CLASS)} aria-hidden="true" />
+
+          <div className="w-full max-w-3xl min-w-0">
+            {/* Search Stats Line (Google Style) */}
+            <div className="mb-4 text-[13px] text-[#70757a] dark:text-[#9aa0a6] select-none fa-num">
+              {isSearching ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-primary animate-ping" />
+                  {isRtl ? "در حال جستجو..." : "Searching..."}
+                </span>
+              ) : response.query.trim().length > 0 ? (
+                t("resultsStats", {
+                  count: response.total,
+                  time: response.executionTime,
+                })
+              ) : null}
+            </div>
 
           {/* ──────────────────────────────────────────────────────────── */}
           {/* RESULTS LIST                                                 */}
@@ -338,9 +322,10 @@ export function SearchResultsClient() {
             )
           )}
         </div>
-      </main>
-    </div>
-  );
+      </div>
+    </main>
+  </div>
+);
 }
 
 /**
