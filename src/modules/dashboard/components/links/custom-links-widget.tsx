@@ -146,21 +146,21 @@ export function CustomLinksWidget({
   return (
     <div
       className={cn(
-        "flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative p-3.5 sm:p-4 gap-3 @container",
+        "flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative p-3.5 sm:p-4 gap-3 @container",
         className
       )}
     >
       {/* ── Header ── */}
-      <div className="flex items-center justify-between gap-2 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 shrink-0 pe-18 sm:pe-20">
+        <div className="flex items-center gap-2 min-w-0">
           <div className="p-2 bg-primary/10 rounded-xl shrink-0 text-primary">
             <LinkIcon className="size-4.5" />
           </div>
-          <div>
-            <h3 className="font-semibold text-sm sm:text-base text-foreground/90 leading-none">
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm sm:text-base text-foreground/90 leading-none truncate">
               {t("title")}
             </h3>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] text-muted-foreground truncate block">
               {t("subtitle", { count: links.length })}
             </span>
           </div>
@@ -170,7 +170,7 @@ export function CustomLinksWidget({
           size="sm"
           variant={isAdding ? "outline" : "default"}
           onClick={() => setIsAdding(!isAdding)}
-          className="h-8 text-xs gap-1.5 px-2.5 font-medium shadow-xs"
+          className="h-8 text-xs gap-1.5 px-2.5 font-medium shadow-xs shrink-0"
         >
           {isAdding ? <X className="size-3.5" /> : <Plus className="size-3.5" />}
           <span>{isAdding ? t("cancel") : t("newLink")}</span>

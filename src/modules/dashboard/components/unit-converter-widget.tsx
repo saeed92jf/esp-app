@@ -97,27 +97,54 @@ export function UnitConverterWidget() {
   }, [activeCategory]);
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container min-h-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-1 mb-4 shrink-0 border-b border-border/40 pb-3">
-        <div className="p-2 bg-primary/10 rounded-xl shrink-0">
-          <ArrowRightLeft className="size-5 text-primary" />
+      <div className="flex items-center justify-between gap-2 px-1 mb-3 shrink-0 border-b border-border/40 pb-2.5 pe-18 sm:pe-20">
+        <div className="flex items-center gap-2 min-w-0">
+          {activeCategory ? (
+            <button
+              type="button"
+              onClick={() => setActiveCategory(null)}
+              className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors border border-border/40 shrink-0 flex items-center gap-1 cursor-pointer shadow-2xs"
+              title={isFa ? "بازگشت به دسته‌بندی‌ها" : "Back to categories"}
+            >
+              <ChevronRight className={cn("size-4", !isFa && "rotate-180")} />
+              <span className="text-xs font-medium text-foreground">{isFa ? "بازگشت" : "Back"}</span>
+            </button>
+          ) : (
+            <div className="p-1.5 bg-primary/10 rounded-xl shrink-0 text-primary">
+              <ArrowRightLeft className="size-4.5" />
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="font-semibold text-sm sm:text-base text-foreground/90 truncate">
+              {isFa ? "مبدل واحد" : "Unit Converter"}
+            </h3>
+            {activeCategory && (
+              <>
+                <span className="text-muted-foreground/40 text-xs select-none">/</span>
+                <span className="text-xs sm:text-sm font-medium text-primary truncate">
+                  {isFa
+                    ? CONVERTER_CATEGORIES.find((c) => c.id === activeCategory)?.labelFa
+                    : CONVERTER_CATEGORIES.find((c) => c.id === activeCategory)?.labelEn}
+                </span>
+              </>
+            )}
+          </div>
         </div>
-        <h3 className="font-semibold text-base text-foreground/80 shrink-0">
-          {isFa ? "مبدل واحد" : "Unit Converter"}
-        </h3>
       </div>
 
-      <div className="flex flex-col flex-1 gap-4 overflow-hidden relative">
+      <div className="flex flex-col flex-1 gap-3 overflow-hidden relative min-h-0">
         <AnimatePresence mode="popLayout" initial={false}>
           {!activeCategory ? (
-            <motion.div 
+            <motion.div
               key="grid"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-2 @[380px]:grid-cols-3 @[600px]:grid-cols-4 gap-2 h-full overflow-y-auto custom-scrollbar pe-1 pb-2 content-start"
+              className="grid grid-cols-2 @[260px]:grid-cols-2 @[380px]:grid-cols-3 @[560px]:grid-cols-4 gap-2 h-full overflow-y-auto custom-scrollbar pe-1 pb-2 content-start min-h-0"
             >
               {CONVERTER_CATEGORIES.map((cat) => {
                 const Icon = cat.icon;
@@ -125,7 +152,7 @@ export function UnitConverterWidget() {
                   <button
                     key={cat.id}
                     onClick={() => setActiveCategory(cat.id)}
-                    className="flex flex-col items-center justify-center gap-2 p-2.5 rounded-xl bg-white dark:bg-card border border-border/40 hover:border-primary/40 transition-colors shadow-xs group"
+                    className="flex flex-col items-center justify-center gap-2 p-2.5 rounded-xl bg-white dark:bg-card border border-border/40 hover:border-primary/40 transition-colors shadow-2xs group cursor-pointer"
                   >
                     <div className="p-2 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
                       <Icon className="size-5 text-primary" />
@@ -138,60 +165,63 @@ export function UnitConverterWidget() {
               })}
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="converter"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col @[540px]:flex-row gap-3 flex-1 overflow-hidden relative h-full"
+              className="flex flex-col @[520px]:flex-row gap-3 flex-1 overflow-hidden relative h-full min-h-0"
             >
-              {/* Top Bar with Back Button */}
-              <div className="flex items-center gap-2 shrink-0 px-1 @[540px]:hidden">
-                <button 
-                  onClick={() => setActiveCategory(null)} 
-                  className="p-1.5 hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl transition-colors border border-transparent hover:border-border/40"
-                >
-                  {isFa ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
-                </button>
-                <span className="font-semibold text-sm text-foreground/90">
-                  {isFa ? CONVERTER_CATEGORIES.find(c => c.id === activeCategory)?.labelFa : CONVERTER_CATEGORIES.find(c => c.id === activeCategory)?.labelEn}
-                </span>
-              </div>
-          
               {/* Primary Input Card */}
-              <div className="flex flex-col p-3.5 bg-primary text-primary-foreground rounded-xl relative shadow-sm shrink-0 border border-transparent @[540px]:w-[240px]" dir="ltr">
-                <div className="flex items-center justify-between mb-3">
-                  {/* Icon of the category */}
+              <div
+                className="flex flex-col p-3 bg-primary text-primary-foreground rounded-xl relative shadow-xs shrink-0 border border-transparent @[520px]:w-[240px] justify-between gap-2.5 min-h-[115px]"
+                dir="ltr"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  {/* Category icon */}
                   {(() => {
-                    const CatIcon = CONVERTER_CATEGORIES.find(c => c.id === activeCategory)?.icon || ArrowRightLeft;
-                    return <CatIcon className="size-5 text-white/90" />;
+                    const CatIcon =
+                      CONVERTER_CATEGORIES.find((c) => c.id === activeCategory)?.icon ||
+                      ArrowRightLeft;
+                    return <CatIcon className="size-5 text-white/90 shrink-0" />;
                   })()}
-                  <div dir={isFa ? 'rtl' : 'ltr'}>
+                  <div dir={isFa ? "rtl" : "ltr"} className="min-w-0 max-w-[140px]">
                     <Combobox
-                      options={UNITS[activeCategory]?.map(u => ({ value: u.id, label: isFa ? u.labelFa : u.labelEn })) || []}
+                      options={
+                        UNITS[activeCategory]?.map((u) => ({
+                          value: u.id,
+                          label: isFa ? u.labelFa : u.labelEn,
+                        })) || []
+                      }
                       value={unitFrom}
                       onChange={(val) => setUnitFrom(val)}
-                      className="h-8 bg-white/10 border-transparent shadow-none text-xs font-medium text-white hover:bg-white/20 hover:text-white w-[130px] rounded-lg"
+                      className="h-8 bg-white/15 border-transparent shadow-none text-xs font-medium text-white hover:bg-white/25 hover:text-white w-full rounded-lg"
                       showSearch={false}
                     />
                   </div>
                 </div>
-                
+
                 {(() => {
-                  const activeUnitDef = UNITS[activeCategory]?.find(u => u.id === unitFrom);
-                  const activeSymbol = activeUnitDef?.labelEn.match(/\(([^)]+)\)/)?.[1] || '';
+                  const activeUnitDef = UNITS[activeCategory]?.find(
+                    (u) => u.id === unitFrom
+                  );
+                  const activeSymbol =
+                    activeUnitDef?.labelEn.match(/\(([^)]+)\)/)?.[1] || "";
                   return (
-                    <div className="relative w-full flex items-baseline border-b border-white/20 focus-within:border-white transition-colors pb-1.5">
-                      <input 
+                    <div className="relative w-full flex items-baseline border-b border-white/20 focus-within:border-white transition-colors pb-1">
+                      <input
                         type="number"
                         value={valueFrom}
                         onChange={(e) => setValueFrom(e.target.value)}
-                        className="flex-1 min-w-0 bg-transparent outline-none text-[30px] font-bold fa-num text-white p-0 m-0 placeholder:text-white/30 text-left tracking-tight"
+                        className="flex-1 min-w-0 bg-transparent outline-none text-2xl @[280px]:text-3xl font-bold fa-num text-white p-0 m-0 placeholder:text-white/30 text-left tracking-tight"
                         placeholder="0"
                         dir="ltr"
                       />
-                      <span className="text-lg font-semibold text-white/80 ms-2 select-none" dir="ltr">
+                      <span
+                        className="text-base font-semibold text-white/80 ms-2 select-none shrink-0"
+                        dir="ltr"
+                      >
                         {activeSymbol}
                       </span>
                     </div>
@@ -200,28 +230,44 @@ export function UnitConverterWidget() {
               </div>
 
               {/* List of converted units */}
-              <div className="flex flex-col gap-2 overflow-y-auto custom-scrollbar pe-1 pb-2 flex-1 mt-1">
+              <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pe-1 pb-2 flex-1 min-h-0">
                 {(() => {
                   const val = parseFloat(valueFrom);
-                  const activeUnitDef = UNITS[activeCategory]?.find(u => u.id === unitFrom);
+                  const activeUnitDef = UNITS[activeCategory]?.find(
+                    (u) => u.id === unitFrom
+                  );
                   const isValValid = !isNaN(val) && activeUnitDef;
                   const baseVal = isValValid ? activeUnitDef.toBase(val) : 0;
 
-                  return UNITS[activeCategory]?.filter(u => u.id !== unitFrom).map(u => {
-                    const converted = isValValid ? u.fromBase(baseVal) : 0;
-                    const displayVal = valueFrom === '' ? '' : (Number.isInteger(converted) ? converted.toString() : converted.toFixed(2).replace(/\.?0+$/, ''));
-                    
-                    return (
-                      <div key={u.id} className="flex items-center justify-between py-2 px-3 rounded-xl bg-white dark:bg-card border border-border/40 shadow-xs hover:border-primary/30 transition-colors" dir="ltr">
-                        <span className="text-sm font-bold fa-num text-foreground/90 tracking-tight text-left">
-                          {displayVal || '-'}
-                        </span>
-                        <span className="text-xs font-medium text-muted-foreground/90 text-right" dir={isFa ? 'rtl' : 'ltr'}>
-                          {isFa ? u.labelFa : u.labelEn}
-                        </span>
-                      </div>
-                    );
-                  });
+                  return UNITS[activeCategory]
+                    ?.filter((u) => u.id !== unitFrom)
+                    .map((u) => {
+                      const converted = isValValid ? u.fromBase(baseVal) : 0;
+                      const displayVal =
+                        valueFrom === ""
+                          ? ""
+                          : Number.isInteger(converted)
+                          ? converted.toString()
+                          : converted.toFixed(2).replace(/\.?0+$/, "");
+
+                      return (
+                        <div
+                          key={u.id}
+                          className="flex items-center justify-between py-2 px-3 rounded-xl bg-white dark:bg-card border border-border/40 shadow-2xs hover:border-primary/30 transition-colors gap-2"
+                          dir="ltr"
+                        >
+                          <span className="text-xs sm:text-sm font-bold fa-num text-foreground/90 tracking-tight text-left truncate">
+                            {displayVal || "-"}
+                          </span>
+                          <span
+                            className="text-[11px] sm:text-xs font-medium text-muted-foreground/90 text-right shrink-0"
+                            dir={isFa ? "rtl" : "ltr"}
+                          >
+                            {isFa ? u.labelFa : u.labelEn}
+                          </span>
+                        </div>
+                      );
+                    });
                 })()}
               </div>
             </motion.div>

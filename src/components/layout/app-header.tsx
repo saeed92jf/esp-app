@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations, useLocale } from "next-intl";
+import { ChevronRight } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { AnimatedHamburger } from "@/components/ui/animated-hamburger";
 import { cn } from "@/lib/utils";
@@ -9,7 +11,9 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { HelpPopover } from "@/components/layout/help-popover";
 import { AppsPopover } from "@/components/layout/apps-popover";
+import { NotificationsPopover } from "@/modules/dashboard/components/notifications/notifications-popover";
 import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 
 export interface AppHeaderProps {
@@ -35,6 +39,8 @@ export interface AppHeaderProps {
   position?: 'sticky' | 'absolute' | 'fixed';
   /** Extra container className */
   className?: string;
+  /** Whether to show notifications popover when logged in (default: true) */
+  showNotifications?: boolean;
 }
 
 /**
@@ -52,11 +58,30 @@ export function AppHeader({
   children,
   position = 'sticky',
   className,
+  showNotifications = true,
 }: AppHeaderProps) {
+  const { user } = useAuth();
+  const tHeader = useTranslations("Header");
+  const locale = useLocale();
+  const isFa = locale === "fa";
+
+  let displayTag: React.ReactNode = tag;
+  if (typeof tag === "string") {
+    const cleanKey = tag.toLowerCase().trim().replace(/^\.+/, "");
+    if (tHeader.has(`tags.${cleanKey}`)) {
+      displayTag = tHeader(`tags.${cleanKey}`);
+    } else {
+      displayTag = tag;
+    }
+    if (!isFa && typeof displayTag === "string") {
+      displayTag = displayTag.toUpperCase();
+    }
+  }
+
   return (
     <header
       className={cn(
-        "z-[60] top-0 left-0 right-0 w-full h-[var(--header-height)] flex items-center justify-between px-2.5 sm:px-6 shrink-0 bg-transparent backdrop-blur-2xl border-none shadow-none",
+        "z-[60] top-0 left-0 right-0 w-full h-[var(--header-height)] flex items-center justify-between ps-0 pe-2.5 sm:pe-6 shrink-0 bg-transparent backdrop-blur-2xl border-none shadow-none",
         position === 'sticky' && "sticky",
         position === 'absolute' && "absolute",
         position === 'fixed' && "fixed",
@@ -64,37 +89,55 @@ export function AppHeader({
       )}
     >
       {/* ── Left Side: Side Menu Button + Logo + Page Tag ── */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-        {menuTrigger ? (
-          menuTrigger
-        ) : showMenuButton ? (
-          <button
-            type="button"
-            onClick={onToggleMenu}
-            aria-label="Menu"
-            className={cn(
-              HEADER_ICON_BUTTON_CLASS,
-              isMenuOpen && "bg-foreground/[0.08] text-foreground"
+      <div className="flex items-center min-w-0">
+        {(menuTrigger || showMenuButton) && (
+          <div className="w-[52px] sm:w-[64px] h-[var(--header-height)] flex items-center justify-center shrink-0">
+            {menuTrigger ? (
+              menuTrigger
+            ) : (
+              <button
+                type="button"
+                onClick={onToggleMenu}
+                aria-label="Menu"
+                className={cn(
+                  HEADER_ICON_BUTTON_CLASS,
+                  isMenuOpen && "bg-foreground/[0.08] text-foreground"
+                )}
+              >
+                <AnimatedHamburger isOpen={Boolean(isMenuOpen)} />
+              </button>
             )}
-          >
-            <AnimatedHamburger isOpen={Boolean(isMenuOpen)} />
-          </button>
-        ) : null}
+          </div>
+        )}
 
         {/* Brand Logo (in Anta font) */}
         <Link
           href={logoHref}
           dir="ltr"
-          className="flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0"
+          className={cn(
+            "flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0",
+            (menuTrigger || showMenuButton) ? "ms-0.5 sm:ms-1" : "ps-2.5 sm:ps-6"
+          )}
         >
           <Logo compact short={logoShort} className="text-[13px] sm:text-[15px]" />
         </Link>
 
-        {/* Centralized Page Tag: UPPERCASE, bold, no dot, inline with logo */}
+        {/* Centralized Page Tag: Breadcrumb Arrow > and Tag Name */}
         {tag && (
-          <div className="inline-flex items-center shrink-0 select-none ms-1.5 sm:ms-2.5 self-center leading-none" dir="ltr">
-            <span className="font-sans font-bold uppercase tracking-[0.06em] text-[11px] sm:text-[15px] leading-none text-foreground select-none max-w-[100px] sm:max-w-none truncate">
-              {typeof tag === "string" ? tag.replace(/^\.+/, "").toUpperCase() : tag}
+          <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 select-none ms-1.5 sm:ms-2.5 self-center">
+            <ChevronRight
+              className="size-3.5 sm:size-4 text-muted-foreground/60 rtl:rotate-180 shrink-0 stroke-[2.2]"
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                "text-[12px] sm:text-[14px] text-foreground font-bold select-none max-w-[120px] sm:max-w-none truncate",
+                isFa
+                  ? "relative -top-[1.5px] sm:-top-[2px] tracking-normal leading-tight"
+                  : "uppercase tracking-[0.06em] leading-none"
+              )}
+            >
+              {displayTag}
             </span>
           </div>
         )}
@@ -114,6 +157,12 @@ export function AppHeader({
               triggerClassName={HEADER_ICON_BUTTON_CLASS}
               iconClassName={HEADER_ICON_CLASS}
             />
+            {user && showNotifications && (
+              <NotificationsPopover
+                triggerClassName={HEADER_ICON_BUTTON_CLASS}
+                iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+              />
+            )}
             <AppsPopover
               triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden xs:inline-flex")}
               iconClassName={HEADER_ICON_CLASS}

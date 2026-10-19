@@ -6,17 +6,45 @@ import { Tooltip as TooltipPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 function TooltipProvider({
-  delayDuration = 1000,
+  delayDuration = 200,
   skipDelayDuration = 0,
+  children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+  React.useEffect(() => {
+    // Globally suppress browser native tooltips by removing title attribute on mouseover
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest?.("[title]");
+      if (target && target.hasAttribute("title")) {
+        const titleVal = target.getAttribute("title");
+        if (titleVal) {
+          target.setAttribute("data-native-title", titleVal);
+          target.removeAttribute("title");
+        }
+      }
+    };
+
+    document.addEventListener("mouseover", handleMouseOver, {
+      capture: true,
+      passive: true,
+    });
+
+    return () => {
+      document.removeEventListener("mouseover", handleMouseOver, {
+        capture: true,
+      });
+    };
+  }, []);
+
   return (
     <TooltipPrimitive.Provider
       data-slot="tooltip-provider"
       delayDuration={delayDuration}
       skipDelayDuration={skipDelayDuration}
       {...props}
-    />
+    >
+      {children}
+    </TooltipPrimitive.Provider>
   );
 }
 
@@ -45,14 +73,14 @@ function TooltipContent({
         data-slot="tooltip-content"
         sideOffset={sideOffset}
         className={cn(
-          "z-[200] overflow-hidden rounded-md bg-foreground/90 backdrop-blur-md px-2.5 py-1 text-xs font-normal text-background border border-border/15 shadow-md select-none",
+          "z-[200] overflow-hidden rounded-md bg-neutral-900/95 dark:bg-neutral-950/95 text-white font-medium backdrop-blur-md px-2.5 py-1 text-xs border border-white/10 shadow-lg select-none",
           className
         )}
         {...props}
       >
         {children}
         {showArrow && (
-          <TooltipPrimitive.Arrow className="fill-popover stroke-border z-50 size-2.5" />
+          <TooltipPrimitive.Arrow className="fill-neutral-900 stroke-white/10 z-50 size-2.5" />
         )}
       </TooltipPrimitive.Content>
     </TooltipPrimitive.Portal>

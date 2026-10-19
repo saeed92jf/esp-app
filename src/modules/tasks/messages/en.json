@@ -1,0 +1,192 @@
+{
+  "Tasks": {
+    "title": "Tasks Management",
+    "subtitle": "Define, track, collaborate and manage project execution",
+    "search": "Search in title, category, assignee, company...",
+    "newTask": "New Task",
+    "manageAll": "Full Task Management",
+    "company": "Company / Organization",
+    "companies": {
+      "all": "All Companies",
+      "euroslot": "Euroslot Pars",
+      "nano": "Nano Palayesh Ceram",
+      "petro": "Petro Espadana"
+    },
+    "timeline": {
+      "title": "Roadmap & Project Timeline",
+      "today": "Today",
+      "prev": "Previous",
+      "next": "Next",
+      "completed": "Completed",
+      "notStarted": "Not started yet",
+      "underReview": "Under Review",
+      "taskFinished": "Task finished",
+      "milestoneNotice": "Task milestone on {date}",
+      "quickFilters": "Quick Filters",
+      "viewDetails": "View Task Details",
+      "tasksCount": "tasks"
+    },
+    "collaborators": {
+      "title": "Assigned Team & Collaborators",
+      "lead": "Lead",
+      "add": "Add Collaborator",
+      "selectUser": "Select Collaborator",
+      "role": "Role in Task",
+      "remove": "Remove Collaborator",
+      "manageNotice": "As a manager, you can add or remove members involved in this task.",
+      "progress": "Task Completion Progress",
+      "updateProgress": "Save Progress"
+    },
+    "board": {
+      "addTask": "Add Task +",
+      "quickFilters": "Quick Filters",
+      "searchPlaceholder": "Live task search...",
+      "notStarted": "Not started yet",
+      "underReview": "Under Review",
+      "completed": "Task finished"
+    },
+    "views": {
+      "kanban": "Kanban Board",
+      "list": "List View",
+      "analytics": "Analytics"
+    },
+    "tabs": {
+      "all": "All Tasks",
+      "manager": "Manager Tasks",
+      "mine": "My Tasks",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "roles": {
+      "roleMode": "Access Level & View",
+      "adminMode": "System Manager (Admin)",
+      "userMode": "Team Member (User)",
+      "adminBadge": "Manager: Full oversight & control over all tasks and team",
+      "userBadge": "Member Workspace: My assigned tasks and projects",
+      "filterAssignee": "Filter by Assignee",
+      "allAssignees": "All Team Members",
+      "switchPerspective": "Simulate Member View:",
+      "userNotice": "You are in Member View. Only your assigned tasks and active projects are shown. You can update status, report progress, add comments, and attach technical drawings.",
+      "myTasksOnly": "My Tasks Only",
+      "allTeamTasks": "All Team Tasks"
+    },
+    "status": {
+      "pending": "To Do",
+      "in_progress": "In Progress",
+      "review": "Review",
+      "completed": "Done"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    },
+    "stats": {
+      "total": "Total Tasks",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "review": "In Review",
+      "completed": "Completed",
+      "manager": "Manager Tasks",
+      "rate": "Completion Rate"
+    },
+    "filters": {
+      "allStatus": "All Statuses",
+      "allPriority": "All Priorities",
+      "allCategories": "All Categories",
+      "allCompanies": "All Companies",
+      "managerOnly": "Manager Tasks Only",
+      "clear": "Clear Filters"
+    },
+    "table": {
+      "title": "Task Title",
+      "category": "Category",
+      "company": "Company",
+      "priority": "Priority",
+      "status": "Status",
+      "assignee": "Assignee / Team",
+      "dueDate": "Due Date",
+      "progress": "Progress",
+      "subtasks": "Subtasks",
+      "actions": "Actions"
+    },
+    "drawer": {
+      "details": "Details",
+      "subtasks": "Checklist & Subtasks",
+      "comments": "Comments & Blueprint Attachments",
+      "attachments": "Attachments",
+      "activity": "Activity History",
+      "creator": "Created By",
+      "assignedTo": "Assigned Team",
+      "company": "Company / Client",
+      "startDate": "Start Date",
+      "dueDate": "Due Date",
+      "timelineDate": "Timeline Date",
+      "hoursEstimated": "Est. Hours",
+      "hoursLogged": "Logged Hours",
+      "changeStatus": "Change status to",
+      "markComplete": "Mark as Completed",
+      "reopen": "Reopen Task",
+      "deleteTask": "Delete Task",
+      "deleteConfirm": "Are you sure you want to delete this task?",
+      "cannotDeleteManager": "Manager tasks cannot be deleted.",
+      "managerTaskNotice": "This organizational task was assigned by manager and has high execution priority."
+    },
+    "subtasks": {
+      "title": "Subtasks & Execution Checklist",
+      "placeholder": "Enter subtask title...",
+      "add": "Add",
+      "progress": "Subtasks Progress:",
+      "empty": "No subtasks defined yet."
+    },
+    "comments": {
+      "title": "Discussion & Progress Updates",
+      "placeholder": "Write a comment or update (attach blueprints or technical files)...",
+      "send": "Post Comment",
+      "reply": "Reply",
+      "replyTo": "Replying to {author}",
+      "replyPlaceholder": "Write your reply...",
+      "cancelReply": "Cancel",
+      "noComments": "No comments yet. Be the first to start the discussion.",
+      "attachFile": "Attach Blueprint or File",
+      "attachedFiles": "Attachments in this comment",
+      "removeAttachment": "Remove file",
+      "drawingBadge": "Engineering Blueprint",
+      "selectDrawing": "P&ID Drawing / Technical File"
+    },
+    "attachments": {
+      "title": "Attached Documents & Files",
+      "dropzone": "Drag & drop files here or click to upload",
+      "supportNotice": "Supported: DWG, DXF, PDF, XLSX, ZIP, Images (up to 20MB)",
+      "download": "Download",
+      "delete": "Delete",
+      "noAttachments": "No documents attached."
+    },
+    "createModal": {
+      "title": "Define Manager Task",
+      "titlePlaceholder": "Enter precise task title...",
+      "description": "Technical Description & Requirements",
+      "descriptionPlaceholder": "Guidelines, standard references, execution specs...",
+      "category": "Project / Category",
+      "company": "Assigned Company",
+      "priority": "Task Priority",
+      "assignee": "Primary Assignee",
+      "collaborators": "Involved Collaborators",
+      "dueDate": "Due Date",
+      "timelineDate": "Timeline Milestone Date",
+      "initialProgress": "Initial Progress %",
+      "estimatedHours": "Estimated Hours",
+      "submit": "Create Task",
+      "cancel": "Cancel"
+    },
+    "widget": {
+      "title": "Tasks Management",
+      "quickAdd": "Quick add task...",
+      "viewAll": "View All",
+      "empty": "No active tasks",
+      "managerBadge": "Manager",
+      "remaining": "active tasks"
+    }
+  }
+}

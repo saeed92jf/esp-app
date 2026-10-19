@@ -18,7 +18,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { DashboardNotificationItem, DashboardTask } from "../../services/dashboard.service";
+import {
+  type DashboardNotificationItem,
+  type DashboardTask,
+  SAMPLE_TASKS,
+} from "../../services/dashboard.service";
 import { ManagerEmailModal } from "../tasks/manager-email-modal";
 
 interface DailyNotificationsModalProps {
@@ -54,8 +58,30 @@ export function DailyNotificationsModal({
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const handleOpenEmail = (taskId?: string) => {
-    const found = tasks.find((t) => t.id === taskId);
+  const handleOpenEmail = (
+    taskId?: string,
+    notif?: DashboardNotificationItem
+  ) => {
+    const allTasks = tasks && tasks.length > 0 ? tasks : SAMPLE_TASKS;
+    let found = taskId ? allTasks.find((t) => t.id === taskId) : null;
+    if (!found && notif) {
+      found = {
+        id: notif.taskId || notif.id,
+        title: notif.title,
+        description: notif.description,
+        creatorName: notif.emailPreview?.from || "مهندس شریفی (مدیر فنی)",
+        assignedToName: "سعید جلیلی",
+        dueDate: notif.date || "1405/02/10",
+        priority: "urgent",
+        status: "in_progress",
+        category: "کنترل کیفیت",
+        createdBy: "manager",
+        comments: [],
+        attachments: [],
+        isManagerDefined: true,
+        emailSent: true,
+      };
+    }
     if (found) {
       setSelectedTaskForEmail(found);
     }
@@ -166,7 +192,7 @@ export function DailyNotificationsModal({
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleOpenEmail(notif.taskId)}
+                            onClick={() => handleOpenEmail(notif.taskId, notif)}
                             className="h-7 text-[11px] gap-1 px-2.5 font-medium border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
                           >
                             <Mail className="size-3" />

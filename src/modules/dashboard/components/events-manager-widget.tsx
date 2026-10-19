@@ -197,18 +197,18 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
   ], [t, eventTypeOptions]);
 
   return (
-    <div className="bg-panel dark:bg-card/40 h-full rounded-xl rounded-br-none border border-border/50 flex flex-col overflow-hidden relative">
+    <div className="bg-panel dark:bg-card/40 h-full rounded-2xl border border-border/50 flex flex-col overflow-hidden relative @container">
       {/* Header */}
-      <div className="flex items-center gap-2 p-4 border-b border-border/30 bg-muted/10 shrink-0">
+      <div className="flex items-center gap-2 p-3 sm:p-4 border-b border-border/30 bg-muted/10 shrink-0 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <CalendarIcon className="size-5 text-primary" />
         </div>
         <h3 className="font-semibold text-base text-foreground/80">{t("managerTitle")}</h3>
       </div>
 
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <div className="flex flex-col @[920px]:flex-row flex-1 overflow-y-auto @[920px]:overflow-hidden custom-scrollbar min-h-0">
         {/* Column 1: Calendar */}
-        <div className="w-full lg:w-[350px] p-4 flex flex-col min-h-0">
+        <div className="w-full @[920px]:w-[320px] p-3 sm:p-4 flex flex-col min-h-0 shrink-0">
           <div className="w-full h-full flex-1 rounded-xl bg-white dark:bg-card border border-border/50 shadow-xs p-3.5 flex flex-col justify-center overflow-y-auto custom-scrollbar">
             <DatePicker
               mode="inline"
@@ -224,7 +224,7 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
         </div>
 
         {/* Column 2: Events List */}
-        <div className="flex-1 p-4 flex flex-col gap-3 min-h-0 overflow-hidden lg:border-x border-border/30">
+        <div className="flex-1 p-3 sm:p-4 flex flex-col gap-3 min-h-0 overflow-hidden @[920px]:border-x border-border/30">
           {/* Annual Events Search Bar */}
           <div className="relative w-full shrink-0">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2" />
@@ -469,7 +469,7 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
         </div>
 
         {/* Column 3: New Event Only */}
-        <div className="w-full lg:w-[280px] p-4 flex flex-col min-h-0">
+        <div className="w-full @[920px]:w-[280px] p-3 sm:p-4 flex flex-col min-h-0 shrink-0">
           <div className="w-full h-full flex-1 rounded-xl bg-white dark:bg-card border border-border/50 shadow-xs p-4 flex flex-col justify-between overflow-y-auto custom-scrollbar">
             {/* Header */}
             <div className="flex items-center gap-2 pb-3 border-b border-border/30 shrink-0">

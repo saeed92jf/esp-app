@@ -52,12 +52,12 @@ export function AdminSidebar({
           "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none",
           "absolute md:relative start-0 top-0",
           sidebarOpen
-            ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
-            : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
+            ? "w-64 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
+            : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[64px] md:px-0 md:py-6"
         )}
       >
         <TooltipProvider>
-          <nav className="flex flex-col gap-2.5 w-full items-start">
+          <nav className={cn("flex flex-col gap-2.5 w-full", sidebarOpen ? "items-start ps-3 sm:ps-6" : "items-center px-0")}>
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;

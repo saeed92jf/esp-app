@@ -74,67 +74,71 @@ export function CalendarWidget({ events }: { events: CalendarEvent[] }) {
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 gap-4 w-full fa-num">
+    <div className="flex flex-col h-full min-h-0 bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 gap-3 w-full fa-num @container">
       {/* Header */}
-      <div className="flex items-center gap-2 px-1">
+      <div className="flex items-center gap-2 px-1 shrink-0 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <CalendarIcon className="size-5 text-primary" />
         </div>
         <h3 className="font-semibold text-base text-foreground/80">{t("title")}</h3>
       </div>
 
-      {/* Inline Calendar */}
-      <div className="bg-white dark:bg-card rounded-2xl border border-border/40 p-2.5 relative shadow-xs">
-        <DatePicker
-          mode="inline"
-          value={selectedDate}
-          onChange={(d) => setSelectedDate(d)}
-          getEventColors={getEventColors}
-        />
-      </div>
-
-      {/* Events list */}
-      <div className="flex flex-col gap-2 px-2 mb-1">
-        <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">
-          {t("eventsCount", { count: filteredEvents.length })}
-        </span>
-      </div>
-      
-      {filteredEvents.length > 0 ? (
-        <ul className="segmented-list padded-ends flex-1 min-h-[150px] overflow-y-auto pe-1 custom-scrollbar">
-          {filteredEvents.map((event) => {
-            const typeKey = event.type as keyof typeof TYPE_ICONS;
-            const Icon = (TYPE_ICONS[typeKey] || CalendarIcon) as any;
-            const colorClass = TYPE_COLORS[typeKey] || "";
-
-            return (
-              <li 
-                key={event.id} 
-                className="segmented-item flex items-start justify-between gap-3 p-2.5 border-none bg-background cursor-pointer group relative"
-              >
-                <div className="flex items-start gap-2.5 min-w-0 w-full">
-                  <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", colorClass)}>
-                    <Icon className="size-4" />
-                  </div>
-                  <div className="flex flex-col min-w-0 w-full">
-                    <span className="text-[13px] font-normal text-foreground/80 leading-tight whitespace-normal break-words pr-2">
-                      {event.title}
-                    </span>
-                    <span className="text-[11px] font-medium opacity-80 mt-0.5">
-                      {event.date}
-                    </span>
-                  </div>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-70">
-          <CalendarIcon className="size-10 mb-2 opacity-20" />
-          <p className="text-sm font-medium">{t("empty")}</p>
+      <div className="flex flex-col @[520px]:flex-row flex-1 gap-3 overflow-y-auto custom-scrollbar min-h-0">
+        {/* Inline Calendar */}
+        <div className="bg-white dark:bg-card rounded-2xl border border-border/40 p-2.5 relative shadow-2xs shrink-0 @[520px]:w-[280px] flex items-center justify-center">
+          <DatePicker
+            mode="inline"
+            value={selectedDate}
+            onChange={(d) => setSelectedDate(d)}
+            getEventColors={getEventColors}
+          />
         </div>
-      )}
+
+        {/* Events Column */}
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex items-center gap-2 px-1 mb-1.5 shrink-0">
+            <span className="text-[11px] font-semibold text-muted-foreground rtl:text-right">
+              {t("eventsCount", { count: filteredEvents.length })}
+            </span>
+          </div>
+          
+          {filteredEvents.length > 0 ? (
+            <ul className="segmented-list padded-ends flex-1 min-h-[120px] overflow-y-auto pe-1 custom-scrollbar">
+              {filteredEvents.map((event) => {
+                const typeKey = event.type as keyof typeof TYPE_ICONS;
+                const Icon = (TYPE_ICONS[typeKey] || CalendarIcon) as any;
+                const colorClass = TYPE_COLORS[typeKey] || "";
+
+                return (
+                  <li 
+                    key={event.id} 
+                    className="segmented-item flex items-start justify-between gap-3 p-2.5 border-none bg-background cursor-pointer group relative"
+                  >
+                    <div className="flex items-start gap-2.5 min-w-0 w-full">
+                      <div className={cn("mt-0.5 p-1.5 rounded-md shrink-0", colorClass)}>
+                        <Icon className="size-4" />
+                      </div>
+                      <div className="flex flex-col min-w-0 w-full">
+                        <span className="text-[13px] font-normal text-foreground/80 leading-tight whitespace-normal break-words pr-2">
+                          {event.title}
+                        </span>
+                        <span className="text-[11px] font-medium opacity-80 mt-0.5">
+                          {event.date}
+                        </span>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-muted-foreground opacity-70 flex-1">
+              <CalendarIcon className="size-8 mb-2 opacity-20" />
+              <p className="text-xs font-medium">{t("empty")}</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

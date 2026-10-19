@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -54,6 +55,11 @@ export function TaskDetailModal({
   const [explanation, setExplanation] = React.useState(task?.completionExplanation || "");
   const [showEmailModal, setShowEmailModal] = React.useState(false);
   const [isUploading, setIsUploading] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
     if (task) {
@@ -61,7 +67,7 @@ export function TaskDetailModal({
     }
   }, [task]);
 
-  if (!open || !task) return null;
+  if (!open || !task || !mounted) return null;
 
   const isCompleted = task.status === "completed";
 
@@ -147,13 +153,17 @@ export function TaskDetailModal({
     onUpdateTask(updated);
   };
 
-  return (
+  return createPortal(
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs select-none animate-in fade-in duration-150"
+        onClick={() => onOpenChange(false)}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
+          onClick={(e) => e.stopPropagation()}
           className="relative w-full max-w-2xl bg-card border border-border/70 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* ── Modal Header ── */}
@@ -487,6 +497,7 @@ export function TaskDetailModal({
         open={showEmailModal}
         onOpenChange={setShowEmailModal}
       />
-    </>
+    </>,
+    document.body
   );
 }

@@ -118,17 +118,17 @@ export function StatsOverviewWidget({
   };
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 @container min-h-0">
       {/* Header */}
-      <div className="px-4 py-3 flex items-center justify-between w-full">
+      <div className="px-3.5 sm:px-4 py-3 flex items-center justify-between w-full shrink-0 border-b border-border/30 pe-18 sm:pe-20">
         <div className="flex items-center gap-2 flex-wrap pe-12">
           <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
             <BarChart2 className="size-4" />
           </div>
-          <h3 className="font-semibold text-base text-foreground/80">
+          <h3 className="font-semibold text-sm sm:text-base text-foreground/80">
             {t('statsOverview')}
           </h3>
-          <div className="hidden sm:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px] ms-2">
+          <div className="hidden @[500px]:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px] ms-2">
             <span className="text-muted-foreground">{isFa ? 'منبع' : 'Source'}:</span>
             <span className="font-bold flex items-center gap-1">
               <a href="https://finance.yahoo.com" target="_blank" className="text-primary hover:underline">Yahoo Finance</a>
@@ -138,7 +138,7 @@ export function StatsOverviewWidget({
           <button 
             onClick={handleToggleEditing}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-2",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-2 cursor-pointer",
               isEditing 
                 ? "border-primary/40 bg-white dark:bg-card text-primary ring-1 ring-primary/20" 
                 : "border-border/50 bg-white dark:bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -151,8 +151,8 @@ export function StatsOverviewWidget({
       </div>
 
       {/* Grid of Cards */}
-      <div className={cn("flex-1 p-3 @container overflow-y-auto", isEditing ? "bg-muted/10" : "bg-transparent")} dir={isFa ? 'rtl' : 'ltr'}>
-        <div className="grid grid-cols-1 @xs:grid-cols-2 @md:grid-cols-3 @2xl:grid-cols-5 gap-3 relative h-full">
+      <div className={cn("flex-1 p-3 @container overflow-y-auto custom-scrollbar min-h-0", isEditing ? "bg-muted/10" : "bg-transparent")} dir={isFa ? 'rtl' : 'ltr'}>
+        <div className="grid grid-cols-1 @[200px]:grid-cols-2 @[450px]:grid-cols-3 @[700px]:grid-cols-5 gap-3 relative min-h-0">
           <AnimatePresence mode="popLayout">
             {displayStats.map((stat) => {
               const isSelected = statCards.includes(stat.id);

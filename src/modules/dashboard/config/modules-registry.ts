@@ -45,10 +45,10 @@ export const MODULES_REGISTRY: DashboardModuleMeta[] = [
     descEn: "Task board, manager tasks, collaboration and file attachments",
     icon: CheckSquare,
     category: "tasks",
-    minW: 6,
-    minH: 8,
-    defaultW: 12,
-    defaultH: 10,
+    minW: 3,
+    minH: 6,
+    defaultW: 6,
+    defaultH: 9,
   },
   {
     id: "checklist",
@@ -65,8 +65,8 @@ export const MODULES_REGISTRY: DashboardModuleMeta[] = [
   },
   {
     id: "routines",
-    titleFa: "روتین‌های روزانه",
-    titleEn: "Daily Routines",
+    titleFa: "روتین",
+    titleEn: "Routine",
     descFa: "پیگیری روتین‌های روزانه بر اساس ساعات کاری و روزهای متوالی",
     descEn: "Daily work routines, time slots and habit streaks",
     icon: Flame,
@@ -255,40 +255,36 @@ export function getModuleMeta(id: string): DashboardModuleMeta | undefined {
   return MODULE_MAP.get(id);
 }
 
-// ─── Default Configurations Per Tab ──────────────────────────────────────────
+export const DASHBOARD_TABS: TabId[] = [
+  "tasks",
+  "administrative",
+  "market",
+  "custom",
+];
 
 export const DEFAULT_TAB_WIDGETS: Record<TabId, string[]> = {
   tasks: ["tasks", "checklist", "routines"],
-  custom: ["notes", "custom-links", "calendar", "unit-converter"],
   administrative: ["events-manager", "world-clock", "calendar", "custom-links"],
   market: ["commodities", "chart", "stats-overview", "bourse"],
+  custom: ["notes", "custom-links", "calendar", "unit-converter"],
 };
 
 export const DEFAULT_TAB_LAYOUTS: Record<TabId, Record<string, any[]>> = {
   tasks: {
     lg: [
-      { i: "tasks", x: 0, y: 0, w: 12, h: 10, minW: 6, minH: 8 },
-      { i: "checklist", x: 0, y: 10, w: 6, h: 9, minW: 3, minH: 6 },
-      { i: "routines", x: 6, y: 10, w: 6, h: 9, minW: 3, minH: 6 },
-      { i: "notes", x: 0, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "custom-links", x: 6, y: 19, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "activity", x: 0, y: 27, w: 12, h: 8, minW: 4, minH: 6 },
+      { i: "tasks", x: 0, y: 0, w: 6, h: 9, minW: 3, minH: 6 },
+      { i: "checklist", x: 6, y: 0, w: 6, h: 9, minW: 3, minH: 6 },
+      { i: "routines", x: 0, y: 9, w: 6, h: 9, minW: 3, minH: 6 },
     ],
     md: [
-      { i: "tasks", x: 0, y: 0, w: 10, h: 10, minW: 5, minH: 8 },
-      { i: "checklist", x: 0, y: 10, w: 5, h: 9, minW: 3, minH: 6 },
-      { i: "routines", x: 5, y: 10, w: 5, h: 9, minW: 3, minH: 6 },
-      { i: "notes", x: 0, y: 19, w: 5, h: 8, minW: 3, minH: 6 },
-      { i: "custom-links", x: 5, y: 19, w: 5, h: 8, minW: 3, minH: 6 },
-      { i: "activity", x: 0, y: 27, w: 10, h: 8, minW: 4, minH: 6 },
+      { i: "tasks", x: 0, y: 0, w: 5, h: 9, minW: 3, minH: 6 },
+      { i: "checklist", x: 5, y: 0, w: 5, h: 9, minW: 3, minH: 6 },
+      { i: "routines", x: 0, y: 9, w: 5, h: 9, minW: 3, minH: 6 },
     ],
     sm: [
-      { i: "tasks", x: 0, y: 0, w: 6, h: 11, minW: 4, minH: 8 },
-      { i: "checklist", x: 0, y: 11, w: 6, h: 9, minW: 3, minH: 6 },
-      { i: "routines", x: 0, y: 20, w: 6, h: 9, minW: 3, minH: 6 },
-      { i: "notes", x: 0, y: 29, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "custom-links", x: 0, y: 37, w: 6, h: 8, minW: 3, minH: 6 },
-      { i: "activity", x: 0, y: 45, w: 6, h: 8, minW: 3, minH: 6 },
+      { i: "tasks", x: 0, y: 0, w: 6, h: 9, minW: 3, minH: 6 },
+      { i: "checklist", x: 0, y: 9, w: 6, h: 9, minW: 3, minH: 6 },
+      { i: "routines", x: 0, y: 18, w: 6, h: 9, minW: 3, minH: 6 },
     ],
   },
   custom: {

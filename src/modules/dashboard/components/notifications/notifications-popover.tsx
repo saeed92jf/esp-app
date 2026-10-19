@@ -31,9 +31,11 @@ import {
 import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
-import type {
-  DashboardNotificationItem,
-  DashboardTask,
+import {
+  type DashboardNotificationItem,
+  type DashboardTask,
+  SAMPLE_NOTIFICATIONS,
+  SAMPLE_TASKS,
 } from "../../services/dashboard.service";
 import { ManagerEmailModal } from "../tasks/manager-email-modal";
 
@@ -48,7 +50,7 @@ interface NotificationsPopoverProps {
 type NotificationSegment = "all" | "unread";
 
 export function NotificationsPopover({
-  notifications = [],
+  notifications,
   tasks = [],
   triggerClassName,
   iconClassName,
@@ -61,8 +63,10 @@ export function NotificationsPopover({
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSegment, setActiveSegment] =
     useState<NotificationSegment>("all");
-  const [items, setItems] =
-    useState<DashboardNotificationItem[]>(notifications);
+  const [items, setItems] = useState<DashboardNotificationItem[]>(() => {
+    if (notifications && notifications.length > 0) return notifications;
+    return SAMPLE_NOTIFICATIONS;
+  });
   const [selectedTaskForEmail, setSelectedTaskForEmail] =
     useState<DashboardTask | null>(null);
 
@@ -71,7 +75,7 @@ export function NotificationsPopover({
   const dir = locale === "fa" ? "rtl" : "ltr";
 
   useEffect(() => {
-    if (notifications.length > 0) {
+    if (notifications && notifications.length > 0) {
       setItems(notifications);
     }
   }, [notifications]);
@@ -100,10 +104,33 @@ export function NotificationsPopover({
     );
   };
 
-  const handleOpenEmail = (taskId?: string) => {
-    const found = tasks.find((t) => t.id === taskId);
+  const handleOpenEmail = (
+    taskId?: string,
+    notif?: DashboardNotificationItem
+  ) => {
+    const allTasks = tasks && tasks.length > 0 ? tasks : SAMPLE_TASKS;
+    let found = taskId ? allTasks.find((t) => t.id === taskId) : null;
+    if (!found && notif) {
+      found = {
+        id: notif.taskId || notif.id,
+        title: notif.title,
+        description: notif.description,
+        creatorName: notif.emailPreview?.from || "مهندس شریفی (مدیر فنی)",
+        assignedToName: "سعید جلیلی",
+        dueDate: notif.date || "1405/02/10",
+        priority: "urgent",
+        status: "in_progress",
+        category: "کنترل کیفیت",
+        createdBy: "manager",
+        comments: [],
+        attachments: [],
+        isManagerDefined: true,
+        emailSent: true,
+      };
+    }
     if (found) {
       setSelectedTaskForEmail(found);
+      setOpen(false);
     }
   };
 
@@ -134,17 +161,19 @@ export function NotificationsPopover({
                     triggerClassName || HEADER_ICON_BUTTON_CLASS,
                     "relative"
                   )}
-                  aria-label={t("title")}
+                  aria-label={t("tooltip")}
                 >
                   <Bell className={cn(iconClassName || HEADER_ICON_CLASS)} />
                   {unreadCount > 0 && (
-                    <span className="absolute top-2 end-2 size-2 rounded-full bg-foreground ring-2 ring-background animate-pulse" />
+                    <span className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 dark:bg-red-500 text-white text-[10px] font-bold leading-none flex items-center justify-center shadow-xs ring-2 ring-background pointer-events-none fa-num">
+                      {unreadCount > 99 ? "+99" : unreadCount}
+                    </span>
                   )}
                 </Button>
               </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent side="bottom" sideOffset={8}>
-              {t("title")}
+              {t("tooltip")}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -172,7 +201,7 @@ export function NotificationsPopover({
           collisionPadding={12}
           dir={dir}
         >
-          {/* ── Top Bar: Only Close Button ("بالا فقط ضربدر") with concentric fillet ── */}
+          {/* ── Top Bar: Mini Summary on scroll & concentric Close Button ── */}
           <div
             className={cn(
               "absolute top-0 inset-x-0 z-30 flex items-center h-[46px] sm:h-[50px] transition-colors duration-200 pointer-events-auto rounded-t-[22px] sm:rounded-t-[26px]",
@@ -181,6 +210,40 @@ export function NotificationsPopover({
                 : "bg-popover border-b border-transparent"
             )}
           >
+            {/* Mini Notifications Summary (Centered in header on scroll) */}
+            <div className="absolute inset-0 flex items-center justify-center px-12 pointer-events-none">
+              <div className="flex items-center gap-2 max-w-full">
+                <div
+                  className={cn(
+                    "transition-all duration-300 ease-out shrink-0 flex items-center justify-center",
+                    isScrolled
+                      ? "opacity-100 scale-100 translate-y-0"
+                      : "opacity-0 scale-90 translate-y-2 pointer-events-none"
+                  )}
+                >
+                  <Bell className="size-5 sm:size-5.5 text-primary stroke-[2.75]" />
+                </div>
+                <span
+                  className={cn(
+                    "text-sm font-semibold text-foreground truncate min-w-0 text-center transition-opacity duration-300 ease-out",
+                    isScrolled ? "opacity-100" : "opacity-0 pointer-events-none"
+                  )}
+                >
+                  {t("titleShort")}
+                </span>
+                {unreadCount > 0 && (
+                  <span
+                    className={cn(
+                      "text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-600 dark:bg-red-500 text-white shadow-xs fa-num transition-opacity duration-300 ease-out leading-none",
+                      isScrolled ? "opacity-100" : "opacity-0 pointer-events-none"
+                    )}
+                  >
+                    {unreadCount > 99 ? "+99" : unreadCount}
+                  </span>
+                )}
+              </div>
+            </div>
+
             <button
               type="button"
               onClick={() => setOpen(false)}
@@ -202,7 +265,7 @@ export function NotificationsPopover({
           >
             <div className="flex flex-col w-full p-3 sm:p-4 pt-[50px] sm:pt-[54px]">
               <div className="segmented-list flex flex-col gap-[2px] w-full">
-                {/* ── Main Accordion Trigger (مثل هلپ) ── */}
+                {/* ── Main Accordion Trigger (مثل هلپ با آیکون بولد پرایمری بزرگ و بج قرمز) ── */}
                 <button
                   type="button"
                   onClick={() => setIsExpanded(!isExpanded)}
@@ -215,27 +278,23 @@ export function NotificationsPopover({
                 >
                   <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0">
                     <div className="flex items-center justify-center size-12 sm:size-14 shrink-0 select-none">
-                      <Bell className="size-7 sm:size-8 text-foreground" />
+                      <Bell className="size-10.5 sm:size-12 text-primary stroke-[2.8]" />
                     </div>
                     <div className="flex flex-col items-start gap-0.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 w-full">
                         <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight truncate text-start">
-                          {locale === "fa" ? "نوتیفیکیشن‌ها" : "Notifications"}
+                          {t("titleShort")}
                         </h3>
                         {unreadCount > 0 && (
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-foreground fa-num">
-                            {unreadCount}
+                          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-600 dark:bg-red-500 text-white shadow-xs fa-num flex items-center justify-center leading-none">
+                            {unreadCount > 99 ? "+99" : unreadCount}
                           </span>
                         )}
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground text-start leading-tight truncate w-full">
                         {unreadCount > 0
-                          ? locale === "fa"
-                            ? `${unreadCount} اعلان خوانده‌نشده`
-                            : `${unreadCount} unread`
-                          : locale === "fa"
-                          ? "تمام اعلان‌ها خوانده شده‌اند"
-                          : "All caught up"}
+                          ? t("unreadBadge", { count: unreadCount })
+                          : t("allCaughtUp")}
                       </p>
                     </div>
                   </div>
@@ -270,7 +329,8 @@ export function NotificationsPopover({
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >
-                            <span>{locale === "fa" ? "همه" : "All"}</span>
+                            <span>{t("all")}</span>
+                            <span className="size-1.5 rounded-full bg-primary" />
                             <span className="text-[10px] text-muted-foreground/80 fa-num">
                               ({items.length})
                             </span>
@@ -285,9 +345,9 @@ export function NotificationsPopover({
                                 : "text-muted-foreground hover:text-foreground"
                             )}
                           >
-                            <span>{locale === "fa" ? "خوانده‌نشده" : "Unread"}</span>
+                            <span>{t("unread")}</span>
                             {unreadCount > 0 && (
-                              <span className="size-1.5 rounded-full bg-foreground" />
+                              <span className="size-1.5 rounded-full bg-red-600 dark:bg-red-500" />
                             )}
                             <span className="text-[10px] text-muted-foreground/80 fa-num">
                               ({unreadCount})
@@ -314,21 +374,23 @@ export function NotificationsPopover({
                                 isLast ? "rounded-b-[32px]" : "rounded-b-[6px]"
                               )}
                             >
-                              {/* Restrained monochromatic icon */}
-                              <div className="relative z-10 size-7.5 rounded-lg bg-muted text-foreground flex items-center justify-center shrink-0 mt-0.5 border border-border/40">
-                                {isTask && <Lock className="size-3.5" />}
-                                {isEvent && <Calendar className="size-3.5" />}
-                                {isRoutine && <Flame className="size-3.5" />}
+                              {/* Clean icon without background and larger */}
+                              <div className="relative z-10 shrink-0 flex items-center justify-center size-6 text-muted-foreground group-hover:text-foreground transition-colors mt-0.5">
+                                {isTask && <Lock className="size-5 sm:size-5.5 stroke-[2]" />}
+                                {isEvent && <Calendar className="size-5 sm:size-5.5 stroke-[2]" />}
+                                {isRoutine && <Flame className="size-5 sm:size-5.5 stroke-[2]" />}
                                 {!isTask && !isEvent && !isRoutine && (
-                                  <Bell className="size-3.5" />
+                                  <Bell className="size-5 sm:size-5.5 stroke-[2]" />
                                 )}
                               </div>
 
                               <div className="relative z-10 flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-1.5 mb-1">
                                   <div className="flex items-center gap-1.5 min-w-0">
-                                    {!notif.read && (
-                                      <span className="size-1.5 rounded-full bg-foreground shrink-0" />
+                                    {!notif.read ? (
+                                      <span className="size-1.5 rounded-full bg-red-600 dark:bg-red-500 shrink-0" />
+                                    ) : (
+                                      <CheckCheck className="size-3.5 text-primary shrink-0 stroke-[2.2]" />
                                     )}
                                     <h4
                                       className={cn(
@@ -351,13 +413,13 @@ export function NotificationsPopover({
                                 </p>
 
                                 {/* Action for Manager Task */}
-                                {isTask && notif.taskId && (
+                                {isTask && (
                                   <div className="pt-2">
                                     <button
                                       type="button"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleOpenEmail(notif.taskId);
+                                        handleOpenEmail(notif.taskId, notif);
                                       }}
                                       className="h-6.5 px-2.5 rounded-lg text-[11px] font-semibold bg-muted hover:bg-foreground hover:text-background text-foreground border border-border/50 transition-colors flex items-center gap-1.5 cursor-pointer"
                                     >
@@ -407,8 +469,8 @@ export function NotificationsPopover({
                   {t("markAllRead")}
                 </span>
                 {unreadCount > 0 && (
-                  <span className="relative z-10 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted text-foreground border border-border/60 fa-num">
-                    {unreadCount}
+                  <span className="relative z-10 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-red-600 dark:bg-red-500 text-white shadow-xs fa-num leading-none">
+                    {unreadCount > 99 ? "+99" : unreadCount}
                   </span>
                 )}
               </button>

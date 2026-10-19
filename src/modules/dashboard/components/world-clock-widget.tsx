@@ -64,9 +64,9 @@ export function WorldClockWidget() {
   const selectedClocks = TIMEZONES.filter((tz) => selectedIds.includes(tz.id));
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container min-h-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-1 mb-2">
+      <div className="flex items-center gap-2 px-1 mb-2 shrink-0 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <Globe className="size-5 text-primary" />
         </div>
@@ -87,7 +87,7 @@ export function WorldClockWidget() {
       </div>
 
       {/* Content */}
-      <div className={cn("flex-1 p-3 flex flex-col gap-3", isEditing ? "bg-muted/10" : "bg-transparent")}>
+      <div className={cn("flex-1 p-1 overflow-y-auto custom-scrollbar min-h-0 flex flex-col gap-3", isEditing ? "bg-muted/10 rounded-xl" : "bg-transparent")}>
         <AnimatePresence mode="popLayout">
           {isEditing ? (
             <motion.div
@@ -121,7 +121,7 @@ export function WorldClockWidget() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col sm:flex-row gap-3 h-full items-stretch justify-center"
+              className="grid grid-cols-1 @[260px]:grid-cols-2 @[520px]:grid-cols-4 gap-2.5 h-full items-stretch content-start"
             >
               {selectedClocks.map((clock, idx) => {
                 const formatterTime = new Intl.DateTimeFormat(isFa ? "fa-IR" : "en-US", {
@@ -157,27 +157,27 @@ export function WorldClockWidget() {
                 return (
                   <div
                     key={clock.id}
-                    className="flex-1 w-full bg-background border border-border/40 rounded-xl p-3 sm:p-4 flex flex-col items-center justify-center relative overflow-hidden group shadow-sm"
+                    className="w-full bg-background border border-border/40 rounded-xl p-3 flex flex-col items-center justify-between relative overflow-hidden group shadow-2xs min-h-[140px]"
                   >
-                    <div className="absolute top-2 end-2 text-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-[1px] group-hover:blur-none">
+                    <div className="absolute top-2 end-2 text-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-[1px] group-hover:blur-none select-none">
                       {clock.flag}
                     </div>
                     
-                    <div className="flex flex-col items-center z-10 w-full">
-                      <span className="text-xs font-medium text-primary/80 mb-0.5">
+                    <div className="flex flex-col items-center z-10 w-full my-auto">
+                      <span className="text-xs font-medium text-primary/90 mb-0.5">
                         {isFa ? clock.labelFa : clock.labelEn}
                       </span>
-                      <span className="text-3xl font-bold text-foreground/80 fa-num tracking-tight tabular-nums">
+                      <span className="text-2xl @[180px]:text-3xl font-bold text-foreground/80 fa-num tracking-tight tabular-nums">
                         {formatterTime.format(now)}
                       </span>
-                      <div className="flex flex-col items-center gap-1.5 sm:gap-2 mt-3 bg-muted/30 p-2 sm:px-3 sm:py-2.5 rounded-xl w-full">
-                        <span className="text-xs sm:text-sm text-foreground/90 font-medium fa-num leading-relaxed">
+                      <div className="flex flex-col items-center gap-1 mt-2.5 bg-muted/30 p-2 rounded-xl w-full text-center">
+                        <span className="text-xs text-foreground/90 font-medium fa-num leading-tight">
                           {formatterDateShamsi.format(now)}
                         </span>
-                        <span className="text-[11px] sm:text-xs text-muted-foreground/80 font-medium fa-num leading-relaxed">
+                        <span className="text-[11px] text-muted-foreground/80 font-medium fa-num leading-tight">
                           {formatterDateQamari.format(now)}
                         </span>
-                        <span className="text-[10px] sm:text-[11px] text-muted-foreground/60 font-medium fa-num leading-relaxed">
+                        <span className="text-[10px] text-muted-foreground/60 font-medium fa-num leading-tight">
                           {formatterDateMiladi.format(now)}
                         </span>
                       </div>

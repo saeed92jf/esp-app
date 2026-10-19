@@ -18,8 +18,8 @@ export function SystemStatusWidget() {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative transition-all duration-300 fa-num p-4 sm:p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 fa-num p-4 sm:p-5">
+      <div className="flex items-center justify-between mb-4 pe-18 sm:pe-20">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-primary/10 rounded-xl">
             <Server className="size-5 text-primary" />

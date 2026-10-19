@@ -23,6 +23,7 @@ import { SearchFooter } from "./search-footer";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { HelpPopover } from "@/components/layout/help-popover";
+import { NotificationsPopover } from "@/modules/dashboard/components/notifications/notifications-popover";
 import { AppsPopover } from "@/components/layout/apps-popover";
 import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
@@ -168,6 +169,10 @@ export function SearchResultsClient() {
                 <HelpPopover
                   triggerClassName={HEADER_ICON_BUTTON_CLASS}
                   iconClassName={HEADER_ICON_CLASS}
+                />
+                <NotificationsPopover
+                  triggerClassName={HEADER_ICON_BUTTON_CLASS}
+                  iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
                 />
                 <AppsPopover
                   triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden sm:inline-flex")}

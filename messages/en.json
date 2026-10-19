@@ -75,9 +75,18 @@
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
     "help": "Help",
+    "notifications": "Messages",
     "apps": "Apps",
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "tags": {
+      "dashboard": "Dashboard",
+      "account": "Account",
+      "admin": "Admin",
+      "settings": "Settings",
+      "profile": "Profile",
+      "search": "Search"
+    }
   },
   "Home": {
     "meta": {
@@ -561,9 +570,9 @@
     "themeSettings": "Theme Settings",
     "tabs": {
       "tasks": "Tasks",
-      "custom": "Custom",
       "administrative": "Admin",
-      "market": "Market"
+      "market": "Market",
+      "custom": "Personal"
     },
     "chartTitle": "6-month trend",
     "chartSubtitle": "Based on sample data",
@@ -643,6 +652,54 @@
       "hidden": "Hidden:",
       "resetDashboard": "Reset Dashboard",
       "reset": "Reset"
+    },
+    "widget": {
+      "hide": "Hide from this tab",
+      "drag": "Move and rearrange"
+    },
+    "routines": {
+      "title": "Routine",
+      "subtitle": "Habit streaks and weekly tracking",
+      "addRoutine": "New",
+      "cancel": "Cancel",
+      "todayProgress": "Today's Progress",
+      "weekProgress": "Week's Progress",
+      "all": "All",
+      "morning": "Morning",
+      "midday": "Workday",
+      "evening": "End of Day",
+      "routinePlaceholder": "Routine title (e.g. Reading, Gym...)",
+      "save": "Save Routine",
+      "delete": "Delete",
+      "empty": "No routines defined yet",
+      "emptyWeek": "No routines defined for this week",
+      "addForThisWeek": "Add Routine",
+      "copyFromPrevWeek": "Copy from Last Week",
+      "forWeek": "For Week",
+      "streakDays": "days streak",
+      "prevWeek": "Previous Week",
+      "nextWeek": "Next Week",
+      "thisWeek": "This Week",
+      "activities": "Activities",
+      "highlight": "Highlight",
+      "color": "Color",
+      "jalali": "Solar",
+      "gregorian": "Gregorian",
+      "week": "Week",
+      "selectWeek": "Select Week",
+      "scope": "Time Scope",
+      "scopeThisWeek": "This Week",
+      "scopeMonth": "Whole Month",
+      "scopeYear": "Whole Year",
+      "scopeCustom": "Specific Weeks",
+      "monthWeeks": "Weeks of this Month",
+      "allYearWeeks": "All Year Weeks",
+      "evenWeeks": "Even",
+      "oddWeeks": "Odd",
+      "selectAll": "All",
+      "clearAll": "Clear",
+      "weekNumber": "Week {number}",
+      "selectedWeeksCount": "{count} weeks selected"
     },
     "header": {
       "closeMenu": "Close menu",
@@ -734,7 +791,49 @@
       "noPinnedTools": "No tools pinned to sidebar",
       "moveToTargetTab": "Move to Tab",
       "activeTabStats": "Active Tab Modules",
-      "allCatalogStats": "Total System Modules"
+      "allCatalogStats": "Total System Modules",
+      "editTabModules": "Manage Tab Modules",
+      "tasksTabFixedTooltip": "Tasks tab is fixed and non-editable",
+      "tasksTabLockedNotice": "This tab is fixed by default and only contains the Tasks Workspace.",
+      "tabModulesManager": "Tab Modules Manager"
+    },
+    "notifications": {
+      "title": "Messages & Notifications",
+      "titleShort": "Messages",
+      "tooltip": "Messages",
+      "close": "Close",
+      "all": "All",
+      "unread": "Unread",
+      "allCaughtUp": "All caught up",
+      "unreadBadge": "{count} new unread messages",
+      "markAllRead": "Mark all as read",
+      "empty": "No notifications",
+      "viewEmailPreview": "View Email Preview"
+    },
+    "tasks": {
+      "emailModal": {
+        "title": "Corporate Email Preview",
+        "subtitle": "Euroslot Pars Notification System",
+        "from": "From",
+        "to": "To",
+        "subject": "Subject",
+        "subjectPrefix": "New Corporate Task:",
+        "salutation": "Dear {name},",
+        "bodyNotice": "A new corporate task was assigned to you by {manager}. Details are provided below:",
+        "due": "Due Date",
+        "bodyFooter": "Please access your Task Workspace in the dashboard to review attached files, communicate, or update status.",
+        "copyEmail": "Copy Email",
+        "copied": "Copied",
+        "close": "Close"
+      },
+      "modal": {
+        "tabDetails": "Details",
+        "tabComments": "Comments",
+        "tabFiles": "Files",
+        "taskCategory": "Category",
+        "noFiles": "No files attached",
+        "close": "Close"
+      }
     }
   },
   "Account": {

@@ -57,10 +57,10 @@
     "selectStats": "انتخاب کارت‌ها",
     "greeting": "خوش آمدید، {name}",
     "tabs": {
-      "tasks": "وظایف",
-      "custom": "کاستوم",
+      "tasks": "تسک",
       "administrative": "اداری",
-      "market": "بازار"
+      "market": "مارکت",
+      "custom": "شخصی"
     },
     "chartTitle": "روند ۶ ماهه",
     "chartSubtitle": "بر اساس داده‌های نمونه",
@@ -501,20 +501,48 @@
       }
     },
     "routines": {
-      "title": "روتین‌های روزانه",
-      "subtitle": "زنجیره عادات و نظم کاری روزانه",
-      "addRoutine": "روتین جدید",
+      "title": "روتین",
+      "subtitle": "زنجیره عادات و پیگیری روزهای هفته",
+      "addRoutine": "جدید",
       "cancel": "انصراف",
-      "todayProgress": "پیشرفت روتین‌های امروز",
+      "todayProgress": "پیشرفت امروز",
+      "weekProgress": "پیشرفت هفته",
       "all": "همه",
       "morning": "صبحگاهی",
       "midday": "کاری/ظهر",
       "evening": "پایان روز",
-      "routinePlaceholder": "عنوان روتین روزانه...",
+      "routinePlaceholder": "عنوان روتین (مثلاً کتاب، ورزش...)",
       "save": "ثبت روتین",
       "delete": "حذف",
-      "empty": "روتینی تعریف نشده است",
-      "streakDays": "روز پیاپی"
+      "empty": "هیچ روتینی ثبت نشده است",
+      "emptyWeek": "هیچ روتینی برای این هفته تعریف نشده است",
+      "addForThisWeek": "تعریف روتین",
+      "copyFromPrevWeek": "کپی از هفته قبل",
+      "forWeek": "برای هفته",
+      "streakDays": "روز پیاپی",
+      "prevWeek": "هفته قبل",
+      "nextWeek": "هفته بعد",
+      "thisWeek": "این هفته",
+      "activities": "فعالیت‌ها",
+      "highlight": "نشانگر ویژه",
+      "color": "رنگ",
+      "jalali": "شمسی",
+      "gregorian": "میلادی",
+      "week": "هفته",
+      "selectWeek": "انتخاب هفته",
+      "scope": "دوره زمانی",
+      "scopeThisWeek": "این هفته",
+      "scopeMonth": "کل ماه",
+      "scopeYear": "کل سال",
+      "scopeCustom": "هفته‌های خاص",
+      "monthWeeks": "هفته‌های این ماه",
+      "allYearWeeks": "تمام هفته‌های سال",
+      "evenWeeks": "زوج",
+      "oddWeeks": "فرد",
+      "selectAll": "همه",
+      "clearAll": "پاک",
+      "weekNumber": "هفته {number}",
+      "selectedWeeksCount": "{count} هفته انتخاب شد"
     },
     "notes": {
       "title": "یادداشت‌ها",
@@ -591,18 +619,34 @@
     },
     "notifications": {
       "title": "نوتیفیکیشن‌های روزانه",
+      "titleShort": "نوتیفیکیشن‌ها",
+      "tooltip": "پیام‌ها",
       "subtitle": "رخدادهای مهم امروز و ابلاغ‌های مدیر",
+      "unreadBadge": "{count} اعلان خوانده‌نشده",
+      "allCaughtUp": "تمام اعلان‌ها خوانده شده‌اند",
+      "all": "همه",
+      "unread": "خوانده‌نشده",
       "markAllRead": "خواندن همه",
       "viewEmailPreview": "مشاهده ایمیل ابلاغ",
       "empty": "هیچ اعلان جدیدی وجود ندارد",
       "close": "بستن"
     },
     "slideCustomizer": {
-      "title": "سفارشی‌سازی منوی اسلایدی",
-      "subtitle": "انتخاب آیکون‌های دسترسی سریع در سایدبار",
+      "title": "تنظیمات سایدبار اسلایدی",
+      "subtitle": "مدیریت، مرتب‌سازی و افزودن ابزارها به سایدبار کنار",
+      "simpleTitle": "تنظیمات اسلاید",
+      "simpleSubtitle": "مدیریت و چینش آیکون‌های سایدبار",
+      "activeItemsTitle": "ابزارهای فعال در سایدبار (به ترتیب نمایش):",
+      "availableItemsTitle": "افزودن ابزار جدید به سایدبار:",
+      "moveUp": "انتقال به بالا",
+      "moveDown": "انتقال به پایین",
+      "removeFromRail": "حذف از سایدبار",
+      "addToRail": "افزودن به سایدبار",
       "reset": "پیش‌فرض",
+      "done": "ذخیره و بستن",
       "save": "ذخیره",
       "items": {
+        "tasks": "تسک‌ها و پروژه‌ها",
         "checklist": "چک‌لیست وظایف",
         "routines": "روتین‌های روزانه",
         "notes": "یادداشت‌ها",
@@ -615,7 +659,8 @@
         "worldClock": "ساعت جهانی",
         "events": "رویدادها",
         "bourse": "بورس",
-        "tools": "ابزار مهندسی"
+        "tools": "ابزار مهندسی",
+        "projects": "مدیریت پروژه‌ها"
       }
     },
     "controlHub": {
@@ -718,7 +763,11 @@
       "noPinnedTools": "هیچ ابزاری در سایدبار پین نشده است",
       "moveToTargetTab": "انتقال به تب",
       "activeTabStats": "ماژول‌های تب فعلی",
-      "allCatalogStats": "کل ماژول‌های سامانه"
+      "allCatalogStats": "کل ماژول‌های سامانه",
+      "editTabModules": "تنظیمات ماژول‌های تب",
+      "tasksTabFixedTooltip": "تب تسک پیش‌فرض و غیرقابل ویرایش است",
+      "tasksTabLockedNotice": "این تب پیش‌فرض سامانه است و فقط شامل ماژول مدیریت تسک‌ها می‌باشد.",
+      "tabModulesManager": "مدیریت ماژول‌های تب‌ها"
     }
   }
 }

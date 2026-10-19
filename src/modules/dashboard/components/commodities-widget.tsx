@@ -79,25 +79,25 @@ export function CommoditiesWidget() {
   })();
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 overflow-hidden relative">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative @container min-h-0">
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div className="px-4 pt-4 pb-3 border-b border-border/50 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <div className="px-3.5 sm:px-4 pt-3.5 sm:pt-4 pb-3 border-b border-border/50 flex flex-col gap-3 shrink-0">
+        <div className="flex items-center justify-between pe-18 sm:pe-20">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
                 <Activity className="size-4" />
               </div>
-              <h3 className="font-semibold text-base text-foreground/80">
+              <h3 className="font-semibold text-sm sm:text-base text-foreground/80">
                 {t('title')}
-                <span className="text-xs font-normal text-muted-foreground ms-1 hidden lg:inline-block">
+                <span className="text-xs font-normal text-muted-foreground ms-1 hidden @[520px]:inline-block">
                   ({formattedDate})
                 </span>
               </h3>
             </div>
 
             {/* Source label */}
-            <div className="hidden sm:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px]">
+            <div className="hidden @[460px]:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px]">
               <span className="text-muted-foreground">{t('source')}:</span>
               <span className="font-bold flex items-center gap-1">
                 {activeCategory === 'crypto' ? (

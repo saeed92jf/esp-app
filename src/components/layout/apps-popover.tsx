@@ -122,11 +122,11 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
         side="bottom"
         sideOffset={0}
         collisionPadding={12}
-        className="w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
+        className="w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] h-[440px] sm:h-[460px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
       >
         <ScrollArea className="w-full flex-1 min-h-0 apps-radix-scroll" dir={dir} type="auto">
           <div className="p-3">
-            <div className="bg-white dark:bg-black rounded-[20px] p-4 mb-3 border border-border/40">
+            <div className="bg-white dark:bg-card rounded-[20px] p-4 mb-3 border border-border/40">
               <div className="flex items-center justify-between mb-4 px-2">
                 <h3 className="font-semibold text-base sm:text-lg text-foreground">{t("popular")}</h3>
               {editMode ? (

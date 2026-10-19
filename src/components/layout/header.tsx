@@ -19,6 +19,8 @@ import {
 import { AppHeader } from "@/components/layout/app-header";
 import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
 import { HelpPopover } from "@/components/layout/help-popover";
+import { NotificationsPopover } from "@/modules/dashboard/components/notifications/notifications-popover";
+import { AppsPopover } from "@/components/layout/apps-popover";
 import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import { SideMenu } from "@/components/layout/side-menu";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
@@ -38,6 +40,14 @@ export function Header() {
         <>
           <HelpPopover 
             triggerClassName={HEADER_ICON_BUTTON_CLASS}
+            iconClassName={HEADER_ICON_CLASS}
+          />
+          <NotificationsPopover
+            triggerClassName={HEADER_ICON_BUTTON_CLASS}
+            iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+          />
+          <AppsPopover
+            triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden xs:inline-flex")}
             iconClassName={HEADER_ICON_CLASS}
           />
           <DashboardAvatar />

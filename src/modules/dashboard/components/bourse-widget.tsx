@@ -47,28 +47,28 @@ export function BourseWidget() {
   }, [fetchBourse]);
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl shadow-sm border border-border/40 overflow-hidden relative">
-      <div className="flex items-center justify-between p-4 border-b border-border/30 bg-muted/10 shrink-0">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative @container min-h-0">
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border/30 bg-muted/10 shrink-0 pe-18 sm:pe-20">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-primary/10 rounded-xl">
             <Briefcase className="size-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-base text-foreground/80">{t("title")}</h3>
-            <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
+            <h3 className="font-semibold text-sm sm:text-base text-foreground/80">{t("title")}</h3>
+            <p className="text-[11px] text-muted-foreground">{t("subtitle")}</p>
           </div>
         </div>
         <button
           onClick={() => fetchBourse(true)}
           disabled={refreshing || loading}
-          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground disabled:opacity-50"
+          className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground disabled:opacity-50 cursor-pointer"
           title={t("refresh")}
         >
           <RefreshCw className={cn("size-4", refreshing && "animate-spin")} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 custom-scrollbar min-h-0">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <RefreshCw className="size-6 animate-spin text-muted-foreground/50" />
@@ -83,7 +83,7 @@ export function BourseWidget() {
             <span className="text-sm">{t("noData")}</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 @xl:grid-cols-2 gap-3 pb-2">
+          <div className="grid grid-cols-1 @[380px]:grid-cols-2 gap-2.5 pb-2">
             <AnimatePresence>
               {items.map((item) => (
                 <motion.div

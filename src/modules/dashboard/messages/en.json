@@ -58,9 +58,9 @@
     "greeting": "Welcome, {name}",
     "tabs": {
       "tasks": "Tasks",
-      "custom": "Custom",
       "administrative": "Admin",
-      "market": "Market"
+      "market": "Market",
+      "custom": "Personal"
     },
     "chartTitle": "6-month trend",
     "chartSubtitle": "Based on sample data",
@@ -501,20 +501,48 @@
       }
     },
     "routines": {
-      "title": "Daily Routines",
-      "subtitle": "Workday habits and consistency tracker",
-      "addRoutine": "New Routine",
+      "title": "Routine",
+      "subtitle": "Habit streaks and weekly tracking",
+      "addRoutine": "New",
       "cancel": "Cancel",
-      "todayProgress": "Today's Routines Progress",
+      "todayProgress": "Today's Progress",
+      "weekProgress": "Week's Progress",
       "all": "All",
       "morning": "Morning",
       "midday": "Workday",
       "evening": "End of Day",
-      "routinePlaceholder": "Routine title...",
+      "routinePlaceholder": "Routine title (e.g. Reading, Gym...)",
       "save": "Save Routine",
       "delete": "Delete",
       "empty": "No routines defined yet",
-      "streakDays": "days streak"
+      "emptyWeek": "No routines defined for this week",
+      "addForThisWeek": "Add Routine",
+      "copyFromPrevWeek": "Copy from Last Week",
+      "forWeek": "For Week",
+      "streakDays": "days streak",
+      "prevWeek": "Previous Week",
+      "nextWeek": "Next Week",
+      "thisWeek": "This Week",
+      "activities": "Activities",
+      "highlight": "Highlight",
+      "color": "Color",
+      "jalali": "Solar",
+      "gregorian": "Gregorian",
+      "week": "Week",
+      "selectWeek": "Select Week",
+      "scope": "Time Scope",
+      "scopeThisWeek": "This Week",
+      "scopeMonth": "Whole Month",
+      "scopeYear": "Whole Year",
+      "scopeCustom": "Specific Weeks",
+      "monthWeeks": "Weeks of this Month",
+      "allYearWeeks": "All Year Weeks",
+      "evenWeeks": "Even",
+      "oddWeeks": "Odd",
+      "selectAll": "All",
+      "clearAll": "Clear",
+      "weekNumber": "Week {number}",
+      "selectedWeeksCount": "{count} weeks selected"
     },
     "notes": {
       "title": "Quick Notes",
@@ -591,18 +619,34 @@
     },
     "notifications": {
       "title": "Daily Notifications",
+      "titleShort": "Notifications",
+      "tooltip": "Messages",
       "subtitle": "Today's critical events & manager tasks",
+      "unreadBadge": "{count} unread",
+      "allCaughtUp": "All caught up",
+      "all": "All",
+      "unread": "Unread",
       "markAllRead": "Mark All as Read",
       "viewEmailPreview": "View Email Preview",
       "empty": "No new notifications",
       "close": "Close"
     },
     "slideCustomizer": {
-      "title": "Customize Slide Menu",
-      "subtitle": "Select quick-access tools in sidebar",
+      "title": "Slide Rail Settings",
+      "subtitle": "Manage, reorder and add tools to the side rail",
+      "simpleTitle": "Slide Settings",
+      "simpleSubtitle": "Sidebar icons visibility and order",
+      "activeItemsTitle": "Active Slide Rail Tools (in order):",
+      "availableItemsTitle": "Add Tool to Slide Rail:",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
+      "removeFromRail": "Remove from Rail",
+      "addToRail": "Add to Rail",
       "reset": "Default",
+      "done": "Save & Close",
       "save": "Save",
       "items": {
+        "tasks": "Tasks & Projects",
         "checklist": "Checklist",
         "routines": "Daily Routines",
         "notes": "Notes",
@@ -615,7 +659,8 @@
         "worldClock": "World Clock",
         "events": "Events",
         "bourse": "Bourse",
-        "tools": "Eng Tools"
+        "tools": "Eng Tools",
+        "projects": "Project Management"
       }
     },
     "controlHub": {
@@ -718,7 +763,11 @@
       "noPinnedTools": "No tools pinned to sidebar",
       "moveToTargetTab": "Move to Tab",
       "activeTabStats": "Active Tab Modules",
-      "allCatalogStats": "Total System Modules"
+      "allCatalogStats": "Total System Modules",
+      "editTabModules": "Manage Tab Modules",
+      "tasksTabFixedTooltip": "Tasks tab is fixed and non-editable",
+      "tasksTabLockedNotice": "This tab is fixed by default and only contains the Tasks Workspace.",
+      "tabModulesManager": "Tab Modules Manager"
     }
   }
 }

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "../../auth/hooks/use-auth";
 import { useDashboard } from "../hooks/use-dashboard";
 import { useDashboardLayout } from "../hooks/use-dashboard-layout";
-import { TabId, getModuleMeta } from "../config/modules-registry";
+import { TabId, getModuleMeta, DASHBOARD_TABS } from "../config/modules-registry";
 
 import { StatsOverviewWidget } from "./stats-overview-widget";
 import { MiniChart } from "./mini-chart";
@@ -32,29 +32,27 @@ import { EventsManagerWidget } from "./events-manager-widget";
 import { BourseWidget } from "./bourse-widget";
 
 // Unified feature components
-import { TasksWorkspace } from "./tasks/tasks-workspace";
+import { TaskWidget } from "@/modules/tasks/components/task-widget";
 import { PeriodicChecklistWidget } from "./tasks/periodic-checklist-widget";
 import { DailyRoutinesWidget } from "./tasks/daily-routines-widget";
 import { NotesWidget } from "./notes/notes-widget";
 import { CustomLinksWidget } from "./links/custom-links-widget";
-import { DashboardControlHubModal } from "./control-hub/dashboard-control-hub-modal";
 import { DashboardSchematicStudioModal } from "./schematic/dashboard-schematic-studio-modal";
 import {
-  SlideMenuCustomizerModal,
   ALL_SLIDE_ITEMS,
   DEFAULT_SLIDE_ITEMS,
 } from "./slide-menu/slide-menu-customizer-modal";
+import { SlideSettingsDrawer } from "./slide-menu/slide-settings-drawer";
+import { ProjectsSlideWidget } from "@/modules/projects/components/slide-drawer/projects-slide-widget";
 
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import {
-  Plus,
   SlidersHorizontal,
-  LayoutGrid,
   X,
+  Lock,
   LayoutDashboard,
-  Calendar as CalendarIcon,
 } from "lucide-react";
 import {
   Tooltip,
@@ -66,6 +64,27 @@ import {
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const SLIDE_STORAGE_KEY = "dashboard_slide_rail_items_v4";
+
+const CustomResizeHandle = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      {...props}
+      className={cn(
+        "react-resizable-handle react-resizable-handle-se",
+        "absolute bottom-2.5 right-2.5 z-40 flex items-center justify-center size-5 cursor-se-resize select-none",
+        className
+      )}
+      title="تغییر اندازه"
+    >
+      <span className="size-2 rounded-full bg-muted-foreground/45 hover:bg-primary hover:scale-125 transition-all duration-150 shadow-2xs pointer-events-none" />
+    </div>
+  );
+});
+CustomResizeHandle.displayName = "CustomResizeHandle";
 
 export function Dashboard() {
   const t = useTranslations("Dashboard");
@@ -84,8 +103,6 @@ export function Dashboard() {
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   // Modals state
-  const [isSlideCustomizerOpen, setIsSlideCustomizerOpen] = React.useState(false);
-  const [isControlHubOpen, setIsControlHubOpen] = React.useState(false);
   const [isSchematicOpen, setIsSchematicOpen] = React.useState(false);
 
   // Slide rail items (customizable per user)
@@ -100,9 +117,12 @@ export function Dashboard() {
   });
 
   React.useEffect(() => {
-    try {
-      localStorage.setItem(SLIDE_STORAGE_KEY, JSON.stringify(slideRailItems));
-    } catch {}
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(SLIDE_STORAGE_KEY, JSON.stringify(slideRailItems));
+      } catch {}
+    }, 250);
+    return () => clearTimeout(timer);
   }, [slideRailItems]);
 
   const handleToggleSlideRailItem = (id: string) => {
@@ -169,89 +189,84 @@ export function Dashboard() {
     switch (id) {
       case "tasks":
         return (
-          <div className="h-full">
-            <TasksWorkspace
-              initialTasks={data.tasks}
-              initialChecklist={data.detailedChecklist}
-              initialRoutines={data.routines}
-              hideSideWidgets={true}
-            />
+          <div className="h-full min-h-0 fa-num">
+            <TaskWidget />
           </div>
         );
 
       case "checklist":
         return (
-          <div className="h-full fa-num">
+          <div className="h-full min-h-0 fa-num">
             <PeriodicChecklistWidget initialItems={data.detailedChecklist} />
           </div>
         );
 
       case "routines":
         return (
-          <div className="h-full fa-num">
+          <div className="h-full min-h-0 fa-num">
             <DailyRoutinesWidget initialRoutines={data.routines} />
           </div>
         );
 
       case "notes":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <NotesWidget initialNotes={data.notes} />
           </div>
         );
 
       case "custom-links":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <CustomLinksWidget initialLinks={data.customLinks} />
           </div>
         );
 
       case "calendar":
         return (
-          <div className="h-full fa-num">
+          <div className="h-full min-h-0 fa-num">
             <CalendarWidget events={data.calendarEvents} />
           </div>
         );
 
       case "unit-converter":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <UnitConverterWidget />
           </div>
         );
 
       case "events-manager":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <EventsManagerWidget events={data.calendarEvents} />
           </div>
         );
 
       case "commodities":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <CommoditiesWidget />
           </div>
         );
 
       case "chart":
         return (
-          <div className="fa-num h-full">
+          <div className="fa-num h-full min-h-0">
             <MiniChart data={data.chart} />
           </div>
         );
 
       case "world-clock":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <WorldClockWidget />
           </div>
         );
 
       case "stats-overview":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <StatsOverviewWidget
               stats={data.stats}
               allStats={data.allStats || data.stats}
@@ -261,28 +276,28 @@ export function Dashboard() {
 
       case "bourse":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <BourseWidget />
           </div>
         );
 
       case "engineering-tools":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <EngineeringToolsWidget locale={locale} />
           </div>
         );
 
       case "sources":
         return (
-          <div className="h-full">
+          <div className="h-full min-h-0">
             <SourcesWidget locale={locale} />
           </div>
         );
 
       case "activity":
         return (
-          <div className="h-full fa-num">
+          <div className="h-full min-h-0 fa-num">
             <ActivityFeed items={data.activities} />
           </div>
         );
@@ -296,6 +311,18 @@ export function Dashboard() {
   const renderSlideDrawerContent = (tabId: string) => {
     if (!data) return null;
     switch (tabId) {
+      case "projects":
+        return (
+          <div className="h-full fa-num">
+            <ProjectsSlideWidget />
+          </div>
+        );
+      case "tasks":
+        return (
+          <div className="h-full fa-num">
+            <TaskWidget />
+          </div>
+        );
       case "checklist":
         return (
           <div className="h-full fa-num">
@@ -305,7 +332,7 @@ export function Dashboard() {
       case "routines":
         return (
           <div className="h-full fa-num">
-            <DailyRoutinesWidget initialRoutines={data.routines} />
+            <DailyRoutinesWidget initialRoutines={data.routines} isCompact />
           </div>
         );
       case "notes":
@@ -376,16 +403,13 @@ export function Dashboard() {
             <EngineeringToolsWidget locale={locale} />
           </div>
         );
-      case "tasks":
+
+      case "slide-settings":
         return (
-          <div className="h-full">
-            <TasksWorkspace
-              initialTasks={data.tasks}
-              initialChecklist={data.detailedChecklist}
-              initialRoutines={data.routines}
-              hideSideWidgets={true}
-            />
-          </div>
+          <SlideSettingsDrawer
+            slideRailItems={slideRailItems}
+            onChangeSlideRailItems={setSlideRailItems}
+          />
         );
       default:
         return (
@@ -416,14 +440,6 @@ export function Dashboard() {
         notifications={data?.notifications}
         tasks={data?.tasks}
         unreadNotificationsCount={unreadCount}
-        currentTab={dashboardTab}
-        onChangeTab={handleTabChange}
-        tabWidgets={tabWidgets}
-        onToggleWidgetInTab={toggleWidgetInTab}
-        slideRailItems={slideRailItems}
-        onToggleSlideRailItem={handleToggleSlideRailItem}
-        onResetCurrentTab={resetTab}
-        onOpenSettings={() => setIsSchematicOpen(true)}
       />
 
       {loading ? (
@@ -469,8 +485,47 @@ export function Dashboard() {
           <div className="flex-shrink-0 flex h-full z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent">
             {/* ── Side Rail (Icons) with Independent Scrolling ── */}
             <TooltipProvider>
-              <div className="w-[58px] sm:w-[90px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20">
-                {/* Scrollable Icon List */}
+              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20">
+                {/* 1. Slide Rail Settings Button (FIRST ICON AT TOP) */}
+                <div className="shrink-0 pb-2.5 mb-1.5 border-b border-border/20 w-full flex items-center justify-center">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        onClick={() => handleRailTabClick("slide-settings")}
+                        className={cn(
+                          "relative rounded-full transition-colors duration-150 size-[34px] sm:size-[42px] flex items-center justify-center outline-none cursor-pointer select-none shrink-0",
+                          linksSidebarOpen && toolsTab === "slide-settings"
+                            ? "text-primary-foreground"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/40 hover:border-border/80"
+                        )}
+                        aria-label={t("slideCustomizer.title")}
+                      >
+                        {linksSidebarOpen && toolsTab === "slide-settings" && (
+                          <motion.div
+                            layoutId="active-tool-tab"
+                            className="absolute inset-0 bg-primary shadow-xs rounded-full"
+                            transition={{
+                              type: "spring",
+                              stiffness: 520,
+                              damping: 32,
+                              mass: 0.5,
+                            }}
+                          />
+                        )}
+                        <SlidersHorizontal className="size-4 sm:size-4.5 relative z-10 transition-transform duration-150 active:scale-95" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side={locale === "fa" ? "left" : "right"}
+                      className="text-xs font-medium"
+                    >
+                      {t("slideCustomizer.title")}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+
+                {/* 2. Scrollable Icon List */}
                 <div className="flex-1 w-full overflow-y-auto custom-scrollbar flex flex-col items-center gap-2.5 py-1 px-1 min-h-0">
                   {slideRailItems.map((itemId) => {
                     const itemDef = ALL_SLIDE_ITEMS.find((it) => it.id === itemId);
@@ -481,89 +536,58 @@ export function Dashboard() {
                     const itemTitle = t(`slideCustomizer.items.${itemDef.titleKey}`);
 
                     return (
-                      <Tooltip key={itemDef.id}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            onClick={() => handleRailTabClick(itemDef.id)}
-                            className={cn(
-                              "relative rounded-full transition-colors duration-150 size-[34px] sm:size-[42px] flex items-center justify-center outline-none cursor-pointer select-none shrink-0",
-                              isActive
-                                ? "text-primary-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/40 hover:border-border/80"
-                            )}
-                            aria-label={itemTitle}
-                          >
-                            {isActive && (
-                              <motion.div
-                                layoutId="active-tool-tab"
-                                className="absolute inset-0 bg-primary shadow-xs rounded-full"
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 520,
-                                  damping: 32,
-                                  mass: 0.5,
-                                }}
+                      <motion.div
+                        key={itemDef.id}
+                        layout="position"
+                        transition={{
+                          type: "spring",
+                          stiffness: 450,
+                          damping: 32,
+                          mass: 0.75,
+                        }}
+                        className="shrink-0 flex items-center justify-center w-full"
+                      >
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => handleRailTabClick(itemDef.id)}
+                              className={cn(
+                                "relative rounded-full transition-colors duration-150 size-[34px] sm:size-[42px] flex items-center justify-center outline-none cursor-pointer select-none shrink-0",
+                                isActive
+                                  ? "text-primary-foreground"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/40 hover:border-border/80"
+                              )}
+                              aria-label={itemTitle}
+                            >
+                              {isActive && (
+                                <motion.div
+                                  layoutId="active-tool-tab"
+                                  className="absolute inset-0 bg-primary shadow-xs rounded-full"
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 520,
+                                    damping: 32,
+                                    mass: 0.5,
+                                  }}
+                                />
+                              )}
+                              <AppIcon
+                                icon={Icon as any}
+                                className="size-5 relative z-10 transition-transform duration-150 active:scale-95"
                               />
-                            )}
-                            <AppIcon
-                              icon={Icon as any}
-                              className="size-5 relative z-10 transition-transform duration-150 active:scale-95"
-                            />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent
-                          side={tooltipSide}
-                          className="text-xs font-medium"
-                        >
-                          {itemTitle}
-                        </TooltipContent>
-                      </Tooltip>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent
+                            side={tooltipSide}
+                            className="text-xs font-medium"
+                          >
+                            {itemTitle}
+                          </TooltipContent>
+                        </Tooltip>
+                      </motion.div>
                     );
                   })}
-                </div>
-
-                {/* Bottom Pinned Controls */}
-                <div className="shrink-0 pt-2 pb-1 flex flex-col items-center gap-2 w-full border-t border-border/20 mt-1">
-                  {/* Plus button to customize slide rail */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => setIsSlideCustomizerOpen(true)}
-                        className="rounded-full size-[34px] sm:size-[42px] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-dashed border-border/60 hover:border-border transition-colors outline-none cursor-pointer"
-                        aria-label="Customize Slide Menu"
-                      >
-                        <Plus className="size-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side={locale === "fa" ? "left" : "right"}
-                      className="text-xs font-medium"
-                    >
-                      {t("slideCustomizer.title")}
-                    </TooltipContent>
-                  </Tooltip>
-
-                  {/* Master Control Hub & Schematic Studio Shortcut button */}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        onClick={() => setIsSchematicOpen(true)}
-                        className="rounded-full size-[34px] sm:size-[42px] flex items-center justify-center text-primary/80 hover:text-primary hover:bg-primary/10 border border-primary/30 transition-colors outline-none cursor-pointer shadow-2xs"
-                        aria-label={t("schematic.title")}
-                      >
-                        <SlidersHorizontal className="size-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side={locale === "fa" ? "left" : "right"}
-                      className="text-xs font-medium"
-                    >
-                      {t("schematic.title")}
-                    </TooltipContent>
-                  </Tooltip>
                 </div>
               </div>
             </TooltipProvider>
@@ -574,45 +598,25 @@ export function Dashboard() {
               animate={{
                 width: linksSidebarOpen
                   ? typeof window !== "undefined" && window.innerWidth < 640
-                    ? Math.min(340, window.innerWidth - 68)
-                    : 400
+                    ? Math.min(360, window.innerWidth - 56)
+                    : 480
                   : 0,
                 opacity: linksSidebarOpen ? 1 : 0,
               }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden h-full flex flex-col bg-card sm:bg-transparent max-w-[calc(100vw-64px)] z-20"
+              className="overflow-hidden h-full flex flex-col bg-card sm:bg-transparent max-w-[calc(100vw-54px)] z-20"
             >
-              <div className="w-[calc(100vw-68px)] max-w-[400px] sm:w-[400px] h-full overflow-y-auto custom-scrollbar p-3 sm:p-3.5 pe-2.5 pb-6 flex flex-col">
-                {/* Drawer Header with "Add to Active Tab" action */}
-                <div className="flex items-center justify-between pb-3 mb-2 border-b border-border/30 shrink-0">
-                  <span className="text-xs font-semibold text-foreground">
-                    {currentToolMeta
-                      ? locale === "fa"
-                        ? currentToolMeta.titleFa
-                        : currentToolMeta.titleEn
-                      : toolsTab}
-                  </span>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        addWidgetToTab(dashboardTab, normalizedDrawerToolId);
-                      }}
-                      title={t("controlHub.moveToCenter")}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors cursor-pointer shadow-2xs"
-                    >
-                      <LayoutGrid className="size-3" />
-                      <span>{t("controlHub.moveToCenter")}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setLinksSidebarOpen(false)}
-                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
-                    >
-                      <X className="size-3.5" />
-                    </button>
-                  </div>
+              <div className="w-[calc(100vw-56px)] max-w-[480px] sm:w-[480px] h-full overflow-y-auto custom-scrollbar p-2.5 sm:p-3 ps-1 sm:ps-1.5 pe-2.5 sm:pe-3 pb-6 flex flex-col">
+                {/* Clean Drawer Close Header (Title & Add-to-grid removed) */}
+                <div className="flex items-center justify-end pb-2 mb-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setLinksSidebarOpen(false)}
+                    className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+                    aria-label="Close"
+                  >
+                    <X className="size-3.5" />
+                  </button>
                 </div>
 
                 {/* Drawer Content */}
@@ -639,26 +643,28 @@ export function Dashboard() {
           >
             <div className="min-w-0 pb-8 pt-6 px-3 sm:px-6 lg:px-8">
               <div className="mx-auto w-full max-w-[1240px]">
-                {/* ── Tabs (Tasks 1st, Custom 2nd, Administrative 3rd, Market 4th) ── */}
-                <div className="flex items-center justify-start gap-8 mb-6 border-b border-border/40 pb-[2px] fa-num">
-                  {(["tasks", "custom", "administrative", "market"] as const).map(
-                    (tabId) => {
+                {/* ── Tabs Row (Tasks 1st, Administrative 2nd, Market 3rd, Custom 4th) & Tab Settings Button ── */}
+                <div className="flex items-center justify-between mb-6 border-b border-border/40 fa-num gap-4">
+                  {/* Tabs List */}
+                  <div className="flex items-center justify-start gap-6 sm:gap-8 overflow-x-auto overflow-y-hidden no-scrollbar">
+                    {DASHBOARD_TABS.map((tabId) => {
                       const isActive = dashboardTab === tabId;
                       return (
                         <button
                           key={tabId}
                           onClick={() => handleTabChange(tabId)}
                           className={cn(
-                            "relative pb-3 text-sm font-semibold transition-colors outline-none cursor-pointer select-none",
+                            "relative pb-3 text-sm font-semibold transition-colors outline-none cursor-pointer select-none whitespace-nowrap shrink-0",
                             isActive
                               ? "text-primary"
                               : "text-muted-foreground hover:text-foreground"
                           )}
                         >
+                          <span>{t(`tabs.${tabId}`)}</span>
                           {isActive && (
                             <motion.div
                               layoutId="dashboard-main-tab-line"
-                              className="absolute bottom-[-3px] left-0 right-0 h-[2px] bg-primary rounded-t-full"
+                              className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full"
                               transition={{
                                 type: "spring",
                                 bounce: 0.2,
@@ -666,11 +672,51 @@ export function Dashboard() {
                               }}
                             />
                           )}
-                          <span>{t(`tabs.${tabId}`)}</span>
                         </button>
                       );
-                    }
-                  )}
+                    })}
+                  </div>
+
+                  {/* Settings Button on the opposite side to edit active tab modules (ICON ONLY) */}
+                  <div className="ms-auto shrink-0 mb-1.5">
+                    <TooltipProvider>
+                      {dashboardTab === "tasks" ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="inline-block cursor-not-allowed">
+                              <button
+                                type="button"
+                                disabled
+                                className="flex items-center justify-center size-8 rounded-lg text-muted-foreground/40 border border-border/30 bg-muted/10 opacity-50 pointer-events-none"
+                                aria-label={t("schematic.settingsButton")}
+                              >
+                                <Lock className="size-3.5" />
+                              </button>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs font-medium">
+                            {t("schematic.tasksTabFixedTooltip")}
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              onClick={() => setIsSchematicOpen(true)}
+                              className="flex items-center justify-center size-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-border/40 hover:border-border/80 transition-colors cursor-pointer shadow-2xs"
+                              aria-label={t("schematic.settingsButton")}
+                            >
+                              <SlidersHorizontal className="size-3.5" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs font-medium">
+                            {t("schematic.editTabModules")}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </TooltipProvider>
+                  </div>
                 </div>
 
 
@@ -696,7 +742,7 @@ export function Dashboard() {
                 >
                   {visibleWidgets.length > 0 ? (
                     <ResponsiveGridLayout
-                      key={`rgl-${dashboardTab}-${visibleWidgets.join("-")}`}
+                      key={`rgl-${dashboardTab}-${visibleWidgets.join("-")}-${locale}`}
                       className="layout"
                       layouts={layouts as any}
                       breakpoints={{ lg: 1024, md: 768, sm: 640 }}
@@ -708,6 +754,10 @@ export function Dashboard() {
                       containerPadding={[0, 0]}
                       isDroppable={true}
                       isResizable={true}
+                      resizeHandles={["se"]}
+                      resizeHandle={(axis, ref) => (
+                        <CustomResizeHandle ref={ref as any} />
+                      )}
                       useCSSTransforms={true}
                       compactType="vertical"
                     >
@@ -724,7 +774,7 @@ export function Dashboard() {
                         >
                           <div
                             dir={locale === "fa" ? "rtl" : "ltr"}
-                            className="w-full h-full"
+                            className="w-full h-full min-h-0 flex flex-col"
                           >
                             {renderWidgetContent(id)}
                           </div>
@@ -760,29 +810,6 @@ export function Dashboard() {
       )}
 
       {/* ── Modals ── */}
-
-      <SlideMenuCustomizerModal
-        open={isSlideCustomizerOpen}
-        onOpenChange={setIsSlideCustomizerOpen}
-        activeItems={slideRailItems}
-        onChangeActiveItems={setSlideRailItems}
-      />
-
-      <DashboardControlHubModal
-        open={isControlHubOpen}
-        onOpenChange={setIsControlHubOpen}
-        currentTab={dashboardTab}
-        onChangeTab={handleTabChange}
-        activeWidgetsInTab={visibleWidgets}
-        onToggleWidgetInTab={toggleWidgetInTab}
-        onAddWidgetToTab={addWidgetToTab}
-        onRemoveWidgetFromTab={removeWidgetFromTab}
-        slideRailItems={slideRailItems}
-        onToggleSlideRailItem={handleToggleSlideRailItem}
-        onResetCurrentTab={resetTab}
-        onResetAllTabs={resetAllTabs}
-        onApplyPreset={applyPreset}
-      />
 
       <DashboardSchematicStudioModal
         open={isSchematicOpen}

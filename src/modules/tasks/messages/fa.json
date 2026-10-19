@@ -1,0 +1,192 @@
+{
+  "Tasks": {
+    "title": "مدیریت تسک‌ها",
+    "subtitle": "تعریف، پیگیری، تبادل نظر سازمانی و مدیریت پیشرفت پروژه‌ها",
+    "search": "جستجو در عنوان، دسته‌بندی، کارشناس، شرکت...",
+    "newTask": "تسک جدید",
+    "manageAll": "مدیریت کامل تسک‌ها",
+    "company": "شرکت / مجموعه",
+    "companies": {
+      "all": "همه شرکت‌ها",
+      "euroslot": "یورو اسلات پارس",
+      "nano": "نانو پالایش سرام",
+      "petro": "پترو اسپادانا"
+    },
+    "timeline": {
+      "title": "خط زمانی و فازبندی پروژه‌ها",
+      "today": "امروز",
+      "prev": "بازه قبل",
+      "next": "بازه بعد",
+      "completed": "تکمیل شده",
+      "notStarted": "شروع نشده",
+      "underReview": "در حال بازبینی",
+      "taskFinished": "تکمیل شده",
+      "milestoneNotice": "فاز زمانی تسک در {date}",
+      "quickFilters": "فیلترهای سریع",
+      "viewDetails": "مشاهده جزئیات تسک",
+      "tasksCount": "تسک"
+    },
+    "collaborators": {
+      "title": "تیم مجری و همکاران تسک",
+      "lead": "مسئول اصلی",
+      "add": "افزودن همکار جدید",
+      "selectUser": "انتخاب همکار",
+      "role": "سمت / نقش در تسک",
+      "remove": "حذف همکار",
+      "manageNotice": "به عنوان مدیر، می‌توانید اعضای درگیر در این تسک را اضافه یا حذف کنید.",
+      "progress": "درصد پیشرفت تسک",
+      "updateProgress": "ثبت پیشرفت"
+    },
+    "board": {
+      "addTask": "افزودن تسک +",
+      "quickFilters": "فیلترهای سریع",
+      "searchPlaceholder": "جستجوی زنده در تسک‌ها...",
+      "notStarted": "شروع نشده",
+      "underReview": "در حال بازبینی",
+      "completed": "تکمیل شده"
+    },
+    "views": {
+      "kanban": "تخته کانبان",
+      "list": "جدول فهرست",
+      "analytics": "خلاصه آمار"
+    },
+    "tabs": {
+      "all": "همه تسک‌ها",
+      "manager": "ابلاغی مدیر",
+      "mine": "شخصی من",
+      "inProgress": "در حال انجام",
+      "completed": "تکمیل‌شده"
+    },
+    "roles": {
+      "roleMode": "سطح دسترسی و نما",
+      "adminMode": "مدیر سیستم (Admin)",
+      "userMode": "کاربر / کارشناس (User)",
+      "adminBadge": "مدیر ارشد: نظارت بر کل تسک‌ها و کنترل افراد",
+      "userBadge": "میز کار کارشناس: تسک‌های محوله و پروژه‌های من",
+      "filterAssignee": "فیلتر بر اساس مسئول تسک",
+      "allAssignees": "همه افراد تیم",
+      "switchPerspective": "شبیه‌سازی دید کارشناس:",
+      "userNotice": "شما در نمای کارشناس هستید. تنها تسک‌های محوله و پروژه‌های مرتبط با شما قابل مشاهده است. امکان تغییر وضعیت تسک، ثبت پیشرفت، کامنت‌گذاری و الحاق نقشه برای شما فعال است.",
+      "myTasksOnly": "فقط تسک‌های من",
+      "allTeamTasks": "کل تسک‌های تیم"
+    },
+    "status": {
+      "pending": "To Do",
+      "in_progress": "In Progress",
+      "review": "Review",
+      "completed": "Done"
+    },
+    "priority": {
+      "low": "عادی",
+      "medium": "متوسط",
+      "high": "مهم",
+      "urgent": "فوری"
+    },
+    "stats": {
+      "total": "کل تسک‌ها",
+      "pending": "در انتظار",
+      "inProgress": "در دست اقدام",
+      "review": "بازبینی",
+      "completed": "انجام‌شده",
+      "manager": "ابلاغی مدیر",
+      "rate": "درصد تکمیل"
+    },
+    "filters": {
+      "allStatus": "همه وضعیت‌ها",
+      "allPriority": "همه اولویت‌ها",
+      "allCategories": "همه دسته‌بندی‌ها",
+      "allCompanies": "همه شرکت‌ها",
+      "managerOnly": "فقط ابلاغی مدیر",
+      "clear": "پاک کردن فیلترها"
+    },
+    "table": {
+      "title": "عنوان تسک",
+      "category": "دسته‌بندی",
+      "company": "شرکت",
+      "priority": "اولویت",
+      "status": "وضعیت",
+      "assignee": "مسئول / همکاران",
+      "dueDate": "مهلت تحویل",
+      "progress": "پیشرفت",
+      "subtasks": "زیرتسک‌ها",
+      "actions": "عملیات"
+    },
+    "drawer": {
+      "details": "مشخصات تسک",
+      "subtasks": "چک‌لیست و زیرتسک‌ها",
+      "comments": "نظرات و الحاقیه نقشه‌ها",
+      "attachments": "پیوست‌ها و اسناد",
+      "activity": "تاریخچه تغییرات",
+      "creator": "تعریف‌کننده",
+      "assignedTo": "تیم مجری",
+      "company": "شرکت کارفرما / مجری",
+      "startDate": "تاریخ شروع",
+      "dueDate": "مهلت تحویل",
+      "timelineDate": "تاریخ فاز خط زمانی",
+      "hoursEstimated": "تخمین ساعت",
+      "hoursLogged": "ساعت ثبت‌شده",
+      "changeStatus": "تغییر وضعیت به",
+      "markComplete": "ثبت تکمیل تسک",
+      "reopen": "بازگشایی مجدد",
+      "deleteTask": "حذف تسک",
+      "deleteConfirm": "آیا از حذف این تسک اطمینان دارید؟",
+      "cannotDeleteManager": "تسک‌های ابلاغی مدیر قابل حذف نیستند.",
+      "managerTaskNotice": "این تسک سازمانی از طرف مدیر مستقیم ابلاغ گردیده و دارای اولویت اجرایی است."
+    },
+    "subtasks": {
+      "title": "زیرتسک‌ها و چک‌لیست اجرایی",
+      "placeholder": "عنوان زیرتسک جدید را وارد کنید...",
+      "add": "افزودن",
+      "progress": "پیشرفت زیرتسک‌ها:",
+      "empty": "هیچ زیرتسکی ثبت نشده است."
+    },
+    "comments": {
+      "title": "تبادل نظر و گزارش پیشرفت",
+      "placeholder": "نظر یا گزارش خود را بنویسید (امکان الحاق نقشه یا فایل فنی)...",
+      "send": "ارسال نظر",
+      "reply": "پاسخ",
+      "replyTo": "پاسخ به {author}",
+      "replyPlaceholder": "پاسخ خود را بنویسید...",
+      "cancelReply": "انصراف",
+      "noComments": "هنوز نظری ثبت نشده است. اولین نظر را شما ارسال کنید.",
+      "attachFile": "الحاق نقشه یا فایل",
+      "attachedFiles": "پیوست‌های این پیام",
+      "removeAttachment": "حذف فایل",
+      "drawingBadge": "نقشه مهندسی",
+      "selectDrawing": "نقشه P&ID / فایل فنی"
+    },
+    "attachments": {
+      "title": "فایل‌ها و مستندات پیوست",
+      "dropzone": "برای بارگذاری، فایل را اینجا بکشید یا کلیک کنید",
+      "supportNotice": "فرمت‌های مجاز: DWG, DXF, PDF, XLSX, ZIP, تصاویر (حداکثر ۲۰ مگابایت)",
+      "download": "دانلود",
+      "delete": "حذف",
+      "noAttachments": "هیچ سندی پیوست نشده است."
+    },
+    "createModal": {
+      "title": "تعریف تسک جدید برای مدیر",
+      "titlePlaceholder": "عنوان دقیق تسک را وارد کنید...",
+      "description": "توضیحات و شرح الزامات فنی",
+      "descriptionPlaceholder": "دستورالعمل، مراجع استاندارد یا نکات اجرایی...",
+      "category": "پروژه / دسته‌بندی",
+      "company": "شرکت مربوطه",
+      "priority": "اولویت کاری",
+      "assignee": "مسئول اصلی تسک",
+      "collaborators": "همکاران درگیر در تسک",
+      "dueDate": "مهلت انجام (تاریخ)",
+      "timelineDate": "تاریخ در خط زمانی (Roadmap)",
+      "initialProgress": "درصد پیشرفت اولیه",
+      "estimatedHours": "تخمین ساعت کاری",
+      "submit": "ایجاد و ثبت تسک",
+      "cancel": "انصراف"
+    },
+    "widget": {
+      "title": "مدیریت تسک‌ها",
+      "quickAdd": "افزودن سریع تسک...",
+      "viewAll": "مشاهده همه",
+      "empty": "تسکی وجود ندارد",
+      "managerBadge": "ابلاغ مدیر",
+      "remaining": "تسک فعال"
+    }
+  }
+}

@@ -152,23 +152,23 @@ export function MiniChart({ data }: { data: ChartPoint[] }) {
 
   return (
     <div
-      className="bg-panel dark:bg-card/40 rounded-xl rounded-br-none border border-border/50 p-4 @sm:p-5 h-full flex flex-col"
+      className="bg-panel dark:bg-card/40 rounded-2xl border border-border/50 p-3.5 @sm:p-5 h-full flex flex-col @container min-h-0"
     >
-      <div className="mb-3 @sm:mb-5 flex items-start justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
+      <div className="mb-2.5 @sm:mb-4 flex items-start justify-between flex-wrap gap-2.5 pe-18 sm:pe-20">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="p-1.5 rounded-lg bg-primary/10 text-primary shrink-0">
             <BarChart3 className="size-4" />
           </div>
-          <span className="font-semibold text-base text-foreground/80 whitespace-nowrap">
+          <span className="font-semibold text-sm sm:text-base text-foreground/80 whitespace-nowrap">
             {t('miniChart.monthlyTrend')}
           </span>
-          <div className="hidden sm:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px] ms-2 shrink-0">
+          <div className="hidden @[460px]:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px] ms-1 shrink-0">
             <span className="text-muted-foreground">{isFa ? 'منبع' : 'Source'}:</span>
             <span className="font-bold flex items-center gap-1">
               <a href="https://finance.yahoo.com" target="_blank" className="text-primary hover:underline">Yahoo Finance</a>
             </span>
           </div>
-          <div className="w-32 @sm:w-40 ms-2">
+          <div className="w-28 @[380px]:w-36 ms-1">
             <Combobox
               options={chartOptions}
               value={chartSource}

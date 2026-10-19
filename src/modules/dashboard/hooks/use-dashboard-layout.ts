@@ -13,8 +13,8 @@ import {
 export type Layouts = Record<string, any[]>;
 export type Layout = any;
 
-const STORAGE_KEY_TAB_LAYOUTS = "dashboard_tab_layouts_v5";
-const STORAGE_KEY_TAB_WIDGETS = "dashboard_tab_widgets_v5";
+const STORAGE_KEY_TAB_LAYOUTS = "dashboard_tab_layouts_v6";
+const STORAGE_KEY_TAB_WIDGETS = "dashboard_tab_widgets_v6";
 
 const enforceItemConstraints = (item: any) => {
   const meta = getModuleMeta(item.i);
@@ -141,6 +141,7 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
   // Add widget to a specific tab
   const addWidgetToTab = useCallback(
     (tabId: TabId, widgetId: string) => {
+      if (tabId === "tasks") return; // Tasks tab is fixed and non-editable
       setTabWidgets((prev) => {
         const currentList = prev[tabId] || [];
         if (currentList.includes(widgetId)) return prev;
@@ -197,6 +198,7 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
   // Remove widget from a specific tab
   const removeWidgetFromTab = useCallback(
     (tabId: TabId, widgetId: string) => {
+      if (tabId === "tasks") return; // Tasks tab is fixed and non-editable
       setTabWidgets((prev) => {
         const currentList = prev[tabId] || [];
         return {
@@ -227,6 +229,7 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
   // Toggle widget in a specific tab
   const toggleWidgetInTab = useCallback(
     (tabId: TabId, widgetId: string) => {
+      if (tabId === "tasks") return; // Tasks tab is fixed and non-editable
       const isVisible = (tabWidgets[tabId] || []).includes(widgetId);
       if (isVisible) {
         removeWidgetFromTab(tabId, widgetId);
@@ -239,6 +242,15 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
 
   // Reset a specific tab
   const resetTab = useCallback((tabId: TabId) => {
+    if (tabId === "tasks") {
+      setTabWidgets((prev) => ({ ...prev, tasks: ["tasks"] }));
+      setTabLayouts((prev) => ({
+        ...prev,
+        tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
+      }));
+      return;
+    }
+
     setTabWidgets((prev) => ({
       ...prev,
       [tabId]: DEFAULT_TAB_WIDGETS[tabId] || [],
@@ -268,6 +280,7 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
   // Apply a preset of widgets to a specific tab
   const applyPreset = useCallback(
     (tabId: TabId, presetWidgetIds: string[]) => {
+      if (tabId === "tasks") return; // Tasks tab is fixed and non-editable
       setTabWidgets((prev) => ({
         ...prev,
         [tabId]: presetWidgetIds,

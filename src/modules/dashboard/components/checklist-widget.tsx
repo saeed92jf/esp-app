@@ -69,10 +69,10 @@ export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
   }, [tasks, activeTab]);
 
   return (
-    <div className="flex flex-col h-full min-h-0 fa-num bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
+    <div className="flex flex-col h-full min-h-0 fa-num bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container">
       
       {/* Header */}
-      <div className="flex items-center gap-2 px-1 mb-4">
+      <div className="flex items-center gap-2 px-1 mb-4 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <CheckSquare className="size-5 text-primary" />
         </div>

@@ -1,7 +1,9 @@
+// src/components/ui/animated-hamburger.tsx
 "use client";
 
 import * as React from "react";
 import { motion } from "motion/react";
+import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 
 export interface AnimatedHamburgerProps {
@@ -13,42 +15,56 @@ export interface AnimatedHamburgerProps {
   lineClassName?: string;
 }
 
-/** Snappy, organic fluid spring physics */
-const fluidSpring = {
+/** Snappy spring physics for smooth morphing of dots */
+const dotSpring = {
+  type: "spring" as const,
+  stiffness: 460,
+  damping: 28,
+  mass: 0.7,
+};
+
+/** Staggered line spring transitions */
+const createLineTransition = (delayOpen: number, delayClose: number, isOpen: boolean) => ({
   type: "spring" as const,
   stiffness: 420,
-  damping: 25,
-  mass: 0.85,
-};
-
-const membraneSpring = {
-  type: "spring" as const,
-  stiffness: 380,
   damping: 26,
-};
-
-const nucleolusTransition = {
-  duration: 0.18,
-  ease: [0.16, 1, 0.3, 1] as const,
-};
+  mass: 0.65,
+  delay: isOpen ? delayOpen : delayClose,
+});
 
 /**
- * Organic Cell Nucleus -> Metaballs morphing menu trigger icon.
- * - Closed: Single biological cell nucleus with glowing nucleolus & delicate membrane.
- * - Open: Fluid mitosis into 4 corner satellite metaballs tethered by viscous liquid bridges forming an organic "X".
- * - Close: Instant spring pull that collapses the metaballs back into a single cell with surface tension bounce.
+ * Animated Side Menu Trigger Icon:
+ * - Closed: Three vertical dots ("سه تا نقطه عمودی") centered and balanced.
+ * - Open: The 3 dots slide to the side, and 3 horizontal lines smoothly shoot out in front of them
+ *   with an energetic cascading spring animation ("با باز شدن سه تا خط جلوش با انیمیت خفن ظاهر بشه").
  */
 export function AnimatedHamburger({
   isOpen,
   className,
   lineClassName,
 }: AnimatedHamburgerProps) {
-  const rawId = React.useId();
-  // Sanitize React ID for standard SVG URL referencing
-  const filterId = React.useMemo(
-    () => `cell-goo-${rawId.replace(/[^a-zA-Z0-9_-]/g, "")}`,
-    [rawId]
-  );
+  let isRtl = true;
+  try {
+    const locale = useLocale();
+    isRtl = locale === "fa";
+  } catch {
+    if (typeof document !== "undefined") {
+      isRtl = document.documentElement.dir === "rtl";
+    }
+  }
+
+  // Row vertical positions in 24x24 SVG
+  const yTop = 5.5;
+  const yMid = 12;
+  const yBot = 18.5;
+
+  // Horizontal positions based on RTL/LTR reading direction:
+  // In RTL, drawer is on the right, so dots anchor at x=18.5 and lines extend to the left (x=4.5).
+  // In LTR, drawer is on the left, so dots anchor at x=5.5 and lines extend to the right (x=19.5).
+  const dotClosedX = 12;
+  const dotOpenX = isRtl ? 18.5 : 5.5;
+  const lineStartX = isRtl ? 14.5 : 9.5;
+  const lineEndX = isRtl ? 4.5 : 19.5;
 
   return (
     <div
@@ -59,149 +75,94 @@ export function AnimatedHamburger({
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 32 32"
+        viewBox="0 0 24 24"
         className={cn("w-full h-full overflow-visible", lineClassName)}
+        fill="none"
       >
-        <defs>
-          {/* High-fidelity Metaball / Gooey Threshold Filter */}
-          <filter
-            id={filterId}
-            x="-40%"
-            y="-40%"
-            width="180%"
-            height="180%"
-            colorInterpolationFilters="sRGB"
-          >
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur" />
-            <feColorMatrix
-              in="blur"
-              mode="matrix"
-              values="1 0 0 0 0  
-                      0 1 0 0 0  
-                      0 0 1 0 0  
-                      0 0 0 19 -8"
-              result="goo"
-            />
-          </filter>
-        </defs>
-
-        {/* 1. Outer Cell Membrane (delicate organic orbital envelope) */}
+        {/* ── Row 1: Top Dot & Line ── */}
         <motion.circle
-          cx={16}
-          cy={16}
-          r={11.5}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-          strokeDasharray="2.5 3"
           initial={false}
           animate={{
-            r: isOpen ? 14 : 11.5,
-            opacity: isOpen ? 0 : 0.35,
+            cx: isOpen ? dotOpenX : dotClosedX,
+            cy: yTop,
+            r: isOpen ? 1.85 : 2.15,
+            opacity: 1,
           }}
-          transition={membraneSpring}
+          transition={dotSpring}
+          fill="currentColor"
+        />
+        <motion.line
+          initial={false}
+          animate={{
+            x1: isOpen ? lineStartX : dotClosedX,
+            x2: isOpen ? lineEndX : dotClosedX,
+            y1: yTop,
+            y2: yTop,
+            opacity: isOpen ? 1 : 0,
+          }}
+          transition={createLineTransition(0.04, 0.08, isOpen)}
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
         />
 
-        {/* 2. Fluid Metaball System (Morphs between 1 Cell Nucleus and 4 Satellite Metaballs) */}
-        <motion.g
-          filter={`url(#${filterId})`}
-          initial={false}
-          animate={{ rotate: isOpen ? 90 : 0 }}
-          transition={fluidSpring}
-          style={{ transformBox: "view-box", transformOrigin: "16px 16px" }}
-        >
-          {/* Central Mother Droplet (Main Nucleus Body) */}
-          <motion.circle
-            cx={16}
-            cy={16}
-            r={6.2}
-            fill="currentColor"
-            initial={false}
-            animate={{
-              r: isOpen ? 3.8 : 6.2,
-            }}
-            transition={fluidSpring}
-          />
-
-          {/* Satellite Droplet 1: Top-Left */}
-          <motion.circle
-            cx={16}
-            cy={16}
-            r={4.2}
-            fill="currentColor"
-            initial={false}
-            animate={{
-              cx: isOpen ? 8.8 : 16,
-              cy: isOpen ? 8.8 : 16,
-              r: isOpen ? 3.6 : 4.2,
-            }}
-            transition={fluidSpring}
-          />
-
-          {/* Satellite Droplet 2: Top-Right */}
-          <motion.circle
-            cx={16}
-            cy={16}
-            r={4.2}
-            fill="currentColor"
-            initial={false}
-            animate={{
-              cx: isOpen ? 23.2 : 16,
-              cy: isOpen ? 8.8 : 16,
-              r: isOpen ? 3.6 : 4.2,
-            }}
-            transition={fluidSpring}
-          />
-
-          {/* Satellite Droplet 3: Bottom-Right */}
-          <motion.circle
-            cx={16}
-            cy={16}
-            r={4.2}
-            fill="currentColor"
-            initial={false}
-            animate={{
-              cx: isOpen ? 23.2 : 16,
-              cy: isOpen ? 23.2 : 16,
-              r: isOpen ? 3.6 : 4.2,
-            }}
-            transition={fluidSpring}
-          />
-
-          {/* Satellite Droplet 4: Bottom-Left */}
-          <motion.circle
-            cx={16}
-            cy={16}
-            r={4.2}
-            fill="currentColor"
-            initial={false}
-            animate={{
-              cx: isOpen ? 8.8 : 16,
-              cy: isOpen ? 23.2 : 16,
-              r: isOpen ? 3.6 : 4.2,
-            }}
-            transition={fluidSpring}
-          />
-        </motion.g>
-
-        {/* 3. Glowing Nucleolus Dot (هستک داخل هسته) - Visible only in closed single-cell state */}
+        {/* ── Row 2: Middle Dot & Line ── */}
         <motion.circle
-          cx={16}
-          cy={16}
-          r={2.2}
-          fill="var(--color-primary-500, #3b82f6)"
           initial={false}
           animate={{
-            r: isOpen ? 0 : 2.2,
-            opacity: isOpen ? 0 : 0.95,
+            cx: isOpen ? dotOpenX : dotClosedX,
+            cy: yMid,
+            r: isOpen ? 1.85 : 2.15,
+            opacity: 1,
           }}
-          transition={nucleolusTransition}
+          transition={dotSpring}
+          fill="currentColor"
+        />
+        <motion.line
+          initial={false}
+          animate={{
+            x1: isOpen ? lineStartX : dotClosedX,
+            x2: isOpen ? lineEndX : dotClosedX,
+            y1: yMid,
+            y2: yMid,
+            opacity: isOpen ? 1 : 0,
+          }}
+          transition={createLineTransition(0.09, 0.04, isOpen)}
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+
+        {/* ── Row 3: Bottom Dot & Line ── */}
+        <motion.circle
+          initial={false}
+          animate={{
+            cx: isOpen ? dotOpenX : dotClosedX,
+            cy: yBot,
+            r: isOpen ? 1.85 : 2.15,
+            opacity: 1,
+          }}
+          transition={dotSpring}
+          fill="currentColor"
+        />
+        <motion.line
+          initial={false}
+          animate={{
+            x1: isOpen ? lineStartX : dotClosedX,
+            x2: isOpen ? lineEndX : dotClosedX,
+            y1: yBot,
+            y2: yBot,
+            opacity: isOpen ? 1 : 0,
+          }}
+          transition={createLineTransition(0.14, 0.0, isOpen)}
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
         />
       </svg>
     </div>
   );
 }
 
-// Alias export for explicit naming
+// Keep export alias
 export { AnimatedHamburger as CellNucleusMenuIcon };
-

@@ -88,11 +88,22 @@ export interface DetailedChecklistItem {
 export interface DailyRoutine {
   id: string;
   title: string;
-  timeSlot: string;
-  period: 'morning' | 'midday' | 'evening';
-  streakDays: number;
-  completedToday: boolean;
+  timeSlot?: string;
+  period?: 'morning' | 'midday' | 'evening';
+  streakDays?: number;
+  completedToday?: boolean;
   category?: string;
+  color?: 'purple' | 'emerald' | 'rose' | 'orange' | 'blue' | 'amber' | string;
+  highlight?: boolean;
+  completedDays?: Record<string, boolean>;
+  weekKey?: string;
+  createdAtDate?: string;
+  scope?: 'week' | 'month' | 'year' | 'custom';
+  weekKeys?: string[];
+  monthKey?: string;
+  yearKey?: string;
+  customWeekNumbers?: number[];
+  monthWeekIndices?: number[];
 }
 
 export interface DashboardNote {
@@ -706,7 +717,7 @@ const REAL_EVENTS: CalendarEvent[] = [
   }
 ];
 
-const SAMPLE_TASKS: DashboardTask[] = [
+export const SAMPLE_TASKS: DashboardTask[] = [
   {
     id: "task-m1",
     title: "بازرسی و کنترل کیفیت خروجی پمپ‌های ESP ایستگاه اهواز",
@@ -879,7 +890,7 @@ const SAMPLE_CUSTOM_LINKS: CustomLink[] = [
   { id: "lnk-7", title: "سامانه جامع تجارت ایران (NTSW)", url: "https://ntsw.ir", isInternal: false, category: "بازرگانی", description: "ثبت سفارشات مواد اولیه و قطعات وارداتی", createdAt: "1405/01/15" }
 ];
 
-const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [
+export const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [
   {
     id: "notif-1",
     title: "تسک سازمانی جدید از طرف مهندس شریفی",

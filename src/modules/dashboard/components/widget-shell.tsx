@@ -2,7 +2,8 @@
 "use client";
 
 import * as React from "react";
-import { GripVertical, Eye, EyeOff, PanelRightClose, Sidebar } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
+import { GripVertical, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -23,8 +24,10 @@ interface WidgetShellProps extends React.HTMLAttributes<HTMLDivElement> {
 // ─── WidgetShell ──────────────────────────────────────────────────────────────
 
 export const WidgetShell = React.forwardRef<HTMLDivElement, WidgetShellProps>(
-  ({ id, onToggleVisible, onPinToRail, children, className, style, ...props }, ref) => {
-    const [isHovered, setIsHovered] = React.useState(false);
+  ({ id, onToggleVisible, onPinToRail: _onPinToRail, children, className, style, ...props }, ref) => {
+    const t = useTranslations("Dashboard.widget");
+    const locale = useLocale();
+    const isFa = locale === "fa";
 
     return (
       <TooltipProvider>
@@ -32,40 +35,18 @@ export const WidgetShell = React.forwardRef<HTMLDivElement, WidgetShellProps>(
           ref={ref}
           style={style}
           className={cn(
-            "relative group h-full flex flex-col bg-transparent overflow-hidden rounded-2xl rounded-br-none",
+            "relative group h-full flex flex-col bg-transparent overflow-hidden rounded-2xl",
             className
           )}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
           {...props}
         >
-          {/* ── Controls overlay ── */}
+          {/* ── Controls overlay (Swaps between left in FA and right in EN) ── */}
           <div
             className={cn(
-              "absolute top-2.5 end-2.5 z-30 flex items-center gap-1.5 transition-opacity duration-200",
-              isHovered ? "opacity-100" : "opacity-0"
+              "absolute top-2.5 z-30 flex items-center gap-1.5 opacity-100 select-none",
+              isFa ? "left-2.5" : "right-2.5"
             )}
           >
-            {/* Pin to Side Rail */}
-            {onPinToRail && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    type="button"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={() => onPinToRail(id)}
-                    className="h-7 w-7 flex items-center justify-center rounded-lg bg-card/90 backdrop-blur-md border border-border/60 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/40 transition-colors shadow-xs cursor-pointer"
-                    aria-label="Pin to Slide Rail"
-                  >
-                    <Sidebar className="size-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="text-xs">
-                  پین در منوی اسلایدی
-                </TooltipContent>
-              </Tooltip>
-            )}
-
             {/* Hide button */}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -73,14 +54,14 @@ export const WidgetShell = React.forwardRef<HTMLDivElement, WidgetShellProps>(
                   type="button"
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={() => onToggleVisible(id)}
-                  className="h-7 w-7 flex items-center justify-center rounded-lg bg-card/90 backdrop-blur-md border border-border/60 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors shadow-xs cursor-pointer"
+                  className="h-7 w-7 flex items-center justify-center rounded-lg bg-card/90 backdrop-blur-md border border-border/60 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 hover:border-rose-500/40 transition-colors shadow-2xs cursor-pointer"
                   aria-label="Hide Widget"
                 >
                   <EyeOff className="size-3.5" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
-                مخفی کردن از این تب
+                {t("hide")}
               </TooltipContent>
             </Tooltip>
 
@@ -88,41 +69,20 @@ export const WidgetShell = React.forwardRef<HTMLDivElement, WidgetShellProps>(
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
-                  className="widget-drag-handle h-7 w-7 flex items-center justify-center rounded-lg bg-card/90 backdrop-blur-md border border-border/60 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/40 transition-colors cursor-grab active:cursor-grabbing shadow-xs"
+                  className="widget-drag-handle h-7 w-7 flex items-center justify-center rounded-lg bg-card/90 backdrop-blur-md border border-border/60 text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/40 transition-colors cursor-grab active:cursor-grabbing shadow-2xs"
                 >
                   <GripVertical className="size-4 pointer-events-none" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
-                جابجایی و تغییر مکان
+                {t("drag")}
               </TooltipContent>
             </Tooltip>
           </div>
 
-          {/* ── Content ── */}
-          <div className="flex-1 h-full w-full min-h-0 @container relative overflow-hidden rounded-2xl rounded-br-none">
+          {/* ── Content (Uniform fillet on all corners) ── */}
+          <div className="flex-1 h-full w-full min-h-0 @container relative overflow-hidden rounded-2xl">
             {children}
-          </div>
-
-          {/* ── Bottom-Right Corner Resize Indicator (Without Fillet / Sharp with Arrow) ── */}
-          <div
-            className="absolute bottom-0 right-0 z-30 pointer-events-none size-6 flex items-end justify-end p-1 text-muted-foreground/50 group-hover:text-primary transition-colors select-none"
-            aria-hidden="true"
-          >
-            <svg
-              className="size-3.5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 3 21 3 21 9" />
-              <polyline points="9 21 3 21 3 15" />
-              <line x1="21" y1="3" x2="14" y2="10" />
-              <line x1="3" y1="21" x2="10" y2="14" />
-            </svg>
           </div>
         </div>
       </TooltipProvider>

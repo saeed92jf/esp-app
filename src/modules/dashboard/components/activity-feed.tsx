@@ -29,14 +29,14 @@ export function ActivityFeed({ items }: { items: ActivityItem[] }) {
   const t = useTranslations('Dashboard.activity');
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4">
-      <div className="flex items-center gap-2 px-1 mb-4 shrink-0">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container min-h-0">
+      <div className="flex items-center gap-2 px-1 mb-3 shrink-0 border-b border-border/40 pb-2.5 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <Activity className="size-5 text-primary" />
         </div>
-        <h3 className="font-semibold text-base text-foreground/80">{t('title')}</h3>
+        <h3 className="font-semibold text-sm sm:text-base text-foreground/80">{t('title')}</h3>
       </div>
-      <ul className="segmented-list padded-ends flex-1 overflow-y-auto pe-1 custom-scrollbar">
+      <ul className="segmented-list padded-ends flex-1 overflow-y-auto pe-1 custom-scrollbar min-h-0">
         {items.map((item, index) => {
           const cfg = STATUS_CONFIG[item.status];
           return (
