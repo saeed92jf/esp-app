@@ -172,14 +172,17 @@ export function TaskDetailDrawer({
     { value: "completed", label: "Done" },
   ];
 
+  const isRtl = locale === "fa";
+
   const drawerContent = (
     <div
-      className="fixed inset-0 z-[100] flex justify-end bg-slate-900/60 dark:bg-black/70 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-slate-950/60 dark:bg-black/80 backdrop-blur-xs transition-all duration-200 animate-in fade-in select-none"
       onClick={onClose}
     >
       <div
+        dir={isRtl ? "rtl" : "ltr"}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl h-full bg-white dark:bg-card shadow-2xl flex flex-col fa-num border-s border-border/80 overflow-hidden"
+        className="w-full max-w-3xl max-h-[90vh] bg-white dark:bg-card shadow-2xl rounded-3xl flex flex-col fa-num border border-border/80 overflow-hidden animate-in zoom-in-95 duration-200 select-text"
       >
         {/* ── Top Header ── */}
         <div className="p-4 sm:p-5 border-b border-border/60 flex flex-col gap-3 shrink-0 bg-slate-50/50 dark:bg-muted/10">

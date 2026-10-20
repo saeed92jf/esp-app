@@ -4,7 +4,7 @@ import { usePathname } from '@/i18n/navigation';
 import { Footer } from './footer';
 
 // Routes where the footer must never appear (e.g. full-screen flow editors and dedicated search page).
-const HIDDEN_PREFIXES = ['/ESP-Flow', '/aparat', '/dashboard', '/team', '/admin', '/search', '/sitemap'];
+const HIDDEN_PREFIXES = ['/ESP-Flow', '/aparat', '/dashboard', '/team', '/admin', '/search', '/sitemap', '/dictionary', '/did-you-know'];
 
 export function ConditionalFooter() {
   const pathname = usePathname();

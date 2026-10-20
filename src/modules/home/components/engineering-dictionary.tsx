@@ -645,11 +645,12 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t("searchPlaceholder")}
+                dir={isRtl ? "rtl" : "ltr"}
                 className={cn(
                   "h-10 sm:h-10.5 text-xs sm:text-sm rounded-full bg-white dark:bg-[#12141c] border border-border/80 shadow-sm focus-visible:ring-primary/25 transition-all",
                   isRtl
-                    ? (searchQuery ? "pr-11 pl-20 sm:pl-22" : "pr-11 pl-12 sm:pl-14")
-                    : (searchQuery ? "pl-11 pr-20 sm:pr-22" : "pl-11 pr-12 sm:pr-14")
+                    ? (searchQuery ? "pr-11 pl-20 sm:pl-22 text-right rtl:text-right placeholder:text-right" : "pr-11 pl-12 sm:pl-14 text-right rtl:text-right placeholder:text-right")
+                    : (searchQuery ? "pl-11 pr-20 sm:pr-22 text-left placeholder:text-left" : "pl-11 pr-12 sm:pr-14 text-left placeholder:text-left")
                 )}
               />
               <div

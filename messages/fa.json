@@ -85,7 +85,10 @@
       "admin": "مدیریت",
       "settings": "تنظیمات",
       "profile": "پروفایل",
-      "search": "جستجو"
+      "search": "جستجو",
+      "dictionary": "دیکشنری",
+      "didyouknow": "آیا می‌دانید",
+      "tasks": "تسک‌ها"
     }
   },
   "Home": {
@@ -1433,7 +1436,8 @@
       "modules": "ماژول‌ها و ابزارها",
       "tasks": "پروژه‌ها و تسک‌ها",
       "videos": "ویدیوها",
-      "dictionary": "واژه‌نامه و مستندات"
+      "dictionary": "واژه‌نامه و مستندات",
+      "didYouKnow": "آیا می‌دانید"
     },
     "noResults": "نتیجه‌ای برای «{query}» پیدا نشد",
     "noResultsTitle": "نتیجه‌ای برای «{query}» یافت نشد.",
@@ -1451,6 +1455,7 @@
     "openVideo": "مشاهده ویدیو",
     "openProject": "مشاهده پروژه",
     "openTerm": "مشاهده در واژه‌نامه",
+    "openDidYouKnow": "مشاهده نکته علمی",
     "standard": "استاندارد",
     "clear": "پاک کردن",
     "footer": {

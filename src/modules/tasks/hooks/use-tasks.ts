@@ -160,8 +160,12 @@ export function useTasks(options?: {
     });
   }, [tasks, currentUserName]);
 
+  const personalTasks = useMemo(() => {
+    return tasks.filter((t) => t.isPersonal || t.scope === "personal");
+  }, [tasks]);
+
   const stats = useMemo(() => {
-    const targetSet = roleMode === "user" ? userTasks : tasks;
+    const targetSet = roleMode === "user" ? userTasks : tasks.filter((t) => !t.isPersonal && t.scope !== "personal");
     const total = targetSet.length;
     const pending = targetSet.filter((t) => t.status === "pending").length;
     const inProgress = targetSet.filter((t) => t.status === "in_progress").length;
@@ -180,12 +184,21 @@ export function useTasks(options?: {
       completionRate,
       allTotal: tasks.length,
       userTotal: userTasks.length,
+      personalTotal: personalTasks.length,
     };
-  }, [tasks, userTasks, roleMode]);
+  }, [tasks, userTasks, personalTasks, roleMode]);
 
   const filteredTasks = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
     return tasks.filter((task) => {
+      // ── Scope Isolation: Personal vs Team tasks ──
+      if (filters.scope === "personal") {
+        if (!task.isPersonal && task.scope !== "personal") return false;
+      } else {
+        // By default on team boards, keep personal tasks strictly isolated
+        if (task.isPersonal || task.scope === "personal") return false;
+      }
+
       // ── Role Separation ──
       if (roleMode === "user") {
         const u = currentUserName.trim().toLowerCase();
@@ -214,8 +227,12 @@ export function useTasks(options?: {
       if (filters.company && filters.company !== "all" && task.company !== filters.company) return false;
 
       if (q) {
-        const titleMatch = task.title.toLowerCase().includes(q);
-        const descMatch = task.description?.toLowerCase().includes(q) || false;
+        const titleMatch =
+          task.title.toLowerCase().includes(q) ||
+          (task.titleEn ? task.titleEn.toLowerCase().includes(q) : false);
+        const descMatch =
+          (task.description ? task.description.toLowerCase().includes(q) : false) ||
+          (task.descriptionEn ? task.descriptionEn.toLowerCase().includes(q) : false);
         const catMatch = task.category.toLowerCase().includes(q);
         const compMatch = task.company?.toLowerCase().includes(q) || false;
         const creatorMatch = task.creatorName.toLowerCase().includes(q);
@@ -227,6 +244,7 @@ export function useTasks(options?: {
               a.role.toLowerCase().includes(q)
           );
         const tagMatch = task.tags?.some((tg) => tg.toLowerCase().includes(q)) || false;
+        const projectMatch = task.relatedProjectTitle?.toLowerCase().includes(q) || false;
         const attachmentMatch = task.attachments?.some((att) => att.name.toLowerCase().includes(q)) || false;
 
         if (
@@ -237,6 +255,7 @@ export function useTasks(options?: {
           !creatorMatch &&
           !assigneeMatch &&
           !tagMatch &&
+          !projectMatch &&
           !attachmentMatch
         ) {
           return false;
@@ -450,6 +469,7 @@ export function useTasks(options?: {
     setCurrentUserName: changeCurrentUserName,
     allAssignees,
     filteredTasks,
+    personalTasks,
     stats,
     categories,
     companies,

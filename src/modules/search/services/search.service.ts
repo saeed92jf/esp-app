@@ -180,7 +180,7 @@ export class FakeSearchService implements ISearchService {
         total: 0,
         query: "",
         executionTime: 0.01,
-        categoryCounts: { all: 0, modules: 0, tasks: 0, videos: 0, dictionary: 0 },
+        categoryCounts: { all: 0, modules: 0, tasks: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
         relatedSearches: [],
       };
     }
@@ -327,6 +327,7 @@ export class FakeSearchService implements ISearchService {
       tasks: scoredItems.filter((i) => i.category === "tasks").length,
       videos: scoredItems.filter((i) => i.category === "videos").length,
       dictionary: scoredItems.filter((i) => i.category === "dictionary").length,
+      didYouKnow: scoredItems.filter((i) => i.category === "didYouKnow").length,
     };
 
     // Filter by selected category

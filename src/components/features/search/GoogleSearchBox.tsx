@@ -124,7 +124,8 @@ export function GoogleSearchBox({
     );
   };
 
-  const finalShowAiModeButton = showAiModeButton !== undefined ? showAiModeButton : !compact;
+  // AI Mode button is temporarily hidden per user request to avoid layout offset issues
+  const finalShowAiModeButton = showAiModeButton !== undefined ? showAiModeButton : false;
   const finalShowClearButton = showClearButton !== undefined ? showClearButton : compact;
 
   return (

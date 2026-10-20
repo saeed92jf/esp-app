@@ -85,7 +85,10 @@
       "admin": "Admin",
       "settings": "Settings",
       "profile": "Profile",
-      "search": "Search"
+      "search": "Search",
+      "dictionary": "Dictionary",
+      "didyouknow": "Did You Know",
+      "tasks": "Tasks"
     }
   },
   "Home": {
@@ -1433,7 +1436,8 @@
       "modules": "Tools & Modules",
       "tasks": "Projects & Tasks",
       "videos": "Videos",
-      "dictionary": "Dictionary & Docs"
+      "dictionary": "Dictionary & Docs",
+      "didYouKnow": "Did You Know"
     },
     "noResults": "No results found for \"{query}\"",
     "noResultsTitle": "No results found for \"{query}\".",
@@ -1451,6 +1455,7 @@
     "openVideo": "Watch Video",
     "openProject": "View Project",
     "openTerm": "View in Dictionary",
+    "openDidYouKnow": "View Scientific Fact",
     "standard": "Standard",
     "clear": "Clear",
     "footer": {

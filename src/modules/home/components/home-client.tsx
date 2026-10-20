@@ -5,6 +5,8 @@ import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
   BookA,
+  BookOpen,
+  CheckSquare,
   Lightbulb,
   Headphones,
   UserPlus,
@@ -174,7 +176,50 @@ export function HomeClient() {
                         className="w-full"
                         placeholder={t("hero.searchPlaceholder")}
                         onOpenChange={setIsSearchOpen}
+                        showAiModeButton={false}
                       />
+                    </motion.div>
+
+                    {/* Quick Access Tag-like Buttons under Search */}
+                    <motion.div
+                      variants={fadeUp}
+                      className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mt-3 sm:mt-3.5"
+                    >
+                      {/* Dictionary Tag */}
+                      <Link
+                        href="/dictionary"
+                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                      >
+                        <BookOpen className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
+                        <span>{isRtl ? "دیکشنری" : "Dictionary"}</span>
+                      </Link>
+
+                      {/* Did You Know Tag */}
+                      <Link
+                        href="/did-you-know"
+                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                      >
+                        <Lightbulb className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
+                        <span>{isRtl ? "آیا می‌دانید" : "Did You Know"}</span>
+                      </Link>
+
+                      {/* Dashboard Tag */}
+                      <Link
+                        href="/dashboard"
+                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                      >
+                        <SquaresFour className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
+                        <span>{isRtl ? "داشبورد" : "Dashboard"}</span>
+                      </Link>
+
+                      {/* Tasks Tag */}
+                      <Link
+                        href="/dashboard/tasks"
+                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                      >
+                        <CheckSquare className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
+                        <span>{isRtl ? "تسک‌ها" : "Tasks"}</span>
+                      </Link>
                     </motion.div>
                   </div>
 

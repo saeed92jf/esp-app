@@ -4,12 +4,16 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export type TaskStatus = 'pending' | 'in_progress' | 'review' | 'completed';
 
-export type CompanyName = 'یورو اسلات پارس' | 'نانو پالایش سرام' | 'پترو اسپادانا' | string;
+export type CompanyName = 'یورو اسلات پارس' | 'نانو پالایش سرام';
+
+export type TaskScope = 'team' | 'personal';
 
 export interface TaskAssignee {
   id: string;
   name: string;
   role: string;
+  company?: CompanyName;
+  companies?: CompanyName[]; // Overlapping roles in both companies
   avatar?: string;
   isLead?: boolean;
 }
@@ -66,11 +70,17 @@ export interface TaskActivity {
 export interface TaskItem {
   id: string;
   title: string;
+  titleEn?: string;
   description?: string;
+  descriptionEn?: string;
   status: TaskStatus;
   priority: TaskPriority;
   category: string;
   company: CompanyName;
+  scope?: TaskScope;
+  isPersonal?: boolean;
+  relatedProjectId?: string;
+  relatedProjectTitle?: string;
   tags?: string[];
   createdBy: 'manager' | 'user';
   creatorName: string;
@@ -101,6 +111,7 @@ export interface TaskFilterState {
   category: string;
   company: string;
   assignee: string;
+  scope?: "all" | "team" | "personal";
   isManagerOnly: boolean;
 }
 

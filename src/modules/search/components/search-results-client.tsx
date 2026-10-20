@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useMemo } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -13,6 +13,7 @@ import {
   Kanban,
   Video,
   BookOpen,
+  Lightbulb,
   Sparkles,
   SlidersHorizontal,
   type LucideIcon,
@@ -33,6 +34,22 @@ import { HighlightMatch } from "@/components/ui/highlight-match";
 import { cn } from "@/lib/utils";
 import { useUniversalSearch } from "../hooks/use-universal-search";
 import type { SearchCategory, SearchItem } from "../types/search.types";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { AnimatedHamburger } from "@/components/ui/animated-hamburger";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar, Filter, Globe, RotateCcw } from "lucide-react";
 
 const START_OFFSET_CLASS = "sm:w-[185px] md:w-[200px] shrink-0";
 
@@ -111,13 +128,35 @@ export function SearchResultsClient() {
     });
   };
 
+  const [isAdvancedMenuOpen, setIsAdvancedMenuOpen] = useState(false);
+  const [filterOnlyFormulas, setFilterOnlyFormulas] = useState(false);
+  const [filterOnlyStandards, setFilterOnlyStandards] = useState(false);
+  const [languageFilter, setLanguageFilter] = useState<"all" | "fa" | "en">("all");
+
   const categoryTabs: { id: SearchCategory; label: string; icon: LucideIcon }[] = [
     { id: "all", label: t("tabs.all"), icon: SlidersHorizontal },
     { id: "modules", label: t("tabs.modules"), icon: Layers },
     { id: "tasks", label: t("tabs.tasks"), icon: Kanban },
     { id: "videos", label: t("tabs.videos"), icon: Video },
     { id: "dictionary", label: t("tabs.dictionary"), icon: BookOpen },
+    { id: "didYouKnow", label: t("tabs.didYouKnow"), icon: Lightbulb },
   ];
+
+  const displayedResults = useMemo<SearchItem[]>(() => {
+    let list = response.results;
+    if (filterOnlyFormulas) {
+      list = list.filter((item) => item.category === "didYouKnow" || /[\=×÷\+\-\_σ\^]/.test(item.snippet || ""));
+    }
+    if (filterOnlyStandards) {
+      list = list.filter((item) => Boolean(item.metadata?.standard));
+    }
+    if (languageFilter === "fa") {
+      list = list.filter((item) => !item.snippetEn || /[\u0600-\u06FF]/.test(item.title));
+    } else if (languageFilter === "en") {
+      list = list.filter((item) => Boolean(item.titleEn));
+    }
+    return list;
+  }, [response.results, filterOnlyFormulas, filterOnlyStandards, languageFilter]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
@@ -133,10 +172,30 @@ export function SearchResultsClient() {
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
           {/* Start Section: Positioned Logo + Search Box */}
           <div className="flex items-center flex-1 min-w-0">
-            {/* Logo positioned with exact offset as if SideMenu button were present */}
+            {/* Logo + Side Menu Button for Advanced Search */}
             <div className={cn("flex items-center", START_OFFSET_CLASS)}>
-              {/* Invisible spacer matching SideMenu button size + gap */}
-              <div className="w-[32px] sm:w-[36px] me-1.5 sm:me-2.5 shrink-0" aria-hidden="true" />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      onClick={() => setIsAdvancedMenuOpen(true)}
+                      className={cn(
+                        HEADER_ICON_BUTTON_CLASS,
+                        "me-1.5 sm:me-2.5 shrink-0 cursor-pointer text-foreground/80 hover:text-foreground",
+                        isAdvancedMenuOpen && "bg-foreground/10 text-foreground"
+                      )}
+                      aria-label={isRtl ? "تنظیمات پیشرفته جستجو" : "Advanced Search Settings"}
+                    >
+                      <AnimatedHamburger isOpen={isAdvancedMenuOpen} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    {isRtl ? "ابزارهای پیشرفته جستجو" : "Advanced Search Tools"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
               <Link
                 href="/"
                 dir="ltr"
@@ -273,9 +332,9 @@ export function SearchResultsClient() {
           {/* ──────────────────────────────────────────────────────────── */}
           {/* RESULTS LIST                                                 */}
           {/* ──────────────────────────────────────────────────────────── */}
-          {response.results.length > 0 ? (
+          {displayedResults.length > 0 ? (
             <div className="space-y-7 w-full">
-              {response.results.map((item) => (
+              {displayedResults.map((item) => (
                 <SearchResultCard
                   key={item.id}
                   item={item}
@@ -345,6 +404,138 @@ export function SearchResultsClient() {
     {/* 4. FOOTER (Non-fixed, IP Location & Useful Links)            */}
     {/* ──────────────────────────────────────────────────────────── */}
     <SearchFooter startOffsetClass={START_OFFSET_CLASS} />
+
+    {/* ──────────────────────────────────────────────────────────── */}
+    {/* ADVANCED GOOGLE-STYLE SEARCH SIDE MENU DRAWER                */}
+    {/* ──────────────────────────────────────────────────────────── */}
+    <Sheet open={isAdvancedMenuOpen} onOpenChange={setIsAdvancedMenuOpen}>
+      <SheetContent
+        side={isRtl ? "right" : "left"}
+        className="w-[320px] sm:w-[380px] p-6 flex flex-col justify-between overflow-y-auto"
+      >
+        <div>
+          <SheetHeader className="mb-6 text-start">
+            <SheetTitle className="flex items-center gap-2 text-lg font-bold">
+              <SlidersHorizontal className="size-5 text-primary" />
+              <span>{isRtl ? "تنظیمات پیشرفته جستجو" : "Advanced Search Settings"}</span>
+            </SheetTitle>
+            <SheetDescription className="text-xs text-muted-foreground">
+              {isRtl ? "فیلتر دقیق و ابزارهای جستجوی حرفه‌ای گوگل" : "Google-style search tools and precision filters"}
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="space-y-6">
+            {/* Category Quick Filter */}
+            <div>
+              <span className="text-xs font-bold text-muted-foreground mb-2.5 block">
+                {isRtl ? "دسته‌بندی نتایج" : "Search Domain"}
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {categoryTabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleCategoryChange(tab.id)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
+                      category === tab.id
+                        ? "bg-primary text-white border-primary"
+                        : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Language Filter */}
+            <div>
+              <span className="text-xs font-bold text-muted-foreground mb-2.5 flex items-center gap-1.5">
+                <Globe className="size-3.5 text-primary" />
+                <span>{isRtl ? "زبان محتوا" : "Content Language"}</span>
+              </span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: "all", label: isRtl ? "همه" : "All" },
+                  { id: "fa", label: "فارسی" },
+                  { id: "en", label: "English" },
+                ].map((lang) => (
+                  <button
+                    key={lang.id}
+                    type="button"
+                    onClick={() => setLanguageFilter(lang.id as any)}
+                    className={cn(
+                      "py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center",
+                      languageFilter === lang.id
+                        ? "bg-primary text-white border-primary"
+                        : "bg-muted/50 hover:bg-muted text-muted-foreground border-border/50"
+                    )}
+                  >
+                    {lang.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Precision Filters */}
+            <div>
+              <span className="text-xs font-bold text-muted-foreground mb-2.5 flex items-center gap-1.5">
+                <Filter className="size-3.5 text-primary" />
+                <span>{isRtl ? "فیلترهای اختصاصی مهندسی" : "Engineering Precision"}</span>
+              </span>
+              <div className="space-y-2.5 bg-muted/30 p-3.5 rounded-2xl border border-border/50">
+                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium">
+                  <input
+                    type="checkbox"
+                    checked={filterOnlyFormulas}
+                    onChange={(e) => setFilterOnlyFormulas(e.target.checked)}
+                    className="size-4 rounded-md accent-primary"
+                  />
+                  <span>{isRtl ? "فقط موارد دارای فرمول ریاضی" : "Formulas & Equations Only"}</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium">
+                  <input
+                    type="checkbox"
+                    checked={filterOnlyStandards}
+                    onChange={(e) => setFilterOnlyStandards(e.target.checked)}
+                    className="size-4 rounded-md accent-primary"
+                  />
+                  <span>{isRtl ? "فقط موارد دارای استاندارد ASME/API" : "Codes & Standards Only"}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Reset Button */}
+        <div className="pt-4 border-t border-border/40 flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setFilterOnlyFormulas(false);
+              setFilterOnlyStandards(false);
+              setLanguageFilter("all");
+              handleCategoryChange("all");
+            }}
+            className="rounded-full text-xs"
+          >
+            <RotateCcw className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+            <span>{isRtl ? "بازنشانی فیلترها" : "Reset Filters"}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => setIsAdvancedMenuOpen(false)}
+            className="rounded-full px-5 text-xs font-semibold"
+          >
+            <span>{isRtl ? "مشاهده نتایج" : "Done"}</span>
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
   </div>
 );
 }

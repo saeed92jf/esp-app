@@ -7,7 +7,8 @@ export type SearchCategory =
   | "modules"
   | "tasks"
   | "videos"
-  | "dictionary";
+  | "dictionary"
+  | "didYouKnow";
 
 export interface SearchItem {
   id: string;

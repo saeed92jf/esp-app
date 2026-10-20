@@ -4,6 +4,8 @@
 
 import { ENGINEERING_TERMS_FA } from "@/modules/home/data/engineering-dictionary.fa";
 import { ENGINEERING_TERMS_EN } from "@/modules/home/data/engineering-dictionary.en";
+import { DID_YOU_KNOW_CARDS_FA } from "@/modules/home/data/did-you-know.fa";
+import { DID_YOU_KNOW_CARDS_EN } from "@/modules/home/data/did-you-know.en";
 import type { SearchItem } from "../types/search.types";
 
 /**
@@ -66,8 +68,8 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     id: "mod-dictionary",
     title: "واژه‌نامه تخصصی مهندسی و اصطلاحات صنعتی",
     titleEn: "Engineering Dictionary & Technical Glossary",
-    category: "modules",
-    href: "/#dictionary",
+    category: "dictionary",
+    href: "/dictionary",
     snippet: "بیش از ۲۰۰۰ اصطلاح تخصصی مهندسی مکانیک، نفت، گاز، پتروشیمی، متریال، استانداردها و اصطلاحات کارگاهی با ارجاع دقیق به استانداردها.",
     snippetEn: "Over 2,000 engineering terms in mechanical, oil & gas, petrochemical, materials, and standards with exact code references.",
     breadcrumbs: ["سامانه پارس", "دانش و مراجع", "واژه‌نامه تخصصی"],
@@ -84,6 +86,28 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
       "standards", "abbreviations", "materials", "equipment", "jargon",
       "واژه نامه", "دیکشنری", "اصطلاحات", "اصطلاحات مهندسی", "تعاریف", "استانداردها",
       "مخفف ها", "متریال", "تجهیزات", "اصطلاحات کارگاهی", "واژگان تخصصی"
+    ],
+  },
+  {
+    id: "mod-did-you-know",
+    title: "دانستنی‌های علمی و مهندسی (آیا می‌دانید؟)",
+    titleEn: "Scientific & Engineering Insights (Did You Know?)",
+    category: "didYouKnow",
+    href: "/did-you-know",
+    snippet: "نکات شگفت‌انگیز علمی، استانداردهای طراحی ASME، فیزیک سیالات، مخازن تحت فشار، پدیده کاویتاسیون و نانوفناوری.",
+    snippetEn: "Fascinating scientific insights, ASME design codes, fluid mechanics, cavitation, and pressure vessel engineering facts.",
+    breadcrumbs: ["سامانه پارس", "دانش و مراجع", "آیا می‌دانید"],
+    breadcrumbsEn: ["ESP Platform", "Knowledge & References", "Did You Know"],
+    iconName: "Lightbulb",
+    badge: "نکات علمی",
+    badgeEn: "Science Facts",
+    metadata: {
+      categoryName: "دانش مهندسی",
+      standard: "ASME / API / Fluid Mechanics",
+    },
+    keywords: [
+      "did you know", "insights", "facts", "science", "physics", "formulas",
+      "آیا می دانید", "آیا میدانید", "نکات علمی", "دانستنی ها", "فرمول ها", "علم مواد"
     ],
   },
   {
@@ -576,7 +600,7 @@ function buildDictionarySearchItems(): SearchItem[] {
       title: `${term.term} ${term.secondaryTerm ? `(${term.secondaryTerm})` : ""}`,
       titleEn: enMatch ? enMatch.term : term.secondaryTerm,
       category: "dictionary" as const,
-      href: `/#dictionary?term=${encodeURIComponent(term.id)}`,
+      href: `/dictionary?term=${encodeURIComponent(term.id)}`,
       snippet: term.shortDesc + (term.keyTip ? ` نکته کلیدی: ${term.keyTip}` : ""),
       snippetEn: enMatch ? enMatch.shortDesc : undefined,
       breadcrumbs: ["واژه‌نامه تخصصی", term.categoryName, term.term],
@@ -594,11 +618,55 @@ function buildDictionarySearchItems(): SearchItem[] {
 }
 
 /**
+ * Builds search items from scientific & engineering Did-You-Know cards.
+ */
+function buildDidYouKnowSearchItems(): SearchItem[] {
+  return DID_YOU_KNOW_CARDS_FA.map((card) => {
+    const enMatch = DID_YOU_KNOW_CARDS_EN.find((e) => e.id === card.id);
+    const keywords = [
+      card.title,
+      card.category,
+      card.tag,
+      card.formula,
+      card.ref,
+      ...(enMatch ? [enMatch.title, enMatch.category, enMatch.tag, enMatch.formula] : []),
+      "آیا می دانید",
+      "آیا میدانید",
+      "دانستنی ها",
+      "نکات علمی",
+      "فرمول",
+      "پدیده فیزیکی",
+    ].filter(Boolean);
+
+    return {
+      id: `dyk-${card.id}`,
+      title: card.title,
+      titleEn: enMatch?.title,
+      category: "didYouKnow" as const,
+      href: `/did-you-know?card=${encodeURIComponent(card.id)}`,
+      snippet: card.description + (card.formula ? ` فرمول: ${card.formula}` : "") + ` (${card.ref})`,
+      snippetEn: enMatch ? enMatch.description : undefined,
+      breadcrumbs: ["آیا می‌دانید؟", card.category, card.tag],
+      breadcrumbsEn: ["Did You Know?", enMatch?.category || card.category, enMatch?.tag || card.tag],
+      iconName: "Lightbulb",
+      badge: card.tag || card.category,
+      badgeEn: enMatch?.tag || "Fact",
+      metadata: {
+        standard: card.ref,
+        categoryName: card.category,
+      },
+      keywords,
+    };
+  });
+}
+
+/**
  * Combined all searchable items across all domains.
  */
 export const ALL_SEARCH_ITEMS: SearchItem[] = [
   ...CORE_SEARCH_ITEMS,
   ...buildDictionarySearchItems(),
+  ...buildDidYouKnowSearchItems(),
 ];
 
 /**

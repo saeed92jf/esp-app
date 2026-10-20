@@ -16,6 +16,9 @@ import {
   ShieldAlert,
   Users,
   Sliders,
+  UserCheck,
+  Briefcase,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +30,9 @@ import {
   TaskStatus,
   SubTask,
   TaskAssignee,
+  TaskScope,
 } from "../types/tasks.types";
+import { cn } from "@/lib/utils";
 
 interface TaskCreateDialogProps {
   open: boolean;
@@ -38,6 +43,7 @@ interface TaskCreateDialogProps {
   categories: string[];
   companies?: string[];
   defaultStatus?: TaskStatus;
+  initialScope?: TaskScope;
 }
 
 export function TaskCreateDialog({
@@ -45,10 +51,18 @@ export function TaskCreateDialog({
   onClose,
   onCreateTask,
   categories,
-  companies = ["یورو اسلات پارس", "نانو پالایش سرام", "پترو اسپادانا"],
+  companies = ["یورو اسلات پارس", "نانو پالایش سرام"],
   defaultStatus = "pending",
+  initialScope = "team",
 }: TaskCreateDialogProps) {
   const t = useTranslations("Tasks");
+
+  // Scope: 'team' (organizational/manager) vs 'personal' (private workspace)
+  const [scope, setScope] = useState<TaskScope>(initialScope);
+
+  // For personal tasks: linked to project vs standalone
+  const [personalType, setPersonalType] = useState<"project" | "standalone">("project");
+  const [relatedProjectTitle, setRelatedProjectTitle] = useState("");
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -61,12 +75,12 @@ export function TaskCreateDialog({
   const [initialProgress, setInitialProgress] = useState(0);
   const [isManagerDefined, setIsManagerDefined] = useState(true);
 
-  // Assignees
+  // Assignees for team tasks
   const [assigneeName, setAssigneeName] = useState("سعید جلیلی");
   const [assigneeRole, setAssigneeRole] = useState("سرپرست مهندسی فرآیند");
   const [collaborators, setCollaborators] = useState<TaskAssignee[]>([
-    { id: "lead", name: "سعید جلیلی", role: "سرپرست مهندسی فرآیند", isLead: true },
-    { id: "mgr", name: "مهندس علیرضا رضایی", role: "مدیر فنی و مهندسی" },
+    { id: "lead", name: "سعید جلیلی", role: "سرپرست مهندسی فرآیند", isLead: true, companies: ["یورو اسلات پارس", "نانو پالایش سرام"] },
+    { id: "mgr", name: "مهندس علیرضا رضایی", role: "مدیر فنی و مهندسی", companies: ["یورو اسلات پارس", "نانو پالایش سرام"] },
   ]);
   const [extraCollabName, setExtraCollabName] = useState("");
   const [extraCollabRole, setExtraCollabRole] = useState("");
@@ -79,6 +93,12 @@ export function TaskCreateDialog({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (open) {
+      setScope(initialScope);
+    }
+  }, [open, initialScope]);
 
   useEffect(() => {
     if (!open) return;
@@ -128,20 +148,28 @@ export function TaskCreateDialog({
 
     setIsSubmitting(true);
     try {
+      const isPersonalTask = scope === "personal";
+
       await onCreateTask({
         title: title.trim(),
         description: description.trim() || undefined,
-        category: category.trim() || "عمومی",
-        company,
+        category: category.trim() || (isPersonalTask ? "یادداشت شخصی" : "عمومی"),
+        company: (company as any) || "یورو اسلات پارس",
         priority,
         status: defaultStatus,
-        createdBy: "manager",
-        creatorName: "مهندس علیرضا رضایی (مدیر مهندسی)",
-        assignedToName: assigneeName.trim() || "سعید جلیلی",
-        assignedToRole: assigneeRole.trim() || "سرپرست مهندسی فرآیند",
-        assignees: collaborators.length > 0 ? collaborators : [
-          { id: "default", name: assigneeName, role: assigneeRole, isLead: true }
-        ],
+        scope,
+        isPersonal: isPersonalTask,
+        relatedProjectId: isPersonalTask && personalType === "project" ? (relatedProjectTitle ? "proj-custom" : undefined) : undefined,
+        relatedProjectTitle: isPersonalTask && personalType === "project" ? relatedProjectTitle.trim() || "پروژه عمومی واحد ۴۰۰" : undefined,
+        createdBy: isPersonalTask ? "user" : (isManagerDefined ? "manager" : "user"),
+        creatorName: isPersonalTask ? "سعید جلیلی" : "مهندس علیرضا رضایی (مدیر مهندسی)",
+        assignedToName: isPersonalTask ? "سعید جلیلی" : (assigneeName.trim() || "سعید جلیلی"),
+        assignedToRole: isPersonalTask ? "سرپرست مهندسی فرآیند" : (assigneeRole.trim() || "سرپرست مهندسی فرآیند"),
+        assignees: isPersonalTask
+          ? [{ id: "usr-1", name: "سعید جلیلی", role: "شخصی", isLead: true, companies: ["یورو اسلات پارس", "نانو پالایش سرام"] }]
+          : collaborators.length > 0
+          ? collaborators
+          : [{ id: "default", name: assigneeName, role: assigneeRole, isLead: true }],
         progressPercent: initialProgress,
         timelineDate: timelineDate.trim() || undefined,
         milestoneLabel: title.trim(),
@@ -149,13 +177,14 @@ export function TaskCreateDialog({
         startDate: new Intl.DateTimeFormat("fa-IR").format(new Date()),
         estimatedHours: estimatedHours ? Number(estimatedHours) : undefined,
         loggedHours: 0,
-        isManagerDefined,
+        isManagerDefined: isPersonalTask ? false : isManagerDefined,
         subtasks,
       });
 
       // Reset
       setTitle("");
       setDescription("");
+      setRelatedProjectTitle("");
       onClose();
     } finally {
       setIsSubmitting(false);
@@ -168,36 +197,118 @@ export function TaskCreateDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-2xl bg-white dark:bg-card border border-border/80 shadow-2xl overflow-hidden fa-num animate-in zoom-in-95 duration-200"
+        className="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl bg-white dark:bg-card border border-border/80 shadow-2xl overflow-hidden fa-num animate-in zoom-in-95 duration-200"
         role="dialog"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
-              <ShieldAlert className="size-4.5" />
+          <div className="flex items-center gap-2.5">
+            <div className={cn("p-2 rounded-2xl", scope === "personal" ? "bg-emerald-500/10 text-emerald-600" : "bg-primary/10 text-primary")}>
+              {scope === "personal" ? <UserCheck className="size-5" /> : <ShieldAlert className="size-5" />}
             </div>
             <div className="flex flex-col">
               <h2 className="text-base sm:text-lg font-bold text-foreground">
-                {t("createModal.title")}
+                {scope === "personal" ? "ثبت تسک شخصی من" : t("createModal.title")}
               </h2>
               <span className="text-[11px] text-muted-foreground">
-                تفکیک بر اساس شرکت و تخصیص تیم چندنفره
+                {scope === "personal"
+                  ? "وظایف و یادداشت‌های انفرادی شما (کاملاً ایزوله بدون تداخل با تسک‌های شرکتی)"
+                  : "تسک سازمانی با تفکیک دو شرکت یورو اسلات و نانو پالایش سرام"}
               </span>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="size-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+            className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer"
           >
             <X className="size-4" />
           </button>
         </div>
 
         {/* Scrollable Form Content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 flex flex-col gap-4">
+          {/* ── Scope Switcher: Team vs Personal ── */}
+          <div className="p-1 rounded-2xl bg-muted/30 border border-border/60 grid grid-cols-2 gap-1 text-xs">
+            <button
+              type="button"
+              onClick={() => setScope("team")}
+              className={cn(
+                "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                scope === "team"
+                  ? "bg-primary text-white shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+              )}
+            >
+              <Briefcase className="size-3.5" />
+              <span>تسک سازمانی / پروژه‌ای</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setScope("personal")}
+              className={cn(
+                "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                scope === "personal"
+                  ? "bg-emerald-600 text-white shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+              )}
+            >
+              <UserCheck className="size-3.5" />
+              <span>تسک شخصی من (انفرادی)</span>
+            </button>
+          </div>
+
+          {/* If Personal: Choose Project-Linked vs Standalone */}
+          {scope === "personal" && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-500/30 flex flex-col gap-3">
+              <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                <Link2 className="size-3.5 text-emerald-600" />
+                <span>نحوه اتصال تسک شخصی:</span>
+              </span>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setPersonalType("project")}
+                  className={cn(
+                    "p-2.5 rounded-xl border font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                    personalType === "project"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      : "bg-white dark:bg-card text-muted-foreground border-border/60 hover:text-foreground"
+                  )}
+                >
+                  <span>متصل به یک پروژه خاص</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPersonalType("standalone")}
+                  className={cn(
+                    "p-2.5 rounded-xl border font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer",
+                    personalType === "standalone"
+                      ? "bg-emerald-600 text-white border-emerald-600 shadow-2xs"
+                      : "bg-white dark:bg-card text-muted-foreground border-border/60 hover:text-foreground"
+                  )}
+                >
+                  <span>مستقل و انفرادی برای خودم</span>
+                </button>
+              </div>
+
+              {personalType === "project" && (
+                <div className="flex flex-col gap-1.5 pt-1">
+                  <label className="text-[11px] font-semibold text-emerald-900 dark:text-emerald-300">
+                    نام یا کد پروژه مربوطه:
+                  </label>
+                  <Input
+                    value={relatedProjectTitle}
+                    onChange={(e) => setRelatedProjectTitle(e.target.value)}
+                    placeholder="مثلاً: پروژه واحد ۴۰۰ پتروشیمی یا راکتور نانو سرام"
+                    className="text-xs rounded-xl bg-white dark:bg-card"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Title */}
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-foreground flex items-center gap-1">
@@ -207,13 +318,13 @@ export function TaskCreateDialog({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("createModal.titlePlaceholder")}
+              placeholder={scope === "personal" ? "عنوان تسک یا یادداشت شخصی..." : t("createModal.titlePlaceholder")}
               className="text-xs sm:text-sm rounded-xl"
               required
             />
           </div>
 
-          {/* Company & Category Row */}
+          {/* Company & Category Row (Only 2 Companies: Euroslot & Nano Palayesh Ceram) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -222,9 +333,8 @@ export function TaskCreateDialog({
               </label>
               <Combobox
                 options={[
-                  { value: "یورو اسلات پارس", label: "یورو اسلات پارس" },
-                  { value: "نانو پالایش سرام", label: "نانو پالایش سرام" },
-                  { value: "پترو اسپادانا", label: "پترو اسپادانا" },
+                  { value: "یورو اسلات پارس", label: "یورو اسلات پارس (Euroslot Pars)" },
+                  { value: "نانو پالایش سرام", label: "نانو پالایش سرام (Nano Palayesh Ceram)" },
                 ]}
                 value={company}
                 onChange={setCompany}
@@ -240,13 +350,13 @@ export function TaskCreateDialog({
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="مثلاً P&ID FLOW, ASME, QC"
+                placeholder="مثلاً P&ID, ASME, QC, یادداشت شخصی"
                 className="text-xs rounded-xl"
               />
             </div>
           </div>
 
-          {/* Priority & Timeline Date Row */}
+          {/* Priority & Due Date Row */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground">
@@ -268,90 +378,94 @@ export function TaskCreateDialog({
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <Calendar className="size-3.5 text-primary" />
-                <span>{t("createModal.timelineDate")}</span>
-              </label>
-              <Input
-                value={timelineDate}
-                onChange={(e) => setTimelineDate(e.target.value)}
-                placeholder="مثلاً ۱۸ اسفند"
-                className="text-xs rounded-xl"
-              />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Calendar className="size-3.5 text-primary" />
-                <span>{t("createModal.dueDate")}</span>
+                <span>{t("table.dueDate")}</span>
               </label>
               <Input
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
                 placeholder="1403/08/20"
-                className="text-xs rounded-xl"
+                className="h-9 text-xs rounded-xl font-mono"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                <Clock className="size-3.5 text-primary" />
+                <span>تخمین ساعت کار</span>
+              </label>
+              <Input
+                type="number"
+                value={estimatedHours}
+                onChange={(e) => setEstimatedHours(e.target.value)}
+                placeholder="16"
+                className="h-9 text-xs rounded-xl font-mono"
               />
             </div>
           </div>
 
-          {/* ── Multiple Assignees Management ── */}
-          <div className="p-3.5 rounded-xl border border-border/60 bg-muted/15 flex flex-col gap-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Users className="size-3.5 text-primary" />
-                <span>{t("collaborators.title")}</span>
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                {collaborators.length} عضو درگیر
-              </span>
-            </div>
-
-            {/* Existing Collaborators chips */}
-            <div className="flex flex-wrap gap-1.5">
-              {collaborators.map((c) => (
-                <div
-                  key={c.id}
-                  className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white dark:bg-card border border-border/80 text-[11px] shadow-2xs"
-                >
-                  <span className="font-semibold">{c.name}</span>
-                  <span className="text-[10px] text-muted-foreground">({c.role})</span>
-                  {collaborators.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCollaborator(c.id)}
-                      className="size-3.5 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer ms-1"
-                    >
-                      <X className="size-2.5" />
-                    </button>
-                  )}
+          {/* Assignees Section - Only visible for Team tasks */}
+          {scope === "team" && (
+            <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                  <Users className="size-4 text-primary" />
+                  <span>تیم مجری و همکاران سازمانی</span>
                 </div>
-              ))}
-            </div>
+                <span className="text-[10px] text-muted-foreground">
+                  پرسنل ممکن است در هر دو شرکت نقش داشته باشند
+                </span>
+              </div>
 
-            {/* Quick Add Extra Collaborator Inputs */}
-            <div className="flex items-center gap-2 pt-1">
-              <Input
-                value={extraCollabName}
-                onChange={(e) => setExtraCollabName(e.target.value)}
-                placeholder="نام همکار جدید..."
-                className="text-xs rounded-lg bg-background h-8"
-              />
-              <Input
-                value={extraCollabRole}
-                onChange={(e) => setExtraCollabRole(e.target.value)}
-                placeholder="سمت (طراح، ناظر...)"
-                className="text-xs rounded-lg bg-background h-8"
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={handleAddCollaborator}
-                disabled={!extraCollabName.trim()}
-                className="rounded-lg h-8 text-xs shrink-0 cursor-pointer"
-              >
-                افزودن
-              </Button>
+              {/* Collaborators Badges */}
+              <div className="flex flex-wrap gap-2">
+                {collaborators.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-card border border-border/60 text-xs shadow-2xs"
+                  >
+                    <User className="size-3 text-primary" />
+                    <span className="font-semibold">{c.name}</span>
+                    <span className="text-[10px] text-muted-foreground">({c.role})</span>
+                    {collaborators.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCollaborator(c.id)}
+                        className="size-3.5 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive cursor-pointer ms-1"
+                      >
+                        <X className="size-2.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Quick Add Extra Collaborator Inputs */}
+              <div className="flex items-center gap-2 pt-1">
+                <Input
+                  value={extraCollabName}
+                  onChange={(e) => setExtraCollabName(e.target.value)}
+                  placeholder="نام همکار جدید..."
+                  className="text-xs rounded-xl bg-background h-8"
+                />
+                <Input
+                  value={extraCollabRole}
+                  onChange={(e) => setExtraCollabRole(e.target.value)}
+                  placeholder="سمت (طراح، ناظر...)"
+                  className="text-xs rounded-xl bg-background h-8"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleAddCollaborator}
+                  disabled={!extraCollabName.trim()}
+                  className="rounded-xl h-8 text-xs shrink-0 cursor-pointer"
+                >
+                  افزودن
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
@@ -402,7 +516,7 @@ export function TaskCreateDialog({
                 {subtasks.map((s) => (
                   <div
                     key={s.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border/40 text-xs"
+                    className="flex items-center justify-between p-2 rounded-xl bg-muted/20 border border-border/40 text-xs"
                   >
                     <span>{s.title}</span>
                     <button
@@ -418,20 +532,22 @@ export function TaskCreateDialog({
             )}
           </div>
 
-          {/* Initial Progress & Manager Defined Checkbox */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/50 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isManagerDefined}
-                onChange={(e) => setIsManagerDefined(e.target.checked)}
-                className="size-4 rounded accent-primary cursor-pointer"
-              />
-              <span className="font-semibold text-foreground">
-                ابلاغ رسمی به عنوان تسک سازمانی مدیر
-              </span>
-            </label>
-          </div>
+          {/* Official Manager Task Checkbox - Only for Team */}
+          {scope === "team" && (
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/20 border border-border/50 text-xs">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isManagerDefined}
+                  onChange={(e) => setIsManagerDefined(e.target.checked)}
+                  className="size-4 rounded accent-primary cursor-pointer"
+                />
+                <span className="font-semibold text-foreground">
+                  ابلاغ رسمی به عنوان تسک سازمانی مدیر
+                </span>
+              </label>
+            </div>
+          )}
 
           {/* Footer Submit */}
           <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/50">
@@ -448,9 +564,9 @@ export function TaskCreateDialog({
               type="submit"
               size="sm"
               disabled={!title.trim() || isSubmitting}
-              className="text-xs font-semibold rounded-xl cursor-pointer shadow-2xs"
+              className={cn("text-xs font-semibold rounded-xl cursor-pointer shadow-2xs", scope === "personal" && "bg-emerald-600 hover:bg-emerald-700")}
             >
-              {t("createModal.submit")}
+              {scope === "personal" ? "ثبت تسک شخصی" : t("createModal.submit")}
             </Button>
           </div>
         </form>
