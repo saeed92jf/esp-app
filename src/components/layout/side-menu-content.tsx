@@ -12,6 +12,7 @@ import { NAVIGATION } from "@/config/navigation";
 import { AppIcon } from "@/components/ui/app-icon";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { segmentedAccordionMotion } from "@/lib/animations/segmented-accordion";
 
 export interface SideMenuContentProps {
   onClose?: () => void;
@@ -152,8 +153,10 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
             type="button"
             onClick={handleToggleMenuExpanded}
             className={cn(
-              "segmented-item group relative flex items-center justify-between gap-3.5 px-5 py-4.5 sm:py-5 text-start w-full outline-none cursor-pointer overflow-hidden transition-all duration-150 ease-out",
-              menuExpanded ? "rounded-t-[22px] sm:rounded-t-[26px] rounded-b-[6px]" : "rounded-[22px] sm:rounded-[26px]"
+              "segmented-item group relative flex items-center justify-between gap-3.5 px-5 py-4.5 sm:py-5 text-start w-full outline-none cursor-pointer overflow-hidden",
+              menuExpanded
+                ? "rounded-t-[22px] sm:rounded-t-[26px] rounded-b-[6px] transition-[border-radius] duration-120 delay-0 ease-out"
+                : "rounded-[22px] sm:rounded-[26px] transition-[border-radius] duration-220 delay-100 ease-[cubic-bezier(0.16,1,0.3,1)]"
             )}
           >
             <span className="relative z-10 flex items-center gap-3.5 overflow-hidden">
@@ -179,10 +182,9 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
           <AnimatePresence initial={false}>
             {menuExpanded && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.12, ease: "easeOut" }}
+                initial={segmentedAccordionMotion.initial}
+                animate={segmentedAccordionMotion.animate}
+                exit={segmentedAccordionMotion.exit}
                 className="flex flex-col gap-[2px] overflow-hidden"
               >
                 {filteredNav.map((group) => {

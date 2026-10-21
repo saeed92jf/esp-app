@@ -32,6 +32,10 @@ import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import {
+  segmentedAccordionMotion,
+  getSegmentedAccordionHeaderClass,
+} from "@/lib/animations/segmented-accordion";
+import {
   type DashboardNotificationItem,
   type DashboardTask,
   SAMPLE_NOTIFICATIONS,
@@ -271,9 +275,7 @@ export function NotificationsPopover({
                   onClick={() => setIsExpanded(!isExpanded)}
                   className={cn(
                     "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer",
-                    isExpanded
-                      ? "rounded-t-[32px] rounded-b-[6px]"
-                      : "rounded-[32px]"
+                    getSegmentedAccordionHeaderClass(isExpanded, { isTopRounded: true, fullCapsuleWhenClosed: true })
                   )}
                 >
                   <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0">
@@ -310,10 +312,9 @@ export function NotificationsPopover({
                 <AnimatePresence initial={false}>
                   {isExpanded && (
                     <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      initial={segmentedAccordionMotion.initial}
+                      animate={segmentedAccordionMotion.animate}
+                      exit={segmentedAccordionMotion.exit}
                       className="flex flex-col overflow-hidden gap-[2px]"
                     >
                       {/* Segment Filter (All / Unread) */}

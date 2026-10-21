@@ -335,7 +335,7 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     keywords: [
       "task", "tasks", "board", "kanban", "timeline", "roadmap", "euroslot", "nano palayesh",
       "تسک", "تسک ها", "مدیریت تسک", "کانبان", "خط زمانی", "رودمپ", "یورو اسلات", "یورو اسلات پارس",
-      "نانو پالایش", "نانو پالایش سرام", "پترو اسپادانا", "الحاقیه نقشه", "نقشه", "کارتابل"
+      "نانو پالایش", "نانو پالایش سرام", "الحاقیه نقشه", "نقشه", "کارتابل"
     ],
   },
   {
@@ -412,14 +412,14 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
   },
   {
     id: "task-usr-201",
-    title: "تسک: تست هیدرواستاتیک و بازرسی NDT پکیج راکتور (پترو اسپادانا)",
-    titleEn: "Task: Hydrostatic Test & NDT Inspection for Reactor Package (Petro Espadana)",
+    title: "تسک: تست هیدرواستاتیک و بازرسی NDT پکیج راکتور (یورو اسلات پارس)",
+    titleEn: "Task: Hydrostatic Test & NDT Inspection for Reactor Package (Euroslot Pars)",
     category: "tasks",
     href: "/dashboard/tasks?taskId=task-usr-201",
     snippet: "انجام آزمون هیدرواستاتیک در ۱.۵ برابر فشار طراحی، بازرسی رادیوگرافی و صدور گواهی MTC 3.1 با الحاقیه مدارک بازرسی.",
     snippetEn: "Hydrostatic test at 1.5x design pressure, radiography inspection, and MTC 3.1 certificate with inspection drawings.",
-    breadcrumbs: ["تسک‌ها", "پترو اسپادانا", "کنترل کیفیت NDT"],
-    breadcrumbsEn: ["Tasks", "Petro Espadana", "NDT & Quality"],
+    breadcrumbs: ["تسک‌ها", "یورو اسلات پارس", "کنترل کیفیت NDT"],
+    breadcrumbsEn: ["Tasks", "Euroslot Pars", "NDT & Quality"],
     iconName: "CheckCircle",
     badge: "تکمیل شده",
     badgeEn: "Completed",
@@ -427,11 +427,11 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
       date: "1403/08/04",
       standard: "ASME UG-99 / NDT",
       status: "تکمیل شده",
-      categoryName: "پترو اسپادانا",
+      categoryName: "یورو اسلات پارس",
     },
     keywords: [
-      "task", "hydrostatic test", "ndt", "petro espadana", "asme ug-99", "mtc",
-      "تسک", "تست هیدرواستاتیک", "هیدروتست", "پترو اسپادانا", "بازرسی جوش", "کنترل کیفیت", "سارا محمدی"
+      "task", "hydrostatic test", "ndt", "euroslot pars", "asme ug-99", "mtc",
+      "تسک", "تست هیدرواستاتیک", "هیدروتست", "یورو اسلات پارس", "بازرسی جوش", "کنترل کیفیت", "سارا محمدی"
     ],
   },
 

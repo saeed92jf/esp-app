@@ -8,6 +8,7 @@ import {
   ChartPolar,
   Kanban,
   ListChecks,
+  ListPlus,
   Calendar,
   PresentationChart,
   GridFour,
@@ -377,9 +378,15 @@ export const NAVIGATION: NavGroup[] = [
       },
       {
         labelKey: "tasks",
-        href: "/projects/tasks",
+        href: "/dashboard/tasks",
         icon: ListChecks,
         color: "sky",
+      },
+      {
+        labelKey: "newTask",
+        href: "/dashboard/tasks/new",
+        icon: ListPlus,
+        color: "emerald",
       },
       {
         labelKey: "calendar",

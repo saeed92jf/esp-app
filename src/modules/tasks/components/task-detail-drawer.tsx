@@ -166,10 +166,10 @@ export function TaskDetailDrawer({
   };
 
   const statusOptions: { value: TaskStatus; label: string }[] = [
-    { value: "pending", label: "To Do" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "review", label: "Review" },
-    { value: "completed", label: "Done" },
+    { value: "pending", label: t("status.pending") },
+    { value: "in_progress", label: t("status.in_progress") },
+    { value: "review", label: t("status.review") },
+    { value: "completed", label: t("status.completed") },
   ];
 
   const isRtl = locale === "fa";

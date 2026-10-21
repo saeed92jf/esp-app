@@ -267,10 +267,11 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 6px; /* Decreased fillet for middle items */
     overflow: hidden;
     position: relative;
+    transition: border-radius 280ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .dark .segmented-item {
-    background-color: #000000 !important;
+    background-color: #121212 !important;
   }
 
   /* GPU-accelerated ultra-smooth hover layer for segmented-item */
@@ -319,9 +320,12 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   /* Last item logic */
-  .segmented-list > .segmented-item:last-child {
-    border-end-start-radius: 32px;
-    border-end-end-radius: 32px;
+  .segmented-list > .segmented-item:last-child,
+  .segmented-list > div > .segmented-item:last-child,
+  .segmented-list > div:last-child > .segmented-item:last-child,
+  .segmented-list .segmented-item-last {
+    border-end-start-radius: 32px !important;
+    border-end-end-radius: 32px !important;
   }
   .segmented-list.padded-ends > .segmented-item:last-child {
     padding-bottom: 1.25rem !important; /* pb-5 */
@@ -335,6 +339,27 @@ h1, h2, h3, h4, h5, h6 {
     border-start-end-radius: 32px !important;
     border-end-start-radius: 32px !important;
     border-end-end-radius: 32px !important;
+  }
+
+  /* Global Segmented Accordion Header Fillet Timing & Sequencing */
+  /* On Open: Immediately flatten bottom edge to 6px (no delay) */
+  .segmented-accordion-trigger[data-state="open"],
+  .segmented-accordion-trigger.is-open {
+    border-end-start-radius: 6px !important;
+    border-end-end-radius: 6px !important;
+    transition: border-radius 120ms cubic-bezier(0.16, 1, 0.3, 1) 0ms !important;
+  }
+
+  /* On Close: Items hide first (~100ms), THEN bottom edge morphs to 32px with 100ms delay */
+  .segmented-accordion-trigger[data-state="closed"],
+  .segmented-accordion-trigger.is-closed {
+    border-end-start-radius: 32px !important;
+    border-end-end-radius: 32px !important;
+    transition: border-radius 220ms cubic-bezier(0.16, 1, 0.3, 1) 100ms !important;
+  }
+
+  .segmented-accordion-trigger.is-closed.full-capsule {
+    border-radius: 32px !important;
   }
 }
 

@@ -10,7 +10,7 @@ import {
   ProjectTaskItem,
 } from "../types/projects.types";
 
-const STORAGE_KEY = "esp_projects_data_v1";
+const STORAGE_KEY = "esp_projects_data_v3";
 
 export const DEFAULT_PROJECT_PHASES: ProjectPhase[] = [
   {
@@ -98,9 +98,9 @@ const INITIAL_PROJECTS: ProjectItem[] = [
     code: "PRJ-ESP-2024-TK101",
     title: "طراحی و ساخت پکیج مخازن تحت فشار آمونیاک واحد پتروشیمی (TK-101)",
     clientName: "شرکت پتروشیمی بوعلی سینا",
-    organization: "پترو اسپادانا",
+    organization: "یورو اسلات پارس",
     quotationNumber: "QT-2024-884-R2",
-    contractNumber: "CNT-1403-PETRO-091",
+    contractNumber: "CNT-1403-EURO-091",
     projectType: "internal",
     status: "fabrication",
     progressPercent: 62,
@@ -109,7 +109,7 @@ const INITIAL_PROJECTS: ProjectItem[] = [
     targetEndDate: "1403/12/15",
     budgetAmount: "۴۸,۵۰۰,۰۰۰,۰۰۰",
     currency: "IRR",
-    dmsNetworkPath: "\\\\DMS\\PetroEspadana\\Projects\\TK101-Ammonia-Vessel\\",
+    dmsNetworkPath: "\\\\DMS\\EuroslotPars\\Projects\\TK101-Ammonia-Vessel\\",
     description:
       "پروژه جامع طراحی مکانیکی طبق استاندارد ASME Section VIII Div 1، خرید ورق‌های فولادی مقاوم به ترک هیدروژنی SA-516 Gr 70 HIC، ضخامت دیواره ۳۸ میلی‌متر، ساخت دو دستگاه مخزن افقی ذخیره آمونیاک و آزمون هیدرواستاتیک ۲۸ بار.",
     subPackages: [
@@ -668,6 +668,15 @@ const INITIAL_PROJECTS: ProjectItem[] = [
         email: "farahmand@nanopalayesh.com",
         isManager: false,
         raci: "Responsible",
+      },
+      {
+        id: "tm-guest",
+        name: "کاربر مهمان",
+        role: "کارشناس ناظر مهمان",
+        department: "R&D و ارزیابی",
+        email: "guest@demo.com",
+        isManager: false,
+        raci: "Consulted",
       },
     ],
     tasks: [],

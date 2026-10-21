@@ -1,9 +1,10 @@
 // src/modules/tasks/components/tasks-management-page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
+import { motion, AnimatePresence } from "motion/react";
 import {
   CheckSquare,
   CheckCircle2,
@@ -13,6 +14,7 @@ import {
   Search,
   Filter,
   Kanban,
+  Table2,
   List as ListIcon,
   RefreshCw,
   ArrowRight,
@@ -35,6 +37,7 @@ import {
   PieChart,
   Check,
   FolderKanban,
+  PlusCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,10 +49,11 @@ import { useTasks } from "../hooks/use-tasks";
 import { TaskItem, TaskStatus, TaskPriority } from "../types/tasks.types";
 import { TaskBoard } from "./task-board";
 import { TaskTable } from "./task-table";
-import { TaskTimelineBar } from "./task-timeline-bar";
-import { TaskDetailDrawer } from "./task-detail-drawer";
-import { TaskCreateDialog } from "./task-create-dialog";
+import { TaskRoadmapAnalytics } from "./task-timeline-bar";
+import { TaskDetailView } from "./task-detail-view";
+import { TaskCreateView } from "./task-create-view";
 import { AppHeader } from "@/components/layout/app-header";
+import { Footer, type FooterLinkItem } from "@/components/layout/footer";
 import {
   Tooltip,
   TooltipContent,
@@ -58,7 +62,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-type TaskTab = "kanban" | "table" | "timeline" | "companies" | "analytics" | "settings";
+type TaskTab = "kanban" | "table" | "timeline" | "create" | "detail" | "companies" | "analytics" | "settings";
 
 interface NavItem {
   id: TaskTab;
@@ -72,27 +76,27 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   {
     id: "kanban",
-    labelFa: "تخته کانبان",
-    labelEn: "Kanban Board",
+    labelFa: "تسک‌ها و گردش کار",
+    labelEn: "Tasks & Workflow",
     icon: Kanban,
-    descriptionFa: "تخته چابک بصری برای مدیریت وضعیت جریان کار",
-    descriptionEn: "Visual agile workflow across task stages",
-  },
-  {
-    id: "table",
-    labelFa: "جدول و فهرست",
-    labelEn: "Table & List",
-    icon: ListIcon,
-    descriptionFa: "فهرست جدولی با فیلترهای پیشرفته و دسته‌بندی",
-    descriptionEn: "Tabular data view with column filters and sorting",
+    descriptionFa: "نمای یکپارچه کانبان و جدول برای مدیریت وضعیت و فیلتر تسک‌ها",
+    descriptionEn: "Unified kanban board and tabular workflow for tasks",
   },
   {
     id: "timeline",
-    labelFa: "خط زمانی و فازبندی",
-    labelEn: "Timeline & Roadmap",
+    labelFa: "نقشه راه و آنالیز",
+    labelEn: "Roadmap & Analytics",
     icon: Clock,
-    descriptionFa: "نقشه راه، فازبندی پروژه‌ها و مهلت‌های تحویل",
-    descriptionEn: "Engineering roadmap and milestone deadlines",
+    descriptionFa: "نقشه راه فازبندی پروژه‌ها، افق زمانی و شاخص‌های آماری KPI",
+    descriptionEn: "Engineering roadmap, time horizons, and performance KPIs",
+  },
+  {
+    id: "create",
+    labelFa: "تعریف تسک",
+    labelEn: "New Task",
+    icon: PlusCircle,
+    descriptionFa: "فرم اختصاصی ثبت و زمان‌بندی تسک‌های کاری",
+    descriptionEn: "Dedicated form to define and schedule new tasks",
   },
   {
     id: "companies",
@@ -101,14 +105,6 @@ const NAV_ITEMS: NavItem[] = [
     icon: Building2,
     descriptionFa: "پورتفولیو و آمار تفکیکی شرکت‌های تابعه",
     descriptionEn: "Portfolio view for subsidiaries & joint projects",
-  },
-  {
-    id: "analytics",
-    labelFa: "آمار و تحلیل",
-    labelEn: "Analytics & KPIs",
-    icon: BarChart3,
-    descriptionFa: "شاخص‌های عملکرد، ماتریس بار کاری و نرخ تکمیل",
-    descriptionEn: "Performance KPIs, workload matrix, and completion rates",
   },
   {
     id: "settings",
@@ -120,8 +116,14 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-export function TasksManagementPage() {
+export interface TasksManagementPageProps {
+  initialTab?: TaskTab;
+  initialTaskId?: string;
+}
+
+export function TasksManagementPage({ initialTab, initialTaskId }: TasksManagementPageProps = {}) {
   const t = useTranslations("Tasks");
+  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const isRtl = locale === "fa";
 
@@ -131,6 +133,8 @@ export function TasksManagementPage() {
 
   const {
     tasks,
+    isAdmin,
+    userInvolvedProjects,
     isLoading,
     error,
     filters,
@@ -151,6 +155,7 @@ export function TasksManagementPage() {
     toggleTaskComplete,
     toggleSubtask,
     addSubtask,
+    deleteSubtask,
     addComment,
     addReply,
     uploadAttachment,
@@ -164,44 +169,127 @@ export function TasksManagementPage() {
     defaultUserName,
   });
 
-  const [activeTab, setActiveTab] = useState<TaskTab>("kanban");
+  const availableNavItems: NavItem[] = useMemo(() => {
+    if (!isAdmin) {
+      // Non-admins (regular users) have NO organizational access:
+      // Exclude 'companies' (corporate portfolio) and 'settings' (admin perspective switcher)
+      return NAV_ITEMS.filter(
+        (item) => item.id !== "companies" && item.id !== "settings"
+      );
+    }
+    return NAV_ITEMS;
+  }, [isAdmin]);
+
+  const taskFooterLinks: FooterLinkItem[] = useMemo(
+    () => [
+      {
+        href: "/dashboard",
+        label: tCommon("footer.dashboard"),
+      },
+      {
+        href: "/",
+        label: tCommon("footer.home"),
+      },
+      {
+        href: "/dashboard/projects",
+        label: tCommon("footer.projects"),
+        hideOnMobile: true,
+      },
+      {
+        href: "/privacy",
+        label: tCommon("footer.privacyPolicy"),
+        hideOnMobile: true,
+      },
+      {
+        href: "/terms",
+        label: tCommon("footer.termsOfUse"),
+        hideOnMobile: true,
+      },
+      {
+        href: "/sitemap",
+        label: tCommon("footer.sitemap"),
+        hideOnMobile: true,
+      },
+    ],
+    [tCommon]
+  );
+
+  const searchParams = useSearchParams();
+  const queryTab = searchParams?.get("tab") as TaskTab | null;
+  const queryMode = searchParams?.get("mode") as "kanban" | "table" | null;
+
+  const [tasksViewMode, setTasksViewMode] = useState<"kanban" | "table">(() => {
+    if (queryTab === "table" || initialTab === "table" || queryMode === "table") {
+      return "table";
+    }
+    return "kanban";
+  });
+
+  const [activeTab, setActiveTab] = useState<TaskTab>(() => {
+    if (queryTab === "table" || initialTab === "table") {
+      return "kanban";
+    }
+    if (
+      queryTab &&
+      ["kanban", "timeline", "create", "detail", "companies", "analytics", "settings"].includes(queryTab)
+    ) {
+      return queryTab;
+    }
+    return initialTab || "kanban";
+  });
+
+  useEffect(() => {
+    if (queryTab === "table") {
+      setActiveTab("kanban");
+      setTasksViewMode("table");
+    } else if (
+      queryTab &&
+      ["kanban", "timeline", "create", "detail", "companies", "analytics", "settings"].includes(queryTab)
+    ) {
+      setActiveTab(queryTab);
+    }
+  }, [queryTab]);
+
+  useEffect(() => {
+    if (!isAdmin && (activeTab === "companies" || activeTab === "settings")) {
+      setActiveTab("kanban");
+    }
+  }, [isAdmin, activeTab]);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [createDefaultStatus, setCreateDefaultStatus] = useState<TaskStatus>("pending");
   const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Selected company state for company portfolio tab
   const [selectedCompanyPortfolio, setSelectedCompanyPortfolio] = useState<string>("all");
 
-  const searchParams = useSearchParams();
   const queryTaskId = searchParams?.get("taskId");
 
   useEffect(() => {
-    if (queryTaskId && tasks.length > 0) {
-      const found = tasks.find((t) => t.id === queryTaskId);
+    const targetId = initialTaskId || queryTaskId;
+    if (targetId && tasks.length > 0) {
+      const found = tasks.find((t) => t.id === targetId);
       if (found) {
         setSelectedTask(found);
-        setIsDetailOpen(true);
+        setActiveTab("detail");
       }
     }
-  }, [queryTaskId, tasks]);
+  }, [initialTaskId, queryTaskId, tasks]);
 
   const handleOpenDetail = (task: TaskItem) => {
     setSelectedTask(task);
-    setIsDetailOpen(true);
+    setActiveTab("detail");
   };
 
   const handleOpenCreateWithStatus = (status: TaskStatus = "pending") => {
     setCreateDefaultStatus(status);
-    setIsCreateOpen(true);
+    setActiveTab("create");
   };
 
   const companyList = [
     { id: "all", label: t("companies.all") },
     { id: "یورو اسلات پارس", label: t("companies.euroslot") },
     { id: "نانو پالایش سرام", label: t("companies.nano") },
-    { id: "پترو اسپادانا", label: t("companies.petro") },
   ];
 
   const hasActiveFilters =
@@ -213,55 +301,146 @@ export function TasksManagementPage() {
     filters.isManagerOnly;
 
   /* ──────────────────────────────────────────────────────────── */
-  /* TAB 1: KANBAN BOARD VIEW                                     */
+  /* TAB 1: UNIFIED TASKS WORKFLOW (KANBAN & TABLE MODES)         */
   /* ──────────────────────────────────────────────────────────── */
-  const renderKanbanView = () => (
-    <div className="max-w-7xl mx-auto w-full py-6 px-4 sm:px-8 animate-in fade-in duration-300">
-      {/* View Header & Action Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              {isRtl ? "تخته کانبان گردش کار" : "Agile Kanban Workflow"}
-            </h1>
-            <Badge variant="outline" className="fa-num border-primary/30 text-primary font-semibold text-xs">
-              {filteredTasks.length} {t("timeline.tasksCount")}
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            {isRtl
-              ? "مدیریت تسک‌ها با کشیدن و رها کردن در ستون‌های کارها، در دست اقدام، بازبینی و انجام‌شده"
-              : "Drag and drop tasks between To Do, In Progress, Review, and Done stages"}
-          </p>
+  const renderTasksWorkflowView = () => (
+    <div className="max-w-7xl mx-auto w-full py-6 px-4 sm:px-8 animate-in fade-in duration-300 space-y-6">
+      {/* ── 1. Page Title & Overview (Fixed, Never Shifts) ── */}
+      <div className="space-y-1">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+            {isRtl ? "گردش کار و مدیریت تسک‌ها" : "Tasks & Workflow Management"}
+          </h1>
+          <Badge variant="outline" className="fa-num border-primary/30 text-primary font-semibold text-xs">
+            {filteredTasks.length} {t("timeline.tasksCount")}
+          </Badge>
         </div>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          {isRtl
+            ? "مشاهده، فیلتر و هدایت وظایف سازمانی در دو نمای چابک کانبان و جدول داده اکسلی"
+            : "Track and organize organizational workflows seamlessly across Agile Kanban and data tables."}
+        </p>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-          {/* Quick Search */}
-          <div className="relative w-44 sm:w-56">
+      {/* ── 2. Dedicated Fixed Toolbar Directly Below Title (Fixed Layout, Zero Jump) ── */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-2.5 sm:p-3 rounded-2xl bg-white/70 dark:bg-card/70 border border-border/60 shadow-2xs backdrop-blur-md">
+        {/* Left Side: Live Search & Scope Filter Pills */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap flex-1">
+          {/* Live Search Input */}
+          <div className="relative w-full sm:w-64">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
             <Input
               type="text"
-              placeholder={isRtl ? "جستجوی زنده..." : "Filter tasks..."}
+              placeholder={isRtl ? "جستجوی زنده در تسک‌ها..." : "Search tasks..."}
               value={filters.search}
               onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-              className="h-9 ps-8 pe-3 text-xs rounded-full bg-card/70 border-border/70"
+              className="h-10 ps-8 pe-3 text-xs rounded-xl bg-card border-border/70 shadow-none focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
 
+          {/* Scope Filter Pills */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-muted/40 border border-border/50 text-xs font-semibold">
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, scope: "all", isManagerOnly: false }))}
+              className={cn(
+                "px-3 py-1.5 rounded-lg transition-all cursor-pointer",
+                filters.scope === "all" && !filters.isManagerOnly
+                  ? "bg-primary text-white shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("tabs.all")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, scope: "personal", isManagerOnly: false }))}
+              className={cn(
+                "px-3 py-1.5 rounded-lg transition-all cursor-pointer",
+                filters.scope === "personal"
+                  ? "bg-primary text-white shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("tabs.mine")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setFilters((prev) => ({ ...prev, scope: "all", isManagerOnly: true }))}
+              className={cn(
+                "px-3 py-1.5 rounded-lg transition-all cursor-pointer",
+                filters.isManagerOnly
+                  ? "bg-primary text-white shadow-2xs font-bold"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("tabs.manager")}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Side: Switcher, Refresh & New Task */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 self-end lg:self-auto flex-wrap">
+          {/* Two-Icon Mode Toggle with Animated Sliding Pill */}
+          <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 relative">
+            <button
+              type="button"
+              onClick={() => setTasksViewMode("kanban")}
+              className={cn(
+                "relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer z-10",
+                tasksViewMode === "kanban" ? "text-white" : "text-muted-foreground hover:text-foreground"
+              )}
+              title={t("views.switchToKanban")}
+              aria-label={t("views.switchToKanban")}
+            >
+              {tasksViewMode === "kanban" && (
+                <motion.div
+                  layoutId="tasksViewModePill"
+                  className="absolute inset-0 rounded-lg bg-primary shadow-xs z-[-1]"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+              <Kanban className="size-4" />
+              <span className="hidden sm:inline">{t("views.switchToKanban")}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTasksViewMode("table")}
+              className={cn(
+                "relative px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer z-10",
+                tasksViewMode === "table" ? "text-white" : "text-muted-foreground hover:text-foreground"
+              )}
+              title={t("views.switchToTable")}
+              aria-label={t("views.switchToTable")}
+            >
+              {tasksViewMode === "table" && (
+                <motion.div
+                  layoutId="tasksViewModePill"
+                  className="absolute inset-0 rounded-lg bg-primary shadow-xs z-[-1]"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+              <Table2 className="size-4" />
+              <span className="hidden sm:inline">{t("views.switchToTable")}</span>
+            </button>
+          </div>
+
+          {/* Refresh Button */}
           <Button
             variant="outline"
-            size="icon-sm"
+            size="icon"
             onClick={refreshTasks}
-            className="rounded-full shadow-2xs hover:bg-muted"
+            className="size-10 rounded-xl shadow-2xs hover:bg-muted/70 bg-card border-border/60"
             title={isRtl ? "بروزرسانی داده‌ها" : "Refresh"}
           >
-            <RefreshCw className={cn("size-3.5", isLoading && "animate-spin")} />
+            <RefreshCw className={cn("size-4", isLoading && "animate-spin")} />
           </Button>
 
+          {/* New Task Button */}
           <Button
             onClick={() => handleOpenCreateWithStatus("pending")}
-            className="rounded-full h-9 px-4 text-xs font-semibold gap-1.5 shadow-2xs"
+            className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 shadow-2xs"
           >
             <Plus className="size-4" />
             <span>{t("newTask")}</span>
@@ -269,278 +448,106 @@ export function TasksManagementPage() {
         </div>
       </div>
 
-      {/* Kanban Board Container */}
-      <div className="rounded-3xl border border-border/60 bg-white/50 dark:bg-card/40 backdrop-blur-sm p-4 sm:p-6 shadow-xs">
-        <TaskBoard
-          tasks={filteredTasks}
-          onSelectTask={handleOpenDetail}
-          onUpdateStatus={changeTaskStatus}
-          onOpenCreate={handleOpenCreateWithStatus}
-        />
-      </div>
-    </div>
-  );
-
-  /* ──────────────────────────────────────────────────────────── */
-  /* TAB 2: TABLE & LIST VIEW                                     */
-  /* ──────────────────────────────────────────────────────────── */
-  const renderTableView = () => (
-    <div className="max-w-7xl mx-auto w-full py-6 px-4 sm:px-8 animate-in fade-in duration-300">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-              {isRtl ? "فهرست و جدول تسک‌ها" : "Task Table & Data List"}
-            </h1>
-            <Badge variant="outline" className="fa-num border-primary/30 text-primary font-semibold text-xs">
-              {filteredTasks.length} {t("timeline.tasksCount")}
-            </Badge>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            {isRtl
-              ? "مشاهده کلیه جزئیات تسک‌ها با امکان مرتب‌سازی، فیلتر ترکیبی و اعمال عملیات گروهی"
-              : "Comprehensive tabular view with sorting, multi-attribute filtering, and quick actions"}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button
-            onClick={() => handleOpenCreateWithStatus("pending")}
-            className="rounded-full h-9 px-4 text-xs font-semibold gap-1.5 shadow-2xs"
-          >
-            <Plus className="size-4" />
-            <span>{t("newTask")}</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Multi-Filter Bar */}
-      <div className="rounded-3xl border border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md p-4 sm:p-5 shadow-xs mb-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-          {/* Search Input */}
-          <div className="relative sm:col-span-2">
-            <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={t("search")}
-              value={filters.search}
-              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-              className="h-10 ps-9 pe-8 text-xs rounded-2xl bg-card border-border/60"
-            />
-            {filters.search && (
-              <button
-                type="button"
-                onClick={() => setFilters((prev) => ({ ...prev, search: "" }))}
-                className="absolute end-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground hover:text-foreground"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Status Dropdown */}
-          <Combobox
-            value={filters.status}
-            onChange={(val) => setFilters((prev) => ({ ...prev, status: val as any }))}
-            options={[
-              { value: "all", label: t("filters.allStatus") },
-              { value: "pending", label: t("status.pending") },
-              { value: "in_progress", label: t("status.in_progress") },
-              { value: "review", label: t("status.review") },
-              { value: "completed", label: t("status.completed") },
-            ]}
-            placeholder={t("filters.allStatus")}
-            className="h-10 rounded-2xl text-xs bg-card border-border/60"
-          />
-
-          {/* Priority Dropdown */}
-          <Combobox
-            value={filters.priority}
-            onChange={(val) => setFilters((prev) => ({ ...prev, priority: val as any }))}
-            options={[
-              { value: "all", label: t("filters.allPriority") },
-              { value: "urgent", label: t("priority.urgent") },
-              { value: "high", label: t("priority.high") },
-              { value: "medium", label: t("priority.medium") },
-              { value: "low", label: t("priority.low") },
-            ]}
-            placeholder={t("filters.allPriority")}
-            className="h-10 rounded-2xl text-xs bg-card border-border/60"
-          />
-
-          {/* Company Dropdown */}
-          <Combobox
-            value={filters.company}
-            onChange={(val) => setFilters((prev) => ({ ...prev, company: val }))}
-            options={companyList.map((c) => ({ value: c.id, label: c.label }))}
-            placeholder={t("filters.allCompanies")}
-            className="h-10 rounded-2xl text-xs bg-card border-border/60"
-          />
-        </div>
-
-        {/* Filter Utilities */}
-        <div className="flex items-center justify-between flex-wrap gap-3 pt-2 border-t border-border/40 text-xs">
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 cursor-pointer select-none text-muted-foreground hover:text-foreground">
-              <input
-                type="checkbox"
-                checked={filters.isManagerOnly}
-                onChange={(e) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    isManagerOnly: e.target.checked,
-                  }))
-                }
-                className="rounded border-border/70 text-primary focus:ring-primary size-4"
-              />
-              <span>{t("filters.managerOnly")}</span>
-            </label>
-          </div>
-
-          {hasActiveFilters && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setFilters({
-                  search: "",
-                  status: "all",
-                  priority: "all",
-                  category: "all",
-                  company: "all",
-                  assignee: "all",
-                  isManagerOnly: false,
-                })
-              }
-              className="text-xs text-muted-foreground hover:text-destructive h-8 px-3 rounded-full"
+      {/* ── 3. Stable Shared Display Container for Kanban / Table with Motion Transition ── */}
+      <div className="rounded-3xl border border-border/60 bg-white/50 dark:bg-card/40 backdrop-blur-sm p-4 sm:p-6 shadow-xs min-h-[580px] w-full relative">
+        <AnimatePresence mode="wait" initial={false}>
+          {tasksViewMode === "kanban" ? (
+            <motion.div
+              key="kanban-view"
+              initial={{ opacity: 0, filter: "blur(4px)", scale: 0.995 }}
+              animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+              exit={{ opacity: 0, filter: "blur(4px)", scale: 0.995 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
             >
-              <X className="size-3.5 mr-1 rtl:ml-1 rtl:mr-0" />
-              <span>{t("filters.clear")}</span>
-            </Button>
+              <TaskBoard
+                tasks={filteredTasks}
+                searchQuery={filters.search}
+                onSelectTask={handleOpenDetail}
+                onUpdateStatus={changeTaskStatus}
+                onOpenCreate={handleOpenCreateWithStatus}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="table-view"
+              initial={{ opacity: 0, filter: "blur(4px)", scale: 0.995 }}
+              animate={{ opacity: 1, filter: "blur(0px)", scale: 1 }}
+              exit={{ opacity: 0, filter: "blur(4px)", scale: 0.995 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full"
+            >
+              <TaskTable
+                tasks={filteredTasks}
+                searchQuery={filters.search}
+                roleMode={roleMode}
+                onSelectTask={handleOpenDetail}
+                onUpdateStatus={changeTaskStatus}
+                onDeleteTask={deleteTask}
+              />
+            </motion.div>
           )}
-        </div>
-      </div>
-
-      {/* Table Component */}
-      <div className="rounded-3xl border border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md overflow-hidden shadow-xs">
-        <TaskTable
-          tasks={filteredTasks}
-          roleMode={roleMode}
-          onSelectTask={handleOpenDetail}
-          onUpdateStatus={changeTaskStatus}
-          onDeleteTask={deleteTask}
-        />
+        </AnimatePresence>
       </div>
     </div>
   );
 
   /* ──────────────────────────────────────────────────────────── */
-  /* TAB 3: TIMELINE & ROADMAP VIEW                               */
+  /* TAB 3: UNIFIED ROADMAP & ANALYTICS VIEW                      */
   /* ──────────────────────────────────────────────────────────── */
   const renderTimelineView = () => (
     <div className="max-w-7xl mx-auto w-full py-6 px-4 sm:px-8 animate-in fade-in duration-300 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight flex items-center gap-2.5">
-            <Clock className="size-7 text-primary shrink-0" />
-            <span>{isRtl ? "خط زمانی و فازبندی پروژه‌ها" : "Project Timeline & Roadmap"}</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            {isRtl
-              ? "برنامه‌ریزی زمانی، تحویل مهندسی، موعد بازبینی نقشه‌ها و مایلستون‌های کلیدی ASME / API"
-              : "Engineering milestones, delivery deadlines, and ASME/API review schedules"}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs px-3 py-1 rounded-full border-primary/30 text-primary">
-            {isRtl ? "نرخ تحقق برنامه زمانی:" : "Timeline Adherence:"} {stats.completionRate}%
-          </Badge>
-        </div>
-      </div>
-
-      {/* Interactive Timeline Bar Component */}
-      <div className="rounded-3xl border border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md p-4 sm:p-6 shadow-xs">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-bold text-base text-foreground flex items-center gap-2">
-            <CalendarDays className="size-4 text-primary" />
-            <span>{t("timeline.title")}</span>
-          </h3>
-          <span className="text-xs text-muted-foreground">
-            {isRtl ? "برای مشاهده مشخصات، روی نوار هر تسک کلیک کنید" : "Click on any milestone bar to view details"}
-          </span>
-        </div>
-        <TaskTimelineBar
-          tasks={filteredTasks}
-          selectedTaskId={selectedTask?.id}
-          onSelectTask={handleOpenDetail}
-        />
-      </div>
-
-      {/* Engineering Milestone Chronology */}
-      <div className="rounded-3xl border border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md p-6 shadow-xs">
-        <h3 className="font-bold text-base text-foreground mb-4">
-          {isRtl ? "جدول توالی مایلستون‌های فعال" : "Active Engineering Milestones"}
-        </h3>
-
-        <div className="space-y-3">
-          {filteredTasks.slice(0, 8).map((task) => (
-            <div
-              key={task.id}
-              onClick={() => handleOpenDetail(task)}
-              className="flex items-center justify-between p-3.5 rounded-2xl bg-muted/40 hover:bg-muted/70 border border-border/40 transition-colors cursor-pointer group"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "size-2.5 rounded-full",
-                    task.status === "completed"
-                      ? "bg-emerald-500"
-                      : task.status === "in_progress"
-                      ? "bg-amber-500 animate-pulse"
-                      : task.status === "review"
-                      ? "bg-pink-500"
-                      : "bg-indigo-500"
-                  )}
-                />
-                <div>
-                  <h4 className="font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors">
-                    {task.title}
-                  </h4>
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
-                    <span>{task.company}</span>
-                    <span>•</span>
-                    <span>{task.category}</span>
-                    <span>•</span>
-                    <span>{task.assignedToName}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 shrink-0">
-                <div className="text-end">
-                  <span className="text-xs font-mono font-semibold text-foreground block">
-                    {task.dueDate}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {task.progressPercent}% {isRtl ? "پیشرفت" : "progress"}
-                  </span>
-                </div>
-                <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground rtl:rotate-180 transition-transform" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Universal Visual Roadmap & Analytics Component with Pure Segmented-Lists */}
+      <TaskRoadmapAnalytics
+        tasks={tasks}
+        selectedTaskId={selectedTask?.id}
+        onSelectTask={handleOpenDetail}
+        searchQuery={filters.search}
+        allAssignees={allAssignees}
+        userInvolvedProjects={userInvolvedProjects}
+        isAdmin={isAdmin}
+        roleMode={roleMode}
+      />
     </div>
   );
 
   /* ──────────────────────────────────────────────────────────── */
-  /* TAB 4: COMPANY PORTFOLIO VIEW                                */
+  /* TAB 4: DEDICATED TASK CREATION VIEW                          */
+  /* ──────────────────────────────────────────────────────────── */
+  const renderCreateView = () => (
+    <TaskCreateView
+      onCreateTask={createTask}
+      onCancel={() => setActiveTab("kanban")}
+      onSuccess={(_newTask) => {
+        setFilters((prev) => ({
+          ...prev,
+          search: "",
+          status: "all",
+          company: "all",
+          category: "all",
+          assignee: "all",
+          scope: "all",
+          isManagerOnly: false,
+        }));
+        setActiveTab("kanban");
+      }}
+      categories={categories}
+      companies={companies}
+      defaultStatus={createDefaultStatus}
+      currentUserName={currentUserName}
+      isAdmin={isAdmin}
+      userInvolvedProjects={userInvolvedProjects}
+    />
+  );
+
+  /* ──────────────────────────────────────────────────────────── */
+  /* TAB 5: COMPANY PORTFOLIO VIEW                                */
   /* ──────────────────────────────────────────────────────────── */
   const renderCompaniesView = () => {
+    if (!isAdmin) {
+      return renderTasksWorkflowView();
+    }
+
     const companiesData = [
       {
         id: "یورو اسلات پارس",
@@ -561,16 +568,6 @@ export function TasksManagementPage() {
         descEn: "High-temperature ceramic membrane filters and advanced porous substrates",
         color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
         accent: "bg-emerald-600",
-      },
-      {
-        id: "پترو اسپادانا",
-        nameFa: "پترو اسپادانا",
-        nameEn: "Petro Espadana",
-        badge: "پایپینگ و کنترل فشار",
-        descFa: "تجهیزات خطوط انتقال، شیرآلات صنعتی فشار قوی، چک‌ولوها و اسپول‌های مهندسی",
-        descEn: "High-pressure valves, piping spools, and skid instrumentation packages",
-        color: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
-        accent: "bg-amber-600",
       },
     ];
 
@@ -604,8 +601,8 @@ export function TasksManagementPage() {
           </Button>
         </div>
 
-        {/* 3 Company Portfolio Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* 2 Company Portfolio Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {companiesData.map((comp) => {
             const compTasks = tasks.filter((t) => t.company === comp.id);
             const compCompleted = compTasks.filter((t) => t.status === "completed").length;
@@ -869,45 +866,99 @@ export function TasksManagementPage() {
             </div>
           </div>
 
-          {/* Team Workload Matrix */}
+          {/* Workload / Involved Projects Breakdown */}
           <div className="p-6 rounded-3xl border border-border/60 bg-white/80 dark:bg-card/70 backdrop-blur-md shadow-xs">
             <h3 className="font-bold text-base text-foreground mb-4 flex items-center gap-2">
-              <Users className="size-4 text-primary" />
-              <span>{isRtl ? "ماتریس بار کاری کارشناسان" : "Team Workload Matrix"}</span>
+              <FolderKanban className="size-4 text-primary" />
+              <span>
+                {isAdmin && roleMode === "admin"
+                  ? (isRtl ? "ماتریس بار کاری کارشناسان" : "Team Workload Matrix")
+                  : (isRtl ? "پروژه‌ها و وضعیت مشارکت من" : "My Projects & Task Allocation")}
+              </span>
             </h3>
 
-            <div className="space-y-3">
-              {allAssignees.map((member) => {
-                const memberTasks = tasks.filter(
-                  (t) => t.assignedToName === member.name || t.assignees?.some((a) => a.name === member.name)
-                );
-                const completedCount = memberTasks.filter((t) => t.status === "completed").length;
-                const memberRate = memberTasks.length > 0 ? Math.round((completedCount / memberTasks.length) * 100) : 0;
+            {isAdmin && roleMode === "admin" ? (
+              <div className="space-y-3">
+                {allAssignees.map((member) => {
+                  const memberTasks = tasks.filter(
+                    (t) => t.assignedToName === member.name || t.assignees?.some((a) => a.name === member.name)
+                  );
+                  const completedCount = memberTasks.filter((t) => t.status === "completed").length;
+                  const memberRate = memberTasks.length > 0 ? Math.round((completedCount / memberTasks.length) * 100) : 0;
 
-                return (
-                  <div key={member.name} className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/40">
-                    <div className="flex items-center gap-2.5">
-                      <div className="size-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
-                        {member.name.charAt(0)}
+                  return (
+                    <div key={member.name} className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/40">
+                      <div className="flex items-center gap-2.5">
+                        <div className="size-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
+                          {member.name.charAt(0)}
+                        </div>
+                        <div>
+                          <span className="font-semibold text-xs text-foreground block">{member.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{member.role}</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-semibold text-xs text-foreground block">{member.name}</span>
-                        <span className="text-[10px] text-muted-foreground">{member.role}</span>
+
+                      <div className="flex items-center gap-4 text-xs">
+                        <span className="text-muted-foreground fa-num">
+                          {memberTasks.length} {isRtl ? "تسک" : "tasks"}
+                        </span>
+                        <Badge variant="outline" className="text-[10px] px-2 py-0 border-border/60 fa-num">
+                          {memberRate}% {isRtl ? "تکمیل" : "done"}
+                        </Badge>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className="text-muted-foreground fa-num">
-                        {memberTasks.length} {isRtl ? "تسک" : "tasks"}
-                      </span>
-                      <Badge variant="outline" className="text-[10px] px-2 py-0 border-border/60 fa-num">
-                        {memberRate}% {isRtl ? "تکمیل" : "done"}
-                      </Badge>
-                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {userInvolvedProjects.length > 0 ? (
+                  <div className="space-y-3">
+                    <span className="text-[11px] font-semibold text-muted-foreground block">
+                      {isRtl ? "پروژه‌هایی که در آن دخیل هستید:" : "Projects you are involved in:"}
+                    </span>
+                    {userInvolvedProjects.map((p) => {
+                      const pTasks = tasks.filter((t) => t.relatedProjectId === p.id);
+                      const pCompleted = pTasks.filter((t) => t.status === "completed").length;
+                      const pRate = pTasks.length > 0 ? Math.round((pCompleted / pTasks.length) * 100) : p.progressPercent || 0;
+                      return (
+                        <div
+                          key={p.id}
+                          className="p-3.5 rounded-2xl bg-muted/40 border border-border/40 flex flex-col gap-2"
+                        >
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-bold text-foreground truncate max-w-[240px]">{p.title}</span>
+                            <Badge variant="outline" className="fa-num text-[10px]">{pTasks.length} {isRtl ? "تسک" : "tasks"}</Badge>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                            <span>{p.organization} • {p.code}</span>
+                            <span className="font-semibold text-primary fa-num">{pRate}% {isRtl ? "پیشرفت" : "progress"}</span>
+                          </div>
+                          <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${pRate}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                ) : (
+                  <div className="p-4 rounded-2xl bg-muted/30 border border-border/40 text-xs text-muted-foreground text-center">
+                    {isRtl ? "در حال حاضر پروژه‌ای برای این حساب کاربری ثبت نشده است." : "No active projects found for this account."}
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-border/40 grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-card border border-border/50 text-center">
+                    <span className="text-[11px] text-muted-foreground block">{isRtl ? "وظایف من" : "My Tasks"}</span>
+                    <span className="font-bold text-foreground fa-num text-base">{stats.userTotal}</span>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-card border border-border/50 text-center">
+                    <span className="text-[11px] text-muted-foreground block">{isRtl ? "ابلاغی مدیر" : "Manager Defined"}</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 fa-num text-base">{stats.managerCount}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -918,6 +969,10 @@ export function TasksManagementPage() {
   /* TAB 6: SETTINGS & ROLE PERSPECTIVE VIEW                      */
   /* ──────────────────────────────────────────────────────────── */
   const renderSettingsView = () => {
+    if (!isAdmin) {
+      return renderTasksWorkflowView();
+    }
+
     return (
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300 space-y-6">
         <div>
@@ -1050,34 +1105,62 @@ export function TasksManagementPage() {
   };
 
   /* ──────────────────────────────────────────────────────────── */
-  /* FOOTER COMPONENT                                             */
+  /* TAB 8: DEDICATED FULL-PAGE TASK DETAIL VIEW                  */
   /* ──────────────────────────────────────────────────────────── */
-  const renderFooter = () => (
-    <footer className="w-full border-t border-border/50 bg-white/70 dark:bg-card/70 backdrop-blur-md px-4 sm:px-8 py-3 text-xs text-muted-foreground flex items-center justify-between flex-wrap gap-2 shrink-0 z-20">
-      <div className="flex items-center gap-2.5">
-        <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-        <span className="font-medium text-foreground">
-          {isRtl ? "سامانه تسک‌های مرکزی یورواسلات" : "Euroslot Central Task System"}
-        </span>
-        <span className="hidden sm:inline">•</span>
-        <span className="hidden sm:inline text-[11px]">
-          {isRtl ? `دیدگاه فعال: ${currentUserName} (${roleMode === "admin" ? "ادمین" : "کارشناس"})` : `Perspective: ${currentUserName}`}
-        </span>
-      </div>
+  const renderDetailView = () => {
+    const currentTask = selectedTask
+      ? tasks.find((t) => t.id === selectedTask.id) || selectedTask
+      : null;
 
-      <div className="flex items-center gap-4 text-[11px]">
-        <Link href="/dashboard" className="hover:text-foreground transition-colors">
-          {isRtl ? "بازگشت به داشبورد" : "Dashboard"}
-        </Link>
-        <span>•</span>
-        <Link href="/" className="hover:text-foreground transition-colors">
-          {isRtl ? "صفحه نخست" : "Home"}
-        </Link>
-        <span>•</span>
-        <span className="font-mono text-muted-foreground/80">ESP Core v2.4</span>
-      </div>
-    </footer>
-  );
+    if (!currentTask) {
+      return (
+        <div className="max-w-7xl mx-auto py-16 px-4 text-center space-y-4">
+          <h3 className="text-lg font-bold text-foreground">
+            {isRtl ? "تسک مورد نظر یافت نشد" : "Task not found"}
+          </h3>
+          <Button
+            onClick={() => {
+              setSelectedTask(null);
+              setActiveTab("kanban");
+            }}
+            className="rounded-full"
+          >
+            {isRtl ? "بازگشت به تخته کانبان" : "Back to Kanban"}
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <TaskDetailView
+        task={currentTask}
+        roleMode={roleMode}
+        onBack={() => {
+          setSelectedTask(null);
+          setActiveTab("kanban");
+        }}
+        onUpdateStatus={changeTaskStatus}
+        onToggleSubtask={toggleSubtask}
+        onAddSubtask={addSubtask}
+        onDeleteSubtask={deleteSubtask}
+        onAddComment={addComment}
+        onAddReply={addReply}
+        onUploadAttachment={uploadAttachment}
+        onDeleteAttachment={deleteAttachment}
+        onDeleteTask={async (id) => {
+          await deleteTask(id);
+          setSelectedTask(null);
+          setActiveTab("kanban");
+        }}
+        onAssignCollaborator={assignCollaborator}
+        onRemoveCollaborator={removeCollaborator}
+        onUpdateProgress={updateProgress}
+        onUpdateTask={updateTask}
+      />
+    );
+  };
+
+
 
   return (
     <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
@@ -1090,7 +1173,7 @@ export function TasksManagementPage() {
         position="absolute"
       />
 
-      <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
+      <div className="flex flex-1 min-h-0 overflow-hidden w-full relative pt-[72px]">
         {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
           <div
@@ -1103,16 +1186,21 @@ export function TasksManagementPage() {
         {/* ── 2. Sidebar Navigation (Directly following Profile Page Layout) ── */}
         <aside
           className={cn(
-            "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none",
+            "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
             "absolute md:relative start-0 top-0",
             sidebarOpen
-              ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
-              : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
+              ? "w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none"
+              : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto w-[52px] sm:w-[64px]"
           )}
         >
           <TooltipProvider>
-            <nav className="flex flex-col gap-2.5 w-full items-start">
-              {NAV_ITEMS.map((item) => {
+            <nav
+              className={cn(
+                "flex flex-col gap-2.5 w-full ps-[5px] sm:ps-[11px] items-start transition-all duration-300",
+                sidebarOpen ? "pe-3 sm:pe-4" : "pe-[5px] sm:pe-[11px]"
+              )}
+            >
+              {availableNavItems.map((item: NavItem) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
                 const label = isRtl ? item.labelFa : item.labelEn;
@@ -1134,8 +1222,8 @@ export function TasksManagementPage() {
                     )}
                     aria-label={label}
                   >
-                    {/* Fixed 42px circle icon */}
-                    <div className="aspect-square h-full shrink-0 flex items-center justify-center">
+                    {/* Fixed 42px circle icon - 100% fixed position, aligned with header button */}
+                    <div className="size-[42px] shrink-0 flex items-center justify-center">
                       <Icon
                         className={cn(
                           "size-5 shrink-0 transition-colors duration-150",
@@ -1150,7 +1238,7 @@ export function TasksManagementPage() {
                         "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none",
                         isActive ? "font-semibold text-white" : "font-medium text-foreground/75 group-hover:text-foreground",
                         sidebarOpen
-                          ? "opacity-100 max-w-[170px] pe-4 ps-1.5"
+                          ? "opacity-100 max-w-[170px] pe-3 ps-1"
                           : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
                       )}
                     >
@@ -1176,48 +1264,32 @@ export function TasksManagementPage() {
           </TooltipProvider>
         </aside>
 
-        {/* ── 3. Main Scrollable Content Area with Footer ── */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 flex flex-col justify-between">
-          <div className="flex-1 pb-10">
-            {activeTab === "kanban" && renderKanbanView()}
-            {activeTab === "table" && renderTableView()}
-            {activeTab === "timeline" && renderTimelineView()}
+        {/* ── 3. Main Scrollable Content Area ── */}
+        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
+          <div className="pb-10">
+            {(activeTab === "kanban" || activeTab === "table") && renderTasksWorkflowView()}
+            {(activeTab === "timeline" || activeTab === "analytics") && renderTimelineView()}
+            {activeTab === "create" && renderCreateView()}
+            {activeTab === "detail" && renderDetailView()}
             {activeTab === "companies" && renderCompaniesView()}
-            {activeTab === "analytics" && renderAnalyticsView()}
             {activeTab === "settings" && renderSettingsView()}
           </div>
-
-          {/* Bottom Footer */}
-          {renderFooter()}
         </main>
       </div>
 
-      {/* ── 4. Modals & Drawers ── */}
-      <TaskDetailDrawer
-        task={selectedTask}
-        open={isDetailOpen}
-        onClose={() => setIsDetailOpen(false)}
-        roleMode={roleMode}
-        onUpdateStatus={changeTaskStatus}
-        onToggleSubtask={toggleSubtask}
-        onAddSubtask={addSubtask}
-        onAddComment={addComment}
-        onAddReply={addReply}
-        onUploadAttachment={uploadAttachment}
-        onDeleteAttachment={deleteAttachment}
-        onDeleteTask={deleteTask}
-        onAssignCollaborator={assignCollaborator}
-        onRemoveCollaborator={removeCollaborator}
-        onUpdateProgress={updateProgress}
-      />
-
-      <TaskCreateDialog
-        open={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-        onCreateTask={createTask}
-        categories={categories}
-        companies={companies}
-        defaultStatus={createDefaultStatus}
+      {/* ── 4. Full-Width Transparent Bottom Footer (Under sidebar & main content) ── */}
+      <Footer
+        isTransparent={true}
+        links={taskFooterLinks}
+        className="w-full bg-transparent border-t-0 shrink-0 z-20"
+        topRowExtra={
+          <span>
+            {isRtl
+              ? `دیدگاه فعال: ${currentUserName} (${isAdmin && roleMode === "admin" ? "ادمین سازمان" : "کارشناس"})`
+              : `Perspective: ${currentUserName} (${isAdmin && roleMode === "admin" ? "Admin" : "Specialist"})`}
+          </span>
+        }
+        topRowEnd={<span className="font-mono text-[10.5px] opacity-75">ESP Core v2.4</span>}
       />
     </div>
   );

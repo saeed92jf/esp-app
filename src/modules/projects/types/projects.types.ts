@@ -164,7 +164,7 @@ export interface ProjectItem {
   code: string;                  // e.g. PRJ-ESP-2024-TK101
   title: string;
   clientName: string;            // e.g. پتروشیمی بوعلی سینا
-  organization: string;          // یورو اسلات پارس، نانو پالایش سرام، پترو اسپادانا
+  organization: string;          // یورو اسلات پارس، نانو پالایش سرام
   quotationNumber: string;       // شماره کوتیشن / استعلام (e.g. QT-2024-884-R2)
   contractNumber?: string;
   projectType: ProjectType;

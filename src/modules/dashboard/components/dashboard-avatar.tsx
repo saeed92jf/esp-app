@@ -13,6 +13,10 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { HEADER_ICON_BUTTON_CLASS } from '@/lib/constants';
+import {
+  segmentedAccordionMotion,
+  getSegmentedAccordionHeaderClass,
+} from '@/lib/animations/segmented-accordion';
 
 import avatar1 from '../assets/avatars/Avatar (1).webp';
 import avatar2 from '../assets/avatars/Avatar (2).webp';
@@ -265,8 +269,8 @@ export function DashboardAvatar() {
             <div className="segmented-list w-full">
               {/* Top Block (Avatar + Name) */}
               <div className={cn(
-                "segmented-item no-hover-bg relative flex items-stretch w-full z-10 transition-all duration-150 ease-out overflow-hidden", 
-                statusExpanded ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
+                "segmented-item no-hover-bg relative flex items-stretch w-full z-10 overflow-hidden", 
+                getSegmentedAccordionHeaderClass(statusExpanded, { isTopRounded: true, fullCapsuleWhenClosed: true })
               )}>
                  {/* Avatar Container (Clickable for Profile) */}
                  <Link 
@@ -329,10 +333,9 @@ export function DashboardAvatar() {
               <AnimatePresence>
                 {statusExpanded && (
                   <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.1, ease: "easeOut" }}
+                    initial={segmentedAccordionMotion.initial}
+                    animate={segmentedAccordionMotion.animate}
+                    exit={segmentedAccordionMotion.exit}
                     className="flex flex-col w-full gap-[2px] overflow-hidden"
                   >
                     {/* Tags Section (Separated block, showing popover background above and below) */}

@@ -53,7 +53,7 @@ export function AdminSidebar({
           "absolute md:relative start-0 top-0",
           sidebarOpen
             ? "w-64 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
-            : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[64px] md:px-0 md:py-6"
+            : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[64px] md:px-0 md:py-6"
         )}
       >
         <TooltipProvider>

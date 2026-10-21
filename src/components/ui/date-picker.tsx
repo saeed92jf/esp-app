@@ -317,24 +317,21 @@ function CalendarContent({
     <div className={cn(isFa ? "fa-num" : "en-num")}>
       <style>{`
         .calendar-day-btn {
-          transition: background-color 2200ms cubic-bezier(0.1, 0.85, 0.2, 1) 120ms,
-                      color 2200ms cubic-bezier(0.1, 0.85, 0.2, 1) 120ms,
-                      box-shadow 2200ms cubic-bezier(0.1, 0.85, 0.2, 1) 120ms,
-                      border-color 2200ms cubic-bezier(0.1, 0.85, 0.2, 1) 120ms,
-                      transform 200ms ease;
+          transition: background-color 150ms ease,
+                      color 150ms ease,
+                      box-shadow 150ms ease,
+                      border-color 150ms ease;
         }
         .calendar-day-btn:hover {
           transition: none !important;
-          transform: scale(1.12) !important;
           z-index: 20;
         }
         .calendar-week-day {
-          transition: background-color 1800ms cubic-bezier(0.1, 0.85, 0.2, 1) 100ms,
-                      color 1800ms cubic-bezier(0.1, 0.85, 0.2, 1) 100ms;
+          transition: background-color 150ms ease,
+                      color 150ms ease;
         }
         .calendar-week-day:hover {
           transition: none !important;
-          transform: scale(1.06);
         }
       `}</style>
 
@@ -473,7 +470,7 @@ function CalendarContent({
                 !cell.isCurrentMonth && "text-muted-foreground/30 hover:bg-muted/50 hover:text-muted-foreground/60",
                 cell.isCurrentMonth && !isSelected && !isCurrentDay && "text-foreground hover:bg-primary/10 hover:text-primary hover:font-bold hover:shadow-sm",
                 isCurrentDay && !isSelected && "border border-primary/40 text-primary font-bold hover:bg-primary/10 hover:shadow-sm",
-                isSelected && "!transition-none bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5"
+                isSelected && "!transition-none bg-primary text-primary-foreground font-bold shadow-md hover:bg-primary/90"
               )}
             >
               {displayNum(cell.day)}
@@ -506,9 +503,12 @@ export interface DatePickerProps {
   placeholder?: string;
   isJalali?: boolean;
   onCalendarTypeChange?: (isJalali: boolean) => void;
+  /** Applied to the trigger button in popover mode, or the wrapper in inline mode */
   className?: string;
-  /** Applied only to the popover trigger button (not the calendar content) */
+  /** Explicit styling for the popover trigger button */
   triggerClassName?: string;
+  /** Explicit styling for the popover content dropdown */
+  popoverClassName?: string;
   disabled?: boolean;
   startYear?: number;
   endYear?: number;
@@ -531,6 +531,7 @@ export function DatePicker({
   onCalendarTypeChange,
   className,
   triggerClassName,
+  popoverClassName,
   disabled = false,
   startYear,
   endYear,
@@ -642,13 +643,14 @@ export function DatePicker({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full justify-start gap-2 text-start font-medium border border-border/50 bg-card/40 backdrop-blur-md text-foreground transition-all duration-300 hover:border-primary/50 hover:bg-card/80 shadow-sm rounded-xl select-none group",
+            "w-full justify-start gap-2 text-start font-medium border border-border/50 bg-background text-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 shadow-xs rounded-xl select-none group",
             sizeClasses[size],
             !selectedDate && "text-muted-foreground",
+            className,
             triggerClassName
           )}
         >
-          <CalendarIcon className="size-3.5 shrink-0 opacity-70 group-hover:text-primary transition-colors" />
+          <CalendarIcon className="size-4 shrink-0 opacity-70 group-hover:text-primary transition-colors" />
           <span className="truncate">
             {selectedDate ? formatted : placeholder}
           </span>
@@ -656,8 +658,8 @@ export function DatePicker({
       </PopoverTrigger>
       <PopoverContent
         className={cn(
-          "w-[315px] p-4 shadow-2xl rounded-2xl bg-popover border border-border/50 z-50",
-          className
+          "w-[320px] max-w-[calc(100vw-32px)] p-4 shadow-xl rounded-2xl bg-popover text-popover-foreground border border-border/60 z-50",
+          popoverClassName
         )}
         align="start"
       >

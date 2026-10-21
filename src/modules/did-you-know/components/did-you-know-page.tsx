@@ -1175,11 +1175,11 @@ export function DidYouKnowPage() {
             "absolute md:relative start-0 top-0",
             sidebarOpen
               ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
-              : "-translate-x-full rtl:translate-x-full opacity-0 pointer-events-none md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:ps-6 md:pe-6 md:py-6"
+              : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:px-0 md:py-6"
           )}
         >
           <TooltipProvider>
-            <nav className="flex flex-col gap-2.5 w-full items-start">
+            <nav className={cn("flex flex-col gap-2.5 w-full", sidebarOpen ? "items-start ps-3 sm:ps-6" : "items-center px-0")}>
               {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;

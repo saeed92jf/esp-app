@@ -11,11 +11,9 @@ import {
   Clock,
   Tag,
   User,
-  AlertCircle,
   Building2,
   ShieldAlert,
   Users,
-  Sliders,
   UserCheck,
   Briefcase,
   Link2,
@@ -32,6 +30,7 @@ import {
   TaskAssignee,
   TaskScope,
 } from "../types/tasks.types";
+import type { ProjectItem } from "@/modules/projects/types/projects.types";
 import { cn } from "@/lib/utils";
 
 interface TaskCreateDialogProps {
@@ -44,6 +43,9 @@ interface TaskCreateDialogProps {
   companies?: string[];
   defaultStatus?: TaskStatus;
   initialScope?: TaskScope;
+  currentUserName?: string;
+  isAdmin?: boolean;
+  userInvolvedProjects?: ProjectItem[];
 }
 
 export function TaskCreateDialog({
@@ -54,14 +56,20 @@ export function TaskCreateDialog({
   companies = ["یورو اسلات پارس", "نانو پالایش سرام"],
   defaultStatus = "pending",
   initialScope = "team",
+  currentUserName,
+  isAdmin = false,
+  userInvolvedProjects = [],
 }: TaskCreateDialogProps) {
   const t = useTranslations("Tasks");
+  const userLead = currentUserName || "سعید جلیلی";
 
-  // Scope: 'team' (organizational/manager) vs 'personal' (private workspace)
-  const [scope, setScope] = useState<TaskScope>(initialScope);
+  // Non-admins can strictly ONLY create personal tasks.
+  // Admins can toggle between 'team' (organizational) and 'personal'.
+  const [scope, setScope] = useState<TaskScope>(isAdmin ? initialScope : "personal");
 
-  // For personal tasks: linked to project vs standalone
+  // For personal tasks: linked to an involved project vs standalone
   const [personalType, setPersonalType] = useState<"project" | "standalone">("project");
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [relatedProjectTitle, setRelatedProjectTitle] = useState("");
 
   const [title, setTitle] = useState("");
@@ -73,14 +81,19 @@ export function TaskCreateDialog({
   const [timelineDate, setTimelineDate] = useState("18 اسفند");
   const [estimatedHours, setEstimatedHours] = useState("16");
   const [initialProgress, setInitialProgress] = useState(0);
-  const [isManagerDefined, setIsManagerDefined] = useState(true);
+  const [isManagerDefined, setIsManagerDefined] = useState(isAdmin);
 
-  // Assignees for team tasks
-  const [assigneeName, setAssigneeName] = useState("سعید جلیلی");
-  const [assigneeRole, setAssigneeRole] = useState("سرپرست مهندسی فرآیند");
+  // Assignees for team tasks (Admin only)
+  const [assigneeName, setAssigneeName] = useState(userLead);
+  const [assigneeRole, setAssigneeRole] = useState(isAdmin ? "مدیر پروژه" : "کارشناس مهندسی");
   const [collaborators, setCollaborators] = useState<TaskAssignee[]>([
-    { id: "lead", name: "سعید جلیلی", role: "سرپرست مهندسی فرآیند", isLead: true, companies: ["یورو اسلات پارس", "نانو پالایش سرام"] },
-    { id: "mgr", name: "مهندس علیرضا رضایی", role: "مدیر فنی و مهندسی", companies: ["یورو اسلات پارس", "نانو پالایش سرام"] },
+    {
+      id: "lead",
+      name: userLead,
+      role: isAdmin ? "مدیر پروژه" : "کارشناس مهندسی",
+      isLead: true,
+      companies: ["یورو اسلات پارس", "نانو پالایش سرام"],
+    },
   ]);
   const [extraCollabName, setExtraCollabName] = useState("");
   const [extraCollabRole, setExtraCollabRole] = useState("");
@@ -96,9 +109,16 @@ export function TaskCreateDialog({
 
   useEffect(() => {
     if (open) {
-      setScope(initialScope);
+      setScope(isAdmin ? initialScope : "personal");
+      if (userInvolvedProjects.length > 0) {
+        setSelectedProjectId(userInvolvedProjects[0].id);
+        setRelatedProjectTitle(userInvolvedProjects[0].title);
+        if (userInvolvedProjects[0].organization) {
+          setCompany(userInvolvedProjects[0].organization);
+        }
+      }
     }
-  }, [open, initialScope]);
+  }, [open, initialScope, isAdmin, userInvolvedProjects]);
 
   useEffect(() => {
     if (!open) return;
@@ -148,7 +168,17 @@ export function TaskCreateDialog({
 
     setIsSubmitting(true);
     try {
-      const isPersonalTask = scope === "personal";
+      // Non-admins are hard-locked to personal scope
+      const isPersonalTask = !isAdmin || scope === "personal";
+      const finalScope: TaskScope = isPersonalTask ? "personal" : "team";
+
+      let linkedProjId: string | undefined = undefined;
+      let linkedProjTitle: string | undefined = undefined;
+
+      if (isPersonalTask && personalType === "project") {
+        linkedProjId = selectedProjectId || (relatedProjectTitle ? "proj-custom" : undefined);
+        linkedProjTitle = relatedProjectTitle.trim() || undefined;
+      }
 
       await onCreateTask({
         title: title.trim(),
@@ -157,19 +187,36 @@ export function TaskCreateDialog({
         company: (company as any) || "یورو اسلات پارس",
         priority,
         status: defaultStatus,
-        scope,
+        scope: finalScope,
         isPersonal: isPersonalTask,
-        relatedProjectId: isPersonalTask && personalType === "project" ? (relatedProjectTitle ? "proj-custom" : undefined) : undefined,
-        relatedProjectTitle: isPersonalTask && personalType === "project" ? relatedProjectTitle.trim() || "پروژه عمومی واحد ۴۰۰" : undefined,
-        createdBy: isPersonalTask ? "user" : (isManagerDefined ? "manager" : "user"),
-        creatorName: isPersonalTask ? "سعید جلیلی" : "مهندس علیرضا رضایی (مدیر مهندسی)",
-        assignedToName: isPersonalTask ? "سعید جلیلی" : (assigneeName.trim() || "سعید جلیلی"),
-        assignedToRole: isPersonalTask ? "سرپرست مهندسی فرآیند" : (assigneeRole.trim() || "سرپرست مهندسی فرآیند"),
+        relatedProjectId: linkedProjId,
+        relatedProjectTitle: linkedProjTitle,
+        createdBy: isPersonalTask ? "user" : (isManagerDefined && isAdmin ? "manager" : "user"),
+        creatorName: isPersonalTask
+          ? userLead
+          : (isManagerDefined && isAdmin ? "مهندس علیرضا رضایی (مدیر مهندسی)" : userLead),
+        assignedToName: isPersonalTask ? userLead : (assigneeName.trim() || userLead),
+        assignedToRole: isPersonalTask ? "شخصی" : (assigneeRole.trim() || "کارشناس مهندسی"),
         assignees: isPersonalTask
-          ? [{ id: "usr-1", name: "سعید جلیلی", role: "شخصی", isLead: true, companies: ["یورو اسلات پارس", "نانو پالایش سرام"] }]
+          ? [
+              {
+                id: "usr-self",
+                name: userLead,
+                role: "شخصی",
+                isLead: true,
+                companies: ["یورو اسلات پارس", "نانو پالایش سرام"],
+              },
+            ]
           : collaborators.length > 0
           ? collaborators
-          : [{ id: "default", name: assigneeName, role: assigneeRole, isLead: true }],
+          : [
+              {
+                id: "default",
+                name: assigneeName || userLead,
+                role: assigneeRole || "کارشناس مهندسی",
+                isLead: true,
+              },
+            ],
         progressPercent: initialProgress,
         timelineDate: timelineDate.trim() || undefined,
         milestoneLabel: title.trim(),
@@ -177,11 +224,11 @@ export function TaskCreateDialog({
         startDate: new Intl.DateTimeFormat("fa-IR").format(new Date()),
         estimatedHours: estimatedHours ? Number(estimatedHours) : undefined,
         loggedHours: 0,
-        isManagerDefined: isPersonalTask ? false : isManagerDefined,
+        isManagerDefined: isPersonalTask ? false : (isAdmin && isManagerDefined),
         subtasks,
       });
 
-      // Reset
+      // Reset Form
       setTitle("");
       setDescription("");
       setRelatedProjectTitle("");
@@ -190,6 +237,8 @@ export function TaskCreateDialog({
       setIsSubmitting(false);
     }
   };
+
+  const isPersonalActive = !isAdmin || scope === "personal";
 
   return createPortal(
     <div
@@ -204,17 +253,24 @@ export function TaskCreateDialog({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-border/50 bg-muted/20 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className={cn("p-2 rounded-2xl", scope === "personal" ? "bg-emerald-500/10 text-emerald-600" : "bg-primary/10 text-primary")}>
-              {scope === "personal" ? <UserCheck className="size-5" /> : <ShieldAlert className="size-5" />}
+            <div
+              className={cn(
+                "p-2 rounded-2xl",
+                isPersonalActive
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-primary/10 text-primary"
+              )}
+            >
+              {isPersonalActive ? <UserCheck className="size-5" /> : <ShieldAlert className="size-5" />}
             </div>
             <div className="flex flex-col">
               <h2 className="text-base sm:text-lg font-bold text-foreground">
-                {scope === "personal" ? "ثبت تسک شخصی من" : t("createModal.title")}
+                {isPersonalActive ? t("createModal.personalTitle") : t("createModal.title")}
               </h2>
               <span className="text-[11px] text-muted-foreground">
-                {scope === "personal"
-                  ? "وظایف و یادداشت‌های انفرادی شما (کاملاً ایزوله بدون تداخل با تسک‌های شرکتی)"
-                  : "تسک سازمانی با تفکیک دو شرکت یورو اسلات و نانو پالایش سرام"}
+                {isPersonalActive
+                  ? t("createModal.personalSubtitle")
+                  : "تسک سازمانی با تفکیک دو شرکت یورو اسلات پارس و نانو پالایش سرام"}
               </span>
             </div>
           </div>
@@ -229,42 +285,44 @@ export function TaskCreateDialog({
 
         {/* Scrollable Form Content */}
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 flex flex-col gap-4">
-          {/* ── Scope Switcher: Team vs Personal ── */}
-          <div className="p-1 rounded-2xl bg-muted/30 border border-border/60 grid grid-cols-2 gap-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setScope("team")}
-              className={cn(
-                "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
-                scope === "team"
-                  ? "bg-primary text-white shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-              )}
-            >
-              <Briefcase className="size-3.5" />
-              <span>تسک سازمانی / پروژه‌ای</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setScope("personal")}
-              className={cn(
-                "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
-                scope === "personal"
-                  ? "bg-emerald-600 text-white shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-card/50"
-              )}
-            >
-              <UserCheck className="size-3.5" />
-              <span>تسک شخصی من (انفرادی)</span>
-            </button>
-          </div>
+          {/* ── Scope Switcher: Team vs Personal (ADMIN ONLY) ── */}
+          {isAdmin && (
+            <div className="p-1 rounded-2xl bg-muted/30 border border-border/60 grid grid-cols-2 gap-1 text-xs">
+              <button
+                type="button"
+                onClick={() => setScope("team")}
+                className={cn(
+                  "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                  scope === "team"
+                    ? "bg-primary text-white shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                )}
+              >
+                <Briefcase className="size-3.5" />
+                <span>{t("createModal.scopeTeam")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setScope("personal")}
+                className={cn(
+                  "py-2 px-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 cursor-pointer",
+                  scope === "personal"
+                    ? "bg-emerald-600 text-white shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-card/50"
+                )}
+              >
+                <UserCheck className="size-3.5" />
+                <span>{t("createModal.scopePersonal")}</span>
+              </button>
+            </div>
+          )}
 
-          {/* If Personal: Choose Project-Linked vs Standalone */}
-          {scope === "personal" && (
+          {/* ── Personal Task Association: Project-Linked vs Standalone ── */}
+          {isPersonalActive && (
             <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-500/30 flex flex-col gap-3">
               <span className="text-xs font-bold text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
                 <Link2 className="size-3.5 text-emerald-600" />
-                <span>نحوه اتصال تسک شخصی:</span>
+                <span>{t("createModal.personalTypeLabel")}</span>
               </span>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <button
@@ -277,7 +335,7 @@ export function TaskCreateDialog({
                       : "bg-white dark:bg-card text-muted-foreground border-border/60 hover:text-foreground"
                   )}
                 >
-                  <span>متصل به یک پروژه خاص</span>
+                  <span>{t("createModal.personalTypeProject")}</span>
                 </button>
                 <button
                   type="button"
@@ -289,21 +347,43 @@ export function TaskCreateDialog({
                       : "bg-white dark:bg-card text-muted-foreground border-border/60 hover:text-foreground"
                   )}
                 >
-                  <span>مستقل و انفرادی برای خودم</span>
+                  <span>{t("createModal.personalTypeStandalone")}</span>
                 </button>
               </div>
 
               {personalType === "project" && (
                 <div className="flex flex-col gap-1.5 pt-1">
                   <label className="text-[11px] font-semibold text-emerald-900 dark:text-emerald-300">
-                    نام یا کد پروژه مربوطه:
+                    {t("createModal.selectProjectLabel")}
                   </label>
-                  <Input
-                    value={relatedProjectTitle}
-                    onChange={(e) => setRelatedProjectTitle(e.target.value)}
-                    placeholder="مثلاً: پروژه واحد ۴۰۰ پتروشیمی یا راکتور نانو سرام"
-                    className="text-xs rounded-xl bg-white dark:bg-card"
-                  />
+                  {userInvolvedProjects.length > 0 ? (
+                    <Combobox
+                      options={userInvolvedProjects.map((p) => ({
+                        value: p.id,
+                        label: `${p.title} (${p.code})`,
+                      }))}
+                      value={selectedProjectId}
+                      onChange={(val) => {
+                        setSelectedProjectId(val);
+                        const found = userInvolvedProjects.find((x) => x.id === val);
+                        if (found) {
+                          setRelatedProjectTitle(found.title);
+                          if (found.organization) {
+                            setCompany(found.organization);
+                          }
+                        }
+                      }}
+                      placeholder={t("createModal.selectProjectPlaceholder")}
+                      className="text-xs rounded-xl bg-white dark:bg-card"
+                    />
+                  ) : (
+                    <Input
+                      value={relatedProjectTitle}
+                      onChange={(e) => setRelatedProjectTitle(e.target.value)}
+                      placeholder={t("createModal.customProjectPlaceholder")}
+                      className="text-xs rounded-xl bg-white dark:bg-card"
+                    />
+                  )}
                 </div>
               )}
             </div>
@@ -318,13 +398,17 @@ export function TaskCreateDialog({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder={scope === "personal" ? "عنوان تسک یا یادداشت شخصی..." : t("createModal.titlePlaceholder")}
+              placeholder={
+                isPersonalActive
+                  ? t("createModal.personalTitlePlaceholder")
+                  : t("createModal.titlePlaceholder")
+              }
               className="text-xs sm:text-sm rounded-xl"
               required
             />
           </div>
 
-          {/* Company & Category Row (Only 2 Companies: Euroslot & Nano Palayesh Ceram) */}
+          {/* Company & Category Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -391,7 +475,7 @@ export function TaskCreateDialog({
             <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                 <Clock className="size-3.5 text-primary" />
-                <span>تخمین ساعت کار</span>
+                <span>{t("createModal.estimatedHours")}</span>
               </label>
               <Input
                 type="number"
@@ -403,16 +487,16 @@ export function TaskCreateDialog({
             </div>
           </div>
 
-          {/* Assignees Section - Only visible for Team tasks */}
-          {scope === "team" && (
+          {/* Assignees Section - ONLY FOR ADMIN IN TEAM SCOPE */}
+          {isAdmin && scope === "team" && (
             <div className="p-3.5 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
                   <Users className="size-4 text-primary" />
-                  <span>تیم مجری و همکاران سازمانی</span>
+                  <span>{t("createModal.teamCollaborators")}</span>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
-                  پرسنل ممکن است در هر دو شرکت نقش داشته باشند
+                  {t("createModal.collaboratorsNotice")}
                 </span>
               </div>
 
@@ -444,13 +528,13 @@ export function TaskCreateDialog({
                 <Input
                   value={extraCollabName}
                   onChange={(e) => setExtraCollabName(e.target.value)}
-                  placeholder="نام همکار جدید..."
+                  placeholder={t("createModal.newCollabNamePlaceholder")}
                   className="text-xs rounded-xl bg-background h-8"
                 />
                 <Input
                   value={extraCollabRole}
                   onChange={(e) => setExtraCollabRole(e.target.value)}
-                  placeholder="سمت (طراح، ناظر...)"
+                  placeholder={t("createModal.newCollabRolePlaceholder")}
                   className="text-xs rounded-xl bg-background h-8"
                 />
                 <Button
@@ -461,7 +545,7 @@ export function TaskCreateDialog({
                   disabled={!extraCollabName.trim()}
                   className="rounded-xl h-8 text-xs shrink-0 cursor-pointer"
                 >
-                  افزودن
+                  {t("createModal.addCollab")}
                 </Button>
               </div>
             </div>
@@ -504,7 +588,7 @@ export function TaskCreateDialog({
                 size="sm"
                 onClick={handleAddSubtask}
                 disabled={!subtaskInput.trim()}
-                className="rounded-xl text-xs shrink-0"
+                className="rounded-xl text-xs shrink-0 cursor-pointer"
               >
                 <Plus className="size-3.5" />
                 <span>{t("subtasks.add")}</span>
@@ -532,8 +616,8 @@ export function TaskCreateDialog({
             )}
           </div>
 
-          {/* Official Manager Task Checkbox - Only for Team */}
-          {scope === "team" && (
+          {/* Official Manager Task Checkbox - ONLY FOR ADMIN IN TEAM SCOPE */}
+          {isAdmin && scope === "team" && (
             <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/20 border border-border/50 text-xs">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -543,7 +627,7 @@ export function TaskCreateDialog({
                   className="size-4 rounded accent-primary cursor-pointer"
                 />
                 <span className="font-semibold text-foreground">
-                  ابلاغ رسمی به عنوان تسک سازمانی مدیر
+                  {t("createModal.managerDirective")}
                 </span>
               </label>
             </div>
@@ -564,9 +648,14 @@ export function TaskCreateDialog({
               type="submit"
               size="sm"
               disabled={!title.trim() || isSubmitting}
-              className={cn("text-xs font-semibold rounded-xl cursor-pointer shadow-2xs", scope === "personal" && "bg-emerald-600 hover:bg-emerald-700")}
+              className={cn(
+                "text-xs font-semibold rounded-xl cursor-pointer shadow-2xs",
+                isPersonalActive && "bg-emerald-600 hover:bg-emerald-700 text-white"
+              )}
             >
-              {scope === "personal" ? "ثبت تسک شخصی" : t("createModal.submit")}
+              {isPersonalActive
+                ? t("createModal.submitPersonal")
+                : t("createModal.submit")}
             </Button>
           </div>
         </form>

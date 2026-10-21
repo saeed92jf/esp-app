@@ -303,7 +303,6 @@ export function ProjectCreateDialog({
               >
                 <option value="یورو اسلات پارس">یورو اسلات پارس (Euroslot Pars)</option>
                 <option value="نانو پالایش سرام">نانو پالایش سرام (Nano Palayesh Ceram)</option>
-                <option value="پترو اسپادانا">پترو اسپادانا (Petro Spadana)</option>
               </select>
             </div>
             <div className="space-y-1.5 text-right">
