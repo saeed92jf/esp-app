@@ -433,10 +433,6 @@ export function HeroFlow() {
                     className="flex items-center justify-center w-full h-full outline-none"
                     onClick={(e) => {
                       e.preventDefault();
-                      if (!user) {
-                        openModal();
-                        return;
-                      }
                       if (isMobile) {
                         setShowMobileAlert(true);
                         return;

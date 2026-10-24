@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { 
@@ -280,7 +280,7 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
                       onClick={() => setSelectedUser(u)}
                       title={u.name}
                     >
-                      <AvatarImage src={u.avatar} className="object-cover object-top" />
+                      
                       <AvatarFallback className="bg-muted text-foreground text-[10px] font-bold">{u.name[0]}</AvatarFallback>
                     </Avatar>
                   </motion.div>

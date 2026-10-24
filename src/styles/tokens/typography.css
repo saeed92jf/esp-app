@@ -8,7 +8,7 @@
   /* ===== Font Families ===== */
   --font-sans: 'Inter', 'Shabnam', system-ui, -apple-system, sans-serif;
   --font-serif: 'Times New Roman', Georgia, serif;
-  --font-mono: 'SF Mono', 'Fira Code', monospace;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', 'Consolas', 'Fira Code', 'Menlo', 'Monaco', monospace;
   --font-persian: 'Shabnam', 'Inter', sans-serif;
   --font-english: 'Inter', 'Shabnam', sans-serif;
   --font-shabnam: 'Shabnam', 'Inter', sans-serif;

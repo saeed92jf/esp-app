@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -66,45 +66,29 @@ export function DashboardAvatar() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    if (user) {
-      setAvatarUrl(user.avatar || null);
-    }
-  }, [user?.avatar]);
-
-  const saveAvatar = (url: string | null) => {
-    setAvatarUrl(url);
-    updateAvatar(url);
-    if (user?.id) {
-      if (url) {
-        localStorage.setItem(`esp_custom_avatar_${user.id}`, url);
-      } else {
-        localStorage.removeItem(`esp_custom_avatar_${user.id}`);
+    // Clear photo from history/storage completely per user request
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("esp_auth_user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.avatar) {
+            delete parsed.avatar;
+            localStorage.setItem("esp_auth_user", JSON.stringify(parsed));
+          }
+        }
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith("esp_custom_avatar")) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (e) {
+        // ignore
       }
     }
-    setOpen(false);
-    toast.success('تصویر پروفایل به‌روز شد');
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        saveAvatar(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  }, []);
 
   if (!user) return null;
-
-  const handlePrev = () => {
-    setCurrentSlide((prev) => (prev === 0 ? PREDEFINED_AVATARS.length - 1 : prev - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentSlide((prev) => (prev === PREDEFINED_AVATARS.length - 1 ? 0 : prev + 1));
-  };
 
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
@@ -131,10 +115,10 @@ export function DashboardAvatar() {
       )}
       <div className="relative z-10 size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
         <Avatar className="size-full rounded-full overflow-hidden">
-          {avatarUrl ? (
-            <AvatarImage src={avatarUrl} alt={user.fullName} title="" className="object-cover" />
-          ) : null}
-          <AvatarFallback className="text-xs sm:text-sm font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
+          <AvatarFallback 
+            style={{ backgroundColor: user.avatarColor || "#0284c7" }}
+            className="text-xs sm:text-sm font-bold text-white transition-colors"
+          >
             <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
           </AvatarFallback>
         </Avatar>
@@ -209,10 +193,7 @@ export function DashboardAvatar() {
                     <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)]" />
                     <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
                       <Avatar className="size-7 sm:size-7.5">
-                        {avatarUrl ? (
-                          <AvatarImage src={avatarUrl} alt={user.email || user.fullName} className="object-cover" />
-                        ) : null}
-                        <AvatarFallback className="text-xs font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
+                        <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xs font-bold text-white">
                           <span>{initial}</span>
                         </AvatarFallback>
                       </Avatar>
@@ -220,10 +201,7 @@ export function DashboardAvatar() {
                   </div>
                 ) : (
                   <Avatar className="size-8 shrink-0 ring-2 ring-primary ring-offset-1 ring-offset-background border border-transparent">
-                    {avatarUrl ? (
-                      <AvatarImage src={avatarUrl} alt={user.email || user.fullName} className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="text-xs font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
+                    <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xs font-bold text-white">
                       <span>{initial}</span>
                     </AvatarFallback>
                   </Avatar>
@@ -293,10 +271,8 @@ export function DashboardAvatar() {
                      />
                      <div className="relative z-10 bg-white dark:bg-black rounded-full p-0.5">
                        <Avatar className="size-14 sm:size-16">
-                         {avatarUrl ? (
-                           <AvatarImage src={avatarUrl} alt={user.fullName} className="object-cover" />
-                         ) : null}
-                         <AvatarFallback className="text-xl sm:text-2xl font-bold bg-zinc-800 dark:bg-zinc-700 text-white">
+                         
+                         <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xl sm:text-2xl font-bold text-white">
                            <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
                          </AvatarFallback>
                        </Avatar>

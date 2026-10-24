@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2 } from "lucide-react";
+import { Loader2, MailCheck } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 import { useRouter, Link } from "@/i18n/navigation";
 import { getLoginSchema, type LoginInput } from "@/lib/validations/auth";
@@ -34,20 +35,27 @@ export default function LoginPage() {
   const t = useTranslations("Auth");
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const isFa = locale === "fa";
+  const emailParam = searchParams.get("email") || searchParams.get("identifier") || "";
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(getLoginSchema(t)),
     defaultValues: {
-      identifier: "",
+      identifier: emailParam,
       password: "",
     },
   });
+
+  useEffect(() => {
+    if (emailParam) {
+      form.setValue("identifier", emailParam);
+    }
+  }, [emailParam, form]);
 
   async function onSubmit(data: LoginInput) {
     setIsLoading(true);
@@ -55,13 +63,28 @@ export default function LoginPage() {
 
     try {
       if (login) {
-        // ارسال جداگانه شناسنامه و رمز عبور (طبق امضای سرویس شما)
-        await login(data.identifier, data.password);
+        const user = await login(data.identifier, data.password);
+        if (user) {
+          // If profile is not yet completed, redirect immediately to profile setup
+          if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
+            router.push("/dashboard/profile?onboarding=true");
+            router.refresh();
+            return;
+          }
+          // If not active / not yet final approved by manager, ALWAYS go directly to /account-pending
+          const isFullyApproved = Boolean(
+            user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
+          );
+          if (!isFullyApproved) {
+            router.push("/account-pending");
+            router.refresh();
+            return;
+          }
+        }
       }
       router.push("/");
       router.refresh();
     } catch (error: any) {
-      // Use console.log to prevent Next.js dev overlay from catching expected auth errors
       console.log("Login failed:", error?.message);
       const isAuthError = error?.status === 401 || error?.status === 400;
       setErrorMsg(
@@ -151,6 +174,13 @@ export default function LoginPage() {
                 />
               </div>
 
+              {emailParam && (
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
+                  <MailCheck className="size-4 shrink-0 text-primary" />
+                  <span>{t("emailPrefilledNotice")}</span>
+                </div>
+              )}
+
               {errorMsg && (
                 <div className="text-xs sm:text-sm font-medium text-destructive text-center bg-destructive/10 p-2 rounded-md border border-destructive/20">
                   {errorMsg}
@@ -175,10 +205,10 @@ export default function LoginPage() {
                 <div>
                   <span className="text-muted-foreground">{t("noAccount")}</span>{" "}
                   <Link
-                    href="/register"
+                    href="/account-request"
                     className="font-medium text-primary hover:underline"
                   >
-                    {t("createAccount")}
+                    {t("requestAccount")}
                   </Link>
                 </div>
               </div>

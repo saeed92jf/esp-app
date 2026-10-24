@@ -38,19 +38,8 @@ export function FeatureCard({
   isRtl = false,
   className,
 }: FeatureCardProps) {
-  const { user } = useAuth();
-  const { openModal } = useAuthModal();
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!user) {
-      e.preventDefault();
-      e.stopPropagation();
-      openModal();
-    }
-  };
-
   return (
-    <Link href={href} onClick={handleClick} className={cn("group block h-full", className)}>
+    <Link href={href} className={cn("group block h-full", className)}>
       <Card
         className={cn(
           "relative h-full overflow-hidden shadow-sm border border-border/50",

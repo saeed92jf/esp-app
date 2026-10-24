@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search as SearchIcon, Lock } from "lucide-react";
+import { Search as SearchIcon } from "lucide-react";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-import { AuthModal } from "@/modules/auth/components/auth-modal";
 
 export function DashboardMenuSidebar() {
   const pathname = usePathname();
@@ -25,7 +24,6 @@ export function DashboardMenuSidebar() {
   const { user } = useAuth();
 
   const [query, setQuery] = React.useState("");
-  const [showUpsell, setShowUpsell] = React.useState(false);
 
   const filteredNav = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -136,20 +134,11 @@ export function DashboardMenuSidebar() {
                       {group.items.map((item) => {
                         const ItemIcon = item.icon;
                         const isActive = pathname === item.href;
-                        const isRestricted = !user && !item.free;
-
-                        const handleLinkClick = (e: React.MouseEvent) => {
-                          if (isRestricted) {
-                            e.preventDefault();
-                            setShowUpsell(true);
-                          }
-                        };
 
                         return (
                           <li key={item.href} className="segmented-item flex flex-col overflow-hidden rounded-xl">
                             <Link
                               href={item.href}
-                              onClick={handleLinkClick}
                               className={cn(
                                 "relative flex items-center gap-3 px-4 py-3 text-sm no-underline hover:no-underline outline-none transition-colors w-full",
                                 isActive
@@ -158,15 +147,11 @@ export function DashboardMenuSidebar() {
                               )}
                             >
                               {ItemIcon && (
-                                <ItemIcon className={cn("relative z-10 size-4.5 shrink-0", isRestricted && "opacity-60")} />
+                                <ItemIcon className="relative z-10 size-4.5 shrink-0" />
                               )}
-                              <span className={cn("relative z-10 text-sm font-medium", isRestricted && "opacity-80")}>
+                              <span className="relative z-10 text-sm font-medium">
                                 {tItems(item.labelKey)}
                               </span>
-                              
-                              {isRestricted && (
-                                <Lock className="relative z-10 size-3.5 ms-auto opacity-40 group-hover:opacity-100 group-hover:text-primary transition-opacity" />
-                              )}
                             </Link>
                           </li>
                         );
@@ -179,8 +164,6 @@ export function DashboardMenuSidebar() {
           })}
         </Accordion>
       </nav>
-
-      <AuthModal open={showUpsell} onOpenChange={setShowUpsell} />
     </div>
   );
 }

@@ -62,6 +62,13 @@ import {
   type IExchangeRatesService,
 } from "@/modules/dashboard/services/exchange-rates.service";
 import { AparatService, type IAparatService } from "./aparat.service";
+import {
+  FakeAdminService,
+} from "@/modules/admin/services/admin.fake.service";
+import {
+  RealAdminService,
+} from "@/modules/admin/services/admin.real.service";
+import type { IAdminService } from "@/modules/admin/services/admin.service";
 
 // ═════════════════════════════════════════════════════════════════════════════
 // ⚙️  حالت پیش‌فرض جهانی  (از .env.local خوانده می‌شود)
@@ -101,6 +108,7 @@ const SERVICE_MODES = {
   stats:         'inherit',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
   user:          'inherit',  // 🔴 Fake  — پروفایل کاربری هنوز backend ندارد
   preferences:   'inherit',  // 🔴 Fake  — تنظیمات در localStorage ذخیره می‌شوند
+  admin:         'inherit',  // 🔴 Fake  — مدیریت کاربران و درخواست‌ها
 
   // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
   commodities:   'real',     // 🟢 REAL   — کریپتو از Finnhub، کالا/فارکس از Yahoo Finance
@@ -178,6 +186,12 @@ export const api = {
 
   // آپارات — همیشه Real (مستقل از GLOBAL_API_MODE)
   aparat: new AparatService() as IAparatService,
+
+  // مدیریت کاربران و درخواست‌های سازمانی (HR و Admin)
+  admin: pickService<IAdminService>('admin',
+    new FakeAdminService(),
+    new RealAdminService(http),
+  ),
 };
 
 // ─── Re-export برای راحتی import ──────────────────────────────────────────────
@@ -209,3 +223,4 @@ export type {
   Trend as DashboardTrend,
   IconName as DashboardIconName,
 } from "@/modules/dashboard/services/dashboard.service";
+export type { IAdminService } from "@/modules/admin/services/admin.service";

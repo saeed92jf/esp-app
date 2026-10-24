@@ -715,7 +715,7 @@ export function ProjectVdisTransmittalTab({
                     type="email"
                     value={recipientEmail}
                     onChange={(e) => setRecipientEmail(e.target.value)}
-                    className="text-xs rounded-xl font-mono"
+                    className="text-xs rounded-xl font-sans"
                     required
                   />
                 </div>
@@ -726,7 +726,7 @@ export function ProjectVdisTransmittalTab({
                   <Input
                     value={ccEmails}
                     onChange={(e) => setCcEmails(e.target.value)}
-                    className="text-xs rounded-xl font-mono"
+                    className="text-xs rounded-xl font-sans"
                   />
                 </div>
               </div>

@@ -100,7 +100,7 @@ export function DailyNotificationsModal({
           <div className="flex items-center justify-between p-4 border-b border-border/50 bg-muted/20">
             <div className="flex items-center gap-2.5">
               <div className="p-2 bg-primary/10 rounded-xl text-primary">
-                <Bell className="size-5" />
+                <Bell className="size-5 fill-current" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
@@ -206,7 +206,7 @@ export function DailyNotificationsModal({
               })
             ) : (
               <div className="py-12 flex flex-col items-center justify-center text-muted-foreground">
-                <Bell className="size-8 mb-2 opacity-25" />
+                <Bell className="size-8 mb-2 opacity-25 fill-current" />
                 <p className="text-xs font-medium">{t("empty")}</p>
               </div>
             )}

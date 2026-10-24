@@ -3,7 +3,7 @@
 
 import { useTranslations } from "next-intl";
 import { SignIn } from "@phosphor-icons/react";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 import { cn } from "@/lib/utils";
@@ -29,6 +29,27 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 export function Header() {
   const t = useTranslations("Auth");
   const { user, loading } = useAuth();
+  const pathname = usePathname();
+
+  const isPendingPage = pathname === "/account-pending" || pathname.startsWith("/account-pending/");
+
+  // On the pending page: side menu is disabled, page tag is shown next to logo, and only Theme & Locale icons appear
+  if (isPendingPage) {
+    return (
+      <AppHeader
+        tag="pending"
+        showMenuButton={false}
+        menuTrigger={null}
+        logoHref="/account-pending"
+        rightActions={
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <ThemeToggle />
+            <LocaleSwitcher />
+          </div>
+        }
+      />
+    );
+  }
 
   const rightActions = (
     <div className="flex items-center gap-1.5 sm:gap-2.5">
@@ -67,20 +88,20 @@ export function Header() {
             </Tooltip>
 
             <Button asChild className="group hidden sm:flex text-[13px] h-[32px] sm:h-[36px] px-5 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-colors border border-transparent">
-              <Link href="/register" className="flex items-center justify-center">
+              <Link href="/account-request" className="flex items-center justify-center">
                 <span className="relative flex items-center justify-center h-[20px] [perspective:800px]">
                   <span className="opacity-0 grid place-items-center h-full pointer-events-none whitespace-nowrap font-medium">
-                    <span className="col-start-1 row-start-1">{t("register")}</span>
-                    <span className="col-start-1 row-start-1">{t("registerTooltip")}</span>
+                    <span className="col-start-1 row-start-1">{t("requestAccount")}</span>
+                    <span className="col-start-1 row-start-1">{t("requestAccountTooltip")}</span>
                   </span>
 
                   <span className="absolute inset-0 w-full h-full transition-transform duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] [transform-style:preserve-3d] group-hover:[transform:rotateX(90deg)]">
                     <span className="absolute inset-0 flex items-center justify-center font-medium whitespace-nowrap [transform:translateZ(10px)] [backface-visibility:hidden]">
-                      {t("register")}
+                      {t("requestAccount")}
                     </span>
 
                     <span className="absolute inset-0 flex items-center justify-center font-medium whitespace-nowrap [transform:rotateX(-90deg)_translateZ(10px)] [backface-visibility:hidden]">
-                      {t("registerTooltip")}
+                      {t("requestAccountTooltip")}
                     </span>
                   </span>
                 </span>

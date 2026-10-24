@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { AdminFakeService } from "../services/admin.fake.service";
+import { api } from "@/services";
 import { User, PendingRequest } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Settings } from "lucide-react";
+import { ShieldAlert, Settings, CheckCircle2, Mail, Clock, Send, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import { NAVIGATION } from "@/config/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,6 +18,7 @@ import { AdminTasksTime } from "./AdminTasksTime";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
+import { AdminRequests } from "./AdminRequests";
 
 export function AdminDashboard() {
   const t = useTranslations("Admin");
@@ -37,14 +38,19 @@ export function AdminDashboard() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [u, r] = await Promise.all([
-      AdminFakeService.getUsers(),
-      AdminFakeService.getPendingRequests(),
-    ]);
-    setUsers(u);
-    if (u.length > 0) setSelectedUser(u[0]);
-    setRequests(r);
-    setLoading(false);
+    try {
+      const [u, r] = await Promise.all([
+        api.admin.getUsers(),
+        api.admin.getPendingRequests(),
+      ]);
+      setUsers(u);
+      if (u.length > 0) setSelectedUser(u[0]);
+      setRequests(r);
+    } catch (err) {
+      console.error("Admin dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
@@ -201,15 +207,11 @@ export function AdminDashboard() {
           )}
 
           {!loading && activeTab === 'requests' && (
-            <div className="flex items-center justify-center h-full">
-              <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
-                <div className="w-20 h-20 bg-amber-500/10 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <ShieldAlert size={32} />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">{t("tabReqTitle")}</h2>
-                <p className="text-muted-foreground mb-8">{t("tabReqDesc")}</p>
-              </div>
-            </div>
+            <AdminRequests 
+              requests={requests}
+              setRequests={setRequests}
+              onRefresh={fetchData}
+            />
           )}
 
           {!loading && activeTab === 'settings' && (

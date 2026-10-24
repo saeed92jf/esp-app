@@ -466,7 +466,7 @@ function CalendarContent({
               type="button"
               onClick={() => handleSelect(cell.date)}
               className={cn(
-                "calendar-day-btn relative aspect-square w-full max-w-[36px] mx-auto flex items-center justify-center rounded-lg text-xs select-none font-normal cursor-pointer active:scale-95",
+                "calendar-day-btn relative aspect-square w-full max-w-[36px] mx-auto flex items-center justify-center rounded-lg text-xs select-none font-normal cursor-pointer active:opacity-75 transition-colors",
                 !cell.isCurrentMonth && "text-muted-foreground/30 hover:bg-muted/50 hover:text-muted-foreground/60",
                 cell.isCurrentMonth && !isSelected && !isCurrentDay && "text-foreground hover:bg-primary/10 hover:text-primary hover:font-bold hover:shadow-sm",
                 isCurrentDay && !isSelected && "border border-primary/40 text-primary font-bold hover:bg-primary/10 hover:shadow-sm",
@@ -519,6 +519,14 @@ export interface DatePickerProps {
    * "inline" — renders the calendar directly on the page without any trigger/popover.
    */
   mode?: "popover" | "inline";
+  /**
+   * Visual variant of the date input trigger:
+   * - "outline" (default): standard rounded boxed input button
+   * - "underline": simple flat underline input matching profile/form fields
+   * - "ghost": borderless input button
+   * - "unstyled": neutral container allowing full custom styling via className
+   */
+  variant?: "outline" | "underline" | "ghost" | "unstyled";
 }
 
 // ─── DatePicker ───────────────────────────────────────────────────────────────
@@ -538,6 +546,7 @@ export function DatePicker({
   size = "default",
   getEventColors,
   mode = "popover",
+  variant = "outline",
 }: DatePickerProps) {
   const [internalDate, setInternalDate] = React.useState<Date | undefined>(value);
   const [viewDate, setViewDate] = React.useState<Date>(value || new Date());
@@ -636,25 +645,49 @@ export function DatePicker({
   }
 
   // ── Popover mode (default) ──
+  const isUnderline = variant === "underline";
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen} modal={false}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <button
+          type="button"
           disabled={disabled}
           className={cn(
-            "w-full justify-start gap-2 text-start font-medium border border-border/50 bg-background text-foreground transition-colors hover:border-primary/50 hover:bg-muted/40 shadow-xs rounded-xl select-none group",
-            sizeClasses[size],
-            !selectedDate && "text-muted-foreground",
+            // Base styles: never resize or scale on click
+            "w-full text-start font-medium transition-colors select-none group cursor-pointer outline-none focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 active:scale-100 transform-none",
+            isUnderline
+              ? "h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base sm:text-lg flex items-center justify-between hover:border-primary/50 focus:border-primary focus-visible:border-primary shadow-none"
+              : variant === "ghost"
+              ? cn("flex items-center justify-start gap-2 rounded-xl bg-transparent hover:bg-muted/40", sizeClasses[size])
+              : variant === "unstyled"
+              ? "flex items-center"
+              : cn(
+                  // Default outline
+                  "flex items-center justify-start gap-2 border border-border/50 bg-background text-foreground hover:border-primary/50 hover:bg-muted/40 shadow-xs rounded-xl",
+                  sizeClasses[size]
+                ),
+            !selectedDate && (isUnderline ? "text-muted-foreground/60" : "text-muted-foreground"),
             className,
             triggerClassName
           )}
         >
-          <CalendarIcon className="size-4 shrink-0 opacity-70 group-hover:text-primary transition-colors" />
-          <span className="truncate">
-            {selectedDate ? formatted : placeholder}
-          </span>
-        </Button>
+          {isUnderline ? (
+            <>
+              <span className="truncate font-mono">
+                {selectedDate ? formatted : placeholder}
+              </span>
+              <CalendarIcon className="size-5 shrink-0 text-muted-foreground/60 group-hover:text-primary transition-colors" />
+            </>
+          ) : (
+            <>
+              <CalendarIcon className="size-4 shrink-0 opacity-70 group-hover:text-primary transition-colors" />
+              <span className="truncate">
+                {selectedDate ? formatted : placeholder}
+              </span>
+            </>
+          )}
+        </button>
       </PopoverTrigger>
       <PopoverContent
         className={cn(

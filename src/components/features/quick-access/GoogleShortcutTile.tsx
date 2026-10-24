@@ -42,17 +42,9 @@ export function GoogleShortcutTile({
   const isRtl = locale === "fa";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user } = useAuth();
-  const { openModal } = useAuthModal();
-
   const navGradientClass = resolveNavIconGradient(color);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!user) {
-      e.preventDefault();
-      e.stopPropagation();
-      openModal();
-      return;
-    }
     if (onClick) {
       onClick(e);
     }

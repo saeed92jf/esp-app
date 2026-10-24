@@ -28,8 +28,11 @@ import {
   GraduationCap, Search, KeyRound, Smartphone, Lock, 
   Activity, Mail, Pencil, Menu, HelpCircle, Grip, Settings,
   Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, Map, Upload, Trash, Plus,
-  Monitor, Sun, Moon, Palette, Languages
+  Monitor, Sun, Moon, Palette, Languages, CheckCircle2, Clock, ShieldCheck,
+  Users, PhoneCall, CreditCard, Minus
 } from "lucide-react";
+import { toast } from "sonner";
+import { PersonnelForm } from "./personnel-form";
 import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -170,6 +173,7 @@ const ProjectIcon = () => (
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, labelKey: "nav.home" },
+  { id: "form", icon: FileText, labelKey: "nav.personnelForm" },
   { id: "personal", icon: User, labelKey: "nav.personal" },
   { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
   { id: "skills", icon: Star, labelKey: "nav.skills" },
@@ -183,7 +187,7 @@ export function ProfilePage() {
   const { profile, isLoading, isError, updateProfile, isUpdating } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || "home";
+  const initialTab = searchParams.get('tab') || "personal";
   const initialField = searchParams.get('field') || null;
   const router = useRouter();
   const pathname = usePathname();
@@ -202,6 +206,11 @@ export function ProfilePage() {
   const [editingField, setEditingField] = useState<string | null>(initialField);
   const [isAvatarAccordionOpen, setIsAvatarAccordionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Bilingual Mobile Phone OTP & Verification State
+  const [phoneOtpStep, setPhoneOtpStep] = useState<"idle" | "sent" | "verified">("idle");
+  const [phoneOtpCode, setPhoneOtpCode] = useState("");
+  const [phoneOtpError, setPhoneOtpError] = useState("");
 
   useEffect(() => {
     if (profile) {
@@ -449,14 +458,201 @@ export function ProfilePage() {
             </div>
           );
           break;
+        case 'maritalStatus':
+          title = t("fields.maritalStatus");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-4 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.maritalStatus")}</Label>
+                <Combobox
+                  options={[
+                    { value: "single", label: t("fields.maritalSingle") },
+                    { value: "married", label: t("fields.maritalMarried") },
+                  ]}
+                  value={formData.personal.maritalStatus || "single"}
+                  onChange={(val) => handleChange("personal", "maritalStatus", val)}
+                  className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
+                />
+              </div>
+            </div>
+          );
+          break;
+        case 'childrenCount':
+          title = t("fields.childrenCount");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-4 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.childrenCount")}</Label>
+                <div className="h-12 flex items-center">
+                  <div className="inline-flex items-center rounded-xl border border-border/60 bg-muted/20 p-1 shadow-2xs">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const cur = formData.personal.childrenCount ?? 0;
+                        handleChange("personal", "childrenCount", Math.max(0, cur - 1));
+                      }}
+                      disabled={(formData.personal.childrenCount ?? 0) <= 0}
+                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      aria-label="Decrease children count"
+                    >
+                      <Minus className="size-4 stroke-[2.5]" />
+                    </Button>
+                    <span className="min-w-12 px-3 text-center font-mono font-bold text-base text-foreground fa-num select-none">
+                      {formData.personal.childrenCount ?? 0}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const cur = formData.personal.childrenCount ?? 0;
+                        handleChange("personal", "childrenCount", Math.min(20, cur + 1));
+                      }}
+                      disabled={(formData.personal.childrenCount ?? 0) >= 20}
+                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      aria-label="Increase children count"
+                    >
+                      <Plus className="size-4 stroke-[2.5]" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+          break;
         case 'phone':
           title = t("fields.phone");
           description = t("descriptions.phoneEdit");
           content = (
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
                  <Label htmlFor="phone" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.phone")}</Label>
-                 <Input id="phone" value={formData.personal.phone} onChange={(e) => handleChange("personal", "phone", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" autoFocus />
+                 <Input 
+                   id="phone" 
+                   value={formData.personal.phone} 
+                   onChange={(e) => {
+                     const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                     handleChange("personal", "phone", val);
+                     if (val !== profile?.personal?.phone) {
+                       handleChange("personal", "phoneVerified", false);
+                       setPhoneOtpStep("idle");
+                     }
+                   }} 
+                   maxLength={11}
+                   placeholder="09120000000"
+                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" 
+                   autoFocus 
+                 />
+                 <p className="text-xs text-muted-foreground">{t("fields.phoneHelpText")}</p>
+               </div>
+
+               {/* Bilingual Verification Status Card */}
+               <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
+                 <div className="flex items-center justify-between">
+                   <span className="text-xs font-semibold text-foreground flex items-center gap-2">
+                     <ShieldCheck className="size-4 text-primary" />
+                     {t("fields.phoneVerificationStatus")}
+                   </span>
+                   {formData.personal.phoneVerified ? (
+                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                       <CheckCircle2 className="size-3.5" />
+                       {t("fields.phoneVerified")}
+                     </span>
+                   ) : (
+                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                       <Clock className="size-3.5" />
+                       {t("fields.phoneUnverified")}
+                     </span>
+                   )}
+                 </div>
+
+                 <p className="text-xs text-muted-foreground leading-relaxed">
+                   {formData.personal.phoneVerified
+                     ? t("fields.phoneVerifiedDesc")
+                     : t("fields.phoneUnverifiedDesc")}
+                 </p>
+
+                 {/* OTP verification interaction */}
+                 {!formData.personal.phoneVerified && (
+                   <div className="pt-2 border-t border-border/40">
+                     {phoneOtpStep === "idle" ? (
+                       <Button
+                         type="button"
+                         variant="outline"
+                         size="sm"
+                         onClick={() => {
+                           if (!/^09\d{9}$/.test(formData.personal.phone || "")) {
+                             toast.error(t("fields.phoneHelpText"));
+                             return;
+                           }
+                           setPhoneOtpStep("sent");
+                           toast.info(t("fields.otpSentToast"));
+                         }}
+                         className="text-xs h-9 font-medium text-primary border-primary/30 hover:bg-primary/10 gap-1.5"
+                       >
+                         <Smartphone className="size-3.5" />
+                         <span>{t("fields.verifyPhone")}</span>
+                       </Button>
+                     ) : (
+                       <div className="space-y-3 pt-1">
+                         <p className="text-xs text-muted-foreground">{t("fields.otpPrompt")}</p>
+                         <div className="flex items-center gap-2">
+                           <Input
+                             id="phoneOtpCode"
+                             value={phoneOtpCode}
+                             onChange={(e) => {
+                               setPhoneOtpCode(e.target.value.replace(/\D/g, "").slice(0, 5));
+                               setPhoneOtpError("");
+                             }}
+                             maxLength={5}
+                             placeholder="12345"
+                             className={`h-10 w-32 text-center font-mono tracking-widest text-base ${phoneOtpError ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+                             dir="ltr"
+                             autoFocus
+                           />
+                           <Button
+                             type="button"
+                             size="sm"
+                             onClick={() => {
+                               if (phoneOtpCode === "12345" || phoneOtpCode.length === 5) {
+                                 handleChange("personal", "phoneVerified", true);
+                                 setPhoneOtpStep("idle");
+                                 setPhoneOtpCode("");
+                                 setPhoneOtpError("");
+                                 toast.success(t("fields.phoneVerifiedSuccess"));
+                               } else {
+                                 setPhoneOtpError(t("fields.otpInvalid"));
+                               }
+                             }}
+                             className="h-10 text-xs font-semibold px-4"
+                           >
+                             {t("fields.confirmOtp")}
+                           </Button>
+                           <Button
+                             type="button"
+                             variant="ghost"
+                             size="sm"
+                             onClick={() => {
+                               toast.info(t("fields.otpSentToast"));
+                             }}
+                             className="h-10 text-xs text-muted-foreground hover:text-foreground"
+                           >
+                             {t("fields.resendOtp")}
+                           </Button>
+                         </div>
+                         {phoneOtpError ? (
+                           <span className="text-[11px] text-destructive">{phoneOtpError}</span>
+                         ) : (
+                           <span className="text-[11px] text-muted-foreground">{t("fields.otpDemoHint")}</span>
+                         )}
+                       </div>
+                     )}
+                   </div>
+                 )}
                </div>
             </div>
           );
@@ -630,6 +826,42 @@ export function ProfilePage() {
              </div>
           </div>
 
+          {/* Marital Status */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('maritalStatus')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <HeartPh className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.maritalStatus")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.personal.maritalStatus === 'married' ? t("fields.maritalMarried") : formData.personal.maritalStatus === 'single' ? t("fields.maritalSingle") : t("notSet")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Children Count */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('childrenCount')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Users className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.childrenCount")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 fa-num font-semibold text-foreground">
+                  {formData.personal.childrenCount ?? 0}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
           {/* Email */}
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
@@ -657,7 +889,24 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.personal.phone || t("notSet")}</span>
+                <div className="flex items-center gap-2 truncate px-2">
+                  <span className="text-sm text-muted-foreground text-start font-mono fa-num ltr">
+                    {formData.personal.phone || t("notSet")}
+                  </span>
+                  {formData.personal.phone && (
+                    formData.personal.phoneVerified ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
+                        <CheckCircle2 className="size-3" />
+                        {t("fields.phoneVerified")}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">
+                        <Clock className="size-3" />
+                        {t("fields.phoneUnverified")}
+                      </span>
+                    )
+                  )}
+                </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -693,6 +942,7 @@ export function ProfilePage() {
         case 'employeeId': title = t("fields.employeeId"); break;
         case 'joinDate': title = t("fields.joinDate"); break;
         case 'manager': title = t("fields.manager"); break;
+        case 'extensionNumber': title = t("fields.extensionNumber"); break;
         default: return null;
       }
       
@@ -818,6 +1068,24 @@ export function ProfilePage() {
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.manager || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Extension Number */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('extensionNumber')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <PhoneCall className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.extensionNumber")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono fa-num ltr">
+                  {formData.organizational.extensionNumber || t("notSet")}
+                </span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -958,6 +1226,7 @@ export function ProfilePage() {
   const renderInsuranceView = () => {
     if (editingField) {
       let title = "";
+      let content: React.ReactNode = null;
       let fieldKey = editingField as keyof UserProfile["insurance"];
       
       switch (editingField) {
@@ -965,10 +1234,78 @@ export function ProfilePage() {
         case 'type': title = t("fields.type"); break;
         case 'insuranceCode': title = t("fields.insuranceCode"); break;
         case 'validUntil': title = t("fields.validUntil"); break;
+        case 'shebaNumber': title = t("fields.shebaNumber"); break;
+        case 'supplementaryPlan':
+          title = t("fields.supplementaryPlan");
+          content = (
+            <div className="space-y-4 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
+                <Combobox
+                  options={[
+                    { value: "golden", label: t("fields.planGolden") },
+                    { value: "silver", label: t("fields.planSilver") },
+                    { value: "special", label: t("fields.planSpecial") },
+                    { value: "none", label: t("fields.planNone") },
+                  ]}
+                  value={formData.insurance.supplementaryPlan || "none"}
+                  onChange={(val) => handleChange("insurance", "supplementaryPlan", val)}
+                  className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
+                />
+              </div>
+            </div>
+          );
+          break;
+        case 'dependentsCount':
+          title = t("fields.dependentsCount");
+          content = (
+            <div className="space-y-4 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.dependentsCount")}</Label>
+                <div className="h-12 flex items-center">
+                  <div className="inline-flex items-center rounded-xl border border-border/60 bg-muted/20 p-1 shadow-2xs">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const cur = formData.insurance.dependentsCount ?? 0;
+                        handleChange("insurance", "dependentsCount", Math.max(0, cur - 1));
+                      }}
+                      disabled={(formData.insurance.dependentsCount ?? 0) <= 0}
+                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      aria-label="Decrease dependents count"
+                    >
+                      <Minus className="size-4 stroke-[2.5]" />
+                    </Button>
+                    <span className="min-w-12 px-3 text-center font-mono font-bold text-base text-foreground fa-num select-none">
+                      {formData.insurance.dependentsCount ?? 0}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        const cur = formData.insurance.dependentsCount ?? 0;
+                        handleChange("insurance", "dependentsCount", Math.min(20, cur + 1));
+                      }}
+                      disabled={(formData.insurance.dependentsCount ?? 0) >= 20}
+                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                      aria-label="Increase dependents count"
+                    >
+                      <Plus className="size-4 stroke-[2.5]" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+          break;
         default: return null;
       }
       
-      const value = formData.insurance[fieldKey] || "";
+      const rawValue = formData.insurance[fieldKey];
+      const value = typeof rawValue === "string" || typeof rawValue === "number" ? rawValue : "";
       
       const handleLocalSave = () => {
         handleSave();
@@ -988,17 +1325,19 @@ export function ProfilePage() {
             <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.insurance")}</p>
             
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              <div className="space-y-6 max-w-lg">
-                <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
-                  <Input 
-                    value={value} 
-                    onChange={(e) => handleChange("insurance", fieldKey, e.target.value)}
-                    className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                    autoFocus
-                  />
+              {content || (
+                <div className="space-y-6 max-w-lg">
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
+                    <Input 
+                      value={value} 
+                      onChange={(e) => handleChange("insurance", fieldKey, e.target.value)}
+                      className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                      autoFocus
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
@@ -1077,6 +1416,63 @@ export function ProfilePage() {
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
+
+          {/* Supplementary Plan */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('supplementaryPlan')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <ShieldCheck className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.supplementaryPlan")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.insurance.supplementaryPlan === 'golden' ? t("fields.planGolden")
+                    : formData.insurance.supplementaryPlan === 'silver' ? t("fields.planSilver")
+                    : formData.insurance.supplementaryPlan === 'special' ? t("fields.planSpecial")
+                    : t("fields.planNone")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Dependents Count */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('dependentsCount')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Users className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.dependentsCount")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 fa-num font-semibold text-foreground">
+                  {formData.insurance.dependentsCount ?? 0}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Sheba / IBAN */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('shebaNumber')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <CreditCard className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.shebaNumber")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono fa-num ltr">
+                  {formData.insurance.shebaNumber || t("notSet")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
         </div>
       </div>
     );
@@ -1095,7 +1491,8 @@ export function ProfilePage() {
         default: return null;
       }
       
-      const value = formData.education[fieldKey] || "";
+      const rawValue = formData.education[fieldKey];
+      const value = typeof rawValue === "string" || typeof rawValue === "number" ? rawValue : "";
       
       const handleLocalSave = () => {
         handleSave();
@@ -1419,6 +1816,15 @@ export function ProfilePage() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
            {activeTab === "home" ? renderHomeView() : 
+            activeTab === "form" ? (
+              <div className="max-w-4xl mx-auto w-full pt-6 pb-16 px-4 sm:px-8 animate-in fade-in duration-300">
+                <PersonnelForm
+                  initialData={formData}
+                  onSave={(updated) => updateProfile(updated)}
+                  isSaving={isUpdating}
+                />
+              </div>
+            ) :
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
             activeTab === "skills" ? renderSkillsView() :

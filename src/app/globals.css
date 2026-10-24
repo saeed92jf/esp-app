@@ -12,6 +12,7 @@
 @theme {
   /* Map standard sans font to our custom bilingual base font for Shadcn UI components */
   --font-sans: var(--font-base);
+  --font-mono: ui-monospace, 'Cascadia Code', 'Segoe UI Mono', 'Consolas', 'Fira Code', 'Menlo', 'Monaco', monospace;
   
   /* Provide utility classes for specific overrides */
   --font-poppins: 'Poppins', system-ui, sans-serif;
@@ -106,6 +107,25 @@ body {
 
 /* Ensure form controls inherit the global font normally */
 button, input, select, textarea {
+  font-family: var(--font-base);
+}
+
+/* Utility classes for bidirectional text direction and email styling */
+.ltr,
+.dir-ltr {
+  direction: ltr !important;
+  text-align: left;
+}
+
+.rtl,
+.dir-rtl {
+  direction: rtl !important;
+  text-align: right;
+}
+
+/* Ensure email and contact addresses always render cleanly in Latin sans font */
+.email-text,
+input[type="email"] {
   font-family: var(--font-base);
 }
 
@@ -887,3 +907,54 @@ h1, h2, h3, h4, h5, h6 {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* ============================================
+   SHADCN COLOR PICKER STYLES
+   ============================================ */
+.shadcn-color-picker .react-colorful {
+  width: 100% !important;
+  height: 170px !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.shadcn-color-picker .react-colorful__saturation {
+  border-radius: 1.25rem 1.25rem 0.5rem 0.5rem !important;
+  border: 1px solid var(--border) !important;
+  border-bottom: none !important;
+  cursor: crosshair !important;
+}
+
+.shadcn-color-picker .react-colorful__saturation .react-colorful__interactive {
+  cursor: crosshair !important;
+}
+
+.shadcn-color-picker .react-colorful__hue {
+  height: 16px !important;
+  border-radius: 9999px !important;
+  margin-top: 12px !important;
+  border: 1px solid var(--border) !important;
+  cursor: pointer !important;
+}
+
+.shadcn-color-picker .react-colorful__hue .react-colorful__interactive {
+  cursor: pointer !important;
+}
+
+.shadcn-color-picker .react-colorful__pointer {
+  width: 22px !important;
+  height: 22px !important;
+  border: 2.5px solid #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.15) !important;
+  cursor: grab !important;
+  transition: box-shadow 0.15s ease !important;
+}
+
+.shadcn-color-picker .react-colorful__pointer:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(255, 255, 255, 0.7) !important;
+}
+
+.shadcn-color-picker .react-colorful__pointer:active {
+  cursor: grabbing !important;
+}
+

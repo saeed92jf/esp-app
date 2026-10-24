@@ -167,7 +167,7 @@ export function NotificationsPopover({
                   )}
                   aria-label={t("tooltip")}
                 >
-                  <Bell className={cn(iconClassName || HEADER_ICON_CLASS)} />
+                  <Bell className={cn(iconClassName || HEADER_ICON_CLASS, "fill-current")} />
                   {unreadCount > 0 && (
                     <span className="absolute -top-1 -end-1 min-w-[16px] h-4 px-1 rounded-full bg-red-600 dark:bg-red-500 text-white text-[10px] font-bold leading-none flex items-center justify-center shadow-xs ring-2 ring-background pointer-events-none fa-num">
                       {unreadCount > 99 ? "+99" : unreadCount}
@@ -225,7 +225,7 @@ export function NotificationsPopover({
                       : "opacity-0 scale-90 translate-y-2 pointer-events-none"
                   )}
                 >
-                  <Bell className="size-5 sm:size-5.5 text-primary stroke-[2.75]" />
+                  <Bell className="size-5 sm:size-5.5 text-primary fill-current" />
                 </div>
                 <span
                   className={cn(
@@ -280,7 +280,7 @@ export function NotificationsPopover({
                 >
                   <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0">
                     <div className="flex items-center justify-center size-12 sm:size-14 shrink-0 select-none">
-                      <Bell className="size-10.5 sm:size-12 text-primary stroke-[2.8]" />
+                      <Bell className="size-10.5 sm:size-12 text-primary fill-current" />
                     </div>
                     <div className="flex flex-col items-start gap-0.5 flex-1 min-w-0">
                       <div className="flex items-center gap-2 w-full">
@@ -381,7 +381,7 @@ export function NotificationsPopover({
                                 {isEvent && <Calendar className="size-5 sm:size-5.5 stroke-[2]" />}
                                 {isRoutine && <Flame className="size-5 sm:size-5.5 stroke-[2]" />}
                                 {!isTask && !isEvent && !isRoutine && (
-                                  <Bell className="size-5 sm:size-5.5 stroke-[2]" />
+                                  <Bell className="size-5 sm:size-5.5 fill-current" />
                                 )}
                               </div>
 
@@ -440,7 +440,7 @@ export function NotificationsPopover({
                             "rounded-t-[6px] rounded-b-[32px]"
                           )}
                         >
-                          <Bell className="relative z-10 size-7 text-muted-foreground/30 mb-2" />
+                          <Bell className="relative z-10 size-7 text-muted-foreground/30 mb-2 fill-current" />
                           <p className="relative z-10 text-xs text-muted-foreground font-medium">
                             {t("empty")}
                           </p>

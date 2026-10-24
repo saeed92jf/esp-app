@@ -59,9 +59,9 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
             <div className="flex flex-col gap-3 w-full pt-2">
               <Button asChild size="lg" className="w-full h-12 rounded-xl text-base shadow-md shadow-primary/20 transition-all" onClick={() => handleOpenChange(false)}>
-                <Link href="/register">
+                <Link href="/account-request">
                   <UserPlus className={cn("size-5", isRtl ? "ml-2" : "mr-2")} />
-                  {t("registerButton")}
+                  {tAuth("requestAccount")}
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full h-12 rounded-xl" onClick={() => handleOpenChange(false)}>

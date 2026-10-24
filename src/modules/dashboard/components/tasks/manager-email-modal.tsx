@@ -138,14 +138,14 @@ export function ManagerEmailModal({
               <div className="p-3 rounded-xl bg-muted/40 border border-border/40 space-y-2 text-xs">
                 <div className="flex items-center justify-between border-b border-border/30 pb-1.5 gap-2">
                   <span className="text-muted-foreground shrink-0">{t("from")}:</span>
-                  <span className="font-medium text-foreground/90 font-mono truncate text-end" dir="ltr">
+                  <span className="font-medium text-foreground/90 font-sans truncate text-end" dir="ltr">
                     {activeTask.creatorName || "مهندس شریفی (مدیر فنی)"} &lt;{senderEmail}&gt;
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between border-b border-border/30 pb-1.5 gap-2">
                   <span className="text-muted-foreground shrink-0">{t("to")}:</span>
-                  <span className="font-medium text-foreground/90 font-mono truncate text-end" dir="ltr">
+                  <span className="font-medium text-foreground/90 font-sans truncate text-end" dir="ltr">
                     {activeTask.assignedToName || "سعید جلیلی"} &lt;{recipientEmail}&gt;
                   </span>
                 </div>

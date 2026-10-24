@@ -6,10 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Combobox } from "@/components/ui/combobox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { ShieldCheck, KeyRound, UserPlus, RefreshCw, Trash2, Mail, Phone, UserCircle2, Edit2, X, Users } from "lucide-react";
+import { ShieldCheck, KeyRound, UserPlus, RefreshCw, Trash2, Mail, Phone, UserCircle2, Edit2, X, Users, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
 
@@ -237,7 +237,7 @@ export function AdminUserConfig({
           {/* User Profile Card */}
           <div className="flex items-center gap-4 border-b border-border/50 pb-6 relative z-10">
             <Avatar className="size-16 border-[2px] border-card shadow-sm shrink-0">
-              <AvatarImage src={selectedUser?.avatar} className="object-cover object-top" />
+              
               <AvatarFallback className="bg-muted text-foreground text-xl font-bold">{selectedUser?.name?.[0]}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col flex-1">
@@ -468,7 +468,35 @@ export function AdminUserConfig({
             </div>
             <div className="flex flex-col gap-2.5">
               <Label className="text-muted-foreground ml-1">{t("childrenCountLabel")}</Label>
-              <Input type="number" min={0} max={20} value={newUser.childrenCount} onChange={(e) => setNewUser({...newUser, childrenCount: parseInt(e.target.value) || 0})} className="h-12 bg-background border-border/50 rounded-xl fa-num" dir="ltr" disabled={newUser.maritalStatus === 'single'} />
+              <div className="h-12 flex items-center">
+                <div className={`inline-flex items-center rounded-xl border border-border/50 bg-background p-1 shadow-2xs ${newUser.maritalStatus === 'single' ? 'opacity-50 pointer-events-none' : ''}`}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setNewUser(prev => ({ ...prev, childrenCount: Math.max(0, (prev.childrenCount || 0) - 1) }))}
+                    disabled={newUser.maritalStatus === 'single' || (newUser.childrenCount || 0) <= 0}
+                    className="size-9 rounded-lg text-foreground hover:bg-muted/80 active:bg-muted flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    aria-label="Decrease children count"
+                  >
+                    <Minus className="size-4 stroke-[2.5]" />
+                  </Button>
+                  <span className="min-w-12 px-3 text-center font-mono font-bold text-base text-foreground fa-num select-none">
+                    {newUser.childrenCount || 0}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setNewUser(prev => ({ ...prev, childrenCount: Math.min(20, (prev.childrenCount || 0) + 1) }))}
+                    disabled={newUser.maritalStatus === 'single' || (newUser.childrenCount || 0) >= 20}
+                    className="size-9 rounded-lg text-foreground hover:bg-muted/80 active:bg-muted flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    aria-label="Increase children count"
+                  >
+                    <Plus className="size-4 stroke-[2.5]" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -528,7 +556,7 @@ export function AdminUserConfig({
             <div key={u.id} className="flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border/40 hover:border-primary/20 transition-colors group">
               <div className="flex items-center gap-3">
                 <Avatar className="size-10 border border-border/50">
-                  <AvatarImage src={u.avatar} />
+                  
                   <AvatarFallback className="bg-primary/5 text-primary text-sm font-bold">{u.name?.[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">

@@ -10,7 +10,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
-  AvatarImage,
+  
   AvatarFallback,
   AvatarBadge,
 } from "@/components/ui/avatar";
@@ -77,7 +77,7 @@ export function UserMenu({
           )}
           <div className="relative z-10 bg-background rounded-full p-[2px]">
             <Avatar size={size}>
-              {imageUrl ? <AvatarImage src={imageUrl} alt={displayName} className="object-cover" /> : null}
+              
               <AvatarFallback className="bg-primary/10 text-primary font-medium text-lg">
                 {initial}
               </AvatarFallback>
@@ -96,7 +96,7 @@ export function UserMenu({
       >
         <div className="flex items-center gap-4 p-4 mb-2 bg-muted/30 rounded-[1.25rem] border border-border/50">
           <Avatar className="size-16 border bg-background shrink-0">
-            {imageUrl ? <AvatarImage src={imageUrl} alt={displayName} /> : null}
+            
             <AvatarFallback className="bg-primary/10 text-primary text-2xl font-semibold">
               {initial}
             </AvatarFallback>

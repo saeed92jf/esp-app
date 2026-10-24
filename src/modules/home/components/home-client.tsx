@@ -26,7 +26,7 @@ import { EngineeringDictionary } from "@/modules/home/components/engineering-dic
 import { DidYouKnowSection } from "@/modules/home/components/did-you-know-section";
 import { SupportSection } from "@/modules/home/components/support-section";
 import { MultiButton, MultiButtonGroup } from "@/components/ui/multi-button";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 16 },
@@ -48,6 +48,7 @@ type GuestTab = "dictionary" | "insights" | "featured" | "support";
 export function HomeClient() {
   const t = useTranslations("Home");
   const tCommon = useTranslations("Common");
+  const tAuth = useTranslations("Auth");
   const locale = useLocale();
   const isRtl = locale === "fa";
 
@@ -59,9 +60,18 @@ export function HomeClient() {
     return false;
   });
 
+  const router = useRouter();
+
   useEffect(() => {
     setIsAuthenticated(Boolean(user || (typeof window !== "undefined" && localStorage.getItem("esp-auth-user"))));
-  }, [user]);
+    if (user && user.role !== "admin") {
+      if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
+        router.push("/dashboard/profile?onboarding=true");
+      } else if (user.accountStatus !== "active" || !(user.hrApproved && user.managerApproved)) {
+        router.push("/account-pending");
+      }
+    }
+  }, [user, router]);
 
   const { isOpen, close } = useHomeSidebar();
   const [isMobile, setIsMobile] = useState(false);
@@ -328,11 +338,11 @@ export function HomeClient() {
 
                     {/* Create Account Link (Neutral Monochromatic Flat) */}
                     <Link
-                      href="/register"
+                      href="/account-request"
                       className="flex-1 sm:flex-none inline-flex h-9 items-center justify-center gap-1.5 sm:gap-2 rounded-full bg-foreground text-background hover:bg-foreground/90 px-3.5 sm:px-4 text-xs font-semibold border border-transparent shadow-none transition-colors active:scale-95"
                     >
                       <UserPlus className="size-3.5" />
-                      <span>{tCommon("register")}</span>
+                      <span>{tAuth("requestAccount")}</span>
                     </Link>
                   </div>
                 </div>

@@ -54,6 +54,8 @@ export function Footer({
         pathname === '' ||
         pathname === '/login' ||
         pathname === '/register' ||
+        pathname === '/account-request' ||
+        pathname === '/account-pending' ||
         pathname.startsWith('/forgot-password') ||
         pathname.startsWith('/reset-password') ||
         pathname.startsWith('/verify-email');

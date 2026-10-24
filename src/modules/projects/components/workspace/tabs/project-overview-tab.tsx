@@ -345,7 +345,7 @@ export function ProjectOverviewTab({
                     </span>
                   </td>
                   <td className="p-3">
-                    <div className="space-y-0.5 font-mono text-[11px] text-muted-foreground dir-ltr text-right">
+                    <div className="space-y-0.5 font-sans text-[11px] text-muted-foreground dir-ltr text-right">
                       <div>{member.email}</div>
                       {member.phone && <div className="fa-num">{member.phone}</div>}
                     </div>

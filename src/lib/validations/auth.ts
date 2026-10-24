@@ -15,3 +15,20 @@ export const getLoginSchema = (t: (key: string) => string) => z.object({
 });
 
 export type LoginInput = { identifier: string; password: string };
+
+// Allowed corporate email domains: @euroslotpars.com and @npceram.com
+export const companyEmailRe = /^[a-zA-Z0-9._%+-]+@(euroslotpars\.com|npceram\.com)$/i;
+
+export const getAccountRequestSchema = (t: (key: string) => string) => z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, { message: t('required') })
+    .email({ message: t('invalidEmail') })
+    .refine((v) => companyEmailRe.test(v), {
+      message: t('errors.invalidCompanyEmail'),
+    }),
+});
+
+export type AccountRequestInput = { email: string };
+
