@@ -8,15 +8,17 @@ import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan
 import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { toPersianDigits } from "@/utils/textDirection";
-
-const DEGREE_OPTIONS: ComboboxOption[] = [
-  { value: "دیپلم", label: "دیپلم" },
-  { value: "کاردانی", label: "کاردانی (Associate)" },
-  { value: "کارشناسی", label: "کارشناسی (Bachelor)" },
-  { value: "کارشناسی ارشد", label: "کارشناسی ارشد (Master)" },
-  { value: "دکتری تخصصی", label: "دکتری تخصصی (Ph.D)" },
-  { value: "پسادکتری", label: "پسادکتری (Post-Doctorate)" },
-];
+import {
+  getDegreeOptions,
+  getStudyFieldOptions,
+  getUniversityOptions,
+  getGraduationYearOptions,
+  resolveDegreeLabel,
+  resolveStudyFieldLabel,
+  resolveUniversityLabel,
+  STUDY_FIELD_DEFINITIONS,
+  UNIVERSITY_DEFINITIONS,
+} from "../data/education-options";
 
 const MARITAL_STATUS_OPTIONS: ComboboxOption[] = [
   { value: "single", label: "مجرد (Single)" },
@@ -358,6 +360,9 @@ export function ProfilePage() {
     setNewDepBirthDate("");
   }, [editingField, isApprovedByHrAndManager]);
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
+  const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
+  const [isManualUniversity, setIsManualUniversity] = useState(false);
+  const [educationDateMode, setEducationDateMode] = useState<"combo" | "calendar" | "input">("combo");
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || "#0284c7"
   );
@@ -2845,6 +2850,35 @@ export function ProfilePage() {
           }]
         : [];
 
+    const openEditEducationRecord = (rec: EducationRecord) => {
+      const isKnownField = STUDY_FIELD_DEFINITIONS.some(f => f.key === rec.fieldOfStudy);
+      setIsManualFieldOfStudy(!isKnownField && Boolean(rec.fieldOfStudy));
+      const isKnownUni = UNIVERSITY_DEFINITIONS.some(u => u.key === rec.university);
+      setIsManualUniversity(!isKnownUni && Boolean(rec.university));
+      if (rec.graduationYear && (rec.graduationYear.includes("-") || rec.graduationYear.includes("/"))) {
+        setEducationDateMode("calendar");
+      } else {
+        setEducationDateMode("combo");
+      }
+      setActiveEducationRecord(rec);
+      setEditingField(rec.id || "edu_primary");
+    };
+
+    const handleAddNewDegree = () => {
+      const newRecord: EducationRecord = {
+        id: `edu_${Date.now()}`,
+        degree: "bachelor",
+        fieldOfStudy: "",
+        university: "",
+        graduationYear: "",
+      };
+      setIsManualFieldOfStudy(false);
+      setIsManualUniversity(false);
+      setEducationDateMode("combo");
+      setActiveEducationRecord(newRecord);
+      setEditingField("new_edu");
+    };
+
     const handleDeleteEducationRecord = (recordId: string) => {
       const updatedRecords = currentRecords.filter(r => r.id !== recordId);
       const primaryRecord = updatedRecords[updatedRecords.length - 1] || {
@@ -2881,7 +2915,7 @@ export function ProfilePage() {
     if (isEditingEducation) {
       const record: EducationRecord = activeEducationRecord || currentRecords.find(r => r.id === editingField) || {
         id: editingField?.startsWith('edu_') ? editingField : `edu_${Date.now()}`,
-        degree: formData.education.degree || "کارشناسی",
+        degree: formData.education.degree || "bachelor",
         fieldOfStudy: formData.education.fieldOfStudy || "",
         university: formData.education.university || "",
         graduationYear: formData.education.graduationYear || "",
@@ -2951,7 +2985,7 @@ export function ProfilePage() {
                     {t("fields.degree")}
                   </Label>
                   <Combobox
-                    options={DEGREE_OPTIONS}
+                    options={getDegreeOptions(locale)}
                     value={currentRecordState.degree}
                     onChange={(val) => setActiveEducationRecord({ ...currentRecordState, degree: val })}
                     placeholder={t("fields.selectDegree")}
@@ -2959,45 +2993,154 @@ export function ProfilePage() {
                   />
                 </div>
 
-                {/* 2. دانشگاه یا موسسه آموزشی */}
+                {/* 2. دانشگاه یا موسسه آموزشی (کومبو + گزینه دستی) */}
                 <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">
-                    {t("fields.university")}
-                  </Label>
-                  <Input 
-                    value={currentRecordState.university} 
-                    onChange={(e) => setActiveEducationRecord({ ...currentRecordState, university: e.target.value })}
-                    placeholder="مثال: دانشگاه صنعتی شریف / دانشگاه تهران"
-                    className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {t("fields.university")}
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setIsManualUniversity(!isManualUniversity)}
+                      className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                    >
+                      {isManualUniversity ? t("fields.switchToList") : t("fields.switchToManual")}
+                    </button>
+                  </div>
+                  {isManualUniversity ? (
+                    <Input 
+                      value={currentRecordState.university} 
+                      onChange={(e) => setActiveEducationRecord({ ...currentRecordState, university: e.target.value })}
+                      placeholder={t("fields.universityPlaceholder")}
+                      className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                      autoFocus
+                    />
+                  ) : (
+                    <Combobox
+                      options={getUniversityOptions(locale, t("fields.manualOption"))}
+                      value={currentRecordState.university}
+                      onChange={(val) => {
+                        if (val === "__manual__") {
+                          setIsManualUniversity(true);
+                        } else {
+                          setActiveEducationRecord({ ...currentRecordState, university: val });
+                        }
+                      }}
+                      placeholder={t("fields.selectUniversity")}
+                      showSearch={true}
+                      className="w-full h-12"
+                    />
+                  )}
                 </div>
 
-                {/* 3. رشته تحصیلی */}
+                {/* 3. رشته تحصیلی (کومبو در حوزه‌های نفت، گاز، پتروشیمی، اداری، IT، کنترل پروژه و ... + گزینه دستی) */}
                 <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">
-                    {t("fields.fieldOfStudy")}
-                  </Label>
-                  <Input 
-                    value={currentRecordState.fieldOfStudy} 
-                    onChange={(e) => setActiveEducationRecord({ ...currentRecordState, fieldOfStudy: e.target.value })}
-                    placeholder="مثال: مهندسی متالورژی و مواد / مهندسی کامپیوتر"
-                    className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {t("fields.fieldOfStudy")}
+                    </Label>
+                    <button
+                      type="button"
+                      onClick={() => setIsManualFieldOfStudy(!isManualFieldOfStudy)}
+                      className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                    >
+                      {isManualFieldOfStudy ? t("fields.switchToList") : t("fields.switchToManual")}
+                    </button>
+                  </div>
+                  {isManualFieldOfStudy ? (
+                    <Input 
+                      value={currentRecordState.fieldOfStudy} 
+                      onChange={(e) => setActiveEducationRecord({ ...currentRecordState, fieldOfStudy: e.target.value })}
+                      placeholder={t("fields.fieldOfStudyPlaceholder")}
+                      className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                      autoFocus
+                    />
+                  ) : (
+                    <Combobox
+                      options={getStudyFieldOptions(locale, t("fields.manualOption"))}
+                      value={currentRecordState.fieldOfStudy}
+                      onChange={(val) => {
+                        if (val === "__manual__") {
+                          setIsManualFieldOfStudy(true);
+                        } else {
+                          setActiveEducationRecord({ ...currentRecordState, fieldOfStudy: val });
+                        }
+                      }}
+                      placeholder={t("fields.selectFieldOfStudy")}
+                      showSearch={true}
+                      className="w-full h-12"
+                    />
+                  )}
                 </div>
 
-                {/* 4. تاریخ فارغ‌التحصیلی DatePicker */}
+                {/* 4. تاریخ / سال فارغ‌التحصیلی (کومبو، تقویم دیت‌پیکر و اینپوت استایل ساده) */}
                 <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">
-                    {t("fields.graduationDate")}
-                  </Label>
-                  <DatePicker
-                    value={parseDateString(currentRecordState.graduationYear)}
-                    onChange={(date) => setActiveEducationRecord({ ...currentRecordState, graduationYear: formatDateToString(date) })}
-                    isJalali={true}
-                    placeholder={t("fields.selectGraduationDate")}
-                    className="w-full h-12"
-                    triggerClassName="w-full h-12 justify-between text-base"
-                  />
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {t("fields.graduationDate")}
+                    </Label>
+                    <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/50 text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => setEducationDateMode("combo")}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
+                          educationDateMode === "combo" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {t("fields.dateModeCombo")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEducationDateMode("calendar")}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
+                          educationDateMode === "calendar" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {t("fields.dateModeCalendar")}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEducationDateMode("input")}
+                        className={cn(
+                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
+                          educationDateMode === "input" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        {t("fields.dateModeInput")}
+                      </button>
+                    </div>
+                  </div>
+
+                  {educationDateMode === "combo" ? (
+                    <Combobox
+                      options={getGraduationYearOptions(locale)}
+                      value={currentRecordState.graduationYear}
+                      onChange={(val) => setActiveEducationRecord({ ...currentRecordState, graduationYear: val })}
+                      placeholder={t("fields.selectGraduationYear")}
+                      showSearch={true}
+                      className="w-full h-12 fa-num"
+                    />
+                  ) : educationDateMode === "calendar" ? (
+                    <DatePicker
+                      value={parseDateString(currentRecordState.graduationYear)}
+                      onChange={(date) => setActiveEducationRecord({ ...currentRecordState, graduationYear: formatDateToString(date) })}
+                      isJalali={locale === 'fa'}
+                      placeholder={t("fields.selectGraduationDate")}
+                      className="w-full h-12"
+                      triggerClassName="w-full h-12 justify-between text-base"
+                    />
+                  ) : (
+                    <Input
+                      value={currentRecordState.graduationYear || ""}
+                      onChange={(e) => setActiveEducationRecord({ ...currentRecordState, graduationYear: e.target.value })}
+                      placeholder={t("fields.graduationYearPlaceholder")}
+                      dir="ltr"
+                      className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base font-mono ltr text-left focus-visible:ring-0 focus-visible:border-primary shadow-none fa-num"
+                      autoFocus
+                    />
+                  )}
                 </div>
 
               </div>
@@ -3051,10 +3194,7 @@ export function ProfilePage() {
           {currentRecords.map((rec) => (
             <div
               key={rec.id}
-              onClick={() => {
-                setActiveEducationRecord(rec);
-                setEditingField(rec.id || "edu_primary");
-              }}
+              onClick={() => openEditEducationRecord(rec)}
               className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             >
               <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
@@ -3064,11 +3204,11 @@ export function ProfilePage() {
                 <GraduationCap className="size-5 text-muted-foreground shrink-0" />
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-medium text-foreground truncate">
-                    {rec.degree || t("fields.degree")}
+                    {resolveDegreeLabel(rec.degree, locale) || t("fields.degree")}
                   </span>
                   {rec.fieldOfStudy && (
                     <span className="text-xs text-muted-foreground truncate">
-                      {rec.fieldOfStudy}
+                      {resolveStudyFieldLabel(rec.fieldOfStudy, locale)}
                     </span>
                   )}
                 </div>
@@ -3077,7 +3217,7 @@ export function ProfilePage() {
               {/* Right / University & Date & Actions */}
               <div className="flex items-center justify-end w-2/3 gap-3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">
-                  {rec.university || t("notSet")}
+                  {resolveUniversityLabel(rec.university, locale) || t("notSet")}
                 </span>
 
                 {rec.graduationYear && (
@@ -3112,17 +3252,7 @@ export function ProfilePage() {
 
           {/* Add Degree segmented-item */}
           <div
-            onClick={() => {
-              const newRecord: EducationRecord = {
-                id: `edu_${Date.now()}`,
-                degree: "کارشناسی",
-                fieldOfStudy: "",
-                university: "",
-                graduationYear: "",
-              };
-              setActiveEducationRecord(newRecord);
-              setEditingField("new_edu");
-            }}
+            onClick={handleAddNewDegree}
             className="relative outline-none segmented-item no-hover-bg shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] border-t border-border/40 hover:bg-muted/20 transition-colors"
           >
             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />

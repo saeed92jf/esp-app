@@ -62,6 +62,14 @@ import { DatePicker, jalaliToGregorianDate, getJalaliDate } from "@/components/u
 import { toPersianDigits } from "@/utils/textDirection";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import {
+  getDegreeOptions,
+  getStudyFieldOptions,
+  getUniversityOptions,
+  getGraduationYearOptions,
+  STUDY_FIELD_DEFINITIONS,
+  UNIVERSITY_DEFINITIONS,
+} from "../data/education-options";
 
 const LocationPickerMap = dynamic(
   () => import("./location-picker-map"),
@@ -157,6 +165,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
   ];
 
   const [newSubordinate, setNewSubordinate] = useState("");
+  const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
+  const [isManualUniversity, setIsManualUniversity] = useState(false);
+  const [educationDateMode, setEducationDateMode] = useState<"combo" | "calendar" | "input">("combo");
 
   // Dependents state
   const [newDepFullName, setNewDepFullName] = useState("");
@@ -1054,7 +1065,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               {t("fields.degree")}
             </Label>
             <Combobox
-              options={DEGREES}
+              options={getDegreeOptions(locale)}
               value={formData.education.degree}
               onChange={(val) => handleFieldChange("education", "degree", val)}
               placeholder={t("fields.selectDegree")}
@@ -1062,47 +1073,156 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             />
           </div>
 
-          {/* Field of study */}
+          {/* Field of study (Combobox + Manual Option) */}
           <div className="space-y-1.5">
-            <Label htmlFor="fieldOfStudy" className="text-xs sm:text-sm font-semibold">
-              {t("fields.fieldOfStudy")}
-            </Label>
-            <Input
-              id="fieldOfStudy"
-              value={formData.education.fieldOfStudy}
-              onChange={(e) => handleFieldChange("education", "fieldOfStudy", e.target.value)}
-              placeholder={isFa ? "مثال: مهندسی متالورژی / سرامیک" : "e.g. Metallurgy & Ceramic Engineering"}
-              className="h-10 text-sm"
-            />
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="fieldOfStudy" className="text-xs sm:text-sm font-semibold">
+                {t("fields.fieldOfStudy")}
+              </Label>
+              <button
+                type="button"
+                onClick={() => setIsManualFieldOfStudy(!isManualFieldOfStudy)}
+                className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+              >
+                {isManualFieldOfStudy ? t("fields.switchToList") : t("fields.switchToManual")}
+              </button>
+            </div>
+            {isManualFieldOfStudy ? (
+              <Input
+                id="fieldOfStudy"
+                value={formData.education.fieldOfStudy}
+                onChange={(e) => handleFieldChange("education", "fieldOfStudy", e.target.value)}
+                placeholder={t("fields.fieldOfStudyPlaceholder")}
+                className="h-10 text-sm"
+                autoFocus
+              />
+            ) : (
+              <Combobox
+                options={getStudyFieldOptions(locale, t("fields.manualOption"))}
+                value={formData.education.fieldOfStudy}
+                onChange={(val) => {
+                  if (val === "__manual__") {
+                    setIsManualFieldOfStudy(true);
+                  } else {
+                    handleFieldChange("education", "fieldOfStudy", val);
+                  }
+                }}
+                placeholder={t("fields.selectFieldOfStudy")}
+                showSearch={true}
+                className="w-full h-10 rtl:text-right"
+              />
+            )}
           </div>
 
-          {/* University */}
+          {/* University (Combobox + Manual Option) */}
           <div className="space-y-1.5">
-            <Label htmlFor="university" className="text-xs sm:text-sm font-semibold">
-              {t("fields.university")}
-            </Label>
-            <Input
-              id="university"
-              value={formData.education.university}
-              onChange={(e) => handleFieldChange("education", "university", e.target.value)}
-              placeholder={isFa ? "مثال: دانشگاه صنعتی شریف" : "e.g. Sharif University of Technology"}
-              className="h-10 text-sm"
-            />
+            <div className="flex items-center justify-between gap-2">
+              <Label htmlFor="university" className="text-xs sm:text-sm font-semibold">
+                {t("fields.university")}
+              </Label>
+              <button
+                type="button"
+                onClick={() => setIsManualUniversity(!isManualUniversity)}
+                className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+              >
+                {isManualUniversity ? t("fields.switchToList") : t("fields.switchToManual")}
+              </button>
+            </div>
+            {isManualUniversity ? (
+              <Input
+                id="university"
+                value={formData.education.university}
+                onChange={(e) => handleFieldChange("education", "university", e.target.value)}
+                placeholder={t("fields.universityPlaceholder")}
+                className="h-10 text-sm"
+                autoFocus
+              />
+            ) : (
+              <Combobox
+                options={getUniversityOptions(locale, t("fields.manualOption"))}
+                value={formData.education.university}
+                onChange={(val) => {
+                  if (val === "__manual__") {
+                    setIsManualUniversity(true);
+                  } else {
+                    handleFieldChange("education", "university", val);
+                  }
+                }}
+                placeholder={t("fields.selectUniversity")}
+                showSearch={true}
+                className="w-full h-10 rtl:text-right"
+              />
+            )}
           </div>
 
-          {/* Graduation Date (DatePicker) */}
+          {/* Graduation Date / Year (3 Modes: Combo, Calendar, Input) */}
           <div className="space-y-1.5">
-            <Label className="text-xs sm:text-sm font-semibold">
-              {t("fields.graduationDate")}
-            </Label>
-            <DatePicker
-              value={parseDateString(formData.education.graduationYear)}
-              onChange={(date) => handleFieldChange("education", "graduationYear", formatDateToString(date))}
-              isJalali={isFa}
-              placeholder={t("fields.selectGraduationDate")}
-              className="w-full h-10"
-              triggerClassName="w-full h-10 justify-between text-sm"
-            />
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Label className="text-xs sm:text-sm font-semibold">
+                {t("fields.graduationDate")}
+              </Label>
+              <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/50 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setEducationDateMode("combo")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
+                    educationDateMode === "combo" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t("fields.dateModeCombo")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEducationDateMode("calendar")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
+                    educationDateMode === "calendar" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t("fields.dateModeCalendar")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEducationDateMode("input")}
+                  className={cn(
+                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
+                    educationDateMode === "input" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {t("fields.dateModeInput")}
+                </button>
+              </div>
+            </div>
+
+            {educationDateMode === "combo" ? (
+              <Combobox
+                options={getGraduationYearOptions(locale)}
+                value={formData.education.graduationYear}
+                onChange={(val) => handleFieldChange("education", "graduationYear", val)}
+                placeholder={t("fields.selectGraduationYear")}
+                showSearch={true}
+                className="w-full h-10 fa-num rtl:text-right"
+              />
+            ) : educationDateMode === "calendar" ? (
+              <DatePicker
+                value={parseDateString(formData.education.graduationYear)}
+                onChange={(date) => handleFieldChange("education", "graduationYear", formatDateToString(date))}
+                isJalali={isFa}
+                placeholder={t("fields.selectGraduationDate")}
+                className="w-full h-10"
+                triggerClassName="w-full h-10 justify-between text-sm"
+              />
+            ) : (
+              <Input
+                value={formData.education.graduationYear || ""}
+                onChange={(e) => handleFieldChange("education", "graduationYear", e.target.value)}
+                placeholder={t("fields.graduationYearPlaceholder")}
+                dir="ltr"
+                className="h-10 text-sm font-mono ltr text-left fa-num"
+                autoFocus
+              />
+            )}
           </div>
 
           {/* Corporate Insurance (Tamin Ejtemaei) */}

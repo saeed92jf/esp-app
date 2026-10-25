@@ -63,6 +63,20 @@
       "selectDegree": "انتخاب مقطع تحصیلی...",
       "addDegree": "افزودن مقطع تحصیلی",
       "deleteDegree": "حذف مقطع",
+      "selectFieldOfStudy": "انتخاب یا جستجوی رشته تحصیلی...",
+      "selectUniversity": "انتخاب یا جستجوی دانشگاه...",
+      "selectGraduationYear": "انتخاب سال فارغ‌التحصیلی...",
+      "manualFieldOfStudy": "ورود دستی عنوان رشته",
+      "manualUniversity": "ورود دستی نام دانشگاه",
+      "switchToManual": "ورود دستی",
+      "switchToList": "انتخاب از فهرست",
+      "dateModeCombo": "انتخاب سال (کومبو)",
+      "dateModeCalendar": "تقویم کامل",
+      "dateModeInput": "اینپوت ساده",
+      "fieldOfStudyPlaceholder": "مثال: مهندسی نفت و گاز / مکانیک / صنایع...",
+      "universityPlaceholder": "مثال: دانشگاه صنعت نفت / صنعتی شریف / تهران...",
+      "graduationYearPlaceholder": "مثال: ۱۴۰۲ یا ۲۰۲۳",
+      "manualOption": "سایر / ورود دستی...",
       "verificationCode": "کد تأیید پیامکی",
       "otpPrompt": "کد اعتبارسنجی ۵ رقمی ارسال‌شده به شماره همراه خود را وارد کنید:",
       "sendOtp": "ارسال کد تأیید",
@@ -372,6 +386,14 @@
       "insuranceLockedDesc": "مشخصات بیمه پایه، تکمیلی SOS و افراد تحت تکفل پس از تایید مدیریت و منابع انسانی قفل گردیده است.",
       "insuranceLockedBadge": "تأیید و قفل شده",
       "lockedNotice": "جهت هرگونه تغییر در این اطلاعات، با واحد منابع انسانی هماهنگ نمایید."
+    },
+    "degrees": {
+      "diploma": "دیپلم",
+      "associate": "کاردانی (فوق دیپلم)",
+      "bachelor": "کارشناسی (لیسانس)",
+      "master": "کارشناسی ارشد (فوق لیسانس)",
+      "doctorate": "دکتری تخصصی (Ph.D.)",
+      "post_doc": "پسادکتری"
     },
     "footerText": "تنظیمات شما فقط برای خودتان قابل مشاهده است. همچنین می‌توانید تنظیمات سرویس‌هایی که استفاده می‌کنید را بررسی کنید تا حریم خصوصی شما حفظ شود."
   }

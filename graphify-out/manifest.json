@@ -60,16 +60,16 @@
     "semantic_hash": "18d6594a2d575c0e3c55ef36bea06ccf"
   },
   "messages/en.json": {
-    "mtime": 1792918969.4016218,
-    "seen": 1792919426.6094995,
-    "ast_hash": "2154a5d3e388a31bc1e608b79462f019",
-    "semantic_hash": "2154a5d3e388a31bc1e608b79462f019"
+    "mtime": 1792921563.493101,
+    "seen": 1792921981.6866465,
+    "ast_hash": "7e1c6cd518eb135f47c7e65621000da1",
+    "semantic_hash": "7e1c6cd518eb135f47c7e65621000da1"
   },
   "messages/fa.json": {
-    "mtime": 1792918954.3829632,
-    "seen": 1792919426.6095052,
-    "ast_hash": "f9ee4a0db5f00b15f193aab61726db84",
-    "semantic_hash": "f9ee4a0db5f00b15f193aab61726db84"
+    "mtime": 1792921519.0283723,
+    "seen": 1792921981.686651,
+    "ast_hash": "c0618906aef4c310118fac7eb700e8e6",
+    "semantic_hash": "c0618906aef4c310118fac7eb700e8e6"
   },
   "next.config.ts": {
     "mtime": 1791204237.302117,
@@ -1968,10 +1968,10 @@
     "semantic_hash": "4328e79245559ace1f946b1446aaa971"
   },
   "src/modules/profile/components/profile-page.tsx": {
-    "mtime": 1792919391.1577172,
-    "seen": 1792919426.678712,
-    "ast_hash": "2d8b0331edcb4944bd2940959057774d",
-    "semantic_hash": "2d8b0331edcb4944bd2940959057774d"
+    "mtime": 1792921759.4654858,
+    "seen": 1792921981.76223,
+    "ast_hash": "d00e4129bb73b16e689d96ac12acdc9b",
+    "semantic_hash": "d00e4129bb73b16e689d96ac12acdc9b"
   },
   "src/modules/profile/hooks/use-profile.ts": {
     "mtime": 1786952620.4690378,
@@ -1980,16 +1980,16 @@
     "semantic_hash": "197a56a7447254381034bb7896d3ecd1"
   },
   "src/modules/profile/messages/en.json": {
-    "mtime": 1792919005.225469,
-    "seen": 1792919426.6788905,
-    "ast_hash": "93e3845a50dd9f150f16f86e81db9d7a",
-    "semantic_hash": "93e3845a50dd9f150f16f86e81db9d7a"
+    "mtime": 1792921470.1728587,
+    "seen": 1792921981.762379,
+    "ast_hash": "d052a8a46c9ddbd2085879adc12d574d",
+    "semantic_hash": "d052a8a46c9ddbd2085879adc12d574d"
   },
   "src/modules/profile/messages/fa.json": {
-    "mtime": 1792918987.1268408,
-    "seen": 1792919426.6788933,
-    "ast_hash": "80fe599b8775355aa2d1185cfbb25143",
-    "semantic_hash": "80fe599b8775355aa2d1185cfbb25143"
+    "mtime": 1792921443.090176,
+    "seen": 1792921981.762395,
+    "ast_hash": "2b821b3c382fb2dd439747a872c3a0a2",
+    "semantic_hash": "2b821b3c382fb2dd439747a872c3a0a2"
   },
   "src/modules/profile/services/fake-profile.service.ts": {
     "mtime": 1792918249.0860991,
@@ -3498,10 +3498,10 @@
     "semantic_hash": "4324f60b4a4fb1b05015e0a825a47a82"
   },
   "src/modules/profile/components/personnel-form.tsx": {
-    "mtime": 1792916744.6247058,
-    "seen": 1792916947.7676983,
-    "ast_hash": "1c5266a4fdcc16b8442bc8d5738ca528",
-    "semantic_hash": "1c5266a4fdcc16b8442bc8d5738ca528"
+    "mtime": 1792921858.5289464,
+    "seen": 1792921981.7622275,
+    "ast_hash": "edd36a4ab96b886bc43db5a78c8feb94",
+    "semantic_hash": "edd36a4ab96b886bc43db5a78c8feb94"
   },
   "src/components/ui/color-picker.tsx": {
     "mtime": 1792909499.6689973,
@@ -3532,5 +3532,11 @@
     "seen": 1792916947.7882295,
     "ast_hash": "c9b0a6d7c9f2142809e185e0e562efce",
     "semantic_hash": "c9b0a6d7c9f2142809e185e0e562efce"
+  },
+  "src/modules/profile/data/education-options.ts": {
+    "mtime": 1792921396.674513,
+    "seen": 1792921981.7622323,
+    "ast_hash": "bf3c6d0f97abc597bc5ced1b7f43b362",
+    "semantic_hash": "bf3c6d0f97abc597bc5ced1b7f43b362"
   }
 }
