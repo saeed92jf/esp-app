@@ -1043,137 +1043,34 @@ export function AdminUsersTable({
                       </td>
                     </tr>
 
-                    {/* ── 2. Integrated Extended Folder-Tab Attached Directly Under Row ── */}
+                    {/* ── 2. Paper Pull-out & Bottom-Right Folder Tab ── */}
                     <tr className="border-0">
                       <td colSpan={9} className="p-0 border-0">
-                        <div className={cn("w-full flex items-start justify-end px-3 sm:px-4", isAccordionOpen ? "pb-3.5" : "pb-2.5")} dir="ltr">
-                          <div 
-                            dir={isRtl ? "rtl" : "ltr"}
-                            className={cn(
-                              "flex flex-col -mt-px overflow-hidden",
-                              "w-[620px] max-w-full",
-                              "transition-[background-color,border-color,box-shadow] duration-200",
-                              isAccordionOpen
-                                ? "bg-card border-x border-b border-border/70 rounded-b-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/5"
-                                : "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
-                            )}
-                          >
-                            {/* Action Icons Header Strip */}
-                            <div className={cn(
-                              "flex items-center justify-between px-3 py-1 transition-colors",
-                              isAccordionOpen ? "border-b border-border/40 bg-muted/20" : ""
-                            )}>
-                              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                {/* 1. View User Details (مشاهده مشخصات) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'view')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'view'
-                                      ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("viewDetailsBtn")}
+                        <div 
+                          className={cn(
+                            "w-full flex flex-col items-end px-3 sm:px-4",
+                            isAccordionOpen ? "pb-4" : "pb-2.5"
+                          )} 
+                          dir="ltr"
+                        >
+                          {/* ── A. Content Container on Top (کانتینر محتواشون بالا باشه) ── */}
+                          <AnimatePresence initial={false}>
+                            {isAccordionOpen && (
+                              <motion.div
+                                key={`acc-content-${user.id}`}
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ 
+                                  height: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+                                  opacity: { duration: 0.22, ease: "easeOut" }
+                                }}
+                                className="w-[660px] max-w-full overflow-hidden"
+                              >
+                                <div 
+                                  dir={isRtl ? "rtl" : "ltr"}
+                                  className="bg-card border border-border/60 rounded-t-2xl rounded-bl-2xl rounded-br-none -mt-px p-4 sm:p-5 shadow-none"
                                 >
-                                  <Eye size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("viewDetailsBtn")}</span>
-                                </button>
-
-                                {/* 2. Change Password (تغییر رمز عبور) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'password')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'password'
-                                      ? "bg-amber-500 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("changePassword")}
-                                >
-                                  <KeyRound size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("changePassword")}</span>
-                                </button>
-
-                                {/* 3. Edit User Info (ویرایش مشخصات) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'edit')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'edit'
-                                      ? "bg-blue-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("editUserInfo")}
-                                >
-                                  <Edit2 size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("editUserInfo")}</span>
-                                </button>
-
-                                {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'access')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'access'
-                                      ? "bg-emerald-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("moduleAccess")}
-                                >
-                                  <ShieldCheck size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("moduleAccess")}</span>
-                                </button>
-
-                                <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
-
-                                {/* 5. Open in Dashboard (مشاهده در داشبورد - بدون اسم، آیکون آخر) */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleSelectAndGoHome(user)}
-                                  className="size-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                                  title={t("viewInDashboard")}
-                                  aria-label={t("viewInDashboard")}
-                                >
-                                  <LayoutDashboard size={14} className="shrink-0" />
-                                </button>
-                              </div>
-
-                              {/* ── Fixed 28px slot for Close (X) so the tab width NEVER shifts when X appears ── */}
-                              <div className="size-7 flex items-center justify-center shrink-0 ms-1">
-                                {isAccordionOpen && (
-                                  <button
-                                    type="button"
-                                    onClick={() => setActiveAccordion(null)}
-                                    className="size-6.5 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card transition-colors cursor-pointer"
-                                    title={t("cancel")}
-                                    aria-label={t("cancel")}
-                                  >
-                                    <X size={13} className="shrink-0" />
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Extended Body Content (Mode A, B, C, D) inside the same container */}
-                            <AnimatePresence initial={false}>
-                              {isAccordionOpen && (
-                                <motion.div
-                                  key={`acc-content-${user.id}`}
-                                  initial={{ height: 0, opacity: 0, y: -8 }}
-                                  animate={{ height: "auto", opacity: 1, y: 0 }}
-                                  exit={{ height: 0, opacity: 0, y: -8 }}
-                                  transition={{ 
-                                    height: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
-                                    opacity: { duration: 0.22, ease: "easeOut" },
-                                    y: { duration: 0.32, ease: [0.16, 1, 0.3, 1] }
-                                  }}
-                                  className="overflow-hidden border-t border-border/40"
-                                >
-                                  <div className="p-4 sm:p-5">
                             
                             {/* ── Mode A: View Details ── */}
                             {activeAccordion.type === 'view' && (
@@ -1568,7 +1465,111 @@ export function AdminUsersTable({
                               )}
                             </AnimatePresence>
 
-                          </div>
+                            {/* ── B. Icon Tab (در پایین سمت راست کانتینر محتوا، بدون سایه) ── */}
+                            <div 
+                              dir={isRtl ? "rtl" : "ltr"}
+                              className={cn(
+                                "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0 -mt-px",
+                                isAccordionOpen
+                                  ? "bg-card border-x border-b border-border/60 rounded-b-xl shadow-none"
+                                  : "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80 shadow-none"
+                              )}
+                            >
+                              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                {/* 1. View User Details (مشاهده مشخصات) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'view')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'view'
+                                      ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={t("viewDetailsBtn")}
+                                >
+                                  <Eye size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{t("viewDetailsBtn")}</span>
+                                </button>
+
+                                {/* 2. Change Password (تغییر رمز عبور) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'password')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'password'
+                                      ? "bg-amber-500 text-white shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={t("changePassword")}
+                                >
+                                  <KeyRound size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{t("changePassword")}</span>
+                                </button>
+
+                                {/* 3. Edit User Info (ویرایش مشخصات) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'edit')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'edit'
+                                      ? "bg-blue-600 text-white shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={t("editUserInfo")}
+                                >
+                                  <Edit2 size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{t("editUserInfo")}</span>
+                                </button>
+
+                                {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'access')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'access'
+                                      ? "bg-emerald-600 text-white shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={t("moduleAccess")}
+                                >
+                                  <ShieldCheck size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{t("moduleAccess")}</span>
+                                </button>
+
+                                <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
+
+                                {/* 5. Open in Dashboard (مشاهده در داشبورد - بدون اسم، آیکون آخر) */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectAndGoHome(user)}
+                                  className="size-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                                  title={t("viewInDashboard")}
+                                  aria-label={t("viewInDashboard")}
+                                >
+                                  <LayoutDashboard size={14} className="shrink-0" />
+                                </button>
+                              </div>
+
+                              {/* ── Fixed 28px slot for Close (X) so the tab width NEVER shifts when X appears ── */}
+                              <div className="size-7 flex items-center justify-center shrink-0 ms-1">
+                                {isAccordionOpen && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveAccordion(null)}
+                                    className="size-6.5 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card transition-colors cursor-pointer"
+                                    title={t("cancel")}
+                                    aria-label={t("cancel")}
+                                  >
+                                    <X size={13} className="shrink-0" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+
                         </div>
                       </td>
                     </tr>
