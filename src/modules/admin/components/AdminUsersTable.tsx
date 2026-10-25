@@ -338,6 +338,11 @@ export function AdminUsersTable({
 
   // Accordion Toggle
   const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit' | 'access') => {
+    const targetUser = users.find(x => x.id === userId);
+    if (targetUser) {
+      setSelectedUser(targetUser);
+    }
+
     if (activeAccordion?.userId === userId && activeAccordion?.type === type) {
       setActiveAccordion(null);
     } else {
@@ -345,7 +350,7 @@ export function AdminUsersTable({
       setNewPassword("");
       setConfirmPassword("");
       if (type === 'edit') {
-        const u = users.find(x => x.id === userId);
+        const u = targetUser || users.find(x => x.id === userId);
         if (u) {
           setEditFormData({
             name: u.name,
@@ -961,7 +966,7 @@ export function AdminUsersTable({
                 }
 
                 const isAccordionOpen = activeAccordion?.userId === user.id;
-                const isRowActive = isSelected || isAccordionOpen;
+                const isRowActive = activeAccordion ? isAccordionOpen : isSelected;
 
                 // Determine unclipped location badge (color & localized label)
                 const getLocationBadge = () => {
@@ -996,31 +1001,19 @@ export function AdminUsersTable({
                 return (
                   <React.Fragment key={user.id}>
                     
-                    {/* ── 1. Main User Data Row with Full Continuous Shadow across the whole row ── */}
+                    {/* ── 1. Main User Data Row ── */}
                     <tr
+                      onClick={() => {
+                        setSelectedUser(user);
+                        if (activeAccordion && activeAccordion.userId !== user.id) {
+                          setActiveAccordion(null);
+                        }
+                      }}
                       className={cn(
-                        "transition-all duration-200 group relative",
+                        "transition-colors duration-150 group cursor-pointer",
                         isRowActive
-                          ? [
-                              "z-10",
-                              "bg-primary/[0.08] dark:bg-primary/20",
-                              "[&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35",
-                              // Continuous macro shadow for the entire row (no cell-by-cell breaks)
-                              "[filter:drop-shadow(0_5px_8px_rgba(15,23,42,0.12))] dark:[filter:drop-shadow(0_5px_8px_rgba(0,0,0,0.55))]",
-                              // Horizontal-free bottom shadow on cells so there are NO cell-by-cell vertical seams
-                              "[&>td]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12)] dark:[&>td]:shadow-[0_6px_6px_-3px_rgba(0,0,0,0.5)]",
-                              "[&>td:first-child]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12),-3px_0_4px_-2px_rgba(15,23,42,0.08)]",
-                              "[&>td:last-child]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12),3px_0_4px_-2px_rgba(15,23,42,0.08)]"
-                            ]
-                          : [
-                              "z-[1]",
-                              "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
-                              "[&>td]:border-b [&>td]:border-border/30",
-                              // Continuous subtle row shadow
-                              "[filter:drop-shadow(0_2px_4px_rgba(15,23,42,0.04))] dark:[filter:drop-shadow(0_2px_4px_rgba(0,0,0,0.25))]",
-                              "[&>td]:shadow-[0_3px_4px_-2px_rgba(15,23,42,0.05)] dark:[&>td]:shadow-[0_3px_4px_-2px_rgba(0,0,0,0.25)]",
-                              "hover:[&>td]:shadow-[0_4px_6px_-2px_rgba(15,23,42,0.08)]"
-                            ]
+                          ? "bg-primary/[0.08] dark:bg-primary/20 [&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35"
+                          : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/30"
                       )}
                     >
                       {/* Column 1: User */}
@@ -1094,6 +1087,7 @@ export function AdminUsersTable({
                           {user.email ? (
                             <a
                               href={`mailto:${user.email}`}
+                              onClick={(e) => e.stopPropagation()}
                               dir="ltr"
                               className="text-primary hover:underline truncate max-w-[160px] flex items-center gap-1 font-medium"
                             >
@@ -1184,12 +1178,15 @@ export function AdminUsersTable({
                       <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
-                            "w-full flex flex-col px-3 sm:px-4",
+                            "w-full flex flex-col px-3 sm:px-4 relative",
                             isRtl ? "items-start" : "items-end",
                             isAccordionOpen ? "pb-4" : "pb-2.5"
                           )} 
                           dir="ltr"
                         >
+                          {/* ── Fixed Continuous Bottom Shadow across the whole row ── */}
+                          <div className="w-full h-1.5 bg-gradient-to-b from-slate-900/[0.06] dark:from-black/30 to-transparent pointer-events-none absolute top-0 inset-x-0 z-10" />
+
                           {/* ── A. Content Container on Top (فول واید هم‌اندازه سطر، بدون فیلت در بالا) ── */}
                           <AnimatePresence initial={false}>
                             {isAccordionOpen && activeAccordion && (
