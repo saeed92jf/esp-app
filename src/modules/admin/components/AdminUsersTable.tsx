@@ -897,6 +897,7 @@ export function AdminUsersTable({
                 }
 
                 const isAccordionOpen = activeAccordion?.userId === user.id;
+                const isRowActive = isSelected || isAccordionOpen;
 
                 // Determine unclipped location badge (color & localized label)
                 const getLocationBadge = () => {
@@ -928,16 +929,31 @@ export function AdminUsersTable({
                 return (
                   <React.Fragment key={user.id}>
                     
-                    {/* ── 1. Main User Data Row with Subtle Soft Shadow ── */}
+                    {/* ── 1. Main User Data Row with Full Continuous Shadow across the whole row ── */}
                     <tr
                       className={cn(
                         "transition-all duration-200 group relative",
-                        "[&>td]:border-b [&>td]:border-border/30",
-                        isAccordionOpen
-                          ? "bg-card dark:bg-card [&>td]:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.12),0_2px_4px_-1px_rgba(15,23,42,0.06)] dark:[&>td]:shadow-[0_4px_14px_-2px_rgba(0,0,0,0.5)] z-10"
-                          : isSelected 
-                          ? "bg-primary/[0.07] dark:bg-primary/15 [&>td]:shadow-[0_4px_12px_-2px_rgba(var(--primary),0.15)] z-[2]" 
-                          : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.03)] dark:[&>td]:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.35)] hover:[&>td]:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.09)] z-[1]"
+                        isRowActive
+                          ? [
+                              "z-10",
+                              "bg-primary/[0.08] dark:bg-primary/20",
+                              "[&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35",
+                              // Continuous macro shadow for the entire row (no cell-by-cell breaks)
+                              "[filter:drop-shadow(0_5px_8px_rgba(15,23,42,0.12))] dark:[filter:drop-shadow(0_5px_8px_rgba(0,0,0,0.55))]",
+                              // Horizontal-free bottom shadow on cells so there are NO cell-by-cell vertical seams
+                              "[&>td]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12)] dark:[&>td]:shadow-[0_6px_6px_-3px_rgba(0,0,0,0.5)]",
+                              "[&>td:first-child]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12),-3px_0_4px_-2px_rgba(15,23,42,0.08)]",
+                              "[&>td:last-child]:shadow-[0_6px_6px_-3px_rgba(15,23,42,0.12),3px_0_4px_-2px_rgba(15,23,42,0.08)]"
+                            ]
+                          : [
+                              "z-[1]",
+                              "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40",
+                              "[&>td]:border-b [&>td]:border-border/30",
+                              // Continuous subtle row shadow
+                              "[filter:drop-shadow(0_2px_4px_rgba(15,23,42,0.04))] dark:[filter:drop-shadow(0_2px_4px_rgba(0,0,0,0.25))]",
+                              "[&>td]:shadow-[0_3px_4px_-2px_rgba(15,23,42,0.05)] dark:[&>td]:shadow-[0_3px_4px_-2px_rgba(0,0,0,0.25)]",
+                              "hover:[&>td]:shadow-[0_4px_6px_-2px_rgba(15,23,42,0.08)]"
+                            ]
                       )}
                     >
                       {/* Column 1: User */}
