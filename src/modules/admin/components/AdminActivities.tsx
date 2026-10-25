@@ -15,8 +15,8 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   const activities = selectedUser?.recentActivities || [];
 
   return (
-    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col min-h-0 shrink-0 shadow-2xs">
-      <div className="flex items-center justify-between mb-3 px-1">
+    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col flex-1 min-h-[180px] shadow-2xs">
+      <div className="flex items-center justify-between mb-3 px-1 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <Activity size={16} className="text-emerald-500 shrink-0" />
           <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
@@ -28,7 +28,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
         </span>
       </div>
 
-      <div className="overflow-y-auto space-y-2 pr-1 scrollbar-thin max-h-[220px]">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
         {activities.length > 0 ? (
           activities.map((act) => (
             <div 

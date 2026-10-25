@@ -44,11 +44,11 @@ export function AdminHeatmapModules({
   });
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col flex-1 min-h-[180px]">
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col flex-1 min-h-0 relative overflow-hidden shadow-2xs">
         
         {/* Header with Title, Count & Direct Link to Access Section */}
-        <div className="flex items-center justify-between mb-4 relative z-10 gap-2">
+        <div className="flex items-center justify-between mb-3 relative z-10 gap-2 shrink-0">
           <div className="flex items-center gap-2 min-w-0">
             <h3 className="font-semibold text-[15px] text-foreground truncate">{t("accesses")}</h3>
             <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
@@ -86,7 +86,7 @@ export function AdminHeatmapModules({
             )}
           </div>
         ) : (
-          <div className="flex flex-col flex-1 overflow-y-auto pr-1 scrollbar-thin space-y-2 relative z-10">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pr-1 scrollbar-thin space-y-2 relative z-10">
             {grantedItems.map(item => (
               <div 
                 key={item.id} 
