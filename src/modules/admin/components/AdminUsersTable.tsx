@@ -1112,12 +1112,13 @@ export function AdminUsersTable({
                       </td>
                     </tr>
 
-                    {/* ── 2. Paper Pull-out & Bottom-Right Folder Tab ── */}
+                    {/* ── 2. Paper Pull-out & Folder Tab (سمت چپ در فارسی، راست در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
                       <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
-                            "w-full flex flex-col items-end px-3 sm:px-4",
+                            "w-full flex flex-col px-3 sm:px-4",
+                            isRtl ? "items-start" : "items-end",
                             isAccordionOpen ? "pb-4" : "pb-2.5"
                           )} 
                           dir="ltr"
@@ -1537,7 +1538,7 @@ export function AdminUsersTable({
                               )}
                             </AnimatePresence>
 
-                            {/* ── B. Icon Tab (در پایین سمت راست کانتینر محتوا، بدون تغییر رنگ هنگام باز شدن) ── */}
+                            {/* ── B. Icon Tab (در پایین کانتینر محتوا - سمت چپ در فارسی، سمت راست در انگلیسی) ── */}
                             <div 
                               dir={isRtl ? "rtl" : "ltr"}
                               className={cn(
