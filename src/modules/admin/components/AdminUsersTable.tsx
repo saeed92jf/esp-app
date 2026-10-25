@@ -931,12 +931,13 @@ export function AdminUsersTable({
                     {/* ── 1. Main User Data Row with Subtle Soft Shadow ── */}
                     <tr
                       className={cn(
-                        "transition-all duration-200 group relative z-[2]",
+                        "transition-all duration-200 group relative",
                         "[&>td]:border-b [&>td]:border-border/30",
-                        "[&>td]:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.03)] dark:[&>td]:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.35)]",
-                        isSelected 
-                          ? "bg-primary/[0.07] dark:bg-primary/15 [&>td]:shadow-[0_4px_12px_-2px_rgba(var(--primary),0.15)]" 
-                          : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 hover:[&>td]:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.09)]"
+                        isAccordionOpen
+                          ? "bg-card dark:bg-card [&>td]:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.12),0_2px_4px_-1px_rgba(15,23,42,0.06)] dark:[&>td]:shadow-[0_4px_14px_-2px_rgba(0,0,0,0.5)] z-10"
+                          : isSelected 
+                          ? "bg-primary/[0.07] dark:bg-primary/15 [&>td]:shadow-[0_4px_12px_-2px_rgba(var(--primary),0.15)] z-[2]" 
+                          : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:shadow-[0_2px_8px_-2px_rgba(15,23,42,0.06),0_1px_3px_-1px_rgba(15,23,42,0.03)] dark:[&>td]:shadow-[0_2px_8px_-2px_rgba(0,0,0,0.35)] hover:[&>td]:shadow-[0_4px_12px_-2px_rgba(15,23,42,0.09)] z-[1]"
                       )}
                     >
                       {/* Column 1: User */}
@@ -1096,7 +1097,7 @@ export function AdminUsersTable({
                     </tr>
 
                     {/* ── 2. Paper Pull-out & Bottom-Right Folder Tab ── */}
-                    <tr className="border-0">
+                    <tr className="border-0 relative z-0">
                       <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
@@ -1105,7 +1106,7 @@ export function AdminUsersTable({
                           )} 
                           dir="ltr"
                         >
-                          {/* ── A. Content Container on Top (کانتینر محتواشون بالا باشه) ── */}
+                          {/* ── A. Content Container on Top (فول واید هم‌اندازه سطر، بدون فیلت در بالا) ── */}
                           <AnimatePresence initial={false}>
                             {isAccordionOpen && (
                               <motion.div
@@ -1117,11 +1118,14 @@ export function AdminUsersTable({
                                   height: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
                                   opacity: { duration: 0.22, ease: "easeOut" }
                                 }}
-                                className="w-[660px] max-w-full overflow-hidden"
+                                className="w-full overflow-hidden"
                               >
                                 <div 
                                   dir={isRtl ? "rtl" : "ltr"}
-                                  className="bg-card border border-border/60 rounded-t-2xl rounded-bl-2xl rounded-br-none -mt-px p-4 sm:p-5 shadow-none"
+                                  className={cn(
+                                    "w-full bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-t-none rounded-b-2xl p-4 sm:p-5",
+                                    "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.09)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
+                                  )}
                                 >
                             
                             {/* ── Mode A: View Details ── */}
@@ -1517,14 +1521,13 @@ export function AdminUsersTable({
                               )}
                             </AnimatePresence>
 
-                            {/* ── B. Icon Tab (در پایین سمت راست کانتینر محتوا، بدون سایه) ── */}
+                            {/* ── B. Icon Tab (در پایین سمت راست کانتینر محتوا، بدون تغییر رنگ هنگام باز شدن) ── */}
                             <div 
                               dir={isRtl ? "rtl" : "ltr"}
                               className={cn(
                                 "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0 -mt-px",
-                                isAccordionOpen
-                                  ? "bg-card border-x border-b border-border/60 rounded-b-xl shadow-none"
-                                  : "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80 shadow-none"
+                                "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground shadow-none",
+                                !isAccordionOpen && "hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
                               )}
                             >
                               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
