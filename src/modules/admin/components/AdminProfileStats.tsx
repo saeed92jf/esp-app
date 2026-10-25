@@ -2,12 +2,15 @@
 
 import React from "react";
 import { 
-  Mail, ShieldCheck, ShieldAlert
+  Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, Calendar
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
 import { AnimatedNumber } from "./AdminTasksTime";
+import { usePrimaryColor } from "@/hooks/use-primary-color";
+import { PRIMARY_COLORS } from "@/config/settings";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 interface AdminProfileStatsProps {
   selectedUser: User;
@@ -15,6 +18,21 @@ interface AdminProfileStatsProps {
 
 export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const t = useTranslations("Admin");
+  const { colorId } = usePrimaryColor();
+  const { user: currentUser } = useAuth();
+
+  // Dynamic primary color syncing with profile management
+  const userColorId = selectedUser.id === currentUser?.id
+    ? (currentUser?.primaryColor || colorId)
+    : (selectedUser.primaryColor || selectedUser.avatarColor);
+
+  const matchedPreset = PRIMARY_COLORS.find(c => c.id === userColorId);
+  const avatarBgColor = matchedPreset?.hex 
+    || (selectedUser.avatarColor?.startsWith('#') ? selectedUser.avatarColor : undefined)
+    || PRIMARY_COLORS.find(c => c.id === colorId)?.hex
+    || '#3a86ff';
+
+  const isAdmin = selectedUser.role === 'admin';
 
   // Real or Fallback values
   const age = selectedUser.age || 32;
@@ -48,100 +66,160 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const firstLetter = selectedUser.name?.trim().charAt(0).toUpperCase() || "U";
 
   return (
-    <div className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto custom-scrollbar">
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col items-center justify-center text-center shrink-0">
-        <div className="size-16 sm:size-18 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-2xl sm:text-3xl select-none shrink-0 shadow-2xs">
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={selectedUser.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.2 }}
+    <div className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto custom-scrollbar pe-0.5">
+      
+      {/* ── 1. Profile Header Card (Prominent Avatar, Admin Ring & Contacts) ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col items-center justify-center text-center shrink-0 shadow-2xs">
+        
+        {/* Avatar Ring: Multi-color gradient for Admin, Refined Primary Tint for User */}
+        <div 
+          className={`p-[3px] rounded-full shrink-0 transition-transform duration-300 ${
+            isAdmin 
+              ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-md" 
+              : "shadow-xs"
+          }`}
+          style={!isAdmin ? { backgroundColor: `${avatarBgColor}35` } : undefined}
+        >
+          <div className="p-1 rounded-full bg-white dark:bg-card">
+            <div 
+              className="size-20 sm:size-24 rounded-full flex items-center justify-center font-bold text-3xl sm:text-4xl text-white select-none shadow-inner"
+              style={{ backgroundColor: avatarBgColor }}
             >
-              {firstLetter}
-            </motion.span>
-          </AnimatePresence>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={selectedUser.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {firstLetter}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
 
-        <span className="text-foreground font-bold text-base sm:text-lg mt-2.5 truncate max-w-full">
+        {/* User Name */}
+        <h2 className="text-foreground font-bold text-base sm:text-lg mt-3 truncate max-w-full leading-tight">
           {selectedUser.name}
-        </span>
+        </h2>
 
-        {selectedUser.email && (
-          <a
-            href={`mailto:${selectedUser.email}`}
-            dir="ltr"
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors truncate max-w-full mt-1 font-medium"
-          >
-            <Mail size={13} className="shrink-0 opacity-70" />
-            <span className="truncate">{selectedUser.email}</span>
-          </a>
+        {/* Role Badge */}
+        {isAdmin ? (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 mt-1.5 shadow-2xs">
+            <ShieldCheck size={12} className="stroke-[2.5]" />
+            <span>{t("roleAdmin")}</span>
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mt-1.5 shadow-2xs">
+            <UserCheck size={12} className="stroke-[2.5]" />
+            <span className="truncate max-w-[180px]">{selectedUser.jobTitle || t("roleUser")}</span>
+          </div>
         )}
-      </div>
 
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-center sm:text-start">
-        <span className="text-lg sm:text-xl font-bold text-foreground mb-1">
-          <AnimatedNumber value={age} /> <span className="text-[0.7em] font-medium text-muted-foreground">{t("yearsOld")}</span>
-        </span>
-        <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-          {t("ageSub", { month: t("months.farvardin"), days: 2 })}
-        </span>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-center sm:text-start">
-          <span className="text-lg sm:text-xl font-bold text-foreground mb-1">
-            {isMarried ? t("married") : t("single")}
-          </span>
-          <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-            {t("maritalStatus")}
-          </span>
-        </div>
-
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-center sm:text-start">
-          <span className="text-lg sm:text-xl font-bold text-foreground mb-1">
-            <AnimatedNumber value={childrenCount} /> <span className="text-[0.7em] font-medium text-muted-foreground">{t("child")}</span>
-          </span>
-          <span className="text-[11px] sm:text-xs text-muted-foreground font-medium">
-            {t("children")}
-          </span>
+        {/* Contact Links */}
+        <div className="flex flex-col items-center gap-1 mt-3 w-full">
+          {selectedUser.email && (
+            <a
+              href={`mailto:${selectedUser.email}`}
+              dir="ltr"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors truncate max-w-full font-medium"
+            >
+              <Mail size={12} className="shrink-0 opacity-70" />
+              <span className="truncate">{selectedUser.email}</span>
+            </a>
+          )}
+          {selectedUser.phone && (
+            <span
+              dir="ltr"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground truncate max-w-full font-medium fa-num"
+            >
+              <Phone size={12} className="shrink-0 opacity-70" />
+              <span>{selectedUser.phone}</span>
+            </span>
+          )}
         </div>
       </div>
 
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-between gap-3 relative overflow-hidden min-h-[172px]">
+      {/* ── 2. Unified Personal Demographics Card (Age, Marital, Children) ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 px-1 mb-1 text-muted-foreground">
+          <Users size={14} className="stroke-[2.2]" />
+          <span className="text-[11px] font-bold">{t("demographics")}</span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-1 divide-x divide-x-reverse divide-border/40 text-center">
+          {/* Age */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <span className="text-base sm:text-lg font-bold text-foreground fa-num">
+              <AnimatedNumber value={age} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("yearsOldUnit")}</span>
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5">{t("age")}</span>
+          </div>
+
+          {/* Marital Status */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <span className="text-base sm:text-lg font-bold text-foreground truncate max-w-full">
+              {isMarried ? t("married") : t("single")}
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5">{t("maritalStatus")}</span>
+          </div>
+
+          {/* Children */}
+          <div className="flex flex-col items-center justify-center px-1">
+            <span className="text-base sm:text-lg font-bold text-foreground fa-num">
+              <AnimatedNumber value={childrenCount} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("child")}</span>
+            </span>
+            <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium mt-0.5">{t("children")}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. Insurance & Healthcare Card ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-between gap-3 relative overflow-hidden shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col min-w-0">
-            <span className="text-[15px] font-bold text-foreground mb-0.5 truncate">
+            <span className="text-[14px] sm:text-[15px] font-bold text-foreground mb-0.5 truncate">
               {insType !== 'none' ? t("insuranceTitle", { type: t(`insuranceOptions.${insType}`) }) : t("insuranceOptions.none")}
             </span>
-            <span className={`text-[11px] sm:text-xs font-semibold ${currentIns.text}`}>
+            <span className={`text-[11px] font-semibold ${currentIns.text}`}>
               {t(`insuranceStatus.${insStatus}`)}
             </span>
           </div>
-          <InsIcon size={36} className={`shrink-0 ${currentIns.text}`} />
+          <InsIcon size={32} className={`shrink-0 ${currentIns.text}`} />
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-border/30">
           <div className="flex flex-col">
-            <span className="text-[11px] text-muted-foreground font-medium">{t("insPlanLabel")}</span>
-            <span className="text-base sm:text-lg font-bold text-foreground">{insType !== 'none' ? t(`insurancePlans.${insPlan}`) : "-"}</span>
+            <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{t("insPlanLabel")}</span>
+            <span className="text-sm sm:text-base font-bold text-foreground truncate">{insType !== 'none' ? t(`insurancePlans.${insPlan}`) : "-"}</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[11px] text-muted-foreground font-medium">{t("insDependentsLabel")}</span>
-            <span className="text-base sm:text-lg font-bold text-foreground">{insType !== 'none' ? <><AnimatedNumber value={insDependents} /> <span className="text-[0.8em] font-medium text-muted-foreground">{t("personUnit")}</span></> : "-"}</span>
+            <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{t("insDependentsLabel")}</span>
+            <span className="text-sm sm:text-base font-bold text-foreground truncate fa-num">
+              {insType !== 'none' ? <><AnimatedNumber value={insDependents} /> <span className="text-[0.8em] font-medium text-muted-foreground">{t("personUnit")}</span></> : "-"}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-center sm:text-start">
-        <span className="text-lg sm:text-xl font-bold text-foreground mb-1 leading-tight">
-          {t("educationTitle", { field: educationField })}
-        </span>
-        <span className="text-[11px] sm:text-xs text-muted-foreground font-medium mt-0.5">
-          {t("educationSub", { degree: educationDegree })}
-        </span>
+      {/* ── 4. Education & Academic Background Card ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-start shrink-0">
+        <div className="flex items-center justify-between gap-2 mb-1.5">
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <GraduationCap size={15} className="stroke-[2.2]" />
+            <span className="text-[11px] font-bold">{t("education")}</span>
+          </div>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+            {educationDegree}
+          </span>
+        </div>
+        <p className="text-sm sm:text-[15px] font-bold text-foreground leading-snug truncate">
+          {educationField}
+        </p>
       </div>
+
     </div>
   );
 }

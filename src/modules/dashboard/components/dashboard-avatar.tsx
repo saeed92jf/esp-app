@@ -13,6 +13,8 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { HEADER_ICON_BUTTON_CLASS } from '@/lib/constants';
+import { usePrimaryColor } from '@/hooks/use-primary-color';
+import { PRIMARY_COLORS } from '@/config/settings';
 import {
   segmentedAccordionMotion,
   getSegmentedAccordionHeaderClass,
@@ -90,6 +92,10 @@ export function DashboardAvatar() {
 
   if (!user) return null;
 
+  const { colorId } = usePrimaryColor();
+  const activeColorPreset = PRIMARY_COLORS.find(c => c.id === (user?.primaryColor || colorId));
+  const avatarBgColor = activeColorPreset?.hex || user?.avatarColor || "#3a86ff";
+
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
@@ -116,7 +122,7 @@ export function DashboardAvatar() {
       <div className="relative z-10 size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
         <Avatar className="size-full rounded-full overflow-hidden">
           <AvatarFallback 
-            style={{ backgroundColor: user.avatarColor || "#0284c7" }}
+            style={{ backgroundColor: avatarBgColor }}
             className="text-xs sm:text-sm font-bold text-white transition-colors"
           >
             <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
@@ -193,7 +199,7 @@ export function DashboardAvatar() {
                     <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)]" />
                     <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
                       <Avatar className="size-7 sm:size-7.5">
-                        <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xs font-bold text-white">
+                        <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
                           <span>{initial}</span>
                         </AvatarFallback>
                       </Avatar>
@@ -201,7 +207,7 @@ export function DashboardAvatar() {
                   </div>
                 ) : (
                   <Avatar className="size-8 shrink-0 ring-2 ring-primary ring-offset-1 ring-offset-background border border-transparent">
-                    <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xs font-bold text-white">
+                    <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
                       <span>{initial}</span>
                     </AvatarFallback>
                   </Avatar>
@@ -272,7 +278,7 @@ export function DashboardAvatar() {
                      <div className="relative z-10 bg-white dark:bg-black rounded-full p-0.5">
                        <Avatar className="size-14 sm:size-16">
                          
-                         <AvatarFallback style={{ backgroundColor: user.avatarColor || "#0284c7" }} className="text-xl sm:text-2xl font-bold text-white">
+                         <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xl sm:text-2xl font-bold text-white">
                            <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
                          </AvatarFallback>
                        </Avatar>

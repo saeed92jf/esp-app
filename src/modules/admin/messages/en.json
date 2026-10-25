@@ -251,6 +251,17 @@
     "step1Short": "Initial Request",
     "step2Short": "Profile Form",
     "step3Short": "HR Review",
-    "step4Short": "Manager Approval"
+    "step4Short": "Manager Approval",
+    "urgentAndOverdueTasks": "Urgent & Overdue Tasks",
+    "viewAllTasks": "Tasks Page",
+    "urgentBadge": "Urgent",
+    "overdueBadge": "Overdue",
+    "manageAccess": "Manage Access",
+    "grantAccess": "Grant Access",
+    "noUrgentOverdueTasks": "No active urgent or overdue tasks.",
+    "roleAdmin": "System Admin",
+    "roleUser": "Standard User",
+    "demographics": "Personal Demographics",
+    "yearsOldUnit": "yrs"
   }
 }

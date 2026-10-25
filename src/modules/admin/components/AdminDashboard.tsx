@@ -177,6 +177,7 @@ export function AdminDashboard() {
                   tMenu={tMenu}
                   handleToggleModuleAccess={handleToggleModuleAccess}
                   handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                  onNavigateToAccess={() => setActiveTab('add')}
                 />
               </div>
 

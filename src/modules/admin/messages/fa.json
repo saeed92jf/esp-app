@@ -251,6 +251,17 @@
     "step1Short": "ثبت اولیه",
     "step2Short": "تکمیل پروفایل",
     "step3Short": "بررسی HR",
-    "step4Short": "تأیید مدیر"
+    "step4Short": "تأیید مدیر",
+    "urgentAndOverdueTasks": "تسک‌های فوری و معوق",
+    "viewAllTasks": "صفحه تسک‌ها",
+    "urgentBadge": "فوری",
+    "overdueBadge": "معوق",
+    "manageAccess": "مدیریت دسترسی‌ها",
+    "grantAccess": "اعطای دسترسی",
+    "noUrgentOverdueTasks": "تسک فوری یا معوق فعالی وجود ندارد.",
+    "roleAdmin": "مدیر سیستم",
+    "roleUser": "کاربر عادی",
+    "demographics": "مشخصات فردی",
+    "yearsOldUnit": "سال"
   }
 }
