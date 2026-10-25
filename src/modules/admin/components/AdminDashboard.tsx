@@ -125,7 +125,7 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+    <div className="flex flex-col h-[calc(100vh)] bg-white dark:bg-background font-sans w-full overflow-hidden relative">
       {/* Top Header */}
       <AppHeader
         tag="Admin"

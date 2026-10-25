@@ -49,7 +49,7 @@ export function AdminSidebar({
 
       <aside
         className={cn(
-          "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
+          "flex flex-col shrink-0 h-full bg-white/95 dark:bg-background/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
           "absolute md:relative start-0 top-0",
           sidebarOpen
             ? "w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none"
