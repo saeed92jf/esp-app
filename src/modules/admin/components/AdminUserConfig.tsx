@@ -1121,6 +1121,7 @@ export function AdminUserConfig({
 
           {/* Real-time Personnel Badge Card */}
           <div className="bg-background/80 dark:bg-background/60 border border-border/50 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative">
+            {/* 1. Personnel Header Profile */}
             <div className="flex items-center gap-3.5">
               <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0 bg-transparent">
                 <AvatarFallback className="bg-transparent text-primary font-bold text-xl rounded-full">
@@ -1154,59 +1155,144 @@ export function AdminUserConfig({
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/40">
                     {t(`departments.${form.department}`)}
                   </span>
+                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    {t(`workFormat${form.workMode ? form.workMode.charAt(0).toUpperCase() + form.workMode.slice(1) : "Office"}`)}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="h-[1px] w-full bg-border/40" />
 
-            {/* Contact details */}
-            <div className="flex flex-col gap-2 text-xs">
-              <div className="flex items-center gap-2 text-muted-foreground truncate">
-                <Mail className="size-3.5 shrink-0 text-muted-foreground/70" />
-                <span className="truncate" dir="ltr">
-                  {form.email.trim() || "email@company.com"}
+            {/* 2. Bilingual Name Breakdown */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="flex flex-col bg-slate-100/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/30 min-w-0">
+                <span className="text-[10px] text-muted-foreground font-medium truncate">
+                  {t("persianName")}
+                </span>
+                <span className="text-xs font-bold text-foreground truncate mt-0.5" title={fullNameFa}>
+                  {fullNameFa || "---"}
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground truncate fa-num">
-                <Phone className="size-3.5 shrink-0 text-muted-foreground/70" />
-                <span dir="ltr">{form.phone.trim() || "---"}</span>
+              <div className="flex flex-col bg-slate-100/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/30 min-w-0">
+                <span className="text-[10px] text-muted-foreground font-medium truncate">
+                  {t("englishName")}
+                </span>
+                <span className="text-xs font-bold text-foreground truncate mt-0.5" dir="ltr" title={fullNameEn}>
+                  {fullNameEn || "---"}
+                </span>
               </div>
             </div>
 
-            {/* Quick Metadata Chips */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30">
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2 rounded-xl">
+            {/* 3. Contact & Identity Items */}
+            <div className="flex flex-col gap-1.5 text-xs">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
+                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                  <Mail className="size-3.5 shrink-0 text-primary" />
+                  <span className="text-[11px] font-medium">{t("email")}</span>
+                </div>
+                <span className="font-semibold text-foreground truncate max-w-[190px] text-start" dir="ltr">
+                  {form.email.trim() || "---"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
+                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                  <Phone className="size-3.5 shrink-0 text-emerald-500" />
+                  <span className="text-[11px] font-medium">{t("phone")}</span>
+                </div>
+                <span className="font-semibold text-foreground fa-num" dir="ltr">
+                  {form.phone.trim() || "---"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
+                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                  <CreditCard className="size-3.5 shrink-0 text-amber-500" />
+                  <span className="text-[11px] font-medium">{t("nationalIdInputLabel")}</span>
+                </div>
+                <span className="font-semibold text-foreground fa-num font-mono text-xs" dir="ltr">
+                  {form.nationalId.trim() || "---"}
+                </span>
+              </div>
+            </div>
+
+            {/* 4. Complete Detailed Metadata Grid */}
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30 text-xs">
+              {/* Base Monthly Salary */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <DollarSign className="size-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span className="text-[10px] truncate">{t("baseSalary")}</span>
+                </div>
+                <span className="text-xs font-bold text-foreground mt-0.5 fa-num">
+                  {form.salary ? Number(form.salary).toLocaleString() : "0"} $
+                </span>
+              </div>
+
+              {/* Work Format / Location */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Building2 className="size-3 text-blue-500 shrink-0" />
+                  <span className="text-[10px] truncate">{t("workFormatLabel")}</span>
+                </div>
+                <span className="text-xs font-bold text-foreground mt-0.5 truncate">
+                  {t(`workFormat${form.workMode ? form.workMode.charAt(0).toUpperCase() + form.workMode.slice(1) : "Office"}`)}
+                </span>
+              </div>
+
+              {/* Age */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
                 <span className="text-[10px] text-muted-foreground">
                   {t("userAge")}
                 </span>
-                <span className="text-xs font-bold text-foreground fa-num">
+                <span className="text-xs font-bold text-foreground mt-0.5 fa-num">
                   {form.age} {t("yearsOldUnit")}
                 </span>
               </div>
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2 rounded-xl">
+
+              {/* Marital Status & Children */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
                 <span className="text-[10px] text-muted-foreground">
                   {t("maritalStatusLabel")}
                 </span>
-                <span className="text-xs font-bold text-foreground">
+                <span className="text-xs font-bold text-foreground mt-0.5 truncate fa-num">
                   {t(`maritalStatusOptions.${form.maritalStatus}`)}
+                  {form.maritalStatus === "married" && ` (${form.childrenCount} ${t("childCountUnit")})`}
                 </span>
               </div>
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2 rounded-xl">
-                <span className="text-[10px] text-muted-foreground">
-                  {t("educationDegreeLabel")}
-                </span>
-                <span className="text-xs font-bold text-foreground truncate">
+
+              {/* Education Degree */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <GraduationCap className="size-3 text-indigo-500 shrink-0" />
+                  <span className="text-[10px] truncate">{t("educationDegreeLabel")}</span>
+                </div>
+                <span className="text-xs font-bold text-foreground mt-0.5 truncate">
                   {t(`degreesOptions.${form.educationDegree}`)}
                 </span>
               </div>
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2 rounded-xl">
-                <span className="text-[10px] text-muted-foreground">
-                  {t("insuranceTypeLabel")}
+
+              {/* Field of Study */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+                <span className="text-[10px] text-muted-foreground truncate">
+                  {t("educationFieldLabel")}
                 </span>
-                <span className="text-xs font-bold text-foreground truncate">
-                  {t(`insuranceOptions.${form.insuranceType}`)}
+                <span className="text-xs font-bold text-foreground mt-0.5 truncate" title={form.educationField}>
+                  {form.educationField.trim() || t("unspecified")}
                 </span>
+              </div>
+
+              {/* Insurance Type (full width) */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">
+                    {t("insuranceTypeLabel")}
+                  </span>
+                  <span className="text-xs font-bold text-foreground truncate">
+                    {t(`insuranceOptions.${form.insuranceType}`)}
+                  </span>
+                </div>
               </div>
             </div>
 
