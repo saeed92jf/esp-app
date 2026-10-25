@@ -103,6 +103,7 @@ export function AdminRequests({
   const [reviewData, setReviewData] = useState<PendingRequest | null>(null);
   const [activeSegment, setActiveSegment] = useState<ReqSegmentId>("personal");
   const [openSegment, setOpenSegment] = useState<ReqSegmentId | null>("personal");
+  const [completedSteps, setCompletedSteps] = useState<Set<ReqSegmentId>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
 
   // Dialog states for rejection
@@ -181,6 +182,9 @@ export function AdminRequests({
   // Load selected request into review form
   useEffect(() => {
     if (selectedReqId) {
+      setCompletedSteps(new Set());
+      setActiveSegment("personal");
+      setOpenSegment("personal");
       const found = requests.find((r) => r.id === selectedReqId);
       if (found) {
         setReviewData({
@@ -305,6 +309,63 @@ export function AdminRequests({
       if (onRefresh) await onRefresh();
     } catch {
       toast.error("خطا در ذخیره تغییرات پرونده");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Step Navigation Helpers
+  const handleNextStep = (currentSegmentId: ReqSegmentId, nextSegmentId: ReqSegmentId) => {
+    setCompletedSteps((prev) => new Set(prev).add(currentSegmentId));
+    setActiveSegment(nextSegmentId);
+    setOpenSegment(nextSegmentId);
+  };
+
+  const handlePrevStep = (currentSegmentId: ReqSegmentId, prevSegmentId: ReqSegmentId) => {
+    setCompletedSteps((prev) => {
+      const nextSet = new Set(prev);
+      nextSet.delete(currentSegmentId);
+      nextSet.delete(prevSegmentId);
+      return nextSet;
+    });
+    setActiveSegment(prevSegmentId);
+    setOpenSegment(prevSegmentId);
+  };
+
+  // Final Step Action: Save and Advance Stage depending on status (HR vs Admin)
+  const handleSaveAndAdvance = async () => {
+    if (!reviewData) return;
+    try {
+      setIsSaving(true);
+      setCompletedSteps((prev) => new Set(prev).add("education"));
+
+      // 1. First save any current modifications to request profile
+      await api.admin.updateRequest(reviewData.id, reviewData);
+
+      // 2. Advance stage based on current workflow status
+      if (reviewData.status === "pending") {
+        // HR Stage Approval
+        const updated = await api.admin.approveHr(reviewData.id);
+        setRequests((prev) =>
+          prev.map((r) => (r.id === reviewData.id ? updated : r))
+        );
+        setReviewData((prev) => (prev ? { ...prev, ...updated, status: "hr_approved", hrApproved: true } : null));
+        toast.success(t("hrApproveSuccess", { email: reviewData.email }));
+      } else if (reviewData.status === "hr_approved") {
+        // Manager / Admin Stage Final Approval & Activation
+        const res = await api.admin.approveManager(reviewData.id);
+        setRequests((prev) =>
+          prev.map((r) => (r.id === reviewData.id ? res.request : r))
+        );
+        setReviewData((prev) => (prev ? { ...prev, ...res.request, status: "active", hrApproved: true, managerApproved: true, tempPassword: res.tempPassword || res.request.tempPassword } : null));
+        toast.success(t("managerApproveSuccess", { email: reviewData.email }));
+      } else {
+        toast.success(t("profileChangesSavedSuccess"));
+      }
+
+      if (onRefresh) await onRefresh();
+    } catch {
+      toast.error("خطا در تایید و پیشبرد مرحله پرونده");
     } finally {
       setIsSaving(false);
     }
@@ -742,44 +803,6 @@ export function AdminRequests({
 
                   {/* Actions Header Bar */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    {/* Save Button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSaveProfileChanges}
-                      disabled={isSaving}
-                      className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/60 hover:bg-background"
-                    >
-                      <Save className="size-3.5 text-primary" />
-                      <span>{t("saveProfileChanges")}</span>
-                    </Button>
-
-                    {/* Step 3 Action: HR Approval */}
-                    {reviewData.status === "pending" && (
-                      <Button
-                        size="sm"
-                        onClick={handleApproveHr}
-                        disabled={actionLoadingId === reviewData.id}
-                        className="h-9 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white gap-1.5 shadow-xs cursor-pointer"
-                      >
-                        <UserCheck className="size-3.5" />
-                        <span>{t("approveHrBtn")}</span>
-                      </Button>
-                    )}
-
-                    {/* Step 4 Action: Manager Approval / Final Activation */}
-                    {reviewData.status === "hr_approved" && (
-                      <Button
-                        size="sm"
-                        onClick={handleApproveManager}
-                        disabled={actionLoadingId === reviewData.id}
-                        className="h-9 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs cursor-pointer"
-                      >
-                        <ShieldCheck className="size-3.5" />
-                        <span>{t("approveManagerBtn")}</span>
-                      </Button>
-                    )}
 
                     {/* Reject Button (if not rejected) */}
                     {reviewData.status !== "rejected" && (
@@ -852,11 +875,192 @@ export function AdminRequests({
                 )}
 
                 {/* =================================================== */}
+                {/* 3-STAGE WORKFLOW APPROVAL PIPELINE */}
+                {/* =================================================== */}
+                {(() => {
+                  const isHrDone =
+                    reviewData.status === "hr_approved" ||
+                    reviewData.status === "active" ||
+                    !!reviewData.hrApproved;
+                  const isHrActive = reviewData.status === "pending";
+
+                  const isManagerDone =
+                    reviewData.status === "active" || !!reviewData.managerApproved;
+                  const isManagerActive = reviewData.status === "hr_approved";
+
+                  const isRejected = reviewData.status === "rejected";
+
+                  return (
+                    <div className="bg-background/70 dark:bg-slate-900/40 border border-border/50 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <Sparkles className="size-3.5" />
+                          </div>
+                          <span className="text-xs font-bold text-foreground">
+                            {isRtl ? "مراحل بررسی و تأیید سازمانی" : "Organizational Approval Pipeline"}
+                          </span>
+                        </div>
+                        <div className="text-[11px] font-medium">
+                          {isRejected ? (
+                            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                              <AlertCircle className="size-3" />
+                              <span>{t("statusRejected")}</span>
+                            </span>
+                          ) : isManagerDone ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                              <CheckCircle2 className="size-3" />
+                              <span>{t("statusActive")}</span>
+                            </span>
+                          ) : isManagerActive ? (
+                            <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
+                              <Clock className="size-3" />
+                              <span>{t("statPendingManager")}</span>
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                              <Clock className="size-3" />
+                              <span>{t("statusPendingHr")}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                        {/* Stage 1: Submitted */}
+                        <div className="p-3 rounded-xl border bg-emerald-500/5 border-emerald-500/30 flex items-center gap-3 transition-colors">
+                          <div className="size-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <Check className="size-4 stroke-[3]" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-foreground truncate">
+                              {t("stageProfileSubmitted")}
+                            </span>
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                              {t("stageCompleted")}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Stage 2: HR Review */}
+                        <div
+                          className={cn(
+                            "p-3 rounded-xl border flex items-center gap-3 transition-all",
+                            isHrDone
+                              ? "bg-emerald-500/5 border-emerald-500/30"
+                              : isHrActive
+                              ? "bg-amber-500/10 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
+                              : isRejected
+                              ? "bg-rose-500/5 border-rose-500/30 opacity-70"
+                              : "bg-muted/30 border-border/40 opacity-70"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "size-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs text-xs font-bold",
+                              isHrDone
+                                ? "bg-emerald-500 text-white"
+                                : isHrActive
+                                ? "bg-amber-500 text-white"
+                                : isRejected
+                                ? "bg-rose-500 text-white"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {isHrDone ? (
+                              <Check className="size-4 stroke-[3]" />
+                            ) : (
+                              <span className="fa-num">۲</span>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-foreground truncate">
+                              {t("stageHrApproval")}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-[10px] font-semibold mt-0.5",
+                                isHrDone
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                : isHrActive
+                                  ? "text-amber-600 dark:text-amber-400"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              {isHrDone
+                                ? t("stageCompleted")
+                                : isHrActive
+                                ? t("stageCurrent")
+                                : t("stagePending")}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Stage 3: Manager Approval */}
+                        <div
+                          className={cn(
+                            "p-3 rounded-xl border flex items-center gap-3 transition-all",
+                            isManagerDone
+                              ? "bg-emerald-500/5 border-emerald-500/30"
+                              : isManagerActive
+                              ? "bg-blue-500/10 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
+                              : isRejected
+                              ? "bg-rose-500/5 border-rose-500/30 opacity-70"
+                              : "bg-muted/30 border-border/40 opacity-70"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "size-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs text-xs font-bold",
+                              isManagerDone
+                                ? "bg-emerald-500 text-white"
+                                : isManagerActive
+                                ? "bg-blue-500 text-white"
+                                : isRejected
+                                ? "bg-rose-500 text-white"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {isManagerDone ? (
+                              <Check className="size-4 stroke-[3]" />
+                            ) : (
+                              <span className="fa-num">۳</span>
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-foreground truncate">
+                              {t("stageManagerApproval")}
+                            </span>
+                            <span
+                              className={cn(
+                                "text-[10px] font-semibold mt-0.5",
+                                isManagerDone
+                                  ? "text-emerald-600 dark:text-emerald-400"
+                                : isManagerActive
+                                  ? "text-blue-600 dark:text-blue-400"
+                                  : "text-muted-foreground"
+                              )}
+                            >
+                              {isManagerDone
+                                ? t("stageCompleted")
+                                : isManagerActive
+                                ? t("stageCurrent")
+                                : t("stagePending")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* =================================================== */}
                 {/* SEGMENTED CONTROL / TABS */}
                 {/* =================================================== */}
                 <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                   {SEGMENTS.map((seg) => {
                     const isActive = activeSegment === seg.id;
+                    const isCompleted = completedSteps.has(seg.id);
                     const Icon = seg.icon;
 
                     return (
@@ -871,18 +1075,26 @@ export function AdminRequests({
                           "flex-1 min-w-[140px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
+                            : isCompleted
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
                             : "text-muted-foreground hover:text-foreground hover:bg-background/80"
                         )}
                       >
                         <div
                           className={cn(
                             "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold fa-num transition-colors",
-                            isActive
+                            isCompleted
+                              ? "bg-emerald-500 text-white"
+                              : isActive
                               ? "bg-primary-foreground/20 text-primary-foreground"
                               : "bg-muted text-muted-foreground"
                           )}
                         >
-                          {seg.stepNumber}
+                          {isCompleted ? (
+                            <Check className="size-3 stroke-[3]" />
+                          ) : (
+                            seg.stepNumber
+                          )}
                         </div>
                         <span className="truncate">{t(seg.titleKey)}</span>
                       </button>
@@ -897,6 +1109,7 @@ export function AdminRequests({
               <div className="flex flex-col gap-4">
                 {SEGMENTS.map((seg, idx) => {
                   const isOpen = openSegment === seg.id;
+                  const isCompleted = completedSteps.has(seg.id);
                   const Icon = seg.icon;
 
                   return (
@@ -922,17 +1135,31 @@ export function AdminRequests({
                           <div
                             className={cn(
                               "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-2xs",
-                              isOpen
+                              isCompleted
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                : isOpen
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-background text-muted-foreground border border-border/50"
                             )}
                           >
-                            <Icon className="size-4" />
+                            {isCompleted ? (
+                              <Check className="size-4 stroke-[2.5]" />
+                            ) : (
+                              <Icon className="size-4" />
+                            )}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-sm sm:text-base text-foreground truncate">
-                              {t(seg.titleKey)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-sm sm:text-base text-foreground truncate">
+                                {t(seg.titleKey)}
+                              </span>
+                              {isCompleted && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                  <Check className="size-2.5" />
+                                  <span>{t("stageCompleted")}</span>
+                                </span>
+                              )}
+                            </div>
                             <span className="text-xs text-muted-foreground truncate mt-0.5">
                               {t(seg.descKey)}
                             </span>
@@ -1790,50 +2017,55 @@ export function AdminRequests({
                               {/* Accordion Footer Actions */}
                               <div className="flex items-center justify-between pt-3 border-t border-border/30 mt-1">
                                 <div>
-                                  {idx > 0 && (
+                                  {idx > 0 ? (
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => {
-                                        const prev = SEGMENTS[idx - 1].id;
-                                        setActiveSegment(prev);
-                                        setOpenSegment(prev);
-                                      }}
+                                      onClick={() =>
+                                        handlePrevStep(seg.id, SEGMENTS[idx - 1].id)
+                                      }
                                       className="h-9 px-3.5 rounded-xl font-medium text-xs gap-1.5 cursor-pointer"
                                     >
                                       <PrevArrow className="size-3.5" />
                                       <span>{t("prevStep")}</span>
                                     </Button>
+                                  ) : (
+                                    <div />
                                   )}
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                  {idx < SEGMENTS.length - 1 && (
+                                  {idx < SEGMENTS.length - 1 ? (
                                     <Button
                                       type="button"
                                       size="sm"
-                                      onClick={() => {
-                                        const next = SEGMENTS[idx + 1].id;
-                                        setActiveSegment(next);
-                                        setOpenSegment(next);
-                                      }}
+                                      onClick={() =>
+                                        handleNextStep(seg.id, SEGMENTS[idx + 1].id)
+                                      }
                                       className="h-9 px-4 rounded-xl font-medium text-xs gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                                     >
                                       <span>{t("nextStep")}</span>
                                       <NextArrow className="size-3.5" />
                                     </Button>
+                                  ) : (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={handleSaveAndAdvance}
+                                      disabled={isSaving}
+                                      className="h-9 px-5 rounded-xl font-semibold text-xs gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                    >
+                                      <Save className="size-3.5" />
+                                      <span>
+                                        {reviewData.status === "pending"
+                                          ? t("saveAndApproveHr")
+                                          : reviewData.status === "hr_approved"
+                                          ? t("saveAndApproveManager")
+                                          : t("saveProfileChanges")}
+                                      </span>
+                                    </Button>
                                   )}
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={handleSaveProfileChanges}
-                                    disabled={isSaving}
-                                    className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                                  >
-                                    <Save className="size-3.5" />
-                                    <span>{t("saveProfileChanges")}</span>
-                                  </Button>
                                 </div>
                               </div>
                             </div>
