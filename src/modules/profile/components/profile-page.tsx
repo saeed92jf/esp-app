@@ -4,7 +4,74 @@ import React, { useState, useEffect, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
-import { UserProfile } from "../types/profile";
+import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan } from "../types/profile";
+import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
+
+const DEGREE_OPTIONS: ComboboxOption[] = [
+  { value: "دیپلم", label: "دیپلم" },
+  { value: "کاردانی", label: "کاردانی (Associate)" },
+  { value: "کارشناسی", label: "کارشناسی (Bachelor)" },
+  { value: "کارشناسی ارشد", label: "کارشناسی ارشد (Master)" },
+  { value: "دکتری تخصصی", label: "دکتری تخصصی (Ph.D)" },
+  { value: "پسادکتری", label: "پسادکتری (Post-Doctorate)" },
+];
+
+const MARITAL_STATUS_OPTIONS: ComboboxOption[] = [
+  { value: "single", label: "مجرد (Single)" },
+  { value: "married", label: "متأهل (Married)" },
+];
+
+const SUPPLEMENTARY_PLAN_OPTIONS: ComboboxOption[] = [
+  { value: "golden", label: "طلایی (Golden)" },
+  { value: "silver", label: "نقره‌ای (Silver)" },
+  { value: "special", label: "ویژه (Special)" },
+  { value: "none", label: "فاقد بیمه تکمیلی (None)" },
+];
+
+const normalizeRelationship = (val?: string) => {
+  if (!val) return "spouse";
+  if (val === "همسر" || val === "spouse") return "spouse";
+  if (val === "فرزند" || val === "child") return "child";
+  if (val === "والدین" || val === "parent") return "parent";
+  if (val === "سایر" || val === "other") return "other";
+  return val;
+};
+
+const getSkillBadgeStyle = (level: number) => {
+  switch (level) {
+    case 1:
+      return "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25";
+    case 2:
+      return "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25";
+    case 3:
+      return "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/25";
+    case 4:
+      return "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25";
+    case 5:
+      return "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25";
+    default:
+      return "bg-primary/10 text-primary border-primary/20";
+  }
+};
+
+const parseDateString = (dateStr?: string): Date | undefined => {
+  if (!dateStr) return undefined;
+  if (dateStr.includes("/")) {
+    const parts = dateStr.split("/").map((p) => parseInt(p, 10));
+    if (parts.length === 3 && parts[0] > 1300 && parts[0] < 1500) {
+      return jalaliToGregorianDate(parts[0], parts[1], parts[2]);
+    }
+  }
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? undefined : parsed;
+};
+
+const formatDateToString = (date?: Date): string => {
+  if (!date) return "";
+  const j = getJalaliDate(date);
+  return `${j.year}/${String(j.month).padStart(2, "0")}/${String(j.day).padStart(2, "0")}`;
+};
 
 const LocationPickerMap = dynamic(
   () => import("./location-picker-map"),
@@ -22,18 +89,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Loader2, Home, User, Briefcase, Star, Shield, 
-  GraduationCap, Search, KeyRound, Smartphone, Lock, 
-  Activity, Mail, Pencil, Menu, HelpCircle, Grip, Settings,
-  Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, Map, Upload, Trash, Plus,
-  Monitor, Sun, Moon, Palette, Languages, CheckCircle2, Clock, ShieldCheck,
-  Users, PhoneCall, CreditCard, Minus
-} from "lucide-react";
-import { User as UserPh, Sparkle as SparklePh, Heart as HeartPh } from "@phosphor-icons/react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/ui/color-picker";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Loader2, Home, User, Briefcase, Star, Shield, ShieldAlert,
+  GraduationCap, Search, KeyRound, Smartphone, Lock, 
+  Activity, Mail, Pencil, Menu, HelpCircle, Grip, Settings,
+  Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, ArrowRight, Map, Upload, Trash, Plus,
+  Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
+  Heart, Users, PhoneCall, CreditCard, Check
+} from "lucide-react";
+import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SettingsSection } from "@/components/layout/settings-section";
@@ -45,7 +113,6 @@ import { useTheme } from "next-themes";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
 import { PRIMARY_COLORS } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-import { Combobox } from "@/components/ui/combobox";
 import {
   Tooltip,
   TooltipContent,
@@ -171,9 +238,22 @@ const ProjectIcon = () => (
 );
 
 
+const AVATAR_COLOR_PRESETS = [
+  { hex: "#0284c7", label: "آبی آسمانی" },
+  { hex: "#4f46e5", label: "نیلی" },
+  { hex: "#7c3aed", label: "بنفش" },
+  { hex: "#059669", label: "زمردی" },
+  { hex: "#0d9488", label: "سبز کله‌غازی" },
+  { hex: "#d97706", label: "کهربایی" },
+  { hex: "#e11d48", label: "زرشکی" },
+  { hex: "#ea580c", label: "نارنجی" },
+  { hex: "#475569", label: "سربی" },
+  { hex: "#1e293b", label: "زغالی" },
+];
+
 const NAV_ITEMS = [
   { id: "home", icon: Home, labelKey: "nav.home" },
-    { id: "personal", icon: User, labelKey: "nav.personal" },
+  { id: "personal", icon: User, labelKey: "nav.personal" },
   { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
   { id: "skills", icon: Star, labelKey: "nav.skills" },
   { id: "insurance", icon: Shield, labelKey: "nav.insurance" },
@@ -181,12 +261,22 @@ const NAV_ITEMS = [
   { id: "settings", icon: Settings, labelKey: "nav.settings" },
 ];
 
+
+const SUGGESTED_SKILLS = [
+  "React", "Next.js", "TypeScript", "Node.js", "Tailwind CSS",
+  "UI/UX Design", "Project Management", "Python", "DevOps", "Docker",
+  "System Architecture", "GraphQL", "PostgreSQL", "Product Strategy"
+];
+
 export function ProfilePage() {
   const t = useTranslations("Profile");
+  const tAuth = useTranslations("Auth");
   const { profile, isLoading, isError, updateProfile, isUpdating } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
-  const initialTab = searchParams.get('tab') || "personal";
+  const { user } = useAuth();
+  const isOnboarding = Boolean(searchParams.get('onboarding') === 'true' || user?.accountStatus === 'pending_profile' || (user && !user.isProfileCompleted));
+  const initialTab = searchParams.get('tab') || (isOnboarding ? "personal" : "home");
   const initialField = searchParams.get('field') || null;
   const router = useRouter();
   const pathname = usePathname();
@@ -197,12 +287,25 @@ export function ProfilePage() {
   const tColors = useTranslations("Settings.colors");
   const tSettings = useTranslations("Settings");
   const locale = useLocale();
-  const { user } = useAuth();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(initialField);
+  const isPendingUser = Boolean(
+    user && (
+      !user.managerApproved ||
+      !user.hrApproved ||
+      user.accountStatus === 'pending_profile' ||
+      user.accountStatus === 'pending_approval' ||
+      !user.isProfileCompleted
+    )
+  );
+  const [isPendingBannerMinimized, setIsPendingBannerMinimized] = useState(false);
+  const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [otpInput, setOtpInput] = useState("");
+  const [isPhoneVerified, setIsPhoneVerified] = useState(true);
+  const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || "#0284c7"
   );
@@ -212,13 +315,57 @@ export function ProfilePage() {
       setLiveAvatarColor(formData.personal.avatarColor);
     }
   }, [formData?.personal?.avatarColor]);
+
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillLevel, setNewSkillLevel] = useState<number>(3);
+  const [isAddingCustomSkill, setIsAddingCustomSkill] = useState(false);
+
+  const handleAddSkill = (name: string, level: number = 3) => {
+    if (!name.trim()) return;
+    const exists = (formData?.skills || []).some(s => s.name.toLowerCase() === name.trim().toLowerCase());
+    if (exists) {
+      toast.error(t("errors.skillExists"));
+      return;
+    }
+    const newSkill = {
+      id: "skill-" + Date.now(),
+      name: name.trim(),
+      level: Math.min(5, Math.max(1, level))
+    };
+    setFormData(prev => prev ? ({
+      ...prev,
+      skills: [...prev.skills, newSkill]
+    }) : prev);
+    setNewSkillName("");
+    setIsAddingCustomSkill(false);
+    toast.success(t("actions.skillAdded"));
+  };
+
+  const handleCancelSkill = (id?: string) => {
+    setNewSkillName("");
+    setIsAddingCustomSkill(false);
+    if (id && formData) {
+      const skill = formData.skills.find(s => s.id === id);
+      if (skill && !skill.name.trim()) {
+        setFormData({
+          ...formData,
+          skills: formData.skills.filter(s => s.id !== id)
+        });
+      }
+    }
+    setEditingField(null);
+  };
+
+  const handleDeleteSkill = (id: string) => {
+    setFormData(prev => prev ? ({
+      ...prev,
+      skills: prev.skills.filter(s => s.id !== id)
+    }) : prev);
+    setEditingField(null);
+    toast.success(t("actions.skillDeleted"));
+  };
   const [isAvatarAccordionOpen, setIsAvatarAccordionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Bilingual Mobile Phone OTP & Verification State
-  const [phoneOtpStep, setPhoneOtpStep] = useState<"idle" | "sent" | "verified">("idle");
-  const [phoneOtpCode, setPhoneOtpCode] = useState("");
-  const [phoneOtpError, setPhoneOtpError] = useState("");
 
   useEffect(() => {
     if (profile) {
@@ -267,6 +414,24 @@ export function ProfilePage() {
   const handleSave = () => {
     if (formData) {
       updateProfile(formData);
+      if (user) {
+        const fullNameEnglish = `${formData.personal.firstName} ${formData.personal.lastName}`.trim();
+        const fullNamePersian = formData.personal.firstNameFa && formData.personal.lastNameFa
+          ? `${formData.personal.firstNameFa} ${formData.personal.lastNameFa}`.trim()
+          : fullNameEnglish;
+
+        const updated = {
+          ...user,
+          fullName: fullNameEnglish || user.fullName,
+          fullNameFa: fullNamePersian || user.fullNameFa || fullNameEnglish,
+          avatarColor: formData.personal.avatarColor || user.avatarColor,
+          isProfileCompleted: true,
+          accountStatus: "pending_approval" as const,
+          hrApproved: false,
+          managerApproved: false,
+        };
+        localStorage.setItem("esp_auth_user", JSON.stringify(updated));
+      }
     }
   };
 
@@ -300,8 +465,8 @@ export function ProfilePage() {
         <div className="relative z-10 bg-white dark:bg-card rounded-full p-0.5 shadow-sm transition-shadow">
           <Avatar className="size-24 sm:size-32">
             <AvatarFallback 
-              className="text-6xl sm:text-7xl font-bold text-white transition-colors duration-200"
-              style={{ backgroundColor: formData?.personal?.avatarColor || '#0284c7' }}
+              className="text-6xl sm:text-7xl font-bold text-white shadow-inner" 
+              style={{ backgroundColor: formData?.personal?.avatarColor || user?.avatarColor || "#2563eb" }}
             >
               {initial}
             </AvatarFallback>
@@ -395,21 +560,99 @@ export function ProfilePage() {
       switch(editingField) {
         case 'picture':
           title = t("picture.title");
-          description = t("picture.description");
-          content = renderPictureEditorContent();
+          content = (
+            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+              {/* Profile Avatar Current Status Preview */}
+              <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+                <div 
+                  style={{ backgroundColor: liveAvatarColor || formData.personal.avatarColor || "#0284c7" }}
+                  className="size-24 sm:size-28 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-black shadow-md ring-4 ring-background transition-colors duration-200 select-none shrink-0 mb-3"
+                >
+                  {initial}
+                </div>
+                <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t("picture.selectedCodeLabel")}{" "}
+                  <span className="font-mono font-semibold" dir="ltr">{liveAvatarColor || formData.personal.avatarColor || "#0284c7"}</span>
+                </p>
+              </div>
+
+              {/* Shadcn Color Picker with live draft change & Save button */}
+              <ColorPicker
+                value={formData.personal.avatarColor || "#0284c7"}
+                presets={AVATAR_COLOR_PRESETS}
+                showSaveButton={true}
+                onDraftChange={(newHex: string) => {
+                  setLiveAvatarColor(newHex);
+                }}
+                onChange={(savedHex: string) => {
+                  handleChange("personal", "avatarColor", savedHex);
+                  setLiveAvatarColor(savedHex);
+                }}
+                onSave={(savedHex: string) => {
+                  handleChange("personal", "avatarColor", savedHex);
+                  setLiveAvatarColor(savedHex);
+                  handleSave();
+                  setEditingField(null);
+                }}
+                onCancel={() => {
+                  setLiveAvatarColor(formData.personal.avatarColor || "#0284c7");
+                  setEditingField(null);
+                }}
+              />
+            </div>
+          );
           break;
         case 'name':
           title = t("fields.name");
-          description = t("descriptions.nameEdit");
+          description = "نام و نام‌خانوادگی پرسنل به هر دو زبان فارسی و انگلیسی ثبت می‌شود.";
           content = (
             <div className="space-y-6 max-w-lg">
+               {/* Persian Name */}
                <div className="space-y-2">
-                 <Label htmlFor="firstName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.firstName")}</Label>
-                 <Input id="firstName" value={formData.personal.firstName} onChange={(e) => handleChange("personal", "firstName", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" autoFocus />
+                 <Label htmlFor="firstNameFa" className="rtl:text-right block font-medium text-muted-foreground">نام (فارسی)</Label>
+                 <Input 
+                   id="firstNameFa" 
+                   value={formData.personal.firstNameFa || ""} 
+                   onChange={(e) => handleChange("personal", "firstNameFa", e.target.value)} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   placeholder="مثال: سعید"
+                   autoFocus 
+                 />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="lastName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.lastName")}</Label>
-                 <Input id="lastName" value={formData.personal.lastName} onChange={(e) => handleChange("personal", "lastName", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" />
+                 <Label htmlFor="lastNameFa" className="rtl:text-right block font-medium text-muted-foreground">نام خانوادگی (فارسی)</Label>
+                 <Input 
+                   id="lastNameFa" 
+                   value={formData.personal.lastNameFa || ""} 
+                   onChange={(e) => handleChange("personal", "lastNameFa", e.target.value)} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   placeholder="مثال: جلیلی"
+                 />
+               </div>
+
+               {/* English Name */}
+               <div className="space-y-2 pt-2 border-t border-border/40">
+                 <Label htmlFor="firstName" className="rtl:text-right block font-medium text-muted-foreground">First Name (انگلیسی)</Label>
+                 <Input 
+                   id="firstName" 
+                   value={formData.personal.firstName} 
+                   onChange={(e) => handleChange("personal", "firstName", e.target.value)} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   dir="ltr"
+                   placeholder="e.g. Saeed"
+                 />
+               </div>
+               <div className="space-y-2">
+                 <Label htmlFor="lastName" className="rtl:text-right block font-medium text-muted-foreground">Last Name (انگلیسی)</Label>
+                 <Input 
+                   id="lastName" 
+                   value={formData.personal.lastName} 
+                   onChange={(e) => handleChange("personal", "lastName", e.target.value)} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   dir="ltr"
+                   placeholder="e.g. Jalili"
+                 />
                </div>
             </div>
           );
@@ -433,222 +676,175 @@ export function ProfilePage() {
             <div className="space-y-4 max-w-lg">
                <div className="space-y-2">
                  <Label htmlFor="birthDate" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.birthDate")}</Label>
-                 <Input id="birthDate" value={formData.personal.birthDate} onChange={(e) => handleChange("personal", "birthDate", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left" autoFocus />
+                 <DatePicker
+                   value={parseDateString(formData.personal.birthDate)}
+                   onChange={(date) => handleChange("personal", "birthDate", formatDateToString(date))}
+                   isJalali={locale === "fa"}
+                   placeholder={t("fields.selectBirthDate")}
+                   variant="underline"
+                 />
+                 <p className="text-xs text-muted-foreground">
+                   تاریخ تولد شمسی ثبت‌شده در اسناد سجلی.
+                 </p>
                </div>
             </div>
           );
           break;
-        case 'maritalStatus':
-          title = t("fields.maritalStatus");
-          description = t("descriptions.personal");
-          content = (
-            <div className="space-y-4 max-w-lg">
-              <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.maritalStatus")}</Label>
-                <Combobox
-                  options={[
-                    { value: "single", label: t("fields.maritalSingle") },
-                    { value: "married", label: t("fields.maritalMarried") },
-                  ]}
-                  value={formData.personal.maritalStatus || "single"}
-                  onChange={(val) => handleChange("personal", "maritalStatus", val)}
-                  className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
-                />
-              </div>
-            </div>
-          );
-          break;
-        case 'childrenCount':
-          title = t("fields.childrenCount");
-          description = t("descriptions.personal");
-          content = (
-            <div className="space-y-4 max-w-lg">
-              <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.childrenCount")}</Label>
-                <div className="h-12 flex items-center">
-                  <div className="inline-flex items-center rounded-xl border border-border/60 bg-muted/20 p-1 shadow-2xs">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const cur = formData.personal.childrenCount ?? 0;
-                        handleChange("personal", "childrenCount", Math.max(0, cur - 1));
-                      }}
-                      disabled={(formData.personal.childrenCount ?? 0) <= 0}
-                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                      aria-label="Decrease children count"
-                    >
-                      <Minus className="size-4 stroke-[2.5]" />
-                    </Button>
-                    <span className="min-w-12 px-3 text-center font-mono font-bold text-base text-foreground fa-num select-none">
-                      {formData.personal.childrenCount ?? 0}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const cur = formData.personal.childrenCount ?? 0;
-                        handleChange("personal", "childrenCount", Math.min(20, cur + 1));
-                      }}
-                      disabled={(formData.personal.childrenCount ?? 0) >= 20}
-                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                      aria-label="Increase children count"
-                    >
-                      <Plus className="size-4 stroke-[2.5]" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-          break;
-        case 'phone':
+        case 'phone': {
           title = t("fields.phone");
           description = t("descriptions.phoneEdit");
+          const isPhoneValid = /^09\d{9}$/.test(formData.personal.phone?.trim() || "");
+          const isPhoneVerified = Boolean(formData.personal.phoneVerified);
+
           content = (
             <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="phone" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.phone")}</Label>
-                 <Input 
-                   id="phone" 
-                   value={formData.personal.phone} 
-                   onChange={(e) => {
-                     const val = e.target.value.replace(/\D/g, "").slice(0, 11);
-                     handleChange("personal", "phone", val);
-                     if (val !== profile?.personal?.phone) {
-                       handleChange("personal", "phoneVerified", false);
-                       setPhoneOtpStep("idle");
-                     }
-                   }} 
-                   maxLength={11}
-                   placeholder="09120000000"
-                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" 
-                   autoFocus 
-                 />
-                 <p className="text-xs text-muted-foreground">{t("fields.phoneHelpText")}</p>
-               </div>
-
-               {/* Bilingual Verification Status Card */}
-               <div className="p-4 rounded-2xl border border-border/60 bg-muted/20 space-y-3">
                  <div className="flex items-center justify-between">
-                   <span className="text-xs font-semibold text-foreground flex items-center gap-2">
-                     <ShieldCheck className="size-4 text-primary" />
-                     {t("fields.phoneVerificationStatus")}
-                   </span>
-                   {formData.personal.phoneVerified ? (
-                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+                   <Label htmlFor="phone" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.phone")}</Label>
+                   {isPhoneVerified ? (
+                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                        <CheckCircle2 className="size-3.5" />
                        {t("fields.phoneVerified")}
                      </span>
                    ) : (
-                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
                        <Clock className="size-3.5" />
                        {t("fields.phoneUnverified")}
                      </span>
                    )}
                  </div>
-
-                 <p className="text-xs text-muted-foreground leading-relaxed">
-                   {formData.personal.phoneVerified
-                     ? t("fields.phoneVerifiedDesc")
-                     : t("fields.phoneUnverifiedDesc")}
+                 <div className="relative">
+                   <Input 
+                     id="phone" 
+                     value={formData.personal.phone} 
+                     onChange={(e) => {
+                       const val = e.target.value.replace(/\D/g, "");
+                       handleChange("personal", "phone", val);
+                       if (val !== profile?.personal.phone) {
+                         handleChange("personal", "phoneVerified", false);
+                       }
+                     }} 
+                     maxLength={11}
+                     placeholder="09120000000"
+                     className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" 
+                     autoFocus 
+                   />
+                   <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                 </div>
+                 <p className="text-xs text-muted-foreground">
+                   شماره همراه باید با ۰۹ شروع شده و ۱۱ رقم باشد.
                  </p>
+               </div>
 
-                 {/* OTP verification interaction */}
-                 {!formData.personal.phoneVerified && (
-                   <div className="pt-2 border-t border-border/40">
-                     {phoneOtpStep === "idle" ? (
+               {/* Phone Verification Box */}
+               <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
+                 <div className="flex items-center justify-between gap-3">
+                   <div className="space-y-0.5 min-w-0">
+                     <span className="text-xs font-semibold text-foreground block">وضعیت اعتبارسنجی شماره همراه</span>
+                     <p className="text-[11px] text-muted-foreground">
+                       {isPhoneVerified 
+                         ? "شماره تلفن شما تأیید شده است. در صورت تغییر، نیاز به تأیید پیامکی مجدد خواهد بود."
+                         : "جهت فعال‌سازی اعلانات و ورود دو مرحله‌ای، شماره خود را تأیید کنید."}
+                     </p>
+                   </div>
+                   {!isPhoneVerified && !isVerifyingPhone && (
+                     <Button
+                       type="button"
+                       size="sm"
+                       disabled={!isPhoneValid}
+                       onClick={() => {
+                         setIsVerifyingPhone(true);
+                         toast.info(t("fields.otpDemoHint"));
+                       }}
+                       className="rounded-full text-xs font-bold px-3.5 h-8 gap-1.5 shrink-0"
+                     >
+                       <Smartphone className="size-3.5" />
+                       <span>{t("fields.sendOtp")}</span>
+                     </Button>
+                   )}
+                 </div>
+
+                 {/* OTP Input Card */}
+                 {isVerifyingPhone && !isPhoneVerified && (
+                   <div className="pt-3 border-t border-border/40 space-y-3 animate-in fade-in duration-200">
+                     <p className="text-xs text-foreground font-medium">
+                       {t("fields.otpPrompt")}
+                     </p>
+                     <div className="flex items-center gap-2">
+                       <Input
+                         value={otpInput}
+                         onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                         placeholder="12345"
+                         maxLength={5}
+                         dir="ltr"
+                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-background border-primary/30"
+                         autoFocus
+                       />
                        <Button
                          type="button"
-                         variant="outline"
                          size="sm"
                          onClick={() => {
-                           if (!/^09\d{9}$/.test(formData.personal.phone || "")) {
-                             toast.error(t("fields.phoneHelpText"));
-                             return;
+                           if (otpInput.trim() === "12345") {
+                             handleChange("personal", "phoneVerified", true);
+                             setIsVerifyingPhone(false);
+                             setOtpInput("");
+                             toast.success(t("fields.phoneVerifiedSuccess"));
+                           } else {
+                             toast.error(t("fields.otpInvalid"));
                            }
-                           setPhoneOtpStep("sent");
-                           toast.info(t("fields.otpSentToast"));
                          }}
-                         className="text-xs h-9 font-medium text-primary border-primary/30 hover:bg-primary/10 gap-1.5"
+                         disabled={otpInput.length < 5}
+                         className="h-11 px-5 rounded-xl font-bold"
                        >
-                         <Smartphone className="size-3.5" />
-                         <span>{t("fields.verifyPhone")}</span>
+                         {t("fields.confirmOtp")}
                        </Button>
-                     ) : (
-                       <div className="space-y-3 pt-1">
-                         <p className="text-xs text-muted-foreground">{t("fields.otpPrompt")}</p>
-                         <div className="flex items-center gap-2">
-                           <Input
-                             id="phoneOtpCode"
-                             value={phoneOtpCode}
-                             onChange={(e) => {
-                               setPhoneOtpCode(e.target.value.replace(/\D/g, "").slice(0, 5));
-                               setPhoneOtpError("");
-                             }}
-                             maxLength={5}
-                             placeholder="12345"
-                             className={`h-10 w-32 text-center font-mono tracking-widest text-base ${phoneOtpError ? "border-destructive ring-1 ring-destructive/20" : ""}`}
-                             dir="ltr"
-                             autoFocus
-                           />
-                           <Button
-                             type="button"
-                             size="sm"
-                             onClick={() => {
-                               if (phoneOtpCode === "12345" || phoneOtpCode.length === 5) {
-                                 handleChange("personal", "phoneVerified", true);
-                                 setPhoneOtpStep("idle");
-                                 setPhoneOtpCode("");
-                                 setPhoneOtpError("");
-                                 toast.success(t("fields.phoneVerifiedSuccess"));
-                               } else {
-                                 setPhoneOtpError(t("fields.otpInvalid"));
-                               }
-                             }}
-                             className="h-10 text-xs font-semibold px-4"
-                           >
-                             {t("fields.confirmOtp")}
-                           </Button>
-                           <Button
-                             type="button"
-                             variant="ghost"
-                             size="sm"
-                             onClick={() => {
-                               toast.info(t("fields.otpSentToast"));
-                             }}
-                             className="h-10 text-xs text-muted-foreground hover:text-foreground"
-                           >
-                             {t("fields.resendOtp")}
-                           </Button>
-                         </div>
-                         {phoneOtpError ? (
-                           <span className="text-[11px] text-destructive">{phoneOtpError}</span>
-                         ) : (
-                           <span className="text-[11px] text-muted-foreground">{t("fields.otpDemoHint")}</span>
-                         )}
-                       </div>
-                     )}
+                       <Button
+                         type="button"
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => {
+                           setIsVerifyingPhone(false);
+                           setOtpInput("");
+                         }}
+                         className="h-11 text-xs text-muted-foreground"
+                       >
+                         {t("actions.cancel")}
+                       </Button>
+                     </div>
+                     <p className="text-[11px] text-primary font-medium">
+                       💡 {t("fields.otpDemoHint")}
+                     </p>
                    </div>
                  )}
                </div>
             </div>
           );
           break;
-        case 'email':
+        }
+        case 'email': {
           title = t("fields.email");
           description = t("descriptions.personal");
+
           content = (
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
                  <Label htmlFor="email" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.email")}</Label>
-                 <Input id="email" value={formData.personal.email} onChange={(e) => handleChange("personal", "email", e.target.value)} className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" autoFocus />
+                 <div className="relative">
+                   <Input 
+                     id="email" 
+                     value={formData.personal.email} 
+                     onChange={(e) => handleChange("personal", "email", e.target.value)} 
+                     placeholder="user@euroslotpars.com"
+                     className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
+                     autoFocus 
+                   />
+                   <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                 </div>
                </div>
             </div>
           );
           break;
+        }
         case 'address':
           title = t("fields.address");
           description = t("descriptions.addressEdit");
@@ -704,6 +900,91 @@ export function ProfilePage() {
             </div>
           );
           break;
+        case 'maritalStatus':
+          title = t("fields.maritalStatus");
+          content = (
+            <div className="space-y-6 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.maritalStatus")}</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleChange("personal", "maritalStatus", "single")}
+                    className={cn(
+                      "p-4 rounded-2xl border text-sm font-bold flex flex-col items-center justify-center gap-2 transition-all cursor-pointer",
+                      (formData.personal.maritalStatus || "single") === "single"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-muted/30 text-foreground border-border/60 hover:bg-muted/60"
+                    )}
+                  >
+                    <User className="size-5" />
+                    <span>{t("fields.maritalSingle")}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChange("personal", "maritalStatus", "married")}
+                    className={cn(
+                      "p-4 rounded-2xl border text-sm font-bold flex flex-col items-center justify-center gap-2 transition-all cursor-pointer",
+                      formData.personal.maritalStatus === "married"
+                        ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                        : "bg-muted/30 text-foreground border-border/60 hover:bg-muted/60"
+                    )}
+                  >
+                    <Heart className="size-5" />
+                    <span>{t("fields.maritalMarried")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+          break;
+        case 'childrenCount':
+          title = t("fields.childrenCount");
+          content = (
+            <div className="space-y-6 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.childrenCount")}</Label>
+                <div className="flex items-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-12 rounded-xl text-lg font-bold"
+                    onClick={() => {
+                      const current = formData.personal.childrenCount || 0;
+                      if (current > 0) handleChange("personal", "childrenCount", current - 1);
+                    }}
+                  >
+                    -
+                  </Button>
+                  <Input 
+                    type="number"
+                    min={0}
+                    max={20}
+                    value={formData.personal.childrenCount ?? 0}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      handleChange("personal", "childrenCount", isNaN(val) ? 0 : Math.max(0, val));
+                    }}
+                    className="h-12 text-center text-xl font-bold font-mono fa-num max-w-[120px]"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="size-12 rounded-xl text-lg font-bold"
+                    onClick={() => {
+                      const current = formData.personal.childrenCount || 0;
+                      handleChange("personal", "childrenCount", current + 1);
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+          break;
       }
 
       return (
@@ -716,8 +997,6 @@ export function ProfilePage() {
           </div>
           
           <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{description}</p>
-            
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
                {content}
 
@@ -739,24 +1018,6 @@ export function ProfilePage() {
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.personal")}</h2>
         
         <div className="segmented-list mb-10">
-          
-          {/* Profile Picture */}
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('picture')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <Camera className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
-             </div>
-             <div className="flex items-center justify-end w-2/3 gap-4">
-               <Avatar className="size-11 sm:size-12 shadow-none" style={{ backgroundColor: formData.personal.avatarColor || '#0284c7' }}>
-                 <AvatarFallback className="text-lg bg-transparent text-white font-medium">{initial}</AvatarFallback>
-               </Avatar>
-               <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
 
           {/* Name */}
           <div 
@@ -801,7 +1062,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.birthDate")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.personal.birthDate || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.personal.birthDate || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -813,12 +1074,12 @@ export function ProfilePage() {
           >
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
-                <HeartPh className="size-5 text-muted-foreground shrink-0" />
+                <Heart className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.maritalStatus")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">
-                  {formData.personal.maritalStatus === 'married' ? t("fields.maritalMarried") : formData.personal.maritalStatus === 'single' ? t("fields.maritalSingle") : t("notSet")}
+                  {formData.personal.maritalStatus === "married" ? t("fields.maritalMarried") : t("fields.maritalSingle")}
                 </span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
@@ -835,7 +1096,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.childrenCount")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 fa-num font-semibold text-foreground">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 fa-num">
                   {formData.personal.childrenCount ?? 0}
                 </span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -853,7 +1114,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.email")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.personal.email || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 font-sans" dir="ltr">{formData.personal.email || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -868,25 +1129,19 @@ export function ProfilePage() {
                 <Phone className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
              </div>
-             <div className="flex items-center justify-between w-2/3">
-                <div className="flex items-center gap-2 truncate px-2">
-                  <span className="text-sm text-muted-foreground text-start font-mono fa-num ltr">
-                    {formData.personal.phone || t("notSet")}
+             <div className="flex items-center justify-end w-2/3 gap-3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num font-mono">{formData.personal.phone || t("notSet")}</span>
+                {formData.personal.phoneVerified ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                    <CheckCircle2 className="size-3" />
+                    <span className="hidden sm:inline">{t("fields.phoneVerified")}</span>
                   </span>
-                  {formData.personal.phone && (
-                    formData.personal.phoneVerified ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shrink-0">
-                        <CheckCircle2 className="size-3" />
-                        {t("fields.phoneVerified")}
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">
-                        <Clock className="size-3" />
-                        {t("fields.phoneUnverified")}
-                      </span>
-                    )
-                  )}
-                </div>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 shrink-0">
+                    <Clock className="size-3" />
+                    <span className="hidden sm:inline">{t("fields.phoneUnverified")}</span>
+                  </span>
+                )}
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -920,9 +1175,9 @@ export function ProfilePage() {
         case 'department': title = t("fields.department"); break;
         case 'role': title = t("fields.role"); break;
         case 'employeeId': title = t("fields.employeeId"); break;
+        case 'extensionNumber': title = t("fields.extensionNumber"); break;
         case 'joinDate': title = t("fields.joinDate"); break;
         case 'manager': title = t("fields.manager"); break;
-        case 'extensionNumber': title = t("fields.extensionNumber"); break;
         default: return null;
       }
       
@@ -943,19 +1198,27 @@ export function ProfilePage() {
           </div>
           
           <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.organizational")}</p>
-            
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
                 <div className="space-y-2">
                   <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
-                  <Input 
-                    value={value} 
-                    onChange={(e) => handleChange("organizational", fieldKey, e.target.value)}
-                    className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                    autoFocus
-                    disabled={editingField !== 'manager'}
-                  />
+                  {fieldKey === 'joinDate' ? (
+                    <DatePicker
+                      value={parseDateString(formData.organizational.joinDate)}
+                      onChange={(date) => handleChange("organizational", "joinDate", formatDateToString(date))}
+                      isJalali={true}
+                      placeholder={t("fields.selectJoinDate")}
+                      className="w-full h-12"
+                      triggerClassName="w-full h-12 justify-between text-base"
+                    />
+                  ) : (
+                    <Input 
+                      value={value} 
+                      onChange={(e) => handleChange("organizational", fieldKey, e.target.value)}
+                      className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                      autoFocus
+                    />
+                  )}
                 </div>
               </div>
 
@@ -1017,7 +1280,22 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.employeeId")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.organizational.employeeId || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono">{formData.organizational.employeeId || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('extensionNumber')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <PhoneCall className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.extensionNumber")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono fa-num">{formData.organizational.extensionNumber || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -1032,7 +1310,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.joinDate")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.organizational.joinDate || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.organizational.joinDate || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -1051,24 +1329,6 @@ export function ProfilePage() {
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
-
-          {/* Extension Number */}
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('extensionNumber')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <PhoneCall className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.extensionNumber")}</span>
-             </div>
-             <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono fa-num ltr">
-                  {formData.organizational.extensionNumber || t("notSet")}
-                </span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
         </div>
       </div>
     );
@@ -1084,24 +1344,25 @@ export function ProfilePage() {
       const title = t("fields.skillName");
       
       const handleLocalSave = () => {
+        if (!skill.name.trim()) return;
         handleSave();
         setEditingField(null);
+        toast.success(t("actions.skillSaved"));
       };
 
       return (
         <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
+            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelSkill(skillId)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
             </Button>
             <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{title}</h2>
           </div>
           
           <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.skills")}</p>
-            
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
                <div className="space-y-6 max-w-lg">
+                 {/* Skill Name Input */}
                  <div className="space-y-2">
                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
                    <Input 
@@ -1110,33 +1371,107 @@ export function ProfilePage() {
                        const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: e.target.value } : s);
                        setFormData({ ...formData, skills: updated });
                      }} 
+                     placeholder={t("placeholders.skillName")}
                      className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" 
                      autoFocus
                    />
                  </div>
-                 <div className="space-y-4 pt-4">
-                   <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.level")}</Label>
-                   <div className="flex items-center gap-3">
-                     {[1, 2, 3, 4, 5].map((level) => (
+
+                 {/* Suggested Skill Chips */}
+                 <div className="space-y-2 pt-1">
+                   <Label className="text-xs font-semibold text-muted-foreground">{t("skillsSuggestions")}</Label>
+                   <div className="flex flex-wrap gap-1.5">
+                     {SUGGESTED_SKILLS.map((item: string) => (
                        <button
-                         key={level}
+                         key={item}
+                         type="button"
                          onClick={() => {
-                           const updated = formData.skills.map(s => s.id === skillId ? { ...s, level } : s);
+                           const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: item } : s);
                            setFormData({ ...formData, skills: updated });
                          }}
-                         className={`size-8 rounded-full transition-all duration-300 ${level <= skill.level ? 'bg-primary shadow-sm scale-110' : 'bg-muted hover:bg-primary/20'}`}
-                       />
+                         className="text-xs px-3 py-1.5 rounded-full bg-muted/40 hover:bg-primary/10 hover:text-primary border border-border/60 transition-colors cursor-pointer select-none"
+                       >
+                         + {item}
+                       </button>
                      ))}
+                   </div>
+                 </div>
+
+                 {/* Proficiency Level Selector */}
+                 <div className="space-y-3 pt-4">
+                   <div className="flex items-center justify-between">
+                     <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.level")}</Label>
+                     <span 
+                       dir="ltr"
+                       className={cn(
+                         "text-xs font-bold px-2.5 py-0.5 rounded-full border text-left",
+                         getSkillBadgeStyle(skill.level)
+                       )}
+                     >
+                       {t(`skillsLevels.${skill.level}`)}
+                     </span>
+                   </div>
+                   
+                   <div className="grid grid-cols-5 gap-2">
+                     {[1, 2, 3, 4, 5].map((lvl) => {
+                       const isSelected = skill.level === lvl;
+                       return (
+                         <button
+                           key={lvl}
+                           type="button"
+                           onClick={() => {
+                             const updated = formData.skills.map(s => s.id === skillId ? { ...s, level: lvl } : s);
+                             setFormData({ ...formData, skills: updated });
+                           }}
+                           className={cn(
+                             "h-12 rounded-xl flex flex-col items-center justify-center gap-0.5 border transition-all cursor-pointer select-none",
+                             isSelected
+                               ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                               : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted/70 hover:text-foreground"
+                           )}
+                         >
+                           <span className="font-bold text-sm font-mono">{lvl}</span>
+                           <span className="text-[10px] font-medium truncate px-1">
+                             {t(`skillsLevels.${lvl}`).split(" ")[0]}
+                           </span>
+                         </button>
+                       );
+                     })}
                    </div>
                  </div>
                </div>
 
-               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
-                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                 <Button onClick={handleLocalSave} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                   {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   {t("actions.save")}
+               {/* Action Footer */}
+               <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
+                 <Button 
+                   type="button"
+                   variant="ghost" 
+                   onClick={() => handleDeleteSkill(skillId)} 
+                   className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
+                 >
+                   <Trash className="size-4" />
+                   <span>{t("actions.deleteSkill")}</span>
                  </Button>
+
+                 <div className="flex items-center gap-2">
+                   <Button 
+                     type="button"
+                     variant="ghost" 
+                     onClick={() => handleCancelSkill(skillId)} 
+                     className="rounded-full px-6 font-medium text-muted-foreground hover:bg-muted/50"
+                   >
+                     {t("actions.cancel")}
+                   </Button>
+                   <Button 
+                     type="button"
+                     onClick={handleLocalSave} 
+                     disabled={isUpdating || !skill.name.trim()} 
+                     className="rounded-full px-8 font-medium"
+                   >
+                     {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                     {t("actions.save")}
+                   </Button>
+                 </div>
                </div>
             </div>
           </div>
@@ -1153,11 +1488,11 @@ export function ProfilePage() {
             const isFirst = index === 0;
             const isLast = index === formData.skills.length - 1;
             const roundedClass = isFirst && isLast 
-              ? "rounded-[8px]" // Both
+              ? "rounded-[8px]"
               : isFirst 
                 ? "rounded-t-[24px] rounded-b-[8px]" 
                 : isLast 
-                  ? "rounded-[8px]" // wait, button is the last item
+                  ? "rounded-[8px]"
                   : "rounded-[8px]";
 
             return (
@@ -1170,19 +1505,42 @@ export function ProfilePage() {
                 onClick={() => setEditingField('skill_' + skill.id)}
               >
                  <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-                 <div className="flex items-center gap-4 w-1/3">
+                 <div className="flex items-center gap-4 w-1/3 min-w-0">
                     <Star className="size-5 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-foreground truncate">{skill.name}</span>
+                    <span className="text-sm font-medium text-foreground truncate">{skill.name || t("notSet")}</span>
                  </div>
-                 <div className="flex items-center justify-end w-2/3 gap-4">
-                    <div className="flex items-center gap-1.5 px-2">
+                 <div className="flex items-center justify-end w-2/3 gap-3">
+                    <span 
+                      dir="ltr"
+                      className={cn(
+                        "text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-left shrink-0 inline-flex items-center justify-center min-w-[70px]",
+                        getSkillBadgeStyle(skill.level)
+                      )}
+                    >
+                      {t(`skillsLevels.${skill.level}`).split(" ")[0]}
+                    </span>
+                    <div className="flex items-center gap-1.5 px-2" dir="ltr">
                       {[1, 2, 3, 4, 5].map((level) => (
                         <div 
                           key={level} 
-                          className={`size-2 sm:size-2.5 rounded-full ${level <= skill.level ? 'bg-primary' : 'bg-muted'}`}
+                          className={cn(
+                            "size-2 sm:size-2.5 rounded-full transition-colors",
+                            level <= skill.level ? 'bg-primary' : 'bg-muted'
+                          )}
                         />
                       ))}
                     </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteSkill(skill.id);
+                      }}
+                      className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
+                      title={t("actions.deleteSkill")}
+                    >
+                      <Trash className="size-4" />
+                    </button>
                     <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
                  </div>
               </div>
@@ -1190,7 +1548,13 @@ export function ProfilePage() {
           })}
           
           <div 
-            className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px]">
+            onClick={() => {
+              const newId = `skill_${Date.now()}`;
+              const newSkill = { id: newId.replace('skill_', ''), name: '', level: 3 };
+              setFormData(prev => prev ? ({ ...prev, skills: [...prev.skills, newSkill] }) : prev);
+              setEditingField(newId);
+            }}
+            className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] rounded-b-[24px] border-t border-border/40 hover:bg-muted/20 transition-colors">
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
 
              <div className="flex items-center gap-2 text-primary font-medium">
@@ -1204,9 +1568,15 @@ export function ProfilePage() {
   };
 
   const renderInsuranceView = () => {
+    const relationshipOptions: ComboboxOption[] = [
+      { value: "spouse", label: t("fields.spouse") },
+      { value: "child", label: t("fields.child") },
+      { value: "parent", label: t("fields.parent") },
+      { value: "other", label: t("fields.other") },
+    ];
+
     if (editingField) {
       let title = "";
-      let content: React.ReactNode = null;
       let fieldKey = editingField as keyof UserProfile["insurance"];
       
       switch (editingField) {
@@ -1214,82 +1584,63 @@ export function ProfilePage() {
         case 'type': title = t("fields.type"); break;
         case 'insuranceCode': title = t("fields.insuranceCode"); break;
         case 'validUntil': title = t("fields.validUntil"); break;
+        case 'supplementaryPlan': title = t("fields.supplementaryPlan"); break;
         case 'shebaNumber': title = t("fields.shebaNumber"); break;
-        case 'supplementaryPlan':
-          title = t("fields.supplementaryPlan");
-          content = (
-            <div className="space-y-4 max-w-lg">
-              <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
-                <Combobox
-                  options={[
-                    { value: "golden", label: t("fields.planGolden") },
-                    { value: "silver", label: t("fields.planSilver") },
-                    { value: "special", label: t("fields.planSpecial") },
-                    { value: "none", label: t("fields.planNone") },
-                  ]}
-                  value={formData.insurance.supplementaryPlan || "none"}
-                  onChange={(val) => handleChange("insurance", "supplementaryPlan", val)}
-                  className="w-full h-12 bg-background border-border/50 rounded-xl rtl:text-right"
-                />
-              </div>
-            </div>
-          );
-          break;
         case 'dependentsCount':
-          title = t("fields.dependentsCount");
-          content = (
-            <div className="space-y-4 max-w-lg">
-              <div className="space-y-2">
-                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.dependentsCount")}</Label>
-                <div className="h-12 flex items-center">
-                  <div className="inline-flex items-center rounded-xl border border-border/60 bg-muted/20 p-1 shadow-2xs">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const cur = formData.insurance.dependentsCount ?? 0;
-                        handleChange("insurance", "dependentsCount", Math.max(0, cur - 1));
-                      }}
-                      disabled={(formData.insurance.dependentsCount ?? 0) <= 0}
-                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                      aria-label="Decrease dependents count"
-                    >
-                      <Minus className="size-4 stroke-[2.5]" />
-                    </Button>
-                    <span className="min-w-12 px-3 text-center font-mono font-bold text-base text-foreground fa-num select-none">
-                      {formData.insurance.dependentsCount ?? 0}
-                    </span>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        const cur = formData.insurance.dependentsCount ?? 0;
-                        handleChange("insurance", "dependentsCount", Math.min(20, cur + 1));
-                      }}
-                      disabled={(formData.insurance.dependentsCount ?? 0) >= 20}
-                      className="size-9 rounded-lg text-foreground hover:bg-background hover:shadow-xs active:bg-muted disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
-                      aria-label="Increase dependents count"
-                    >
-                      <Plus className="size-4 stroke-[2.5]" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-          break;
+        case 'dependents': title = t("fields.dependents"); break;
         default: return null;
       }
       
-      const rawValue = formData.insurance[fieldKey];
-      const value = typeof rawValue === "string" || typeof rawValue === "number" ? rawValue : "";
+      const value = (formData.insurance[fieldKey] as string) || "";
       
       const handleLocalSave = () => {
         handleSave();
         setEditingField(null);
+      };
+
+      const handleAddDependent = () => {
+        const newDep: DependentInfo = {
+          id: `dep_${Date.now()}`,
+          fullName: "",
+          relationship: "spouse",
+          nationalId: "",
+          birthDate: "",
+        };
+        const updated = [...(formData.insurance.dependents || []), newDep];
+        setFormData({
+          ...formData,
+          insurance: {
+            ...formData.insurance,
+            dependents: updated,
+            dependentsCount: updated.length,
+          },
+        });
+      };
+
+      const handleUpdateDependent = (depId: string, field: keyof DependentInfo, val: string) => {
+        const updated = (formData.insurance.dependents || []).map((dep) =>
+          dep.id === depId ? { ...dep, [field]: val } : dep
+        );
+        setFormData({
+          ...formData,
+          insurance: {
+            ...formData.insurance,
+            dependents: updated,
+            dependentsCount: updated.length,
+          },
+        });
+      };
+
+      const handleDeleteDependent = (depId: string) => {
+        const updated = (formData.insurance.dependents || []).filter((dep) => dep.id !== depId);
+        setFormData({
+          ...formData,
+          insurance: {
+            ...formData.insurance,
+            dependents: updated,
+            dependentsCount: updated.length,
+          },
+        });
       };
 
       return (
@@ -1302,19 +1653,200 @@ export function ProfilePage() {
           </div>
           
           <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.insurance")}</p>
-            
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              {content || (
+              {fieldKey === 'supplementaryPlan' ? (
+                <div className="space-y-6 max-w-xl">
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      {[
+                        { id: "golden", label: t("fields.planGolden"), desc: t("fields.planGoldenDesc"), color: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
+                        { id: "silver", label: t("fields.planSilver"), desc: t("fields.planSilverDesc"), color: "border-slate-400/40 bg-slate-400/10 text-slate-700 dark:text-slate-300" },
+                        { id: "special", label: t("fields.planSpecial"), desc: t("fields.planSpecialDesc"), color: "border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-400" },
+                        { id: "none", label: t("fields.planNone"), desc: t("fields.planNoneDesc"), color: "border-muted bg-muted/20 text-muted-foreground" },
+                      ].map((plan) => {
+                        const isSelected = (formData.insurance.supplementaryPlan || "none") === plan.id;
+                        return (
+                          <button
+                            key={plan.id}
+                            type="button"
+                            onClick={() => handleChange("insurance", "supplementaryPlan", plan.id)}
+                            className={cn(
+                              "p-4 rounded-2xl border text-start flex flex-col gap-1 transition-all cursor-pointer relative",
+                              isSelected
+                                ? `${plan.color} ring-2 ring-primary shadow-xs`
+                                : "bg-muted/20 border-border/60 hover:bg-muted/50 text-foreground"
+                            )}
+                          >
+                            <div className="flex items-center justify-between w-full">
+                              <span className="font-bold text-sm">{plan.label}</span>
+                              {isSelected && <Check className="size-4 text-primary" />}
+                            </div>
+                            <span className="text-[11px] text-muted-foreground leading-tight">{plan.desc}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : fieldKey === 'shebaNumber' ? (
+                <div className="space-y-6 max-w-lg">
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.shebaNumber")}</Label>
+                    <div className="relative">
+                      <Input
+                        value={formData.insurance.shebaNumber || ""}
+                        onChange={(e) => {
+                          let val = e.target.value.toUpperCase();
+                          if (!val.startsWith("IR") && val.length > 0) {
+                            val = "IR" + val.replace(/[^0-9]/g, "");
+                          }
+                          handleChange("insurance", "shebaNumber", val);
+                        }}
+                        placeholder="IR000000000000000000000000"
+                        dir="ltr"
+                        maxLength={26}
+                        className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none font-mono text-left ltr"
+                        autoFocus
+                      />
+                      <CreditCard className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+              ) : (fieldKey === 'dependents' || fieldKey === 'dependentsCount') ? (
+                <div className="space-y-6 max-w-2xl">
+                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                    <div className="flex items-center gap-2.5">
+                      <h4 className="text-base font-bold text-foreground">{t("fields.dependents")}</h4>
+                      <Badge variant="outline" className="fa-num text-xs font-semibold border-primary/30 text-primary">
+                        {(formData.insurance.dependents || []).length} {t("fields.persons")}
+                      </Badge>
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddDependent}
+                      className="rounded-full text-xs font-bold gap-1 px-3.5"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>{t("fields.addDependent")}</span>
+                    </Button>
+                  </div>
+
+                  {(formData.insurance.dependents || []).length === 0 ? (
+                    <div className="py-8 text-center text-muted-foreground text-xs">
+                      {t("fields.noDependents")}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {(formData.insurance.dependents || []).map((dep, idx) => (
+                        <div key={dep.id} className="p-4 rounded-2xl bg-muted/20 border border-border/50 space-y-3 relative">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-primary fa-num">
+                              {t("fields.dependentPerson")} #{idx + 1}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteDependent(dep.id)}
+                              className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
+                              title={t("fields.deleteDependent")}
+                            >
+                              <Trash className="size-3.5" />
+                            </Button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{t("fields.dependentFullName")}</Label>
+                              <Input
+                                value={dep.fullName}
+                                onChange={(e) => handleUpdateDependent(dep.id, "fullName", e.target.value)}
+                                placeholder={t("fields.fullNamePlaceholder")}
+                                className="h-10 text-sm"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{t("fields.relationship")}</Label>
+                              <Combobox
+                                options={relationshipOptions}
+                                value={normalizeRelationship(dep.relationship)}
+                                onChange={(val) => handleUpdateDependent(dep.id, "relationship", val)}
+                                placeholder={t("fields.selectRelationship")}
+                                className="w-full h-10 rtl:text-right"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{t("fields.nationalId")}</Label>
+                              <Input
+                                value={dep.nationalId}
+                                maxLength={10}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                                  handleUpdateDependent(dep.id, "nationalId", val);
+                                }}
+                                placeholder={t("fields.nationalIdPlaceholder")}
+                                dir="ltr"
+                                className="h-10 font-mono text-sm"
+                              />
+                            </div>
+
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">{t("fields.birthDate")}</Label>
+                              <DatePicker
+                                value={parseDateString(dep.birthDate)}
+                                onChange={(date) => handleUpdateDependent(dep.id, "birthDate", formatDateToString(date))}
+                                isJalali={locale === 'fa'}
+                                placeholder={t("fields.selectBirthDate")}
+                                className="w-full h-10"
+                                triggerClassName="w-full h-10 justify-between text-sm"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
                 <div className="space-y-6 max-w-lg">
                   <div className="space-y-2">
                     <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
-                    <Input 
-                      value={value} 
-                      onChange={(e) => handleChange("insurance", fieldKey, e.target.value)}
-                      className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                      autoFocus
-                    />
+                    {fieldKey === 'validUntil' ? (
+                      <DatePicker
+                        value={parseDateString(formData.insurance.validUntil)}
+                        onChange={(date) => handleChange("insurance", "validUntil", formatDateToString(date))}
+                        isJalali={locale === 'fa'}
+                        placeholder={t("fields.selectValidUntil")}
+                        className="w-full h-12"
+                        triggerClassName="w-full h-12 justify-between text-base"
+                      />
+                    ) : fieldKey === 'insuranceCode' ? (
+                      <div className="relative">
+                        <Input 
+                          value={value} 
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, "");
+                            handleChange("insurance", "insuranceCode", val);
+                          }}
+                          placeholder="12345678"
+                          dir="ltr"
+                          className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none font-mono text-left ltr"
+                          autoFocus
+                        />
+                        <KeyRound className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                      </div>
+                    ) : (
+                      <Input 
+                        value={value} 
+                        onChange={(e) => handleChange("insurance", fieldKey, e.target.value)}
+                        className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                        autoFocus
+                      />
+                    )}
                   </div>
                 </div>
               )}
@@ -1331,6 +1863,31 @@ export function ProfilePage() {
         </div>
       );
     }
+
+    const supplementaryPlan = formData.insurance.supplementaryPlan;
+    const planBadge = (
+      supplementaryPlan === "golden" ? (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+          <Star className="size-3 fill-current" />
+          {t("fields.planGolden")}
+        </span>
+      ) : supplementaryPlan === "silver" ? (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-400/15 text-slate-700 dark:text-slate-300 border border-slate-400/30">
+          <Shield className="size-3" />
+          {t("fields.planSilver")}
+        </span>
+      ) : supplementaryPlan === "special" ? (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/15 text-purple-700 dark:text-purple-400 border border-purple-500/30">
+          <ShieldAlert className="size-3" />
+          {t("fields.planSpecial")}
+        </span>
+      ) : (
+        <span className="text-xs text-muted-foreground">{t("fields.planNone")}</span>
+      )
+    );
+
+    const dependentsList = formData.insurance.dependents || [];
+    const dependentsCountValue = dependentsList.length > 0 ? dependentsList.length : (formData.insurance.dependentsCount ?? 0);
 
     return (
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
@@ -1377,7 +1934,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.insuranceCode")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.insurance.insuranceCode || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono">{formData.insurance.insuranceCode || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -1392,7 +1949,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.validUntil")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.insurance.validUntil || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.insurance.validUntil || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -1404,39 +1961,52 @@ export function ProfilePage() {
           >
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
-                <ShieldCheck className="size-5 text-muted-foreground shrink-0" />
+                <ShieldAlert className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.supplementaryPlan")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2">
-                  {formData.insurance.supplementaryPlan === 'golden' ? t("fields.planGolden")
-                    : formData.insurance.supplementaryPlan === 'silver' ? t("fields.planSilver")
-                    : formData.insurance.supplementaryPlan === 'special' ? t("fields.planSpecial")
-                    : t("fields.planNone")}
-                </span>
+                <div className="px-2">{planBadge}</div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
 
-          {/* Dependents Count */}
+          {/* Unified Dependents Information & Count */}
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('dependentsCount')}
+            onClick={() => setEditingField('dependents')}
           >
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Users className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.dependentsCount")}</span>
+                <span className="text-sm font-medium text-foreground">{t("fields.dependents")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 fa-num font-semibold text-foreground">
-                  {formData.insurance.dependentsCount ?? 0}
-                </span>
+                <div className="text-sm text-muted-foreground text-start truncate px-2 flex items-center gap-2 min-w-0">
+                  {dependentsList.length > 0 ? (
+                    <>
+                      <Badge variant="outline" className="fa-num text-xs font-semibold shrink-0 border-primary/30 text-primary">
+                        {dependentsList.length} {t("fields.persons")}
+                      </Badge>
+                      <span className="truncate">
+                        {dependentsList
+                          .map(d => `${d.fullName || t("fields.dependentPerson")} (${t(`fields.${normalizeRelationship(d.relationship)}`)})`)
+                          .filter(Boolean)
+                          .join(locale === 'fa' ? "، " : ", ")}
+                      </span>
+                    </>
+                  ) : dependentsCountValue > 0 ? (
+                    <span className="fa-num font-medium">
+                      {dependentsCountValue} {t("fields.persons")}
+                    </span>
+                  ) : (
+                    <span>{t("notSet")}</span>
+                  )}
+                </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
 
-          {/* Sheba / IBAN */}
+          {/* Sheba Number */}
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('shebaNumber')}
@@ -1447,7 +2017,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.shebaNumber")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono fa-num ltr">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono" dir="ltr">
                   {formData.insurance.shebaNumber || t("notSet")}
                 </span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -1459,25 +2029,326 @@ export function ProfilePage() {
   };
 
   const renderEducationView = () => {
-    if (editingField) {
-      let title = "";
-      let fieldKey = editingField as keyof UserProfile["education"];
-      
-      switch (editingField) {
-        case 'degree': title = t("fields.degree"); break;
-        case 'fieldOfStudy': title = t("fields.fieldOfStudy"); break;
-        case 'university': title = t("fields.university"); break;
-        case 'graduationYear': title = t("fields.graduationYear"); break;
-        default: return null;
-      }
-      
-      const rawValue = formData.education[fieldKey];
-      const value = typeof rawValue === "string" || typeof rawValue === "number" ? rawValue : "";
-      
-      const handleLocalSave = () => {
-        handleSave();
-        setEditingField(null);
+    const currentRecords: EducationRecord[] = (formData.education.records && formData.education.records.length > 0)
+      ? formData.education.records
+      : formData.education.degree
+        ? [{
+            id: "edu_primary",
+            degree: formData.education.degree,
+            fieldOfStudy: formData.education.fieldOfStudy,
+            university: formData.education.university,
+            graduationYear: formData.education.graduationYear,
+          }]
+        : [];
+
+    const handleDeleteEducationRecord = (recordId: string) => {
+      const updatedRecords = currentRecords.filter(r => r.id !== recordId);
+      const primaryRecord = updatedRecords[updatedRecords.length - 1] || {
+        degree: "",
+        fieldOfStudy: "",
+        university: "",
+        graduationYear: "",
       };
+
+      const updatedProfile: UserProfile = {
+        ...formData,
+        education: {
+          degree: primaryRecord.degree,
+          fieldOfStudy: primaryRecord.fieldOfStudy,
+          university: primaryRecord.university,
+          graduationYear: primaryRecord.graduationYear,
+          records: updatedRecords,
+        },
+      };
+
+      setFormData(updatedProfile);
+      updateProfile(updatedProfile);
+      setActiveEducationRecord(null);
+      setEditingField(null);
+      toast.success(t("fields.deleteDegree"));
+    };
+
+    const isEditingEducation = Boolean(
+      editingField === 'new_edu' ||
+      editingField?.startsWith('edu_') ||
+      ['degree', 'fieldOfStudy', 'university', 'graduationYear'].includes(editingField || '')
+    );
+
+    if (isEditingEducation) {
+      const record: EducationRecord = activeEducationRecord || currentRecords.find(r => r.id === editingField) || {
+        id: editingField?.startsWith('edu_') ? editingField : `edu_${Date.now()}`,
+        degree: formData.education.degree || "کارشناسی",
+        fieldOfStudy: formData.education.fieldOfStudy || "",
+        university: formData.education.university || "",
+        graduationYear: formData.education.graduationYear || "",
+      };
+
+      const currentRecordState = activeEducationRecord || record;
+      const isExistingRecord = currentRecords.some(r => r.id === currentRecordState.id);
+
+      const handleSaveEducationRecord = () => {
+        if (!currentRecordState.degree?.trim()) return;
+
+        const existingIdx = currentRecords.findIndex(r => r.id === currentRecordState.id);
+        let updatedRecords: EducationRecord[];
+        if (existingIdx >= 0) {
+          updatedRecords = [...currentRecords];
+          updatedRecords[existingIdx] = currentRecordState;
+        } else {
+          updatedRecords = [...currentRecords, currentRecordState];
+        }
+
+        const primaryRecord = updatedRecords[updatedRecords.length - 1] || currentRecordState;
+
+        const updatedProfile: UserProfile = {
+          ...formData,
+          education: {
+            degree: primaryRecord.degree,
+            fieldOfStudy: primaryRecord.fieldOfStudy,
+            university: primaryRecord.university,
+            graduationYear: primaryRecord.graduationYear,
+            records: updatedRecords,
+          },
+        };
+
+        setFormData(updatedProfile);
+        updateProfile(updatedProfile);
+        setActiveEducationRecord(null);
+        setEditingField(null);
+        toast.success(t("actions.save"));
+      };
+
+      return (
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-4 mb-8">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full hover:bg-muted/60"
+              onClick={() => {
+                setActiveEducationRecord(null);
+                setEditingField(null);
+              }}
+            >
+               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+            </Button>
+            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">
+              {isExistingRecord ? t("fields.degree") : t("fields.addDegree")}
+            </h2>
+          </div>
+          
+          <div className="ps-0 sm:ps-14">
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+              <div className="space-y-6 max-w-lg">
+                
+                {/* 1. مقطع تحصیلی Combobox */}
+                <div className="space-y-2">
+                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    {t("fields.degree")}
+                  </Label>
+                  <Combobox
+                    options={DEGREE_OPTIONS}
+                    value={currentRecordState.degree}
+                    onChange={(val) => setActiveEducationRecord({ ...currentRecordState, degree: val })}
+                    placeholder={t("fields.selectDegree")}
+                    className="w-full h-12"
+                  />
+                </div>
+
+                {/* 2. دانشگاه یا موسسه آموزشی */}
+                <div className="space-y-2">
+                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    {t("fields.university")}
+                  </Label>
+                  <Input 
+                    value={currentRecordState.university} 
+                    onChange={(e) => setActiveEducationRecord({ ...currentRecordState, university: e.target.value })}
+                    placeholder="مثال: دانشگاه صنعتی شریف / دانشگاه تهران"
+                    className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                  />
+                </div>
+
+                {/* 3. رشته تحصیلی */}
+                <div className="space-y-2">
+                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    {t("fields.fieldOfStudy")}
+                  </Label>
+                  <Input 
+                    value={currentRecordState.fieldOfStudy} 
+                    onChange={(e) => setActiveEducationRecord({ ...currentRecordState, fieldOfStudy: e.target.value })}
+                    placeholder="مثال: مهندسی متالورژی و مواد / مهندسی کامپیوتر"
+                    className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none"
+                  />
+                </div>
+
+                {/* 4. تاریخ فارغ‌التحصیلی DatePicker */}
+                <div className="space-y-2">
+                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    {t("fields.graduationDate")}
+                  </Label>
+                  <DatePicker
+                    value={parseDateString(currentRecordState.graduationYear)}
+                    onChange={(date) => setActiveEducationRecord({ ...currentRecordState, graduationYear: formatDateToString(date) })}
+                    isJalali={true}
+                    placeholder={t("fields.selectGraduationDate")}
+                    className="w-full h-12"
+                    triggerClassName="w-full h-12 justify-between text-base"
+                  />
+                </div>
+
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
+                {isExistingRecord && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleDeleteEducationRecord(currentRecordState.id || '')}
+                    className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
+                  >
+                    <Trash className="size-4" />
+                    <span>{t("fields.deleteDegree")}</span>
+                  </Button>
+                )}
+                <div className="flex items-center justify-end gap-3 ms-auto">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setActiveEducationRecord(null);
+                      setEditingField(null);
+                    }}
+                    className="rounded-full px-6 font-medium text-primary hover:bg-primary/5"
+                  >
+                    {t("actions.cancel")}
+                  </Button>
+                  <Button
+                    onClick={handleSaveEducationRecord}
+                    disabled={isUpdating || !currentRecordState.degree?.trim()}
+                    className="rounded-full px-8 font-medium"
+                  >
+                    {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {t("actions.save")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
+        <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.education")}</h2>
+
+        {/* Segmented list */}
+        <div className="segmented-list mb-10">
+          {currentRecords.map((rec) => (
+            <div
+              key={rec.id}
+              onClick={() => {
+                setActiveEducationRecord(rec);
+                setEditingField(rec.id || "edu_primary");
+              }}
+              className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            >
+              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+              
+              {/* Left / Title info */}
+              <div className="flex items-center gap-4 w-1/3 min-w-0">
+                <GraduationCap className="size-5 text-muted-foreground shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium text-foreground truncate">
+                    {rec.degree || t("fields.degree")}
+                  </span>
+                  {rec.fieldOfStudy && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      {rec.fieldOfStudy}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Right / University & Date & Actions */}
+              <div className="flex items-center justify-end w-2/3 gap-3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {rec.university || t("notSet")}
+                </span>
+
+                {rec.graduationYear && (
+                  <span className="text-xs text-muted-foreground font-mono fa-num shrink-0 px-2 py-0.5 rounded bg-muted/40 hidden sm:inline-block">
+                    {rec.graduationYear}
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteEducationRecord(rec.id || "");
+                  }}
+                  className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
+                  title={t("fields.deleteDegree")}
+                >
+                  <Trash className="size-4" />
+                </button>
+
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </div>
+          ))}
+
+          {currentRecords.length === 0 && (
+            <div className="segmented-item no-hover-bg shadow-none flex flex-col items-center justify-center py-8 px-4 text-center">
+              <GraduationCap className="size-8 text-muted-foreground/60 mb-2" />
+              <span className="text-sm text-muted-foreground">{t("fields.noEducationRecords")}</span>
+            </div>
+          )}
+
+          {/* Add Degree segmented-item */}
+          <div
+            onClick={() => {
+              const newRecord: EducationRecord = {
+                id: `edu_${Date.now()}`,
+                degree: "کارشناسی",
+                fieldOfStudy: "",
+                university: "",
+                graduationYear: "",
+              };
+              setActiveEducationRecord(newRecord);
+              setEditingField("new_edu");
+            }}
+            className="relative outline-none segmented-item no-hover-bg shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] border-t border-border/40 hover:bg-muted/20 transition-colors"
+          >
+            <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+            <div className="flex items-center gap-2 text-primary font-medium">
+              <Plus className="size-5 shrink-0" />
+              <span>{t("fields.addDegree")}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSettingsView = () => {
+    const THEME_OPTIONS = [
+      { value: "system", labelKey: "system", icon: Monitor },
+      { value: "light", labelKey: "light", icon: Sun },
+      { value: "dark", labelKey: "dark", icon: Moon },
+    ] as const;
+
+    const currentLocaleLabel = locale === 'fa' ? 'فارسی (Persian)' : 'English (US)';
+    const currentThemeLabel = theme === 'system' ? tSettings('system') : theme === 'dark' ? tSettings('dark') : tSettings('light');
+    const currentColorLabel = PRIMARY_COLORS.find(c => c.id === colorId)?.labelKey || '';
+
+    if (editingField === 'primaryColor' || editingField === 'picture') {
+      let title = "";
+      switch (editingField) {
+        case 'primaryColor': title = tSettings("color"); break;
+        case 'picture': title = t("picture.title"); break;
+      }
 
       return (
         <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
@@ -1489,199 +2360,65 @@ export function ProfilePage() {
           </div>
           
           <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.education")}</p>
-            
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              <div className="space-y-6 max-w-lg">
-                <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
-                  <Input 
-                    value={value} 
-                    onChange={(e) => handleChange("education", fieldKey, e.target.value)}
-                    className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none"
-                    autoFocus
-                  />
+              {editingField === 'picture' && (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+                    {/* Profile Avatar Current Status Preview */}
+                    <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+                      <div 
+                        style={{ backgroundColor: formData.personal.avatarColor || user?.avatarColor || "#0284c7" }}
+                        className="size-24 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-md ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-3"
+                      >
+                        {initial}
+                      </div>
+                      <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t("picture.selectedCodeLabel")}{" "}
+                        <span className="font-mono font-semibold" dir="ltr">{formData.personal.avatarColor || user?.avatarColor || "#0284c7"}</span>
+                      </p>
+                    </div>
+
+                    {/* Shadcn Color Picker with local draft state & Save button */}
+                    <ColorPicker
+                      value={formData.personal.avatarColor || user?.avatarColor || "#0284c7"}
+                      presets={AVATAR_COLOR_PRESETS}
+                      showSaveButton={true}
+                      onDraftChange={(newHex: string) => {
+                        setLiveAvatarColor(newHex);
+                      }}
+                      onChange={(savedHex: string) => {
+                        handleChange("personal", "avatarColor", savedHex);
+                        setLiveAvatarColor(savedHex);
+                      }}
+                      onSave={(savedHex: string) => {
+                        handleChange("personal", "avatarColor", savedHex);
+                        setLiveAvatarColor(savedHex);
+                        handleSave();
+                        setEditingField(null);
+                      }}
+                      onCancel={() => {
+                        setLiveAvatarColor(formData.personal.avatarColor || "#0284c7");
+                        setEditingField(null);
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
+                    <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
+                    <Button onClick={() => { handleSave(); setEditingField(null); }} disabled={isUpdating} className="rounded-full px-8 font-medium">
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t("actions.save")}
+                    </Button>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
-                <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                <Button onClick={handleLocalSave} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                  {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {t("actions.save")}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
-        <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.education")}</h2>
-        
-        <div className="segmented-list mb-10">
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('degree')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <GraduationCap className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.degree")}</span>
-             </div>
-             <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.education.degree || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
-
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('fieldOfStudy')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <Activity className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.fieldOfStudy")}</span>
-             </div>
-             <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.education.fieldOfStudy || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
-
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('university')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <MapPin className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.university")}</span>
-             </div>
-             <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.education.university || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
-
-          <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('graduationYear')}
-          >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-             <div className="flex items-center gap-4 w-1/3">
-                <Calendar className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.graduationYear")}</span>
-             </div>
-             <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr">{formData.education.graduationYear || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderPictureEditorContent = () => {
-    const currentHex = liveAvatarColor || formData?.personal?.avatarColor || "#0284c7";
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
-        {/* Profile Avatar Current Status Preview */}
-        <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
-          <div 
-            style={{ backgroundColor: currentHex }}
-            className="size-24 sm:size-28 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-black shadow-md ring-4 ring-background transition-colors duration-200 select-none shrink-0 mb-3"
-          >
-            {initial}
-          </div>
-          <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("picture.selectedCodeLabel")}{" "}
-            <span className="font-mono font-semibold" dir="ltr">{currentHex}</span>
-          </p>
-        </div>
-
-        {/* Shadcn Color Picker with live draft change & Save button */}
-        <ColorPicker
-          value={formData?.personal?.avatarColor || "#0284c7"}
-          showSaveButton={true}
-          onDraftChange={(newHex) => {
-            setLiveAvatarColor(newHex);
-          }}
-          onChange={(savedHex) => {
-            handleChange("personal", "avatarColor", savedHex);
-            setLiveAvatarColor(savedHex);
-          }}
-          onSave={(savedHex) => {
-            handleChange("personal", "avatarColor", savedHex);
-            setLiveAvatarColor(savedHex);
-            handleSave();
-            setEditingField(null);
-          }}
-          onCancel={() => {
-            setLiveAvatarColor(formData?.personal?.avatarColor || "#0284c7");
-            setEditingField(null);
-          }}
-        />
-      </div>
-    );
-  };
-
-  const renderSettingsView = () => {
-    const currentThemeLabel = theme === 'system' ? tSettings('system') : theme === 'dark' ? tSettings('dark') : tSettings('light');
-    const currentColorLabel = PRIMARY_COLORS.find(c => c.id === colorId)?.labelKey || '';
-
-    if (editingField === 'picture') {
-      return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
-               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
-            </Button>
-            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{t("fields.profilePicture")}</h2>
-          </div>
-          
-          <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.chooseAvatar")}</p>
-            
-            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-               {renderPictureEditorContent()}
-
-               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
-                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                 <Button onClick={() => { handleSave(); setEditingField(null); }} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                   {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   {t("actions.save")}
-                 </Button>
-               </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (editingField === 'primaryColor') {
-      return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
-               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
-            </Button>
-            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{tSettings("color")}</h2>
-          </div>
-          
-          <div className="ps-0 sm:ps-14">
-            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{tSettings("appearanceDesc")}</p>
-            
-            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              <div className="space-y-6 max-w-lg">
+              {editingField === 'primaryColor' && isAdmin && (
                 <div className="flex flex-col gap-3">
                   <div className="flex w-full h-24 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
                     {PRIMARY_COLORS.map((preset) => {
+                      const active = colorId === preset.id;
                       return (
                         <motion.button
                           key={preset.id}
@@ -1719,7 +2456,7 @@ export function ProfilePage() {
                     })}
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -1730,10 +2467,10 @@ export function ProfilePage() {
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("nav.settings")}</h2>
         
-        <div className="segmented-list mb-10 space-y-2">
-          {/* Profile Picture & Avatar Color */}
+        <div className="segmented-list mb-10">
+          {/* Profile Picture */}
           <div 
-            className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px] cursor-pointer group relative outline-none"
+            className="segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('picture')}
           >
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
@@ -1742,59 +2479,42 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
              </div>
              <div className="flex items-center justify-end w-2/3 gap-4">
-               <Avatar className="size-11 sm:size-12 shadow-none" style={{ backgroundColor: formData.personal.avatarColor || '#0284c7' }}>
-                 <AvatarFallback className="text-lg bg-transparent text-white font-medium">{initial}</AvatarFallback>
+               <Avatar className="size-11 sm:size-12 shadow-none">
+                 <AvatarFallback 
+                   style={{ backgroundColor: formData.personal.avatarColor || user?.avatarColor || "#0284c7" }} 
+                   className="text-lg font-bold text-white transition-colors"
+                 >
+                   {initial}
+                 </AvatarFallback>
                </Avatar>
                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
 
-          {/* Theme Switcher */}
-          <div className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]">
-             <div className="flex items-center gap-4 w-1/3">
-                {theme === 'dark' ? <Moon className="size-5 text-muted-foreground shrink-0" /> : <Sun className="size-5 text-muted-foreground shrink-0" />}
-                <span className="text-sm font-medium text-foreground">{tSettings("theme")}</span>
-             </div>
-             <div className="flex items-center justify-end w-2/3 gap-3">
-                <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                  {currentThemeLabel}
-                </span>
-                <ThemeToggle />
-             </div>
-          </div>
-
-          {/* Primary Color */}
+          {/* Theme Color */}
           <div 
-            className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px] cursor-pointer group relative outline-none"
-            onClick={() => setEditingField('primaryColor')}
+            className={cn(
+              "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]",
+              isAdmin ? "cursor-pointer group relative outline-none" : "opacity-60 cursor-not-allowed"
+            )}
+            onClick={() => isAdmin && setEditingField('primaryColor')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {isAdmin && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Palette className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{tSettings("color")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center gap-2 px-2">
-                   <div 
-                     className="size-4 rounded-full border border-black/10 shrink-0" 
-                     style={{ backgroundColor: PRIMARY_COLORS.find(c => c.id === colorId)?.hex || '#0284c7' }} 
-                   />
-                   <span className="text-sm text-muted-foreground text-start truncate">
-                     {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
-                   </span>
+                  {isAdmin ? (
+                     <span className="text-sm text-muted-foreground text-start truncate">
+                       {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
+                     </span>
+                  ) : (
+                     <span className="text-sm text-muted-foreground flex items-center gap-1.5"><Lock className="size-3.5" /> {tSettings("color")}</span>
+                  )}
                 </div>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
-             </div>
-          </div>
-
-          {/* Language Switcher */}
-          <div className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]">
-             <div className="flex items-center gap-4 w-1/3">
-                <Languages className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{tSettings("language")}</span>
-             </div>
-             <div className="flex items-center justify-end w-2/3 gap-3">
-                <LocaleSwitcher />
+                {isAdmin && <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />}
              </div>
           </div>
         </div>
@@ -1894,7 +2614,7 @@ export function ProfilePage() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
+        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 p-3 sm:p-6 pb-28">
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
@@ -1904,6 +2624,51 @@ export function ProfilePage() {
             activeTab === "settings" ? renderSettingsView() :
             null}
         </main>
+
+        {/* Floating Bottom Navigation Bar while account is pending approval / onboarding */}
+        {isOnboarding && (
+          <div className="fixed bottom-4 inset-x-4 max-w-2xl mx-auto z-50 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-border/70 p-3 sm:p-3.5 rounded-2xl shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Clock className="size-4 animate-pulse" />
+              </div>
+              <div className="text-start">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  تکمیل اطلاعات پرونده
+                </h4>
+                <p className="text-[11px] text-muted-foreground hidden sm:block">
+                  از منوهای کناری اطلاعات خود را وارد کنید، سپس به صفحه وضعیت بازگردید.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push("/account-pending")}
+                className="h-8.5 text-xs font-semibold gap-1.5"
+              >
+                <ArrowRight className="size-3.5 rtl:rotate-180" />
+                <span>صفحه تایم‌لاین</span>
+              </Button>
+
+              <Button
+                size="sm"
+                disabled={isUpdating}
+                onClick={() => {
+                  handleSave();
+                  toast.success("اطلاعات ثبت شد و به صفحه وضعیت بازگشتید.");
+                  router.push("/account-pending");
+                }}
+                className="h-8.5 px-3.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5"
+              >
+                {isUpdating ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+                <span>ثبت نهایی و بازگشت</span>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
