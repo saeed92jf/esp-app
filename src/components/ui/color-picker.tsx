@@ -20,6 +20,7 @@ export interface ColorPreset {
 export interface ColorPickerProps {
   value: string;
   onChange: (hex: string) => void;
+  onDraftChange?: (hex: string) => void;
   presets?: ColorPreset[];
   className?: string;
   title?: string;
@@ -44,6 +45,7 @@ const DEFAULT_PRESETS: ColorPreset[] = [
 export function ColorPicker({
   value,
   onChange,
+  onDraftChange,
   presets = DEFAULT_PRESETS,
   className,
   title,
@@ -74,6 +76,7 @@ export function ColorPicker({
   const handlePickerChange = (newColor: string) => {
     setDraftColor(newColor);
     setHexInput(newColor);
+    if (onDraftChange) onDraftChange(newColor);
   };
 
   const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -84,12 +87,14 @@ export function ColorPicker({
     setHexInput(input);
     if (isValidHex(input)) {
       setDraftColor(input);
+      if (onDraftChange) onDraftChange(input);
     }
   };
 
   const handlePresetClick = (hex: string) => {
     setDraftColor(hex);
     setHexInput(hex);
+    if (onDraftChange) onDraftChange(hex);
   };
 
   const handleCopy = () => {
@@ -102,6 +107,7 @@ export function ColorPicker({
   const handleReset = () => {
     setDraftColor(value);
     setHexInput(value);
+    if (onDraftChange) onDraftChange(value);
     if (onCancel) onCancel();
   };
 

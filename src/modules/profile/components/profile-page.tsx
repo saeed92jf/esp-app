@@ -31,9 +31,9 @@ import {
   Monitor, Sun, Moon, Palette, Languages, CheckCircle2, Clock, ShieldCheck,
   Users, PhoneCall, CreditCard, Minus
 } from "lucide-react";
+import { User as UserPh, Sparkle as SparklePh, Heart as HeartPh } from "@phosphor-icons/react";
 import { toast } from "sonner";
-import { PersonnelForm } from "./personnel-form";
-import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
+import { ColorPicker } from "@/components/ui/color-picker";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SettingsSection } from "@/components/layout/settings-section";
@@ -173,8 +173,7 @@ const ProjectIcon = () => (
 
 const NAV_ITEMS = [
   { id: "home", icon: Home, labelKey: "nav.home" },
-  { id: "form", icon: FileText, labelKey: "nav.personnelForm" },
-  { id: "personal", icon: User, labelKey: "nav.personal" },
+    { id: "personal", icon: User, labelKey: "nav.personal" },
   { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
   { id: "skills", icon: Star, labelKey: "nav.skills" },
   { id: "insurance", icon: Shield, labelKey: "nav.insurance" },
@@ -204,6 +203,15 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(initialField);
+  const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
+    formData?.personal?.avatarColor || "#0284c7"
+  );
+
+  useEffect(() => {
+    if (formData?.personal?.avatarColor) {
+      setLiveAvatarColor(formData.personal.avatarColor);
+    }
+  }, [formData?.personal?.avatarColor]);
   const [isAvatarAccordionOpen, setIsAvatarAccordionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -386,8 +394,8 @@ export function ProfilePage() {
 
       switch(editingField) {
         case 'picture':
-          title = t("fields.profilePicture");
-          description = t("descriptions.chooseAvatar");
+          title = t("picture.title");
+          description = t("picture.description");
           content = renderPictureEditorContent();
           break;
         case 'name':
@@ -1578,82 +1586,50 @@ export function ProfilePage() {
     );
   };
 
-  const renderPictureEditorContent = () => (
-    <div className="space-y-6">
-      <div className="flex flex-wrap gap-4">
-        {[
-          { icon: UserPh, hex: '#0284c7', colorClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
-          { icon: GhostPh, hex: '#059669', colorClass: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
-          { icon: SparklePh, hex: '#7c3aed', colorClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
-          { icon: SmileyPh, hex: '#ea580c', colorClass: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
-          { icon: HeartPh, hex: '#e11d48', colorClass: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' }
-        ].map((preset, i) => {
-          const Icon = preset.icon;
-          const isSelected = (formData.personal.avatarColor || '#0284c7').toLowerCase() === preset.hex.toLowerCase();
-          return (
-            <button 
-              key={i} 
-              type="button" 
-              onClick={() => handleChange("personal", "avatarColor", preset.hex)}
-              className={cn(
-                "group relative rounded-full size-14 sm:size-16 flex items-center justify-center overflow-hidden bg-muted shadow-none cursor-pointer outline-none border-2 transition-all",
-                isSelected ? "border-primary ring-2 ring-primary/30" : "border-transparent hover:border-primary/50"
-              )}
-            >
-              <div className={cn("relative z-10 w-full h-full flex items-center justify-center", preset.colorClass)}>
-                <Icon className="size-6 sm:size-8" weight="duotone" />
-              </div>
-              <span className="absolute inset-0 z-20 bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" aria-hidden="true" />
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Color Presets Row */}
-      <div className="space-y-2 pt-2">
-        <Label className="text-xs font-semibold text-muted-foreground block">
-          {t("personnelForm.avatarColor")}
-        </Label>
-        <div className="flex flex-wrap items-center gap-2">
-          {[
-            "#0284c7", "#4f46e5", "#7c3aed", "#059669", "#0d9488",
-            "#d97706", "#e11d48", "#ea580c", "#475569", "#1e293b"
-          ].map((hex) => {
-            const isSelected = (formData.personal.avatarColor || '#0284c7').toLowerCase() === hex.toLowerCase();
-            return (
-              <button
-                key={hex}
-                type="button"
-                onClick={() => handleChange("personal", "avatarColor", hex)}
-                className={cn(
-                  "size-7 rounded-full transition-all outline-none cursor-pointer flex items-center justify-center",
-                  isSelected ? "ring-2 ring-primary ring-offset-2 scale-110 shadow-sm" : "opacity-80 hover:opacity-100"
-                )}
-                style={{ backgroundColor: hex }}
-              >
-                {isSelected && <span className="size-1.5 rounded-full bg-white shadow-xs" />}
-              </button>
-            );
-          })}
+  const renderPictureEditorContent = () => {
+    const currentHex = liveAvatarColor || formData?.personal?.avatarColor || "#0284c7";
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+        {/* Profile Avatar Current Status Preview */}
+        <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+          <div 
+            style={{ backgroundColor: currentHex }}
+            className="size-24 sm:size-28 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-black shadow-md ring-4 ring-background transition-colors duration-200 select-none shrink-0 mb-3"
+          >
+            {initial}
+          </div>
+          <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            {t("picture.selectedCodeLabel")}{" "}
+            <span className="font-mono font-semibold" dir="ltr">{currentHex}</span>
+          </p>
         </div>
-      </div>
 
-      <div className="flex flex-wrap items-center gap-3 pt-2">
-        <Button variant="outline" className="rounded-full px-5 shadow-none font-medium text-xs h-9" disabled>
-          <Upload className="size-3.5 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
-          {t("actions.uploadPicture")}
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => handleChange("personal", "avatarColor", "#0284c7")}
-          className="rounded-full px-5 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 font-medium text-xs h-9"
-        >
-          <Trash className="size-3.5 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
-          {t("actions.removePicture")}
-        </Button>
+        {/* Shadcn Color Picker with live draft change & Save button */}
+        <ColorPicker
+          value={formData?.personal?.avatarColor || "#0284c7"}
+          showSaveButton={true}
+          onDraftChange={(newHex) => {
+            setLiveAvatarColor(newHex);
+          }}
+          onChange={(savedHex) => {
+            handleChange("personal", "avatarColor", savedHex);
+            setLiveAvatarColor(savedHex);
+          }}
+          onSave={(savedHex) => {
+            handleChange("personal", "avatarColor", savedHex);
+            setLiveAvatarColor(savedHex);
+            handleSave();
+            setEditingField(null);
+          }}
+          onCancel={() => {
+            setLiveAvatarColor(formData?.personal?.avatarColor || "#0284c7");
+            setEditingField(null);
+          }}
+        />
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderSettingsView = () => {
     const currentThemeLabel = theme === 'system' ? tSettings('system') : theme === 'dark' ? tSettings('dark') : tSettings('light');
@@ -1920,15 +1896,6 @@ export function ProfilePage() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
            {activeTab === "home" ? renderHomeView() : 
-            activeTab === "form" ? (
-              <div className="max-w-4xl mx-auto w-full pt-6 pb-16 px-4 sm:px-8 animate-in fade-in duration-300">
-                <PersonnelForm
-                  initialData={formData}
-                  onSave={(updated) => updateProfile(updated)}
-                  isSaving={isUpdating}
-                />
-              </div>
-            ) :
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
             activeTab === "skills" ? renderSkillsView() :
