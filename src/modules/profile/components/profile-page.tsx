@@ -319,6 +319,7 @@ export function ProfilePage() {
   const isAccountActive = Boolean(
     user && (user.accountStatus === 'active' || (user.hrApproved && user.managerApproved))
   );
+  const isApprovedByHrAndManager = isAccountActive;
   const showPendingBottomPopup = Boolean(user && !isAccountActive);
   const isProfileIncomplete = Boolean(
     user && (!user.isProfileCompleted || user.accountStatus === 'pending_profile' || isOnboarding)
@@ -336,6 +337,16 @@ export function ProfilePage() {
   const [newDepBirthDate, setNewDepBirthDate] = useState("");
 
   useEffect(() => {
+    if (editingField === 'email') {
+      setEditingField(null);
+    }
+    if (isApprovedByHrAndManager && editingField) {
+      const isOrgField = ['department', 'role', 'workLocation', 'contractType', 'employeeId', 'extensionNumber', 'joinDate', 'manager', 'subordinates'].includes(editingField);
+      const isInsField = ['provider', 'type', 'insuranceCode', 'validUntil', 'supplementaryPlan', 'shebaNumber', 'dependentsCount', 'dependents'].includes(editingField);
+      if (isOrgField || isInsField) {
+        setEditingField(null);
+      }
+    }
     setIsVerifyingPhone(false);
     setOtpInput("");
     setIsVerifyingEmail(false);
@@ -345,7 +356,7 @@ export function ProfilePage() {
     setNewDepRelationship("spouse");
     setNewDepNationalId("");
     setNewDepBirthDate("");
-  }, [editingField]);
+  }, [editingField, isApprovedByHrAndManager]);
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || "#0284c7"
@@ -1352,12 +1363,10 @@ export function ProfilePage() {
              </div>
           </div>
 
-          {/* Email */}
+          {/* Email (Locked & Non-editable) */}
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('email')}
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-default h-[72px]"
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Mail className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.email")}</span>
@@ -1375,7 +1384,12 @@ export function ProfilePage() {
                     <span className="hidden sm:inline">{t("fields.emailUnverified")}</span>
                   </span>
                 )}
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="flex items-center gap-1 text-muted-foreground/70 shrink-0" title={t("lockedFields.emailLocked")}>
+                  <Lock className="size-3.5" />
+                  <span className="text-[10px] font-medium hidden sm:inline bg-muted/60 px-2 py-0.5 rounded-full border border-border/50">
+                    {t("lockedFields.emailLockedBadge")}
+                  </span>
+                </div>
              </div>
           </div>
 
@@ -1683,42 +1697,80 @@ export function ProfilePage() {
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.organizational")}</h2>
         
+        {isApprovedByHrAndManager && (
+          <div className="mb-6 p-4 rounded-2xl bg-muted/20 border border-border/70 flex items-start gap-3.5 shadow-xs animate-in fade-in duration-200">
+            <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+              <Lock className="size-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  {t("lockedFields.orgLockedTitle")}
+                </h4>
+                <Badge variant="outline" className="text-[10px] font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10">
+                  {t("lockedFields.orgLockedBadge")}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                {t("lockedFields.orgLockedDesc")} {t("lockedFields.lockedNotice")}
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="segmented-list mb-10">
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('department')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('department')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Briefcase className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.department")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.department || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('role')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('role')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.role")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.role || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('workLocation')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('workLocation')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Building2 className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.workLocation")}</span>
@@ -1731,15 +1783,22 @@ export function ProfilePage() {
                    formData.organizational.workLocation === 'office' ? t("fields.workLocationOffice") :
                    formData.organizational.workLocation || t("notSet")}
                 </span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('contractType')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('contractType')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <FileText className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.contractType")}</span>
@@ -1753,75 +1812,110 @@ export function ProfilePage() {
                    formData.organizational.contractType === 'full_time' ? t("fields.contractTypeFullTime") :
                    formData.organizational.contractType || t("notSet")}
                 </span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('employeeId')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('employeeId')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.employeeId")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono">{formData.organizational.employeeId || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('extensionNumber')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('extensionNumber')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <PhoneCall className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.extensionNumber")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono fa-num">{formData.organizational.extensionNumber || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('joinDate')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('joinDate')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.joinDate")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.organizational.joinDate || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('manager')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('manager')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <User className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.manager")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.manager || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('subordinates')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('subordinates')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Users className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.subordinates")}</span>
@@ -1840,7 +1934,11 @@ export function ProfilePage() {
                     </span>
                   )}
                 </div>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
         </div>
@@ -2516,74 +2614,126 @@ export function ProfilePage() {
     return (
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.insurance")}</h2>
+
+        {isApprovedByHrAndManager && (
+          <div className="mb-6 p-4 rounded-2xl bg-muted/20 border border-border/70 flex items-start gap-3.5 shadow-xs animate-in fade-in duration-200">
+            <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+              <Lock className="size-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  {t("lockedFields.insuranceLockedTitle")}
+                </h4>
+                <Badge variant="outline" className="text-[10px] font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10">
+                  {t("lockedFields.insuranceLockedBadge")}
+                </Badge>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                {t("lockedFields.insuranceLockedDesc")} {t("lockedFields.lockedNotice")}
+              </p>
+            </div>
+          </div>
+        )}
         
         <div className="segmented-list mb-10">
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('provider')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('provider')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Shield className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.corporateInsurance")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 font-medium text-foreground">{formData.insurance.provider || t("fields.taminEjtemaei")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('type')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('type')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Activity className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.type")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.insurance.type || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('insuranceCode')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('insuranceCode')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <KeyRound className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.insuranceCode")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono">{formData.insurance.insuranceCode || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('validUntil')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('validUntil')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Calendar className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.validUntil")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.insurance.validUntil || t("notSet")}</span>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           {/* Supplementary Plan - SOS */}
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('supplementaryPlan')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('supplementaryPlan')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <ShieldAlert className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.supplementaryInsurance")}</span>
@@ -2595,16 +2745,23 @@ export function ProfilePage() {
                   </Badge>
                   {planBadge}
                 </div>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           {/* Unified Dependents Information & Count */}
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('dependents')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('dependents')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <Users className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.dependents")}</span>
@@ -2631,16 +2788,23 @@ export function ProfilePage() {
                     <span>{t("notSet")}</span>
                   )}
                 </div>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
 
           {/* Sheba Number */}
           <div 
-            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
-            onClick={() => setEditingField('shebaNumber')}
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('shebaNumber')}
           >
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
              <div className="flex items-center gap-4 w-1/3">
                 <CreditCard className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.shebaNumber")}</span>
@@ -2656,7 +2820,11 @@ export function ProfilePage() {
                     </span>
                   )}
                 </div>
-                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
              </div>
           </div>
         </div>

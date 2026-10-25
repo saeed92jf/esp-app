@@ -1457,6 +1457,17 @@
       "sampleBadge": "Active Status",
       "saveButton": "Save Primary Color"
     },
+    "lockedFields": {
+      "emailLocked": "Corporate email address is locked and cannot be modified.",
+      "emailLockedBadge": "Locked",
+      "orgLockedTitle": "Organizational Info is Locked",
+      "orgLockedDesc": "This section has been locked following approval by Management and HR and cannot be edited directly.",
+      "orgLockedBadge": "Approved & Locked",
+      "insuranceLockedTitle": "Insurance Information is Locked",
+      "insuranceLockedDesc": "Basic and SOS supplementary insurance records and dependents are locked following HR & Management approval.",
+      "insuranceLockedBadge": "Approved & Locked",
+      "lockedNotice": "To request changes to these records, please contact the HR department."
+    },
     "placeholders": {
       "firstNameFa": "e.g. Saeed",
       "lastNameFa": "e.g. Jalili",

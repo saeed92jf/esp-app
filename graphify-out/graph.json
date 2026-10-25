@@ -55927,7 +55927,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L1139",
+      "source_location": "L1150",
       "weight": 1.0
     },
     {
@@ -55939,7 +55939,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L1568",
+      "source_location": "L1582",
       "weight": 1.0
     },
     {
@@ -55951,7 +55951,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L1922",
+      "source_location": "L2020",
       "weight": 1.0
     },
     {
@@ -55963,7 +55963,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L2094",
+      "source_location": "L2192",
       "weight": 1.0
     },
     {
@@ -55975,7 +55975,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L2225",
+      "source_location": "L2323",
       "weight": 1.0
     },
     {
@@ -55987,7 +55987,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L2282",
+      "source_location": "L2380",
       "weight": 1.0
     },
     {
@@ -55999,7 +55999,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L2397",
+      "source_location": "L2495",
       "weight": 1.0
     },
     {
@@ -56011,7 +56011,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L2651",
+      "source_location": "L2815",
       "weight": 1.0
     },
     {
@@ -56071,7 +56071,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L3260",
+      "source_location": "L3428",
       "weight": 1.0
     },
     {
@@ -56083,7 +56083,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L3288",
+      "source_location": "L3456",
       "weight": 1.0
     },
     {
@@ -56095,7 +56095,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L3339",
+      "source_location": "L3507",
       "weight": 1.0
     },
     {
@@ -56107,7 +56107,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L3340",
+      "source_location": "L3508",
       "weight": 1.0
     },
     {
@@ -56119,7 +56119,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L3343",
+      "source_location": "L3511",
       "weight": 1.0
     },
     {
@@ -56131,7 +56131,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L561",
+      "source_location": "L572",
       "weight": 1.0
     },
     {
@@ -56143,7 +56143,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L562",
+      "source_location": "L573",
       "weight": 1.0
     },
     {
@@ -56155,7 +56155,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L593",
+      "source_location": "L604",
       "weight": 1.0
     },
     {
@@ -56167,7 +56167,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L606",
+      "source_location": "L617",
       "weight": 1.0
     },
     {
@@ -56179,7 +56179,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L676",
+      "source_location": "L687",
       "weight": 1.0
     },
     {
@@ -56191,7 +56191,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L708",
+      "source_location": "L719",
       "weight": 1.0
     },
     {
@@ -56203,7 +56203,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L792",
+      "source_location": "L803",
       "weight": 1.0
     },
     {
@@ -56215,7 +56215,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L793",
+      "source_location": "L804",
       "weight": 1.0
     },
     {
@@ -56227,7 +56227,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L794",
+      "source_location": "L805",
       "weight": 1.0
     },
     {
@@ -56239,7 +56239,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L834",
+      "source_location": "L845",
       "weight": 1.0
     },
     {
@@ -56251,7 +56251,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/modules/profile/components/profile-page.tsx",
-      "source_location": "L849",
+      "source_location": "L860",
       "weight": 1.0
     },
     {
@@ -149195,5 +149195,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2555fd228f777d8a7a5c323da3c29e33342c152e"
+  "built_at_commit": "ffc34e87ac313ffec7895fe7c033aa6ee23197f4"
 }
