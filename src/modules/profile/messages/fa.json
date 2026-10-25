@@ -338,7 +338,7 @@
       "shebaValidationLabel": "وضعیت اعتبارسنجی شبا",
       "dependentsSectionTitle": "افراد تحت تکفل پرسنل",
       "dependentsSectionDesc": "ثبت اسامی و مشخصات افراد تحت تکفل جهت برقراری پوشش بیمه تکمیلی SOS و مزایای سازمانی",
-      "addDependentBtn": "افزودن فرد تحت تکفل",
+      "addDependentBtn": "افزودن فرد تحت تکفل"
     },
     "pendingBottomBar": {
       "onboardingTitle": "تکمیل اطلاعات پرونده پرسنلی",

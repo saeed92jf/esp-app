@@ -338,7 +338,7 @@
       "shebaValidationLabel": "Sheba Validation Status",
       "dependentsSectionTitle": "Employee Dependents",
       "dependentsSectionDesc": "Register dependents for SOS supplementary health coverage and corporate benefits",
-      "addDependentBtn": "Add Dependent",
+      "addDependentBtn": "Add Dependent"
     },
     "pendingBottomBar": {
       "onboardingTitle": "Complete Personnel Profile",
