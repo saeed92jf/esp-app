@@ -17,6 +17,9 @@ export interface PersonalInfo {
   childrenCount?: number;
 }
 
+export type WorkLocation = "office" | "factory" | "remote" | "hybrid";
+export type ContractType = "full_time" | "part_time" | "hourly" | "contractual" | "internship";
+
 export interface OrganizationalInfo {
   department: string;
   role: string;
@@ -24,7 +27,12 @@ export interface OrganizationalInfo {
   joinDate: string;
   manager: string;
   extensionNumber?: string;
+  workLocation?: WorkLocation | string;
+  contractType?: ContractType | string;
+  subordinates?: string[];
+  subordinatesCount?: number;
 }
+
 
 export interface Skill {
   id: string;

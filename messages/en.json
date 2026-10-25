@@ -1413,7 +1413,10 @@
       "selectBirthDate": "Select birth date...",
       "selectValidUntil": "Select insurance valid until...",
       "persons": "persons",
-      "dependentsRegistered": "{count} registered"
+      "dependentsRegistered": "{count} registered",
+      "workLocation": "Work Location",
+      "contractType": "Contract Type",
+      "subordinates": "Direct Reports"
     },
     "picture": {
       "title": "Avatar Color & Profile Icon",

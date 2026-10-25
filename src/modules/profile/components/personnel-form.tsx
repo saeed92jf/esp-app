@@ -137,6 +137,23 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
     { value: "none", label: t("fields.planNone") },
   ];
 
+  const WORK_LOCATION_OPTIONS: ComboboxOption[] = [
+    { value: "office", label: isFa ? "دفتر مرکزی / ستاد" : "Headquarters / Office" },
+    { value: "factory", label: isFa ? "کارخانه / سایت تولیدی" : "Factory / Plant" },
+    { value: "remote", label: isFa ? "دورکاری" : "Remote" },
+    { value: "hybrid", label: isFa ? "هیبریدی / ترکیبی" : "Hybrid" },
+  ];
+
+  const CONTRACT_TYPE_OPTIONS: ComboboxOption[] = [
+    { value: "full_time", label: isFa ? "تمام وقت" : "Full-Time" },
+    { value: "part_time", label: isFa ? "پاره وقت" : "Part-Time" },
+    { value: "hourly", label: isFa ? "ساعتی" : "Hourly" },
+    { value: "contractual", label: isFa ? "قراردادی / پروژه‌ای" : "Contractual / Project-based" },
+    { value: "internship", label: isFa ? "کارآموزی" : "Internship" },
+  ];
+
+  const [newSubordinate, setNewSubordinate] = useState("");
+
   const currentAvatarBg = formData.personal.avatarColor || "#0284c7";
   const initialLetter = (
     formData.personal.firstNameFa?.trim()?.charAt(0) ||
@@ -718,6 +735,38 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             )}
           </div>
 
+          {/* Work Location */}
+          <div className="space-y-1.5">
+            <Label className="text-xs sm:text-sm font-semibold">
+              {t("personnelForm.workLocationLabel")}
+            </Label>
+            <Combobox
+              options={WORK_LOCATION_OPTIONS}
+              value={formData.organizational.workLocation || "office"}
+              onChange={(val) => handleFieldChange("organizational", "workLocation", val)}
+              placeholder={t("personnelForm.workLocationPlaceholder")}
+              searchPlaceholder={t("personnelForm.workLocationSearch")}
+              className="w-full h-10 rtl:text-right"
+            />
+            <p className="text-[11px] text-muted-foreground">{t("personnelForm.workLocationHelp")}</p>
+          </div>
+
+          {/* Contract Type */}
+          <div className="space-y-1.5">
+            <Label className="text-xs sm:text-sm font-semibold">
+              {t("personnelForm.contractTypeLabel")}
+            </Label>
+            <Combobox
+              options={CONTRACT_TYPE_OPTIONS}
+              value={formData.organizational.contractType || "full_time"}
+              onChange={(val) => handleFieldChange("organizational", "contractType", val)}
+              placeholder={t("personnelForm.contractTypePlaceholder")}
+              searchPlaceholder={t("personnelForm.contractTypeSearch")}
+              className="w-full h-10 rtl:text-right"
+            />
+            <p className="text-[11px] text-muted-foreground">{t("personnelForm.contractTypeHelp")}</p>
+          </div>
+
           {/* Employee ID */}
           <div className="space-y-1.5">
             <Label htmlFor="employeeId" className="text-xs sm:text-sm font-semibold">
@@ -769,7 +818,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
           </div>
 
           {/* Direct Manager */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1.5">
             <Label htmlFor="manager" className="text-xs sm:text-sm font-semibold">
               {t("personnelForm.managerLabel")}
             </Label>
@@ -780,6 +829,110 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               placeholder={t("personnelForm.managerPlaceholder")}
               className="h-10 text-sm"
             />
+          </div>
+
+          {/* Subordinates / Direct Reports */}
+          <div className="space-y-2.5 sm:col-span-2 pt-2 border-t border-border/40">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs sm:text-sm font-semibold flex items-center gap-2">
+                <Users className="size-4 text-primary" />
+                <span>{t("personnelForm.subordinatesLabel")}</span>
+              </Label>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num font-sans font-medium">
+                {formData.organizational.subordinates?.length || 0} {t("fields.subordinatesCountUnit")}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Input
+                value={newSubordinate}
+                onChange={(e) => setNewSubordinate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const trimmed = newSubordinate.trim();
+                    if (trimmed) {
+                      const list = formData.organizational.subordinates || [];
+                      if (!list.includes(trimmed)) {
+                        const updated = [...list, trimmed];
+                        setFormData((prev) => ({
+                          ...prev,
+                          organizational: {
+                            ...prev.organizational,
+                            subordinates: updated,
+                            subordinatesCount: updated.length,
+                          },
+                        }));
+                        setNewSubordinate("");
+                      }
+                    }
+                  }
+                }}
+                placeholder={t("personnelForm.subordinatesPlaceholder")}
+                className="h-10 text-sm"
+              />
+              <Button
+                type="button"
+                onClick={() => {
+                  const trimmed = newSubordinate.trim();
+                  if (trimmed) {
+                    const list = formData.organizational.subordinates || [];
+                    if (!list.includes(trimmed)) {
+                      const updated = [...list, trimmed];
+                      setFormData((prev) => ({
+                        ...prev,
+                        organizational: {
+                          ...prev.organizational,
+                          subordinates: updated,
+                          subordinatesCount: updated.length,
+                        },
+                      }));
+                      setNewSubordinate("");
+                    }
+                  }
+                }}
+                disabled={!newSubordinate.trim()}
+                className="h-10 px-4 shrink-0 font-medium text-xs sm:text-sm"
+              >
+                <Plus className="size-4 me-1" />
+                {t("personnelForm.addSubordinateBtn")}
+              </Button>
+            </div>
+
+            {/* Badges list */}
+            {formData.organizational.subordinates && formData.organizational.subordinates.length > 0 && (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {formData.organizational.subordinates.map((sub, idx) => (
+                  <div
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs border border-border/60 transition-colors"
+                  >
+                    <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {sub.charAt(0) || "U"}
+                    </span>
+                    <span className="font-medium">{sub}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = (formData.organizational.subordinates || []).filter((_, i) => i !== idx);
+                        setFormData((prev) => ({
+                          ...prev,
+                          organizational: {
+                            ...prev.organizational,
+                            subordinates: updated,
+                            subordinatesCount: updated.length,
+                          },
+                        }));
+                      }}
+                      className="text-muted-foreground hover:text-destructive p-0.5 rounded-full hover:bg-destructive/10 transition-colors ms-1 cursor-pointer"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <p className="text-[11px] text-muted-foreground">{t("personnelForm.subordinatesHelp")}</p>
           </div>
 
         </div>

@@ -25,6 +25,10 @@ const MOCK_PROFILE: UserProfile = {
     joinDate: "1398/02/01",
     manager: "علی احمدی",
     extensionNumber: "105",
+    workLocation: "office",
+    contractType: "full_time",
+    subordinates: ["رضا محمدی", "زهرا کریمی", "مهرداد نوری"],
+    subordinatesCount: 3,
   },
   skills: [
     { id: "1", name: "React", level: 5 },

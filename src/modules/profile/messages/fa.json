@@ -21,7 +21,10 @@
       "phoneEdit": "شماره تلفن شما برای ایمن‌سازی حساب و ارتباط با دیگران استفاده می‌شود.",
       "chooseAvatar": "یک تصویر پیش‌فرض انتخاب کنید یا تصویر خود را بارگذاری نمایید.",
       "birthDateHelp": "تاریخ تولد ثبت‌شده در اسناد سجلی و شناسنامه.",
-      "emailHelp": "پست الکترونیک معتبر سازمانی یا شخصی جهت دریافت اعلانات و بازیابی دسترسی."
+      "emailHelp": "پست الکترونیک معتبر سازمانی یا شخصی جهت دریافت اعلانات و بازیابی دسترسی.",
+      "workLocationEdit": "محل خدمت و استقرار کاری خود در شرکت را انتخاب نمایید.",
+      "contractTypeEdit": "نوع قرارداد و شرایط همکاری رسمی خود را انتخاب نمایید.",
+      "subordinatesEdit": "اعضای تیم مستقیم و همکارانی که به شما گزارش می‌دهند را مدیریت نمایید."
     },
     "notSet": "تنظیم نشده",
     "fields": {
@@ -129,7 +132,33 @@
       "firstNameFaPlaceholder": "مثال: سعید",
       "lastNameFaPlaceholder": "مثال: جلیلی",
       "firstNameEnPlaceholder": "مثال: Saeed",
-      "lastNameEnPlaceholder": "مثال: Jalili"
+      "lastNameEnPlaceholder": "مثال: Jalili",
+      "workLocation": "محل خدمت",
+      "contractType": "نوع قرارداد",
+      "subordinates": "افراد زیردست (تیم مستقیم)",
+      "subordinatesCount": "تعداد افراد زیردست",
+      "subordinatesCountUnit": "نفر",
+      "addSubordinate": "افزودن عضو تیم",
+      "subordinatePlaceholder": "نام و نام‌خانوادگی همکار...",
+      "noSubordinates": "هیچ عضو زیردستی ثبت نشده است.",
+      "workLocationOffice": "دفتر مرکزی / ستاد",
+      "workLocationFactory": "کارخانه / سایت تولیدی",
+      "workLocationRemote": "دورکاری",
+      "workLocationHybrid": "هیبریدی / ترکیبی",
+      "workLocationOfficeDesc": "استقرار در ساختمان دفتر مرکزی تهران",
+      "workLocationFactoryDesc": "حضور در کارخانه و سایت تولیدی",
+      "workLocationRemoteDesc": "انجام وظایف کاری به صورت دورکاری",
+      "workLocationHybridDesc": "ترکیبی از حضور در دفتر و دورکاری",
+      "contractTypeFullTime": "تمام وقت",
+      "contractTypePartTime": "پاره وقت",
+      "contractTypeHourly": "ساعتی",
+      "contractTypeContractual": "قراردادی / پروژه‌ای",
+      "contractTypeInternship": "کارآموزی",
+      "contractTypeFullTimeDesc": "قرارداد استاندارد تمام وقت قانون کار",
+      "contractTypePartTimeDesc": "قرارداد پاره وقت با ساعت کار معین",
+      "contractTypeHourlyDesc": "حق‌الزحمه بر مبنای ساعات کارکرد ماهانه",
+      "contractTypeContractualDesc": "قرارداد معین برای پروژه و بازه مشخص",
+      "contractTypeInternshipDesc": "دوره کارآموزی و مهارت‌آموزی سازمانی"
     },
     "actions": {
       "save": "ذخیره تغییرات",
@@ -266,7 +295,19 @@
       "pendingInfo": "پس از ذخیره، پرونده شما جهت تأیید مدارک به کارتابل منابع انسانی و مدیریت ارسال می‌شود.",
       "viewStatus": "مشاهده وضعیت پرونده",
       "submitAndSend": "ذخیره اطلاعات و ارسال جهت تأیید",
-      "submitting": "در حال ثبت اطلاعات..."
+      "submitting": "در حال ثبت اطلاعات...",
+      "workLocationLabel": "محل خدمت",
+      "workLocationPlaceholder": "انتخاب محل خدمت...",
+      "workLocationSearch": "جستجوی محل خدمت...",
+      "workLocationHelp": "محل استقرار فیزیکی یا نحوه همکاری در شرکت.",
+      "contractTypeLabel": "نوع قرارداد",
+      "contractTypePlaceholder": "انتخاب نوع قرارداد...",
+      "contractTypeSearch": "جستجوی نوع قرارداد...",
+      "contractTypeHelp": "نوع رابطه استخدامی طبق مفاد قرارداد کاری.",
+      "subordinatesLabel": "افراد زیردست (تیم مستقیم)",
+      "subordinatesPlaceholder": "نام همکار یا عضو زیردست را وارد کنید...",
+      "subordinatesHelp": "همکارانی که به طور مستقیم به این فرد گزارش می‌دهند.",
+      "addSubordinateBtn": "افزودن عضو"
     },
     "footerText": "تنظیمات شما فقط برای خودتان قابل مشاهده است. همچنین می‌توانید تنظیمات سرویس‌هایی که استفاده می‌کنید را بررسی کنید تا حریم خصوصی شما حفظ شود."
   }

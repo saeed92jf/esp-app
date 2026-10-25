@@ -110,7 +110,8 @@ import {
   Activity, Mail, Pencil, Menu, HelpCircle, Grip, Settings,
   Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, ArrowRight, Map, Upload, Trash, Plus,
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
-  Heart, Users, PhoneCall, CreditCard, Check
+  Heart, Users, PhoneCall, CreditCard, Check,
+  Building2, Factory, Laptop, Network
 } from "lucide-react";
 import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
@@ -319,12 +320,14 @@ export function ProfilePage() {
   const [isPhoneVerified, setIsPhoneVerified] = useState(true);
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [emailOtpInput, setEmailOtpInput] = useState("");
+  const [newSubordinateInput, setNewSubordinateInput] = useState("");
 
   useEffect(() => {
     setIsVerifyingPhone(false);
     setOtpInput("");
     setIsVerifyingEmail(false);
     setEmailOtpInput("");
+    setNewSubordinateInput("");
   }, [editingField]);
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
@@ -1400,14 +1403,17 @@ export function ProfilePage() {
       switch (editingField) {
         case 'department': title = t("fields.department"); break;
         case 'role': title = t("fields.role"); break;
+        case 'workLocation': title = t("fields.workLocation"); break;
+        case 'contractType': title = t("fields.contractType"); break;
         case 'employeeId': title = t("fields.employeeId"); break;
         case 'extensionNumber': title = t("fields.extensionNumber"); break;
         case 'joinDate': title = t("fields.joinDate"); break;
         case 'manager': title = t("fields.manager"); break;
+        case 'subordinates': title = t("fields.subordinates"); break;
         default: return null;
       }
       
-      const value = formData.organizational[fieldKey] || "";
+      const value = typeof formData.organizational[fieldKey] === "string" ? (formData.organizational[fieldKey] as string) : "";
       
       const handleLocalSave = () => {
         handleSave();
@@ -1426,8 +1432,10 @@ export function ProfilePage() {
           <div className="ps-0 sm:ps-14">
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
-                <div className="space-y-2">
-                  <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
+                <div className="space-y-4">
+                  {editingField !== 'workLocation' && editingField !== 'contractType' && editingField !== 'subordinates' && (
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">{title}</Label>
+                  )}
                   {fieldKey === 'joinDate' ? (
                     <DatePicker
                       value={parseDateString(formData.organizational.joinDate)}
@@ -1437,6 +1445,185 @@ export function ProfilePage() {
                       className="w-full h-12"
                       triggerClassName="w-full h-12 justify-between text-base"
                     />
+                  ) : editingField === 'workLocation' ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{t("descriptions.workLocationEdit")}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        {[
+                          { id: "office", label: t("fields.workLocationOffice"), desc: t("fields.workLocationOfficeDesc"), icon: Building2 },
+                          { id: "factory", label: t("fields.workLocationFactory"), desc: t("fields.workLocationFactoryDesc"), icon: Factory },
+                          { id: "remote", label: t("fields.workLocationRemote"), desc: t("fields.workLocationRemoteDesc"), icon: Laptop },
+                          { id: "hybrid", label: t("fields.workLocationHybrid"), desc: t("fields.workLocationHybridDesc"), icon: Network },
+                        ].map((loc) => {
+                          const isSelected = (formData.organizational.workLocation || "office") === loc.id;
+                          const LocIcon = loc.icon;
+                          return (
+                            <button
+                              key={loc.id}
+                              type="button"
+                              onClick={() => handleChange("organizational", "workLocation", loc.id)}
+                              className={cn(
+                                "p-4 rounded-2xl border text-start flex items-start gap-3.5 transition-all cursor-pointer",
+                                isSelected
+                                  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary/30"
+                                  : "bg-card border-border/60 hover:bg-muted/40 text-muted-foreground"
+                              )}
+                            >
+                              <div className={cn(
+                                "size-10 rounded-xl flex items-center justify-center shrink-0",
+                                isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                              )}>
+                                <LocIcon className="size-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-sm text-foreground">{loc.label}</span>
+                                  {isSelected && <CheckCircle2 className="size-4 text-primary shrink-0" />}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{loc.desc}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : editingField === 'contractType' ? (
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{t("descriptions.contractTypeEdit")}</p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        {[
+                          { id: "full_time", label: t("fields.contractTypeFullTime"), desc: t("fields.contractTypeFullTimeDesc"), icon: Clock },
+                          { id: "part_time", label: t("fields.contractTypePartTime"), desc: t("fields.contractTypePartTimeDesc"), icon: Clock },
+                          { id: "hourly", label: t("fields.contractTypeHourly"), desc: t("fields.contractTypeHourlyDesc"), icon: Clock },
+                          { id: "contractual", label: t("fields.contractTypeContractual"), desc: t("fields.contractTypeContractualDesc"), icon: FileText },
+                          { id: "internship", label: t("fields.contractTypeInternship"), desc: t("fields.contractTypeInternshipDesc"), icon: GraduationCap },
+                        ].map((ct) => {
+                          const isSelected = (formData.organizational.contractType || "full_time") === ct.id;
+                          const CtIcon = ct.icon;
+                          return (
+                            <button
+                              key={ct.id}
+                              type="button"
+                              onClick={() => handleChange("organizational", "contractType", ct.id)}
+                              className={cn(
+                                "p-4 rounded-2xl border text-start flex items-start gap-3.5 transition-all cursor-pointer",
+                                isSelected
+                                  ? "bg-primary/10 border-primary text-foreground ring-1 ring-primary/30"
+                                  : "bg-card border-border/60 hover:bg-muted/40 text-muted-foreground"
+                              )}
+                            >
+                              <div className={cn(
+                                "size-10 rounded-xl flex items-center justify-center shrink-0",
+                                isSelected ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                              )}>
+                                <CtIcon className="size-5" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-sm text-foreground">{ct.label}</span>
+                                  {isSelected && <CheckCircle2 className="size-4 text-primary shrink-0" />}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{ct.desc}</p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : editingField === 'subordinates' ? (
+                    <div className="space-y-5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">{t("descriptions.subordinatesEdit")}</p>
+                        <Badge variant="secondary" className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary border-primary/20">
+                          <span className="fa-num font-sans font-bold me-1">
+                            {formData.organizational.subordinates?.length || 0}
+                          </span>
+                          {t("fields.subordinatesCountUnit")}
+                        </Badge>
+                      </div>
+
+                      {/* Add Subordinate Input Form */}
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={newSubordinateInput}
+                          onChange={(e) => setNewSubordinateInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              if (newSubordinateInput.trim()) {
+                                const list = formData.organizational.subordinates || [];
+                                if (!list.includes(newSubordinateInput.trim())) {
+                                  const updated = [...list, newSubordinateInput.trim()];
+                                  handleChange("organizational", "subordinates" as any, updated);
+                                  handleChange("organizational", "subordinatesCount" as any, updated.length);
+                                  setNewSubordinateInput("");
+                                }
+                              }
+                            }
+                          }}
+                          placeholder={t("fields.subordinatePlaceholder")}
+                          className="h-11 rounded-xl text-sm"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            if (newSubordinateInput.trim()) {
+                              const list = formData.organizational.subordinates || [];
+                              if (!list.includes(newSubordinateInput.trim())) {
+                                const updated = [...list, newSubordinateInput.trim()];
+                                handleChange("organizational", "subordinates" as any, updated);
+                                handleChange("organizational", "subordinatesCount" as any, updated.length);
+                                setNewSubordinateInput("");
+                              }
+                            }
+                          }}
+                          disabled={!newSubordinateInput.trim()}
+                          className="h-11 px-4 rounded-xl shrink-0 font-medium"
+                        >
+                          <Plus className="size-4 me-1.5" />
+                          {t("fields.addSubordinate")}
+                        </Button>
+                      </div>
+
+                      {/* Subordinates List */}
+                      <div className="space-y-2 pt-1">
+                        {(!formData.organizational.subordinates || formData.organizational.subordinates.length === 0) ? (
+                          <div className="text-center py-8 px-4 rounded-2xl border border-dashed border-border/70 bg-muted/20 text-muted-foreground text-sm">
+                            <Users className="size-8 mx-auto mb-2 opacity-40" />
+                            {t("fields.noSubordinates")}
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-border/40 border border-border/60 rounded-2xl overflow-hidden bg-card">
+                            {formData.organizational.subordinates.map((subName, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3.5 sm:px-5 hover:bg-muted/30 transition-colors"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="size-9 rounded-full bg-primary/10 text-primary font-semibold text-sm flex items-center justify-center shrink-0">
+                                    {subName.trim().charAt(0) || "U"}
+                                  </div>
+                                  <span className="text-sm font-medium text-foreground">{subName}</span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    const updated = (formData.organizational.subordinates || []).filter((_, idx) => idx !== index);
+                                    handleChange("organizational", "subordinates" as any, updated);
+                                    handleChange("organizational", "subordinatesCount" as any, updated.length);
+                                  }}
+                                  className="size-8 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash className="size-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   ) : (
                     <Input 
                       value={value} 
@@ -1498,6 +1685,49 @@ export function ProfilePage() {
 
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('workLocation')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Building2 className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.workLocation")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.organizational.workLocation === 'factory' ? t("fields.workLocationFactory") :
+                   formData.organizational.workLocation === 'remote' ? t("fields.workLocationRemote") :
+                   formData.organizational.workLocation === 'hybrid' ? t("fields.workLocationHybrid") :
+                   formData.organizational.workLocation === 'office' ? t("fields.workLocationOffice") :
+                   formData.organizational.workLocation || t("notSet")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('contractType')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <FileText className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.contractType")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.organizational.contractType === 'part_time' ? t("fields.contractTypePartTime") :
+                   formData.organizational.contractType === 'hourly' ? t("fields.contractTypeHourly") :
+                   formData.organizational.contractType === 'contractual' ? t("fields.contractTypeContractual") :
+                   formData.organizational.contractType === 'internship' ? t("fields.contractTypeInternship") :
+                   formData.organizational.contractType === 'full_time' ? t("fields.contractTypeFullTime") :
+                   formData.organizational.contractType || t("notSet")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('employeeId')}
           >
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
@@ -1552,6 +1782,33 @@ export function ProfilePage() {
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.manager || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('subordinates')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Users className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.subordinates")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <div className="flex items-center gap-2 truncate px-2">
+                  <Badge variant="secondary" className="font-normal text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border-primary/20 shrink-0">
+                    <span className="fa-num font-sans font-semibold me-1">
+                      {formData.organizational.subordinates?.length ?? formData.organizational.subordinatesCount ?? 0}
+                    </span>
+                    {t("fields.subordinatesCountUnit")}
+                  </Badge>
+                  {formData.organizational.subordinates && formData.organizational.subordinates.length > 0 && (
+                    <span className="text-xs text-muted-foreground truncate hidden sm:inline">
+                      ({formData.organizational.subordinates.slice(0, 2).join("، ")}{formData.organizational.subordinates.length > 2 ? ` +${formData.organizational.subordinates.length - 2}` : ""})
+                    </span>
+                  )}
+                </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>

@@ -21,7 +21,10 @@
       "phoneEdit": "Your phone number is used to secure your account and connect with others.",
       "chooseAvatar": "Choose a default picture or upload your own.",
       "birthDateHelp": "Birth date as registered in official identity documents.",
-      "emailHelp": "Valid corporate or personal email for receiving notifications and account recovery."
+      "emailHelp": "Valid corporate or personal email for receiving notifications and account recovery.",
+      "workLocationEdit": "Choose your primary work location and workplace model.",
+      "contractTypeEdit": "Choose your employment contract and agreement terms.",
+      "subordinatesEdit": "Manage your direct reports and direct team members."
     },
     "notSet": "Not set",
     "fields": {
@@ -129,7 +132,33 @@
       "firstNameFaPlaceholder": "e.g. Saeed",
       "lastNameFaPlaceholder": "e.g. Jalili",
       "firstNameEnPlaceholder": "e.g. Saeed",
-      "lastNameEnPlaceholder": "e.g. Jalili"
+      "lastNameEnPlaceholder": "e.g. Jalili",
+      "workLocation": "Work Location",
+      "contractType": "Contract Type",
+      "subordinates": "Direct Reports",
+      "subordinatesCount": "Direct Reports Count",
+      "subordinatesCountUnit": "members",
+      "addSubordinate": "Add Team Member",
+      "subordinatePlaceholder": "Colleague full name...",
+      "noSubordinates": "No direct reports registered yet.",
+      "workLocationOffice": "Headquarters / Office",
+      "workLocationFactory": "Factory / Plant",
+      "workLocationRemote": "Remote",
+      "workLocationHybrid": "Hybrid",
+      "workLocationOfficeDesc": "Based at central headquarters office",
+      "workLocationFactoryDesc": "On-site at factory and production facility",
+      "workLocationRemoteDesc": "Full-time remote work arrangement",
+      "workLocationHybridDesc": "Combined in-office and remote schedule",
+      "contractTypeFullTime": "Full-Time",
+      "contractTypePartTime": "Part-Time",
+      "contractTypeHourly": "Hourly",
+      "contractTypeContractual": "Contractual / Project-based",
+      "contractTypeInternship": "Internship",
+      "contractTypeFullTimeDesc": "Standard full-time employment contract",
+      "contractTypePartTimeDesc": "Part-time employment with defined schedule",
+      "contractTypeHourlyDesc": "Compensation per working hour",
+      "contractTypeContractualDesc": "Fixed-term contract for specific projects",
+      "contractTypeInternshipDesc": "Corporate trainee or internship program"
     },
     "actions": {
       "save": "Save Changes",
@@ -266,7 +295,19 @@
       "pendingInfo": "After saving, your profile will be sent to HR and Management for review.",
       "viewStatus": "View Profile Status",
       "submitAndSend": "Save & Submit for Approval",
-      "submitting": "Submitting..."
+      "submitting": "Submitting...",
+      "workLocationLabel": "Work Location",
+      "workLocationPlaceholder": "Select work location...",
+      "workLocationSearch": "Search work location...",
+      "workLocationHelp": "Physical location or employment model.",
+      "contractTypeLabel": "Contract Type",
+      "contractTypePlaceholder": "Select contract type...",
+      "contractTypeSearch": "Search contract type...",
+      "contractTypeHelp": "Employment agreement type per corporate contract.",
+      "subordinatesLabel": "Direct Reports",
+      "subordinatesPlaceholder": "Enter direct report or team member name...",
+      "subordinatesHelp": "Colleagues who directly report to this employee.",
+      "addSubordinateBtn": "Add Member"
     },
     "footerText": "Only you can see your settings. You might also want to review your settings for services you use most to keep your data private and secure."
   }
