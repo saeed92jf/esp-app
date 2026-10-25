@@ -48,6 +48,10 @@ export interface AdminUserConfigProps {
 type SegmentId = "identity" | "org" | "personal" | "education";
 
 interface FormState {
+  firstNameFa: string;
+  lastNameFa: string;
+  firstName: string;
+  lastName: string;
   name: string;
   email: string;
   phone: string;
@@ -66,6 +70,10 @@ interface FormState {
 }
 
 const INITIAL_FORM: FormState = {
+  firstNameFa: "",
+  lastNameFa: "",
+  firstName: "",
+  lastName: "",
   name: "",
   email: "",
   phone: "",
@@ -81,6 +89,14 @@ const INITIAL_FORM: FormState = {
   educationDegree: "bachelors",
   educationField: "",
   workMode: "office",
+};
+
+const sanitizePersian = (text: string) => {
+  return text.replace(/[^ \u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, "");
+};
+
+const sanitizeEnglish = (text: string) => {
+  return text.replace(/[^ a-zA-Z'-]/g, "");
 };
 
 const normalizeDigits = (val: string) => {
@@ -101,6 +117,13 @@ export function AdminUserConfig({
   const [activeSegment, setActiveSegment] = useState<SegmentId>("identity");
   const [openSegment, setOpenSegment] = useState<SegmentId | null>("identity");
   const [confirmedSegments, setConfirmedSegments] = useState<Set<SegmentId>>(new Set());
+
+  const fullNameFa = `${form.firstNameFa.trim()} ${form.lastNameFa.trim()}`.trim();
+  const fullNameEn = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
+  const previewDisplayName = (isRtl ? (fullNameFa || fullNameEn) : (fullNameEn || fullNameFa)) || form.name.trim();
+  const previewSecondaryName = isRtl
+    ? (fullNameFa && fullNameEn ? fullNameEn : "")
+    : (fullNameEn && fullNameFa ? fullNameFa : "");
 
   // Options
   const departmentOptions = [
@@ -144,8 +167,12 @@ export function AdminUserConfig({
   // Segment filled checks
   const isSegmentFilled = (id: SegmentId): boolean => {
     switch (id) {
-      case "identity":
-        return Boolean(form.name.trim().length > 0 && form.email.trim().length > 0);
+      case "identity": {
+        const hasFa = Boolean(form.firstNameFa.trim().length > 0 || form.lastNameFa.trim().length > 0);
+        const hasEn = Boolean(form.firstName.trim().length > 0 || form.lastName.trim().length > 0);
+        const hasAnyName = Boolean(hasFa || hasEn || form.name.trim().length > 0);
+        return Boolean(hasAnyName && form.email.trim().length > 0);
+      }
       case "org":
         return Boolean(form.department && form.role && form.jobTitle.trim().length > 0);
       case "personal":
@@ -234,9 +261,17 @@ export function AdminUserConfig({
     }
     setConfirmedSegments((prev) => new Set(prev).add("education"));
 
+    const fullNameFa = `${form.firstNameFa.trim()} ${form.lastNameFa.trim()}`.trim();
+    const fullNameEn = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
+    const finalDisplayName = (isRtl ? (fullNameFa || fullNameEn) : (fullNameEn || fullNameFa)) || form.name.trim();
+
     const createdUser: User = {
       id: `u_${Date.now()}`,
-      name: form.name.trim(),
+      name: finalDisplayName,
+      firstNameFa: form.firstNameFa.trim(),
+      lastNameFa: form.lastNameFa.trim(),
+      firstName: form.firstName.trim(),
+      lastName: form.lastName.trim(),
       email: form.email.trim(),
       phone: form.phone.trim(),
       nationalId: form.nationalId.trim(),
@@ -458,12 +493,13 @@ export function AdminUserConfig({
                         {/* ========================================= */}
                         {seg.id === "identity" && (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* 1. Persian First Name */}
                             <div className="flex flex-col gap-2">
                               <Label
-                                htmlFor="name"
+                                htmlFor="firstNameFa"
                                 className="text-xs font-semibold text-foreground flex items-center gap-1.5"
                               >
-                                {t("fullName")}
+                                {t("firstNameFaLabel")}
                                 <span className="text-rose-500">*</span>
                               </Label>
                               <div className="relative">
@@ -472,13 +508,131 @@ export function AdminUserConfig({
                                   className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                 />
                                 <Input
-                                  id="name"
-                                  value={form.name}
-                                  onChange={(e) =>
-                                    setForm({ ...form, name: e.target.value })
-                                  }
-                                  placeholder={t("fullNamePlaceholder")}
+                                  id="firstNameFa"
+                                  value={form.firstNameFa}
+                                  onChange={(e) => {
+                                    const val = sanitizePersian(e.target.value);
+                                    setForm((prev) => {
+                                      const fa = `${val} ${prev.lastNameFa}`.trim();
+                                      const en = `${prev.firstName} ${prev.lastName}`.trim();
+                                      return {
+                                        ...prev,
+                                        firstNameFa: val,
+                                        name: isRtl ? (fa || en) : (en || fa),
+                                      };
+                                    });
+                                  }}
+                                  placeholder={t("firstNameFaPlaceholder")}
                                   className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  dir="rtl"
+                                />
+                              </div>
+                            </div>
+
+                            {/* 2. Persian Last Name */}
+                            <div className="flex flex-col gap-2">
+                              <Label
+                                htmlFor="lastNameFa"
+                                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                              >
+                                {t("lastNameFaLabel")}
+                                <span className="text-rose-500">*</span>
+                              </Label>
+                              <div className="relative">
+                                <UserCircle2
+                                  size={18}
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                />
+                                <Input
+                                  id="lastNameFa"
+                                  value={form.lastNameFa}
+                                  onChange={(e) => {
+                                    const val = sanitizePersian(e.target.value);
+                                    setForm((prev) => {
+                                      const fa = `${prev.firstNameFa} ${val}`.trim();
+                                      const en = `${prev.firstName} ${prev.lastName}`.trim();
+                                      return {
+                                        ...prev,
+                                        lastNameFa: val,
+                                        name: isRtl ? (fa || en) : (en || fa),
+                                      };
+                                    });
+                                  }}
+                                  placeholder={t("lastNameFaPlaceholder")}
+                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  dir="rtl"
+                                />
+                              </div>
+                            </div>
+
+                            {/* 3. English First Name */}
+                            <div className="flex flex-col gap-2">
+                              <Label
+                                htmlFor="firstName"
+                                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                              >
+                                {t("firstNameEnLabel")}
+                                <span className="text-rose-500">*</span>
+                              </Label>
+                              <div className="relative">
+                                <UserCircle2
+                                  size={18}
+                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                />
+                                <Input
+                                  id="firstName"
+                                  value={form.firstName}
+                                  onChange={(e) => {
+                                    const val = sanitizeEnglish(e.target.value);
+                                    setForm((prev) => {
+                                      const fa = `${prev.firstNameFa} ${prev.lastNameFa}`.trim();
+                                      const en = `${val} ${prev.lastName}`.trim();
+                                      return {
+                                        ...prev,
+                                        firstName: val,
+                                        name: isRtl ? (fa || en) : (en || fa),
+                                      };
+                                    });
+                                  }}
+                                  placeholder={t("firstNameEnPlaceholder")}
+                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  dir="ltr"
+                                />
+                              </div>
+                            </div>
+
+                            {/* 4. English Last Name */}
+                            <div className="flex flex-col gap-2">
+                              <Label
+                                htmlFor="lastName"
+                                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                              >
+                                {t("lastNameEnLabel")}
+                                <span className="text-rose-500">*</span>
+                              </Label>
+                              <div className="relative">
+                                <UserCircle2
+                                  size={18}
+                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                />
+                                <Input
+                                  id="lastName"
+                                  value={form.lastName}
+                                  onChange={(e) => {
+                                    const val = sanitizeEnglish(e.target.value);
+                                    setForm((prev) => {
+                                      const fa = `${prev.firstNameFa} ${prev.lastNameFa}`.trim();
+                                      const en = `${prev.firstName} ${val}`.trim();
+                                      return {
+                                        ...prev,
+                                        lastName: val,
+                                        name: isRtl ? (fa || en) : (en || fa),
+                                      };
+                                    });
+                                  }}
+                                  placeholder={t("lastNameEnPlaceholder")}
+                                  className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                  dir="ltr"
                                 />
                               </div>
                             </div>
@@ -970,14 +1124,19 @@ export function AdminUserConfig({
             <div className="flex items-center gap-3.5">
               <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0 bg-transparent">
                 <AvatarFallback className="bg-transparent text-primary font-bold text-xl rounded-full">
-                  {form.name.trim() ? form.name.trim().charAt(0) : "؟"}
+                  {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="font-bold text-foreground text-base truncate">
-                  {form.name.trim() || t("newEmployeeBadge")}
+                  {previewDisplayName || t("newEmployeeBadge")}
                 </span>
+                {previewSecondaryName && (
+                  <span className="text-[11px] text-muted-foreground truncate" dir={isRtl ? "ltr" : "rtl"}>
+                    {previewSecondaryName}
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground truncate mt-0.5">
                   {form.jobTitle.trim() || t("unspecified")}
                 </span>

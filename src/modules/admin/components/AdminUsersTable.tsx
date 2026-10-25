@@ -925,6 +925,9 @@ export function AdminUsersTable({
                   return { colorClass: 'bg-[#22c55e]', label: t("office") };
                 };
                 const locationBadge = getLocationBadge();
+                const userDisplayName = isRtl
+                  ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : user.name)
+                  : (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name);
 
                 return (
                   <React.Fragment key={user.id}>
@@ -968,7 +971,7 @@ export function AdminUsersTable({
                               {user.avatar ? (
                                 <img
                                   src={user.avatar}
-                                  alt={user.name}
+                                  alt={userDisplayName}
                                   className="size-full object-cover"
                                   onError={(e) => {
                                     (e.currentTarget as HTMLElement).style.display = 'none';
@@ -981,7 +984,7 @@ export function AdminUsersTable({
                                 className="avatar-fallback text-xs font-bold text-primary uppercase"
                                 style={{ display: user.avatar ? 'none' : 'inline', color: user.avatarColor }}
                               >
-                                {user.name ? user.name.trim().charAt(0) : "U"}
+                                {userDisplayName ? userDisplayName.trim().charAt(0) : "U"}
                               </span>
                             </div>
                             {/* Unclipped colored location status tag */}
@@ -996,7 +999,7 @@ export function AdminUsersTable({
                           <div className="flex flex-col min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className="font-bold text-xs text-foreground truncate max-w-[130px]">
-                                {user.name}
+                                {userDisplayName}
                               </span>
                               <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground shrink-0">
                                 #{user.id}

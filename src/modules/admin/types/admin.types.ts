@@ -11,6 +11,10 @@ export type AccountStatus = 'pending_profile' | 'pending_approval' | 'active' | 
 export interface User {
   id: string;
   name: string;
+  firstNameFa?: string;
+  lastNameFa?: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: 'admin' | 'user';
   status: 'online' | 'offline';

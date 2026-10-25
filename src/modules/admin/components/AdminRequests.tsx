@@ -1003,7 +1003,7 @@ export function AdminRequests({
                                           )} ${reviewData.lastNameFa || ""}`.trim(),
                                         })
                                       }
-                                      placeholder="نام فارسی"
+                                      placeholder={t("firstNameFaPlaceholder")}
                                       className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                     />
                                   </div>
@@ -1027,7 +1027,7 @@ export function AdminRequests({
                                           )}`.trim(),
                                         })
                                       }
-                                      placeholder="نام خانوادگی فارسی"
+                                      placeholder={t("lastNameFaPlaceholder")}
                                       className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                     />
                                   </div>
@@ -1047,7 +1047,7 @@ export function AdminRequests({
                                           ),
                                         })
                                       }
-                                      placeholder="First Name"
+                                      placeholder={t("firstNameEnPlaceholder")}
                                       className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                       dir="ltr"
                                     />
@@ -1067,7 +1067,7 @@ export function AdminRequests({
                                           ),
                                         })
                                       }
-                                      placeholder="Last Name"
+                                      placeholder={t("lastNameEnPlaceholder")}
                                       className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                       dir="ltr"
                                     />
