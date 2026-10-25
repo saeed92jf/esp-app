@@ -55,6 +55,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { DatePicker, jalaliToGregorianDate, getJalaliDate } from "@/components/ui/date-picker";
+import { toPersianDigits } from "@/utils/textDirection";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 
@@ -481,20 +482,24 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             <div className="relative">
               <Input
                 id="phone"
-                value={formData.personal.phone}
+                value={isFa ? toPersianDigits(formData.personal.phone) : formData.personal.phone}
                 onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "").slice(0, 11);
+                  const raw = e.target.value
+                    .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString())
+                    .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString())
+                    .replace(/\D/g, "");
+                  const val = raw.slice(0, 11);
                   handleFieldChange("personal", "phone", val);
                   if (val !== initialData.personal.phone) {
                     handleFieldChange("personal", "phoneVerified", false);
                   }
                 }}
                 maxLength={11}
-                placeholder="09120000000"
+                placeholder={isFa ? "۰۹۱۲۰۰۰۰۰۰۰" : "09120000000"}
                 dir="ltr"
-                className={`h-10 font-mono text-sm ltr:pl-9 rtl:pr-9 ${errors["personal.phone"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+                className={`h-10 font-sans fa-num text-sm text-left pl-9 pr-3 ${errors["personal.phone"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
               />
-              <Phone className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 ltr:left-3 rtl:right-3 pointer-events-none" />
+              <Phone className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
             </div>
             {errors["personal.phone"] ? (
               <span className="text-[11px] text-destructive">{errors["personal.phone"]}</span>
@@ -521,9 +526,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                 disabled
                 readOnly
                 dir="ltr"
-                className="h-10 font-sans text-sm ltr:pl-9 rtl:pr-9 bg-muted/40 cursor-not-allowed text-foreground opacity-90"
+                className="h-10 font-sans text-sm text-left pl-9 pr-3 bg-muted/40 cursor-not-allowed text-foreground opacity-90"
               />
-              <Mail className="size-4 text-emerald-500 absolute top-1/2 -translate-y-1/2 ltr:left-3 rtl:right-3 pointer-events-none" />
+              <Mail className="size-4 text-emerald-500 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
             </div>
             <p className="text-[11px] text-muted-foreground">
               {t("personnelForm.corporateEmailHelp")}

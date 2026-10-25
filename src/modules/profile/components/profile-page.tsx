@@ -7,6 +7,7 @@ import { useProfile } from "../hooks/use-profile";
 import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan } from "../types/profile";
 import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
+import { toPersianDigits } from "@/utils/textDirection";
 
 const DEGREE_OPTIONS: ComboboxOption[] = [
   { value: "دیپلم", label: "دیپلم" },
@@ -297,6 +298,7 @@ export function ProfilePage() {
   const tColors = useTranslations("Settings.colors");
   const tSettings = useTranslations("Settings");
   const locale = useLocale();
+  const isFa = locale === "fa";
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -776,27 +778,32 @@ export function ProfilePage() {
                  </div>
                  <div className="relative">
                    <Input 
-                     id="phone" 
-                     value={formData.personal.phone} 
-                     onChange={(e) => {
-                       const val = e.target.value.replace(/\D/g, "");
-                       handleChange("personal", "phone", val);
-                       if (val !== profile?.personal.phone) {
-                         handleChange("personal", "phoneVerified", false);
-                       }
-                     }} 
-                     maxLength={11}
-                     placeholder="09120000000"
-                     className={cn(
-                       "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 text-lg focus-visible:ring-0 shadow-none ltr text-left font-sans",
-                       formData.personal.phone && !isPhoneValid 
-                         ? "border-destructive text-destructive focus-visible:border-destructive" 
-                         : "border-primary/20 focus-visible:border-primary"
-                     )}
-                     autoFocus 
-                   />
-                   <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
-                 </div>
+                    id="phone" 
+                    value={isFa ? toPersianDigits(formData.personal.phone) : formData.personal.phone} 
+                    onChange={(e) => {
+                      const raw = e.target.value
+                        .replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString())
+                        .replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d).toString())
+                        .replace(/\D/g, "");
+                      const val = raw.slice(0, 11);
+                      handleChange("personal", "phone", val);
+                      if (val !== profile?.personal.phone) {
+                        handleChange("personal", "phoneVerified", false);
+                      }
+                    }} 
+                    maxLength={11}
+                    placeholder={isFa ? "۰۹۱۲۰۰۰۰۰۰۰" : "09120000000"}
+                    dir="ltr"
+                    className={cn(
+                      "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 pr-8 text-lg focus-visible:ring-0 shadow-none text-left font-sans fa-num",
+                      formData.personal.phone && !isPhoneValid 
+                        ? "border-destructive text-destructive focus-visible:border-destructive" 
+                        : "border-primary/20 focus-visible:border-primary"
+                    )}
+                    autoFocus 
+                  />
+                  <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-2 pointer-events-none" />
+                </div>
                  {formData.personal.phone && !isPhoneValid ? (
                    <p className="text-xs text-destructive font-medium">
                      {t("validation.phoneInvalid")}
@@ -918,26 +925,27 @@ export function ProfilePage() {
                  </div>
                  <div className="relative">
                    <Input 
-                     id="email" 
-                     value={formData.personal.email} 
-                     onChange={(e) => {
-                       const val = e.target.value.trim();
-                       handleChange("personal", "email", val);
-                       if (val !== profile?.personal.email) {
-                         handleChange("personal", "emailVerified", false);
-                       }
-                     }} 
-                     placeholder="user@euroslotpars.com"
-                     className={cn(
-                       "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 text-lg focus-visible:ring-0 shadow-none ltr text-left font-sans",
-                       formData.personal.email && !isEmailValid 
-                         ? "border-destructive text-destructive focus-visible:border-destructive" 
-                         : "border-primary/20 focus-visible:border-primary"
-                     )}
-                     autoFocus 
-                   />
-                   <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
-                 </div>
+                    id="email" 
+                    value={formData.personal.email} 
+                    onChange={(e) => {
+                      const val = e.target.value.trim();
+                      handleChange("personal", "email", val);
+                      if (val !== profile?.personal.email) {
+                        handleChange("personal", "emailVerified", false);
+                      }
+                    }} 
+                    placeholder="user@euroslotpars.com"
+                    dir="ltr"
+                    className={cn(
+                      "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 pr-8 text-lg focus-visible:ring-0 shadow-none text-left font-sans",
+                      formData.personal.email && !isEmailValid 
+                        ? "border-destructive text-destructive focus-visible:border-destructive" 
+                        : "border-primary/20 focus-visible:border-primary"
+                    )}
+                    autoFocus 
+                  />
+                  <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-2 pointer-events-none" />
+                </div>
                  {formData.personal.email && !isEmailValid ? (
                    <p className="text-xs text-destructive font-medium">
                      {t("validation.emailInvalid")}
@@ -1330,7 +1338,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
              </div>
              <div className="flex items-center justify-end w-2/3 gap-3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num font-sans">{formData.personal.phone || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num font-sans">{formData.personal.phone ? (isFa ? toPersianDigits(formData.personal.phone) : formData.personal.phone) : t("notSet")}</span>
                 {formData.personal.phoneVerified ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
                     <CheckCircle2 className="size-3" />
