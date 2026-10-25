@@ -831,8 +831,8 @@ export function AdminUsersTable({
                   <div className="flex flex-col gap-1.5">
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterByCompany")}</span>
                     {[
-                      { id: "euroslot", label: isRtl ? "یورو اسلات" : "Euroslot" },
-                      { id: "npceram", label: isRtl ? "نانو پالایش" : "Nano Palaesh" }
+                      { id: "euroslot", label: t("companyEuroslot") },
+                      { id: "npceram", label: t("companyNpceram") }
                     ].map((comp) => (
                       <label key={comp.id} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
@@ -1369,7 +1369,7 @@ export function AdminUsersTable({
                                   </div>
                                   <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
                                     <span className="text-[10px] text-muted-foreground font-medium">{t("education")}</span>
-                                    <span className="font-bold text-foreground mt-0.5 truncate">{user.educationField || "مهندسی نرم افزار"}</span>
+                                    <span className="font-bold text-foreground mt-0.5 truncate">{user.educationField || t("defaultEducationField")}</span>
                                   </div>
                                   <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
                                     <span className="text-[10px] text-muted-foreground font-medium">{t("maritalStatus")} / {t("children")}</span>

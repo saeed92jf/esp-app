@@ -134,29 +134,29 @@ export function AdminTasksTime({
       return [
         {
           id: "task-urgent-1",
-          title: "بازبینی و اعتبارسنجی نقشه‌های P&ID خط تغذیه واحد ۴۰۰",
+          title: t("mockTaskTitle1"),
           priority: "urgent" as const,
           status: "in_progress" as const,
           dueDate: "1403/08/15",
-          timelineDate: "۱۵ آبان",
+          timelineDate: t("mockTaskDate1"),
           category: "P&ID FLOW"
         },
         {
           id: "task-overdue-2",
-          title: "محاسبات هیدرولیک و مدلسازی غشای سرامیکی",
+          title: t("mockTaskTitle2"),
           priority: "high" as const,
           status: "in_progress" as const,
           dueDate: "1403/08/04",
-          timelineDate: "۴ آبان",
+          timelineDate: t("mockTaskDate2"),
           category: "NANOFILTRATION"
         },
         {
           id: "task-urgent-3",
-          title: "تایید کلاس کاری شیرآلات ابزار دقیق پتروشیمی",
+          title: t("mockTaskTitle3"),
           priority: "urgent" as const,
           status: "pending" as const,
           dueDate: "1403/08/20",
-          timelineDate: "۲۰ آبان",
+          timelineDate: t("mockTaskDate3"),
           category: "INSTRUMENTATION"
         }
       ];
@@ -171,7 +171,7 @@ export function AdminTasksTime({
     }
 
     return urgentOrOverdue.slice(0, 5);
-  }, [allTasks, selectedUser]);
+  }, [allTasks, selectedUser, t]);
 
   const rings = useMemo(() => {
     const wf = selectedUser?.workingFormat;

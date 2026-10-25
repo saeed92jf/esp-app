@@ -53,7 +53,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const insPlan = insType === 'complementary' ? 'golden' : 'regular';
   const insDependents = childrenCount + (isMarried ? 1 : 0);
 
-  const educationField = selectedUser.educationField || "مهندسی نرم افزار";
+  const educationField = selectedUser.educationField || t("defaultEducationField");
   const educationDegree = selectedUser.educationDegree ? t(`degreesOptions.${selectedUser.educationDegree}`) : t("degrees.master");
 
   const insuranceStyles = {
@@ -207,7 +207,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
                 type="button"
                 onClick={() => setShowSalary(!showSalary)}
                 className="absolute top-1.5 end-1.5 p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                title={showSalary ? "Hide salary" : "Show salary"}
+                title={showSalary ? t("hideSalary") : t("showSalary")}
               >
                 {showSalary ? <EyeOff size={13} /> : <Eye size={13} />}
               </button>

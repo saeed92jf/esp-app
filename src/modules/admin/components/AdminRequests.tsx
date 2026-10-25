@@ -196,13 +196,13 @@ export function AdminRequests({
           childrenCount: found.childrenCount || 0,
           workLocation: found.workLocation || "office",
           contractType: found.contractType || "full_time",
-          insuranceProvider: found.insuranceProvider || "تامین اجتماعی",
+          insuranceProvider: found.insuranceProvider || t("insuranceOptions.socialSecurity"),
           supplementaryPlan: found.supplementaryPlan || "none",
           educationDegree: found.educationDegree || "bachelors",
           dependents: found.dependents || [],
           skills: found.skills || [
-            { id: "sk-1", name: "کار تیمی و روابط سازمانی", level: 4 },
-            { id: "sk-2", name: "تسلط بر سیستم‌های اداری", level: 4 },
+            { id: "sk-1", name: t("defaultSkill1"), level: 4 },
+            { id: "sk-2", name: t("defaultSkill2"), level: 4 },
           ],
         });
       }
@@ -310,7 +310,7 @@ export function AdminRequests({
       toast.success(t("profileChangesSavedSuccess"));
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در ذخیره تغییرات پرونده");
+      toast.error(t("errorSaveProfileChanges"));
     } finally {
       setIsSaving(false);
     }
@@ -374,7 +374,7 @@ export function AdminRequests({
 
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در تایید و پیشبرد مرحله پرونده");
+      toast.error(t("errorAdvanceStage"));
     } finally {
       setIsSaving(false);
     }
@@ -394,7 +394,7 @@ export function AdminRequests({
       toast.success(t("hrApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در تایید واحد منابع انسانی");
+      toast.error(t("errorApproveHr"));
     } finally {
       setActionLoadingId(null);
     }
@@ -414,7 +414,7 @@ export function AdminRequests({
       toast.success(t("managerApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در فعال‌سازی و صدور دسترسی");
+      toast.error(t("errorApproveManager"));
     } finally {
       setActionLoadingId(null);
     }
@@ -437,7 +437,7 @@ export function AdminRequests({
       setRejectReason("");
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در ثبت رد درخواست");
+      toast.error(t("errorRejectRequest"));
     } finally {
       setIsRejecting(false);
     }
@@ -456,7 +456,7 @@ export function AdminRequests({
       );
       if (onRefresh) await onRefresh();
     } catch {
-      toast.error("خطا در صدور مجدد کلمه عبور");
+      toast.error(t("errorResendCredentials"));
     } finally {
       setActionLoadingId(null);
     }
@@ -528,7 +528,7 @@ export function AdminRequests({
                 className="h-9 px-3.5 text-xs rounded-xl gap-1.5 cursor-pointer border-border/50 hover:bg-background/80"
               >
                 <RotateCw className="size-3.5" />
-                <span>بروزرسانی</span>
+                <span>{t("refreshBtn")}</span>
               </Button>
             )}
           </div>
@@ -952,7 +952,7 @@ export function AdminRequests({
                       ) : (
                         <Copy className="size-3" />
                       )}
-                      <span>کپی کلمه عبور</span>
+                      <span>{t("copyPassword")}</span>
                     </button>
                   </div>
                 )}
@@ -981,7 +981,7 @@ export function AdminRequests({
                             <Sparkles className="size-3.5" />
                           </div>
                           <span className="text-xs font-bold text-foreground">
-                            {isRtl ? "مراحل بررسی و تأیید سازمانی" : "Organizational Approval Pipeline"}
+                            {t("orgApprovalPipeline")}
                           </span>
                         </div>
                         <div className="text-[11px] font-medium">
@@ -1053,7 +1053,7 @@ export function AdminRequests({
                             {isHrDone ? (
                               <Check className="size-4 stroke-[3]" />
                             ) : (
-                              <span className="fa-num">۲</span>
+                              <span className="fa-num">2</span>
                             )}
                           </div>
                           <div className="flex flex-col min-w-0">
@@ -1107,7 +1107,7 @@ export function AdminRequests({
                             {isManagerDone ? (
                               <Check className="size-4 stroke-[3]" />
                             ) : (
-                              <span className="fa-num">۳</span>
+                              <span className="fa-num">3</span>
                             )}
                           </div>
                           <div className="flex flex-col min-w-0">
@@ -1588,7 +1588,7 @@ export function AdminRequests({
                                           })
                                         }
                                         rows={2}
-                                        placeholder="آدرس دقیق محل سکونت..."
+                                        placeholder={t("addressPlaceholder")}
                                         className="ps-10 bg-background border-border/50 rounded-xl text-xs resize-none"
                                       />
                                     </div>
@@ -1730,7 +1730,7 @@ export function AdminRequests({
                                           manager: e.target.value,
                                         })
                                       }
-                                      placeholder="نام مدیر مستقیم"
+                                      placeholder={t("managerDirectPlaceholder")}
                                       className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                     />
                                   </div>
@@ -1830,7 +1830,7 @@ export function AdminRequests({
                                       <Input
                                         value={
                                           reviewData.insuranceProvider ||
-                                          "تامین اجتماعی"
+                                          t("insuranceOptions.socialSecurity")
                                         }
                                         onChange={(e) =>
                                           setReviewData({
@@ -1928,7 +1928,7 @@ export function AdminRequests({
                                       {(reviewData.dependents || []).length ===
                                       0 ? (
                                         <p className="text-xs text-muted-foreground italic py-2">
-                                          هیچ فردی تحت تکفل ثبت نشده است.
+                                          {t("noDependentsRegistered")}
                                         </p>
                                       ) : (
                                         (reviewData.dependents || []).map(
@@ -1946,7 +1946,7 @@ export function AdminRequests({
                                                     e.target.value
                                                   )
                                                 }
-                                                placeholder="نام و نام خانوادگی"
+                                                placeholder={t("fullNamePlaceholder")}
                                                 className="h-9 text-xs bg-background"
                                               />
                                               <Combobox
@@ -1959,7 +1959,7 @@ export function AdminRequests({
                                                     val
                                                   )
                                                 }
-                                                placeholder="نسبت..."
+                                                placeholder={t("relationshipPlaceholder")}
                                                 className="h-9 text-xs bg-background rtl:text-right"
                                               />
                                               <div className="flex items-center gap-2">
@@ -1974,7 +1974,7 @@ export function AdminRequests({
                                                       )
                                                     )
                                                   }
-                                                  placeholder="کد ملی"
+                                                  placeholder={t("nationalIdPlaceholder")}
                                                   className="h-9 text-xs bg-background fa-num"
                                                   dir="ltr"
                                                 />
@@ -2040,7 +2040,7 @@ export function AdminRequests({
                                             educationField: e.target.value,
                                           })
                                         }
-                                        placeholder="مهندسی متالورژی / صنایع..."
+                                        placeholder={t("studyFieldPlaceholder")}
                                         className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                       />
                                     </div>
@@ -2057,7 +2057,7 @@ export function AdminRequests({
                                             university: e.target.value,
                                           })
                                         }
-                                        placeholder="دانشگاه تهران / صنعتی شریف..."
+                                        placeholder={t("universityPlaceholder")}
                                         className="h-11 bg-background border-border/50 rounded-xl text-sm"
                                       />
                                     </div>
@@ -2244,7 +2244,7 @@ export function AdminRequests({
               disabled={isRejecting}
               className="text-xs font-semibold"
             >
-              {isRejecting ? "در حال ثبت..." : t("confirmRejectBtn")}
+              {isRejecting ? t("submitting") : t("confirmRejectBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>
