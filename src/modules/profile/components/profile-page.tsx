@@ -12,7 +12,6 @@ import {
   getDegreeOptions,
   getStudyFieldOptions,
   getUniversityOptions,
-  getGraduationYearOptions,
   resolveDegreeLabel,
   resolveStudyFieldLabel,
   resolveUniversityLabel,
@@ -362,7 +361,6 @@ export function ProfilePage() {
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
   const [isManualUniversity, setIsManualUniversity] = useState(false);
-  const [educationDateMode, setEducationDateMode] = useState<"combo" | "calendar" | "input">("combo");
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || "#0284c7"
   );
@@ -924,7 +922,7 @@ export function ProfilePage() {
                          placeholder="12345"
                          maxLength={5}
                          dir="ltr"
-                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-background border-primary/30"
+                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary shadow-none"
                          autoFocus
                        />
                        <Button
@@ -1066,7 +1064,7 @@ export function ProfilePage() {
                          placeholder="54321"
                          maxLength={5}
                          dir="ltr"
-                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-background border-primary/30"
+                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary shadow-none"
                          autoFocus
                        />
                        <Button
@@ -1231,7 +1229,7 @@ export function ProfilePage() {
                       const val = parseInt(e.target.value, 10);
                       handleChange("personal", "childrenCount", isNaN(val) ? 0 : Math.max(0, val));
                     }}
-                    className="h-12 text-center text-xl font-bold font-mono fa-num max-w-[120px]"
+                    className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-center text-xl font-bold font-mono fa-num max-w-[120px] focus-visible:ring-0 focus-visible:border-primary shadow-none"
                   />
                   <Button
                     type="button"
@@ -1492,8 +1490,8 @@ export function ProfilePage() {
                       onChange={(date) => handleChange("organizational", "joinDate", formatDateToString(date))}
                       isJalali={true}
                       placeholder={t("fields.selectJoinDate")}
-                      className="w-full h-12"
-                      triggerClassName="w-full h-12 justify-between text-base"
+                      variant="underline"
+                      className="w-full"
                     />
                   ) : editingField === 'workLocation' ? (
                     <div className="space-y-3">
@@ -1612,7 +1610,7 @@ export function ProfilePage() {
                             }
                           }}
                           placeholder={t("fields.subordinatePlaceholder")}
-                          className="h-11 rounded-xl text-sm"
+                          className="h-11 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-sm focus-visible:ring-0 focus-visible:border-primary shadow-none"
                         />
                         <Button
                           type="button"
@@ -2257,7 +2255,7 @@ export function ProfilePage() {
                     <Input 
                       value={formData.insurance.provider || t("fields.taminEjtemaei")} 
                       onChange={(e) => handleChange("insurance", "provider", e.target.value)}
-                      className="h-12 text-base font-medium rounded-xl"
+                      className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base font-medium focus-visible:ring-0 focus-visible:border-primary shadow-none"
                     />
                   </div>
                 </div>
@@ -2377,7 +2375,7 @@ export function ProfilePage() {
                           value={newDepFullName}
                           onChange={(e) => setNewDepFullName(e.target.value)}
                           placeholder={t("fields.fullNamePlaceholder")}
-                          className="h-10 text-sm"
+                          className="h-10 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-sm focus-visible:ring-0 focus-visible:border-primary shadow-none"
                         />
                       </div>
                       <div className="space-y-1">
@@ -2387,6 +2385,7 @@ export function ProfilePage() {
                           value={newDepRelationship}
                           onChange={(val) => setNewDepRelationship(val)}
                           placeholder={t("fields.selectRelationship")}
+                          variant="underline"
                           className="w-full h-10 rtl:text-right"
                         />
                       </div>
@@ -2401,7 +2400,7 @@ export function ProfilePage() {
                           }}
                           placeholder={t("fields.nationalIdPlaceholder")}
                           dir="ltr"
-                          className="h-10 font-mono text-sm"
+                          className="h-10 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 font-mono text-sm focus-visible:ring-0 focus-visible:border-primary shadow-none"
                         />
                       </div>
                       <div className="space-y-1">
@@ -2411,8 +2410,8 @@ export function ProfilePage() {
                           onChange={(date) => setNewDepBirthDate(formatDateToString(date))}
                           isJalali={locale === 'fa'}
                           placeholder={t("fields.selectBirthDate")}
+                          variant="underline"
                           className="w-full h-10"
-                          triggerClassName="w-full h-10 justify-between text-sm"
                         />
                       </div>
                     </div>
@@ -2548,8 +2547,8 @@ export function ProfilePage() {
                         onChange={(date) => handleChange("insurance", "validUntil", formatDateToString(date))}
                         isJalali={locale === 'fa'}
                         placeholder={t("fields.selectValidUntil")}
-                        className="w-full h-12"
-                        triggerClassName="w-full h-12 justify-between text-base"
+                        variant="underline"
+                        className="w-full"
                       />
                     ) : fieldKey === 'insuranceCode' ? (
                       <div className="relative">
@@ -2855,11 +2854,6 @@ export function ProfilePage() {
       setIsManualFieldOfStudy(!isKnownField && Boolean(rec.fieldOfStudy));
       const isKnownUni = UNIVERSITY_DEFINITIONS.some(u => u.key === rec.university);
       setIsManualUniversity(!isKnownUni && Boolean(rec.university));
-      if (rec.graduationYear && (rec.graduationYear.includes("-") || rec.graduationYear.includes("/"))) {
-        setEducationDateMode("calendar");
-      } else {
-        setEducationDateMode("combo");
-      }
       setActiveEducationRecord(rec);
       setEditingField(rec.id || "edu_primary");
     };
@@ -2874,7 +2868,6 @@ export function ProfilePage() {
       };
       setIsManualFieldOfStudy(false);
       setIsManualUniversity(false);
-      setEducationDateMode("combo");
       setActiveEducationRecord(newRecord);
       setEditingField("new_edu");
     };
@@ -2989,7 +2982,8 @@ export function ProfilePage() {
                     value={currentRecordState.degree}
                     onChange={(val) => setActiveEducationRecord({ ...currentRecordState, degree: val })}
                     placeholder={t("fields.selectDegree")}
-                    className="w-full h-12"
+                    variant="underline"
+                    className="w-full"
                   />
                 </div>
 
@@ -3028,7 +3022,8 @@ export function ProfilePage() {
                       }}
                       placeholder={t("fields.selectUniversity")}
                       showSearch={true}
-                      className="w-full h-12"
+                      variant="underline"
+                      className="w-full"
                     />
                   )}
                 </div>
@@ -3068,79 +3063,25 @@ export function ProfilePage() {
                       }}
                       placeholder={t("fields.selectFieldOfStudy")}
                       showSearch={true}
-                      className="w-full h-12"
+                      variant="underline"
+                      className="w-full"
                     />
                   )}
                 </div>
 
-                {/* 4. تاریخ / سال فارغ‌التحصیلی (کومبو، تقویم دیت‌پیکر و اینپوت استایل ساده) */}
+                {/* 4. تاریخ فارغ‌التحصیلی (فقط دیتاپیکر با استایل ساده زیرخط) */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">
-                      {t("fields.graduationDate")}
-                    </Label>
-                    <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/50 text-[11px]">
-                      <button
-                        type="button"
-                        onClick={() => setEducationDateMode("combo")}
-                        className={cn(
-                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
-                          educationDateMode === "combo" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {t("fields.dateModeCombo")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEducationDateMode("calendar")}
-                        className={cn(
-                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
-                          educationDateMode === "calendar" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {t("fields.dateModeCalendar")}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEducationDateMode("input")}
-                        className={cn(
-                          "px-2.5 py-1 rounded-md transition-colors cursor-pointer font-medium",
-                          educationDateMode === "input" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {t("fields.dateModeInput")}
-                      </button>
-                    </div>
-                  </div>
-
-                  {educationDateMode === "combo" ? (
-                    <Combobox
-                      options={getGraduationYearOptions(locale)}
-                      value={currentRecordState.graduationYear}
-                      onChange={(val) => setActiveEducationRecord({ ...currentRecordState, graduationYear: val })}
-                      placeholder={t("fields.selectGraduationYear")}
-                      showSearch={true}
-                      className="w-full h-12 fa-num"
-                    />
-                  ) : educationDateMode === "calendar" ? (
-                    <DatePicker
-                      value={parseDateString(currentRecordState.graduationYear)}
-                      onChange={(date) => setActiveEducationRecord({ ...currentRecordState, graduationYear: formatDateToString(date) })}
-                      isJalali={locale === 'fa'}
-                      placeholder={t("fields.selectGraduationDate")}
-                      className="w-full h-12"
-                      triggerClassName="w-full h-12 justify-between text-base"
-                    />
-                  ) : (
-                    <Input
-                      value={currentRecordState.graduationYear || ""}
-                      onChange={(e) => setActiveEducationRecord({ ...currentRecordState, graduationYear: e.target.value })}
-                      placeholder={t("fields.graduationYearPlaceholder")}
-                      dir="ltr"
-                      className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base font-mono ltr text-left focus-visible:ring-0 focus-visible:border-primary shadow-none fa-num"
-                      autoFocus
-                    />
-                  )}
+                  <Label className="rtl:text-right block font-medium text-muted-foreground">
+                    {t("fields.graduationDate")}
+                  </Label>
+                  <DatePicker
+                    value={parseDateString(currentRecordState.graduationYear)}
+                    onChange={(date) => setActiveEducationRecord({ ...currentRecordState, graduationYear: formatDateToString(date) })}
+                    isJalali={locale === 'fa'}
+                    placeholder={t("fields.selectGraduationDate")}
+                    variant="underline"
+                    className="w-full"
+                  />
                 </div>
 
               </div>

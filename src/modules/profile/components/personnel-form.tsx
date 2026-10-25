@@ -66,7 +66,6 @@ import {
   getDegreeOptions,
   getStudyFieldOptions,
   getUniversityOptions,
-  getGraduationYearOptions,
   STUDY_FIELD_DEFINITIONS,
   UNIVERSITY_DEFINITIONS,
 } from "../data/education-options";
@@ -167,7 +166,6 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
   const [newSubordinate, setNewSubordinate] = useState("");
   const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
   const [isManualUniversity, setIsManualUniversity] = useState(false);
-  const [educationDateMode, setEducationDateMode] = useState<"combo" | "calendar" | "input">("combo");
 
   // Dependents state
   const [newDepFullName, setNewDepFullName] = useState("");
@@ -1155,74 +1153,19 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             )}
           </div>
 
-          {/* Graduation Date / Year (3 Modes: Combo, Calendar, Input) */}
+          {/* Graduation Date (DatePicker only) */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-              <Label className="text-xs sm:text-sm font-semibold">
-                {t("fields.graduationDate")}
-              </Label>
-              <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/50 text-[10px]">
-                <button
-                  type="button"
-                  onClick={() => setEducationDateMode("combo")}
-                  className={cn(
-                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
-                    educationDateMode === "combo" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {t("fields.dateModeCombo")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEducationDateMode("calendar")}
-                  className={cn(
-                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
-                    educationDateMode === "calendar" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {t("fields.dateModeCalendar")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setEducationDateMode("input")}
-                  className={cn(
-                    "px-2 py-0.5 rounded transition-colors cursor-pointer font-medium",
-                    educationDateMode === "input" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {t("fields.dateModeInput")}
-                </button>
-              </div>
-            </div>
-
-            {educationDateMode === "combo" ? (
-              <Combobox
-                options={getGraduationYearOptions(locale)}
-                value={formData.education.graduationYear}
-                onChange={(val) => handleFieldChange("education", "graduationYear", val)}
-                placeholder={t("fields.selectGraduationYear")}
-                showSearch={true}
-                className="w-full h-10 fa-num rtl:text-right"
-              />
-            ) : educationDateMode === "calendar" ? (
-              <DatePicker
-                value={parseDateString(formData.education.graduationYear)}
-                onChange={(date) => handleFieldChange("education", "graduationYear", formatDateToString(date))}
-                isJalali={isFa}
-                placeholder={t("fields.selectGraduationDate")}
-                className="w-full h-10"
-                triggerClassName="w-full h-10 justify-between text-sm"
-              />
-            ) : (
-              <Input
-                value={formData.education.graduationYear || ""}
-                onChange={(e) => handleFieldChange("education", "graduationYear", e.target.value)}
-                placeholder={t("fields.graduationYearPlaceholder")}
-                dir="ltr"
-                className="h-10 text-sm font-mono ltr text-left fa-num"
-                autoFocus
-              />
-            )}
+            <Label className="text-xs sm:text-sm font-semibold">
+              {t("fields.graduationDate")}
+            </Label>
+            <DatePicker
+              value={parseDateString(formData.education.graduationYear)}
+              onChange={(date) => handleFieldChange("education", "graduationYear", formatDateToString(date))}
+              isJalali={isFa}
+              placeholder={t("fields.selectGraduationDate")}
+              className="w-full h-10"
+              triggerClassName="w-full h-10 justify-between text-sm"
+            />
           </div>
 
           {/* Corporate Insurance (Tamin Ejtemaei) */}
