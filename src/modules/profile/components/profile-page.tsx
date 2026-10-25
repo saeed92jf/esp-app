@@ -666,53 +666,71 @@ export function ProfilePage() {
           break;
         case 'name':
           title = t("fields.name");
-          description = "نام و نام‌خانوادگی پرسنل به هر دو زبان فارسی و انگلیسی ثبت می‌شود.";
+          description = t("descriptions.nameEdit");
           content = (
             <div className="space-y-6 max-w-lg">
                {/* Persian Name */}
                <div className="space-y-2">
-                 <Label htmlFor="firstNameFa" className="rtl:text-right block font-medium text-muted-foreground">نام (فارسی)</Label>
+                 <Label htmlFor="firstNameFa" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.firstNameFa")}</Label>
                  <Input 
                    id="firstNameFa" 
                    value={formData.personal.firstNameFa || ""} 
-                   onChange={(e) => handleChange("personal", "firstNameFa", e.target.value)} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
-                   placeholder="مثال: سعید"
+                   onChange={(e) => {
+                     const val = e.target.value
+                       .replace(/[0-9\u0660-\u0669\u06F0-\u06F9]/g, "")
+                       .replace(/[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\u200C\s]/g, "");
+                     handleChange("personal", "firstNameFa", val);
+                   }} 
+                   dir="rtl"
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   placeholder={t("fields.firstNameFaPlaceholder")}
                    autoFocus 
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="lastNameFa" className="rtl:text-right block font-medium text-muted-foreground">نام خانوادگی (فارسی)</Label>
+                 <Label htmlFor="lastNameFa" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.lastNameFa")}</Label>
                  <Input 
                    id="lastNameFa" 
                    value={formData.personal.lastNameFa || ""} 
-                   onChange={(e) => handleChange("personal", "lastNameFa", e.target.value)} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
-                   placeholder="مثال: جلیلی"
+                   onChange={(e) => {
+                     const val = e.target.value
+                       .replace(/[0-9\u0660-\u0669\u06F0-\u06F9]/g, "")
+                       .replace(/[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\u200C\s]/g, "");
+                     handleChange("personal", "lastNameFa", val);
+                   }} 
+                   dir="rtl"
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   placeholder={t("fields.lastNameFaPlaceholder")}
                  />
                </div>
 
                {/* English Name */}
                <div className="space-y-2 pt-2 border-t border-border/40">
-                 <Label htmlFor="firstName" className="rtl:text-right block font-medium text-muted-foreground">First Name (انگلیسی)</Label>
+                 <Label htmlFor="firstName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.firstNameEn")}</Label>
                  <Input 
                    id="firstName" 
                    value={formData.personal.firstName} 
-                   onChange={(e) => handleChange("personal", "firstName", e.target.value)} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   onChange={(e) => {
+                     const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
+                     handleChange("personal", "firstName", val);
+                   }} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
                    dir="ltr"
-                   placeholder="e.g. Saeed"
+                   placeholder={t("fields.firstNameEnPlaceholder")}
                  />
                </div>
                <div className="space-y-2">
-                 <Label htmlFor="lastName" className="rtl:text-right block font-medium text-muted-foreground">Last Name (انگلیسی)</Label>
+                 <Label htmlFor="lastName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.lastNameEn")}</Label>
                  <Input 
                    id="lastName" 
                    value={formData.personal.lastName} 
-                   onChange={(e) => handleChange("personal", "lastName", e.target.value)} 
-                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                   onChange={(e) => {
+                     const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
+                     handleChange("personal", "lastName", val);
+                   }} 
+                   className="h-12 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-base focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
                    dir="ltr"
-                   placeholder="e.g. Jalili"
+                   placeholder={t("fields.lastNameEnPlaceholder")}
                  />
                </div>
             </div>

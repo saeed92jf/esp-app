@@ -16,7 +16,7 @@
       "skills": "Register your technical and soft skills here.",
       "insurance": "Health and social security insurance records.",
       "education": "Manage your academic and educational background here.",
-      "nameEdit": "Changes to your name will be reflected across your account.",
+      "nameEdit": "Personnel first and last names are recorded in both Persian and English.",
       "addressEdit": "Your home and work addresses are used to personalize your experiences across our products.",
       "phoneEdit": "Your phone number is used to secure your account and connect with others.",
       "chooseAvatar": "Choose a default picture or upload your own.",
@@ -121,7 +121,15 @@
       "confirmEmailOtp": "Confirm & Verify",
       "emailOtpPrompt": "Enter the 5-digit verification code sent to your email:",
       "emailOtpDemoHint": "Demo verification code: 54321",
-      "emailOtpInvalid": "Invalid code entered (demo code: 54321)"
+      "emailOtpInvalid": "Invalid code entered (demo code: 54321)",
+      "firstNameFa": "First Name (Persian)",
+      "lastNameFa": "Last Name (Persian)",
+      "firstNameEn": "First Name (English)",
+      "lastNameEn": "Last Name (English)",
+      "firstNameFaPlaceholder": "e.g. Saeed",
+      "lastNameFaPlaceholder": "e.g. Jalili",
+      "firstNameEnPlaceholder": "e.g. Saeed",
+      "lastNameEnPlaceholder": "e.g. Jalili"
     },
     "actions": {
       "save": "Save Changes",
@@ -181,10 +189,10 @@
       "settings": "Settings"
     },
     "validation": {
-      "firstNameFaRequired": "Persian first name is required.",
-      "lastNameFaRequired": "Persian last name is required.",
-      "firstNameRequired": "English first name is required.",
-      "lastNameRequired": "English last name is required.",
+      "firstNameFaRequired": "First Name (Persian) is required.",
+      "lastNameFaRequired": "Last Name (Persian) is required.",
+      "firstNameRequired": "First Name (English) is required.",
+      "lastNameRequired": "Last Name (English) is required.",
       "nationalIdRequired": "National ID is required.",
       "nationalIdInvalid": "National ID must be exactly 10 digits.",
       "phoneRequired": "Phone number is required.",

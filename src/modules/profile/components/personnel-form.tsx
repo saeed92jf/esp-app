@@ -351,9 +351,15 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             <Input
               id="firstNameFa"
               value={formData.personal.firstNameFa || ""}
-              onChange={(e) => handleFieldChange("personal", "firstNameFa", e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value
+                  .replace(/[0-9\u0660-\u0669\u06F0-\u06F9]/g, "")
+                  .replace(/[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\u200C\s]/g, "");
+                handleFieldChange("personal", "firstNameFa", val);
+              }}
+              dir="rtl"
               placeholder={t("personnelForm.firstNameFaPlaceholder")}
-              className={`h-10 text-sm ${errors["personal.firstNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm rtl:text-right ${errors["personal.firstNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.firstNameFa"] && (
               <span className="text-[11px] text-destructive">{errors["personal.firstNameFa"]}</span>
@@ -368,9 +374,15 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             <Input
               id="lastNameFa"
               value={formData.personal.lastNameFa || ""}
-              onChange={(e) => handleFieldChange("personal", "lastNameFa", e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value
+                  .replace(/[0-9\u0660-\u0669\u06F0-\u06F9]/g, "")
+                  .replace(/[^\u0600-\u06FF\uFB50-\uFDFF\uFE70-\uFEFF\u200C\s]/g, "");
+                handleFieldChange("personal", "lastNameFa", val);
+              }}
+              dir="rtl"
               placeholder={t("personnelForm.lastNameFaPlaceholder")}
-              className={`h-10 text-sm ${errors["personal.lastNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm rtl:text-right ${errors["personal.lastNameFa"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.lastNameFa"] && (
               <span className="text-[11px] text-destructive">{errors["personal.lastNameFa"]}</span>
@@ -385,10 +397,13 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             <Input
               id="firstName"
               value={formData.personal.firstName}
-              onChange={(e) => handleFieldChange("personal", "firstName", e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
+                handleFieldChange("personal", "firstName", val);
+              }}
               placeholder={t("personnelForm.firstNameEnPlaceholder")}
               dir="ltr"
-              className={`h-10 text-sm font-sans ${errors["personal.firstName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm font-sans text-left ${errors["personal.firstName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.firstName"] && (
               <span className="text-[11px] text-destructive">{errors["personal.firstName"]}</span>
@@ -403,10 +418,13 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             <Input
               id="lastName"
               value={formData.personal.lastName}
-              onChange={(e) => handleFieldChange("personal", "lastName", e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^a-zA-Z\s'-]/g, "");
+                handleFieldChange("personal", "lastName", val);
+              }}
               placeholder={t("personnelForm.lastNameEnPlaceholder")}
               dir="ltr"
-              className={`h-10 text-sm font-sans ${errors["personal.lastName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
+              className={`h-10 text-sm font-sans text-left ${errors["personal.lastName"] ? "border-destructive ring-1 ring-destructive/20" : ""}`}
             />
             {errors["personal.lastName"] && (
               <span className="text-[11px] text-destructive">{errors["personal.lastName"]}</span>
