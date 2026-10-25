@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
 import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -537,6 +538,12 @@ export function AdminUsersTable({
           <div className="relative flex-1 max-w-xs sm:max-w-sm min-w-[180px]">
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
             <Input
+              type="search"
+              name="admin_users_global_search"
+              id="admin_users_global_search"
+              autoComplete="off"
+              data-lpignore="true"
+              data-form-type="other"
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
               placeholder={t("searchUsersPlaceholder")}
@@ -601,6 +608,12 @@ export function AdminUsersTable({
                     <div className="relative">
                       <Search className="absolute start-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
                       <Input
+                        type="search"
+                        name="admin_users_col_name_filter"
+                        id="admin_users_col_name_filter"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        data-form-type="other"
                         value={colFilters.userNameQuery}
                         onChange={(e) => setColFilters(prev => ({ ...prev, userNameQuery: e.target.value }))}
                         placeholder={t("searchInColumn")}
@@ -1215,7 +1228,30 @@ export function AdminUsersTable({
 
                             {/* ── Mode B: Change Password ── */}
                             {activeAccordion.type === 'password' && (
-                              <div className="flex flex-col gap-3">
+                              <form 
+                                onSubmit={(e) => {
+                                  e.preventDefault();
+                                  handleSavePassword(user.id);
+                                }}
+                                autoComplete="off"
+                                className="flex flex-col gap-3"
+                              >
+                                {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
+                                <input 
+                                  type="text" 
+                                  name="fake_username_prevention" 
+                                  tabIndex={-1} 
+                                  style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                  autoComplete="username" 
+                                />
+                                <input 
+                                  type="password" 
+                                  name="fake_password_prevention" 
+                                  tabIndex={-1} 
+                                  style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                  autoComplete="current-password" 
+                                />
+
                                 <div className="flex items-center justify-between pb-2 border-b border-border/40">
                                   <div className="flex items-center gap-2">
                                     <KeyRound size={15} className="text-amber-500" />
@@ -1224,6 +1260,7 @@ export function AdminUsersTable({
                                     </h4>
                                   </div>
                                   <button 
+                                    type="button"
                                     onClick={() => setActiveAccordion(null)}
                                     className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
                                   >
@@ -1236,12 +1273,16 @@ export function AdminUsersTable({
                                     <label className="text-[11px] font-medium text-muted-foreground block mb-1">
                                       {t("newPassword")}
                                     </label>
-                                    <Input
-                                      type="password"
+                                    <PasswordInput
+                                      id={`new_pwd_${user.id}`}
+                                      name={`new_pwd_${user.id}`}
+                                      autoComplete="new-password"
+                                      data-lpignore="true"
                                       value={newPassword}
                                       onChange={(e) => setNewPassword(e.target.value)}
                                       placeholder="••••••••"
                                       className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                      dir="ltr"
                                     />
                                   </div>
 
@@ -1249,24 +1290,29 @@ export function AdminUsersTable({
                                     <label className="text-[11px] font-medium text-muted-foreground block mb-1">
                                       {t("confirmPassword")}
                                     </label>
-                                    <Input
-                                      type="password"
+                                    <PasswordInput
+                                      id={`confirm_pwd_${user.id}`}
+                                      name={`confirm_pwd_${user.id}`}
+                                      autoComplete="new-password"
+                                      data-lpignore="true"
                                       value={confirmPassword}
                                       onChange={(e) => setConfirmPassword(e.target.value)}
                                       placeholder="••••••••"
                                       className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                      dir="ltr"
                                     />
                                   </div>
 
                                   <div className="flex items-center gap-2 pt-5">
                                     <Button
+                                      type="submit"
                                       size="sm"
-                                      onClick={() => handleSavePassword(user.id)}
                                       className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
                                     >
                                       {t("save")}
                                     </Button>
                                     <Button
+                                      type="button"
                                       variant="ghost"
                                       size="sm"
                                       onClick={() => setActiveAccordion(null)}
@@ -1276,7 +1322,7 @@ export function AdminUsersTable({
                                     </Button>
                                   </div>
                                 </div>
-                              </div>
+                              </form>
                             )}
 
                             {/* ── Mode C: Quick Edit User Info ── */}
