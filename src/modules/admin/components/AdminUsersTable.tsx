@@ -1147,6 +1147,8 @@ export function AdminUsersTable({
                                     "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.09)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
                                   )}
                                 >
+                                  {/* Centered content with constrained width so inputs don't stretch excessively */}
+                                  <div className="w-full max-w-3xl mx-auto">
                             
                             {/* ── Mode A: View Details ── */}
                             {activeAccordion.type === 'view' && (
@@ -1536,6 +1538,7 @@ export function AdminUsersTable({
                               </div>
                             )}
 
+                                    </div>
                                   </div>
                                 </motion.div>
                               )}
