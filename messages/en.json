@@ -36,7 +36,11 @@
       "selectMonth": "Select Month...",
       "selectYear": "Select Year...",
       "search": "Search...",
-      "notFound": "Not found"
+      "notFound": "Not found",
+      "jalali": "Jalali",
+      "gregorian": "Gregorian",
+      "switchToGregorian": "Switch to Gregorian",
+      "switchToJalali": "Switch to Jalali"
     },
     "searchBox": {
       "overallView": "Overall Features View",
@@ -1323,12 +1327,12 @@
   "Profile": {
     "nav": {
       "home": "Home",
-      "personal": "Personal",
-      "organizational": "Organizational",
+      "personal": "Personal Info",
+      "organizational": "Organizational Info",
       "skills": "Skills",
-      "insurance": "Insurance",
-      "education": "Education",
-      "settings": "Personal Settings"
+      "insurance": "Insurance Info",
+      "education": "Education Info",
+      "settings": "Settings"
     },
     "quickActions": {
       "changeColor": "Change Color",
@@ -1448,15 +1452,6 @@
       "searchOnMap": "Search or type address...",
       "chooseOnMap": "Select location on map",
       "remove": "Remove"
-    },
-    "nav": {
-      "home": "Home",
-      "personal": "Personal Info",
-      "organizational": "Organizational Info",
-      "skills": "Skills",
-      "insurance": "Insurance Info",
-      "education": "Education Info",
-      "settings": "Settings"
     },
     "notSet": "Not Set",
     "errorLoading": "Error loading user profile",

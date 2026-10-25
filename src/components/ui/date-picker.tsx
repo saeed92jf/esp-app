@@ -130,7 +130,10 @@ function CalendarContent({
   const locale = useLocale();
     const t = useTranslations("Common.datePicker");
   const isFa = locale === "fa";
-  const displayNum = React.useCallback((n: number | string) => isFa ? toPersianDigits(n.toString()) : n.toString(), [isFa]);
+  const displayNum = React.useCallback(
+    (n: number | string) => (isFa && isJalali ? toPersianDigits(n.toString()) : n.toString()),
+    [isFa, isJalali]
+  );
 
   const jalaliView = React.useMemo(() => getJalaliDate(viewDate), [viewDate]);
   const currentYear = isJalali ? jalaliView.year : viewDate.getFullYear();
@@ -144,8 +147,8 @@ function CalendarContent({
     ? (isFa ? JALALI_WEEK_DAYS_FA : JALALI_WEEK_DAYS_EN) 
     : (isFa ? GREGORIAN_WEEK_DAYS_FA : GREGORIAN_WEEK_DAYS_EN);
 
-  const calculatedStartYear = startYear ?? (isJalali ? 1350 : currentYear - 70);
-  const calculatedEndYear = endYear ?? (isJalali ? 1500 : currentYear + 30);
+  const calculatedStartYear = startYear ?? (isJalali ? 1320 : 1940);
+  const calculatedEndYear = endYear ?? (isJalali ? 1430 : currentYear + 25);
 
   const years = React.useMemo(() => {
     return Array.from(
@@ -308,10 +311,9 @@ function CalendarContent({
     handleSelect(today);
   };
 
-  const isEn = !isFa;
   const [isHovered, setIsHovered] = React.useState(false);
-  const textNormal = isJalali ? (isEn ? "Jalali" : "جلالی") : (isEn ? "Gregorian" : "میلادی");
-  const textHover = isJalali ? (isEn ? "Switch to Gregorian" : "تبدیل به میلادی") : (isEn ? "Switch to Jalali" : "تبدیل به جلالی");
+  const textNormal = isJalali ? t("jalali") : t("gregorian");
+  const textHover = isJalali ? t("switchToGregorian") : t("switchToJalali");
 
   return (
     <div className={cn(isFa ? "fa-num" : "en-num")}>
@@ -556,10 +558,10 @@ export function DatePicker({
   );
 
   React.useEffect(() => {
-    if (controlledIsJalali !== undefined) {
+    if (onCalendarTypeChange !== undefined && controlledIsJalali !== undefined) {
       setInternalIsJalali(controlledIsJalali);
     }
-  }, [controlledIsJalali]);
+  }, [controlledIsJalali, onCalendarTypeChange]);
 
   const prevValueTimestampRef = React.useRef<number | undefined>(value ? value.getTime() : undefined);
 
@@ -574,8 +576,8 @@ export function DatePicker({
     }
   }, [value]);
 
-  const isJalali =
-    controlledIsJalali !== undefined ? controlledIsJalali : internalIsJalali;
+  const isControlled = controlledIsJalali !== undefined && onCalendarTypeChange !== undefined;
+  const isJalali = isControlled ? controlledIsJalali : internalIsJalali;
 
   const handleCalendarSwitch = (checked: boolean) => {
     setInternalIsJalali(checked);
@@ -603,16 +605,15 @@ export function DatePicker({
     if (!selectedDate) return "";
     if (isJalali) {
       const j = getJalaliDate(selectedDate);
-      return displayNum(
-        `${j.year}/${String(j.month).padStart(2, "0")}/${String(j.day).padStart(2, "0")}`
-      );
+      const str = `${j.year}/${String(j.month).padStart(2, "0")}/${String(j.day).padStart(2, "0")}`;
+      return isFa ? toPersianDigits(str) : str;
     } else {
       const gy = selectedDate.getFullYear();
       const gm = String(selectedDate.getMonth() + 1).padStart(2, "0");
       const gd = String(selectedDate.getDate()).padStart(2, "0");
-      return displayNum(`${gy}-${gm}-${gd}`);
+      return `${gy}-${gm}-${gd}`;
     }
-  }, [selectedDate, isJalali, displayNum]);
+  }, [selectedDate, isJalali, isFa]);
 
   const sizeClasses = {
     xs: "h-6 text-xs px-2",
@@ -674,7 +675,7 @@ export function DatePicker({
         >
           {isUnderline ? (
             <>
-              <span className="truncate font-mono">
+              <span className={cn("truncate font-medium text-base", isFa && isJalali && "fa-num font-sans")}>
                 {selectedDate ? formatted : placeholder}
               </span>
               <CalendarIcon className="size-5 shrink-0 text-muted-foreground/60 group-hover:text-primary transition-colors" />
@@ -682,7 +683,7 @@ export function DatePicker({
           ) : (
             <>
               <CalendarIcon className="size-4 shrink-0 opacity-70 group-hover:text-primary transition-colors" />
-              <span className="truncate">
+              <span className={cn("truncate font-medium", isFa && isJalali && "fa-num font-sans")}>
                 {selectedDate ? formatted : placeholder}
               </span>
             </>

@@ -19,7 +19,9 @@
       "nameEdit": "Changes to your name will be reflected across your account.",
       "addressEdit": "Your home and work addresses are used to personalize your experiences across our products.",
       "phoneEdit": "Your phone number is used to secure your account and connect with others.",
-      "chooseAvatar": "Choose a default picture or upload your own."
+      "chooseAvatar": "Choose a default picture or upload your own.",
+      "birthDateHelp": "Birth date as registered in official identity documents.",
+      "emailHelp": "Valid corporate or personal email for receiving notifications and account recovery."
     },
     "notSet": "Not set",
     "fields": {
@@ -111,7 +113,15 @@
       "selectRelationship": "Select relationship...",
       "nationalIdPlaceholder": "10-digit national ID",
       "persons": "persons",
-      "dependentsRegistered": "{count} registered"
+      "dependentsRegistered": "{count} registered",
+      "emailVerificationStatus": "Email Verification Status",
+      "emailVerifiedDesc": "Your email is verified. Changing it will require re-verification.",
+      "emailUnverifiedDesc": "Verify your email to receive reports, notifications, and secure login.",
+      "sendEmailOtp": "Send Verification Code",
+      "confirmEmailOtp": "Confirm & Verify",
+      "emailOtpPrompt": "Enter the 5-digit verification code sent to your email:",
+      "emailOtpDemoHint": "Demo verification code: 54321",
+      "emailOtpInvalid": "Invalid code entered (demo code: 54321)"
     },
     "actions": {
       "save": "Save Changes",
@@ -177,12 +187,14 @@
       "lastNameRequired": "English last name is required.",
       "nationalIdRequired": "National ID is required.",
       "nationalIdInvalid": "National ID must be exactly 10 digits.",
-      "phoneRequired": "Mobile number is required.",
-      "phoneInvalid": "Mobile number must start with 09 and be 11 digits.",
+      "phoneRequired": "Phone number is required.",
+      "phoneInvalid": "Phone number must start with 09 and contain 11 digits.",
       "departmentRequired": "Department selection is required.",
       "roleRequired": "Role selection is required.",
       "formHasErrors": "Please correct the required fields specified.",
-      "saveSuccess": "Personnel profile saved successfully."
+      "saveSuccess": "Personnel profile saved successfully.",
+      "emailInvalid": "Invalid email format (e.g. user@example.com)",
+      "emailRequired": "Email address is required."
     },
     "personnelForm": {
       "onboardingTitle": "Personnel Profile Completion Step for Access Issuance",

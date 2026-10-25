@@ -36,7 +36,11 @@
       "selectMonth": "انتخاب ماه...",
       "selectYear": "انتخاب سال...",
       "search": "جستجو...",
-      "notFound": "پیدا نشد"
+      "notFound": "پیدا نشد",
+      "jalali": "جلالی",
+      "gregorian": "میلادی",
+      "switchToGregorian": "تبدیل به میلادی",
+      "switchToJalali": "تبدیل به جلالی"
     },
     "searchBox": {
       "overallView": "نمای کلی امکانات و کارت‌ها",
@@ -1323,12 +1327,12 @@
   "Profile": {
     "nav": {
       "home": "خانه",
-      "personal": "شخصی",
-      "organizational": "سازمانی",
+      "personal": "اطلاعات فردی",
+      "organizational": "اطلاعات سازمانی",
       "skills": "مهارت‌ها",
-      "insurance": "بیمه",
-      "education": "تحصیلات",
-      "settings": "تنظیمات شخصی"
+      "insurance": "اطلاعات بیمه",
+      "education": "اطلاعات تحصیلی",
+      "settings": "تنظیمات"
     },
     "quickActions": {
       "changeColor": "تغییر رنگ",
@@ -1448,15 +1452,6 @@
       "searchOnMap": "جستجو یا تایپ نشانی...",
       "chooseOnMap": "انتخاب موقعیت دقیق روی نقشه",
       "remove": "حذف"
-    },
-    "nav": {
-      "home": "خانه",
-      "personal": "اطلاعات فردی",
-      "organizational": "اطلاعات سازمانی",
-      "skills": "مهارت‌ها",
-      "insurance": "اطلاعات بیمه",
-      "education": "اطلاعات تحصیلی",
-      "settings": "تنظیمات"
     },
     "notSet": "ثبت نشده",
     "errorLoading": "خطا در دریافت اطلاعات کاربری",

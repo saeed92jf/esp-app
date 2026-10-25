@@ -147,14 +147,24 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
 
   // Parse Jalali or ISO date string into Date object for DatePicker
   const parseDateString = (dateStr?: string): Date | undefined => {
-    if (!dateStr) return undefined;
-    if (dateStr.includes("/")) {
-      const parts = dateStr.split("/").map((p) => parseInt(p, 10));
-      if (parts.length === 3 && parts[0] > 1300 && parts[0] < 1500) {
-        return jalaliToGregorianDate(parts[0], parts[1], parts[2]);
+    if (!dateStr || typeof dateStr !== "string") return undefined;
+    const trimmed = dateStr.trim();
+    if (!trimmed) return undefined;
+
+    const delimiter = trimmed.includes("/") ? "/" : trimmed.includes("-") ? "-" : null;
+    if (delimiter) {
+      const parts = trimmed.split(delimiter).map((p) => parseInt(p, 10));
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        const [year, month, day] = parts;
+        if (year >= 1300 && year <= 1500) {
+          return jalaliToGregorianDate(year, month, day);
+        }
+        if (year >= 1900 && year <= 2100) {
+          return new Date(year, month - 1, day, 12, 0, 0);
+        }
       }
     }
-    const parsed = new Date(dateStr);
+    const parsed = new Date(trimmed);
     return isNaN(parsed.getTime()) ? undefined : parsed;
   };
 
@@ -206,6 +216,9 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
       newErrors["personal.phone"] = t("validation.phoneRequired");
     } else if (!/^09\d{9}$/.test(formData.personal.phone.trim())) {
       newErrors["personal.phone"] = t("validation.phoneInvalid");
+    }
+    if (formData.personal.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.personal.email.trim())) {
+      newErrors["personal.email"] = t("validation.emailInvalid");
     }
     if (!formData.organizational.department) {
       newErrors["organizational.department"] = t("validation.departmentRequired");
@@ -527,6 +540,8 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               onChange={(date) => handleFieldChange("personal", "birthDate", formatDateToString(date))}
               isJalali={isFa}
               placeholder={isFa ? t("personnelForm.birthDatePlaceholder") : t("personnelForm.birthDatePlaceholderEn")}
+              startYear={1320}
+              endYear={1420}
               className="w-full h-10"
               triggerClassName="w-full h-10 justify-between text-sm"
             />

@@ -56,14 +56,24 @@ const getSkillBadgeStyle = (level: number) => {
 };
 
 const parseDateString = (dateStr?: string): Date | undefined => {
-  if (!dateStr) return undefined;
-  if (dateStr.includes("/")) {
-    const parts = dateStr.split("/").map((p) => parseInt(p, 10));
-    if (parts.length === 3 && parts[0] > 1300 && parts[0] < 1500) {
-      return jalaliToGregorianDate(parts[0], parts[1], parts[2]);
+  if (!dateStr || typeof dateStr !== "string") return undefined;
+  const trimmed = dateStr.trim();
+  if (!trimmed) return undefined;
+
+  const delimiter = trimmed.includes("/") ? "/" : trimmed.includes("-") ? "-" : null;
+  if (delimiter) {
+    const parts = trimmed.split(delimiter).map((p) => parseInt(p, 10));
+    if (parts.length === 3 && !parts.some(isNaN)) {
+      const [year, month, day] = parts;
+      if (year >= 1300 && year <= 1500) {
+        return jalaliToGregorianDate(year, month, day);
+      }
+      if (year >= 1900 && year <= 2100) {
+        return new Date(year, month - 1, day, 12, 0, 0);
+      }
     }
   }
-  const parsed = new Date(dateStr);
+  const parsed = new Date(trimmed);
   return isNaN(parsed.getTime()) ? undefined : parsed;
 };
 
@@ -305,6 +315,15 @@ export function ProfilePage() {
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
   const [otpInput, setOtpInput] = useState("");
   const [isPhoneVerified, setIsPhoneVerified] = useState(true);
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [emailOtpInput, setEmailOtpInput] = useState("");
+
+  useEffect(() => {
+    setIsVerifyingPhone(false);
+    setOtpInput("");
+    setIsVerifyingEmail(false);
+    setEmailOtpInput("");
+  }, [editingField]);
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || "#0284c7"
@@ -411,8 +430,48 @@ export function ProfilePage() {
     });
   };
 
+  const isPersonalFormValid = () => {
+    if (editingField === 'phone') {
+      const p = formData?.personal?.phone?.trim() || "";
+      return /^09\d{9}$/.test(p);
+    }
+    if (editingField === 'email') {
+      const e = formData?.personal?.email?.trim() || "";
+      return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e);
+    }
+    return true;
+  };
+
+  const handlePersonalSave = () => {
+    if (editingField === 'phone') {
+      const phoneVal = formData?.personal?.phone?.trim() || "";
+      if (!/^09\d{9}$/.test(phoneVal)) {
+        toast.error(t("validation.phoneInvalid"));
+        return;
+      }
+    }
+    if (editingField === 'email') {
+      const emailVal = formData?.personal?.email?.trim() || "";
+      if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(emailVal)) {
+        toast.error(t("validation.emailInvalid"));
+        return;
+      }
+    }
+    handleSave();
+    setEditingField(null);
+  };
+
   const handleSave = () => {
     if (formData) {
+      if (formData.personal.phone && !/^09\d{9}$/.test(formData.personal.phone.trim())) {
+        toast.error(t("validation.phoneInvalid"));
+        return;
+      }
+      if (formData.personal.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.personal.email.trim())) {
+        toast.error(t("validation.emailInvalid"));
+        return;
+      }
+
       updateProfile(formData);
       if (user) {
         const fullNameEnglish = `${formData.personal.firstName} ${formData.personal.lastName}`.trim();
@@ -681,10 +740,12 @@ export function ProfilePage() {
                    onChange={(date) => handleChange("personal", "birthDate", formatDateToString(date))}
                    isJalali={locale === "fa"}
                    placeholder={t("fields.selectBirthDate")}
+                   startYear={1320}
+                   endYear={1420}
                    variant="underline"
                  />
                  <p className="text-xs text-muted-foreground">
-                   تاریخ تولد شمسی ثبت‌شده در اسناد سجلی.
+                   {t("descriptions.birthDateHelp")}
                  </p>
                </div>
             </div>
@@ -726,25 +787,36 @@ export function ProfilePage() {
                      }} 
                      maxLength={11}
                      placeholder="09120000000"
-                     className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-mono" 
+                     className={cn(
+                       "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 text-lg focus-visible:ring-0 shadow-none ltr text-left font-sans",
+                       formData.personal.phone && !isPhoneValid 
+                         ? "border-destructive text-destructive focus-visible:border-destructive" 
+                         : "border-primary/20 focus-visible:border-primary"
+                     )}
                      autoFocus 
                    />
                    <Phone className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
                  </div>
-                 <p className="text-xs text-muted-foreground">
-                   شماره همراه باید با ۰۹ شروع شده و ۱۱ رقم باشد.
-                 </p>
+                 {formData.personal.phone && !isPhoneValid ? (
+                   <p className="text-xs text-destructive font-medium">
+                     {t("validation.phoneInvalid")}
+                   </p>
+                 ) : (
+                   <p className="text-xs text-muted-foreground">
+                     {t("fields.phoneHelpText")}
+                   </p>
+                 )}
                </div>
 
                {/* Phone Verification Box */}
                <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
                  <div className="flex items-center justify-between gap-3">
                    <div className="space-y-0.5 min-w-0">
-                     <span className="text-xs font-semibold text-foreground block">وضعیت اعتبارسنجی شماره همراه</span>
+                     <span className="text-xs font-semibold text-foreground block">{t("fields.phoneVerificationStatus")}</span>
                      <p className="text-[11px] text-muted-foreground">
                        {isPhoneVerified 
-                         ? "شماره تلفن شما تأیید شده است. در صورت تغییر، نیاز به تأیید پیامکی مجدد خواهد بود."
-                         : "جهت فعال‌سازی اعلانات و ورود دو مرحله‌ای، شماره خود را تأیید کنید."}
+                         ? t("fields.phoneVerifiedDesc")
+                         : t("fields.phoneUnverifiedDesc")}
                      </p>
                    </div>
                    {!isPhoneVerified && !isVerifyingPhone && (
@@ -824,22 +896,139 @@ export function ProfilePage() {
         case 'email': {
           title = t("fields.email");
           description = t("descriptions.personal");
+          const isEmailValid = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.personal.email?.trim() || "");
+          const isEmailVerified = Boolean(formData.personal.emailVerified);
 
           content = (
             <div className="space-y-6 max-w-lg">
                <div className="space-y-2">
-                 <Label htmlFor="email" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.email")}</Label>
+                 <div className="flex items-center justify-between">
+                   <Label htmlFor="email" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.email")}</Label>
+                   {isEmailVerified ? (
+                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                       <CheckCircle2 className="size-3.5" />
+                       {t("fields.emailVerified")}
+                     </span>
+                   ) : (
+                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                       <Clock className="size-3.5" />
+                       {t("fields.emailUnverified")}
+                     </span>
+                   )}
+                 </div>
                  <div className="relative">
                    <Input 
                      id="email" 
                      value={formData.personal.email} 
-                     onChange={(e) => handleChange("personal", "email", e.target.value)} 
+                     onChange={(e) => {
+                       const val = e.target.value.trim();
+                       handleChange("personal", "email", val);
+                       if (val !== profile?.personal.email) {
+                         handleChange("personal", "emailVerified", false);
+                       }
+                     }} 
                      placeholder="user@euroslotpars.com"
-                     className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none ltr text-left font-sans" 
+                     className={cn(
+                       "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 text-lg focus-visible:ring-0 shadow-none ltr text-left font-sans",
+                       formData.personal.email && !isEmailValid 
+                         ? "border-destructive text-destructive focus-visible:border-destructive" 
+                         : "border-primary/20 focus-visible:border-primary"
+                     )}
                      autoFocus 
                    />
                    <Mail className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
                  </div>
+                 {formData.personal.email && !isEmailValid ? (
+                   <p className="text-xs text-destructive font-medium">
+                     {t("validation.emailInvalid")}
+                   </p>
+                 ) : (
+                   <p className="text-xs text-muted-foreground">
+                     {t("descriptions.emailHelp")}
+                   </p>
+                 )}
+               </div>
+
+               {/* Email Verification Box */}
+               <div className="rounded-2xl border border-border/60 bg-muted/20 p-4 space-y-3">
+                 <div className="flex items-center justify-between gap-3">
+                   <div className="space-y-0.5 min-w-0">
+                     <span className="text-xs font-semibold text-foreground block">{t("fields.emailVerificationStatus")}</span>
+                     <p className="text-[11px] text-muted-foreground">
+                       {isEmailVerified 
+                         ? t("fields.emailVerifiedDesc")
+                         : t("fields.emailUnverifiedDesc")}
+                     </p>
+                   </div>
+                   {!isEmailVerified && !isVerifyingEmail && (
+                     <Button
+                       type="button"
+                       size="sm"
+                       disabled={!isEmailValid}
+                       onClick={() => {
+                         setIsVerifyingEmail(true);
+                         toast.info(t("fields.emailOtpDemoHint"));
+                       }}
+                       className="rounded-full text-xs font-bold px-3.5 h-8 gap-1.5 shrink-0"
+                     >
+                       <Mail className="size-3.5" />
+                       <span>{t("fields.sendEmailOtp")}</span>
+                     </Button>
+                   )}
+                 </div>
+
+                 {/* Email OTP Input Card */}
+                 {isVerifyingEmail && !isEmailVerified && (
+                   <div className="pt-3 border-t border-border/40 space-y-3 animate-in fade-in duration-200">
+                     <p className="text-xs text-foreground font-medium">
+                       {t("fields.emailOtpPrompt")}
+                     </p>
+                     <div className="flex items-center gap-2">
+                       <Input
+                         value={emailOtpInput}
+                         onChange={(e) => setEmailOtpInput(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                         placeholder="54321"
+                         maxLength={5}
+                         dir="ltr"
+                         className="h-11 w-36 text-center font-mono tracking-widest text-lg font-bold bg-background border-primary/30"
+                         autoFocus
+                       />
+                       <Button
+                         type="button"
+                         size="sm"
+                         onClick={() => {
+                           if (emailOtpInput.trim() === "54321") {
+                             handleChange("personal", "emailVerified", true);
+                             setIsVerifyingEmail(false);
+                             setEmailOtpInput("");
+                             toast.success(t("fields.emailVerifiedSuccess"));
+                           } else {
+                             toast.error(t("fields.emailOtpInvalid"));
+                           }
+                         }}
+                         disabled={emailOtpInput.length < 5}
+                         className="h-11 px-5 rounded-xl font-bold"
+                       >
+                         {t("fields.confirmEmailOtp")}
+                       </Button>
+                       <Button
+                         type="button"
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => {
+                           setIsVerifyingEmail(false);
+                           setEmailOtpInput("");
+                         }}
+                         className="h-11 text-xs text-muted-foreground"
+                       >
+                         {t("actions.cancel")}
+                       </Button>
+                     </div>
+                     <p className="text-[11px] text-primary font-medium">
+                       💡 {t("fields.emailOtpDemoHint")}
+                     </p>
+                   </div>
+                 )}
                </div>
             </div>
           );
@@ -1002,7 +1191,7 @@ export function ProfilePage() {
 
                <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                  <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                 <Button onClick={() => { handleSave(); setEditingField(null); }} disabled={isUpdating} className="rounded-full px-8 font-medium">
+                 <Button onClick={handlePersonalSave} disabled={isUpdating || !isPersonalFormValid()} className="rounded-full px-8 font-medium">
                    {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                    {t("actions.save")}
                  </Button>
@@ -1113,8 +1302,19 @@ export function ProfilePage() {
                 <Mail className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{t("fields.email")}</span>
              </div>
-             <div className="flex items-center justify-between w-2/3">
+             <div className="flex items-center justify-end w-2/3 gap-3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 font-sans" dir="ltr">{formData.personal.email || t("notSet")}</span>
+                {formData.personal.emailVerified ? (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                    <CheckCircle2 className="size-3" />
+                    <span className="hidden sm:inline">{t("fields.emailVerified")}</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 shrink-0">
+                    <Clock className="size-3" />
+                    <span className="hidden sm:inline">{t("fields.emailUnverified")}</span>
+                  </span>
+                )}
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -1130,7 +1330,7 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.phone")}</span>
              </div>
              <div className="flex items-center justify-end w-2/3 gap-3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num font-mono">{formData.personal.phone || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num font-sans">{formData.personal.phone || t("notSet")}</span>
                 {formData.personal.phoneVerified ? (
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
                     <CheckCircle2 className="size-3" />
