@@ -85,6 +85,40 @@ export interface PendingRequest {
   rejectionReason?: string;
   tempPassword?: string;
   notes?: string;
+
+  // Complete Profile Fields (from User Profile Management)
+  firstNameFa?: string;
+  lastNameFa?: string;
+  firstName?: string;
+  lastName?: string;
+  birthDate?: string;
+  address?: string;
+  maritalStatus?: 'single' | 'married';
+  childrenCount?: number;
+  phoneVerified?: boolean;
+  emailVerified?: boolean;
+
+  employeeId?: string;
+  joinDate?: string;
+  manager?: string;
+  extensionNumber?: string;
+  workLocation?: 'office' | 'factory' | 'remote' | 'hybrid' | string;
+  contractType?: 'full_time' | 'part_time' | 'hourly' | 'contractual' | 'internship' | string;
+
+  insuranceCode?: string;
+  insuranceProvider?: string;
+  insuranceValidUntil?: string;
+  insuranceType?: string;
+  supplementaryPlan?: 'golden' | 'silver' | 'special' | 'none';
+  supplementaryProvider?: string;
+  shebaNumber?: string;
+  dependents?: { id: string; fullName: string; relationship: string; nationalId: string }[];
+
+  educationDegree?: string;
+  educationField?: string;
+  university?: string;
+  graduationYear?: string;
+  skills?: { id: string; name: string; level: number }[];
 }
 
 export interface UserQueryParams {

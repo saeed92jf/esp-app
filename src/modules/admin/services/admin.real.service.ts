@@ -89,4 +89,9 @@ export class RealAdminService implements IAdminService {
       tempPassword: res.tempPassword || "password123",
     };
   }
+
+  async updateRequest(requestId: string, updates: Partial<PendingRequest>): Promise<PendingRequest> {
+    const res = await this.http.put<{ data: PendingRequest }>(`/admin/requests/${requestId}`, updates);
+    return res.data;
+  }
 }

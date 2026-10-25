@@ -2,35 +2,54 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { 
-  ShieldAlert, 
-  Search, 
-  X, 
-  Clock, 
-  Send, 
-  UserCheck, 
-  ShieldCheck, 
-  UserX, 
-  Eye, 
-  RotateCw, 
-  KeyRound, 
-  Copy, 
-  Check, 
-  Building2, 
-  Mail, 
-  Phone, 
-  CreditCard, 
-  Briefcase, 
-  Filter,
+import {
+  ShieldAlert,
+  Search,
+  X,
+  Clock,
+  Send,
+  UserCheck,
+  ShieldCheck,
+  UserX,
+  Eye,
+  RotateCw,
+  KeyRound,
+  Copy,
+  Check,
+  Building2,
+  Mail,
+  Phone,
+  CreditCard,
+  Briefcase,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  GraduationCap,
+  Save,
+  Plus,
+  Minus,
+  Trash2,
+  ChevronDown,
+  RotateCcw,
+  Sparkles,
+  UserCircle2,
+  ArrowRight,
+  ArrowLeft,
+  Calendar,
+  MapPin,
+  HeartHandshake,
+  Star,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
 import { PendingRequest, RequestStatus } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Combobox } from "@/components/ui/combobox";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -39,12 +58,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface AdminRequestsProps {
   requests: PendingRequest[];
   setRequests: React.Dispatch<React.SetStateAction<PendingRequest[]>>;
   onRefresh?: () => Promise<void>;
 }
+
+type ReqSegmentId = "personal" | "org" | "insurance" | "education";
+
+const sanitizePersian = (text: string) => {
+  return text.replace(/[^ \u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, "");
+};
+
+const sanitizeEnglish = (text: string) => {
+  return text.replace(/[^ a-zA-Z'-]/g, "");
+};
+
+const normalizeDigits = (val: string) => {
+  return val.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString());
+};
 
 export function AdminRequests({
   requests,
@@ -57,22 +91,29 @@ export function AdminRequests({
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<'all' | RequestStatus>('all');
-  const [domainFilter, setDomainFilter] = useState<'all' | 'euroslotpars.com' | 'npceram.com'>('all');
+  const [statusFilter, setStatusFilter] = useState<"all" | RequestStatus>("all");
+  const [domainFilter, setDomainFilter] = useState<
+    "all" | "euroslotpars.com" | "npceram.com"
+  >("all");
 
-  // Dialog states
+  // Selected Request for Review
+  const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
+
+  // Active form state for the selected request
+  const [reviewData, setReviewData] = useState<PendingRequest | null>(null);
+  const [activeSegment, setActiveSegment] = useState<ReqSegmentId>("personal");
+  const [openSegment, setOpenSegment] = useState<ReqSegmentId | null>("personal");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Dialog states for rejection
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [selectedReqForReject, setSelectedReqForReject] = useState<PendingRequest | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
-
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [selectedReqForDetails, setSelectedReqForDetails] = useState<PendingRequest | null>(null);
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
-  // Copy email / password helper
+  // Copy helper
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
@@ -92,17 +133,15 @@ export function AdminRequests({
   // Fast live filtered requests
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
-      // 1. Status Filter
-      if (statusFilter !== 'all' && req.status !== statusFilter) {
+      if (statusFilter !== "all" && req.status !== statusFilter) {
         return false;
       }
-
-      // 2. Domain Filter
-      if (domainFilter !== 'all' && !req.email.toLowerCase().includes(domainFilter)) {
+      if (
+        domainFilter !== "all" &&
+        !req.email.toLowerCase().includes(domainFilter)
+      ) {
         return false;
       }
-
-      // 3. Fast multi-field query matching
       const q = searchQuery.trim().toLowerCase();
       if (q) {
         const nameMatch = req.name?.toLowerCase().includes(q);
@@ -112,22 +151,177 @@ export function AdminRequests({
         const deptMatch = req.department?.toLowerCase().includes(q);
         const jobMatch = req.jobTitle?.toLowerCase().includes(q);
         const idMatch = req.id.toLowerCase().includes(q);
-        return nameMatch || emailMatch || phoneMatch || natIdMatch || deptMatch || jobMatch || idMatch;
+        return (
+          nameMatch ||
+          emailMatch ||
+          phoneMatch ||
+          natIdMatch ||
+          deptMatch ||
+          jobMatch ||
+          idMatch
+        );
       }
-
       return true;
     });
   }, [requests, statusFilter, domainFilter, searchQuery]);
 
-  // ─── Actions ─────────────────────────────────────────────────────────────
+  // Automatically select first request if none selected or if selected was removed
+  useEffect(() => {
+    if (!selectedReqId && filteredRequests.length > 0) {
+      setSelectedReqId(filteredRequests[0].id);
+    } else if (
+      selectedReqId &&
+      !requests.some((r) => r.id === selectedReqId) &&
+      filteredRequests.length > 0
+    ) {
+      setSelectedReqId(filteredRequests[0].id);
+    }
+  }, [filteredRequests, selectedReqId, requests]);
 
-  // 1. HR Approval
-  const handleApproveHr = async (req: PendingRequest) => {
+  // Load selected request into review form
+  useEffect(() => {
+    if (selectedReqId) {
+      const found = requests.find((r) => r.id === selectedReqId);
+      if (found) {
+        setReviewData({
+          ...found,
+          department: found.department || "engineering",
+          maritalStatus: found.maritalStatus || "single",
+          childrenCount: found.childrenCount || 0,
+          workLocation: found.workLocation || "office",
+          contractType: found.contractType || "full_time",
+          insuranceProvider: found.insuranceProvider || "تامین اجتماعی",
+          supplementaryPlan: found.supplementaryPlan || "none",
+          educationDegree: found.educationDegree || "bachelors",
+          dependents: found.dependents || [],
+          skills: found.skills || [
+            { id: "sk-1", name: "کار تیمی و روابط سازمانی", level: 4 },
+            { id: "sk-2", name: "تسلط بر سیستم‌های اداری", level: 4 },
+          ],
+        });
+      }
+    } else {
+      setReviewData(null);
+    }
+  }, [selectedReqId, requests]);
+
+  // Options
+  const departmentOptions = [
+    { value: "engineering", label: t("departments.engineering") },
+    { value: "marketDevelopment", label: t("departments.marketDevelopment") },
+    { value: "projectControl", label: t("departments.projectControl") },
+    { value: "administrative", label: t("departments.administrative") },
+    { value: "rAndD", label: t("departments.rAndD") },
+  ];
+
+  const maritalOptions = [
+    { value: "single", label: t("maritalStatusOptions.single") },
+    { value: "married", label: t("maritalStatusOptions.married") },
+  ];
+
+  const workLocationOptions = [
+    { value: "office", label: t("workLocationOffice") },
+    { value: "factory", label: t("workLocationFactory") },
+    { value: "remote", label: t("workLocationRemote") },
+    { value: "hybrid", label: t("workLocationHybrid") },
+  ];
+
+  const contractTypeOptions = [
+    { value: "full_time", label: t("contractFullTime") },
+    { value: "part_time", label: t("contractPartTime") },
+    { value: "hourly", label: t("contractHourly") },
+    { value: "contractual", label: t("contractContractual") },
+    { value: "internship", label: t("contractInternship") },
+  ];
+
+  const supplementaryPlanOptions = [
+    { value: "golden", label: t("planGolden") },
+    { value: "silver", label: t("planSilver") },
+    { value: "special", label: t("planSpecial") },
+    { value: "none", label: t("planNone") },
+  ];
+
+  const degreeOptions = [
+    { value: "diploma", label: t("degreesOptions.diploma") },
+    { value: "bachelors", label: t("degreesOptions.bachelors") },
+    { value: "master", label: t("degreesOptions.master") },
+    { value: "phd", label: t("degreesOptions.phd") },
+  ];
+
+  const relationshipOptions = [
+    { value: "spouse", label: t("relationshipSpouse") },
+    { value: "child", label: t("relationshipChild") },
+    { value: "parent", label: t("relationshipParent") },
+    { value: "other", label: t("relationshipOther") },
+  ];
+
+  const SEGMENTS: {
+    id: ReqSegmentId;
+    icon: React.ComponentType<{ className?: string }>;
+    titleKey: string;
+    descKey: string;
+    stepNumber: number;
+  }[] = [
+    {
+      id: "personal",
+      icon: UserCircle2,
+      titleKey: "reqSegmentPersonal",
+      descKey: "reqSegmentPersonalDesc",
+      stepNumber: 1,
+    },
+    {
+      id: "org",
+      icon: Briefcase,
+      titleKey: "reqSegmentOrg",
+      descKey: "reqSegmentOrgDesc",
+      stepNumber: 2,
+    },
+    {
+      id: "insurance",
+      icon: ShieldCheck,
+      titleKey: "reqSegmentInsurance",
+      descKey: "reqSegmentInsuranceDesc",
+      stepNumber: 3,
+    },
+    {
+      id: "education",
+      icon: GraduationCap,
+      titleKey: "reqSegmentEducation",
+      descKey: "reqSegmentEducationDesc",
+      stepNumber: 4,
+    },
+  ];
+
+  // Actions
+  const handleSaveProfileChanges = async () => {
+    if (!reviewData) return;
     try {
-      setActionLoadingId(req.id);
-      const updated = await api.admin.approveHr(req.id);
-      setRequests((prev) => prev.map((r) => (r.id === req.id ? updated : r)));
-      toast.success(t("hrApproveSuccess", { email: req.email }));
+      setIsSaving(true);
+      const updated = await api.admin.updateRequest(reviewData.id, reviewData);
+      setRequests((prev) =>
+        prev.map((r) => (r.id === reviewData.id ? updated : r))
+      );
+      toast.success(t("profileChangesSavedSuccess"));
+      if (onRefresh) await onRefresh();
+    } catch {
+      toast.error("خطا در ذخیره تغییرات پرونده");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleApproveHr = async () => {
+    if (!reviewData) return;
+    try {
+      setActionLoadingId(reviewData.id);
+      // First save any current modifications
+      await api.admin.updateRequest(reviewData.id, reviewData);
+      const updated = await api.admin.approveHr(reviewData.id);
+      setRequests((prev) =>
+        prev.map((r) => (r.id === reviewData.id ? updated : r))
+      );
+      setReviewData((prev) => (prev ? { ...prev, ...updated } : null));
+      toast.success(t("hrApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
       toast.error("خطا در تایید واحد منابع انسانی");
@@ -136,13 +330,18 @@ export function AdminRequests({
     }
   };
 
-  // 2. Manager Final Approval & Activation
-  const handleApproveManager = async (req: PendingRequest) => {
+  const handleApproveManager = async () => {
+    if (!reviewData) return;
     try {
-      setActionLoadingId(req.id);
-      const res = await api.admin.approveManager(req.id);
-      setRequests((prev) => prev.map((r) => (r.id === req.id ? res.request : r)));
-      toast.success(t("managerApproveSuccess", { email: req.email }));
+      setActionLoadingId(reviewData.id);
+      // First save any current modifications
+      await api.admin.updateRequest(reviewData.id, reviewData);
+      const res = await api.admin.approveManager(reviewData.id);
+      setRequests((prev) =>
+        prev.map((r) => (r.id === reviewData.id ? res.request : r))
+      );
+      setReviewData((prev) => (prev ? { ...prev, ...res.request } : null));
+      toast.success(t("managerApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
       toast.error("خطا در فعال‌سازی و صدور دسترسی");
@@ -151,36 +350,21 @@ export function AdminRequests({
     }
   };
 
-  // 3. Resend Temporary Password
-  const handleResendCredentials = async (req: PendingRequest) => {
-    try {
-      setActionLoadingId(req.id);
-      const res = await api.admin.resendCredentials(req.id);
-      toast.success(t("resendSuccess", { email: req.email, password: res.tempPassword || "" }));
-      if (onRefresh) await onRefresh();
-    } catch {
-      toast.error("خطا در صدور مجدد کلمه عبور");
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
-
-  // 4. Reject Request
-  const handleOpenReject = (req: PendingRequest) => {
-    setSelectedReqForReject(req);
-    setRejectReason("");
-    setRejectModalOpen(true);
-  };
-
   const handleConfirmReject = async () => {
-    if (!selectedReqForReject) return;
+    if (!reviewData) return;
     try {
       setIsRejecting(true);
-      const updated = await api.admin.rejectRequest(selectedReqForReject.id, rejectReason);
-      setRequests((prev) => prev.map((r) => (r.id === selectedReqForReject.id ? updated : r)));
-      toast.info(t("rejectSuccess", { email: selectedReqForReject.email }));
+      const updated = await api.admin.rejectRequest(
+        reviewData.id,
+        rejectReason
+      );
+      setRequests((prev) =>
+        prev.map((r) => (r.id === reviewData.id ? updated : r))
+      );
+      setReviewData((prev) => (prev ? { ...prev, ...updated } : null));
+      toast.info(t("rejectSuccess", { email: reviewData.email }));
       setRejectModalOpen(false);
-      setSelectedReqForReject(null);
+      setRejectReason("");
       if (onRefresh) await onRefresh();
     } catch {
       toast.error("خطا در ثبت رد درخواست");
@@ -189,20 +373,80 @@ export function AdminRequests({
     }
   };
 
+  const handleResendCredentials = async () => {
+    if (!reviewData) return;
+    try {
+      setActionLoadingId(reviewData.id);
+      const res = await api.admin.resendCredentials(reviewData.id);
+      toast.success(
+        t("resendSuccess", {
+          email: reviewData.email,
+          password: res.tempPassword || "",
+        })
+      );
+      if (onRefresh) await onRefresh();
+    } catch {
+      toast.error("خطا در صدور مجدد کلمه عبور");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Dependents Helpers
+  const handleAddDependent = () => {
+    if (!reviewData) return;
+    const newDep = {
+      id: `dep-${Date.now()}`,
+      fullName: "",
+      relationship: "child",
+      nationalId: "",
+    };
+    setReviewData({
+      ...reviewData,
+      dependents: [...(reviewData.dependents || []), newDep],
+    });
+  };
+
+  const handleRemoveDependent = (depId: string) => {
+    if (!reviewData) return;
+    setReviewData({
+      ...reviewData,
+      dependents: (reviewData.dependents || []).filter((d) => d.id !== depId),
+    });
+  };
+
+  const handleUpdateDependent = (
+    depId: string,
+    field: "fullName" | "relationship" | "nationalId",
+    value: string
+  ) => {
+    if (!reviewData) return;
+    setReviewData({
+      ...reviewData,
+      dependents: (reviewData.dependents || []).map((d) =>
+        d.id === depId ? { ...d, [field]: value } : d
+      ),
+    });
+  };
+
+  const NextArrow = isRtl ? ArrowLeft : ArrowRight;
+  const PrevArrow = isRtl ? ArrowRight : ArrowLeft;
+
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar p-3 sm:p-5 max-w-6xl mx-auto w-full space-y-6">
-      
+    <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-5 max-w-[1440px] mx-auto w-full space-y-6">
       {/* ─── Top Header & Live KPI Metrics Bar ──────────────────────────────── */}
-      <div className="bg-card rounded-2xl p-5 sm:p-6 border border-border/50 shadow-xs space-y-5">
+      <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground tracking-tight">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                <ShieldAlert className="size-5 sm:size-6" />
+              <div className="size-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
+                <ShieldAlert className="size-6" />
               </div>
               <span>{t("tabReqTitle")}</span>
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">{t("tabReqDesc")}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              {t("tabReqDesc")}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -211,7 +455,7 @@ export function AdminRequests({
                 variant="outline"
                 size="sm"
                 onClick={onRefresh}
-                className="h-9 px-3 text-xs gap-1.5"
+                className="h-9 px-3.5 text-xs rounded-xl gap-1.5 cursor-pointer border-border/50 hover:bg-background/80"
               >
                 <RotateCw className="size-3.5" />
                 <span>بروزرسانی</span>
@@ -222,451 +466,302 @@ export function AdminRequests({
 
         {/* 4 Metric Overview Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 fa-num">
-          
-          <div 
-            onClick={() => setStatusFilter('all')}
-            className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
-              statusFilter === 'all' 
-                ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20" 
-                : "bg-muted/30 border-border/40 hover:bg-muted/50"
-            }`}
+          <div
+            onClick={() => setStatusFilter("all")}
+            className={cn(
+              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
+              statusFilter === "all"
+                ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20"
+                : "bg-background/60 border-border/40 hover:bg-background"
+            )}
           >
-            <div className="text-[11px] text-muted-foreground font-medium">{t("statTotalRequests")}</div>
-            <div className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">{metrics.total}</div>
+            <div className="text-[11px] text-muted-foreground font-medium">
+              {t("statTotalRequests")}
+            </div>
+            <div className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">
+              {metrics.total}
+            </div>
           </div>
 
-          <div 
-            onClick={() => setStatusFilter('pending')}
-            className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
-              statusFilter === 'pending' 
-                ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20" 
+          <div
+            onClick={() => setStatusFilter("pending")}
+            className={cn(
+              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
+              statusFilter === "pending"
+                ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
                 : "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10"
-            }`}
+            )}
           >
-            <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">{t("statPendingHr")}</div>
-            <div className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">{metrics.pendingHr}</div>
+            <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+              {t("statPendingHr")}
+            </div>
+            <div className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">
+              {metrics.pendingHr}
+            </div>
           </div>
 
-          <div 
-            onClick={() => setStatusFilter('hr_approved')}
-            className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
-              statusFilter === 'hr_approved' 
-                ? "bg-blue-500/15 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20" 
+          <div
+            onClick={() => setStatusFilter("hr_approved")}
+            className={cn(
+              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
+              statusFilter === "hr_approved"
+                ? "bg-blue-500/15 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
                 : "bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
-            }`}
+            )}
           >
-            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">{t("statPendingManager")}</div>
-            <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">{metrics.pendingManager}</div>
+            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+              {t("statPendingManager")}
+            </div>
+            <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
+              {metrics.pendingManager}
+            </div>
           </div>
 
-          <div 
-            onClick={() => setStatusFilter('rejected')}
-            className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
-              statusFilter === 'rejected' 
-                ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20" 
+          <div
+            onClick={() => setStatusFilter("rejected")}
+            className={cn(
+              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
+              statusFilter === "rejected"
+                ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20"
                 : "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10"
-            }`}
+            )}
           >
-            <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">{t("statRejected")}</div>
-            <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">{metrics.rejected}</div>
+            <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+              {t("statRejected")}
+            </div>
+            <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">
+              {metrics.rejected}
+            </div>
           </div>
-
         </div>
       </div>
 
-      {/* ─── Fast Search Bar & Filter Controls ─────────────────────────────── */}
-      <div className="bg-card rounded-2xl p-4 sm:p-5 border border-border/50 shadow-xs space-y-4">
-        
-        {/* Search Input */}
-        <div className="relative w-full">
-          <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
-          <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("searchRequestsPlaceholder")}
-            className="h-11 ps-10 pe-9 bg-background/80 text-sm rounded-xl border-border/60 focus-visible:ring-1"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery("")}
-              className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1"
-            >
-              <X className="size-3.5" />
-            </button>
-          )}
-        </div>
+      {/* ─── 2-Column Responsive Workspace ──────────────────────────────────── */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        {/* ======================================================== */}
+        {/* LEFT / QUEUE COLUMN: REQUESTS QUEUE & SEARCH */}
+        {/* ======================================================== */}
+        <div className="xl:col-span-4 flex flex-col gap-4">
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Users className="size-4 text-primary" />
+                <span className="font-bold text-sm text-foreground">
+                  {t("requestsQueue")}
+                </span>
+              </div>
+              <span className="bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full fa-num">
+                {filteredRequests.length}
+              </span>
+            </div>
 
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-          
-          {/* Status Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-muted/30 border border-border/40 text-xs font-medium">
-            <button
-              type="button"
-              onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'all'
-                  ? "bg-background text-foreground shadow-xs font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("reqFilterAll")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter('pending')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'pending'
-                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("reqFilterPending")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter('hr_approved')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'hr_approved'
-                  ? "bg-blue-500/20 text-blue-600 dark:text-blue-400 font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("reqFilterHrApproved")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter('active')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'active'
-                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("reqFilterActive")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStatusFilter('rejected')}
-              className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'rejected'
-                  ? "bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {t("reqFilterRejected")}
-            </button>
-          </div>
+            {/* Fast Search Input */}
+            <div className="relative w-full">
+              <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("searchRequestsPlaceholder")}
+                className="h-10 ps-10 pe-9 bg-background/80 text-xs rounded-xl border-border/60"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
 
-          {/* Domain Filter Pills */}
-          <div className="flex items-center gap-1.5 text-xs">
-            <span className="text-muted-foreground text-[11px] font-medium hidden sm:inline">دامنه:</span>
-            <button
-              type="button"
-              onClick={() => setDomainFilter('all')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer border ${
-                domainFilter === 'all'
-                  ? "bg-secondary text-foreground border-border/80 font-bold"
-                  : "bg-muted/20 text-muted-foreground border-border/30 hover:border-border/60"
-              }`}
-            >
-              {t("allDomains")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDomainFilter('euroslotpars.com')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-colors cursor-pointer border ${
-                domainFilter === 'euroslotpars.com'
-                  ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold"
-                  : "bg-muted/20 text-muted-foreground border-border/30 hover:border-border/60"
-              }`}
-            >
-              @euroslotpars.com
-            </button>
-            <button
-              type="button"
-              onClick={() => setDomainFilter('npceram.com')}
-              className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-colors cursor-pointer border ${
-                domainFilter === 'npceram.com'
-                  ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-bold"
-                  : "bg-muted/20 text-muted-foreground border-border/30 hover:border-border/60"
-              }`}
-            >
-              @npceram.com
-            </button>
-          </div>
-
-        </div>
-
-        {/* Counter of results */}
-        <div className="text-[11px] text-muted-foreground pt-0.5 fa-num">
-          {t("searchResultsCount", { count: filteredRequests.length })}
-        </div>
-      </div>
-
-      {/* ─── Requests List ─────────────────────────────────────────────────── */}
-      <div className="space-y-3.5">
-        {filteredRequests.length === 0 ? (
-          <div className="bg-card rounded-2xl p-12 text-center border border-border/40 shadow-xs space-y-3">
-            <CheckCircle2 className="size-10 text-muted-foreground/60 mx-auto" />
-            <p className="text-sm font-semibold text-foreground">{t("noRequestsFound")}</p>
-            <p className="text-xs text-muted-foreground">برای مشاهده سایر درخواست‌ها فیلترها را تغییر داده یا جستجو را پاک کنید.</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSearchQuery("");
-                setStatusFilter('all');
-                setDomainFilter('all');
-              }}
-              className="mt-2 text-xs"
-            >
-              پاک کردن همه فیلترها
-            </Button>
-          </div>
-        ) : (
-          filteredRequests.map((req) => {
-            const isEuroslot = req.email.toLowerCase().includes("@euroslotpars.com");
-            const isLoading = actionLoadingId === req.id;
-
-            return (
-              <div
-                key={req.id}
-                className="bg-card rounded-2xl p-4 sm:p-5 border border-border/50 hover:border-primary/40 transition-colors shadow-xs space-y-4"
+            {/* Status Tabs */}
+            <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl bg-background/60 border border-border/40 text-[11px] font-medium">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  statusFilter === "all"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
               >
-                {/* Header Row: Applicant details & status badge */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-border/40">
-                  <div className="flex items-start sm:items-center gap-3.5">
-                    
-                    {/* Avatar Initials */}
-                    <div className="size-11 sm:size-12 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center font-bold text-base shrink-0 select-none">
-                      {req.name ? req.name.charAt(0).toUpperCase() : req.email.charAt(0).toUpperCase()}
-                    </div>
+                {t("reqFilterAll")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("pending")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  statusFilter === "pending"
+                    ? "bg-amber-500 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("reqFilterPending")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter("hr_approved")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  statusFilter === "hr_approved"
+                    ? "bg-blue-600 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("reqFilterHrApproved")}
+              </button>
+            </div>
 
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-extrabold text-base text-foreground">
-                          {req.name || req.email.split("@")[0]}
-                        </span>
-                        
-                        {/* Domain tag */}
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-medium ${
-                          isEuroslot 
-                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20" 
-                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                        }`}>
-                          {isEuroslot ? "@euroslotpars.com" : "@npceram.com"}
-                        </span>
+            {/* Requests List Cards */}
+            <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
+              {filteredRequests.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground italic">
+                  {t("noRequestsFound")}
+                </div>
+              ) : (
+                filteredRequests.map((req) => {
+                  const isSelected = selectedReqId === req.id;
+                  const isEuroslot = req.email
+                    .toLowerCase()
+                    .includes("@euroslotpars.com");
 
-                        {/* ID badge */}
-                        <span className="text-[10px] text-muted-foreground font-mono bg-muted/40 px-1.5 py-0.5 rounded">
-                          {req.id}
-                        </span>
-                      </div>
-
-                      {/* Contact metadata */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1 font-sans" dir="ltr">
-                          <Mail className="size-3 text-muted-foreground" />
-                          <span className="select-all font-medium text-foreground/80">{req.email}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(req.email, `email-${req.id}`)}
-                            className="p-0.5 hover:text-foreground text-muted-foreground"
-                            title="کپی ایمیل"
-                          >
-                            {copiedId === `email-${req.id}` ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                          </button>
+                  return (
+                    <div
+                      key={req.id}
+                      onClick={() => setSelectedReqId(req.id)}
+                      className={cn(
+                        "p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex flex-col gap-2 relative",
+                        isSelected
+                          ? "bg-background border-primary shadow-xs ring-1 ring-primary/20"
+                          : "bg-background/60 border-border/40 hover:border-border hover:bg-background"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Avatar className="size-9 rounded-xl border border-border/50 shrink-0">
+                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold rounded-xl">
+                              {req.name ? req.name.charAt(0) : "؟"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {req.name || req.email.split("@")[0]}
+                            </span>
+                            <span
+                              className="text-[11px] text-muted-foreground truncate"
+                              dir="ltr"
+                            >
+                              {req.email}
+                            </span>
+                          </div>
                         </div>
 
-                        {req.phone && (
-                          <div className="flex items-center gap-1 fa-num" dir="ltr">
-                            <Phone className="size-3 text-muted-foreground" />
-                            <span className="text-foreground/80">{req.phone}</span>
-                          </div>
-                        )}
+                        {/* Status Badge */}
+                        <div className="shrink-0">
+                          {req.status === "pending" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                              {t("statusPendingHr")}
+                            </span>
+                          )}
+                          {req.status === "hr_approved" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                              {t("statusHrApproved")}
+                            </span>
+                          )}
+                          {req.status === "active" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                              {t("statusActive")}
+                            </span>
+                          )}
+                          {req.status === "rejected" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 border border-rose-500/20">
+                              {t("statusRejected")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
 
-                        {req.nationalId && (
-                          <div className="flex items-center gap-1 fa-num">
-                            <CreditCard className="size-3 text-muted-foreground" />
-                            <span className="text-[11px]">کدملی: {req.nationalId}</span>
-                          </div>
-                        )}
-
-                        {req.department && (
-                          <div className="flex items-center gap-1">
-                            <Building2 className="size-3 text-muted-foreground" />
-                            <span className="text-[11px]">{req.department}</span>
-                          </div>
-                        )}
-
-                        {req.jobTitle && (
-                          <div className="flex items-center gap-1">
-                            <Briefcase className="size-3 text-muted-foreground" />
-                            <span className="text-[11px]">{req.jobTitle}</span>
-                          </div>
-                        )}
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30 fa-num">
+                        <span>{req.department ? t(`departments.${req.department}`) : "---"}</span>
+                        <span>{new Date(req.requestedAt).toLocaleDateString("fa-IR")}</span>
                       </div>
                     </div>
-                  </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
 
-                  {/* Status Badge */}
-                  <div className="shrink-0">
-                    {req.status === 'pending' && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 flex items-center gap-1.5">
-                        <Clock className="size-3.5" />
-                        <span>{t("statusPendingHr")}</span>
-                      </span>
-                    )}
+        {/* ======================================================== */}
+        {/* RIGHT / MAIN COLUMN: SEGMENTED ACCORDION REVIEW WORKSPACE */}
+        {/* ======================================================== */}
+        <div className="xl:col-span-8 flex flex-col gap-5">
+          {!reviewData ? (
+            <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-12 text-center shadow-xs space-y-3">
+              <CheckCircle2 className="size-10 text-muted-foreground/50 mx-auto" />
+              <p className="text-sm font-semibold text-foreground">
+                {t("selectApplicantPrompt")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {t("selectApplicantDesc")}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-5">
+              {/* Applicant Header Card & Workflow Actions */}
+              <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col gap-5 relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <Avatar className="size-14 rounded-2xl border-2 border-border/60 shadow-xs shrink-0">
+                      <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold rounded-2xl">
+                        {reviewData.name ? reviewData.name.charAt(0) : "؟"}
+                      </AvatarFallback>
+                    </Avatar>
 
-                    {req.status === 'hr_approved' && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25 flex items-center gap-1.5">
-                        <UserCheck className="size-3.5" />
-                        <span>{t("statusHrApproved")}</span>
-                      </span>
-                    )}
-
-                    {req.status === 'active' && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 flex items-center gap-1.5">
-                        <ShieldCheck className="size-3.5" />
-                        <span>{t("statusActive")}</span>
-                      </span>
-                    )}
-
-                    {req.status === 'rejected' && (
-                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 flex items-center gap-1.5">
-                        <UserX className="size-3.5" />
-                        <span>{t("statusRejected")}</span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* 4-Stage visual flow indicator */}
-                <div className="py-1">
-                  <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] sm:text-xs">
-                    
-                    {/* Stage 1: Request */}
-                    <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold flex items-center justify-center gap-1">
-                      <Check className="size-3 stroke-[3]" />
-                      <span>{t("step1Short")}</span>
-                    </div>
-
-                    {/* Stage 2: Profile Form */}
-                    <div className={`p-2 rounded-xl border font-semibold flex items-center justify-center gap-1 ${
-                      req.isProfileCompleted
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                        : "bg-muted/30 border-border/40 text-muted-foreground"
-                    }`}>
-                      {req.isProfileCompleted && <Check className="size-3 stroke-[3]" />}
-                      <span>{t("step2Short")}</span>
-                    </div>
-
-                    {/* Stage 3: HR Review */}
-                    <div className={`p-2 rounded-xl border font-semibold flex items-center justify-center gap-1 ${
-                      req.hrApproved
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                        : req.status === 'pending'
-                          ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
-                          : "bg-muted/30 border-border/40 text-muted-foreground"
-                    }`}>
-                      {req.hrApproved && <Check className="size-3 stroke-[3]" />}
-                      <span>{t("step3Short")}</span>
-                    </div>
-
-                    {/* Stage 4: Manager Approval */}
-                    <div className={`p-2 rounded-xl border font-semibold flex items-center justify-center gap-1 ${
-                      req.status === 'active'
-                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                        : req.status === 'hr_approved'
-                          ? "bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400"
-                          : req.status === 'rejected'
-                            ? "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400"
-                            : "bg-muted/30 border-border/40 text-muted-foreground"
-                    }`}>
-                      {req.status === 'active' && <Check className="size-3 stroke-[3]" />}
-                      <span>{t("step4Short")}</span>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Additional Info Row (Rejection Reason or Temp Password if available) */}
-                {req.rejectionReason && (
-                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 dark:text-rose-400 flex items-start gap-2">
-                    <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <span className="font-bold">{t("rejectionReasonLabel")}</span>
-                      <p className="leading-relaxed">{req.rejectionReason}</p>
-                    </div>
-                  </div>
-                )}
-
-                {req.tempPassword && (
-                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-2">
-                      <KeyRound className="size-3.5 text-primary" />
-                      <span className="text-muted-foreground">{t("tempPasswordLabel")}</span>
-                      <span className="font-mono font-bold text-foreground bg-background px-2 py-0.5 rounded border border-border/60">
-                        {req.tempPassword}
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-extrabold text-base sm:text-lg text-foreground truncate">
+                          {reviewData.name || reviewData.email.split("@")[0]}
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20">
+                          {reviewData.id}
+                        </span>
+                      </div>
+                      <span
+                        className="text-xs text-muted-foreground truncate mt-0.5"
+                        dir="ltr"
+                      >
+                        {reviewData.email}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleCopy(req.tempPassword!, `pass-${req.id}`)}
-                      className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1"
-                    >
-                      {copiedId === `pass-${req.id}` ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                      <span>کپی کلمه عبور</span>
-                    </button>
-                  </div>
-                )}
-
-                {/* Footer Row: Timestamp & Action Buttons */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground fa-num">
-                    <Clock className="size-3.5" />
-                    <span>ثبت در: {new Date(req.requestedAt).toLocaleString("fa-IR")}</span>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2">
-                    
-                    {/* View Details Modal Button */}
+                  {/* Actions Header Bar */}
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {/* Save Button */}
                     <Button
+                      type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => {
-                        setSelectedReqForDetails(req);
-                        setDetailsModalOpen(true);
-                      }}
-                      className="h-8.5 text-xs font-medium gap-1"
+                      onClick={handleSaveProfileChanges}
+                      disabled={isSaving}
+                      className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/60 hover:bg-background"
                     >
-                      <Eye className="size-3.5" />
-                      <span>{t("viewDetailsBtn")}</span>
+                      <Save className="size-3.5 text-primary" />
+                      <span>{t("saveProfileChanges")}</span>
                     </Button>
 
-                    {/* Reject Button (available if not already rejected) */}
-                    {req.status !== 'rejected' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleOpenReject(req)}
-                        disabled={isLoading}
-                        className="h-8.5 text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 gap-1"
-                      >
-                        <UserX className="size-3.5" />
-                        <span>{t("rejectBtn")}</span>
-                      </Button>
-                    )}
-
                     {/* Step 3 Action: HR Approval */}
-                    {req.status === 'pending' && (
+                    {reviewData.status === "pending" && (
                       <Button
                         size="sm"
-                        onClick={() => handleApproveHr(req)}
-                        disabled={isLoading}
-                        className="h-8.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white gap-1.5 shadow-xs"
+                        onClick={handleApproveHr}
+                        disabled={actionLoadingId === reviewData.id}
+                        className="h-9 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white gap-1.5 shadow-xs cursor-pointer"
                       >
                         <UserCheck className="size-3.5" />
                         <span>{t("approveHrBtn")}</span>
@@ -674,39 +769,1084 @@ export function AdminRequests({
                     )}
 
                     {/* Step 4 Action: Manager Approval / Final Activation */}
-                    {req.status === 'hr_approved' && (
+                    {reviewData.status === "hr_approved" && (
                       <Button
                         size="sm"
-                        onClick={() => handleApproveManager(req)}
-                        disabled={isLoading}
-                        className="h-8.5 text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs"
+                        onClick={handleApproveManager}
+                        disabled={actionLoadingId === reviewData.id}
+                        className="h-9 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 shadow-xs cursor-pointer"
                       >
                         <ShieldCheck className="size-3.5" />
                         <span>{t("approveManagerBtn")}</span>
                       </Button>
                     )}
 
-                    {/* Active Action: Resend Temp Credentials */}
-                    {req.status === 'active' && (
+                    {/* Reject Button (if not rejected) */}
+                    {reviewData.status !== "rejected" && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRejectReason("");
+                          setRejectModalOpen(true);
+                        }}
+                        className="h-9 px-3 rounded-xl text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 gap-1 cursor-pointer"
+                      >
+                        <UserX className="size-3.5" />
+                        <span>{t("rejectBtn")}</span>
+                      </Button>
+                    )}
+
+                    {/* Resend Temp Password */}
+                    {reviewData.status === "active" && (
                       <Button
                         variant="secondary"
                         size="sm"
-                        onClick={() => handleResendCredentials(req)}
-                        disabled={isLoading}
-                        className="h-8.5 text-xs font-medium gap-1.5"
+                        onClick={handleResendCredentials}
+                        className="h-9 px-3.5 rounded-xl text-xs font-medium gap-1.5 cursor-pointer"
                       >
                         <Send className="size-3.5" />
                         <span>{t("resendCredentialsBtn")}</span>
                       </Button>
                     )}
-
                   </div>
                 </div>
 
+                {/* Rejection notice or Temp password */}
+                {reviewData.rejectionReason && (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-600 flex items-start gap-2">
+                    <AlertCircle className="size-4 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-bold">{t("rejectionReasonLabel")}</span>
+                      <p className="leading-relaxed">{reviewData.rejectionReason}</p>
+                    </div>
+                  </div>
+                )}
+
+                {reviewData.tempPassword && (
+                  <div className="p-2.5 rounded-xl bg-muted/40 border border-border/40 text-xs flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <KeyRound className="size-3.5 text-primary" />
+                      <span className="text-muted-foreground">
+                        {t("tempPasswordLabel")}
+                      </span>
+                      <span className="font-mono font-bold text-foreground bg-background px-2 py-0.5 rounded border border-border/60">
+                        {reviewData.tempPassword}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopy(reviewData.tempPassword!, `pass-${reviewData.id}`)
+                      }
+                      className="text-[11px] font-medium text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      {copiedId === `pass-${reviewData.id}` ? (
+                        <Check className="size-3 text-emerald-500" />
+                      ) : (
+                        <Copy className="size-3" />
+                      )}
+                      <span>کپی کلمه عبور</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* =================================================== */}
+                {/* SEGMENTED CONTROL / TABS */}
+                {/* =================================================== */}
+                <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                  {SEGMENTS.map((seg) => {
+                    const isActive = activeSegment === seg.id;
+                    const Icon = seg.icon;
+
+                    return (
+                      <button
+                        key={seg.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveSegment(seg.id);
+                          setOpenSegment(seg.id);
+                        }}
+                        className={cn(
+                          "flex-1 min-w-[140px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
+                          isActive
+                            ? "bg-primary text-primary-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground hover:bg-background/80"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold fa-num transition-colors",
+                            isActive
+                              ? "bg-primary-foreground/20 text-primary-foreground"
+                              : "bg-muted text-muted-foreground"
+                          )}
+                        >
+                          {seg.stepNumber}
+                        </div>
+                        <span className="truncate">{t(seg.titleKey)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            );
-          })
-        )}
+
+              {/* =================================================== */}
+              {/* ACCORDION ITEMS CONTAINER (EDITABLE FIELDS) */}
+              {/* =================================================== */}
+              <div className="flex flex-col gap-4">
+                {SEGMENTS.map((seg, idx) => {
+                  const isOpen = openSegment === seg.id;
+                  const Icon = seg.icon;
+
+                  return (
+                    <div
+                      key={seg.id}
+                      className={cn(
+                        "bg-slate-100/90 dark:bg-slate-800/40 border rounded-[1.5rem] transition-colors overflow-hidden",
+                        isOpen
+                          ? "border-primary/40 shadow-xs"
+                          : "border-border/40 hover:border-border/70"
+                      )}
+                    >
+                      {/* Accordion Trigger Header */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOpenSegment(isOpen ? null : seg.id);
+                          setActiveSegment(seg.id);
+                        }}
+                        className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-right rtl:text-right ltr:text-left transition-colors"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div
+                            className={cn(
+                              "size-10 rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-2xs",
+                              isOpen
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-background text-muted-foreground border border-border/50"
+                            )}
+                          >
+                            <Icon className="size-4" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-sm sm:text-base text-foreground truncate">
+                              {t(seg.titleKey)}
+                            </span>
+                            <span className="text-xs text-muted-foreground truncate mt-0.5">
+                              {t(seg.descKey)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="text-[11px] text-muted-foreground font-medium fa-num hidden sm:inline">
+                            {t("stepBadge", { step: seg.stepNumber, total: 4 })}
+                          </span>
+                          <div className="size-7 rounded-lg bg-background/60 flex items-center justify-center text-muted-foreground">
+                            <ChevronDown
+                              className={cn(
+                                "size-4 transition-transform duration-250",
+                                isOpen && "rotate-180 text-foreground"
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Accordion Content */}
+                      <AnimatePresence initial={false}>
+                        {isOpen && (
+                          <motion.div
+                            key={`content-${seg.id}`}
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                          >
+                            <div className="p-4 sm:p-6 pt-2 border-t border-border/30 flex flex-col gap-5">
+                              {/* ========================================= */}
+                              {/* SEGMENT 1: IDENTITY & PERSONAL */}
+                              {/* ========================================= */}
+                              {seg.id === "personal" && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  {/* Persian Name Fields */}
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("firstNameFaLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.firstNameFa || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          firstNameFa: sanitizePersian(
+                                            e.target.value
+                                          ),
+                                          name: `${sanitizePersian(
+                                            e.target.value
+                                          )} ${reviewData.lastNameFa || ""}`.trim(),
+                                        })
+                                      }
+                                      placeholder="نام فارسی"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("lastNameFaLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.lastNameFa || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          lastNameFa: sanitizePersian(
+                                            e.target.value
+                                          ),
+                                          name: `${
+                                            reviewData.firstNameFa || ""
+                                          } ${sanitizePersian(
+                                            e.target.value
+                                          )}`.trim(),
+                                        })
+                                      }
+                                      placeholder="نام خانوادگی فارسی"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                    />
+                                  </div>
+
+                                  {/* English Name Fields */}
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("firstNameEnLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.firstName || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          firstName: sanitizeEnglish(
+                                            e.target.value
+                                          ),
+                                        })
+                                      }
+                                      placeholder="First Name"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      dir="ltr"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("lastNameEnLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.lastName || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          lastName: sanitizeEnglish(
+                                            e.target.value
+                                          ),
+                                        })
+                                      }
+                                      placeholder="Last Name"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      dir="ltr"
+                                    />
+                                  </div>
+
+                                  {/* National ID & Phone */}
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("nationalIdInputLabel")}
+                                    </Label>
+                                    <div className="relative">
+                                      <CreditCard
+                                        size={18}
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Input
+                                        value={reviewData.nationalId || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            nationalId: normalizeDigits(
+                                              e.target.value
+                                            ),
+                                          })
+                                        }
+                                        placeholder="0012345678"
+                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                        dir="ltr"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("phone")}
+                                    </Label>
+                                    <div className="relative">
+                                      <Phone
+                                        size={18}
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Input
+                                        value={reviewData.phone || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            phone: normalizeDigits(
+                                              e.target.value
+                                            ),
+                                          })
+                                        }
+                                        placeholder="0912..."
+                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                        dir="ltr"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Email & Birth Date */}
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("email")}
+                                    </Label>
+                                    <div className="relative">
+                                      <Mail
+                                        size={18}
+                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Input
+                                        type="email"
+                                        value={reviewData.email || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            email: e.target.value,
+                                          })
+                                        }
+                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                        dir="ltr"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("birthDateLabel")}
+                                    </Label>
+                                    <div className="relative">
+                                      <Calendar
+                                        size={18}
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Input
+                                        value={reviewData.birthDate || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            birthDate: e.target.value,
+                                          })
+                                        }
+                                        placeholder="1370/01/01"
+                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Marital Status & Children Count */}
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("maritalStatusLabel")}
+                                    </Label>
+                                    <Combobox
+                                      options={maritalOptions}
+                                      value={reviewData.maritalStatus || "single"}
+                                      onChange={(val) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          maritalStatus: val as
+                                            | "single"
+                                            | "married",
+                                          childrenCount:
+                                            val === "single"
+                                              ? 0
+                                              : reviewData.childrenCount,
+                                        })
+                                      }
+                                      placeholder={t("selectMaritalStatus")}
+                                      emptyText={t("noResults")}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("childrenCountLabel")}
+                                    </Label>
+                                    <div className="h-11 flex items-center">
+                                      <div
+                                        className={cn(
+                                          "inline-flex items-center rounded-xl border border-border/50 bg-background p-1 shadow-2xs",
+                                          reviewData.maritalStatus === "single" &&
+                                            "opacity-50 pointer-events-none"
+                                        )}
+                                      >
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() =>
+                                            setReviewData((prev) =>
+                                              prev
+                                                ? {
+                                                    ...prev,
+                                                    childrenCount: Math.max(
+                                                      0,
+                                                      (prev.childrenCount || 0) -
+                                                        1
+                                                    ),
+                                                  }
+                                                : null
+                                            )
+                                          }
+                                          disabled={
+                                            reviewData.maritalStatus ===
+                                              "single" ||
+                                            (reviewData.childrenCount || 0) <= 0
+                                          }
+                                          className="size-8 rounded-lg text-foreground hover:bg-muted active:bg-muted flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                                        >
+                                          <Minus className="size-3.5 stroke-[2.5]" />
+                                        </Button>
+                                        <span className="min-w-10 px-2 text-center font-mono font-bold text-sm text-foreground fa-num select-none">
+                                          {reviewData.childrenCount || 0}
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() =>
+                                            setReviewData((prev) =>
+                                              prev
+                                                ? {
+                                                    ...prev,
+                                                    childrenCount: Math.min(
+                                                      20,
+                                                      (prev.childrenCount || 0) +
+                                                        1
+                                                    ),
+                                                  }
+                                                : null
+                                            )
+                                          }
+                                          disabled={
+                                            reviewData.maritalStatus ===
+                                              "single" ||
+                                            (reviewData.childrenCount || 0) >= 20
+                                          }
+                                          className="size-8 rounded-lg text-foreground hover:bg-muted active:bg-muted flex items-center justify-center transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                                        >
+                                          <Plus className="size-3.5 stroke-[2.5]" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Residential Address */}
+                                  <div className="flex flex-col gap-2 sm:col-span-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("addressLabel")}
+                                    </Label>
+                                    <div className="relative">
+                                      <MapPin
+                                        size={18}
+                                        className="absolute start-3.5 top-3.5 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Textarea
+                                        value={reviewData.address || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            address: e.target.value,
+                                          })
+                                        }
+                                        rows={2}
+                                        placeholder="آدرس دقیق محل سکونت..."
+                                        className="ps-10 bg-background border-border/50 rounded-xl text-xs resize-none"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 2: ORGANIZATIONAL & JOB */}
+                              {/* ========================================= */}
+                              {seg.id === "org" && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("department")}
+                                    </Label>
+                                    <Combobox
+                                      options={departmentOptions}
+                                      value={reviewData.department || "engineering"}
+                                      onChange={(val) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          department: val,
+                                        })
+                                      }
+                                      placeholder={t("selectDepartment")}
+                                      emptyText={t("noResults")}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("jobTitleLabel")}
+                                    </Label>
+                                    <div className="relative">
+                                      <Briefcase
+                                        size={18}
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                      />
+                                      <Input
+                                        value={reviewData.jobTitle || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            jobTitle: e.target.value,
+                                          })
+                                        }
+                                        placeholder={t("jobTitlePlaceholder")}
+                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("employeeIdLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.employeeId || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          employeeId: e.target.value,
+                                        })
+                                      }
+                                      placeholder="ESP-1001"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      dir="ltr"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("joinDateLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.joinDate || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          joinDate: e.target.value,
+                                        })
+                                      }
+                                      placeholder="1402/01/01"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("managerDirectLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.manager || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          manager: e.target.value,
+                                        })
+                                      }
+                                      placeholder="نام مدیر مستقیم"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("extensionNumberLabel")}
+                                    </Label>
+                                    <Input
+                                      value={reviewData.extensionNumber || ""}
+                                      onChange={(e) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          extensionNumber: normalizeDigits(
+                                            e.target.value
+                                          ),
+                                        })
+                                      }
+                                      placeholder="101"
+                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      dir="ltr"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("workLocationLabel")}
+                                    </Label>
+                                    <Combobox
+                                      options={workLocationOptions}
+                                      value={reviewData.workLocation || "office"}
+                                      onChange={(val) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          workLocation: val,
+                                        })
+                                      }
+                                      placeholder={t("workLocationLabel")}
+                                      emptyText={t("noResults")}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground">
+                                      {t("contractTypeLabel")}
+                                    </Label>
+                                    <Combobox
+                                      options={contractTypeOptions}
+                                      value={
+                                        reviewData.contractType || "full_time"
+                                      }
+                                      onChange={(val) =>
+                                        setReviewData({
+                                          ...reviewData,
+                                          contractType: val,
+                                        })
+                                      }
+                                      placeholder={t("contractTypeLabel")}
+                                      emptyText={t("noResults")}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 3: INSURANCE & FINANCIAL */}
+                              {/* ========================================= */}
+                              {seg.id === "insurance" && (
+                                <div className="flex flex-col gap-5">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("insuranceCodeLabel")}
+                                      </Label>
+                                      <Input
+                                        value={reviewData.insuranceCode || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            insuranceCode: normalizeDigits(
+                                              e.target.value
+                                            ),
+                                          })
+                                        }
+                                        placeholder="1234567890"
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        dir="ltr"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("insuranceProviderLabel")}
+                                      </Label>
+                                      <Input
+                                        value={
+                                          reviewData.insuranceProvider ||
+                                          "تامین اجتماعی"
+                                        }
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            insuranceProvider: e.target.value,
+                                          })
+                                        }
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("insuranceValidUntilLabel")}
+                                      </Label>
+                                      <Input
+                                        value={reviewData.insuranceValidUntil || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            insuranceValidUntil: e.target.value,
+                                          })
+                                        }
+                                        placeholder="1405/12/29"
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("supplementaryPlanLabel")}
+                                      </Label>
+                                      <Combobox
+                                        options={supplementaryPlanOptions}
+                                        value={
+                                          reviewData.supplementaryPlan || "none"
+                                        }
+                                        onChange={(val) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            supplementaryPlan: val as any,
+                                          })
+                                        }
+                                        placeholder={t("supplementaryPlanLabel")}
+                                        emptyText={t("noResults")}
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 sm:col-span-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("shebaNumberLabel")}
+                                      </Label>
+                                      <div className="relative">
+                                        <CreditCard
+                                          size={18}
+                                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                        />
+                                        <Input
+                                          value={reviewData.shebaNumber || ""}
+                                          onChange={(e) =>
+                                            setReviewData({
+                                              ...reviewData,
+                                              shebaNumber: e.target.value.toUpperCase(),
+                                            })
+                                          }
+                                          placeholder="IR000000000000000000000000"
+                                          className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num font-mono text-left"
+                                          dir="ltr"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Dependents Sub-Section */}
+                                  <div className="flex flex-col gap-3 pt-3 border-t border-border/30">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                                        <Users className="size-4 text-primary" />
+                                        <span>{t("dependentsTitle")}</span>
+                                      </Label>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleAddDependent}
+                                        className="h-8 px-2.5 rounded-lg text-xs gap-1 border-border/60 cursor-pointer"
+                                      >
+                                        <Plus className="size-3.5" />
+                                        <span>{t("addDependentBtn")}</span>
+                                      </Button>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      {(reviewData.dependents || []).length ===
+                                      0 ? (
+                                        <p className="text-xs text-muted-foreground italic py-2">
+                                          هیچ فردی تحت تکفل ثبت نشده است.
+                                        </p>
+                                      ) : (
+                                        (reviewData.dependents || []).map(
+                                          (dep) => (
+                                            <div
+                                              key={dep.id}
+                                              className="p-3 rounded-xl bg-background/60 border border-border/40 grid grid-cols-1 sm:grid-cols-3 gap-3 items-center"
+                                            >
+                                              <Input
+                                                value={dep.fullName}
+                                                onChange={(e) =>
+                                                  handleUpdateDependent(
+                                                    dep.id,
+                                                    "fullName",
+                                                    e.target.value
+                                                  )
+                                                }
+                                                placeholder="نام و نام خانوادگی"
+                                                className="h-9 text-xs bg-background"
+                                              />
+                                              <Combobox
+                                                options={relationshipOptions}
+                                                value={dep.relationship}
+                                                onChange={(val) =>
+                                                  handleUpdateDependent(
+                                                    dep.id,
+                                                    "relationship",
+                                                    val
+                                                  )
+                                                }
+                                                placeholder="نسبت..."
+                                                className="h-9 text-xs bg-background rtl:text-right"
+                                              />
+                                              <div className="flex items-center gap-2">
+                                                <Input
+                                                  value={dep.nationalId}
+                                                  onChange={(e) =>
+                                                    handleUpdateDependent(
+                                                      dep.id,
+                                                      "nationalId",
+                                                      normalizeDigits(
+                                                        e.target.value
+                                                      )
+                                                    )
+                                                  }
+                                                  placeholder="کد ملی"
+                                                  className="h-9 text-xs bg-background fa-num"
+                                                  dir="ltr"
+                                                />
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  onClick={() =>
+                                                    handleRemoveDependent(
+                                                      dep.id
+                                                    )
+                                                  }
+                                                  className="size-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-lg shrink-0 cursor-pointer"
+                                                >
+                                                  <Trash2 className="size-3.5" />
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          )
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 4: EDUCATION & SKILLS */}
+                              {/* ========================================= */}
+                              {seg.id === "education" && (
+                                <div className="flex flex-col gap-5">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("degreeLevelLabel")}
+                                      </Label>
+                                      <Combobox
+                                        options={degreeOptions}
+                                        value={
+                                          reviewData.educationDegree || "bachelors"
+                                        }
+                                        onChange={(val) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            educationDegree: val,
+                                          })
+                                        }
+                                        placeholder={t("selectDegree")}
+                                        emptyText={t("noResults")}
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("studyFieldLabel")}
+                                      </Label>
+                                      <Input
+                                        value={reviewData.educationField || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            educationField: e.target.value,
+                                          })
+                                        }
+                                        placeholder="مهندسی متالورژی / صنایع..."
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("universityLabel")}
+                                      </Label>
+                                      <Input
+                                        value={reviewData.university || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            university: e.target.value,
+                                          })
+                                        }
+                                        placeholder="دانشگاه تهران / صنعتی شریف..."
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("graduationYearLabel")}
+                                      </Label>
+                                      <Input
+                                        value={reviewData.graduationYear || ""}
+                                        onChange={(e) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            graduationYear: normalizeDigits(
+                                              e.target.value
+                                            ),
+                                          })
+                                        }
+                                        placeholder="1398"
+                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        dir="ltr"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Skills Sub-Section */}
+                                  <div className="flex flex-col gap-3 pt-3 border-t border-border/30">
+                                    <Label className="text-xs font-bold text-foreground flex items-center gap-2">
+                                      <Star className="size-4 text-amber-500" />
+                                      <span>{t("skillsTitle")}</span>
+                                    </Label>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                      {(reviewData.skills || []).map((sk) => (
+                                        <div
+                                          key={sk.id}
+                                          className="p-3 rounded-xl bg-background/60 border border-border/40 flex items-center justify-between gap-3"
+                                        >
+                                          <span className="text-xs font-semibold text-foreground truncate">
+                                            {sk.name}
+                                          </span>
+                                          <div className="flex items-center gap-1 shrink-0">
+                                            {[1, 2, 3, 4, 5].map((lvl) => (
+                                              <button
+                                                key={lvl}
+                                                type="button"
+                                                onClick={() => {
+                                                  const newSkills = (
+                                                    reviewData.skills || []
+                                                  ).map((s) =>
+                                                    s.id === sk.id
+                                                      ? { ...s, level: lvl }
+                                                      : s
+                                                  );
+                                                  setReviewData({
+                                                    ...reviewData,
+                                                    skills: newSkills,
+                                                  });
+                                                }}
+                                                className="cursor-pointer"
+                                              >
+                                                <Star
+                                                  className={cn(
+                                                    "size-3.5",
+                                                    lvl <= sk.level
+                                                      ? "fill-amber-400 text-amber-400"
+                                                      : "text-muted-foreground/30"
+                                                  )}
+                                                />
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Accordion Footer Actions */}
+                              <div className="flex items-center justify-between pt-3 border-t border-border/30 mt-1">
+                                <div>
+                                  {idx > 0 && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        const prev = SEGMENTS[idx - 1].id;
+                                        setActiveSegment(prev);
+                                        setOpenSegment(prev);
+                                      }}
+                                      className="h-9 px-3.5 rounded-xl font-medium text-xs gap-1.5 cursor-pointer"
+                                    >
+                                      <PrevArrow className="size-3.5" />
+                                      <span>{t("prevStep")}</span>
+                                    </Button>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {idx < SEGMENTS.length - 1 && (
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      onClick={() => {
+                                        const next = SEGMENTS[idx + 1].id;
+                                        setActiveSegment(next);
+                                        setOpenSegment(next);
+                                      }}
+                                      className="h-9 px-4 rounded-xl font-medium text-xs gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
+                                    >
+                                      <span>{t("nextStep")}</span>
+                                      <NextArrow className="size-3.5" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={handleSaveProfileChanges}
+                                    disabled={isSaving}
+                                    className="h-9 px-4 rounded-xl font-semibold text-xs gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                                  >
+                                    <Save className="size-3.5" />
+                                    <span>{t("saveProfileChanges")}</span>
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ─── Rejection Reason Dialog ───────────────────────────────────────── */}
@@ -718,7 +1858,7 @@ export function AdminRequests({
               <span>{t("rejectReasonTitle")}</span>
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
-              {selectedReqForReject?.email}
+              {reviewData?.email}
             </DialogDescription>
           </DialogHeader>
 
@@ -754,120 +1894,6 @@ export function AdminRequests({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* ─── Applicant Details Dialog ──────────────────────────────────────── */}
-      <Dialog open={detailsModalOpen} onOpenChange={setDetailsModalOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <Eye className="size-5 text-primary" />
-              <span>{t("applicantDetailsTitle")}</span>
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              {t("applicantDetailsDesc")}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedReqForDetails && (
-            <div className="py-3 space-y-4 text-xs">
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 rounded-xl bg-muted/20 border border-border/40">
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("name")}:</span>
-                  <div className="font-bold text-foreground text-sm">
-                    {selectedReqForDetails.name || "تعیین نشده"}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("email")}:</span>
-                  <div className="font-sans font-medium text-foreground text-sm" dir="ltr">
-                    {selectedReqForDetails.email}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("phoneLabel")}</span>
-                  <div className="font-sans font-medium text-foreground fa-num" dir="ltr">
-                    {selectedReqForDetails.phone || "09120000000"}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("nationalIdLabel")}</span>
-                  <div className="font-medium text-foreground fa-num">
-                    {selectedReqForDetails.nationalId || "0010000000"}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("deptLabel")}</span>
-                  <div className="font-medium text-foreground">
-                    {selectedReqForDetails.department || "Engineering"}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <span className="text-muted-foreground">{t("jobTitleLabel")}</span>
-                  <div className="font-medium text-foreground">
-                    {selectedReqForDetails.jobTitle || "پرسنل سازمانی"}
-                  </div>
-                </div>
-              </div>
-
-              {/* Status & Approvers details */}
-              <div className="space-y-2 p-4 rounded-xl bg-muted/20 border border-border/40">
-                <div className="flex items-center justify-between border-b border-border/30 pb-2">
-                  <span className="text-muted-foreground">{t("profileCompletionLabel")}</span>
-                  <span className={`font-semibold ${selectedReqForDetails.isProfileCompleted ? "text-emerald-500" : "text-amber-500"}`}>
-                    {selectedReqForDetails.isProfileCompleted ? t("profileCompleted") : t("profileIncomplete")}
-                  </span>
-                </div>
-
-                {selectedReqForDetails.hrApproved && (
-                  <div className="flex items-center justify-between border-b border-border/30 pb-2">
-                    <span className="text-muted-foreground">{t("hrApprovedByLabel")}</span>
-                    <span className="font-medium text-foreground">
-                      {selectedReqForDetails.hrApprovedBy || "واحد HR"}
-                    </span>
-                  </div>
-                )}
-
-                {selectedReqForDetails.managerApproved && (
-                  <div className="flex items-center justify-between border-b border-border/30 pb-2">
-                    <span className="text-muted-foreground">{t("managerApprovedByLabel")}</span>
-                    <span className="font-medium text-foreground">
-                      {selectedReqForDetails.managerApprovedBy || "مدیر سیستم"}
-                    </span>
-                  </div>
-                )}
-
-                {selectedReqForDetails.tempPassword && (
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-muted-foreground">{t("tempPasswordLabel")}</span>
-                    <span className="font-mono font-bold text-foreground bg-background px-2 py-0.5 rounded border border-border/60">
-                      {selectedReqForDetails.tempPassword}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-            </div>
-          )}
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDetailsModalOpen(false)}
-              className="text-xs"
-            >
-              {t("closeBtn")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 }
