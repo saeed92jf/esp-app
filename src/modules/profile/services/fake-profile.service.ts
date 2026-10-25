@@ -38,9 +38,11 @@ const MOCK_PROFILE: UserProfile = {
   insurance: {
     insuranceCode: "12345678",
     provider: "تامین اجتماعی",
+    corporateProvider: "تامین اجتماعی",
     validUntil: "1405/12/29",
     type: "بیمه اجباری",
     supplementaryPlan: "golden",
+    supplementaryProvider: "SOS",
     shebaNumber: "IR120120000000001234567890",
     dependentsCount: 2,
     dependents: [

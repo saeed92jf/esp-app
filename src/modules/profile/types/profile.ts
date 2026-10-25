@@ -52,10 +52,12 @@ export interface DependentInfo {
 
 export interface InsuranceInfo {
   insuranceCode: string;
-  provider: string;
+  provider: string; // "تامین اجتماعی" (Social Security)
+  corporateProvider?: string;
   validUntil: string;
   type: string;
   supplementaryPlan?: SupplementaryInsurancePlan;
+  supplementaryProvider?: string; // "SOS" (کمک‌رسان ایران)
   dependentsCount?: number;
   dependents?: DependentInfo[];
   shebaNumber?: string;

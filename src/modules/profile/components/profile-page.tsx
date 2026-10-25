@@ -111,8 +111,9 @@ import {
   Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, ArrowRight, Map, Upload, Trash, Plus,
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
   Heart, Users, PhoneCall, CreditCard, Check,
-  Building2, Factory, Laptop, Network
+  Building2, Factory, Laptop, Network, AlertCircle, Info
 } from "lucide-react";
+import { validateSheba, normalizeSheba, formatSheba, getShebaDigits } from "@/utils/shebaValidator";
 import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -321,6 +322,10 @@ export function ProfilePage() {
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [emailOtpInput, setEmailOtpInput] = useState("");
   const [newSubordinateInput, setNewSubordinateInput] = useState("");
+  const [newDepFullName, setNewDepFullName] = useState("");
+  const [newDepRelationship, setNewDepRelationship] = useState("spouse");
+  const [newDepNationalId, setNewDepNationalId] = useState("");
+  const [newDepBirthDate, setNewDepBirthDate] = useState("");
 
   useEffect(() => {
     setIsVerifyingPhone(false);
@@ -328,6 +333,10 @@ export function ProfilePage() {
     setIsVerifyingEmail(false);
     setEmailOtpInput("");
     setNewSubordinateInput("");
+    setNewDepFullName("");
+    setNewDepRelationship("spouse");
+    setNewDepNationalId("");
+    setNewDepBirthDate("");
   }, [editingField]);
   const [activeEducationRecord, setActiveEducationRecord] = useState<EducationRecord | null>(null);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
@@ -2054,20 +2063,24 @@ export function ProfilePage() {
     const relationshipOptions: ComboboxOption[] = [
       { value: "spouse", label: t("fields.spouse") },
       { value: "child", label: t("fields.child") },
+      { value: "father", label: t("fields.father") },
+      { value: "mother", label: t("fields.mother") },
       { value: "parent", label: t("fields.parent") },
       { value: "other", label: t("fields.other") },
     ];
+
+    const shebaStatus = validateSheba(formData.insurance.shebaNumber);
 
     if (editingField) {
       let title = "";
       let fieldKey = editingField as keyof UserProfile["insurance"];
       
       switch (editingField) {
-        case 'provider': title = t("fields.provider"); break;
+        case 'provider': title = t("fields.corporateInsurance"); break;
         case 'type': title = t("fields.type"); break;
         case 'insuranceCode': title = t("fields.insuranceCode"); break;
         case 'validUntil': title = t("fields.validUntil"); break;
-        case 'supplementaryPlan': title = t("fields.supplementaryPlan"); break;
+        case 'supplementaryPlan': title = t("fields.supplementaryInsurance"); break;
         case 'shebaNumber': title = t("fields.shebaNumber"); break;
         case 'dependentsCount':
         case 'dependents': title = t("fields.dependents"); break;
@@ -2077,53 +2090,19 @@ export function ProfilePage() {
       const value = (formData.insurance[fieldKey] as string) || "";
       
       const handleLocalSave = () => {
+        if (fieldKey === 'shebaNumber') {
+          const s = validateSheba(formData.insurance.shebaNumber);
+          if (formData.insurance.shebaNumber && !s.isValid) {
+            if (!s.isCompleteLength) {
+              toast.error(t("fields.shebaIncomplete", { remaining: 24 - s.digitCount }));
+            } else {
+              toast.error(t("fields.shebaInvalidChecksum"));
+            }
+            return;
+          }
+        }
         handleSave();
         setEditingField(null);
-      };
-
-      const handleAddDependent = () => {
-        const newDep: DependentInfo = {
-          id: `dep_${Date.now()}`,
-          fullName: "",
-          relationship: "spouse",
-          nationalId: "",
-          birthDate: "",
-        };
-        const updated = [...(formData.insurance.dependents || []), newDep];
-        setFormData({
-          ...formData,
-          insurance: {
-            ...formData.insurance,
-            dependents: updated,
-            dependentsCount: updated.length,
-          },
-        });
-      };
-
-      const handleUpdateDependent = (depId: string, field: keyof DependentInfo, val: string) => {
-        const updated = (formData.insurance.dependents || []).map((dep) =>
-          dep.id === depId ? { ...dep, [field]: val } : dep
-        );
-        setFormData({
-          ...formData,
-          insurance: {
-            ...formData.insurance,
-            dependents: updated,
-            dependentsCount: updated.length,
-          },
-        });
-      };
-
-      const handleDeleteDependent = (depId: string) => {
-        const updated = (formData.insurance.dependents || []).filter((dep) => dep.id !== depId);
-        setFormData({
-          ...formData,
-          insurance: {
-            ...formData.insurance,
-            dependents: updated,
-            dependentsCount: updated.length,
-          },
-        });
       };
 
       return (
@@ -2137,11 +2116,41 @@ export function ProfilePage() {
           
           <div className="ps-0 sm:ps-14">
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              {fieldKey === 'supplementaryPlan' ? (
+              {fieldKey === 'provider' ? (
+                <div className="space-y-5 max-w-lg">
+                  <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-2">
+                    <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                      <Shield className="size-5" />
+                      <span>{t("fields.corporateInsurance")}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {t("fields.corporateInsuranceDesc")}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.provider")}</Label>
+                    <Input 
+                      value={formData.insurance.provider || t("fields.taminEjtemaei")} 
+                      onChange={(e) => handleChange("insurance", "provider", e.target.value)}
+                      className="h-12 text-base font-medium rounded-xl"
+                    />
+                  </div>
+                </div>
+              ) : fieldKey === 'supplementaryPlan' ? (
                 <div className="space-y-6 max-w-xl">
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-sm">
+                      <ShieldAlert className="size-5" />
+                      <span>{t("fields.supplementaryInsurance")} ({t("fields.sosInsurance")})</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {t("fields.supplementaryInsuranceDesc")}
+                    </p>
+                  </div>
+
                   <div className="space-y-2">
                     <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.supplementaryPlan")}</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                       {[
                         { id: "golden", label: t("fields.planGolden"), desc: t("fields.planGoldenDesc"), color: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400" },
                         { id: "silver", label: t("fields.planSilver"), desc: t("fields.planSilverDesc"), color: "border-slate-400/40 bg-slate-400/10 text-slate-700 dark:text-slate-300" },
@@ -2175,124 +2184,234 @@ export function ProfilePage() {
               ) : fieldKey === 'shebaNumber' ? (
                 <div className="space-y-6 max-w-lg">
                   <div className="space-y-2">
-                    <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.shebaNumber")}</Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.shebaNumber")}</Label>
+                      <span className={cn(
+                        "fa-num font-sans font-mono px-2 py-0.5 rounded-md text-[11px] font-semibold border",
+                        shebaStatus.isCompleteLength
+                          ? (shebaStatus.isValid ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20" : "bg-destructive/10 text-destructive border-destructive/20")
+                          : "bg-muted text-muted-foreground border-border/50"
+                      )}>
+                        {shebaStatus.digitCount} / 24 {locale === 'fa' ? 'رقم' : 'digits'}
+                      </span>
+                    </div>
+
                     <div className="relative">
                       <Input
                         value={formData.insurance.shebaNumber || ""}
                         onChange={(e) => {
-                          let val = e.target.value.toUpperCase();
-                          if (!val.startsWith("IR") && val.length > 0) {
-                            val = "IR" + val.replace(/[^0-9]/g, "");
-                          }
-                          handleChange("insurance", "shebaNumber", val);
+                          const normalized = normalizeSheba(e.target.value);
+                          handleChange("insurance", "shebaNumber", normalized);
                         }}
                         placeholder="IR000000000000000000000000"
                         dir="ltr"
                         maxLength={26}
-                        className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none font-mono text-left ltr"
+                        className={cn(
+                          "h-14 bg-transparent border-t-0 border-x-0 border-b-2 rounded-none px-0 pr-9 text-lg focus-visible:ring-0 shadow-none font-mono text-left ltr",
+                          shebaStatus.isCompleteLength
+                            ? (shebaStatus.isValid ? "border-emerald-500 focus-visible:border-emerald-600" : "border-destructive focus-visible:border-destructive")
+                            : "border-primary/20 focus-visible:border-primary"
+                        )}
                         autoFocus
                       />
-                      <CreditCard className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 rtl:left-2 ltr:right-2 pointer-events-none" />
+                      <CreditCard className="size-5 text-muted-foreground absolute top-1/2 -translate-y-1/2 right-3 pointer-events-none" />
                     </div>
+                    <p className="text-xs text-muted-foreground pt-1">{t("fields.shebaHelp")}</p>
+
+                    {/* Verification Status Pill */}
+                    {shebaStatus.isValid ? (
+                      <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20 mt-3">
+                        <CheckCircle2 className="size-4 shrink-0" />
+                        <span>{t("fields.shebaValid")}</span>
+                      </div>
+                    ) : shebaStatus.isCompleteLength ? (
+                      <div className="flex items-center gap-2 text-xs text-destructive font-medium bg-destructive/10 p-3 rounded-xl border border-destructive/20 mt-3">
+                        <AlertCircle className="size-4 shrink-0" />
+                        <span>{t("fields.shebaInvalidChecksum")}</span>
+                      </div>
+                    ) : shebaStatus.digitCount > 0 ? (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border/50 mt-3">
+                        <Info className="size-4 shrink-0" />
+                        <span>{t("fields.shebaIncomplete", { remaining: 24 - shebaStatus.digitCount })}</span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ) : (fieldKey === 'dependents' || fieldKey === 'dependentsCount') ? (
-                <div className="space-y-6 max-w-2xl">
-                  <div className="flex items-center justify-between pb-3 border-b border-border/40">
-                    <div className="flex items-center gap-2.5">
-                      <h4 className="text-base font-bold text-foreground">{t("fields.dependents")}</h4>
+                <div className="space-y-6 max-w-3xl">
+                  {/* Add Dependent Input Form */}
+                  <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/60 space-y-4">
+                    <h5 className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
+                      <Plus className="size-4 text-primary" />
+                      <span>{t("fields.newDependentTitle")}</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("fields.dependentFullName")} *</Label>
+                        <Input
+                          value={newDepFullName}
+                          onChange={(e) => setNewDepFullName(e.target.value)}
+                          placeholder={t("fields.fullNamePlaceholder")}
+                          className="h-10 text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("fields.relationship")} *</Label>
+                        <Combobox
+                          options={relationshipOptions}
+                          value={newDepRelationship}
+                          onChange={(val) => setNewDepRelationship(val)}
+                          placeholder={t("fields.selectRelationship")}
+                          className="w-full h-10 rtl:text-right"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("fields.nationalId")}</Label>
+                        <Input
+                          value={newDepNationalId}
+                          maxLength={10}
+                          onChange={(e) => {
+                            const clean = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            setNewDepNationalId(clean);
+                          }}
+                          placeholder={t("fields.nationalIdPlaceholder")}
+                          dir="ltr"
+                          className="h-10 font-mono text-sm"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{t("fields.birthDate")}</Label>
+                        <DatePicker
+                          value={parseDateString(newDepBirthDate)}
+                          onChange={(date) => setNewDepBirthDate(formatDateToString(date))}
+                          isJalali={locale === 'fa'}
+                          placeholder={t("fields.selectBirthDate")}
+                          className="w-full h-10"
+                          triggerClassName="w-full h-10 justify-between text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-1">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          if (!newDepFullName.trim()) {
+                            toast.error(t("fields.dependentValidationName"));
+                            return;
+                          }
+                          const newDep: DependentInfo = {
+                            id: `dep_${Date.now()}`,
+                            fullName: newDepFullName.trim(),
+                            relationship: newDepRelationship,
+                            nationalId: newDepNationalId.trim(),
+                            birthDate: newDepBirthDate.trim(),
+                          };
+                          const updated = [...(formData.insurance.dependents || []), newDep];
+                          setFormData({
+                            ...formData,
+                            insurance: {
+                              ...formData.insurance,
+                              dependents: updated,
+                              dependentsCount: updated.length,
+                            },
+                          });
+                          setNewDepFullName("");
+                          setNewDepRelationship("spouse");
+                          setNewDepNationalId("");
+                          setNewDepBirthDate("");
+                          toast.success(t("fields.dependentAddedSuccess"));
+                        }}
+                        className="rounded-xl text-xs sm:text-sm font-semibold h-10 px-5 gap-1.5"
+                      >
+                        <Plus className="size-4" />
+                        <span>{t("fields.addDependentSubmit")}</span>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Row-by-Row Table Display (سطری) */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <h5 className="text-xs sm:text-sm font-bold text-foreground">{t("fields.dependents")}</h5>
                       <Badge variant="outline" className="fa-num text-xs font-semibold border-primary/30 text-primary">
                         {(formData.insurance.dependents || []).length} {t("fields.persons")}
                       </Badge>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={handleAddDependent}
-                      className="rounded-full text-xs font-bold gap-1 px-3.5"
-                    >
-                      <Plus className="size-3.5" />
-                      <span>{t("fields.addDependent")}</span>
-                    </Button>
-                  </div>
 
-                  {(formData.insurance.dependents || []).length === 0 ? (
-                    <div className="py-8 text-center text-muted-foreground text-xs">
-                      {t("fields.noDependents")}
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {(formData.insurance.dependents || []).map((dep, idx) => (
-                        <div key={dep.id} className="p-4 rounded-2xl bg-muted/20 border border-border/50 space-y-3 relative">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-primary fa-num">
-                              {t("fields.dependentPerson")} #{idx + 1}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteDependent(dep.id)}
-                              className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full"
-                              title={t("fields.deleteDependent")}
-                            >
-                              <Trash className="size-3.5" />
-                            </Button>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">{t("fields.dependentFullName")}</Label>
-                              <Input
-                                value={dep.fullName}
-                                onChange={(e) => handleUpdateDependent(dep.id, "fullName", e.target.value)}
-                                placeholder={t("fields.fullNamePlaceholder")}
-                                className="h-10 text-sm"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">{t("fields.relationship")}</Label>
-                              <Combobox
-                                options={relationshipOptions}
-                                value={normalizeRelationship(dep.relationship)}
-                                onChange={(val) => handleUpdateDependent(dep.id, "relationship", val)}
-                                placeholder={t("fields.selectRelationship")}
-                                className="w-full h-10 rtl:text-right"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">{t("fields.nationalId")}</Label>
-                              <Input
-                                value={dep.nationalId}
-                                maxLength={10}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, "").slice(0, 10);
-                                  handleUpdateDependent(dep.id, "nationalId", val);
-                                }}
-                                placeholder={t("fields.nationalIdPlaceholder")}
-                                dir="ltr"
-                                className="h-10 font-mono text-sm"
-                              />
-                            </div>
-
-                            <div className="space-y-1">
-                              <Label className="text-xs text-muted-foreground">{t("fields.birthDate")}</Label>
-                              <DatePicker
-                                value={parseDateString(dep.birthDate)}
-                                onChange={(date) => handleUpdateDependent(dep.id, "birthDate", formatDateToString(date))}
-                                isJalali={locale === 'fa'}
-                                placeholder={t("fields.selectBirthDate")}
-                                className="w-full h-10"
-                                triggerClassName="w-full h-10 justify-between text-sm"
-                              />
-                            </div>
-                          </div>
+                    {(!formData.insurance.dependents || formData.insurance.dependents.length === 0) ? (
+                      <div className="py-8 text-center text-muted-foreground text-xs rounded-2xl border border-dashed border-border/70 bg-muted/20">
+                        {t("fields.noDependents")}
+                      </div>
+                    ) : (
+                      <div className="border border-border/60 rounded-2xl overflow-hidden bg-card">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs text-start">
+                            <thead className="bg-muted/40 border-b border-border/60 text-muted-foreground font-semibold">
+                              <tr>
+                                <th className="py-3 px-3 text-center w-12">{t("fields.rowNumber")}</th>
+                                <th className="py-3 px-4 text-start">{t("fields.dependentFullName")}</th>
+                                <th className="py-3 px-3 text-center w-28">{t("fields.relationship")}</th>
+                                <th className="py-3 px-4 text-center w-36">{t("fields.nationalId")}</th>
+                                <th className="py-3 px-4 text-center w-32">{t("fields.birthDate")}</th>
+                                <th className="py-3 px-3 text-center w-16">{t("fields.actions")}</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/40">
+                              {formData.insurance.dependents.map((dep, idx) => (
+                                <tr key={dep.id} className="hover:bg-muted/30 transition-colors">
+                                  <td className="py-3.5 px-3 text-center fa-num font-mono text-muted-foreground">
+                                    {idx + 1}
+                                  </td>
+                                  <td className="py-3.5 px-4 font-semibold text-foreground">
+                                    <div className="flex items-center gap-2.5">
+                                      <div className="size-7 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+                                        {dep.fullName.charAt(0) || "U"}
+                                      </div>
+                                      <span>{dep.fullName}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3.5 px-3 text-center">
+                                    <Badge variant="secondary" className="text-[11px] font-normal px-2 py-0.5 rounded-md">
+                                      {t(`fields.${normalizeRelationship(dep.relationship)}`)}
+                                    </Badge>
+                                  </td>
+                                  <td className="py-3.5 px-4 text-center font-mono fa-num text-muted-foreground ltr">
+                                    {dep.nationalId || "-"}
+                                  </td>
+                                  <td className="py-3.5 px-4 text-center fa-num text-muted-foreground">
+                                    {dep.birthDate || "-"}
+                                  </td>
+                                  <td className="py-3.5 px-3 text-center">
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => {
+                                        const updated = (formData.insurance.dependents || []).filter((d) => d.id !== dep.id);
+                                        setFormData({
+                                          ...formData,
+                                          insurance: {
+                                            ...formData.insurance,
+                                            dependents: updated,
+                                            dependentsCount: updated.length,
+                                          },
+                                        });
+                                        toast.success(t("fields.dependentDeletedSuccess"));
+                                      }}
+                                      className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                      title={t("fields.deleteDependent")}
+                                    >
+                                      <Trash className="size-3.5" />
+                                    </Button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="space-y-6 max-w-lg">
@@ -2384,10 +2503,10 @@ export function ProfilePage() {
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Shield className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.provider")}</span>
+                <span className="text-sm font-medium text-foreground">{t("fields.corporateInsurance")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.insurance.provider || t("notSet")}</span>
+                <span className="text-sm text-muted-foreground text-start truncate px-2 font-medium text-foreground">{formData.insurance.provider || t("fields.taminEjtemaei")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -2437,7 +2556,7 @@ export function ProfilePage() {
              </div>
           </div>
 
-          {/* Supplementary Plan */}
+          {/* Supplementary Plan - SOS */}
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
             onClick={() => setEditingField('supplementaryPlan')}
@@ -2445,10 +2564,15 @@ export function ProfilePage() {
              <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <ShieldAlert className="size-5 text-muted-foreground shrink-0" />
-                <span className="text-sm font-medium text-foreground">{t("fields.supplementaryPlan")}</span>
+                <span className="text-sm font-medium text-foreground">{t("fields.supplementaryInsurance")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <div className="px-2">{planBadge}</div>
+                <div className="flex items-center gap-2 px-2">
+                  <Badge variant="outline" className="text-xs font-semibold border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10">
+                    {t("fields.sosInsurance")}
+                  </Badge>
+                  {planBadge}
+                </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -2500,9 +2624,16 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.shebaNumber")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
-                <span className="text-sm text-muted-foreground text-start truncate px-2 font-mono" dir="ltr">
-                  {formData.insurance.shebaNumber || t("notSet")}
-                </span>
+                <div className="flex items-center gap-2 truncate px-2">
+                  <span className="text-sm text-muted-foreground text-start font-mono" dir="ltr">
+                    {formData.insurance.shebaNumber ? formatSheba(formData.insurance.shebaNumber) : t("notSet")}
+                  </span>
+                  {shebaStatus.isValid && (
+                    <span className="size-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0" title={t("fields.shebaValid")}>
+                      <CheckCircle2 className="size-3" />
+                    </span>
+                  )}
+                </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
