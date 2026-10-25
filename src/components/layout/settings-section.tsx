@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { PRIMARY_COLORS } from "@/config/settings";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { Palette as PalettePh } from "@phosphor-icons/react";
 
 const MODE_OPTIONS = [
   { value: "system", labelKey: "system", icon: Monitor },
@@ -121,7 +122,7 @@ export function SettingsSection() {
       {/* ---- Primary color swatches (Modern Hover Panel) ---- */}
       <div className="pt-2">
         <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground mb-3">
-          <Palette className="size-3.5" />
+          <PalettePh weight="duotone" className="size-4 text-primary" />
           <span>{t("color")}</span>
         </div>
         
@@ -146,13 +147,12 @@ export function SettingsSection() {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className={cn(
-                  "relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors",
-                  active && "ring-2 ring-white/90 ring-inset shadow-inner"
-                )}
+                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
               >
                 {active && (
-                  <div className="absolute top-1.5 right-1.5 size-2 rounded-full bg-white shadow-xs" />
+                  <div className="absolute top-1.5 right-1.5 size-4 rounded-full bg-white/90 flex items-center justify-center shadow-xs">
+                    <Check className="size-2.5 text-slate-900" />
+                  </div>
                 )}
                 <motion.div 
                   variants={{

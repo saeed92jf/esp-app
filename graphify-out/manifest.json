@@ -642,10 +642,10 @@
     "semantic_hash": "2706178ccf4320e18d5d09d2fc61e678"
   },
   "src/components/layout/settings-section.tsx": {
-    "mtime": 1792918383.5270562,
-    "seen": 1792918720.1949632,
-    "ast_hash": "506deac90734ad65fb4d9c8976f9700e",
-    "semantic_hash": "506deac90734ad65fb4d9c8976f9700e"
+    "mtime": 1792926124.8570678,
+    "seen": 1792926265.2813976,
+    "ast_hash": "000e9142ed3daaad02a43b55fa91f9d4",
+    "semantic_hash": "000e9142ed3daaad02a43b55fa91f9d4"
   },
   "src/components/layout/side-menu.tsx": {
     "mtime": 1792319963.3394468,
@@ -1968,10 +1968,10 @@
     "semantic_hash": "4328e79245559ace1f946b1446aaa971"
   },
   "src/modules/profile/components/profile-page.tsx": {
-    "mtime": 1792924643.786942,
-    "seen": 1792924840.1301808,
-    "ast_hash": "2cfa6de0c576678ae86bd54a816fba51",
-    "semantic_hash": "2cfa6de0c576678ae86bd54a816fba51"
+    "mtime": 1792926094.6035705,
+    "seen": 1792926265.3274567,
+    "ast_hash": "7e926df57a59ccf58085c16e0bd5a4fe",
+    "semantic_hash": "7e926df57a59ccf58085c16e0bd5a4fe"
   },
   "src/modules/profile/hooks/use-profile.ts": {
     "mtime": 1786952620.4690378,

@@ -115,7 +115,7 @@ import {
   Building2, Factory, Laptop, Network, AlertCircle, Info
 } from "lucide-react";
 import { validateSheba, normalizeSheba, formatSheba, getShebaDigits } from "@/utils/shebaValidator";
-import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh } from "@phosphor-icons/react";
+import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh, Palette as PalettePh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { SettingsSection } from "@/components/layout/settings-section";
@@ -3296,9 +3296,9 @@ export function ProfilePage() {
                     <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
                       <div 
                         style={{ backgroundColor: PRIMARY_COLORS.find(c => c.id === draftColor)?.hex || "#3a86ff" }}
-                        className="size-20 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-4"
+                        className="size-20 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg transition-colors duration-300 select-none shrink-0 mb-4"
                       >
-                        <Palette className="size-9 text-white drop-shadow-md" />
+                        <PalettePh weight="duotone" className="size-11 text-white drop-shadow-md" />
                       </div>
                       
                       <h4 className="text-sm font-bold text-foreground">
@@ -3372,10 +3372,7 @@ export function ProfilePage() {
                                 }}
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                                 style={{ backgroundColor: preset.hex }}
-                                className={cn(
-                                  "relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors",
-                                  active && "ring-3 ring-white/90 ring-inset shadow-inner"
-                                )}
+                                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
                               >
                                 {active && (
                                   <div className="absolute top-2 right-2 size-5 rounded-full bg-white/90 flex items-center justify-center shadow-md">
