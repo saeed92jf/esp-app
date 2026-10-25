@@ -46,7 +46,29 @@ export class FakePreferencesService implements IPreferencesService {
     const current = await this.get();
     const updated = { ...current, ...patch };
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+        if (patch.primaryColor) {
+          const raw = localStorage.getItem('esp-auth-user') || localStorage.getItem('esp_auth_user');
+          if (raw) {
+            const user = JSON.parse(raw);
+            user.primaryColor = patch.primaryColor;
+            localStorage.setItem('esp-auth-user', JSON.stringify(user));
+            localStorage.setItem('esp_auth_user', JSON.stringify(user));
+
+            const stored = localStorage.getItem('esp_demo_users_override');
+            if (stored) {
+              const users = JSON.parse(stored);
+              const u = users.find((item: any) => item.user.id === user.id);
+              if (u) {
+                u.user.primaryColor = patch.primaryColor;
+                localStorage.setItem('esp_demo_users_override', JSON.stringify(users));
+              }
+            }
+          }
+        }
+      } catch {}
     }
     return updated;
   }

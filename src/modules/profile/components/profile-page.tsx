@@ -124,7 +124,7 @@ import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/layout/app-header";
 import { useTheme } from "next-themes";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
-import { PRIMARY_COLORS } from "@/config/settings";
+import { PRIMARY_COLORS, type PrimaryColorId } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import {
   Tooltip,
@@ -287,7 +287,7 @@ export function ProfilePage() {
   const { profile, isLoading, isError, updateProfile, isUpdating } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, updatePrimaryColor } = useAuth();
   const isOnboarding = Boolean(searchParams.get('onboarding') === 'true' || user?.accountStatus === 'pending_profile' || (user && !user.isProfileCompleted));
   const initialTab = searchParams.get('tab') || (isOnboarding ? "personal" : "home");
   const initialField = searchParams.get('field') || null;
@@ -297,6 +297,16 @@ export function ProfilePage() {
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
+  const [draftColor, setDraftColor] = useState<PrimaryColorId>(colorId);
+
+  useEffect(() => {
+    if (user?.primaryColor && PRIMARY_COLORS.some(c => c.id === user.primaryColor)) {
+      setDraftColor(user.primaryColor as PrimaryColorId);
+    } else {
+      setDraftColor(colorId);
+    }
+  }, [user?.primaryColor, colorId]);
+
   const tColors = useTranslations("Settings.colors");
   const tSettings = useTranslations("Settings");
   const locale = useLocale();
@@ -496,12 +506,26 @@ export function ProfilePage() {
           fullName: fullNameEnglish || user.fullName,
           fullNameFa: fullNamePersian || user.fullNameFa || fullNameEnglish,
           avatarColor: formData.personal.avatarColor || user.avatarColor,
+          primaryColor: draftColor || formData.personal.primaryColor || user.primaryColor,
           isProfileCompleted: true,
           accountStatus: "pending_approval" as const,
           hrApproved: false,
           managerApproved: false,
         };
-        localStorage.setItem("esp_auth_user", JSON.stringify(updated));
+        try {
+          localStorage.setItem("esp_auth_user", JSON.stringify(updated));
+          localStorage.setItem("esp-auth-user", JSON.stringify(updated));
+
+          const stored = localStorage.getItem("esp_demo_users_override");
+          if (stored) {
+            const users = JSON.parse(stored);
+            const u = users.find((item: any) => item.user.id === user.id);
+            if (u) {
+              u.user = { ...u.user, ...updated };
+              localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
+            }
+          }
+        } catch {}
       }
     }
   };
@@ -2958,7 +2982,7 @@ export function ProfilePage() {
     if (editingField === 'primaryColor' || editingField === 'picture') {
       let title = "";
       switch (editingField) {
-        case 'primaryColor': title = tSettings("color"); break;
+        case 'primaryColor': title = t("themeColor.title"); break;
         case 'picture': title = t("picture.title"); break;
       }
 
@@ -3026,46 +3050,149 @@ export function ProfilePage() {
                 </div>
               )}
 
-              {editingField === 'primaryColor' && isAdmin && (
-                <div className="flex flex-col gap-3">
-                  <div className="flex w-full h-24 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
-                    {PRIMARY_COLORS.map((preset) => {
-                      const active = colorId === preset.id;
-                      return (
-                        <motion.button
-                          key={preset.id}
-                          type="button"
-                          onClick={() => setColor(preset.id)}
-                          initial="initial"
-                          animate="animate"
-                          whileHover="hover"
-                          variants={{
-                            initial: { flex: 1 },
-                            animate: { flex: 1 },
-                            hover: { flex: 4 }
+              {editingField === 'primaryColor' && (
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 items-start">
+                    {/* Live Preview Card */}
+                    <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+                      <div 
+                        style={{ backgroundColor: PRIMARY_COLORS.find(c => c.id === draftColor)?.hex || "#3a86ff" }}
+                        className="size-20 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-lg ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-4"
+                      >
+                        <Palette className="size-9 text-white drop-shadow-md" />
+                      </div>
+                      
+                      <h4 className="text-sm font-bold text-foreground">
+                        {t("themeColor.previewTitle")}
+                      </h4>
+
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-muted-foreground">{t("themeColor.selectedCodeLabel")}</span>
+                        <span className="text-xs font-bold text-foreground">
+                          {tColors(PRIMARY_COLORS.find(c => c.id === draftColor)?.labelKey || 'blue')}
+                        </span>
+                        <span className="text-[11px] font-mono font-semibold px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/50 uppercase" dir="ltr">
+                          {PRIMARY_COLORS.find(c => c.id === draftColor)?.hex}
+                        </span>
+                      </div>
+
+                      <div className="w-full mt-5 pt-4 border-t border-border/40 flex flex-col items-center gap-2.5">
+                        <Button
+                          size="sm"
+                          className="w-full h-8.5 rounded-xl text-xs font-semibold shadow-xs"
+                          style={{
+                            backgroundColor: PRIMARY_COLORS.find(c => c.id === draftColor)?.hex || "#3a86ff",
+                            color: "#ffffff"
                           }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                          style={{ backgroundColor: preset.hex }}
-                          className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
                         >
-                          <motion.div 
-                            variants={{
-                              initial: { opacity: 0 },
-                              animate: { opacity: 0 },
-                              hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
-                            }}
-                            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
-                          >
-                            <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
-                              {tColors(preset.labelKey)}
-                            </span>
-                            <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
-                              {preset.hex}
-                            </span>
-                          </motion.div>
-                        </motion.button>
-                      );
-                    })}
+                          <Check className="size-3.5 me-1" />
+                          <span>{t("themeColor.sampleButton")}</span>
+                        </Button>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] font-medium"
+                          style={{
+                            borderColor: `${PRIMARY_COLORS.find(c => c.id === draftColor)?.hex}40`,
+                            color: PRIMARY_COLORS.find(c => c.id === draftColor)?.hex,
+                            backgroundColor: `${PRIMARY_COLORS.find(c => c.id === draftColor)?.hex}15`
+                          }}
+                        >
+                          {t("themeColor.sampleBadge")}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Color Swatches & Description */}
+                    <div className="flex flex-col justify-between h-full">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground mb-1">
+                          {t("themeColor.title")}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mb-5 leading-relaxed">
+                          {t("themeColor.description")}
+                        </p>
+
+                        <div className="flex w-full h-24 rounded-2xl overflow-hidden bg-muted/20 border border-border/60 shadow-inner">
+                          {PRIMARY_COLORS.map((preset) => {
+                            const active = draftColor === preset.id;
+                            return (
+                              <motion.button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => {
+                                  setDraftColor(preset.id);
+                                  setColor(preset.id);
+                                }}
+                                initial="initial"
+                                animate="animate"
+                                whileHover="hover"
+                                variants={{
+                                  initial: { flex: 1 },
+                                  animate: { flex: 1 },
+                                  hover: { flex: 4 }
+                                }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                style={{ backgroundColor: preset.hex }}
+                                className={cn(
+                                  "relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors",
+                                  active && "ring-3 ring-white/90 ring-inset shadow-inner"
+                                )}
+                              >
+                                {active && (
+                                  <div className="absolute top-2 right-2 size-5 rounded-full bg-white/90 flex items-center justify-center shadow-md">
+                                    <Check className="size-3 text-slate-900" />
+                                  </div>
+                                )}
+                                <motion.div 
+                                  variants={{
+                                    initial: { opacity: 0 },
+                                    animate: { opacity: 0 },
+                                    hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
+                                  }}
+                                  className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
+                                >
+                                  <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
+                                    {tColors(preset.labelKey)}
+                                  </span>
+                                  <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                                    {preset.hex}
+                                  </span>
+                                </motion.div>
+                              </motion.button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
+                        <Button 
+                          variant="ghost" 
+                          onClick={() => {
+                            const originalColor = (user?.primaryColor as PrimaryColorId) || colorId;
+                            setDraftColor(originalColor);
+                            setColor(originalColor);
+                            setEditingField(null);
+                          }} 
+                          className="rounded-full px-6 font-medium text-primary hover:bg-primary/5 cursor-pointer"
+                        >
+                          {t("actions.cancel")}
+                        </Button>
+                        <Button 
+                          onClick={async () => {
+                            await updatePrimaryColor(draftColor);
+                            handleChange("personal", "primaryColor" as any, draftColor);
+                            handleSave();
+                            toast.success(t("themeColor.savedToast"));
+                            setEditingField(null);
+                          }} 
+                          disabled={isUpdating} 
+                          className="rounded-full px-8 font-medium cursor-pointer"
+                        >
+                          {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {t("themeColor.saveButton")}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -3105,28 +3232,21 @@ export function ProfilePage() {
 
           {/* Theme Color */}
           <div 
-            className={cn(
-              "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]",
-              isAdmin ? "cursor-pointer group relative outline-none" : "opacity-60 cursor-not-allowed"
-            )}
-            onClick={() => isAdmin && setEditingField('primaryColor')}
+            className="segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px] cursor-pointer group relative outline-none"
+            onClick={() => setEditingField('primaryColor')}
           >
-             {isAdmin && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Palette className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{tSettings("color")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center gap-2 px-2">
-                  {isAdmin ? (
-                     <span className="text-sm text-muted-foreground text-start truncate">
-                       {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
-                     </span>
-                  ) : (
-                     <span className="text-sm text-muted-foreground flex items-center gap-1.5"><Lock className="size-3.5" /> {tSettings("color")}</span>
-                  )}
+                   <span className="text-sm text-muted-foreground text-start truncate">
+                     {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
+                   </span>
                 </div>
-                {isAdmin && <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
         </div>

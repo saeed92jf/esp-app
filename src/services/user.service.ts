@@ -8,9 +8,12 @@ import type { User } from '@/types/auth';
 
 export interface UpdateProfilePayload {
   fullName?: string;
+  fullNameFa?: string;
   email?: string;
   mobile?: string;
   avatar?: string;
+  avatarColor?: string;
+  primaryColor?: string;
 }
 
 export interface ChangePasswordPayload {
@@ -35,7 +38,7 @@ export class FakeUserService implements IUserService {
   async getProfile(): Promise<User> {
     await wait(300);
     if (typeof window === 'undefined') throw new ApiError('UNAUTHORIZED', 'Not authenticated', 401);
-    const raw = localStorage.getItem(AUTH_USER_KEY);
+    const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
     if (!raw) throw new ApiError('UNAUTHORIZED', 'کاربر یافت نشد.', 401);
     return JSON.parse(raw) as User;
   }
@@ -45,7 +48,23 @@ export class FakeUserService implements IUserService {
     const current = await this.getProfile();
     const updated: User = { ...current, ...payload };
     if (typeof window !== 'undefined') {
-      localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
+      try {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
+        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
+
+        // Sync with mock users database (esp_demo_users_override)
+        const stored = localStorage.getItem('esp_demo_users_override');
+        let users = stored ? JSON.parse(stored) : [];
+        if (!users.length) {
+          const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
+          users = JSON.parse(JSON.stringify(DEMO_USERS));
+        }
+        const idx = users.findIndex((u: any) => u.user.id === updated.id);
+        if (idx !== -1) {
+          users[idx].user = { ...users[idx].user, ...updated };
+          localStorage.setItem('esp_demo_users_override', JSON.stringify(users));
+        }
+      } catch {}
     }
     return updated;
   }

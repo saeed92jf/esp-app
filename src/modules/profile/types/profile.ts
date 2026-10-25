@@ -6,6 +6,7 @@ export interface PersonalInfo {
   firstNameFa?: string;
   lastNameFa?: string;
   avatarColor?: string;
+  primaryColor?: string;
   nationalId: string;
   phone: string;
   email: string;

@@ -1447,6 +1447,16 @@
       "previewTitle": "Profile Icon Preview",
       "selectedCodeLabel": "Selected Color Code:"
     },
+    "themeColor": {
+      "title": "Primary Theme Color",
+      "description": "Select your personalized primary theme color for the application. This setting is stored in your personal profile and database record.",
+      "previewTitle": "Theme Preview",
+      "selectedCodeLabel": "Active Color:",
+      "savedToast": "Primary color successfully saved to your account.",
+      "sampleButton": "Sample Button",
+      "sampleBadge": "Active Status",
+      "saveButton": "Save Primary Color"
+    },
     "placeholders": {
       "firstNameFa": "e.g. Saeed",
       "lastNameFa": "e.g. Jalili",

@@ -16,6 +16,8 @@ export interface User {
   status: 'online' | 'offline';
   accountStatus?: AccountStatus;
   avatar?: string;
+  avatarColor?: string;
+  primaryColor?: string;
   phone?: string;
   nationalId?: string;
   joinedAt?: string;

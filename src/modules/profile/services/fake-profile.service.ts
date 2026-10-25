@@ -8,6 +8,7 @@ const MOCK_PROFILE: UserProfile = {
     firstNameFa: "سعید",
     lastNameFa: "جلیلی",
     avatarColor: "#0284c7",
+    primaryColor: "red",
     nationalId: "0123456789",
     phone: "09120000000",
     email: "saeed@euroslotpars.com",
@@ -112,14 +113,33 @@ export class FakeProfileService implements ProfileService {
         localStorage.setItem("esp_user_profile", JSON.stringify(this.profile));
 
         // Update auth user session if present
-        const rawAuth = localStorage.getItem("esp_auth_user");
+        const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
         if (rawAuth) {
           const authUser = JSON.parse(rawAuth);
           authUser.isProfileCompleted = true;
+          if (profile.personal?.primaryColor) {
+            authUser.primaryColor = profile.personal.primaryColor;
+          }
           if (authUser.accountStatus === "pending_profile") {
             authUser.accountStatus = "pending_approval";
           }
           localStorage.setItem("esp_auth_user", JSON.stringify(authUser));
+          localStorage.setItem("esp-auth-user", JSON.stringify(authUser));
+
+          // Also update mock database override
+          try {
+            const stored = localStorage.getItem("esp_demo_users_override");
+            if (stored) {
+              const users = JSON.parse(stored);
+              const u = users.find((item: any) => item.user.id === authUser.id);
+              if (u) {
+                if (profile.personal?.primaryColor) {
+                  u.user.primaryColor = profile.personal.primaryColor;
+                }
+                localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
+              }
+            }
+          } catch {}
         }
 
         // Update corresponding request in esp_account_requests

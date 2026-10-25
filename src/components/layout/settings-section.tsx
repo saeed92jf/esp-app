@@ -27,7 +27,7 @@ export function SettingsSection() {
   const tColors = useTranslations("Settings.colors");
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
-  const { user } = useAuth();
+  const { user, updatePrimaryColor } = useAuth();
   const isAdmin = user?.role === 'admin';
 
   const [mounted, setMounted] = useState(false);
@@ -132,7 +132,10 @@ export function SettingsSection() {
               <motion.button
                 key={preset.id}
                 type="button"
-                onClick={() => setColor(preset.id)}
+                onClick={() => {
+                  setColor(preset.id);
+                  updatePrimaryColor(preset.id);
+                }}
                 initial="initial"
                 animate="animate"
                 whileHover="hover"
@@ -143,8 +146,14 @@ export function SettingsSection() {
                 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
                 style={{ backgroundColor: preset.hex }}
-                className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                className={cn(
+                  "relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors",
+                  active && "ring-2 ring-white/90 ring-inset shadow-inner"
+                )}
               >
+                {active && (
+                  <div className="absolute top-1.5 right-1.5 size-2 rounded-full bg-white shadow-xs" />
+                )}
                 <motion.div 
                   variants={{
                     initial: { opacity: 0 },

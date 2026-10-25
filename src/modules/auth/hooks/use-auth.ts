@@ -22,6 +22,7 @@ interface AuthState {
   setIsLoggingIn: (isLoggingIn: boolean) => void;
   setHydrated: (hydrated: boolean) => void;
   updateAvatar: (url: string | null) => void;
+  updateUser: (partial: Partial<User>) => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
@@ -34,6 +35,7 @@ const useAuthStore = create<AuthState>((set) => ({
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
   setHydrated: (hydrated) => set({ hydrated }),
   updateAvatar: (url) => set((state) => ({ user: state.user ? { ...state.user, avatar: url || undefined } : null })),
+  updateUser: (partial) => set((state) => ({ user: state.user ? { ...state.user, ...partial } : null })),
 }));
 
 export function useAuth() {
@@ -45,7 +47,7 @@ export function useAuth() {
     if (store.hydrated) return;
     
     try {
-      const raw = localStorage.getItem(AUTH_USER_KEY);
+      const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
       if (raw) {
         let parsed = JSON.parse(raw) as User;
         
@@ -54,14 +56,24 @@ export function useAuth() {
         if (!parsed.fullName && (parsed as any).full_name) parsed.fullName = (parsed as any).full_name;
         if (!parsed.fullName) parsed.fullName = parsed.email || 'User';
         
-        // Sync with fake API mock users (so you see new changes without relogging)
+        // Sync with fake API mock users / dynamic overrides
         try {
-          const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
-          const match = DEMO_USERS?.find((d: any) => d.user.id === parsed.id);
-          if (match) {
-            parsed = { ...parsed, ...match.user };
-            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
+          const stored = localStorage.getItem("esp_demo_users_override");
+          if (stored) {
+            const dynamicUsers = JSON.parse(stored);
+            const match = dynamicUsers?.find((d: any) => d.user.id === parsed.id);
+            if (match) {
+              parsed = { ...match.user, ...parsed };
+            }
+          } else {
+            const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
+            const match = DEMO_USERS?.find((d: any) => d.user.id === parsed.id);
+            if (match) {
+              parsed = { ...match.user, ...parsed };
+            }
           }
+          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
+          localStorage.setItem("esp_auth_user", JSON.stringify(parsed));
         } catch (e) {
           // ignore
         }
@@ -87,7 +99,7 @@ export function useAuth() {
       store.setLoading(false);
       store.setHydrated(true);
     }
-  }, [store.hydrated]);
+  }, [store.hydrated, setColor]);
 
   const login = useCallback(async (identifier: string, password: string) => {
     store.setIsLoggingIn(true);
@@ -95,6 +107,7 @@ export function useAuth() {
       const { user: loggedIn, token } = await api.auth.login({ identifier, password });
       localStorage.setItem(AUTH_TOKEN_KEY, token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedIn));
+      localStorage.setItem("esp_auth_user", JSON.stringify(loggedIn));
       store.setUser(loggedIn);
       
       if (loggedIn.primaryColor) {
@@ -105,9 +118,7 @@ export function useAuth() {
     } finally {
       store.setIsLoggingIn(false);
     }
-  }, []);
-
-
+  }, [setColor]);
 
   const logout = useCallback(async () => {
     try {
@@ -117,10 +128,62 @@ export function useAuth() {
     } finally {
       localStorage.removeItem(AUTH_TOKEN_KEY);
       localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem("esp_auth_user");
       store.setUser(null);
       setColor(DEFAULT_PRIMARY_COLOR);
     }
-  }, []);
+  }, [setColor]);
+
+  const updatePrimaryColor = useCallback(async (color: string) => {
+    setColor(color as any);
+    if (!store.user) return;
+
+    const updatedUser: User = { ...store.user, primaryColor: color };
+    store.updateUser({ primaryColor: color });
+
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+        localStorage.setItem("esp_auth_user", JSON.stringify(updatedUser));
+
+        // Persist in mock database (esp_demo_users_override)
+        const stored = localStorage.getItem("esp_demo_users_override");
+        let users = stored ? JSON.parse(stored) : [];
+        if (!users.length) {
+          const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
+          users = JSON.parse(JSON.stringify(DEMO_USERS));
+        }
+        const idx = users.findIndex((u: any) => u.user.id === updatedUser.id);
+        if (idx !== -1) {
+          users[idx].user = { ...users[idx].user, primaryColor: color };
+        } else {
+          users.push({
+            email: updatedUser.email || '',
+            mobile: updatedUser.mobile || '',
+            password: '',
+            user: updatedUser,
+          });
+        }
+        localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
+
+        // Also update in esp_user_profile if exists
+        const storedProfile = localStorage.getItem("esp_user_profile");
+        if (storedProfile) {
+          const parsedProfile = JSON.parse(storedProfile);
+          if (parsedProfile.personal) {
+            parsedProfile.personal.primaryColor = color;
+            localStorage.setItem("esp_user_profile", JSON.stringify(parsedProfile));
+          }
+        }
+      } catch {}
+
+      // Fire and forget update to API services (for real backend mode compliance)
+      try {
+        api.user.updateProfile({ primaryColor: color }).catch(() => {});
+        api.preferences.update({ primaryColor: color }).catch(() => {});
+      } catch {}
+    }
+  }, [store.user, setColor]);
 
   return {
     user: store.user,
@@ -129,6 +192,8 @@ export function useAuth() {
     login,
     logout,
     updateAvatar: store.updateAvatar,
+    updateUser: store.updateUser,
+    updatePrimaryColor,
   };
 }
 
