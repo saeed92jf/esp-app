@@ -15,6 +15,7 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminProfileStats } from "./AdminProfileStats";
 import { AdminTasksTime } from "./AdminTasksTime";
+import { AdminActivities } from "./AdminActivities";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
@@ -170,7 +171,8 @@ export function AdminDashboard() {
                 />
               </div>
 
-              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
+              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar pe-0.5">
+                <AdminActivities selectedUser={selectedUser} />
                 <AdminHeatmapModules 
                   selectedUser={selectedUser}
                   availableModules={availableModules}

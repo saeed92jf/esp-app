@@ -3,11 +3,9 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { 
-  MoreVertical, Search, Star, X, Eye, EyeOff, Code, 
-  TrendingUp, FolderKanban, Briefcase, FlaskConical,
+  Search, X, Code, TrendingUp, FolderKanban, Briefcase, FlaskConical,
   ChevronsRight, ChevronRight, ChevronLeft,
   Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2
 } from "lucide-react";
@@ -68,7 +66,6 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
   const t = useTranslations("Admin");
   
   const [animate, setAnimate] = useState(false);
-  const [showSalary, setShowSalary] = useState(false);
   const [allTasks, setAllTasks] = useState<TaskItem[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
 
@@ -82,7 +79,6 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
 
   const deptKey = selectedUser?.department || 'engineering';
   const currentDept = deptConfig[deptKey] || deptConfig.engineering;
-  const DeptIcon = currentDept.icon;
 
   useEffect(() => {
     setAnimate(false);
@@ -110,16 +106,14 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
 
   // Filter urgent & overdue tasks for selected user or overall
   const displayTasks = useMemo(() => {
-    // 1. Filter urgent or overdue (not completed)
     const urgentOrOverdue = allTasks.filter(task => {
       if (task.status === 'completed') return false;
       const isUrgent = task.priority === 'urgent';
-      const isOverdue = Boolean(task.dueDate); // Active tasks with specified due dates
+      const isOverdue = Boolean(task.dueDate);
       return isUrgent || isOverdue;
     });
 
     if (urgentOrOverdue.length === 0) {
-      // Fallback realistic urgent & overdue tasks if service is empty
       return [
         {
           id: "task-urgent-1",
@@ -151,7 +145,6 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
       ];
     }
 
-    // Filter by selected user if matching tasks exist
     if (selectedUser) {
       const userMatched = urgentOrOverdue.filter(t => 
         t.assignedToName === selectedUser.name ||
@@ -162,8 +155,6 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
 
     return urgentOrOverdue.slice(0, 5);
   }, [allTasks, selectedUser]);
-
-  const experienceCount = 350;
 
   const rings = useMemo(() => {
     const wf = selectedUser?.workingFormat;
@@ -283,10 +274,10 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
     <div className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto custom-scrollbar pe-0.5">
       
       {/* ── Center Header: Department Switcher + Avatars Carousel + Search ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2 px-3 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs">
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 px-3 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs overflow-visible">
         
         {/* Department and Avatars */}
-        <div className="flex items-center gap-1 bg-background/60 dark:bg-slate-900/40 rounded-full h-10 px-1.5 border border-border/30 max-w-full overflow-hidden">
+        <div className="flex items-center gap-1.5 bg-background/60 dark:bg-slate-900/40 rounded-full h-9 px-2 border border-border/30 max-w-full overflow-visible relative">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -296,7 +287,7 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
             <ChevronsRight size={15} className="rtl:rotate-0 rotate-180" />
           </Button>
 
-          <div className="flex items-center gap-1.5 px-2 py-0.5 shrink-0 select-none">
+          <div className="flex items-center gap-1.5 px-1.5 py-0.5 shrink-0 select-none">
             <span className={`size-2 rounded-full ${currentDept.iconBg}`}></span>
             <span className="text-xs font-bold text-foreground truncate max-w-[90px] sm:max-w-[120px]">
               {t(`departments.${deptKey}`) || deptKey}
@@ -324,7 +315,8 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
             <ChevronRight size={13} className="rtl:rotate-0 rotate-180" />
           </Button>
 
-          <div className="flex items-center gap-1 overflow-hidden px-1">
+          {/* Protruding Avatar Circles that stick out of the capsule bounds without clipping */}
+          <div className="flex items-center gap-1.5 overflow-visible px-1 py-1">
             {displayUsers.map((u) => {
               const isSelected = u.id === selectedUser?.id;
               const initial = u.name?.trim().charAt(0).toUpperCase() || "U";
@@ -332,11 +324,15 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
                 <button
                   key={u.id}
                   onClick={() => setSelectedUser(u)}
-                  className={`relative p-0.5 rounded-full transition-all shrink-0 cursor-pointer ${
-                    isSelected ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : "opacity-60 hover:opacity-100"
-                  }`}
+                  className={cn(
+                    "relative rounded-full transition-all shrink-0 cursor-pointer -my-2.5",
+                    isSelected 
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110 z-20" 
+                      : "opacity-75 hover:opacity-100 hover:scale-105 z-10"
+                  )}
+                  title={u.name}
                 >
-                  <Avatar className="size-6 text-[10px] font-bold">
+                  <Avatar className="size-9 text-xs font-bold border-2 border-background dark:border-slate-800 shadow-md">
                     <AvatarFallback 
                       className="bg-primary/20 text-primary"
                       style={u.avatarColor ? { backgroundColor: u.avatarColor, color: "#fff" } : undefined}
@@ -360,7 +356,7 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
         </div>
 
         {/* Quick User Search */}
-        <div className="relative flex items-center h-10 bg-background/60 dark:bg-slate-900/40 rounded-full border border-border/30 w-full sm:w-[180px] md:w-[200px] px-3 focus-within:ring-1 focus-within:ring-primary/50 shrink-0">
+        <div className="relative flex items-center h-9 bg-background/60 dark:bg-slate-900/40 rounded-full border border-border/30 w-full sm:w-[180px] md:w-[200px] px-3 focus-within:ring-1 focus-within:ring-primary/50 shrink-0">
           <Search size={14} className="text-muted-foreground shrink-0 me-2" />
           <input
             type="text"
@@ -492,145 +488,73 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
         </div>
       </div>
 
-      {/* ── Row 2: Urgent & Overdue Tasks (col-span-7) + Performance Stats (col-span-5) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 shrink-0">
-        
-        {/* Module C: Urgent & Overdue Tasks Only with Direct Tasks Page Link */}
-        <div className="lg:col-span-7 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col min-h-0 shadow-2xs">
-          <div className="flex items-center justify-between mb-3 px-1">
-            <div className="flex items-center gap-2 min-w-0">
-              <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-              <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
-                {t("urgentAndOverdueTasks")}
-              </h3>
-              <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
-                {displayTasks.length}
-              </span>
-            </div>
-
-            <Link
-              href="/dashboard/tasks"
-              className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
-            >
-              <span>{t("viewAllTasks")}</span>
-              <ExternalLink size={12} className="rtl:rotate-180 shrink-0" />
-            </Link>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-2 pr-1 scrollbar-thin max-h-[260px]">
-            {displayTasks.length > 0 ? (
-              displayTasks.map(task => {
-                const isUrgent = task.priority === 'urgent';
-                return (
-                  <Link
-                    key={task.id}
-                    href="/dashboard/tasks"
-                    className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/30 transition-all group block text-start cursor-pointer shadow-2xs"
-                  >
-                    <div className="flex flex-col flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {isUrgent ? (
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
-                            {t("urgentBadge")}
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
-                            {t("overdueBadge")}
-                          </span>
-                        )}
-                        {task.category && (
-                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
-                            {task.category}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[12px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                        {task.title}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium shrink-0 fa-num">
-                      <Clock size={12} className="opacity-70" />
-                      <span>{task.timelineDate || task.dueDate || t("todayDate")}</span>
-                    </div>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-60">
-                <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
-                <p className="text-xs font-medium">{t("noUrgentOverdueTasks")}</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Module D: Stats Grid (Days, Projects, Experience, Salary) */}
-        <div className="lg:col-span-5 grid grid-cols-1 gap-2.5 h-full">
-          
-          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col justify-center text-center sm:text-start shadow-2xs">
-            <span className="text-lg sm:text-xl font-bold text-foreground mb-0.5 fa-num">
-              <AnimatedNumber value={selectedUser?.daysInCompany || 0} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("daysUnit")}</span>
-            </span>
-            <span className="text-[11px] text-muted-foreground font-medium">{t("inCompany")}</span>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col justify-center text-center sm:text-start shadow-2xs">
-              <span className="text-xl sm:text-2xl font-bold text-foreground mb-0.5 fa-num">
-                <AnimatedNumber value={selectedUser?.doneProjects || 0} /> <span className="text-[0.5em] font-medium text-muted-foreground">{t("projectsUnit")}</span>
-              </span>
-              <span className="text-[11px] text-muted-foreground font-medium">{t("projectsDone")}</span>
-            </div>
-            
-            <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col justify-center text-center sm:text-start shadow-2xs">
-              <span className="text-xl sm:text-2xl font-bold text-foreground mb-0.5 fa-num">
-                <AnimatedNumber value={Math.min(experienceCount, 99)} />{experienceCount > 99 && <span className="text-primary">+</span>} <span className="text-[0.5em] font-medium text-muted-foreground">{t("experienceUnit")}</span>
-              </span>
-              <span className="text-[11px] text-muted-foreground font-medium">{t("workExperience")}</span>
-            </div>
-          </div>
-
-          <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col justify-center text-center sm:text-start relative shadow-2xs">
-            <button 
-              onClick={() => setShowSalary(!showSalary)}
-              className="absolute top-3.5 end-3.5 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              {showSalary ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-            <span className="text-lg sm:text-xl font-bold text-foreground mb-0.5 fa-num">
-              {showSalary ? `$${selectedUser?.salary?.toLocaleString() || '0'}` : '****'}
-            </span>
-            <span className="text-[11px] text-muted-foreground font-medium">{t("salary")}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Row 3: Activities Module ── */}
+      {/* ── Row 2: Urgent & Overdue Tasks Full-Width Module ── */}
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col min-h-0 shrink-0 shadow-2xs">
         <div className="flex items-center justify-between mb-3 px-1">
-          <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground">{t("activities")}</h3>
-          <span className="text-[11px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold fa-num">
-            {selectedUser?.recentActivities?.length || 0}
-          </span>
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+            <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
+              {t("urgentAndOverdueTasks")}
+            </h3>
+            <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
+              {displayTasks.length}
+            </span>
+          </div>
+
+          <Link
+            href="/dashboard/tasks"
+            className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
+          >
+            <span>{t("viewAllTasks")}</span>
+            <ExternalLink size={12} className="rtl:rotate-180 shrink-0" />
+          </Link>
         </div>
 
-        <div className="overflow-y-auto space-y-2 pr-1 scrollbar-thin max-h-[160px]">
-          {selectedUser?.recentActivities?.length ? selectedUser.recentActivities.slice(0, 8).map(act => (
-            <div key={act.id} className="p-2.5 bg-background/80 border border-border/40 rounded-xl flex items-center justify-between gap-2 transition-colors hover:border-emerald-500/40">
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="font-semibold text-[12px] text-foreground truncate">{act.title}</p>
-                <p className="text-[10px] text-muted-foreground font-medium">{act.date}</p>
-              </div>
-              {act.status && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                  act.status === 'approved' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                }`}>
-                  {act.status}
-                </span>
-              )}
+        <div className="overflow-y-auto space-y-2 pr-1 scrollbar-thin max-h-[260px]">
+          {displayTasks.length > 0 ? (
+            displayTasks.map(task => {
+              const isUrgent = task.priority === 'urgent';
+              return (
+                <Link
+                  key={task.id}
+                  href="/dashboard/tasks"
+                  className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/30 transition-all group block text-start cursor-pointer shadow-2xs"
+                >
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      {isUrgent ? (
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+                          {t("urgentBadge")}
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                          {t("overdueBadge")}
+                        </span>
+                      )}
+                      {task.category && (
+                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
+                          {task.category}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[12px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                      {task.title}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium shrink-0 fa-num">
+                    <Clock size={12} className="opacity-70" />
+                    <span>{task.timelineDate || task.dueDate || t("todayDate")}</span>
+                  </div>
+                </Link>
+              );
+            })
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-60">
+              <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
+              <p className="text-xs font-medium">{t("noUrgentOverdueTasks")}</p>
             </div>
-          )) : <p className="text-xs text-muted-foreground text-center py-4">{t("noActivity")}</p>}
+          )}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
 import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
@@ -970,32 +971,19 @@ export function AdminUsersTable({
                       </td>
                     </tr>
 
-                    {/* ── 2. Slim Full-Width Action Strip Attached Directly Below the User Row ── */}
-                    <tr className={cn(
-                      "border-b border-border/40 transition-colors",
-                      isAccordionOpen
-                        ? "bg-primary/10 dark:bg-primary/20"
-                        : "bg-slate-100/60 dark:bg-slate-900/40 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
-                    )}>
-                      <td colSpan={9} className="py-1 px-3 sm:px-4">
-                        <div className="flex items-center justify-between gap-2 text-xs">
-                          
-                          {/* Left helper: User identifier summary */}
-                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground min-w-0">
-                            <span className="font-semibold text-foreground/80 truncate">{user.name}</span>
-                            <span className="opacity-30">•</span>
-                            <span className="font-mono text-[10px] text-muted-foreground/70 shrink-0">#{user.id}</span>
-                            {user.email && (
-                              <>
-                                <span className="opacity-30 hidden md:inline">•</span>
-                                <span className="truncate hidden md:inline text-[11px]">{user.email}</span>
-                              </>
+                    {/* ── 2. Folder-Tab Action Strip Attached Directly Under Name ── */}
+                    <tr className="border-0">
+                      <td colSpan={9} className="p-0 border-0">
+                        <div className="flex items-center justify-start ps-3 sm:ps-4">
+                          <div 
+                            className={cn(
+                              "inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1 -mt-px",
+                              "rounded-b-xl border-x border-b shadow-2xs backdrop-blur-xs transition-colors",
+                              isAccordionOpen
+                                ? "bg-primary/10 dark:bg-primary/20 border-primary/40 text-foreground"
+                                : "bg-slate-100/95 dark:bg-slate-800/95 border-border/50 text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
                             )}
-                          </div>
-
-                          {/* Right: Integrated Action Icons */}
-                          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                            
+                          >
                             {/* 1. View User Details (مشاهده اطلاعات) */}
                             <button
                               type="button"
@@ -1044,11 +1032,13 @@ export function AdminUsersTable({
                               <span className="hidden sm:inline">{t("editUserInfo")}</span>
                             </button>
 
+                            <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
+
                             {/* 4. Open in Dashboard (مشاهده در داشبورد) */}
                             <button
                               type="button"
                               onClick={() => handleSelectAndGoHome(user)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors cursor-pointer"
                               title={t("viewInDashboard")}
                             >
                               <LayoutDashboard size={13} className="shrink-0" />
@@ -1059,7 +1049,7 @@ export function AdminUsersTable({
                             <button
                               type="button"
                               onClick={() => handleSelectAndGoConfig(user)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors cursor-pointer"
                               title={t("moduleAccess")}
                             >
                               <ShieldCheck size={13} className="shrink-0" />
@@ -1072,21 +1062,30 @@ export function AdminUsersTable({
                                 type="button"
                                 onClick={() => setActiveAccordion(null)}
                                 className="size-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 cursor-pointer ms-0.5"
+                                title={t("cancel")}
                               >
                                 <X size={13} />
                               </button>
                             )}
                           </div>
-
                         </div>
                       </td>
                     </tr>
 
-                    {/* ── 3. Accordion Expandable Panel Underneath Row ── */}
-                    {isAccordionOpen && (
-                      <tr className="bg-background/95 dark:bg-card/95 border-b-2 border-primary/30 shadow-inner">
-                        <td colSpan={9} className="p-4 sm:p-5">
-                          <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200">
+                    {/* ── 3. Accordion Sliding Panel Underneath Row ── */}
+                    <AnimatePresence initial={false}>
+                      {isAccordionOpen && (
+                        <tr key={`acc-tr-${user.id}`} className="border-0">
+                          <td colSpan={9} className="p-0 border-0 overflow-hidden">
+                            <motion.div
+                              key={`acc-content-${user.id}`}
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden"
+                            >
+                              <div className="mx-3 sm:mx-4 my-2 p-4 sm:p-5 rounded-2xl bg-card border border-border/50 shadow-sm">
                             
                             {/* ── Mode A: View Details ── */}
                             {activeAccordion.type === 'view' && (
@@ -1326,10 +1325,12 @@ export function AdminUsersTable({
                               </div>
                             )}
 
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                              </div>
+                            </motion.div>
+                          </td>
+                        </tr>
+                      )}
+                    </AnimatePresence>
 
                   </React.Fragment>
                 );

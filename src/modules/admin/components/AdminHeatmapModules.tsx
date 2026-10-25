@@ -44,8 +44,8 @@ export function AdminHeatmapModules({
   });
 
   return (
-    <div className="flex flex-col gap-3 h-full min-h-0">
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-6 flex flex-col flex-1 min-h-0 relative overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0">
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col flex-1 min-h-0 relative overflow-hidden shadow-2xs">
         
         {/* Header with Title, Count & Direct Link to Access Section */}
         <div className="flex items-center justify-between mb-4 relative z-10 gap-2">

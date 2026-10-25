@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
-  Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, Calendar
+  Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, 
+  Briefcase, FolderKanban, Award, Eye, EyeOff, Calendar
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
@@ -21,6 +22,8 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const { colorId } = usePrimaryColor();
   const { user: currentUser } = useAuth();
 
+  const [showSalary, setShowSalary] = useState(false);
+
   // Dynamic primary color syncing with profile management
   const userColorId = selectedUser.id === currentUser?.id
     ? (currentUser?.primaryColor || colorId)
@@ -38,6 +41,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const age = selectedUser.age || 32;
   const isMarried = selectedUser.maritalStatus ? selectedUser.maritalStatus === 'married' : true;
   const childrenCount = selectedUser.childrenCount ?? 2;
+  const experienceCount = 350;
   
   const insType = selectedUser.insuranceType || 'complementary';
   const insStatus = insType === 'none' ? 'inactive' : 'active';
@@ -142,8 +146,60 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
       </div>
 
-      {/* ── 2. Unified Personal Demographics Card (Age, Marital, Children) ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col gap-2 shrink-0">
+      {/* ── 2. Performance & Career Stats Card (Days, Projects, Experience, Salary) ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col gap-2.5 shrink-0 shadow-2xs">
+        <div className="flex items-center justify-between text-muted-foreground px-1">
+          <div className="flex items-center gap-1.5">
+            <Briefcase size={14} className="stroke-[2.2]" />
+            <span className="text-[11px] font-bold">{t("statsAndPerformance")}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {/* Days in Company */}
+          <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center">
+            <span className="text-base sm:text-lg font-bold text-foreground fa-num">
+              <AnimatedNumber value={selectedUser?.daysInCompany || 0} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("daysUnit")}</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("inCompany")}</span>
+          </div>
+
+          {/* Projects Done */}
+          <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center">
+            <span className="text-base sm:text-lg font-bold text-foreground fa-num">
+              <AnimatedNumber value={selectedUser?.doneProjects || 0} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("projectsUnit")}</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("projectsDone")}</span>
+          </div>
+
+          {/* Work Experience */}
+          <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center">
+            <span className="text-base sm:text-lg font-bold text-foreground fa-num">
+              <AnimatedNumber value={Math.min(experienceCount, 99)} />{experienceCount > 99 && <span className="text-primary">+</span>} <span className="text-[0.65em] font-medium text-muted-foreground">{t("experienceUnit")}</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("workExperience")}</span>
+          </div>
+
+          {/* Salary with Eye Toggle */}
+          <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center relative group">
+            <button 
+              type="button"
+              onClick={() => setShowSalary(!showSalary)}
+              className="absolute top-1.5 end-1.5 p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              title={showSalary ? "Hide salary" : "Show salary"}
+            >
+              {showSalary ? <EyeOff size={13} /> : <Eye size={13} />}
+            </button>
+            <span className="text-base sm:text-lg font-bold text-foreground font-mono truncate px-1 fa-num">
+              {showSalary ? `$${(selectedUser?.salary || 0).toLocaleString()}` : "••••••••"}
+            </span>
+            <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("salary")}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3. Unified Personal Demographics Card (Age, Marital, Children) ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col gap-2 shrink-0 shadow-2xs">
         <div className="flex items-center gap-1.5 px-1 mb-1 text-muted-foreground">
           <Users size={14} className="stroke-[2.2]" />
           <span className="text-[11px] font-bold">{t("demographics")}</span>
@@ -176,8 +232,8 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
       </div>
 
-      {/* ── 3. Insurance & Healthcare Card ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-between gap-3 relative overflow-hidden shrink-0">
+      {/* ── 4. Insurance & Healthcare Card ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-between gap-3 relative overflow-hidden shrink-0 shadow-2xs">
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col min-w-0">
             <span className="text-[14px] sm:text-[15px] font-bold text-foreground mb-0.5 truncate">
@@ -204,8 +260,8 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
       </div>
 
-      {/* ── 4. Education & Academic Background Card ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-start shrink-0">
+      {/* ── 5. Education & Academic Background Card ── */}
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 flex flex-col justify-center text-start shrink-0 shadow-2xs">
         <div className="flex items-center justify-between gap-2 mb-1.5">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <GraduationCap size={15} className="stroke-[2.2]" />
