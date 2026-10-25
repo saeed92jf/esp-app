@@ -339,7 +339,18 @@
       "dependentsSectionTitle": "Employee Dependents",
       "dependentsSectionDesc": "Register dependents for SOS supplementary health coverage and corporate benefits",
       "addDependentBtn": "Add Dependent",
-      "emptyDependentsTable": "No dependents registered yet. Use the form above to add a dependent."
+    },
+    "pendingBottomBar": {
+      "onboardingTitle": "Complete Personnel Profile",
+      "onboardingDesc": "Fill in your profile details from the side tabs, then submit to the status review page.",
+      "awaitingTitle": "Profile Pending Approval & Activation",
+      "awaitingDesc": "Your profile is registered and currently under review by HR and Management.",
+      "awaitingBadge": "Pending Approval",
+      "incompleteBadge": "Incomplete Profile",
+      "viewTimeline": "Status Timeline",
+      "trackStatus": "Track Profile Status",
+      "saveAndSubmit": "Save & Return to Timeline",
+      "savedToast": "Information saved. Returned to status timeline."
     },
     "footerText": "Only you can see your settings. You might also want to review your settings for services you use most to keep your data private and secure."
   }

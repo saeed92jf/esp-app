@@ -9,7 +9,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `742267ab`
+- Built from commit: `3f3ceafa`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -183,8 +183,8 @@
   src/modules/esp-flow/components/ContextMenu.tsx → src/modules/esp-flow/types/index.ts
 - `AuthState` --references--> `User`  [EXTRACTED]
   src/modules/auth/hooks/use-auth.ts → src/types/auth.ts
-- `MaterialListNodeData` --inherits--> `DiagramNodeData`  [EXTRACTED]
-  src/modules/esp-flow/components/nodes/vessel/MaterialListNode.tsx → src/modules/esp-flow/types/index.ts
+- `GeneralDataNodeData` --inherits--> `DiagramNodeData`  [EXTRACTED]
+  src/modules/esp-flow/components/nodes/vessel/GeneralDataNode.tsx → src/modules/esp-flow/types/index.ts
 
 ## Import Cycles
 - None detected.
@@ -708,7 +708,7 @@ Cohesion: 0.67
 Nodes (3): repository, type, url
 
 ## Knowledge Gaps
-- **901 isolated node(s):** `ColumnFilterState`, `CustomWidgetMeta`, `RoutineColor`, `WeekDayItem`, `BourseItem` (+896 more)
+- **901 isolated node(s):** `SearchPopupProps`, `ColorPickerProps`, `ColorPreset`, `ColumnFilterState`, `ChannelInfoBarProps` (+896 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1089 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -716,16 +716,16 @@ Nodes (3): repository, type, url
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `react` connect `react` to `VesselNodeBase.tsx`, `cn`, `BaseNode.tsx`, `task-detail-view.tsx`, `package.json`, `login/page.tsx`, `store/index.ts`, `vessel/HeadNode.tsx`, `home-client.tsx`, `esp-flow/components/DiagramCanvas.tsx`, `GoogleShortcutTile.tsx`, `Label`, `Link`, `dashboard.tsx`, `src/services/index.ts`, `dashboard-avatar.tsx`, `channel-video-search.tsx`, `modal-shell.tsx`, `Combobox`, `date-picker.tsx`, `Badge`, `team-client.tsx`, `VideoListItem`, `Toolbar.tsx`, `profile-page.tsx`, `dictionary-page.tsx`, `[locale]/layout.tsx`, `stats-section.tsx`, `radix-ui`, `useVesselWeightStore`, `base.schema.ts`, `ProjectDataNode.tsx`, `SettingsPanel.tsx`, `attachments.schema.ts`, `EditorSettingsDialog.tsx`, `TooltipContent`, `header.tsx`, `src/services/search.service.ts`, `search/services/search.service.ts`, `mistEliminator.schema.ts`, `app/layout.tsx`, `support.schema.ts`, `EngineeringObject.tsx`, `useAuth`, `src/types/index.ts`, `menubar.tsx`, `ShapeNodes.tsx`, `alert-dialog.tsx`, `did-you-know-page.tsx`, `AdminDashboard.tsx`, `aparat-client.tsx`, `sitemap-client.tsx`, `carousel.tsx`, `fake-projects.service.ts`, `nodes/NozzleNode.tsx`, `chart.tsx`, `commodities-widget.tsx`, `slide-settings-drawer.tsx`, `stats.service.ts`, `projects.types.ts`, `stat-card.tsx`, `drawer.tsx`, `search-results-client.tsx`, `input-otp.tsx`, `input-group.tsx`, `pagination.tsx`, `market-control-bar.tsx`, `settings-section.tsx`, `alert.tsx`, `time-provider.tsx`?**
-  _High betweenness centrality (0.215) - this node is a cross-community bridge._
-- **What connects `ColumnFilterState`, `CustomWidgetMeta`, `RoutineColor` to the rest of the system?**
+  _High betweenness centrality (0.212) - this node is a cross-community bridge._
+- **What connects `SearchPopupProps`, `ColorPickerProps`, `ColorPreset` to the rest of the system?**
   _901 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `react` be split into smaller, more focused modules?**
   _Cohesion score 0.06441374159820762 - nodes in this community are weakly interconnected._
 - **Why does `cn()` connect `cn` to `react`, `VesselNodeBase.tsx`, `BaseNode.tsx`, `task-detail-view.tsx`, `login/page.tsx`, `store/index.ts`, `vessel/HeadNode.tsx`, `home-client.tsx`, `esp-flow/components/DiagramCanvas.tsx`, `GoogleShortcutTile.tsx`, `Label`, `Link`, `dashboard.tsx`, `dashboard-avatar.tsx`, `channel-video-search.tsx`, `Combobox`, `date-picker.tsx`, `Badge`, `Toolbar.tsx`, `profile-page.tsx`, `dictionary-page.tsx`, `radix-ui`, `useVesselWeightStore`, `SettingsPanel.tsx`, `EditorSettingsDialog.tsx`, `dashboard.service.ts`, `TooltipContent`, `header.tsx`, `useAuth`, `menubar.tsx`, `ShapeNodes.tsx`, `alert-dialog.tsx`, `did-you-know-page.tsx`, `AdminDashboard.tsx`, `aparat-client.tsx`, `sitemap-client.tsx`, `carousel.tsx`, `chart.tsx`, `commodities-widget.tsx`, `slide-settings-drawer.tsx`, `stat-card.tsx`, `drawer.tsx`, `search-results-client.tsx`, `input-otp.tsx`, `input-group.tsx`, `pagination.tsx`, `market-control-bar.tsx`, `settings-section.tsx`, `alert.tsx`, `channelstats.tsx`?**
-  _High betweenness centrality (0.153) - this node is a cross-community bridge._
+  _High betweenness centrality (0.166) - this node is a cross-community bridge._
 - **Should `VesselNodeBase.tsx` be split into smaller, more focused modules?**
   _Cohesion score 0.06056701030927835 - nodes in this community are weakly interconnected._
 - **Why does `next` connect `login/page.tsx` to `exchange-rates/route.ts`, `task-detail-view.tsx`, `package.json`, `next.config.ts`, `[...path]/route.ts`, `esp-flow/components/DiagramCanvas.tsx`, `Link`, `channel-video-search.tsx`, `date-picker.tsx`, `Badge`, `team-client.tsx`, `profile-page.tsx`, `MarketQuote`, `dictionary-page.tsx`, `[locale]/layout.tsx`, `useVesselWeightStore`, `refactor_admin.js`, `did-you-know-page.tsx`, `search-results-client.tsx`, `chart/route.ts`?**
-  _High betweenness centrality (0.118) - this node is a cross-community bridge._
+  _High betweenness centrality (0.117) - this node is a cross-community bridge._
 - **Should `cn` be split into smaller, more focused modules?**
   _Cohesion score 0.040293040293040296 - nodes in this community are weakly interconnected._

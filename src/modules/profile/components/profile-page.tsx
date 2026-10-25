@@ -306,14 +306,12 @@ export function ProfilePage() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(initialField);
-  const isPendingUser = Boolean(
-    user && (
-      !user.managerApproved ||
-      !user.hrApproved ||
-      user.accountStatus === 'pending_profile' ||
-      user.accountStatus === 'pending_approval' ||
-      !user.isProfileCompleted
-    )
+  const isAccountActive = Boolean(
+    user && (user.accountStatus === 'active' || (user.hrApproved && user.managerApproved))
+  );
+  const showPendingBottomPopup = Boolean(user && !isAccountActive);
+  const isProfileIncomplete = Boolean(
+    user && (!user.isProfileCompleted || user.accountStatus === 'pending_profile' || isOnboarding)
   );
   const [isPendingBannerMinimized, setIsPendingBannerMinimized] = useState(false);
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
@@ -3247,32 +3245,46 @@ export function ProfilePage() {
             null}
         </main>
 
-        {/* Floating Bottom Navigation Bar while account is pending approval / onboarding */}
-        {isOnboarding && (
-          <div className="fixed bottom-4 inset-x-4 max-w-2xl mx-auto z-50 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-border/70 p-3 sm:p-3.5 rounded-2xl shadow-2xl flex items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <div className="flex items-center gap-2.5">
+        {/* Floating Bottom Navigation Bar while account is pending activation */}
+        {showPendingBottomPopup && (
+          <div className="fixed bottom-4 inset-x-4 max-w-2xl mx-auto z-50 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-border/70 p-3 sm:p-3.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in slide-in-from-bottom-3 duration-300">
+            <div className="flex items-center gap-2.5 w-full sm:w-auto">
               <div className="size-8 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Clock className="size-4 animate-pulse" />
               </div>
-              <div className="text-start">
-                <h4 className="text-xs sm:text-sm font-bold text-foreground">
-                  تکمیل اطلاعات پرونده
-                </h4>
-                <p className="text-[11px] text-muted-foreground hidden sm:block">
-                  از منوهای کناری اطلاعات خود را وارد کنید، سپس به صفحه وضعیت بازگردید.
+              <div className="text-start flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-xs sm:text-sm font-bold text-foreground truncate">
+                    {isProfileIncomplete
+                      ? t("pendingBottomBar.onboardingTitle")
+                      : t("pendingBottomBar.awaitingTitle")}
+                  </h4>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-medium border-amber-500/30 text-amber-700 dark:text-amber-400 bg-amber-500/10 shrink-0"
+                  >
+                    {isProfileIncomplete
+                      ? t("pendingBottomBar.incompleteBadge")
+                      : t("pendingBottomBar.awaitingBadge")}
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground line-clamp-1 sm:line-clamp-none mt-0.5">
+                  {isProfileIncomplete
+                    ? t("pendingBottomBar.onboardingDesc")
+                    : t("pendingBottomBar.awaitingDesc")}
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => router.push("/account-pending")}
-                className="h-8.5 text-xs font-semibold gap-1.5"
+                className="h-8.5 text-xs font-semibold gap-1.5 flex-1 sm:flex-none cursor-pointer"
               >
                 <ArrowRight className="size-3.5 rtl:rotate-180" />
-                <span>صفحه تایم‌لاین</span>
+                <span>{t("pendingBottomBar.viewTimeline")}</span>
               </Button>
 
               <Button
@@ -3280,13 +3292,13 @@ export function ProfilePage() {
                 disabled={isUpdating}
                 onClick={() => {
                   handleSave();
-                  toast.success("اطلاعات ثبت شد و به صفحه وضعیت بازگشتید.");
+                  toast.success(t("pendingBottomBar.savedToast"));
                   router.push("/account-pending");
                 }}
-                className="h-8.5 px-3.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5"
+                className="h-8.5 px-3.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5 flex-1 sm:flex-none cursor-pointer"
               >
                 {isUpdating ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
-                <span>ثبت نهایی و بازگشت</span>
+                <span>{t("pendingBottomBar.saveAndSubmit")}</span>
               </Button>
             </div>
           </div>

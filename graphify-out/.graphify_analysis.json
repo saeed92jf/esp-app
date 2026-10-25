@@ -3647,26 +3647,26 @@
       "why": "bridges separate communities; peripheral node `AuthState` unexpectedly reaches hub `User`"
     },
     {
-      "source": "MaterialListNodeData",
+      "source": "GeneralDataNodeData",
       "target": "DiagramNodeData",
       "source_files": [
-        "src/modules/esp-flow/components/nodes/vessel/MaterialListNode.tsx",
+        "src/modules/esp-flow/components/nodes/vessel/GeneralDataNode.tsx",
         "src/modules/esp-flow/types/index.ts"
       ],
       "confidence": "EXTRACTED",
       "relation": "inherits",
-      "why": "bridges separate communities; peripheral node `MaterialListNodeData` unexpectedly reaches hub `DiagramNodeData`"
+      "why": "bridges separate communities; peripheral node `GeneralDataNodeData` unexpectedly reaches hub `DiagramNodeData`"
     }
   ],
   "questions": [
     {
       "type": "bridge_node",
       "question": "Why does `react` connect `react` to `VesselNodeBase.tsx`, `cn`, `BaseNode.tsx`, `task-detail-view.tsx`, `package.json`, `login/page.tsx`, `store/index.ts`, `vessel/HeadNode.tsx`, `home-client.tsx`, `esp-flow/components/DiagramCanvas.tsx`, `GoogleShortcutTile.tsx`, `Label`, `Link`, `dashboard.tsx`, `src/services/index.ts`, `dashboard-avatar.tsx`, `channel-video-search.tsx`, `modal-shell.tsx`, `Combobox`, `date-picker.tsx`, `Badge`, `team-client.tsx`, `VideoListItem`, `Toolbar.tsx`, `profile-page.tsx`, `dictionary-page.tsx`, `[locale]/layout.tsx`, `stats-section.tsx`, `radix-ui`, `useVesselWeightStore`, `base.schema.ts`, `ProjectDataNode.tsx`, `SettingsPanel.tsx`, `attachments.schema.ts`, `EditorSettingsDialog.tsx`, `TooltipContent`, `header.tsx`, `src/services/search.service.ts`, `search/services/search.service.ts`, `mistEliminator.schema.ts`, `app/layout.tsx`, `support.schema.ts`, `EngineeringObject.tsx`, `useAuth`, `src/types/index.ts`, `menubar.tsx`, `ShapeNodes.tsx`, `alert-dialog.tsx`, `did-you-know-page.tsx`, `AdminDashboard.tsx`, `aparat-client.tsx`, `sitemap-client.tsx`, `carousel.tsx`, `fake-projects.service.ts`, `nodes/NozzleNode.tsx`, `chart.tsx`, `commodities-widget.tsx`, `slide-settings-drawer.tsx`, `stats.service.ts`, `projects.types.ts`, `stat-card.tsx`, `drawer.tsx`, `search-results-client.tsx`, `input-otp.tsx`, `input-group.tsx`, `pagination.tsx`, `market-control-bar.tsx`, `settings-section.tsx`, `alert.tsx`, `time-provider.tsx`?",
-      "why": "High betweenness centrality (0.215) - this node is a cross-community bridge."
+      "why": "High betweenness centrality (0.212) - this node is a cross-community bridge."
     },
     {
       "type": "isolated_nodes",
-      "question": "What connects `ColumnFilterState`, `CustomWidgetMeta`, `RoutineColor` to the rest of the system?",
+      "question": "What connects `SearchPopupProps`, `ColorPickerProps`, `ColorPreset` to the rest of the system?",
       "why": "901 weakly-connected nodes found - possible documentation gaps or missing edges."
     },
     {
@@ -3677,7 +3677,7 @@
     {
       "type": "bridge_node",
       "question": "Why does `cn()` connect `cn` to `react`, `VesselNodeBase.tsx`, `BaseNode.tsx`, `task-detail-view.tsx`, `login/page.tsx`, `store/index.ts`, `vessel/HeadNode.tsx`, `home-client.tsx`, `esp-flow/components/DiagramCanvas.tsx`, `GoogleShortcutTile.tsx`, `Label`, `Link`, `dashboard.tsx`, `dashboard-avatar.tsx`, `channel-video-search.tsx`, `Combobox`, `date-picker.tsx`, `Badge`, `Toolbar.tsx`, `profile-page.tsx`, `dictionary-page.tsx`, `radix-ui`, `useVesselWeightStore`, `SettingsPanel.tsx`, `EditorSettingsDialog.tsx`, `dashboard.service.ts`, `TooltipContent`, `header.tsx`, `useAuth`, `menubar.tsx`, `ShapeNodes.tsx`, `alert-dialog.tsx`, `did-you-know-page.tsx`, `AdminDashboard.tsx`, `aparat-client.tsx`, `sitemap-client.tsx`, `carousel.tsx`, `chart.tsx`, `commodities-widget.tsx`, `slide-settings-drawer.tsx`, `stat-card.tsx`, `drawer.tsx`, `search-results-client.tsx`, `input-otp.tsx`, `input-group.tsx`, `pagination.tsx`, `market-control-bar.tsx`, `settings-section.tsx`, `alert.tsx`, `channelstats.tsx`?",
-      "why": "High betweenness centrality (0.153) - this node is a cross-community bridge."
+      "why": "High betweenness centrality (0.166) - this node is a cross-community bridge."
     },
     {
       "type": "low_cohesion",
@@ -3687,7 +3687,7 @@
     {
       "type": "bridge_node",
       "question": "Why does `next` connect `login/page.tsx` to `exchange-rates/route.ts`, `task-detail-view.tsx`, `package.json`, `next.config.ts`, `[...path]/route.ts`, `esp-flow/components/DiagramCanvas.tsx`, `Link`, `channel-video-search.tsx`, `date-picker.tsx`, `Badge`, `team-client.tsx`, `profile-page.tsx`, `MarketQuote`, `dictionary-page.tsx`, `[locale]/layout.tsx`, `useVesselWeightStore`, `refactor_admin.js`, `did-you-know-page.tsx`, `search-results-client.tsx`, `chart/route.ts`?",
-      "why": "High betweenness centrality (0.118) - this node is a cross-community bridge."
+      "why": "High betweenness centrality (0.117) - this node is a cross-community bridge."
     },
     {
       "type": "low_cohesion",
