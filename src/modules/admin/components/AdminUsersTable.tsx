@@ -1046,7 +1046,7 @@ export function AdminUsersTable({
                     {/* ── 2. Integrated Extended Folder-Tab Attached Directly Under Row ── */}
                     <tr className="border-0">
                       <td colSpan={9} className="p-0 border-0">
-                        <div className="w-full flex items-start justify-end px-3 sm:px-4" dir="ltr">
+                        <div className={cn("w-full flex items-start justify-end px-3 sm:px-4", isAccordionOpen ? "pb-3.5" : "pb-2.5")} dir="ltr">
                           <div 
                             dir={isRtl ? "rtl" : "ltr"}
                             className={cn(
