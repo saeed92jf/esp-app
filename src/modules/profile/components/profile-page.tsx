@@ -291,7 +291,12 @@ export function ProfilePage() {
         {/* Avatar Core */}
         <div className="relative z-10 bg-white dark:bg-card rounded-full p-0.5 shadow-sm transition-shadow">
           <Avatar className="size-24 sm:size-32">
-            <AvatarFallback className="text-6xl sm:text-7xl font-bold bg-zinc-800 dark:bg-zinc-700 text-white">{initial}</AvatarFallback>
+            <AvatarFallback 
+              className="text-6xl sm:text-7xl font-bold text-white transition-colors duration-200"
+              style={{ backgroundColor: formData?.personal?.avatarColor || '#0284c7' }}
+            >
+              {initial}
+            </AvatarFallback>
           </Avatar>
         </div>
 
@@ -383,40 +388,7 @@ export function ProfilePage() {
         case 'picture':
           title = t("fields.profilePicture");
           description = t("descriptions.chooseAvatar");
-          content = (
-            <div className="space-y-6">
-              <div className="flex flex-wrap gap-4">
-                {[
-                  { icon: UserPh, colorClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
-                  { icon: GhostPh, colorClass: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
-                  { icon: SparklePh, colorClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
-                  { icon: SmileyPh, colorClass: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
-                  { icon: HeartPh, colorClass: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' }
-                ].map((preset, i) => {
-                  const Icon = preset.icon;
-                  return (
-                    <button key={i} type="button" className="group relative rounded-full size-14 sm:size-16 flex items-center justify-center overflow-hidden bg-muted shadow-none cursor-pointer outline-none border-2 border-transparent hover:border-primary">
-                      <div className={cn("relative z-10 w-full h-full flex items-center justify-center", preset.colorClass)}>
-                        <Icon className="size-6 sm:size-8" weight="duotone" />
-                      </div>
-                      <span className="absolute inset-0 z-20 bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" aria-hidden="true" />
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button variant="default" className="rounded-full px-5 shadow-none font-medium" disabled>
-                  <Upload className="size-4 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
-                  {t("actions.uploadPicture")}
-                </Button>
-                <Button variant="outline" className="rounded-full px-5 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 font-medium" disabled>
-                  <Trash className="size-4 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
-                  {t("actions.removePicture")}
-                </Button>
-              </div>
-            </div>
-          );
+          content = renderPictureEditorContent();
           break;
         case 'name':
           title = t("fields.name");
@@ -771,8 +743,8 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
              </div>
              <div className="flex items-center justify-end w-2/3 gap-4">
-               <Avatar className="size-11 sm:size-12 shadow-none">
-                 <AvatarFallback className="text-lg bg-muted text-muted-foreground font-medium">{initial}</AvatarFallback>
+               <Avatar className="size-11 sm:size-12 shadow-none" style={{ backgroundColor: formData.personal.avatarColor || '#0284c7' }}>
+                 <AvatarFallback className="text-lg bg-transparent text-white font-medium">{initial}</AvatarFallback>
                </Avatar>
                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
@@ -1606,30 +1578,124 @@ export function ProfilePage() {
     );
   };
 
-  const renderSettingsView = () => {
-    const THEME_OPTIONS = [
-      { value: "system", labelKey: "system", icon: Monitor },
-      { value: "light", labelKey: "light", icon: Sun },
-      { value: "dark", labelKey: "dark", icon: Moon },
-    ] as const;
+  const renderPictureEditorContent = () => (
+    <div className="space-y-6">
+      <div className="flex flex-wrap gap-4">
+        {[
+          { icon: UserPh, hex: '#0284c7', colorClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' },
+          { icon: GhostPh, hex: '#059669', colorClass: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' },
+          { icon: SparklePh, hex: '#7c3aed', colorClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' },
+          { icon: SmileyPh, hex: '#ea580c', colorClass: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' },
+          { icon: HeartPh, hex: '#e11d48', colorClass: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400' }
+        ].map((preset, i) => {
+          const Icon = preset.icon;
+          const isSelected = (formData.personal.avatarColor || '#0284c7').toLowerCase() === preset.hex.toLowerCase();
+          return (
+            <button 
+              key={i} 
+              type="button" 
+              onClick={() => handleChange("personal", "avatarColor", preset.hex)}
+              className={cn(
+                "group relative rounded-full size-14 sm:size-16 flex items-center justify-center overflow-hidden bg-muted shadow-none cursor-pointer outline-none border-2 transition-all",
+                isSelected ? "border-primary ring-2 ring-primary/30" : "border-transparent hover:border-primary/50"
+              )}
+            >
+              <div className={cn("relative z-10 w-full h-full flex items-center justify-center", preset.colorClass)}>
+                <Icon className="size-6 sm:size-8" weight="duotone" />
+              </div>
+              <span className="absolute inset-0 z-20 bg-foreground/10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none" aria-hidden="true" />
+            </button>
+          );
+        })}
+      </div>
 
-    const currentLocaleLabel = locale === 'fa' ? 'فارسی (Persian)' : 'English (US)';
+      {/* Color Presets Row */}
+      <div className="space-y-2 pt-2">
+        <Label className="text-xs font-semibold text-muted-foreground block">
+          {t("personnelForm.avatarColor")}
+        </Label>
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            "#0284c7", "#4f46e5", "#7c3aed", "#059669", "#0d9488",
+            "#d97706", "#e11d48", "#ea580c", "#475569", "#1e293b"
+          ].map((hex) => {
+            const isSelected = (formData.personal.avatarColor || '#0284c7').toLowerCase() === hex.toLowerCase();
+            return (
+              <button
+                key={hex}
+                type="button"
+                onClick={() => handleChange("personal", "avatarColor", hex)}
+                className={cn(
+                  "size-7 rounded-full transition-all outline-none cursor-pointer flex items-center justify-center",
+                  isSelected ? "ring-2 ring-primary ring-offset-2 scale-110 shadow-sm" : "opacity-80 hover:opacity-100"
+                )}
+                style={{ backgroundColor: hex }}
+              >
+                {isSelected && <span className="size-1.5 rounded-full bg-white shadow-xs" />}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 pt-2">
+        <Button variant="outline" className="rounded-full px-5 shadow-none font-medium text-xs h-9" disabled>
+          <Upload className="size-3.5 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
+          {t("actions.uploadPicture")}
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleChange("personal", "avatarColor", "#0284c7")}
+          className="rounded-full px-5 text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/20 font-medium text-xs h-9"
+        >
+          <Trash className="size-3.5 mr-2 rtl:ml-2 rtl:mr-0 shrink-0" />
+          {t("actions.removePicture")}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderSettingsView = () => {
     const currentThemeLabel = theme === 'system' ? tSettings('system') : theme === 'dark' ? tSettings('dark') : tSettings('light');
     const currentColorLabel = PRIMARY_COLORS.find(c => c.id === colorId)?.labelKey || '';
 
-    if (editingField === 'primaryColor') {
-      let title = "";
-      switch (editingField) {
-        case 'primaryColor': title = tSettings("color"); break;
-      }
-
+    if (editingField === 'picture') {
       return (
         <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
             </Button>
-            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{title}</h2>
+            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{t("fields.profilePicture")}</h2>
+          </div>
+          
+          <div className="ps-0 sm:ps-14">
+            <p className="text-sm sm:text-base text-muted-foreground mb-8 max-w-2xl">{t("descriptions.chooseAvatar")}</p>
+            
+            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+               {renderPictureEditorContent()}
+
+               <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
+                 <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
+                 <Button onClick={() => { handleSave(); setEditingField(null); }} disabled={isUpdating} className="rounded-full px-8 font-medium">
+                   {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {t("actions.save")}
+                 </Button>
+               </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (editingField === 'primaryColor') {
+      return (
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
+               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+            </Button>
+            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{tSettings("color")}</h2>
           </div>
           
           <div className="ps-0 sm:ps-14">
@@ -1637,49 +1703,46 @@ export function ProfilePage() {
             
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
               <div className="space-y-6 max-w-lg">
-                {editingField === 'primaryColor' && isAdmin && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex w-full h-24 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
-                      {PRIMARY_COLORS.map((preset) => {
-                        const active = colorId === preset.id;
-                        return (
-                          <motion.button
-                            key={preset.id}
-                            type="button"
-                            onClick={() => setColor(preset.id)}
-                            initial="initial"
-                            animate="animate"
-                            whileHover="hover"
+                <div className="flex flex-col gap-3">
+                  <div className="flex w-full h-24 rounded-xl overflow-hidden bg-muted/20 border border-border/50">
+                    {PRIMARY_COLORS.map((preset) => {
+                      return (
+                        <motion.button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setColor(preset.id)}
+                          initial="initial"
+                          animate="animate"
+                          whileHover="hover"
+                          variants={{
+                            initial: { flex: 1 },
+                            animate: { flex: 1 },
+                            hover: { flex: 4 }
+                          }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                          style={{ backgroundColor: preset.hex }}
+                          className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                        >
+                          <motion.div 
                             variants={{
-                              initial: { flex: 1 },
-                              animate: { flex: 1 },
-                              hover: { flex: 4 }
+                              initial: { opacity: 0 },
+                              animate: { opacity: 0 },
+                              hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
                             }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            style={{ backgroundColor: preset.hex }}
-                            className="relative h-full flex flex-col items-center justify-center overflow-hidden shrink-0 cursor-pointer transition-colors"
+                            className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
                           >
-                            <motion.div 
-                              variants={{
-                                initial: { opacity: 0 },
-                                animate: { opacity: 0 },
-                                hover: { opacity: 1, transition: { delay: 0.1, duration: 0.2 } }
-                              }}
-                              className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pt-1"
-                            >
-                              <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
-                                {tColors(preset.labelKey)}
-                              </span>
-                              <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
-                                {preset.hex}
-                              </span>
-                            </motion.div>
-                          </motion.button>
-                        );
-                      })}
-                    </div>
+                            <span className="text-sm font-bold text-white drop-shadow-md whitespace-nowrap">
+                              {tColors(preset.labelKey)}
+                            </span>
+                            <span className="text-xs font-semibold text-white/95 drop-shadow-md whitespace-nowrap uppercase tracking-wider mt-0.5">
+                              {preset.hex}
+                            </span>
+                          </motion.div>
+                        </motion.button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
@@ -1691,30 +1754,71 @@ export function ProfilePage() {
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("nav.settings")}</h2>
         
-        <div className="segmented-list mb-10">
+        <div className="segmented-list mb-10 space-y-2">
+          {/* Profile Picture & Avatar Color */}
           <div 
-            className={cn(
-              "segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]",
-              isAdmin ? "cursor-pointer group relative outline-none" : "opacity-60 cursor-not-allowed"
-            )}
-            onClick={() => isAdmin && setEditingField('primaryColor')}
+            className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px] cursor-pointer group relative outline-none"
+            onClick={() => setEditingField('picture')}
           >
-             {isAdmin && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Camera className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
+             </div>
+             <div className="flex items-center justify-end w-2/3 gap-4">
+               <Avatar className="size-11 sm:size-12 shadow-none" style={{ backgroundColor: formData.personal.avatarColor || '#0284c7' }}>
+                 <AvatarFallback className="text-lg bg-transparent text-white font-medium">{initial}</AvatarFallback>
+               </Avatar>
+               <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Theme Switcher */}
+          <div className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]">
+             <div className="flex items-center gap-4 w-1/3">
+                {theme === 'dark' ? <Moon className="size-5 text-muted-foreground shrink-0" /> : <Sun className="size-5 text-muted-foreground shrink-0" />}
+                <span className="text-sm font-medium text-foreground">{tSettings("theme")}</span>
+             </div>
+             <div className="flex items-center justify-end w-2/3 gap-3">
+                <span className="text-sm text-muted-foreground hidden sm:inline-block">
+                  {currentThemeLabel}
+                </span>
+                <ThemeToggle />
+             </div>
+          </div>
+
+          {/* Primary Color */}
+          <div 
+            className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px] cursor-pointer group relative outline-none"
+            onClick={() => setEditingField('primaryColor')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
              <div className="flex items-center gap-4 w-1/3">
                 <Palette className="size-5 text-muted-foreground shrink-0" />
                 <span className="text-sm font-medium text-foreground">{tSettings("color")}</span>
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center gap-2 px-2">
-                  {isAdmin ? (
-                     <span className="text-sm text-muted-foreground text-start truncate">
-                       {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
-                     </span>
-                  ) : (
-                     <span className="text-sm text-muted-foreground flex items-center gap-1.5"><Lock className="size-3.5" /> {tSettings("color")}</span>
-                  )}
+                   <div 
+                     className="size-4 rounded-full border border-black/10 shrink-0" 
+                     style={{ backgroundColor: PRIMARY_COLORS.find(c => c.id === colorId)?.hex || '#0284c7' }} 
+                   />
+                   <span className="text-sm text-muted-foreground text-start truncate">
+                     {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
+                   </span>
                 </div>
-                {isAdmin && <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Language Switcher */}
+          <div className="segmented-item no-hover-bg bg-white dark:bg-card rounded-[24px] overflow-hidden shadow-none flex items-center justify-between px-4 sm:px-6 transition-colors h-[72px]">
+             <div className="flex items-center gap-4 w-1/3">
+                <Languages className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{tSettings("language")}</span>
+             </div>
+             <div className="flex items-center justify-end w-2/3 gap-3">
+                <LocaleSwitcher />
              </div>
           </div>
         </div>
