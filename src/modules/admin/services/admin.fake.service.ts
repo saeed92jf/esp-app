@@ -8,10 +8,6 @@ import {
 } from "../types/admin.types";
 import { IAdminService } from "./admin.service";
 
-const getAvatar = (gender: 'male' | 'female') => {
-  return `/avatar/${gender}-01.webp`;
-};
-
 const generateWorkActivity = (): { day: number; hour: number; value: number }[] => {
   const data = [];
   for (let i = 0; i < 7; i++) {
@@ -31,7 +27,6 @@ const INITIAL_USERS: User[] = [
     role: 'admin',
     status: 'online',
     accountStatus: 'active',
-    avatar: '/team/saeed-jalili-fard.webp',
     avatarColor: '#0284c7',
     primaryColor: 'red',
     phone: '09120000000',
@@ -76,7 +71,7 @@ const INITIAL_USERS: User[] = [
     role: 'user',
     status: 'online',
     accountStatus: 'active',
-    avatar: getAvatar('male'),
+    avatarColor: '#8b5cf6',
     primaryColor: 'blue',
     phone: '09120000001',
     nationalId: '0023456789',
@@ -118,7 +113,6 @@ const INITIAL_REQUESTS: PendingRequest[] = [
     id: "req-1",
     name: "محمد محمدی",
     email: "m.mohammadi@euroslotpars.com",
-    avatar: getAvatar("male"),
     phone: "09121112233",
     nationalId: "0019876543",
     department: "engineering",
@@ -168,7 +162,6 @@ const INITIAL_REQUESTS: PendingRequest[] = [
     id: "req-2",
     name: "کیوان کریمی",
     email: "k.karimi@npceram.com",
-    avatar: getAvatar("male"),
     phone: "09123334455",
     nationalId: "0028765432",
     department: "projectControl",
@@ -215,7 +208,6 @@ const INITIAL_REQUESTS: PendingRequest[] = [
     id: "req-3",
     name: "سارا رضایی",
     email: "s.rezaei@euroslotpars.com",
-    avatar: getAvatar("female"),
     phone: "09125556677",
     nationalId: "0037654321",
     department: "marketDevelopment",
@@ -264,7 +256,6 @@ const INITIAL_REQUESTS: PendingRequest[] = [
     id: "req-4",
     name: "علی نوری",
     email: "a.nouri@euroslotpars.com",
-    avatar: getAvatar("male"),
     phone: "09128889900",
     nationalId: "0046543210",
     department: "engineering",
@@ -318,7 +309,6 @@ const INITIAL_REQUESTS: PendingRequest[] = [
     id: "req-5",
     name: "فرزاد مرادی",
     email: "f.moradi@npceram.com",
-    avatar: getAvatar("male"),
     phone: "09127778899",
     nationalId: "0055432109",
     department: "administrative",
@@ -627,7 +617,8 @@ export class FakeAdminService implements IAdminService {
         role: options?.role || "user",
         status: "offline",
         accountStatus: "active",
-        avatar: req.avatar || getAvatar("male"),
+        avatar: "",
+        avatarColor: "#0284c7",
         phone: req.phone || "09120000000",
         nationalId: req.nationalId || "0010000000",
         department: req.department || "Engineering",

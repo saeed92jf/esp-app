@@ -642,13 +642,6 @@ export function AdminRequests({
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <Avatar className="size-9 rounded-full border border-border/50 shrink-0 bg-transparent">
-                            {req.avatar ? (
-                              <AvatarImage
-                                src={req.avatar}
-                                alt={req.name}
-                                className="size-full rounded-full object-cover"
-                              />
-                            ) : null}
                             <AvatarFallback className="bg-transparent text-primary text-xs font-bold rounded-full">
                               {req.name ? req.name.charAt(0) : "؟"}
                             </AvatarFallback>
@@ -724,13 +717,6 @@ export function AdminRequests({
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
                   <div className="flex items-center gap-3.5 min-w-0">
                     <Avatar className="size-14 rounded-full border-2 border-border/60 shadow-xs shrink-0 bg-transparent">
-                      {reviewData.avatar ? (
-                        <AvatarImage
-                          src={reviewData.avatar}
-                          alt={reviewData.name}
-                          className="size-full rounded-full object-cover"
-                        />
-                      ) : null}
                       <AvatarFallback className="bg-transparent text-primary text-xl font-bold rounded-full">
                         {reviewData.name ? reviewData.name.charAt(0) : "؟"}
                       </AvatarFallback>

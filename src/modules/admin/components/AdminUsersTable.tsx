@@ -68,6 +68,14 @@ const initialFilters: ColumnFilterState = {
   statuses: []
 };
 
+const AVATAR_PALETTE = ['#0284c7', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#3b82f6', '#14b8a6', '#6366f1'];
+function getUserAvatarColor(user: User): string {
+  if (user.avatarColor && user.avatarColor.startsWith('#')) return user.avatarColor;
+  let hash = 0;
+  for (let i = 0; i < user.id.length; i++) hash = user.id.charCodeAt(i) + ((hash << 5) - hash);
+  return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+}
+
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
 
 interface TableAccordionPanelProps {
@@ -998,6 +1006,21 @@ export function AdminUsersTable({
                   ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : user.name)
                   : (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name);
 
+                // Initial letter tailored to current locale (Persian vs English)
+                const getInitialLetter = () => {
+                  if (isRtl) {
+                    if (user.firstNameFa?.trim()) return user.firstNameFa.trim().charAt(0);
+                    const match = user.name?.match(/[\u0600-\u06FF]/);
+                    return match ? match[0] : (user.name?.trim().charAt(0) || "ک");
+                  } else {
+                    if (user.firstName?.trim()) return user.firstName.trim().charAt(0).toUpperCase();
+                    const match = user.name?.match(/[a-zA-Z]/);
+                    return match ? match[0].toUpperCase() : (user.name?.trim().charAt(0) || "U").toUpperCase();
+                  }
+                };
+                const userInitial = getInitialLetter();
+                const avatarBg = getUserAvatarColor(user);
+
                 return (
                   <React.Fragment key={user.id}>
                     
@@ -1022,27 +1045,10 @@ export function AdminUsersTable({
                           {/* Avatar with unclipped location tag */}
                           <div className="relative size-9 shrink-0">
                             <div 
-                              className="size-full rounded-full bg-primary/10 border border-border/40 flex items-center justify-center overflow-hidden select-none"
-                              style={user.avatarColor ? { backgroundColor: `${user.avatarColor}20`, borderColor: `${user.avatarColor}40` } : undefined}
+                              className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"
+                              style={{ backgroundColor: avatarBg }}
                             >
-                              {user.avatar ? (
-                                <img
-                                  src={user.avatar}
-                                  alt={userDisplayName}
-                                  className="size-full object-cover"
-                                  onError={(e) => {
-                                    (e.currentTarget as HTMLElement).style.display = 'none';
-                                    const fb = e.currentTarget.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
-                                    if (fb) fb.style.display = 'inline';
-                                  }}
-                                />
-                              ) : null}
-                              <span 
-                                className="avatar-fallback text-xs font-bold text-primary uppercase"
-                                style={{ display: user.avatar ? 'none' : 'inline', color: user.avatarColor }}
-                              >
-                                {userDisplayName ? userDisplayName.trim().charAt(0) : "U"}
-                              </span>
+                              <span className="leading-none">{userInitial}</span>
                             </div>
                             {/* Unclipped colored location status tag */}
                             <span
