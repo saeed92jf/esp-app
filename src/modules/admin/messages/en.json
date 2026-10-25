@@ -262,6 +262,12 @@
     "roleAdmin": "System Admin",
     "roleUser": "Standard User",
     "demographics": "Personal Demographics",
-    "yearsOldUnit": "yrs"
+    "yearsOldUnit": "yrs",
+    "editUserInfo": "Edit User Info",
+    "confirmPassword": "Confirm Password",
+    "passwordMismatch": "Passwords do not match",
+    "passwordChangedSuccess": "Password changed successfully",
+    "userInfoUpdatedSuccess": "User information updated successfully",
+    "saveChangesSuccess": "Changes saved successfully"
   }
 }

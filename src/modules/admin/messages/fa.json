@@ -262,6 +262,12 @@
     "roleAdmin": "مدیر سیستم",
     "roleUser": "کاربر عادی",
     "demographics": "مشخصات فردی",
-    "yearsOldUnit": "سال"
+    "yearsOldUnit": "سال",
+    "editUserInfo": "ویرایش اطلاعات",
+    "confirmPassword": "تکرار رمز عبور",
+    "passwordMismatch": "رمز عبور و تکرار آن یکسان نیستند",
+    "passwordChangedSuccess": "رمز عبور با موفقیت تغییر یافت",
+    "userInfoUpdatedSuccess": "اطلاعات کاربر با موفقیت بروزرسانی شد",
+    "saveChangesSuccess": "تغییرات با موفقیت ذخیره شد"
   }
 }

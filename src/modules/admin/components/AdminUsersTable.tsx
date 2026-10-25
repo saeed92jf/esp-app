@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { 
-  Search, X, Eye, EyeOff, LayoutDashboard, Settings2, 
-  TableProperties, Mail, Phone, Building2, 
-  FolderKanban, Award, Clock, DollarSign, Filter,
+  Search, X, Eye, EyeOff, LayoutDashboard, 
+  TableProperties, Mail, Phone, 
+  FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
-  AlertCircle
+  AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck,
+  Building, GraduationCap, Calendar, Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -87,6 +89,19 @@ export function AdminUsersTable({
   // Salary visibility toggle
   const [showSalaries, setShowSalaries] = useState(false);
 
+  // Active accordion per user row
+  const [activeAccordion, setActiveAccordion] = useState<{
+    userId: string;
+    type: 'view' | 'password' | 'edit';
+  } | null>(null);
+
+  // State for Password Change accordion
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // State for Quick Edit accordion
+  const [editFormData, setEditFormData] = useState<Partial<User>>({});
+
   // Extract unique departments with counts
   const departmentCounts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -99,11 +114,23 @@ export function AdminUsersTable({
 
   const uniqueDepartments = useMemo(() => Object.keys(departmentCounts), [departmentCounts]);
 
-  // Active filters count
+  const toggleArrayItem = (arr: string[], item: string) => {
+    return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
+  };
+
+  const handleSort = (field: string, forceDirection?: 'asc' | 'desc') => {
+    setSortState(prev => {
+      if (prev.field === field) {
+        const nextDir = forceDirection || (prev.direction === 'asc' ? 'desc' : 'asc');
+        return { field, direction: nextDir };
+      }
+      return { field, direction: forceDirection || 'asc' };
+    });
+  };
+
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (colFilters.userRoles.length > 0) count++;
-    if (colFilters.userNameQuery.trim().length > 0) count++;
+    if (colFilters.userRoles.length > 0 || colFilters.userNameQuery.trim().length > 0) count++;
     if (colFilters.departments.length > 0) count++;
     if (colFilters.hasEmailOnly || colFilters.hasPhoneOnly) count++;
     if (colFilters.projectRanges.length > 0) count++;
@@ -119,76 +146,57 @@ export function AdminUsersTable({
     setGlobalSearch("");
   };
 
-  const handleSort = (field: string, direction?: 'asc' | 'desc') => {
-    if (direction) {
-      setSortState({ field, direction });
-    } else {
-      if (sortState.field === field) {
-        setSortState({ field, direction: sortState.direction === 'asc' ? 'desc' : 'asc' });
-      } else {
-        setSortState({ field, direction: 'asc' });
-      }
-    }
-  };
-
-  // Helper to toggle item in array
-  const toggleArrayItem = (list: string[], item: string) => {
-    return list.includes(item) ? list.filter(i => i !== item) : [...list, item];
-  };
-
-  // Filtered and sorted users
+  // Filtered & Sorted Users
   const filteredUsers = useMemo(() => {
-    return users.filter(user => {
-      // 1. Global search
-      const q = globalSearch.trim().toLowerCase();
-      if (q) {
-        const nameMatch = user.name?.toLowerCase().includes(q);
-        const emailMatch = user.email?.toLowerCase().includes(q);
-        const idMatch = user.id?.toLowerCase().includes(q);
-        const jobMatch = user.jobTitle?.toLowerCase().includes(q);
-        const phoneMatch = user.phone?.includes(q);
-        const deptMatch = (user.department || '').toLowerCase().includes(q);
-        if (!nameMatch && !emailMatch && !idMatch && !jobMatch && !phoneMatch && !deptMatch) {
+    return users.filter((user) => {
+      // 0. Global Search
+      if (globalSearch.trim()) {
+        const q = globalSearch.toLowerCase().trim();
+        const matchName = user.name?.toLowerCase().includes(q);
+        const matchEmail = user.email?.toLowerCase().includes(q);
+        const matchId = user.id?.toLowerCase().includes(q);
+        const matchTitle = user.jobTitle?.toLowerCase().includes(q);
+        const matchDept = user.department?.toLowerCase().includes(q);
+        const matchPhone = user.phone?.includes(q);
+        if (!matchName && !matchEmail && !matchId && !matchTitle && !matchDept && !matchPhone) {
           return false;
         }
       }
 
-      // 2. Column 1: User name query
+      // 1. Column 1: User Query & Roles
       if (colFilters.userNameQuery.trim()) {
-        const uq = colFilters.userNameQuery.trim().toLowerCase();
-        const nMatch = user.name?.toLowerCase().includes(uq);
-        const iMatch = user.id?.toLowerCase().includes(uq);
-        if (!nMatch && !iMatch) return false;
+        const q = colFilters.userNameQuery.toLowerCase().trim();
+        if (!user.name?.toLowerCase().includes(q) && !user.id?.toLowerCase().includes(q)) {
+          return false;
+        }
       }
-
-      // Column 1: User role
       if (colFilters.userRoles.length > 0) {
         if (!colFilters.userRoles.includes(user.role)) return false;
       }
 
-      // 3. Column 2: Department
+      // 2. Column 2: Departments
       if (colFilters.departments.length > 0) {
-        const userDep = user.department || 'engineering';
-        if (!colFilters.departments.includes(userDep)) return false;
+        const dep = user.department || 'engineering';
+        if (!colFilters.departments.includes(dep)) return false;
       }
 
-      // 4. Column 3: Contact
+      // 3. Column 3: Contact Channels
       if (colFilters.hasEmailOnly && !user.email) return false;
       if (colFilters.hasPhoneOnly && !user.phone) return false;
 
-      // 5. Column 4: Projects Range
+      // 4. Column 4: Projects Range
       if (colFilters.projectRanges.length > 0) {
-        const done = user.doneProjects || 0;
+        const projects = user.doneProjects || 0;
         const matchesRange = colFilters.projectRanges.some(r => {
-          if (r === 'ge10') return done >= 10;
-          if (r === '5to10') return done >= 5 && done < 10;
-          if (r === 'lt5') return done < 5;
+          if (r === 'ge10') return projects >= 10;
+          if (r === '5to10') return projects >= 5 && projects < 10;
+          if (r === 'lt5') return projects < 5;
           return false;
         });
         if (!matchesRange) return false;
       }
 
-      // 6. Column 6: Tenure (Days) Range
+      // 6. Column 6: Tenure Range
       if (colFilters.tenureRanges.length > 0) {
         const days = user.daysInCompany || 0;
         const matchesTenure = colFilters.tenureRanges.some(r => {
@@ -258,6 +266,60 @@ export function AdminUsersTable({
     setActiveTab('add');
   };
 
+  // Accordion Toggle
+  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit') => {
+    if (activeAccordion?.userId === userId && activeAccordion?.type === type) {
+      setActiveAccordion(null);
+    } else {
+      setActiveAccordion({ userId, type });
+      setNewPassword("");
+      setConfirmPassword("");
+      if (type === 'edit') {
+        const u = users.find(x => x.id === userId);
+        if (u) {
+          setEditFormData({
+            name: u.name,
+            email: u.email,
+            phone: u.phone || "",
+            department: u.department || "engineering",
+            role: u.role || "user",
+            jobTitle: u.jobTitle || ""
+          });
+        }
+      }
+    }
+  };
+
+  // Save Changed Password
+  const handleSavePassword = (userId: string) => {
+    if (!newPassword.trim()) return;
+    if (newPassword !== confirmPassword) {
+      toast.error(t("passwordMismatch"));
+      return;
+    }
+    toast.success(t("passwordChangedSuccess"));
+    setActiveAccordion(null);
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  // Save Quick Edited Info
+  const handleSaveEdit = (userId: string) => {
+    const updatedUsers = users.map(u => {
+      if (u.id === userId) {
+        const updated = { ...u, ...editFormData };
+        if (selectedUser?.id === userId) {
+          setSelectedUser(updated);
+        }
+        return updated;
+      }
+      return u;
+    });
+    setUsers(updatedUsers);
+    toast.success(t("userInfoUpdatedSuccess"));
+    setActiveAccordion(null);
+  };
+
   /* ── Header Cell Component with Excel Filter Popover ── */
   const renderExcelHeader = ({
     title,
@@ -279,8 +341,9 @@ export function AdminUsersTable({
 
     return (
       <th className={cn(
-        "py-3 px-3 text-xs font-semibold select-none group",
-        align === "start" ? "text-start" : "text-center"
+        "py-3.5 px-3 text-xs font-bold select-none group text-slate-800 dark:text-slate-100 first:rounded-s-xl last:rounded-e-xl",
+        align === "start" ? "text-start" : "text-center",
+        isFiltered && "bg-primary/10 text-primary"
       )}>
         <div className={cn(
           "inline-flex items-center gap-1.5",
@@ -393,79 +456,82 @@ export function AdminUsersTable({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-slate-100/70 dark:bg-slate-900/40 border border-border/40 rounded-[2rem] p-4 sm:p-6 shadow-xs overflow-hidden">
-      {/* ── Top Header & Global Search Bar ── */}
-      <div className="flex flex-col gap-3 pb-3 border-b border-border/40 shrink-0">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-              <TableProperties className="size-5" />
+    <div className="flex flex-col h-full min-h-0 bg-slate-100/80 dark:bg-slate-900/40 border border-border/40 rounded-[2rem] p-4 sm:p-6 shadow-xs overflow-hidden">
+      
+      {/* ── Top Header & Global Search Bar (Unified in 1 Streamlined Row) ── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-border/40 shrink-0">
+        
+        {/* Left Side: Title + Total Count + Search Bar directly beside it */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 flex-1 min-w-[280px]">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="size-9 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+              <TableProperties className="size-4.5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-foreground">
+              <h2 className="text-base font-bold text-foreground leading-tight">
                 {t("usersTable")}
               </h2>
-              <p className="text-xs text-muted-foreground fa-num">
+              <p className="text-[11px] text-muted-foreground fa-num">
                 {t("totalUsersCount", { count: filteredUsers.length })}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Active Filters Clear Button */}
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="h-9 px-3 rounded-xl border-destructive/30 text-destructive text-xs font-semibold gap-1.5 bg-destructive/5 hover:bg-destructive/10 transition-colors cursor-pointer"
+          {/* Search Bar placed directly in front of the Title */}
+          <div className="relative flex-1 max-w-xs sm:max-w-sm min-w-[180px]">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+              placeholder={t("searchUsersPlaceholder")}
+              className="h-9 text-xs ps-8.5 pe-8 rounded-xl bg-background/90 dark:bg-card/90 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/40 shadow-none transition-all"
+            />
+            {globalSearch && (
+              <button
+                onClick={() => setGlobalSearch("")}
+                className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded-full cursor-pointer"
               >
-                <RotateCcw className="size-3" />
-                <span>{t("clearAllFilters")}</span>
-                <span className="size-4.5 rounded-full bg-destructive/20 text-destructive text-[10px] flex items-center justify-center fa-num font-bold ms-1">
-                  {activeFiltersCount}
-                </span>
-              </Button>
+                <X className="size-3.5" />
+              </button>
             )}
-
-            {/* Salary Masking Toggle */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSalaries(!showSalaries)}
-              className="h-9 px-3 rounded-xl border-border/50 text-xs font-semibold gap-2 bg-background/80 hover:bg-background transition-colors cursor-pointer"
-            >
-              {showSalaries ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-              <span>{t("monthlySalary")}</span>
-            </Button>
           </div>
         </div>
 
-        {/* Global Search Bar */}
-        <div className="relative w-full max-w-md">
-          <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-          <Input
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
-            placeholder={t("searchUsersPlaceholder")}
-            className="h-9.5 ps-10 pe-9 bg-background/80 rounded-xl border-border/40 text-xs shadow-none focus-visible:ring-1"
-          />
-          {globalSearch && (
-            <button
-              type="button"
-              onClick={() => setGlobalSearch("")}
-              className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-0.5"
+        {/* Right Side: Filters Clear & Salary Masking */}
+        <div className="flex items-center gap-2 shrink-0">
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearAllFilters}
+              className="h-9 px-3 rounded-xl border-destructive/30 text-destructive text-xs font-semibold gap-1.5 bg-destructive/5 hover:bg-destructive/10 transition-colors cursor-pointer"
             >
-              <X className="size-3.5" />
-            </button>
+              <RotateCcw className="size-3" />
+              <span>{t("clearAllFilters")}</span>
+              <span className="size-4.5 rounded-full bg-destructive/20 text-destructive text-[10px] flex items-center justify-center fa-num font-bold ms-1">
+                {activeFiltersCount}
+              </span>
+            </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowSalaries(!showSalaries)}
+            className="h-9 px-3 rounded-xl border-border/50 text-xs font-semibold gap-2 bg-background/80 hover:bg-background transition-colors cursor-pointer"
+          >
+            {showSalaries ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+            <span>{t("monthlySalary")}</span>
+          </Button>
         </div>
       </div>
 
-      {/* ── Table Container ── */}
-      <div className="flex-1 min-h-0 overflow-auto custom-scrollbar border border-border/40 rounded-2xl bg-background/90 dark:bg-card/70 mt-3.5 fa-num">
-        <table className="w-full text-sm text-start border-collapse min-w-[1020px]">
-          <thead className="bg-muted/70 dark:bg-muted/40 sticky top-0 z-10 backdrop-blur-md border-b border-border/40 text-muted-foreground">
+      {/* ── Table Container with Perfect Rounded Fillet Corners & Stacking Isolation ── */}
+      <div className="flex-1 min-h-0 overflow-auto custom-scrollbar border border-border/50 rounded-2xl bg-card shadow-inner mt-3.5 fa-num isolate">
+        <table className="w-full text-sm text-start border-collapse min-w-[960px]">
+          
+          {/* Distinct, High-Contrast Table Header */}
+          <thead className="bg-slate-200/90 dark:bg-slate-800/95 sticky top-0 z-10 backdrop-blur-md border-b-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold shadow-xs">
             <tr>
               {/* ── Column 1: User ── */}
               {renderExcelHeader({
@@ -476,7 +542,6 @@ export function AdminUsersTable({
                 onClear: () => setColFilters(prev => ({ ...prev, userRoles: [], userNameQuery: "" })),
                 children: (
                   <div className="flex flex-col gap-2">
-                    {/* Search inside user name */}
                     <div className="relative">
                       <Search className="absolute start-2 top-1/2 -translate-y-1/2 size-3 text-muted-foreground" />
                       <Input
@@ -521,9 +586,8 @@ export function AdminUsersTable({
                       } catch {
                         depName = dep;
                       }
-                      const count = departmentCounts[dep] || 0;
                       return (
-                        <label key={dep} className="flex items-center justify-between gap-2 cursor-pointer py-1 hover:text-foreground">
+                        <label key={dep} className="flex items-center justify-between gap-2 cursor-pointer py-0.5 hover:text-foreground">
                           <div className="flex items-center gap-2">
                             <Checkbox
                               checked={colFilters.departments.includes(dep)}
@@ -534,7 +598,9 @@ export function AdminUsersTable({
                             />
                             <span>{depName}</span>
                           </div>
-                          <span className="text-[10px] text-muted-foreground font-mono">({count})</span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            {departmentCounts[dep]}
+                          </span>
                         </label>
                       );
                     })}
@@ -542,7 +608,7 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 3: Contact ── */}
+              {/* ── Column 3: Contact Channels ── */}
               {renderExcelHeader({
                 title: t("contactCol"),
                 field: "email",
@@ -552,17 +618,17 @@ export function AdminUsersTable({
                 children: (
                   <div className="flex flex-col gap-1.5">
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
-                    <label className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                       <Checkbox
                         checked={colFilters.hasEmailOnly}
-                        onCheckedChange={(checked) => setColFilters(prev => ({ ...prev, hasEmailOnly: !!checked }))}
+                        onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasEmailOnly: Boolean(c) }))}
                       />
                       <span>{t("hasEmail")}</span>
                     </label>
-                    <label className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                       <Checkbox
                         checked={colFilters.hasPhoneOnly}
-                        onCheckedChange={(checked) => setColFilters(prev => ({ ...prev, hasPhoneOnly: !!checked }))}
+                        onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasPhoneOnly: Boolean(c) }))}
                       />
                       <span>{t("hasPhone")}</span>
                     </label>
@@ -584,7 +650,7 @@ export function AdminUsersTable({
                       { key: '5to10', label: t("projects5to10") },
                       { key: 'lt5', label: t("projectsLt5") }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.projectRanges.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -605,14 +671,10 @@ export function AdminUsersTable({
                 field: "score",
                 isFiltered: false,
                 onClear: () => {},
-                children: (
-                  <div className="flex flex-col gap-1 text-muted-foreground text-center py-2">
-                    <span>{t("sortAsc")} / {t("sortDesc")}</span>
-                  </div>
-                )
+                children: <span className="text-muted-foreground text-[11px]">{t("score")}</span>
               })}
 
-              {/* ── Column 6: Tenure (Days) ── */}
+              {/* ── Column 6: Tenure (Days in company) ── */}
               {renderExcelHeader({
                 title: t("tenureCol"),
                 field: "daysInCompany",
@@ -626,7 +688,7 @@ export function AdminUsersTable({
                       { key: '100to300', label: t("tenure100to300") },
                       { key: 'lt100', label: t("tenureLt100") }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.tenureRanges.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -655,7 +717,7 @@ export function AdminUsersTable({
                       { key: '10to15k', label: t("salary10to15k") },
                       { key: 'lt10k', label: t("salaryLt10k") }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.salaryRanges.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -680,12 +742,12 @@ export function AdminUsersTable({
                   <div className="flex flex-col gap-1.5">
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterPrimaryFormat")}</span>
                     {[
-                      { key: 'office', label: t("office"), color: "bg-[#22c55e]" },
-                      { key: 'factory', label: t("factory"), color: "bg-[#3b82f6]" },
-                      { key: 'mission', label: t("mission"), color: "bg-[#f59e0b]" },
-                      { key: 'leave', label: t("leave"), color: "bg-[#94a3b8]" }
+                      { key: 'office', label: t("office") },
+                      { key: 'factory', label: t("factory") },
+                      { key: 'mission', label: t("mission") },
+                      { key: 'leave', label: t("leave") }
                     ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-1 hover:text-foreground">
+                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.workingFormats.includes(item.key)}
                           onCheckedChange={() => setColFilters(prev => ({
@@ -693,10 +755,7 @@ export function AdminUsersTable({
                             workingFormats: toggleArrayItem(prev.workingFormats, item.key)
                           }))}
                         />
-                        <div className="flex items-center gap-1.5">
-                          <span className={cn("size-2 rounded-full", item.color)} />
-                          <span>{item.label}</span>
-                        </div>
+                        <span>{item.label}</span>
                       </label>
                     ))}
                   </div>
@@ -733,18 +792,13 @@ export function AdminUsersTable({
                   </div>
                 )
               })}
-
-              {/* ── Column 10: Actions ── */}
-              <th className="py-3 px-3 text-center text-xs font-semibold">
-                {t("actionsCol")}
-              </th>
             </tr>
           </thead>
 
           <tbody className="divide-y divide-border/20">
             {filteredUsers.length === 0 ? (
               <tr>
-                <td colSpan={10} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -773,172 +827,511 @@ export function AdminUsersTable({
                   departmentName = departmentKey;
                 }
 
+                const isAccordionOpen = activeAccordion?.userId === user.id;
+
                 return (
-                  <tr
-                    key={user.id}
-                    className={cn(
-                      "hover:bg-muted/40 transition-colors group",
-                      isSelected && "bg-primary/5 dark:bg-primary/10"
-                    )}
-                  >
-                    {/* ── Column 1: User ── */}
-                    <td className="py-3 px-3 text-start">
-                      <div className="flex items-center gap-2.5">
-                        <div className="relative size-9.5 rounded-full bg-primary/10 border border-border/40 shrink-0 flex items-center justify-center overflow-hidden">
-                          {user.avatar ? (
-                            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                          ) : (
+                  <React.Fragment key={user.id}>
+                    
+                    {/* ── 1. Main User Data Row ── */}
+                    <tr
+                      className={cn(
+                        "transition-colors group",
+                        isSelected ? "bg-primary/5 dark:bg-primary/10" : "hover:bg-muted/30"
+                      )}
+                    >
+                      {/* Column 1: User */}
+                      <td className="py-3 px-3 text-start">
+                        <div className="flex items-center gap-2.5">
+                          <div className="relative size-9 rounded-full bg-primary/10 border border-border/40 shrink-0 flex items-center justify-center overflow-hidden">
                             <span className="text-xs font-bold text-primary uppercase">{user.name[0]}</span>
-                          )}
-                          <span
-                            className={cn(
-                              "absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background",
-                              user.status === 'online' ? "bg-emerald-500" : "bg-slate-400"
-                            )}
-                          />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-xs text-foreground truncate max-w-[130px]">
-                              {user.name}
-                            </span>
-                            <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground shrink-0">
-                              #{user.id}
+                            <span
+                              className={cn(
+                                "absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background",
+                                user.status === 'online' ? "bg-emerald-500" : "bg-slate-400"
+                              )}
+                            />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-foreground truncate max-w-[130px]">
+                                {user.name}
+                              </span>
+                              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground shrink-0">
+                                #{user.id}
+                              </span>
+                            </div>
+                            <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+                              {user.role === 'admin' ? t("adminRole") : t("userRole")}
                             </span>
                           </div>
-                          <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
-                            {user.role === 'admin' ? t("adminRole") : t("userRole")}
+                        </div>
+                      </td>
+
+                      {/* Column 2: Department & Title */}
+                      <td className="py-3 px-3 text-start">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
+                            {departmentName}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                            {user.jobTitle || t("userRole")}
                           </span>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* ── Column 2: Department & Title ── */}
-                    <td className="py-3 px-3 text-start">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
-                          {departmentName}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
-                          {user.jobTitle || t("userRole")}
-                        </span>
-                      </div>
-                    </td>
-
-                    {/* ── Column 3: Contact ── */}
-                    <td className="py-3 px-3 text-start">
-                      <div className="flex flex-col gap-0.5 min-w-0 text-xs">
-                        {user.email ? (
-                          <a
-                            href={`mailto:${user.email}`}
-                            dir="ltr"
-                            className="text-primary hover:underline truncate max-w-[160px] flex items-center gap-1 font-medium"
-                          >
-                            <Mail className="size-3 shrink-0 text-muted-foreground" />
-                            <span className="truncate">{user.email}</span>
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                        {user.phone && (
-                          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                            <Phone className="size-2.5 shrink-0" />
-                            <span>{user.phone}</span>
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* ── Column 4: Projects ── */}
-                    <td className="py-3 px-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                        <FolderKanban className="size-3" />
-                        <span>{user.doneProjects || 0}</span>
-                      </span>
-                    </td>
-
-                    {/* ── Column 5: Experience ── */}
-                    <td className="py-3 px-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs">
-                        <Award className="size-3" />
-                        <span>350</span>
-                      </span>
-                    </td>
-
-                    {/* ── Column 6: Tenure ── */}
-                    <td className="py-3 px-3 text-center">
-                      <span className="text-xs font-medium text-foreground">
-                        {user.daysInCompany || 0} <span className="text-[10px] text-muted-foreground">{t("daysUnit")}</span>
-                      </span>
-                    </td>
-
-                    {/* ── Column 7: Salary ── */}
-                    <td className="py-3 px-3 text-center">
-                      <span className="font-mono text-xs font-bold text-foreground">
-                        {showSalaries 
-                          ? `$${(user.salary || 10000).toLocaleString()}` 
-                          : "••••••••"}
-                      </span>
-                    </td>
-
-                    {/* ── Column 8: Working Format ── */}
-                    <td className="py-3 px-3 text-center">
-                      <div className="flex flex-col items-center gap-1 w-26 mx-auto">
-                        <div className="w-full h-2 rounded-full overflow-hidden flex bg-muted/60">
-                          <div style={{ width: `${wf.office}%` }} className="bg-[#22c55e] h-full" title={`${t("office")}: ${wf.office}%`} />
-                          <div style={{ width: `${wf.factory}%` }} className="bg-[#3b82f6] h-full" title={`${t("factory")}: ${wf.factory}%`} />
-                          <div style={{ width: `${wf.mission}%` }} className="bg-[#f59e0b] h-full" title={`${t("mission")}: ${wf.mission}%`} />
-                          <div style={{ width: `${wf.leave}%` }} className="bg-[#94a3b8] h-full" title={`${t("leave")}: ${wf.leave}%`} />
+                      {/* Column 3: Contact */}
+                      <td className="py-3 px-3 text-start">
+                        <div className="flex flex-col gap-0.5 min-w-0 text-xs">
+                          {user.email ? (
+                            <a
+                              href={`mailto:${user.email}`}
+                              dir="ltr"
+                              className="text-primary hover:underline truncate max-w-[160px] flex items-center gap-1 font-medium"
+                            >
+                              <Mail className="size-3 shrink-0 text-muted-foreground" />
+                              <span className="truncate">{user.email}</span>
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                          {user.phone && (
+                            <span className="text-[11px] text-muted-foreground flex items-center gap-1" dir="ltr">
+                              <Phone className="size-2.5 shrink-0" />
+                              <span>{user.phone}</span>
+                            </span>
+                          )}
                         </div>
-                        <div className="flex items-center justify-between w-full text-[9px] text-muted-foreground font-medium">
-                          <span className="text-emerald-600 dark:text-emerald-400">{wf.office}%</span>
-                          <span className="text-blue-600 dark:text-blue-400">{wf.factory}%</span>
-                          <span className="text-amber-600 dark:text-amber-400">{wf.mission}%</span>
-                          <span>{wf.leave}%</span>
-                        </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* ── Column 9: Status ── */}
-                    <td className="py-3 px-3 text-center">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold",
-                        user.status === 'online'
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                          : "bg-slate-500/15 text-slate-700 dark:text-slate-400"
-                      )}>
+                      {/* Column 4: Projects */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                          <FolderKanban className="size-3" />
+                          <span>{user.doneProjects || 0}</span>
+                        </span>
+                      </td>
+
+                      {/* Column 5: Experience */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs">
+                          <Award className="size-3" />
+                          <span>350</span>
+                        </span>
+                      </td>
+
+                      {/* Column 6: Tenure */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="text-xs font-medium text-foreground">
+                          {user.daysInCompany || 0} <span className="text-[10px] text-muted-foreground">{t("daysUnit")}</span>
+                        </span>
+                      </td>
+
+                      {/* Column 7: Salary */}
+                      <td className="py-3 px-3 text-center">
+                        <span className="font-mono text-xs font-bold text-foreground">
+                          {showSalaries 
+                            ? `$${(user.salary || 10000).toLocaleString()}` 
+                            : "••••••••"}
+                        </span>
+                      </td>
+
+                      {/* Column 8: Working Format */}
+                      <td className="py-3 px-3 text-center">
+                        <div className="flex flex-col items-center gap-1 w-26 mx-auto">
+                          <div className="w-full h-2 rounded-full overflow-hidden flex bg-muted/60">
+                            <div style={{ width: `${wf.office}%` }} className="bg-[#22c55e] h-full" title={`${t("office")}: ${wf.office}%`} />
+                            <div style={{ width: `${wf.factory}%` }} className="bg-[#3b82f6] h-full" title={`${t("factory")}: ${wf.factory}%`} />
+                            <div style={{ width: `${wf.mission}%` }} className="bg-[#f59e0b] h-full" title={`${t("mission")}: ${wf.mission}%`} />
+                            <div style={{ width: `${wf.leave}%` }} className="bg-[#94a3b8] h-full" title={`${t("leave")}: ${wf.leave}%`} />
+                          </div>
+                          <div className="flex items-center justify-between w-full text-[9px] text-muted-foreground font-medium">
+                            <span className="text-emerald-600 dark:text-emerald-400">{wf.office}%</span>
+                            <span className="text-blue-600 dark:text-blue-400">{wf.factory}%</span>
+                            <span className="text-amber-600 dark:text-amber-400">{wf.mission}%</span>
+                            <span>{wf.leave}%</span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Column 9: Status */}
+                      <td className="py-3 px-3 text-center">
                         <span className={cn(
-                          "size-1.5 rounded-full",
-                          user.status === 'online' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
-                        )} />
-                        {user.status === 'online' ? t("online") : t("offline")}
-                      </span>
-                    </td>
+                          "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold",
+                          user.status === 'online'
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                            : "bg-slate-500/15 text-slate-700 dark:text-slate-400"
+                        )}>
+                          <span className={cn(
+                            "size-1.5 rounded-full",
+                            user.status === 'online' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                          )} />
+                          {user.status === 'online' ? t("online") : t("offline")}
+                        </span>
+                      </td>
+                    </tr>
 
-                    {/* ── Column 10: Actions ── */}
-                    <td className="py-3 px-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleSelectAndGoHome(user)}
-                          title={t("viewInDashboard")}
-                          className="size-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
-                        >
-                          <LayoutDashboard className="size-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleSelectAndGoConfig(user)}
-                          title={t("editUser")}
-                          className="size-8 rounded-lg hover:bg-muted transition-colors cursor-pointer text-muted-foreground hover:text-foreground"
-                        >
-                          <Settings2 className="size-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
+                    {/* ── 2. Slim Full-Width Action Strip Attached Directly Below the User Row ── */}
+                    <tr className={cn(
+                      "border-b border-border/40 transition-colors",
+                      isAccordionOpen
+                        ? "bg-primary/10 dark:bg-primary/20"
+                        : "bg-slate-100/60 dark:bg-slate-900/40 hover:bg-slate-200/50 dark:hover:bg-slate-800/50"
+                    )}>
+                      <td colSpan={9} className="py-1 px-3 sm:px-4">
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          
+                          {/* Left helper: User identifier summary */}
+                          <div className="flex items-center gap-2 text-[11px] text-muted-foreground min-w-0">
+                            <span className="font-semibold text-foreground/80 truncate">{user.name}</span>
+                            <span className="opacity-30">•</span>
+                            <span className="font-mono text-[10px] text-muted-foreground/70 shrink-0">#{user.id}</span>
+                            {user.email && (
+                              <>
+                                <span className="opacity-30 hidden md:inline">•</span>
+                                <span className="truncate hidden md:inline text-[11px]">{user.email}</span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Right: Integrated Action Icons */}
+                          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                            
+                            {/* 1. View User Details (مشاهده اطلاعات) */}
+                            <button
+                              type="button"
+                              onClick={() => toggleAccordion(user.id, 'view')}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                isAccordionOpen && activeAccordion?.type === 'view'
+                                  ? "bg-primary text-primary-foreground shadow-2xs font-semibold"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card"
+                              )}
+                              title={t("viewDetailsBtn")}
+                            >
+                              <Eye size={13} className="shrink-0" />
+                              <span className="hidden sm:inline">{t("viewDetailsBtn")}</span>
+                            </button>
+
+                            {/* 2. Change Password (تغییر رمز عبور) */}
+                            <button
+                              type="button"
+                              onClick={() => toggleAccordion(user.id, 'password')}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                isAccordionOpen && activeAccordion?.type === 'password'
+                                  ? "bg-amber-500 text-white shadow-2xs font-semibold"
+                                  : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-background/80 dark:hover:bg-card"
+                              )}
+                              title={t("changePassword")}
+                            >
+                              <KeyRound size={13} className="shrink-0" />
+                              <span className="hidden sm:inline">{t("changePassword")}</span>
+                            </button>
+
+                            {/* 3. Edit User Info (ویرایش مشخصات) */}
+                            <button
+                              type="button"
+                              onClick={() => toggleAccordion(user.id, 'edit')}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                isAccordionOpen && activeAccordion?.type === 'edit'
+                                  ? "bg-blue-600 text-white shadow-2xs font-semibold"
+                                  : "text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-background/80 dark:hover:bg-card"
+                              )}
+                              title={t("editUserInfo")}
+                            >
+                              <Edit2 size={13} className="shrink-0" />
+                              <span className="hidden sm:inline">{t("editUserInfo")}</span>
+                            </button>
+
+                            {/* 4. Open in Dashboard (مشاهده در داشبورد) */}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectAndGoHome(user)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                              title={t("viewInDashboard")}
+                            >
+                              <LayoutDashboard size={13} className="shrink-0" />
+                              <span className="hidden sm:inline">{t("viewInDashboard")}</span>
+                            </button>
+
+                            {/* 5. Go to Permissions & Full Config */}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectAndGoConfig(user)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors cursor-pointer"
+                              title={t("moduleAccess")}
+                            >
+                              <ShieldCheck size={13} className="shrink-0" />
+                              <span className="hidden md:inline">{t("moduleAccess")}</span>
+                            </button>
+
+                            {/* Close active accordion if open */}
+                            {isAccordionOpen && (
+                              <button
+                                type="button"
+                                onClick={() => setActiveAccordion(null)}
+                                className="size-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 cursor-pointer ms-0.5"
+                              >
+                                <X size={13} />
+                              </button>
+                            )}
+                          </div>
+
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* ── 3. Accordion Expandable Panel Underneath Row ── */}
+                    {isAccordionOpen && (
+                      <tr className="bg-background/95 dark:bg-card/95 border-b-2 border-primary/30 shadow-inner">
+                        <td colSpan={9} className="p-4 sm:p-5">
+                          <div className="animate-in fade-in-0 slide-in-from-top-1 duration-200">
+                            
+                            {/* ── Mode A: View Details ── */}
+                            {activeAccordion.type === 'view' && (
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                  <div className="flex items-center gap-2">
+                                    <Eye size={15} className="text-primary" />
+                                    <h4 className="text-xs font-bold text-foreground">
+                                      {t("applicantDetailsTitle")} - {user.name}
+                                    </h4>
+                                    <span className="text-[10px] font-mono bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                                      #{user.id}
+                                    </span>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveAccordion(null)}
+                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
+                                    <span className="text-[10px] text-muted-foreground font-medium">{t("nationalIdLabel")}</span>
+                                    <span className="font-bold text-foreground mt-0.5 fa-num">{user.nationalId || "0012345678"}</span>
+                                  </div>
+                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
+                                    <span className="text-[10px] text-muted-foreground font-medium">{t("phoneLabel")}</span>
+                                    <span className="font-bold text-foreground mt-0.5 fa-num" dir="ltr">{user.phone || "09120000000"}</span>
+                                  </div>
+                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
+                                    <span className="text-[10px] text-muted-foreground font-medium">{t("education")}</span>
+                                    <span className="font-bold text-foreground mt-0.5 truncate">{user.educationField || "مهندسی نرم افزار"}</span>
+                                  </div>
+                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
+                                    <span className="text-[10px] text-muted-foreground font-medium">{t("maritalStatus")} / {t("children")}</span>
+                                    <span className="font-bold text-foreground mt-0.5 fa-num">
+                                      {user.maritalStatus === 'married' ? t("married") : t("single")} ({user.childrenCount ?? 2} {t("child")})
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2 pt-1">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSelectAndGoHome(user)}
+                                    className="h-8 px-3 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer inline-flex items-center gap-1.5"
+                                  >
+                                    <LayoutDashboard size={13} />
+                                    <span>{t("viewInDashboard")}</span>
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── Mode B: Change Password ── */}
+                            {activeAccordion.type === 'password' && (
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                  <div className="flex items-center gap-2">
+                                    <KeyRound size={15} className="text-amber-500" />
+                                    <h4 className="text-xs font-bold text-foreground">
+                                      {t("changePassword")} - {user.name}
+                                    </h4>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveAccordion(null)}
+                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <div className="flex-1 min-w-[180px]">
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("newPassword")}
+                                    </label>
+                                    <Input
+                                      type="password"
+                                      value={newPassword}
+                                      onChange={(e) => setNewPassword(e.target.value)}
+                                      placeholder="••••••••"
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+
+                                  <div className="flex-1 min-w-[180px]">
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("confirmPassword")}
+                                    </label>
+                                    <Input
+                                      type="password"
+                                      value={confirmPassword}
+                                      onChange={(e) => setConfirmPassword(e.target.value)}
+                                      placeholder="••••••••"
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+
+                                  <div className="flex items-center gap-2 pt-5">
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleSavePassword(user.id)}
+                                      className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
+                                    >
+                                      {t("save")}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setActiveAccordion(null)}
+                                      className="h-8.5 px-3 rounded-xl text-xs text-muted-foreground cursor-pointer"
+                                    >
+                                      {t("cancel")}
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── Mode C: Quick Edit User Info ── */}
+                            {activeAccordion.type === 'edit' && (
+                              <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
+                                  <div className="flex items-center gap-2">
+                                    <Edit2 size={15} className="text-blue-500" />
+                                    <h4 className="text-xs font-bold text-foreground">
+                                      {t("editUserInfo")} - {user.name}
+                                    </h4>
+                                  </div>
+                                  <button 
+                                    onClick={() => setActiveAccordion(null)}
+                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
+                                  >
+                                    <X size={14} />
+                                  </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("name")}
+                                    </label>
+                                    <Input
+                                      value={editFormData.name || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("email")}
+                                    </label>
+                                    <Input
+                                      value={editFormData.email || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                                      dir="ltr"
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("phoneLabel")}
+                                    </label>
+                                    <Input
+                                      value={editFormData.phone || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                      dir="ltr"
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("department")}
+                                    </label>
+                                    <select
+                                      value={editFormData.department || "engineering"}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, department: e.target.value }))}
+                                      className="h-8.5 w-full text-xs bg-background border border-border/50 rounded-xl px-2.5 outline-none focus:ring-1 focus:ring-primary"
+                                    >
+                                      {uniqueDepartments.map(dep => (
+                                        <option key={dep} value={dep}>
+                                          {t(`departments.${dep}`) || dep}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("role")}
+                                    </label>
+                                    <select
+                                      value={editFormData.role || "user"}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, role: e.target.value as any }))}
+                                      className="h-8.5 w-full text-xs bg-background border border-border/50 rounded-xl px-2.5 outline-none focus:ring-1 focus:ring-primary"
+                                    >
+                                      <option value="user">{t("userRole")}</option>
+                                      <option value="admin">{t("adminRole")}</option>
+                                    </select>
+                                  </div>
+
+                                  <div>
+                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
+                                      {t("jobTitle")}
+                                    </label>
+                                    <Input
+                                      value={editFormData.jobTitle || ""}
+                                      onChange={(e) => setEditFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setActiveAccordion(null)}
+                                    className="h-8.5 px-3 rounded-xl text-xs text-muted-foreground cursor-pointer"
+                                  >
+                                    {t("cancel")}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleSaveEdit(user.id)}
+                                    className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                                  >
+                                    {t("save")}
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                  </React.Fragment>
                 );
               })
             )}
