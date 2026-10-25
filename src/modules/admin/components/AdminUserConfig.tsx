@@ -30,9 +30,11 @@ import {
   DollarSign,
   Building2,
   CheckCircle2,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
+import { getCompanyFromEmail } from "../utils/company";
 
 export interface AdminUserConfigProps {
   selectedUser?: User | null;
@@ -117,6 +119,8 @@ export function AdminUserConfig({
   const [activeSegment, setActiveSegment] = useState<SegmentId>("identity");
   const [openSegment, setOpenSegment] = useState<SegmentId | null>("identity");
   const [confirmedSegments, setConfirmedSegments] = useState<Set<SegmentId>>(new Set());
+
+  const detectedCompany = getCompanyFromEmail(form.email);
 
   const fullNameFa = `${form.firstNameFa.trim()} ${form.lastNameFa.trim()}`.trim();
   const fullNameEn = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
@@ -276,6 +280,8 @@ export function AdminUserConfig({
       phone: form.phone.trim(),
       nationalId: form.nationalId.trim(),
       department: form.department,
+      company: isRtl ? detectedCompany.nameFa : detectedCompany.nameEn,
+      companyId: detectedCompany.id,
       role: form.role,
       jobTitle: form.jobTitle.trim(),
       salary: Number(form.salary) || 10000,
@@ -729,6 +735,41 @@ export function AdminUserConfig({
                         {/* ========================================= */}
                         {seg.id === "org" && (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Auto-detected & Locked Company Field */}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <Building2 className="size-3.5 text-primary" />
+                                  <span>{t("company")}</span>
+                                </Label>
+                                <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-full border border-border/40">
+                                  <Lock className="size-2.5 text-amber-500" />
+                                  <span>{t("companyAutoDetected")}</span>
+                                </span>
+                              </div>
+                              <div className="relative">
+                                <Building2
+                                  size={18}
+                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-primary pointer-events-none"
+                                />
+                                <Input
+                                  readOnly
+                                  disabled
+                                  value={isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}
+                                  className={cn(
+                                    "ps-10 pe-10 h-11 border rounded-xl text-sm font-bold cursor-not-allowed select-none",
+                                    detectedCompany.id === "npceram"
+                                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                      : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
+                                  )}
+                                />
+                                <Lock
+                                  size={16}
+                                  className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none"
+                                />
+                              </div>
+                            </div>
+
                             <div className="flex flex-col gap-2">
                               <Label className="text-xs font-semibold text-foreground">
                                 {t("department")}
@@ -1151,6 +1192,17 @@ export function AdminUserConfig({
                     )}
                   >
                     {form.role === "admin" ? t("roleAdmin") : t("roleUser")}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border",
+                      detectedCompany.id === "npceram"
+                        ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                        : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                    )}
+                  >
+                    <Building2 className="size-2.5" />
+                    <span>{isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}</span>
                   </span>
                   <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/40">
                     {t(`departments.${form.department}`)}

@@ -420,6 +420,15 @@
     "relationshipSpouse": "Spouse",
     "relationshipChild": "Child",
     "relationshipParent": "Parent",
-    "relationshipOther": "Other"
+    "relationshipOther": "Other",
+    "company": "Company",
+    "companyLabel": "Corporate Company",
+    "companyAutoDetected": "Auto-detected from email domain",
+    "companyLockedDesc": "This field is locked and determined by the corporate email domain",
+    "companyEuroslot": "Euroslot",
+    "companyNpceram": "Nano Palaesh",
+    "allCompanies": "All Companies",
+    "filterByCompany": "Filter by Company",
+    "companyCol": "Company"
   }
 }

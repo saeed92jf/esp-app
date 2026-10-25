@@ -34,6 +34,8 @@ export interface User {
   workActivity?: { day: number; hour: number; value: number }[];
   modulesAccess?: UserModuleAccess[];
   department?: string;
+  company?: string;
+  companyId?: 'euroslot' | 'npceram' | string;
   manager?: string;
   education?: string;
   educationDegree?: string;
@@ -75,6 +77,8 @@ export interface PendingRequest {
   phone?: string;
   nationalId?: string;
   department?: string;
+  company?: string;
+  companyId?: 'euroslot' | 'npceram' | string;
   jobTitle?: string;
   requestedAt: string;
   status: RequestStatus;

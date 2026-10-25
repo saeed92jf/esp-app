@@ -39,11 +39,13 @@ import {
   HeartHandshake,
   Star,
   Users,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
 import { PendingRequest, RequestStatus } from "../types/admin.types";
+import { getCompanyFromEmail } from "../utils/company";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -339,8 +341,15 @@ export function AdminRequests({
       setIsSaving(true);
       setCompletedSteps((prev) => new Set(prev).add("education"));
 
+      const reqCompany = getCompanyFromEmail(reviewData.email);
+      const dataToSave: PendingRequest = {
+        ...reviewData,
+        company: isRtl ? reqCompany.nameFa : reqCompany.nameEn,
+        companyId: reqCompany.id,
+      };
+
       // 1. First save any current modifications to request profile
-      await api.admin.updateRequest(reviewData.id, reviewData);
+      await api.admin.updateRequest(reviewData.id, dataToSave);
 
       // 2. Advance stage based on current workflow status
       if (reviewData.status === "pending") {
@@ -676,6 +685,46 @@ export function AdminRequests({
               </button>
             </div>
 
+            {/* Company / Domain Filter Tabs */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/60 border border-border/40 text-[11px] font-medium">
+              <button
+                type="button"
+                onClick={() => setDomainFilter("all")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  domainFilter === "all"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("allCompanies")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDomainFilter("euroslotpars.com")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  domainFilter === "euroslotpars.com"
+                    ? "bg-sky-600 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("companyEuroslot")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDomainFilter("npceram.com")}
+                className={cn(
+                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
+                  domainFilter === "npceram.com"
+                    ? "bg-amber-600 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("companyNpceram")}
+              </button>
+            </div>
+
             {/* Requests List Cards */}
             <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
               {filteredRequests.length === 0 ? (
@@ -746,8 +795,26 @@ export function AdminRequests({
                       </div>
 
                       <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30 fa-num">
-                        <span>{req.department ? t(`departments.${req.department}`) : "---"}</span>
-                        <span>{new Date(req.requestedAt).toLocaleDateString("fa-IR")}</span>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="truncate max-w-[110px]">{req.department ? t(`departments.${req.department}`) : "---"}</span>
+                          {(() => {
+                            const comp = getCompanyFromEmail(req.email);
+                            return (
+                              <span
+                                className={cn(
+                                  "px-1.5 py-0.2 rounded font-bold text-[9px] border shrink-0 flex items-center gap-1",
+                                  comp.id === "npceram"
+                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                                )}
+                              >
+                                <Building2 className="size-2.5" />
+                                <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
+                              </span>
+                            );
+                          })()}
+                        </div>
+                        <span className="shrink-0">{new Date(req.requestedAt).toLocaleDateString("fa-IR")}</span>
                       </div>
                     </div>
                   );
@@ -791,6 +858,22 @@ export function AdminRequests({
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20">
                           {reviewData.id}
                         </span>
+                        {(() => {
+                          const comp = getCompanyFromEmail(reviewData.email);
+                          return (
+                            <span
+                              className={cn(
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border",
+                                comp.id === "npceram"
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                  : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                              )}
+                            >
+                              <Building2 className="size-2.5" />
+                              <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
+                            </span>
+                          );
+                        })()}
                       </div>
                       <span
                         className="text-xs text-muted-foreground truncate mt-0.5"
@@ -1518,6 +1601,46 @@ export function AdminRequests({
                               {/* ========================================= */}
                               {seg.id === "org" && (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  {/* Auto-detected & Locked Company Field */}
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                        <Building2 className="size-3.5 text-primary" />
+                                        <span>{t("company")}</span>
+                                      </Label>
+                                      <span className="text-[10px] font-medium text-muted-foreground flex items-center gap-1 bg-muted/60 px-2 py-0.5 rounded-full border border-border/40">
+                                        <Lock className="size-2.5 text-amber-500" />
+                                        <span>{t("companyAutoDetected")}</span>
+                                      </span>
+                                    </div>
+                                    <div className="relative">
+                                      <Building2
+                                        size={18}
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-primary pointer-events-none"
+                                      />
+                                      {(() => {
+                                        const comp = getCompanyFromEmail(reviewData.email);
+                                        return (
+                                          <Input
+                                            readOnly
+                                            disabled
+                                            value={isRtl ? comp.nameFa : comp.nameEn}
+                                            className={cn(
+                                              "ps-10 pe-10 h-11 border rounded-xl text-sm font-bold cursor-not-allowed select-none",
+                                              comp.id === "npceram"
+                                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                                : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
+                                            )}
+                                          />
+                                        );
+                                      })()}
+                                      <Lock
+                                        size={16}
+                                        className="absolute end-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none"
+                                      />
+                                    </div>
+                                  </div>
+
                                   <div className="flex flex-col gap-2">
                                     <Label className="text-xs font-semibold text-foreground">
                                       {t("department")}

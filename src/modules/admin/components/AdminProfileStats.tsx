@@ -3,15 +3,17 @@
 import React, { useState } from "react";
 import { 
   Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, 
-  Briefcase, FolderKanban, Award, Eye, EyeOff, Calendar
+  Briefcase, FolderKanban, Award, Eye, EyeOff, Calendar, Building2
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
 import { AnimatedNumber } from "./AdminTasksTime";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
 import { PRIMARY_COLORS } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { getCompanyFromEmail } from "../utils/company";
+import { cn } from "@/lib/utils";
 
 interface AdminProfileStatsProps {
   selectedUser: User;
@@ -19,6 +21,9 @@ interface AdminProfileStatsProps {
 
 export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const companyInfo = getCompanyFromEmail(selectedUser.email);
   const { colorId } = usePrimaryColor();
   const { user: currentUser } = useAuth();
 
@@ -109,18 +114,32 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
           {selectedUser.name}
         </h2>
 
-        {/* Role Badge */}
-        {isAdmin ? (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 mt-1.5 shadow-2xs">
-            <ShieldCheck size={12} className="stroke-[2.5]" />
-            <span>{t("roleAdmin")}</span>
+        {/* Role & Company Badges */}
+        <div className="flex items-center justify-center gap-1.5 flex-wrap mt-1.5">
+          {isAdmin ? (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-2xs">
+              <ShieldCheck size={12} className="stroke-[2.5]" />
+              <span>{t("roleAdmin")}</span>
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shadow-2xs">
+              <UserCheck size={12} className="stroke-[2.5]" />
+              <span className="truncate max-w-[180px]">{selectedUser.jobTitle || t("roleUser")}</span>
+            </div>
+          )}
+
+          <div
+            className={cn(
+              "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold border shadow-2xs",
+              companyInfo.id === "npceram"
+                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
+                : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
+            )}
+          >
+            <Building2 size={11} className="stroke-[2]" />
+            <span>{isRtl ? companyInfo.nameFa : companyInfo.nameEn}</span>
           </div>
-        ) : (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 mt-1.5 shadow-2xs">
-            <UserCheck size={12} className="stroke-[2.5]" />
-            <span className="truncate max-w-[180px]">{selectedUser.jobTitle || t("roleUser")}</span>
-          </div>
-        )}
+        </div>
 
         {/* Contact Links */}
         <div className="flex flex-col items-center gap-1 mt-3 w-full">

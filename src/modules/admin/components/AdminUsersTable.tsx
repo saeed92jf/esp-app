@@ -13,11 +13,13 @@ import {
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck,
-  Building, GraduationCap, Calendar, Users, ExternalLink
+  Building, GraduationCap, Calendar, Users, ExternalLink,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { NAVIGATION } from "@/config/navigation";
+import { getCompanyFromEmail } from "../utils/company";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -34,6 +36,9 @@ interface ColumnFilterState {
 
   // Column 2: Department
   departments: string[];
+
+  // Column: Company
+  companies: string[];
 
   // Column 3: Contact
   hasEmailOnly: boolean;
@@ -59,6 +64,7 @@ const initialFilters: ColumnFilterState = {
   userRoles: [],
   userNameQuery: "",
   departments: [],
+  companies: [],
   hasEmailOnly: false,
   hasPhoneOnly: false,
   projectRanges: [],
@@ -210,6 +216,7 @@ export function AdminUsersTable({
     let count = 0;
     if (colFilters.userRoles.length > 0 || colFilters.userNameQuery.trim().length > 0) count++;
     if (colFilters.departments.length > 0) count++;
+    if (colFilters.companies.length > 0) count++;
     if (colFilters.hasEmailOnly || colFilters.hasPhoneOnly) count++;
     if (colFilters.projectRanges.length > 0) count++;
     if (colFilters.tenureRanges.length > 0) count++;
@@ -236,7 +243,9 @@ export function AdminUsersTable({
         const matchTitle = user.jobTitle?.toLowerCase().includes(q);
         const matchDept = user.department?.toLowerCase().includes(q);
         const matchPhone = user.phone?.includes(q);
-        if (!matchName && !matchEmail && !matchId && !matchTitle && !matchDept && !matchPhone) {
+        const userComp = getCompanyFromEmail(user.email);
+        const matchCompany = userComp.nameFa.toLowerCase().includes(q) || userComp.nameEn.toLowerCase().includes(q) || userComp.domain.toLowerCase().includes(q);
+        if (!matchName && !matchEmail && !matchId && !matchTitle && !matchDept && !matchPhone && !matchCompany) {
           return false;
         }
       }
@@ -256,6 +265,12 @@ export function AdminUsersTable({
       if (colFilters.departments.length > 0) {
         const dep = user.department || 'engineering';
         if (!colFilters.departments.includes(dep)) return false;
+      }
+
+      // Column: Company
+      if (colFilters.companies.length > 0) {
+        const comp = getCompanyFromEmail(user.email);
+        if (!colFilters.companies.includes(comp.id)) return false;
       }
 
       // 3. Column 3: Contact Channels
@@ -318,6 +333,9 @@ export function AdminUsersTable({
       if (sortState.field === 'id') {
         valA = parseInt(a.id) || 0;
         valB = parseInt(b.id) || 0;
+      } else if (sortState.field === 'company') {
+        valA = getCompanyFromEmail(a.email).nameFa;
+        valB = getCompanyFromEmail(b.email).nameFa;
       } else if (sortState.field === 'primaryFormat') {
         const wfA = a.workingFormat || { office: 0, factory: 0, mission: 0, leave: 0 };
         const wfB = b.workingFormat || { office: 0, factory: 0, mission: 0, leave: 0 };
@@ -635,6 +653,54 @@ export function AdminUsersTable({
               </button>
             )}
           </div>
+
+          {/* Quick Company Filters */}
+          <div className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-background/80 dark:bg-card/80 border border-border/50 text-[11px] font-medium shrink-0">
+            <button
+              type="button"
+              onClick={() => setColFilters(prev => ({ ...prev, companies: [] }))}
+              className={cn(
+                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
+                colFilters.companies.length === 0
+                  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("allCompanies")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setColFilters(prev => ({
+                ...prev,
+                companies: prev.companies.length === 1 && prev.companies[0] === "euroslot" ? [] : ["euroslot"]
+              }))}
+              className={cn(
+                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
+                colFilters.companies.includes("euroslot") && colFilters.companies.length === 1
+                  ? "bg-sky-600 text-white font-bold shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Building2 className="size-3" />
+              <span>{t("companyEuroslot")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setColFilters(prev => ({
+                ...prev,
+                companies: prev.companies.length === 1 && prev.companies[0] === "npceram" ? [] : ["npceram"]
+              }))}
+              className={cn(
+                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
+                colFilters.companies.includes("npceram") && colFilters.companies.length === 1
+                  ? "bg-amber-600 text-white font-bold shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Building2 className="size-3" />
+              <span>{t("companyNpceram")}</span>
+            </button>
+          </div>
         </div>
 
         {/* Right Side: Filters Clear & Salary Masking */}
@@ -750,6 +816,35 @@ export function AdminUsersTable({
                         </label>
                       );
                     })}
+                  </div>
+                )
+              })}
+
+              {/* ── Column: Company (شرکت) ── */}
+              {renderExcelHeader({
+                title: t("companyCol"),
+                field: "company",
+                align: "start",
+                isFiltered: colFilters.companies.length > 0,
+                onClear: () => setColFilters(prev => ({ ...prev, companies: [] })),
+                children: (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterByCompany")}</span>
+                    {[
+                      { id: "euroslot", label: isRtl ? "یورو اسلات" : "Euroslot" },
+                      { id: "npceram", label: isRtl ? "نانو پالایش" : "Nano Palaesh" }
+                    ].map((comp) => (
+                      <label key={comp.id} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
+                        <Checkbox
+                          checked={colFilters.companies.includes(comp.id)}
+                          onCheckedChange={() => setColFilters(prev => ({
+                            ...prev,
+                            companies: toggleArrayItem(prev.companies, comp.id)
+                          }))}
+                        />
+                        <span className="text-xs">{comp.label}</span>
+                      </label>
+                    ))}
                   </div>
                 )
               })}
@@ -1087,6 +1182,26 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
+                      {/* Column: Company (شرکت) */}
+                      <td className="py-3 px-3 text-start">
+                        {(() => {
+                          const comp = getCompanyFromEmail(user.email);
+                          return (
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-2xs",
+                                comp.id === "npceram"
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
+                                  : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
+                              )}
+                            >
+                              <Building2 className="size-3 shrink-0" />
+                              <span className="truncate max-w-[120px]">{isRtl ? comp.nameFa : comp.nameEn}</span>
+                            </span>
+                          );
+                        })()}
+                      </td>
+
                       {/* Column 3: Contact */}
                       <td className="py-3 px-3 text-start">
                         <div className="flex flex-col gap-0.5 min-w-0 text-xs">
@@ -1181,7 +1296,7 @@ export function AdminUsersTable({
 
                     {/* ── 2. Paper Pull-out & Folder Tab (سمت چپ در فارسی، راست در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
-                      <td colSpan={9} className="p-0 border-0">
+                      <td colSpan={10} className="p-0 border-0">
                         <div 
                           className={cn(
                             "w-full flex flex-col px-3 sm:px-4 relative",
@@ -1222,7 +1337,28 @@ export function AdminUsersTable({
                                   </button>
                                 </div>
 
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
+                                    <span className="text-[10px] text-muted-foreground font-medium">{t("company")}</span>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <Building2 size={13} className="text-primary shrink-0" />
+                                      {(() => {
+                                        const comp = getCompanyFromEmail(user.email);
+                                        return (
+                                          <span
+                                            className={cn(
+                                              "font-bold text-xs truncate px-1.5 py-0.5 rounded",
+                                              comp.id === "npceram"
+                                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                                                : "bg-sky-500/10 text-sky-700 dark:text-sky-300"
+                                            )}
+                                          >
+                                            {isRtl ? comp.nameFa : comp.nameEn}
+                                          </span>
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
                                   <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
                                     <span className="text-[10px] text-muted-foreground font-medium">{t("nationalIdLabel")}</span>
                                     <span className="font-bold text-foreground mt-0.5 fa-num">{user.nationalId || "0012345678"}</span>

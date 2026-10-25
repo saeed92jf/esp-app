@@ -420,6 +420,15 @@
     "relationshipSpouse": "همسر",
     "relationshipChild": "فرزند",
     "relationshipParent": "والدین",
-    "relationshipOther": "سایر"
+    "relationshipOther": "سایر",
+    "company": "شرکت",
+    "companyLabel": "شرکت سازمانی",
+    "companyAutoDetected": "تشخیص خودکار از روی دامنه ایمیل",
+    "companyLockedDesc": "این فیلد بر اساس دامنه ایمیل پرسنلی قفل و تعیین شده است",
+    "companyEuroslot": "یورو اسلات",
+    "companyNpceram": "نانو پالایش",
+    "allCompanies": "همه شرکت‌ها",
+    "filterByCompany": "فیلتر بر اساس شرکت",
+    "companyCol": "شرکت"
   }
 }
