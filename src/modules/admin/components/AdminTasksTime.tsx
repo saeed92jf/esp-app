@@ -14,12 +14,19 @@ import { Link } from "@/i18n/navigation";
 import { User } from "../types/admin.types";
 import { tasksService } from "@/modules/tasks/services";
 import { TaskItem } from "@/modules/tasks/types/tasks.types";
+import { AdminActivities } from "./AdminActivities";
+import { AdminHeatmapModules } from "./AdminHeatmapModules";
 
 interface AdminTasksTimeProps {
   selectedUser: User | null;
   users: User[];
   setUsers: (u: User[]) => void;
   setSelectedUser: (u: User) => void;
+  availableModules?: any[];
+  tMenu?: any;
+  handleToggleModuleAccess?: (moduleId: string, checked: boolean) => void;
+  handleToggleAllModulesAccess?: (checked: boolean) => void;
+  onNavigateToAccess?: () => void;
 }
 
 export const AnimatedNumber = ({ value }: { value: number }) => {
@@ -62,7 +69,17 @@ export const AnimatedNumber = ({ value }: { value: number }) => {
   return <>{displayValue}</>;
 };
 
-export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser }: AdminTasksTimeProps) {
+export function AdminTasksTime({ 
+  selectedUser, 
+  users, 
+  setUsers, 
+  setSelectedUser,
+  availableModules = [],
+  tMenu,
+  handleToggleModuleAccess = () => {},
+  handleToggleAllModulesAccess = () => {},
+  onNavigateToAccess
+}: AdminTasksTimeProps) {
   const t = useTranslations("Admin");
   
   const [animate, setAnimate] = useState(false);
@@ -376,11 +393,11 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
         </div>
       </div>
 
-      {/* ── Row 1: Working Format & Skills as 2 Distinct Modules Side-by-Side ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 shrink-0">
+      {/* ── Virtual Grid Row 1: Working Format (col 1), Skills (col 2), Activities (col 3) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 shrink-0">
         
         {/* Module A: Working Format (فرمت کاری) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col justify-between shadow-2xs">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col justify-between shadow-2xs h-[300px] col-span-1">
           <div className="flex items-center justify-between mb-2">
             <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground">{t("workingFormat")}</h3>
             <span className="text-[11px] font-medium text-muted-foreground">
@@ -389,8 +406,8 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
           </div>
 
           {/* Donut Chart */}
-          <div className="w-full relative min-h-[160px] max-h-[190px] my-auto flex items-center justify-center">
-            <svg viewBox="0 0 200 200" className="w-full h-full max-w-[190px] max-h-[190px] drop-shadow-xs">
+          <div className="w-full relative min-h-[140px] max-h-[165px] my-auto flex items-center justify-center">
+            <svg viewBox="0 0 200 200" className="w-full h-full max-w-[165px] max-h-[165px] drop-shadow-xs">
               {rings.map((ring, index) => {
                 const radius = 55 + ((rings.length - 1 - index) * 13);
                 const circumference = 2 * Math.PI * radius;
@@ -419,7 +436,7 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
               })}
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold text-foreground fa-num">
+              <span className="text-xl sm:text-2xl font-bold text-foreground fa-num">
                 <AnimatedNumber value={selectedUser?.daysInCompany || 0} />
               </span>
               <span className="text-[10px] text-muted-foreground font-medium">{t("daysLabel")}</span>
@@ -427,7 +444,7 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
           </div>
 
           {/* Legend Grid */}
-          <div className="grid grid-cols-2 gap-x-3 gap-y-2 mt-3 px-1">
+          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-2 px-0.5">
             {([
               { key: "office", color: "bg-[#22c55e]" },
               { key: "factory", color: "bg-[#3b82f6]" },
@@ -452,8 +469,8 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
         </div>
 
         {/* Module B: Skills as a Standalone Module (مهارت‌ها) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col justify-between shadow-2xs">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col justify-between shadow-2xs h-[300px] col-span-1">
+          <div className="flex items-center justify-between mb-3 shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground">{t("skillsTitle")}</h3>
               <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
@@ -463,16 +480,16 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
             <Sparkles size={16} className="text-muted-foreground opacity-60" />
           </div>
 
-          <div className="flex flex-col gap-3.5 flex-1 justify-center py-1">
+          <div className="flex flex-col gap-2.5 flex-1 justify-center py-1 overflow-hidden">
             {skillsToRender.map((skill, idx) => {
               const details = getSkillDetails(skill.rate);
               return (
-                <div key={idx} className="flex flex-col gap-1.5 p-2 rounded-xl bg-background/40 border border-border/30">
+                <div key={idx} className="flex flex-col gap-1 p-2 rounded-xl bg-background/40 border border-border/30">
                   <div className="flex justify-between items-center text-[12px] font-medium">
-                    <span className="text-foreground font-semibold truncate">{skill.name}</span>
-                    <span className="text-[11px] font-bold text-muted-foreground">{details.label}</span>
+                    <span className="text-foreground font-semibold truncate text-[11px] sm:text-xs">{skill.name}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground">{details.label}</span>
                   </div>
-                  <div className="h-2 w-full bg-border/40 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-border/40 rounded-full overflow-hidden">
                     <div 
                       className={`h-full rounded-full ${details.gradient}`} 
                       style={{ 
@@ -486,75 +503,95 @@ export function AdminTasksTime({ selectedUser, users, setUsers, setSelectedUser 
             })}
           </div>
         </div>
+
+        {/* Module C: Activities (فعالیت‌ها - متناظر و هم‌سطح با دو باکس قبلی) */}
+        <div className="col-span-1 h-[300px]">
+          <AdminActivities selectedUser={selectedUser} />
+        </div>
       </div>
 
-      {/* ── Row 2: Urgent & Overdue Tasks Full-Width Module (Flex to bottom of page) ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col flex-1 min-h-[220px] shadow-2xs">
-        <div className="flex items-center justify-between mb-3 px-1 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-            <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
-              {t("urgentAndOverdueTasks")}
-            </h3>
-            <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
-              {displayTasks.length}
-            </span>
+      {/* ── Virtual Grid Row 2: Urgent Tasks (col 1-2), Module Access (col 3) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 flex-1 min-h-[220px]">
+        {/* Module D: Urgent & Overdue Tasks (تسک‌های فوری و معوق - اختصاص ۲ ستون) */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-2 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col h-full min-h-0 shadow-2xs">
+          <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+              <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
+                {t("urgentAndOverdueTasks")}
+              </h3>
+              <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
+                {displayTasks.length}
+              </span>
+            </div>
+
+            <Link
+              href="/dashboard/tasks"
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
+            >
+              <span>{t("viewAllTasks")}</span>
+              <ExternalLink size={12} className="rtl:rotate-180 shrink-0" />
+            </Link>
           </div>
 
-          <Link
-            href="/dashboard/tasks"
-            className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
-          >
-            <span>{t("viewAllTasks")}</span>
-            <ExternalLink size={12} className="rtl:rotate-180 shrink-0" />
-          </Link>
+          <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+            {displayTasks.length > 0 ? (
+              displayTasks.map(task => {
+                const isUrgent = task.priority === 'urgent';
+                return (
+                  <Link
+                    key={task.id}
+                    href="/dashboard/tasks"
+                    className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/30 transition-all group block text-start cursor-pointer shadow-2xs"
+                  >
+                    <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {isUrgent ? (
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+                            {t("urgentBadge")}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
+                            {t("overdueBadge")}
+                          </span>
+                        )}
+                        {task.category && (
+                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
+                            {task.category}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[12px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                        {task.title}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium shrink-0 fa-num">
+                      <Clock size={12} className="opacity-70" />
+                      <span>{task.timelineDate || task.dueDate || t("todayDate")}</span>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-60">
+                <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
+                <p className="text-xs font-medium">{t("noUrgentOverdueTasks")}</p>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-          {displayTasks.length > 0 ? (
-            displayTasks.map(task => {
-              const isUrgent = task.priority === 'urgent';
-              return (
-                <Link
-                  key={task.id}
-                  href="/dashboard/tasks"
-                  className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/30 transition-all group block text-start cursor-pointer shadow-2xs"
-                >
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      {isUrgent ? (
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
-                          {t("urgentBadge")}
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
-                          {t("overdueBadge")}
-                        </span>
-                      )}
-                      {task.category && (
-                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
-                          {task.category}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[12px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                      {task.title}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium shrink-0 fa-num">
-                    <Clock size={12} className="opacity-70" />
-                    <span>{task.timelineDate || task.dueDate || t("todayDate")}</span>
-                  </div>
-                </Link>
-              );
-            })
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-60">
-              <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
-              <p className="text-xs font-medium">{t("noUrgentOverdueTasks")}</p>
-            </div>
-          )}
+        {/* Module E: Module Access (دسترسی‌ها - اختصاص ۱ ستون هم‌تراز با تسک‌ها) */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-1 flex flex-col h-full min-h-0">
+          <AdminHeatmapModules 
+            selectedUser={selectedUser}
+            availableModules={availableModules}
+            tMenu={tMenu}
+            handleToggleModuleAccess={handleToggleModuleAccess}
+            handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+            onNavigateToAccess={onNavigateToAccess}
+          />
         </div>
       </div>
 

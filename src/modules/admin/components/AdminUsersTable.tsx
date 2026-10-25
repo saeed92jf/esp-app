@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,10 +12,11 @@ import {
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck,
-  Building, GraduationCap, Calendar, Users
+  Building, GraduationCap, Calendar, Users, ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { NAVIGATION } from "@/config/navigation";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -74,6 +75,9 @@ export function AdminUsersTable({
   setActiveTab
 }: AdminUsersTableProps) {
   const t = useTranslations("Admin");
+  const tMenu = useTranslations("Menu");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
   // Global search input
   const [globalSearch, setGlobalSearch] = useState("");
@@ -93,7 +97,7 @@ export function AdminUsersTable({
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
     userId: string;
-    type: 'view' | 'password' | 'edit';
+    type: 'view' | 'password' | 'edit' | 'access';
   } | null>(null);
 
   // State for Password Change accordion
@@ -268,7 +272,7 @@ export function AdminUsersTable({
   };
 
   // Accordion Toggle
-  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit') => {
+  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit' | 'access') => {
     if (activeAccordion?.userId === userId && activeAccordion?.type === type) {
       setActiveAccordion(null);
     } else {
@@ -289,6 +293,57 @@ export function AdminUsersTable({
         }
       }
     }
+  };
+
+  // Toggle user module access directly from table accordion
+  const handleToggleUserAccess = (userId: string, moduleId: string, checked: boolean) => {
+    const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
+    const updatedUsers = users.map(u => {
+      if (u.id !== userId) return u;
+      const updatedUser = { ...u };
+      const currentList = updatedUser.modulesAccess ? [...updatedUser.modulesAccess] : [];
+
+      const setItemAccess = (id: string, hasAccess: boolean) => {
+        const idx = currentList.findIndex(m => m.moduleId === id);
+        if (idx !== -1) {
+          currentList[idx] = { ...currentList[idx], hasAccess };
+        } else {
+          currentList.push({ moduleId: id, hasAccess, accessLevel: 'read', usagePercentage: 0, hoursSpent: '00:00:00' });
+        }
+      };
+
+      const parent = availableModules.find(m => m.id === moduleId);
+      if (parent) {
+        setItemAccess(moduleId, checked);
+        parent.items?.forEach((item: any) => {
+          setItemAccess(item.href, checked);
+        });
+      } else {
+        setItemAccess(moduleId, checked);
+        const parentGroup = availableModules.find(m => m.items?.some((i: any) => i.href === moduleId));
+        if (parentGroup) {
+          if (checked) {
+            setItemAccess(parentGroup.id, true);
+          } else {
+            const anyItemChecked = parentGroup.items?.some((item: any) => {
+              const ex = currentList.find(m => m.moduleId === item.href);
+              return ex ? ex.hasAccess : false;
+            });
+            if (!anyItemChecked) {
+              setItemAccess(parentGroup.id, false);
+            }
+          }
+        }
+      }
+
+      updatedUser.modulesAccess = currentList;
+      if (selectedUser?.id === userId) {
+        setSelectedUser(updatedUser);
+      }
+      return updatedUser;
+    });
+    setUsers(updatedUsers);
+    toast.success(t("accessUpdated"));
   };
 
   // Save Changed Password
@@ -342,7 +397,7 @@ export function AdminUsersTable({
 
     return (
       <th className={cn(
-        "py-3.5 px-3 text-xs font-bold select-none group text-slate-800 dark:text-slate-100 first:rounded-s-xl last:rounded-e-xl",
+        "py-3.5 px-3 text-xs font-bold select-none group text-slate-800 dark:text-slate-100 first:rounded-ts-2xl first:rounded-bs-none last:rounded-te-2xl last:rounded-be-none rounded-b-none",
         align === "start" ? "text-start" : "text-center",
         isFiltered && "bg-primary/10 text-primary"
       )}>
@@ -532,7 +587,7 @@ export function AdminUsersTable({
         <table className="w-full text-sm text-start border-collapse min-w-[960px]">
           
           {/* Distinct, High-Contrast Table Header */}
-          <thead className="bg-slate-200/90 dark:bg-slate-800/95 sticky top-0 z-10 backdrop-blur-md border-b-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold shadow-xs">
+          <thead className="bg-slate-200/90 dark:bg-slate-800/95 sticky top-0 z-10 backdrop-blur-md border-b-2 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold shadow-xs rounded-t-2xl rounded-b-none">
             <tr>
               {/* ── Column 1: User ── */}
               {renderExcelHeader({
@@ -974,8 +1029,9 @@ export function AdminUsersTable({
                     {/* ── 2. Folder-Tab Action Strip Attached Directly Under Name ── */}
                     <tr className="border-0">
                       <td colSpan={9} className="p-0 border-0">
-                        <div className="flex items-center justify-start ps-3 sm:ps-4">
+                        <div className="w-full flex items-center justify-end px-3 sm:px-4" dir="ltr">
                           <div 
+                            dir={isRtl ? "rtl" : "ltr"}
                             className={cn(
                               "inline-flex items-center gap-1 sm:gap-1.5 px-3 py-1 -mt-px",
                               "rounded-b-xl border-x border-b shadow-2xs backdrop-blur-xs transition-colors",
@@ -984,7 +1040,7 @@ export function AdminUsersTable({
                                 : "bg-slate-100/95 dark:bg-slate-800/95 border-border/50 text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
                             )}
                           >
-                            {/* 1. View User Details (مشاهده اطلاعات) */}
+                            {/* 1. View User Details (مشاهده مشخصات) */}
                             <button
                               type="button"
                               onClick={() => toggleAccordion(user.id, 'view')}
@@ -1032,28 +1088,33 @@ export function AdminUsersTable({
                               <span className="hidden sm:inline">{t("editUserInfo")}</span>
                             </button>
 
-                            <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
-
-                            {/* 4. Open in Dashboard (مشاهده در داشبورد) */}
+                            {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
                             <button
                               type="button"
-                              onClick={() => handleSelectAndGoHome(user)}
-                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors cursor-pointer"
-                              title={t("viewInDashboard")}
-                            >
-                              <LayoutDashboard size={13} className="shrink-0" />
-                              <span className="hidden sm:inline">{t("viewInDashboard")}</span>
-                            </button>
-
-                            {/* 5. Go to Permissions & Full Config */}
-                            <button
-                              type="button"
-                              onClick={() => handleSelectAndGoConfig(user)}
-                              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-background/80 transition-colors cursor-pointer"
+                              onClick={() => toggleAccordion(user.id, 'access')}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                isAccordionOpen && activeAccordion?.type === 'access'
+                                  ? "bg-emerald-600 text-white shadow-2xs font-semibold"
+                                  : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
+                              )}
                               title={t("moduleAccess")}
                             >
                               <ShieldCheck size={13} className="shrink-0" />
-                              <span className="hidden md:inline">{t("moduleAccess")}</span>
+                              <span className="hidden sm:inline">{t("moduleAccess")}</span>
+                            </button>
+
+                            <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
+
+                            {/* 5. Open in Dashboard (مشاهده در داشبورد - بدون اسم، آیکون آخر) */}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectAndGoHome(user)}
+                              className="size-7 rounded-lg flex items-center justify-center text-primary hover:bg-primary/10 transition-colors cursor-pointer"
+                              title={t("viewInDashboard")}
+                              aria-label={t("viewInDashboard")}
+                            >
+                              <LayoutDashboard size={14} className="shrink-0" />
                             </button>
 
                             {/* Close active accordion if open */}
@@ -1321,6 +1382,123 @@ export function AdminUsersTable({
                                   >
                                     {t("save")}
                                   </Button>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* ── Mode D: Module Access (دسترسی ماژول‌ها) ── */}
+                            {activeAccordion.type === 'access' && (
+                              <div className="flex flex-col gap-3.5">
+                                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                  <div className="flex items-center gap-2.5">
+                                    <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                                      <ShieldCheck size={18} />
+                                    </div>
+                                    <div>
+                                      <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                                        <span>{t("moduleAccess")}</span>
+                                        <span className="text-[11px] font-normal text-muted-foreground">({user.name})</span>
+                                      </h4>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {t("changeUserAccess")}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                      {(user.modulesAccess?.filter(m => m.hasAccess).length || 0)} {t("activeStatus")}
+                                    </span>
+
+                                    <Button
+                                      type="button"
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleSelectAndGoConfig(user)}
+                                      className="h-7.5 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                                      title={t("managePermissions")}
+                                    >
+                                      <ExternalLink size={12} />
+                                      <span className="hidden sm:inline">{t("managePermissions")}</span>
+                                    </Button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveAccordion(null)}
+                                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer"
+                                      title={t("cancel")}
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                                  {NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard").map(group => {
+                                    const groupAccess = user.modulesAccess?.find(m => m.moduleId === group.id);
+                                    const hasGroupAccess = groupAccess?.hasAccess ?? false;
+
+                                    let label = group.id;
+                                    try {
+                                      label = tMenu(`sections.${group.labelKey}` as any) || group.id;
+                                    } catch {
+                                      label = group.id;
+                                    }
+
+                                    return (
+                                      <div
+                                        key={group.id}
+                                        className={cn(
+                                          "flex flex-col justify-between p-3 rounded-xl border transition-all",
+                                          hasGroupAccess
+                                            ? "bg-emerald-500/[0.04] border-emerald-500/30 text-foreground"
+                                            : "bg-muted/20 border-border/40 text-muted-foreground opacity-75"
+                                        )}
+                                      >
+                                        <div className="flex items-start justify-between gap-2 mb-2.5">
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <span className={cn(
+                                              "size-2 rounded-full shrink-0",
+                                              hasGroupAccess ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"
+                                            )} />
+                                            <span className="text-xs font-semibold truncate" title={label}>
+                                              {label}
+                                            </span>
+                                          </div>
+
+                                          {group.items && group.items.length > 0 && (
+                                            <span className="text-[10px] text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded border border-border/40 shrink-0">
+                                              {group.items.length} {t("subItems")}
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                                          <span className={cn(
+                                            "text-[10px] font-medium",
+                                            hasGroupAccess ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+                                          )}>
+                                            {hasGroupAccess ? t("activeStatus") : t("inactiveStatus")}
+                                          </span>
+
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            variant={hasGroupAccess ? "outline" : "default"}
+                                            onClick={() => handleToggleUserAccess(user.id, group.id, !hasGroupAccess)}
+                                            className={cn(
+                                              "h-6 px-2 text-[10px] rounded-lg cursor-pointer transition-all",
+                                              hasGroupAccess
+                                                ? "border-destructive/30 text-destructive hover:bg-destructive/10"
+                                                : "bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
+                                            )}
+                                          >
+                                            {hasGroupAccess ? t("revokeAccess") : t("grantAccess")}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}

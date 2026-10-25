@@ -15,7 +15,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   const activities = selectedUser?.recentActivities || [];
 
   return (
-    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[2rem] p-5 flex flex-col flex-1 min-h-[180px] shadow-2xs">
+    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col h-full min-h-0 shadow-2xs">
       <div className="flex items-center justify-between mb-3 px-1 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
           <Activity size={16} className="text-emerald-500 shrink-0" />

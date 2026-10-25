@@ -15,8 +15,6 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminProfileStats } from "./AdminProfileStats";
 import { AdminTasksTime } from "./AdminTasksTime";
-import { AdminActivities } from "./AdminActivities";
-import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
@@ -148,33 +146,25 @@ export function AdminDashboard() {
         {/* Main Content Area */}
         <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 p-4 sm:p-6 lg:p-8">
           {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
-              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
-              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
-              <Skeleton className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 rounded-[2rem] opacity-40 bg-muted/50" />
+            <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[360px_1fr] gap-3.5 h-full w-full max-w-[1560px] mx-auto items-stretch min-h-0">
+              <Skeleton className="col-span-1 h-full min-h-0 min-w-0 rounded-[1.5rem] opacity-40 bg-muted/50" />
+              <Skeleton className="col-span-1 h-full min-h-0 min-w-0 rounded-[1.5rem] opacity-40 bg-muted/50" />
             </div>
           ) : activeTab === 'home' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[2.5fr_6fr_3.5fr] gap-3 h-full w-full max-w-[1440px] mx-auto items-stretch min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[360px_1fr] gap-3.5 h-full w-full max-w-[1560px] mx-auto items-stretch min-h-0">
               
               {selectedUser && (
-                <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
+                <div className="col-span-1 h-full min-h-0 min-w-0">
                   <AdminProfileStats selectedUser={selectedUser} />
                 </div>
               )}
               
-              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0">
+              <div className="col-span-1 h-full min-h-0 min-w-0">
                 <AdminTasksTime 
                   selectedUser={selectedUser}
                   users={users}
                   setUsers={setUsers}
                   setSelectedUser={setSelectedUser}
-                />
-              </div>
-
-              <div className="col-span-1 lg:col-span-1 h-full min-h-0 min-w-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar pe-0.5">
-                <AdminActivities selectedUser={selectedUser} />
-                <AdminHeatmapModules 
-                  selectedUser={selectedUser}
                   availableModules={availableModules}
                   tMenu={tMenu}
                   handleToggleModuleAccess={handleToggleModuleAccess}

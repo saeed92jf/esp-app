@@ -1816,7 +1816,11 @@
     "editUserInfo": "ویرایش مشخصات",
     "viewInDashboard": "نمایش در داشبورد",
     "moduleAccess": "دسترسی‌ها",
-    "applicantDetailsTitle": "پرونده کاربر"
+    "applicantDetailsTitle": "پرونده کاربر",
+    "activeStatus": "فعال",
+    "inactiveStatus": "غیرفعال",
+    "revokeAccess": "لغو دسترسی",
+    "subItems": "زیرمجموعه"
   },
   "Search": {
     "title": "نتایج جستجو",

@@ -268,6 +268,11 @@
     "passwordMismatch": "رمز عبور و تکرار آن یکسان نیستند",
     "passwordChangedSuccess": "رمز عبور با موفقیت تغییر یافت",
     "userInfoUpdatedSuccess": "اطلاعات کاربر با موفقیت بروزرسانی شد",
-    "saveChangesSuccess": "تغییرات با موفقیت ذخیره شد"
+    "saveChangesSuccess": "تغییرات با موفقیت ذخیره شد",
+    "activeStatus": "فعال",
+    "inactiveStatus": "غیرفعال",
+    "revokeAccess": "لغو دسترسی",
+    "subItems": "زیربخش",
+    "managePermissions": "مدیریت کامل دسترسی‌ها"
   }
 }

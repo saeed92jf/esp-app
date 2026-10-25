@@ -1816,7 +1816,11 @@
     "editUserInfo": "Edit Profile",
     "viewInDashboard": "View in Dashboard",
     "moduleAccess": "Permissions",
-    "applicantDetailsTitle": "User Profile"
+    "applicantDetailsTitle": "User Profile",
+    "activeStatus": "Active",
+    "inactiveStatus": "Inactive",
+    "revokeAccess": "Revoke Access",
+    "subItems": "sub-items"
   },
   "Search": {
     "title": "Search Results",

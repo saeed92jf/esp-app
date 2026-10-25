@@ -268,6 +268,11 @@
     "passwordMismatch": "Passwords do not match",
     "passwordChangedSuccess": "Password changed successfully",
     "userInfoUpdatedSuccess": "User information updated successfully",
-    "saveChangesSuccess": "Changes saved successfully"
+    "saveChangesSuccess": "Changes saved successfully",
+    "activeStatus": "Active",
+    "inactiveStatus": "Inactive",
+    "revokeAccess": "Revoke Access",
+    "subItems": "sub-items",
+    "managePermissions": "Full Permissions Config"
   }
 }

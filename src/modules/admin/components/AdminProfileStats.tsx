@@ -149,41 +149,41 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
       {/* ── Sub-Avatar Responsive Flex Container (Stretches to bottom of page) ── */}
       <div className="flex flex-col flex-1 min-h-0 gap-3">
         {/* ── 2. Performance & Career Stats Card (Days, Projects, Experience, Salary) ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 flex flex-col justify-between flex-[1.25] min-h-[140px] shadow-2xs">
-          <div className="flex items-center justify-between text-muted-foreground px-1 mb-1 shrink-0">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 sm:p-4.5 pb-5 sm:pb-5.5 flex flex-col justify-between flex-[1.45] min-h-[170px] shadow-2xs">
+          <div className="flex items-center justify-between text-muted-foreground px-1 mb-2 shrink-0">
             <div className="flex items-center gap-1.5">
               <Briefcase size={14} className="stroke-[2.2]" />
               <span className="text-[11px] font-bold">{t("statsAndPerformance")}</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 flex-1 items-center">
+          <div className="grid grid-cols-2 gap-2.5 flex-1 items-stretch">
             {/* Days in Company */}
-            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center h-full">
+            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-3 border border-border/30 flex flex-col justify-center text-center h-full shadow-2xs">
               <span className="text-base sm:text-lg font-bold text-foreground fa-num">
                 <AnimatedNumber value={selectedUser?.daysInCompany || 0} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("daysUnit")}</span>
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("inCompany")}</span>
+              <span className="text-[10px] text-muted-foreground font-medium mt-1">{t("inCompany")}</span>
             </div>
 
             {/* Projects Done */}
-            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center h-full">
+            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-3 border border-border/30 flex flex-col justify-center text-center h-full shadow-2xs">
               <span className="text-base sm:text-lg font-bold text-foreground fa-num">
                 <AnimatedNumber value={selectedUser?.doneProjects || 0} /> <span className="text-[0.65em] font-medium text-muted-foreground">{t("projectsUnit")}</span>
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("projectsDone")}</span>
+              <span className="text-[10px] text-muted-foreground font-medium mt-1">{t("projectsDone")}</span>
             </div>
 
             {/* Work Experience */}
-            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center h-full">
+            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-3 border border-border/30 flex flex-col justify-center text-center h-full shadow-2xs">
               <span className="text-base sm:text-lg font-bold text-foreground fa-num">
                 <AnimatedNumber value={Math.min(experienceCount, 99)} />{experienceCount > 99 && <span className="text-primary">+</span>} <span className="text-[0.65em] font-medium text-muted-foreground">{t("experienceUnit")}</span>
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("workExperience")}</span>
+              <span className="text-[10px] text-muted-foreground font-medium mt-1">{t("workExperience")}</span>
             </div>
 
             {/* Salary with Eye Toggle */}
-            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-2.5 border border-border/30 flex flex-col justify-center text-center relative group h-full">
+            <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl p-3 border border-border/30 flex flex-col justify-center text-center relative group h-full shadow-2xs">
               <button 
                 type="button"
                 onClick={() => setShowSalary(!showSalary)}
@@ -195,7 +195,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
               <span className="text-base sm:text-lg font-bold text-foreground font-mono truncate px-1 fa-num">
                 {showSalary ? `$${(selectedUser?.salary || 0).toLocaleString()}` : "••••••••"}
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium mt-0.5">{t("salary")}</span>
+              <span className="text-[10px] text-muted-foreground font-medium mt-1">{t("salary")}</span>
             </div>
           </div>
         </div>
