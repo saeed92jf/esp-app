@@ -26,6 +26,7 @@ export interface User {
   score?: number;
   salary?: number;
   workingFormat?: { office: number; factory: number; mission: number; leave: number };
+  workLocation?: 'office' | 'factory' | 'remote' | 'hybrid' | string;
   workActivity?: { day: number; hour: number; value: number }[];
   modulesAccess?: UserModuleAccess[];
   department?: string;

@@ -46,6 +46,7 @@ const INITIAL_USERS: User[] = [
     educationDegree: 'master',
     educationField: 'مهندسی نرم‌افزار',
     jobTitle: 'Senior System Administrator & Lead Engineer',
+    workLocation: 'office',
     workingFormat: { office: 60, factory: 20, mission: 10, leave: 10 },
     workActivity: generateWorkActivity(),
     modulesAccess: [
@@ -89,7 +90,8 @@ const INITIAL_USERS: User[] = [
     educationDegree: 'bachelors',
     educationField: 'مهندسی کامپیوتر',
     jobTitle: 'کاربر آزمایشی سامانه',
-    workingFormat: { office: 70, factory: 15, mission: 10, leave: 5 },
+    workLocation: 'factory',
+    workingFormat: { office: 20, factory: 65, mission: 10, leave: 5 },
     workActivity: generateWorkActivity(),
     modulesAccess: [
       { moduleId: 'marketing', hasAccess: true, accessLevel: 'read', hoursSpent: '05:00:00', usagePercentage: 10 }
@@ -630,6 +632,7 @@ export class FakeAdminService implements IAdminService {
         nationalId: req.nationalId || "0010000000",
         department: req.department || "Engineering",
         jobTitle: req.jobTitle || "پرسنل سازمانی",
+        workLocation: req.workLocation || "office",
         joinedAt: new Date().toISOString().split("T")[0],
         daysInCompany: 1,
         doneProjects: 0,

@@ -898,6 +898,33 @@ export function AdminUsersTable({
 
                 const isAccordionOpen = activeAccordion?.userId === user.id;
 
+                // Determine unclipped location badge (color & localized label)
+                const getLocationBadge = () => {
+                  const loc = user.workLocation?.toLowerCase();
+                  if (loc === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
+                  if (loc === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
+                  if (loc === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
+                  if (loc === 'remote') return { colorClass: 'bg-purple-500', label: t("workLocationRemote") };
+                  if (loc === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+
+                  if (wf) {
+                    const entries = Object.entries(wf) as [string, number][];
+                    entries.sort((a, b) => b[1] - a[1]);
+                    const dominant = entries[0]?.[0];
+                    if (dominant === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
+                    if (dominant === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
+                    if (dominant === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
+                    if (dominant === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+                  }
+
+                  if (user.status === 'offline') {
+                    return { colorClass: 'bg-slate-400', label: t("offline") };
+                  }
+
+                  return { colorClass: 'bg-[#22c55e]', label: t("office") };
+                };
+                const locationBadge = getLocationBadge();
+
                 return (
                   <React.Fragment key={user.id}>
                     
@@ -915,13 +942,38 @@ export function AdminUsersTable({
                       {/* Column 1: User */}
                       <td className="py-3 px-3 text-start">
                         <div className="flex items-center gap-2.5">
-                          <div className="relative size-9 rounded-full bg-primary/10 border border-border/40 shrink-0 flex items-center justify-center overflow-hidden">
-                            <span className="text-xs font-bold text-primary uppercase">{user.name[0]}</span>
+                          {/* Avatar with unclipped location tag */}
+                          <div className="relative size-9 shrink-0">
+                            <div 
+                              className="size-full rounded-full bg-primary/10 border border-border/40 flex items-center justify-center overflow-hidden select-none"
+                              style={user.avatarColor ? { backgroundColor: `${user.avatarColor}20`, borderColor: `${user.avatarColor}40` } : undefined}
+                            >
+                              {user.avatar ? (
+                                <img
+                                  src={user.avatar}
+                                  alt={user.name}
+                                  className="size-full object-cover"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLElement).style.display = 'none';
+                                    const fb = e.currentTarget.parentElement?.querySelector('.avatar-fallback') as HTMLElement;
+                                    if (fb) fb.style.display = 'inline';
+                                  }}
+                                />
+                              ) : null}
+                              <span 
+                                className="avatar-fallback text-xs font-bold text-primary uppercase"
+                                style={{ display: user.avatar ? 'none' : 'inline', color: user.avatarColor }}
+                              >
+                                {user.name ? user.name.trim().charAt(0) : "U"}
+                              </span>
+                            </div>
+                            {/* Unclipped colored location status tag */}
                             <span
                               className={cn(
-                                "absolute bottom-0 right-0 size-2.5 rounded-full border-2 border-background",
-                                user.status === 'online' ? "bg-emerald-500" : "bg-slate-400"
+                                "absolute -bottom-0.5 -end-0.5 size-3 rounded-full border-2 border-background z-10 pointer-events-none shadow-2xs transition-colors",
+                                locationBadge.colorClass
                               )}
+                              title={`${t("workLocationLabel")}: ${locationBadge.label}`}
                             />
                           </div>
                           <div className="flex flex-col min-w-0">
