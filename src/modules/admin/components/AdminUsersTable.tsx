@@ -1050,12 +1050,12 @@ export function AdminUsersTable({
                           <div 
                             dir={isRtl ? "rtl" : "ltr"}
                             className={cn(
-                              "flex flex-col -mt-px transition-all duration-300 overflow-hidden",
-                              "rounded-b-2xl border-x border-b shadow-sm backdrop-blur-xs",
-                              "w-fit max-w-full sm:min-w-[580px]",
+                              "flex flex-col -mt-px overflow-hidden",
+                              "w-[620px] max-w-full",
+                              "transition-[background-color,border-color,box-shadow] duration-200",
                               isAccordionOpen
-                                ? "bg-card/95 border-primary/40 shadow-md ring-1 ring-primary/20"
-                                : "bg-slate-100/95 dark:bg-slate-800/95 border-border/50 text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
+                                ? "bg-card border-x border-b border-border/70 rounded-b-2xl shadow-xl ring-1 ring-black/5 dark:ring-white/5"
+                                : "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
                             )}
                           >
                             {/* Action Icons Header Strip */}
@@ -1163,11 +1163,15 @@ export function AdminUsersTable({
                               {isAccordionOpen && (
                                 <motion.div
                                   key={`acc-content-${user.id}`}
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-                                  className="overflow-hidden"
+                                  initial={{ height: 0, opacity: 0, y: -8 }}
+                                  animate={{ height: "auto", opacity: 1, y: 0 }}
+                                  exit={{ height: 0, opacity: 0, y: -8 }}
+                                  transition={{ 
+                                    height: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
+                                    opacity: { duration: 0.22, ease: "easeOut" },
+                                    y: { duration: 0.32, ease: [0.16, 1, 0.3, 1] }
+                                  }}
+                                  className="overflow-hidden border-t border-border/40"
                                 >
                                   <div className="p-4 sm:p-5">
                             
@@ -1343,7 +1347,7 @@ export function AdminUsersTable({
                                   </button>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                   <div>
                                     <label className="text-[11px] font-medium text-muted-foreground block mb-1">
                                       {t("name")}
@@ -1489,7 +1493,7 @@ export function AdminUsersTable({
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
                                   {NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard").map(group => {
                                     const groupAccess = user.modulesAccess?.find(m => m.moduleId === group.id);
                                     const hasGroupAccess = groupAccess?.hasAccess ?? false;
