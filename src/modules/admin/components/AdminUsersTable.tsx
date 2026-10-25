@@ -68,6 +68,70 @@ const initialFilters: ColumnFilterState = {
   statuses: []
 };
 
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
+
+interface TableAccordionPanelProps {
+  activeType: string;
+  isRtl: boolean;
+  children: React.ReactNode;
+}
+
+function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPanelProps) {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [height, setHeight] = React.useState<number | undefined>(undefined);
+
+  useIsomorphicLayoutEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      const h = el.offsetHeight;
+      if (h > 0) {
+        setHeight((prev) => (prev === h ? prev : h));
+      }
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [activeType]);
+
+  return (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: height ?? "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{
+        height: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
+        opacity: { duration: 0.22, ease: "easeOut" }
+      }}
+      dir={isRtl ? "rtl" : "ltr"}
+      className={cn(
+        "w-full bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-t-none rounded-b-2xl overflow-hidden",
+        "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.09)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
+      )}
+    >
+      <div ref={contentRef} className="p-4 sm:p-5">
+        <div className="w-full max-w-3xl mx-auto">
+          <motion.div
+            key={activeType}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function AdminUsersTable({
   users,
   setUsers,
@@ -1128,29 +1192,13 @@ export function AdminUsersTable({
                         >
                           {/* ── A. Content Container on Top (فول واید هم‌اندازه سطر، بدون فیلت در بالا) ── */}
                           <AnimatePresence initial={false}>
-                            {isAccordionOpen && (
-                              <motion.div
-                                key={`acc-content-${user.id}`}
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ 
-                                  height: { duration: 0.32, ease: [0.16, 1, 0.3, 1] },
-                                  opacity: { duration: 0.22, ease: "easeOut" }
-                                }}
-                                className="w-full overflow-hidden"
+                            {isAccordionOpen && activeAccordion && (
+                              <TableAccordionPanel
+                                key={`acc-panel-${user.id}`}
+                                activeType={activeAccordion.type}
+                                isRtl={isRtl}
                               >
-                                <div 
-                                  dir={isRtl ? "rtl" : "ltr"}
-                                  className={cn(
-                                    "w-full bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-t-none rounded-b-2xl p-4 sm:p-5",
-                                    "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.09)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
-                                  )}
-                                >
-                                  {/* Centered content with constrained width so inputs don't stretch excessively */}
-                                  <div className="w-full max-w-3xl mx-auto">
-                            
-                            {/* ── Mode A: View Details ── */}
+                                {/* ── Mode A: View Details ── */}
                             {activeAccordion.type === 'view' && (
                               <div className="flex flex-col gap-3">
                                 <div className="flex items-center justify-between pb-2 border-b border-border/40">
@@ -1537,10 +1585,7 @@ export function AdminUsersTable({
                                 </div>
                               </div>
                             )}
-
-                                    </div>
-                                  </div>
-                                </motion.div>
+                              </TableAccordionPanel>
                               )}
                             </AnimatePresence>
 
