@@ -100,6 +100,7 @@ export function AdminUserConfig({
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
   const [activeSegment, setActiveSegment] = useState<SegmentId>("identity");
   const [openSegment, setOpenSegment] = useState<SegmentId | null>("identity");
+  const [confirmedSegments, setConfirmedSegments] = useState<Set<SegmentId>>(new Set());
 
   // Options
   const departmentOptions = [
@@ -140,34 +141,32 @@ export function AdminUserConfig({
     { value: "remote", label: t("workFormatRemote") },
   ];
 
-  // Segment completion checks
-  const isIdentityComplete = Boolean(
-    form.name.trim().length > 0 && form.email.trim().length > 0
-  );
-  const isOrgComplete = Boolean(form.department && form.role);
-  const isPersonalComplete = Boolean(
-    form.age >= 18 && form.maritalStatus && form.insuranceType
-  );
-  const isEducationComplete = Boolean(form.educationDegree);
-
-  const getSegmentCompletion = (id: SegmentId): boolean => {
+  // Segment filled checks
+  const isSegmentFilled = (id: SegmentId): boolean => {
     switch (id) {
       case "identity":
-        return isIdentityComplete;
+        return Boolean(form.name.trim().length > 0 && form.email.trim().length > 0);
       case "org":
-        return isOrgComplete;
+        return Boolean(form.department && form.role && form.jobTitle.trim().length > 0);
       case "personal":
-        return isPersonalComplete;
+        return Boolean(form.age >= 18 && form.maritalStatus && form.insuranceType);
       case "education":
-        return isEducationComplete;
+        return Boolean(form.educationDegree && form.educationField.trim().length > 0);
+      default:
+        return false;
     }
   };
 
+  // Step is only ticked if confirmed by Next AND info is currently filled (un-ticks if info cleared)
+  const isSegmentTicked = (id: SegmentId): boolean => {
+    return confirmedSegments.has(id) && isSegmentFilled(id);
+  };
+
   const completedCount = [
-    isIdentityComplete,
-    isOrgComplete,
-    isPersonalComplete,
-    isEducationComplete,
+    isSegmentTicked("identity"),
+    isSegmentTicked("org"),
+    isSegmentTicked("personal"),
+    isSegmentTicked("education"),
   ].filter(Boolean).length;
   const progressPercent = Math.round((completedCount / 4) * 100);
 
@@ -210,18 +209,30 @@ export function AdminUserConfig({
 
   const handleResetForm = () => {
     setForm(INITIAL_FORM);
+    setConfirmedSegments(new Set());
     setActiveSegment("identity");
     setOpenSegment("identity");
   };
 
+  const handleNextStep = (currentId: SegmentId, nextId: SegmentId) => {
+    if (!isSegmentFilled(currentId)) {
+      toast.error(t("fillRequiredFields"));
+      return;
+    }
+    setConfirmedSegments((prev) => new Set(prev).add(currentId));
+    setActiveSegment(nextId);
+    setOpenSegment(nextId);
+  };
+
   const handleCreateUser = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) {
+    if (!isSegmentFilled("identity")) {
       toast.error(t("fillRequiredFields"));
       setActiveSegment("identity");
       setOpenSegment("identity");
       return;
     }
+    setConfirmedSegments((prev) => new Set(prev).add("education"));
 
     const createdUser: User = {
       id: `u_${Date.now()}`,
@@ -308,7 +319,7 @@ export function AdminUserConfig({
           <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
             {SEGMENTS.map((seg) => {
               const isActive = activeSegment === seg.id;
-              const isCompleted = getSegmentCompletion(seg.id);
+              const isCompleted = isSegmentTicked(seg.id);
               const Icon = seg.icon;
 
               return (
@@ -323,20 +334,24 @@ export function AdminUserConfig({
                     "flex-1 min-w-[130px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
+                      : isCompleted
+                      ? "text-emerald-600 dark:text-emerald-400 hover:bg-background/80"
                       : "text-muted-foreground hover:text-foreground hover:bg-background/80"
                   )}
                 >
                   <div
                     className={cn(
                       "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold fa-num transition-colors",
-                      isActive
+                      isCompleted
+                        ? isActive
+                          ? "bg-emerald-500 text-white shadow-xs"
+                          : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                        : isActive
                         ? "bg-primary-foreground/20 text-primary-foreground"
-                        : isCompleted
-                        ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                         : "bg-muted text-muted-foreground"
                     )}
                   >
-                    {isCompleted && !isActive ? (
+                    {isCompleted ? (
                       <Check className="size-3 stroke-[2.5]" />
                     ) : (
                       seg.stepNumber
@@ -355,7 +370,7 @@ export function AdminUserConfig({
         <div className="flex flex-col gap-4">
           {SEGMENTS.map((seg, idx) => {
             const isOpen = openSegment === seg.id;
-            const isCompleted = getSegmentCompletion(seg.id);
+            const isCompleted = isSegmentTicked(seg.id);
             const Icon = seg.icon;
 
             return (
@@ -875,11 +890,9 @@ export function AdminUserConfig({
                               <Button
                                 type="button"
                                 size="sm"
-                                onClick={() => {
-                                  const next = SEGMENTS[idx + 1].id;
-                                  setActiveSegment(next);
-                                  setOpenSegment(next);
-                                }}
+                                onClick={() =>
+                                  handleNextStep(seg.id, SEGMENTS[idx + 1].id)
+                                }
                                 className="h-9 px-4 rounded-xl font-medium text-xs gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
                               >
                                 <span>{t("nextStep")}</span>
@@ -955,8 +968,8 @@ export function AdminUserConfig({
           {/* Real-time Personnel Badge Card */}
           <div className="bg-background/80 dark:bg-background/60 border border-border/50 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative">
             <div className="flex items-center gap-3.5">
-              <Avatar className="size-14 rounded-2xl border-2 border-border/60 shadow-xs shrink-0">
-                <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg rounded-2xl">
+              <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0 bg-transparent">
+                <AvatarFallback className="bg-transparent text-primary font-bold text-xl rounded-full">
                   {form.name.trim() ? form.name.trim().charAt(0) : "؟"}
                 </AvatarFallback>
               </Avatar>
@@ -1080,8 +1093,8 @@ export function AdminUserConfig({
                 className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border/40 hover:border-primary/20 transition-colors group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="size-9 rounded-xl border border-border/50 shrink-0">
-                    <AvatarFallback className="bg-primary/5 text-primary text-xs font-bold rounded-xl">
+                  <Avatar className="size-9 rounded-full border border-border/50 shrink-0 bg-transparent">
+                    <AvatarFallback className="bg-transparent text-primary text-xs font-bold rounded-full">
                       {u.name?.[0]}
                     </AvatarFallback>
                   </Avatar>

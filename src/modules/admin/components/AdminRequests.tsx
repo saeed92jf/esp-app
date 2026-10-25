@@ -49,7 +49,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -641,8 +641,15 @@ export function AdminRequests({
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <Avatar className="size-9 rounded-xl border border-border/50 shrink-0">
-                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold rounded-xl">
+                          <Avatar className="size-9 rounded-full border border-border/50 shrink-0 bg-transparent">
+                            {req.avatar ? (
+                              <AvatarImage
+                                src={req.avatar}
+                                alt={req.name}
+                                className="size-full rounded-full object-cover"
+                              />
+                            ) : null}
+                            <AvatarFallback className="bg-transparent text-primary text-xs font-bold rounded-full">
                               {req.name ? req.name.charAt(0) : "؟"}
                             </AvatarFallback>
                           </Avatar>
@@ -716,8 +723,15 @@ export function AdminRequests({
               <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col gap-5 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <Avatar className="size-14 rounded-2xl border-2 border-border/60 shadow-xs shrink-0">
-                      <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold rounded-2xl">
+                    <Avatar className="size-14 rounded-full border-2 border-border/60 shadow-xs shrink-0 bg-transparent">
+                      {reviewData.avatar ? (
+                        <AvatarImage
+                          src={reviewData.avatar}
+                          alt={reviewData.name}
+                          className="size-full rounded-full object-cover"
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-transparent text-primary text-xl font-bold rounded-full">
                         {reviewData.name ? reviewData.name.charAt(0) : "؟"}
                       </AvatarFallback>
                     </Avatar>
