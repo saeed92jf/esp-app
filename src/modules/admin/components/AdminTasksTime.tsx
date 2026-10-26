@@ -288,7 +288,7 @@ export function AdminTasksTime({
   };
 
   return (
-    <div className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto custom-scrollbar pe-0.5">
+    <div className="flex flex-col gap-3 w-full">
       
       {/* ── Center Header: Department Switcher + Avatars Carousel + Search ── */}
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 px-3 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs overflow-visible">
