@@ -1130,7 +1130,7 @@ export function AdminUsersTable({
                       className={cn(
                         "transition-colors duration-150 group cursor-pointer",
                         isRowActive
-                          ? "bg-primary/[0.08] dark:bg-primary/20 [&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35"
+                          ? "bg-primary/[0.08] dark:bg-primary/20 [&>td]:border-b [&>td]:border-primary/25 dark:[&>td]:border-primary/35 [&>td]:relative [&>td]:z-20"
                           : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/30"
                       )}
                     >
@@ -1732,9 +1732,13 @@ export function AdminUsersTable({
                             <div 
                               dir={isRtl ? "rtl" : "ltr"}
                               className={cn(
-                                "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0 -mt-px",
-                                "bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-b-xl text-muted-foreground shadow-none",
-                                !isAccordionOpen && "hover:bg-slate-200/80 dark:hover:bg-slate-700/80"
+                                "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0",
+                                isAccordionOpen ? "-mt-px" : "mt-0",
+                                "rounded-b-xl shadow-none border-x border-b",
+                                isRowActive
+                                  ? "bg-slate-100/95 dark:bg-slate-800/95 border-primary/30 dark:border-primary/40 text-foreground"
+                                  : "bg-slate-100/95 dark:bg-slate-800/95 border-border/50 text-muted-foreground",
+                                !isAccordionOpen && (isRowActive ? "hover:bg-slate-200/90 dark:hover:bg-slate-700/90" : "hover:bg-slate-200/80 dark:hover:bg-slate-700/80")
                               )}
                             >
                               <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
