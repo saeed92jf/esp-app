@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { GoogleSearchBox } from "@/components/features/search/GoogleSearchBox";
-import { SearchFooter } from "./search-footer";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
 import { HelpPopover } from "@/components/layout/help-popover";
@@ -165,8 +164,7 @@ export function SearchResultsClient() {
       {/* ──────────────────────────────────────────────────────────── */}
       <header
         className={cn(
-          "sticky top-0 z-40 h-[64px] bg-background/95 dark:bg-[#171717]/95 backdrop-blur-md transition-colors duration-150",
-          isScrolled ? "border-b border-border/60" : "border-b border-transparent"
+          "sticky top-0 z-40 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] bg-background/80 dark:bg-background/80 backdrop-blur-xl border-none box-border transition-colors duration-150"
         )}
       >
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
@@ -231,7 +229,7 @@ export function SearchResultsClient() {
                 />
                 <NotificationsPopover
                   triggerClassName={HEADER_ICON_BUTTON_CLASS}
-                  iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+                  iconClassName="size-5 shrink-0"
                 />
                 <AppsPopover
                   triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden sm:inline-flex")}
@@ -399,11 +397,6 @@ export function SearchResultsClient() {
         </div>
       </div>
     </main>
-
-    {/* ──────────────────────────────────────────────────────────── */}
-    {/* 4. FOOTER (Non-fixed, IP Location & Useful Links)            */}
-    {/* ──────────────────────────────────────────────────────────── */}
-    <SearchFooter startOffsetClass={START_OFFSET_CLASS} />
 
     {/* ──────────────────────────────────────────────────────────── */}
     {/* ADVANCED GOOGLE-STYLE SEARCH SIDE MENU DRAWER                */}

@@ -49,8 +49,8 @@ export function AdminSidebar({
 
       <aside
         className={cn(
-          "flex flex-col shrink-0 h-full bg-white/95 dark:bg-background/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
-          "absolute md:relative start-0 top-0",
+          "flex flex-col shrink-0 sticky top-[var(--header-height)] self-start max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] bg-white/95 dark:bg-background/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
+          "absolute md:sticky start-0 top-0 md:top-[var(--header-height)]",
           sidebarOpen
             ? "w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none"
             : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto w-[52px] sm:w-[64px]"

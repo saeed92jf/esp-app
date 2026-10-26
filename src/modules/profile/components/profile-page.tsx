@@ -288,7 +288,7 @@ export function ProfilePage() {
   const { profile, isLoading, isError, updateProfile, isUpdating } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
-  const { user, updatePrimaryColor } = useAuth();
+  const { user, updatePrimaryColor, updateAvatarColor, updateUser } = useAuth();
   const isOnboarding = Boolean(searchParams.get('onboarding') === 'true' || user?.accountStatus === 'pending_profile' || (user && !user.isProfileCompleted));
   const initialTab = searchParams.get('tab') || (isOnboarding ? "personal" : "home");
   const initialField = searchParams.get('field') || null;
@@ -362,14 +362,15 @@ export function ProfilePage() {
   const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
   const [isManualUniversity, setIsManualUniversity] = useState(false);
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
-    formData?.personal?.avatarColor || "#0284c7"
+    formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"
   );
 
   useEffect(() => {
-    if (formData?.personal?.avatarColor) {
-      setLiveAvatarColor(formData.personal.avatarColor);
+    const col = formData?.personal?.avatarColor || user?.avatarColor;
+    if (col) {
+      setLiveAvatarColor(col);
     }
-  }, [formData?.personal?.avatarColor]);
+  }, [formData?.personal?.avatarColor, user?.avatarColor]);
 
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState<number>(3);
@@ -479,6 +480,10 @@ export function ProfilePage() {
   };
 
   const handlePersonalSave = () => {
+    if (editingField === 'picture') {
+      handleSaveAvatarColor(liveAvatarColor);
+      return;
+    }
     if (editingField === 'phone') {
       const phoneVal = formData?.personal?.phone?.trim() || "";
       if (!/^09\d{9}$/.test(phoneVal)) {
@@ -497,35 +502,70 @@ export function ProfilePage() {
     setEditingField(null);
   };
 
-  const handleSave = () => {
-    if (formData) {
-      if (formData.personal.phone && !/^09\d{9}$/.test(formData.personal.phone.trim())) {
+  const handleSave = (options?: {
+    overrideFormData?: UserProfile;
+    overridePrimaryColor?: PrimaryColorId;
+    overrideAvatarColor?: string;
+  }) => {
+    const dataToSave = options?.overrideFormData || formData;
+    if (dataToSave) {
+      if (dataToSave.personal.phone && !/^09\d{9}$/.test(dataToSave.personal.phone.trim())) {
         toast.error(t("validation.phoneInvalid"));
         return;
       }
-      if (formData.personal.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.personal.email.trim())) {
+      if (dataToSave.personal.email && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(dataToSave.personal.email.trim())) {
         toast.error(t("validation.emailInvalid"));
         return;
       }
 
-      updateProfile(formData);
+      const effectiveAvatarColor = options?.overrideAvatarColor 
+        || dataToSave.personal.avatarColor 
+        || liveAvatarColor 
+        || user?.avatarColor 
+        || "#0284c7";
+
+      const effectivePrimaryColor = options?.overridePrimaryColor 
+        || draftColor 
+        || dataToSave.personal.primaryColor 
+        || user?.primaryColor 
+        || colorId;
+
+      const finalProfile: UserProfile = {
+        ...dataToSave,
+        personal: {
+          ...dataToSave.personal,
+          avatarColor: effectiveAvatarColor,
+          primaryColor: effectivePrimaryColor,
+        },
+      };
+
+      setFormData(finalProfile);
+      updateProfile(finalProfile);
+
       if (user) {
-        const fullNameEnglish = `${formData.personal.firstName} ${formData.personal.lastName}`.trim();
-        const fullNamePersian = formData.personal.firstNameFa && formData.personal.lastNameFa
-          ? `${formData.personal.firstNameFa} ${formData.personal.lastNameFa}`.trim()
+        const isAlreadyActive = Boolean(
+          user.accountStatus === 'active' || (user.hrApproved && user.managerApproved)
+        );
+        const fullNameEnglish = `${finalProfile.personal.firstName} ${finalProfile.personal.lastName}`.trim();
+        const fullNamePersian = finalProfile.personal.firstNameFa && finalProfile.personal.lastNameFa
+          ? `${finalProfile.personal.firstNameFa} ${finalProfile.personal.lastNameFa}`.trim()
           : fullNameEnglish;
 
         const updated = {
           ...user,
           fullName: fullNameEnglish || user.fullName,
           fullNameFa: fullNamePersian || user.fullNameFa || fullNameEnglish,
-          avatarColor: formData.personal.avatarColor || user.avatarColor,
-          primaryColor: draftColor || formData.personal.primaryColor || user.primaryColor,
+          avatarColor: effectiveAvatarColor,
+          primaryColor: effectivePrimaryColor,
           isProfileCompleted: true,
-          accountStatus: "pending_approval" as const,
-          hrApproved: false,
-          managerApproved: false,
+          accountStatus: isAlreadyActive ? user.accountStatus : (isOnboarding ? ("pending_approval" as const) : user.accountStatus),
+          hrApproved: isAlreadyActive ? user.hrApproved : false,
+          managerApproved: isAlreadyActive ? user.managerApproved : false,
         };
+
+        // Immediately update Zustand in-memory auth state across the whole app
+        updateUser(updated);
+
         try {
           localStorage.setItem("esp_auth_user", JSON.stringify(updated));
           localStorage.setItem("esp-auth-user", JSON.stringify(updated));
@@ -542,6 +582,33 @@ export function ProfilePage() {
         } catch {}
       }
     }
+  };
+
+  const handleSaveAvatarColor = (colorToSave: string) => {
+    const hex = colorToSave?.trim() || "#0284c7";
+    setLiveAvatarColor(hex);
+
+    const updatedProfile: UserProfile = formData ? {
+      ...formData,
+      personal: {
+        ...formData.personal,
+        avatarColor: hex,
+      },
+    } : {
+      personal: { avatarColor: hex } as any,
+      organizational: {} as any,
+      skills: [],
+      insurance: {} as any,
+      education: {} as any,
+    };
+
+    handleSave({
+      overrideFormData: updatedProfile,
+      overrideAvatarColor: hex,
+    });
+
+    toast.success(t("picture.savedToast"));
+    setEditingField(null);
   };
 
   const renderHomeView = () => (
@@ -688,24 +755,20 @@ export function ProfilePage() {
 
               {/* Shadcn Color Picker with live draft change & Save button */}
               <ColorPicker
-                value={formData.personal.avatarColor || "#0284c7"}
+                value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
                 presets={AVATAR_COLOR_PRESETS}
                 showSaveButton={true}
                 onDraftChange={(newHex: string) => {
                   setLiveAvatarColor(newHex);
                 }}
                 onChange={(savedHex: string) => {
-                  handleChange("personal", "avatarColor", savedHex);
                   setLiveAvatarColor(savedHex);
                 }}
                 onSave={(savedHex: string) => {
-                  handleChange("personal", "avatarColor", savedHex);
-                  setLiveAvatarColor(savedHex);
-                  handleSave();
-                  setEditingField(null);
+                  handleSaveAvatarColor(savedHex);
                 }}
                 onCancel={() => {
-                  setLiveAvatarColor(formData.personal.avatarColor || "#0284c7");
+                  setLiveAvatarColor(formData?.personal?.avatarColor || user?.avatarColor || "#0284c7");
                   setEditingField(null);
                 }}
               />
@@ -3242,7 +3305,7 @@ export function ProfilePage() {
                     {/* Profile Avatar Current Status Preview */}
                     <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
                       <div 
-                        style={{ backgroundColor: formData.personal.avatarColor || user?.avatarColor || "#0284c7" }}
+                        style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }}
                         className="size-24 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-md ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-3"
                       >
                         {initial}
@@ -3250,30 +3313,26 @@ export function ProfilePage() {
                       <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
                       <p className="text-xs text-muted-foreground mt-1">
                         {t("picture.selectedCodeLabel")}{" "}
-                        <span className="font-mono font-semibold" dir="ltr">{formData.personal.avatarColor || user?.avatarColor || "#0284c7"}</span>
+                        <span className="font-mono font-semibold" dir="ltr">{liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}</span>
                       </p>
                     </div>
 
                     {/* Shadcn Color Picker with local draft state & Save button */}
                     <ColorPicker
-                      value={formData.personal.avatarColor || user?.avatarColor || "#0284c7"}
+                      value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
                       presets={AVATAR_COLOR_PRESETS}
                       showSaveButton={true}
                       onDraftChange={(newHex: string) => {
                         setLiveAvatarColor(newHex);
                       }}
                       onChange={(savedHex: string) => {
-                        handleChange("personal", "avatarColor", savedHex);
                         setLiveAvatarColor(savedHex);
                       }}
                       onSave={(savedHex: string) => {
-                        handleChange("personal", "avatarColor", savedHex);
-                        setLiveAvatarColor(savedHex);
-                        handleSave();
-                        setEditingField(null);
+                        handleSaveAvatarColor(savedHex);
                       }}
                       onCancel={() => {
-                        setLiveAvatarColor(formData.personal.avatarColor || "#0284c7");
+                        setLiveAvatarColor(formData?.personal?.avatarColor || user?.avatarColor || "#0284c7");
                         setEditingField(null);
                       }}
                     />
@@ -3281,7 +3340,7 @@ export function ProfilePage() {
 
                   <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                     <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                    <Button onClick={() => { handleSave(); setEditingField(null); }} disabled={isUpdating} className="rounded-full px-8 font-medium">
+                    <Button onClick={() => handleSaveAvatarColor(liveAvatarColor)} disabled={isUpdating} className="rounded-full px-8 font-medium">
                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       {t("actions.save")}
                     </Button>
@@ -3404,7 +3463,7 @@ export function ProfilePage() {
                         <Button 
                           variant="ghost" 
                           onClick={() => {
-                            const originalColor = (user?.primaryColor as PrimaryColorId) || colorId;
+                            const originalColor = (user?.primaryColor as PrimaryColorId) || (formData?.personal?.primaryColor as PrimaryColorId) || colorId;
                             setDraftColor(originalColor);
                             setColor(originalColor);
                             setEditingField(null);
@@ -3415,9 +3474,28 @@ export function ProfilePage() {
                         </Button>
                         <Button 
                           onClick={async () => {
+                            setColor(draftColor);
                             await updatePrimaryColor(draftColor);
-                            handleChange("personal", "primaryColor" as any, draftColor);
-                            handleSave();
+                            
+                            const updatedProfile: UserProfile = formData ? {
+                              ...formData,
+                              personal: {
+                                ...formData.personal,
+                                primaryColor: draftColor,
+                              },
+                            } : {
+                              personal: { primaryColor: draftColor } as any,
+                              organizational: {} as any,
+                              skills: [],
+                              insurance: {} as any,
+                              education: {} as any,
+                            };
+
+                            handleSave({
+                              overrideFormData: updatedProfile,
+                              overridePrimaryColor: draftColor,
+                            });
+
                             toast.success(t("themeColor.savedToast"));
                             setEditingField(null);
                           }} 
@@ -3456,7 +3534,7 @@ export function ProfilePage() {
              <div className="flex items-center justify-end w-2/3 gap-4">
                <Avatar className="size-11 sm:size-12 shadow-none">
                  <AvatarFallback 
-                   style={{ backgroundColor: formData.personal.avatarColor || user?.avatarColor || "#0284c7" }} 
+                   style={{ backgroundColor: formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }} 
                    className="text-lg font-bold text-white transition-colors"
                  >
                    {initial}
@@ -3478,6 +3556,10 @@ export function ProfilePage() {
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <div className="flex items-center gap-2 px-2">
+                   <span 
+                     className="size-3.5 rounded-full inline-block shrink-0 border border-black/10 dark:border-white/20 shadow-xs"
+                     style={{ backgroundColor: PRIMARY_COLORS.find(c => c.id === colorId)?.hex || '#3a86ff' }}
+                   />
                    <span className="text-sm text-muted-foreground text-start truncate">
                      {currentColorLabel ? `${tColors(currentColorLabel)} (${PRIMARY_COLORS.find(c => c.id === colorId)?.hex})` : ''}
                    </span>
@@ -3491,17 +3573,16 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
       {/* Top Header */}
       <AppHeader
         tag="Account"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
-        position="absolute"
       />
       
-      <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
+      <div className="flex flex-1 w-full relative">
         {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
           <div
@@ -3514,8 +3595,8 @@ export function ProfilePage() {
         {/* Sidebar Navigation */}
         <aside
           className={cn(
-            "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
-            "absolute md:relative start-0 top-0",
+            "flex flex-col shrink-0 sticky top-[var(--header-height)] self-start max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
+            "absolute md:sticky start-0 top-0 md:top-[var(--header-height)]",
             sidebarOpen
               ? "w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none"
               : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto w-[52px] sm:w-[64px]"
@@ -3590,7 +3671,7 @@ export function ProfilePage() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 p-3 sm:p-6 pb-28">
+        <main className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :

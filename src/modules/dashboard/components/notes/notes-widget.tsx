@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import type { DashboardNote } from "../../services/dashboard.service";
 
@@ -103,6 +104,27 @@ export function NotesWidget({
     notes.forEach((n) => n.tags.forEach((tg) => tags.add(tg)));
     return Array.from(tags);
   }, [notes]);
+
+  const tagOptions = React.useMemo(() => {
+    const opts = [
+      {
+        value: "all",
+        label: t("all"),
+        icon: <Tag className="size-3.5 text-primary" />,
+        hint: notes.length.toString(),
+      },
+    ];
+    allTags.forEach((tg) => {
+      const count = notes.filter((n) => n.tags.includes(tg)).length;
+      opts.push({
+        value: tg,
+        label: `#${tg}`,
+        icon: <Tag className="size-3.5 text-muted-foreground" />,
+        hint: count.toString(),
+      });
+    });
+    return opts;
+  }, [allTags, notes, t]);
 
   const filteredNotes = React.useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -272,61 +294,40 @@ export function NotesWidget({
         )}
       </AnimatePresence>
 
-      {/* ── Search & Tag Filter ── */}
-      <div className="flex flex-col gap-2 shrink-0">
-        <div className="relative w-full">
-          <SearchIcon className="text-muted-foreground pointer-events-none absolute start-3 top-1/2 size-3.5 -translate-y-1/2" />
+      {/* ── Search & Tag/Category Filter (Combobox in front of search) ── */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="relative flex-1 min-w-0">
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2" />
           <Input
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("searchPlaceholder")}
-            className="ps-8.5 pe-7 h-8 text-xs bg-white dark:bg-card border-border/50 shadow-xs"
+            className="ps-8 pe-7 h-8 text-xs bg-white dark:bg-card border-border/50 shadow-xs"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
             >
               <X className="size-3" />
             </button>
           )}
         </div>
 
-        {/* Tags bar */}
-        {allTags.length > 0 && (
-          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setSelectedTag("all")}
-              className={cn(
-                "px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors shrink-0",
-                selectedTag === "all"
-                  ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                  : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-              )}
-            >
-              {t("all")}
-            </button>
-            {allTags.map((tg) => (
-              <button
-                key={tg}
-                type="button"
-                onClick={() => setSelectedTag(tg)}
-                className={cn(
-                  "px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-colors shrink-0 flex items-center gap-1",
-                  selectedTag === tg
-                    ? "bg-primary text-primary-foreground shadow-xs font-semibold"
-                    : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                <span>#</span>
-                <span>{tg}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="w-32 sm:w-40 shrink-0">
+          <Combobox
+            options={tagOptions}
+            value={selectedTag}
+            onChange={(val) => setSelectedTag(val || "all")}
+            placeholder={t("all")}
+            size="sm"
+            allowClear={false}
+            showSearch={allTags.length > 5}
+            triggerClassName="h-8 text-xs bg-white dark:bg-card border-border/50 shadow-xs"
+          />
+        </div>
       </div>
 
       {/* ── Notes Grid / List ── */}

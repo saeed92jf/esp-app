@@ -9,7 +9,7 @@ type Props = {
 export default function Page({ params: { locale } }: Props) {
   setRequestLocale(locale);
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-50 dark:bg-background" />}>
+    <Suspense fallback={<div className="min-h-screen bg-panel dark:bg-background" />}>
       <TasksManagementPage />
     </Suspense>
   );

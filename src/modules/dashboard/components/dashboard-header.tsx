@@ -51,7 +51,6 @@ export function DashboardHeader({
       onToggleMenu={toggle}
       isMenuOpen={isOpen}
       logoHref="/"
-      position="absolute"
       rightActions={
         <>
           <ThemeToggle />
@@ -65,7 +64,7 @@ export function DashboardHeader({
             tasks={tasks}
             unreadCount={unreadNotificationsCount}
             triggerClassName={HEADER_ICON_BUTTON_CLASS}
-            iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+            iconClassName="size-5 shrink-0"
           />
           <AppsPopover
             triggerClassName={HEADER_ICON_BUTTON_CLASS}

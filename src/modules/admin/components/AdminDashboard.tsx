@@ -11,6 +11,7 @@ import { NAVIGATION } from "@/config/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/layout/app-header";
+import { motion, AnimatePresence } from "motion/react";
 
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminProfileStats } from "./AdminProfileStats";
@@ -18,6 +19,35 @@ import { AdminTasksTime } from "./AdminTasksTime";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
+
+const tabMotionVariants = {
+  initial: {
+    opacity: 0,
+    y: 14,
+    scale: 0.992,
+    filter: "blur(6px)",
+  },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+    transition: {
+      duration: 0.35,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+    },
+  },
+  exit: {
+    opacity: 0,
+    y: -10,
+    scale: 0.992,
+    filter: "blur(4px)",
+    transition: {
+      duration: 0.2,
+      ease: [0.4, 0, 1, 1] as [number, number, number, number],
+    },
+  },
+};
 
 export function AdminDashboard() {
   const t = useTranslations("Admin");
@@ -124,17 +154,16 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-white dark:bg-background font-sans w-full overflow-hidden relative">
+    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-white dark:bg-background font-sans w-full relative">
       {/* Top Header */}
       <AppHeader
         tag="Admin"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
-        position="absolute"
       />
 
-      <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
+      <div className="flex flex-1 w-full relative">
         {/* Sidebar Navigation */}
         <AdminSidebar 
           sidebarOpen={sidebarOpen}
@@ -144,81 +173,105 @@ export function AdminDashboard() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto custom-scrollbar bg-transparent h-full w-full relative z-10 p-2.5 sm:p-3.5 lg:p-4 xl:p-5">
-          {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3.5 xl:gap-4 w-full max-w-[1600px] mx-auto items-start pb-6">
-              <Skeleton className="col-span-1 h-[650px] w-full rounded-[1.5rem] opacity-40 bg-muted/50" />
-              <Skeleton className="col-span-1 h-[650px] w-full rounded-[1.5rem] opacity-40 bg-muted/50" />
-            </div>
-          ) : activeTab === 'home' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3.5 xl:gap-4 w-full max-w-[1600px] mx-auto items-start pb-6">
-              
-              {selectedUser && (
-                <div className="col-span-1 w-full min-w-0">
-                  <AdminProfileStats selectedUser={selectedUser} />
-                </div>
-              )}
-              
-              <div className="col-span-1 w-full min-w-0">
-                <AdminTasksTime 
-                  selectedUser={selectedUser}
-                  users={users}
-                  setUsers={setUsers}
-                  setSelectedUser={setSelectedUser}
-                  availableModules={availableModules}
-                  tMenu={tMenu}
-                  handleToggleModuleAccess={handleToggleModuleAccess}
-                  handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-                  onNavigateToAccess={() => setActiveTab('add')}
-                />
-              </div>
+        <main className="flex-1 bg-transparent w-full relative z-10 p-2.5 sm:p-3.5 lg:p-4 xl:p-5 flex flex-col min-h-0">
+          <AnimatePresence mode="wait" initial={false}>
+            {loading ? (
+              <motion.div
+                key="admin-loading-skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full max-w-[1600px] mx-auto items-stretch pb-6 min-h-full"
+              >
+                <Skeleton className="col-span-1 h-[650px] w-full rounded-[1.5rem] opacity-40 bg-muted/50" />
+                <Skeleton className="col-span-1 h-[650px] w-full rounded-[1.5rem] opacity-40 bg-muted/50" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key={activeTab}
+                variants={tabMotionVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="w-full min-h-full flex flex-col flex-1"
+              >
+                {activeTab === 'home' && (
+                  <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full max-w-[1600px] mx-auto items-stretch pb-4 lg:min-h-full flex-1">
+                    {selectedUser && (
+                      <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+                        <AdminProfileStats selectedUser={selectedUser} />
+                      </div>
+                    )}
+                    
+                    <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+                      <AdminTasksTime 
+                        selectedUser={selectedUser}
+                        users={users}
+                        setUsers={setUsers}
+                        setSelectedUser={setSelectedUser}
+                        availableModules={availableModules}
+                        tMenu={tMenu}
+                        handleToggleModuleAccess={handleToggleModuleAccess}
+                        handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                        onNavigateToAccess={() => setActiveTab('add')}
+                      />
+                    </div>
+                  </div>
+                )}
 
-            </div>
-          ) : null}
+                {activeTab === 'usersTable' && (
+                  <div className="w-full h-full flex-1">
+                    <AdminUsersTable 
+                      users={users}
+                      setUsers={setUsers}
+                      selectedUser={selectedUser}
+                      setSelectedUser={setSelectedUser}
+                      setActiveTab={setActiveTab}
+                    />
+                  </div>
+                )}
 
-          {!loading && activeTab === 'usersTable' && (
-            <AdminUsersTable 
-              users={users}
-              setUsers={setUsers}
-              selectedUser={selectedUser}
-              setSelectedUser={setSelectedUser}
-              setActiveTab={setActiveTab}
-            />
-          )}
+                {activeTab === 'add' && (
+                  <div className="w-full h-full flex-1">
+                    <AdminUserConfig 
+                      selectedUser={selectedUser}
+                      users={users}
+                      setUsers={setUsers}
+                      setSelectedUser={setSelectedUser}
+                      availableModules={availableModules}
+                      tMenu={tMenu}
+                      handleToggleModuleAccess={handleToggleModuleAccess}
+                      handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                    />
+                  </div>
+                )}
 
-          {!loading && activeTab === 'add' && (
-            <AdminUserConfig 
-              selectedUser={selectedUser}
-              users={users}
-              setUsers={setUsers}
-              setSelectedUser={setSelectedUser}
-              availableModules={availableModules}
-              tMenu={tMenu}
-              handleToggleModuleAccess={handleToggleModuleAccess}
-              handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-            />
-          )}
+                {activeTab === 'requests' && (
+                  <div className="w-full h-full flex-1">
+                    <AdminRequests 
+                      requests={requests}
+                      setRequests={setRequests}
+                      onRefresh={fetchData}
+                      availableModules={availableModules}
+                    />
+                  </div>
+                )}
 
-          {!loading && activeTab === 'requests' && (
-            <AdminRequests 
-              requests={requests}
-              setRequests={setRequests}
-              onRefresh={fetchData}
-              availableModules={availableModules}
-            />
-          )}
-
-          {!loading && activeTab === 'settings' && (
-            <div className="flex items-center justify-center h-full">
-              <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40">
-                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Settings size={32} />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">{t("tabSettingsTitle")}</h2>
-                <p className="text-muted-foreground mb-8">{t("tabSettingsDesc")}</p>
-              </div>
-            </div>
-          )}
+                {activeTab === 'settings' && (
+                  <div className="flex items-center justify-center flex-1 min-h-[420px]">
+                    <div className="bg-card rounded-2xl p-10 max-w-lg w-full text-center border border-border/40 shadow-xs">
+                      <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Settings size={32} />
+                      </div>
+                      <h2 className="text-2xl font-bold mb-2">{t("tabSettingsTitle")}</h2>
+                      <p className="text-muted-foreground mb-8">{t("tabSettingsDesc")}</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
     </div>

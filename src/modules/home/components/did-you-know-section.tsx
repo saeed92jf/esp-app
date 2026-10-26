@@ -231,7 +231,7 @@ const STORAGE_KEY = "esp_dyk_seen_ids_v2";
           className="w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_94%,transparent_100%)]"
           ref={emblaRef}
         >
-          <div className="flex w-full touch-pan-y pt-2.5 sm:pt-3 pb-7 sm:pb-9">
+          <div className="flex w-full touch-pan-y pt-1.5 sm:pt-2 pb-5 sm:pb-6">
             {cards.map((card, index) => {
               const isActive = index === selectedIndex;
 
@@ -247,7 +247,7 @@ const STORAGE_KEY = "esp_dyk_seen_ids_v2";
                   {/* Card Container: Only active card takes hover border and holds autoplay */}
                   <div
                     className={cn(
-                      "relative w-full h-[285px] sm:h-[310px] md:h-[325px] rounded-2xl sm:rounded-3xl transition-all duration-300",
+                      "relative w-full h-[270px] sm:h-[290px] md:h-[305px] rounded-2xl sm:rounded-3xl transition-all duration-300",
                       "border bg-card/95 dark:bg-[#0e1017]/95 backdrop-blur-2xl p-4.5 sm:p-6 md:p-7 flex flex-col justify-between overflow-hidden",
                       isActive
                         ? cn(

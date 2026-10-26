@@ -5,7 +5,7 @@ import { type NodeProps, type Node } from "@xyflow/react";
 import { Layers } from "lucide-react";
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
-import type { InternalsNodeData } from "@/modules/vessel-weight/schemas/internals.schema";
+import type { InternalsNodeData } from "@/modules/esp-flow/vessel/schemas/internals.schema";
 import { Input } from "@/components/ui/input";
 import {
   VesselNodeContainer,

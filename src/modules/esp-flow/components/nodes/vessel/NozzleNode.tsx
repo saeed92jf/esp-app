@@ -11,8 +11,8 @@ import {
 
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
-import type { NozzleNodeData, Nozzle } from "@/modules/vessel-weight/schemas/nozzle.schema";
-import { calcNozzleWeight } from "@/modules/vessel-weight/calculations/nozzle.calc";
+import type { NozzleNodeData, Nozzle } from "@/modules/esp-flow/vessel/schemas/nozzle.schema";
+import { calcNozzleWeight } from "@/modules/esp-flow/vessel/calculations/nozzle.calc";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";

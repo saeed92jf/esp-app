@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { ChevronDown, LayoutDashboard, Search as SearchIcon, ShieldCheck, User, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, Search as SearchIcon, User, X } from "lucide-react";
 import { Compass } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -187,9 +187,10 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                 exit={segmentedAccordionMotion.exit}
                 className="flex flex-col gap-[2px] overflow-hidden"
               >
-                {filteredNav.map((group) => {
+                {filteredNav.map((group, groupIdx) => {
                   const GroupIcon = group.icon;
                   const isExpanded = openGroup === group.id;
+                  const isLastGroup = groupIdx === filteredNav.length - 1;
 
                   return (
                     <div key={group.id} className="flex flex-col gap-[2px]">
@@ -197,7 +198,12 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                       <button
                         type="button"
                         onClick={() => setOpenGroup(isExpanded ? undefined : group.id)}
-                        className="segmented-item group relative flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold w-full text-foreground/90 outline-none cursor-pointer overflow-hidden rounded-[6px]"
+                        className={cn(
+                          "segmented-item group relative flex items-center justify-between gap-3 px-5 py-3.5 text-sm font-semibold w-full text-foreground/90 outline-none cursor-pointer overflow-hidden",
+                          isLastGroup && !isExpanded
+                            ? "rounded-t-[6px] rounded-b-[22px] sm:rounded-b-[26px]"
+                            : "rounded-[6px]"
+                        )}
                       >
                         <span className="relative z-10 flex items-center gap-3">
                           {GroupIcon && (
@@ -226,9 +232,10 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                             transition={{ duration: 0.12, ease: "easeOut" }}
                             className="flex flex-col gap-[2px]"
                           >
-                            {group.items.map((item) => {
+                            {group.items.map((item, itemIdx) => {
                               const ItemIcon = item.icon;
                               const isActive = pathname === item.href;
+                              const isLastItem = isLastGroup && itemIdx === group.items.length - 1;
 
                               return (
                                 <Link
@@ -236,7 +243,10 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                                   href={item.href}
                                   onClick={handleLinkClick}
                                   className={cn(
-                                    "segmented-item group relative flex items-center gap-3 px-5 py-3.5 text-sm font-medium w-full outline-none no-underline hover:no-underline overflow-hidden rounded-[6px]",
+                                    "segmented-item group relative flex items-center gap-3 px-5 py-3.5 text-sm font-medium w-full outline-none no-underline hover:no-underline overflow-hidden",
+                                    isLastItem
+                                      ? "rounded-t-[6px] rounded-b-[22px] sm:rounded-b-[26px]"
+                                      : "rounded-[6px]",
                                     isActive ? "text-primary font-semibold" : "text-foreground/80 hover:text-foreground"
                                   )}
                                 >
@@ -271,18 +281,6 @@ export function SideMenuContent({ onClose, showCloseButton = true }: SideMenuCon
                     </div>
                   );
                 })}
-
-                {/* Get Full Access Action */}
-                <div className="segmented-item flex flex-col overflow-hidden rounded-b-[22px] sm:rounded-b-[26px] rounded-t-[6px]">
-                  <Link
-                    href="/plans"
-                    onClick={handleLinkClick}
-                    className="relative flex items-center justify-start gap-4 px-5 py-4 text-sm font-semibold w-full text-foreground/90 outline-none cursor-pointer"
-                  >
-                    <ShieldCheck className="relative z-10 size-5 text-foreground/90" />
-                    <span className="relative z-10">{tMenu("getFullAccess")}</span>
-                  </Link>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

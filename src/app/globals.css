@@ -80,6 +80,42 @@ textarea,
   backface-visibility: hidden;
 }
 
+/* ============================================
+   CRISP VECTOR & SVG ICON RENDERING ENGINE
+   Guarantees zero pixelation, razor-sharp edges,
+   and prevents subpixel blur across all displays
+   without any weight or performance overhead.
+   ============================================ */
+svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  image-rendering: -webkit-optimize-contrast;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+svg path,
+svg circle,
+svg line,
+svg rect,
+svg polyline,
+svg polygon {
+  shape-rendering: geometricPrecision;
+}
+
+/* Filled icon silhouettes must not inherit border strokes */
+svg[fill="currentColor"]:not([stroke]) {
+  stroke-width: 0;
+}
+
+/* Button & interactive element SVG hardware alignment */
+button svg,
+a svg,
+[role="button"] svg {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
 .auto-direction {
   direction: auto;
 }

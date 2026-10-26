@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   X,
   Plus,
@@ -46,6 +46,7 @@ interface TaskCreateDialogProps {
   currentUserName?: string;
   isAdmin?: boolean;
   userInvolvedProjects?: ProjectItem[];
+  availableProjects?: ProjectItem[];
 }
 
 export function TaskCreateDialog({
@@ -59,13 +60,22 @@ export function TaskCreateDialog({
   currentUserName,
   isAdmin = false,
   userInvolvedProjects = [],
+  availableProjects = [],
 }: TaskCreateDialogProps) {
   const t = useTranslations("Tasks");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const userLead = currentUserName || "سعید جلیلی";
 
   // Non-admins can strictly ONLY create personal tasks.
   // Admins can toggle between 'team' (organizational) and 'personal'.
   const [scope, setScope] = useState<TaskScope>(isAdmin ? initialScope : "personal");
+
+  // All selectable projects combining organization projects and user involved projects
+  const allSelectableProjects = React.useMemo(() => {
+    if (availableProjects.length > 0) return availableProjects;
+    return userInvolvedProjects;
+  }, [availableProjects, userInvolvedProjects]);
 
   // For personal tasks: linked to an involved project vs standalone
   const [personalType, setPersonalType] = useState<"project" | "standalone">("project");
@@ -110,15 +120,17 @@ export function TaskCreateDialog({
   useEffect(() => {
     if (open) {
       setScope(isAdmin ? initialScope : "personal");
-      if (userInvolvedProjects.length > 0) {
-        setSelectedProjectId(userInvolvedProjects[0].id);
-        setRelatedProjectTitle(userInvolvedProjects[0].title);
-        if (userInvolvedProjects[0].organization) {
-          setCompany(userInvolvedProjects[0].organization);
+      if (allSelectableProjects.length > 0) {
+        if (!isAdmin || initialScope === "personal") {
+          setSelectedProjectId(allSelectableProjects[0].id);
+          setRelatedProjectTitle(allSelectableProjects[0].title);
+          if (allSelectableProjects[0].organization) {
+            setCompany(allSelectableProjects[0].organization);
+          }
         }
       }
     }
-  }, [open, initialScope, isAdmin, userInvolvedProjects]);
+  }, [open, initialScope, isAdmin, allSelectableProjects]);
 
   useEffect(() => {
     if (!open) return;
@@ -175,7 +187,12 @@ export function TaskCreateDialog({
       let linkedProjId: string | undefined = undefined;
       let linkedProjTitle: string | undefined = undefined;
 
-      if (isPersonalTask && personalType === "project") {
+      if (isPersonalTask) {
+        if (personalType === "project") {
+          linkedProjId = selectedProjectId || (relatedProjectTitle ? "proj-custom" : undefined);
+          linkedProjTitle = relatedProjectTitle.trim() || undefined;
+        }
+      } else {
         linkedProjId = selectedProjectId || (relatedProjectTitle ? "proj-custom" : undefined);
         linkedProjTitle = relatedProjectTitle.trim() || undefined;
       }
@@ -356,16 +373,16 @@ export function TaskCreateDialog({
                   <label className="text-[11px] font-semibold text-emerald-900 dark:text-emerald-300">
                     {t("createModal.selectProjectLabel")}
                   </label>
-                  {userInvolvedProjects.length > 0 ? (
+                  {allSelectableProjects.length > 0 ? (
                     <Combobox
-                      options={userInvolvedProjects.map((p) => ({
+                      options={allSelectableProjects.map((p) => ({
                         value: p.id,
                         label: `${p.title} (${p.code})`,
                       }))}
                       value={selectedProjectId}
                       onChange={(val) => {
                         setSelectedProjectId(val);
-                        const found = userInvolvedProjects.find((x) => x.id === val);
+                        const found = allSelectableProjects.find((x) => x.id === val);
                         if (found) {
                           setRelatedProjectTitle(found.title);
                           if (found.organization) {
@@ -374,7 +391,8 @@ export function TaskCreateDialog({
                         }
                       }}
                       placeholder={t("createModal.selectProjectPlaceholder")}
-                      className="text-xs rounded-xl bg-white dark:bg-card"
+                      emptyText={t("createModal.noProjectsFound")}
+                      className="text-xs rounded-xl bg-white dark:bg-card rtl:text-right"
                     />
                   ) : (
                     <Input
@@ -385,6 +403,56 @@ export function TaskCreateDialog({
                     />
                   )}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Team Task Project Association ── */}
+          {!isPersonalActive && (
+            <div className="p-3.5 rounded-2xl bg-card/60 border border-border/80 flex flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Briefcase className="size-3.5 text-primary" />
+                  <span>{t("createModal.selectProjectLabel")}</span>
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  {t("createModal.projectOptionalHint")}
+                </span>
+              </div>
+
+              {allSelectableProjects.length > 0 ? (
+                <Combobox
+                  options={[
+                    { value: "", label: t("createModal.optionalProjectLink") },
+                    ...allSelectableProjects.map((p) => ({
+                      value: p.id,
+                      label: `${p.title} (${p.code})${p.organization ? ` • ${p.organization}` : ""}`,
+                    })),
+                  ]}
+                  value={selectedProjectId}
+                  onChange={(val) => {
+                    setSelectedProjectId(val);
+                    const found = allSelectableProjects.find((x) => x.id === val);
+                    if (found) {
+                      setRelatedProjectTitle(found.title);
+                      if (found.organization) {
+                        setCompany(found.organization);
+                      }
+                    } else {
+                      setRelatedProjectTitle("");
+                    }
+                  }}
+                  placeholder={t("createModal.selectProjectPlaceholder")}
+                  emptyText={t("createModal.noProjectsFound")}
+                  className="text-xs rounded-xl bg-background rtl:text-right"
+                />
+              ) : (
+                <Input
+                  value={relatedProjectTitle}
+                  onChange={(e) => setRelatedProjectTitle(e.target.value)}
+                  placeholder={t("createModal.customProjectPlaceholder")}
+                  className="text-xs rounded-xl bg-background"
+                />
               )}
             </div>
           )}

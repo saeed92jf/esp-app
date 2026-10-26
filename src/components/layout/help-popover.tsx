@@ -75,9 +75,13 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                 ref={triggerRef}
                 variant="ghost" 
                 size="icon" 
-                className={cn("hidden sm:inline-flex", triggerClassName || HEADER_ICON_BUTTON_CLASS)}
+                className={cn(
+                  "hidden sm:inline-flex",
+                  triggerClassName || HEADER_ICON_BUTTON_CLASS,
+                  open && "!text-blue-600 dark:!text-blue-400"
+                )}
               >
-                <HelpCircle className={cn(iconClassName || HEADER_ICON_CLASS)} />
+                <HelpCircle className={cn(iconClassName || HEADER_ICON_CLASS, open && "!text-blue-600 dark:!text-blue-400")} />
               </Button>
             </PopoverTrigger>
           </TooltipTrigger>
@@ -116,7 +120,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
                     : "opacity-0 scale-90 translate-y-2 pointer-events-none"
                 )}
               >
-                <span className="text-2xl sm:text-3xl font-black text-primary leading-none select-none">?</span>
+                <span className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 leading-none select-none">?</span>
               </div>
               <span 
                 className={cn(
@@ -163,7 +167,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
               >
                 <div className="relative z-10 flex items-center gap-3.5 flex-1 min-w-0">
                   <div className="flex items-center justify-center size-12 sm:size-14 shrink-0 select-none">
-                    <span className="text-5xl sm:text-6xl font-black text-primary mb-1 leading-none">?</span>
+                    <span className="text-5xl sm:text-6xl font-black text-blue-600 dark:text-blue-400 mb-1 leading-none">?</span>
                   </div>
                   <div className="flex flex-col items-start gap-0.5 flex-1 min-w-0">
                     <h3 className="font-extrabold text-base sm:text-lg text-foreground tracking-tight truncate w-full text-start">{t("title")}</h3>

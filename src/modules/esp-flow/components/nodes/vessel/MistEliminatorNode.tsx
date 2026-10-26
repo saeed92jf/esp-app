@@ -10,8 +10,8 @@ import type {
   MistEliminatorNodeData, 
   MistEliminatorItem,
   DemisterData,
-} from "@/modules/vessel-weight/schemas/mistEliminator.schema";
-import { calcDemisterWeight } from "@/modules/vessel-weight/calculations/mistEliminator.calc";
+} from "@/modules/esp-flow/vessel/schemas/mistEliminator.schema";
+import { calcDemisterWeight } from "@/modules/esp-flow/vessel/calculations/mistEliminator.calc";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";

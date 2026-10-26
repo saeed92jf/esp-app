@@ -49,6 +49,9 @@ type TabKey =
 interface ProjectWorkspacePageProps {
   projectId: string;
   initialTab?: TabKey;
+  activeTab?: TabKey;
+  onTabChange?: (tab: TabKey) => void;
+  onBackToProjects?: () => void;
   roleMode?: "admin" | "user";
   currentUserName?: string;
 }
@@ -56,12 +59,23 @@ interface ProjectWorkspacePageProps {
 export function ProjectWorkspacePage({
   projectId,
   initialTab = "overview",
+  activeTab: propActiveTab,
+  onTabChange,
+  onBackToProjects,
   roleMode: propRoleMode,
   currentUserName: propCurrentUserName,
 }: ProjectWorkspacePageProps) {
   const t = useTranslations("Projects");
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  const [internalActiveTab, setInternalActiveTab] = useState<TabKey>(initialTab);
+  const activeTab = propActiveTab || internalActiveTab;
+  const setActiveTab = (tab: TabKey) => {
+    if (onTabChange) {
+      onTabChange(tab);
+    } else {
+      setInternalActiveTab(tab);
+    }
+  };
 
   const [internalRoleMode, setInternalRoleMode] = useState<"admin" | "user">(
     propRoleMode || "admin"
@@ -124,7 +138,7 @@ export function ProjectWorkspacePage({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => router.push("/fa/dashboard/projects")}
+          onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/dashboard/projects"))}
         >
           بازگشت به لیست پروژه‌ها
         </Button>
@@ -189,10 +203,10 @@ export function ProjectWorkspacePage({
         {/* Navigation Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <button
-            onClick={() => router.push("/fa/dashboard/projects")}
+            onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/dashboard/projects"))}
             className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer"
           >
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />
             <span>بازگشت به فهرست پروژه‌ها</span>
           </button>
 
@@ -319,7 +333,20 @@ export function ProjectWorkspacePage({
         {activeTab === "overview" && (
           <ProjectOverviewTab
             project={project}
+            roleMode={activeRoleMode}
+            currentUserName={activeCurrentUserName}
+            isManager={isManager}
             onAddTeamMember={isManager ? addTeamMember : undefined}
+            onAddPhase={isManager ? addPhase : undefined}
+            onUpdatePhase={isManager ? updatePhase : undefined}
+            onAddTask={addTask}
+            onUpdateTaskStatus={updateTaskStatus}
+            onUploadVdisDocument={uploadVdisDocument}
+            onCreateTransmittal={createTransmittal}
+            onManagerApproveTransmittal={managerApproveTransmittal}
+            onManagerRejectTransmittal={managerRejectTransmittal}
+            onAddRisk={addRisk}
+            onUpdateRiskStatus={updateRiskStatus}
           />
         )}
         {activeTab === "phases" && (

@@ -78,6 +78,7 @@ export function AnimatedHamburger({
         viewBox="0 0 24 24"
         className={cn("w-full h-full overflow-visible", lineClassName)}
         fill="none"
+        shapeRendering="geometricPrecision"
       >
         {/* ── Row 1: Top Dot & Line ── */}
         <motion.circle

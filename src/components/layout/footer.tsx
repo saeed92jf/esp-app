@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { isPanelBackgroundRoute } from '@/lib/constants';
 import {
   detectClientIp,
   resolveLocationFromIp,
@@ -19,6 +20,8 @@ export interface FooterLinkItem {
 
 export interface FooterProps {
   className?: string;
+  /** Visual variant: 'default' (transparent) | 'panel' (bg-panel). If omitted, auto-detected from route. */
+  variant?: 'default' | 'panel';
   /** Custom links to replace default navigation links (privacy, terms, sitemap) */
   links?: FooterLinkItem[];
   /** Optional custom React node for replacing the links container completely */
@@ -29,12 +32,13 @@ export interface FooterProps {
   topRowEnd?: React.ReactNode;
   /** Optional start offset class for alignment (used in search or aligned layouts) */
   startOffsetClass?: string;
-  /** Force transparent or opaque footer */
+  /** Force transparent or custom background styling (defaults to true / background-less) */
   isTransparent?: boolean;
 }
 
 export function Footer({
   className,
+  variant,
   links,
   linksSlot,
   topRowExtra,
@@ -44,21 +48,18 @@ export function Footer({
 }: FooterProps = {}) {
   const tCommon = useTranslations('Common');
   const locale = useLocale();
+  const isRtl = locale === 'fa';
   const pathname = usePathname();
   const year = new Date().getFullYear();
 
-  const isTransparentFooter =
-    isTransparent !== undefined
-      ? isTransparent
-      : pathname === '/' ||
-        pathname === '' ||
-        pathname === '/login' ||
-        pathname === '/register' ||
-        pathname === '/account-request' ||
-        pathname === '/account-pending' ||
-        pathname.startsWith('/forgot-password') ||
-        pathname.startsWith('/reset-password') ||
-        pathname.startsWith('/verify-email');
+  const isPanelBg =
+    variant !== undefined
+      ? variant === 'panel'
+      : isPanelBackgroundRoute(pathname);
+
+  const isSearchPage = pathname === '/search' || pathname.startsWith('/search/');
+  const effectiveStartOffset =
+    startOffsetClass || (isSearchPage ? 'w-[124px] md:w-[136px] lg:w-[152px] xl:w-[170px] shrink-0' : undefined);
 
   const [ipAddress, setIpAddress] = useState<string>('192.168.10.45');
 
@@ -97,38 +98,41 @@ export function Footer({
   return (
     <footer
       className={cn(
-        'fa-num w-full mt-auto relative text-xs select-none flex flex-col h-[var(--footer-height)] shrink-0 justify-between overflow-hidden z-20',
-        isTransparentFooter
-          ? 'border-t-0 bg-transparent'
-          : 'border-t border-border/40 bg-background/85 dark:bg-background/90 backdrop-blur-md',
+        'w-full mt-auto relative text-xs select-none flex flex-col h-[var(--footer-height)] min-h-[var(--footer-height)] max-h-[var(--footer-height)] shrink-0 justify-center border-none z-20 px-3 sm:px-8 box-border overflow-hidden transition-colors',
+        isTransparent
+          ? 'bg-transparent'
+          : isPanelBg
+          ? 'bg-panel dark:bg-background'
+          : 'bg-transparent',
+        isRtl && 'fa-num',
         className
       )}
     >
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 1. TOP ROW: Location & Status                                 */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full h-6 shrink-0 px-3 sm:px-8 flex items-center justify-between">
-        <div className="flex items-center">
-          {startOffsetClass && (
-            <div className={cn('hidden sm:block', startOffsetClass)} aria-hidden="true" />
+      <div className="w-full h-5 sm:h-5.5 shrink-0 flex items-center justify-between gap-2 overflow-hidden leading-none">
+        <div className="flex items-center min-w-0">
+          {effectiveStartOffset && (
+            <div className={cn('hidden sm:block', effectiveStartOffset)} aria-hidden="true" />
           )}
-          <div className="flex items-center gap-1.5 font-semibold text-[11px] sm:text-xs text-foreground/90">
-            <span className="relative flex size-2">
+          <div className="flex items-center gap-1.5 font-semibold text-[11px] sm:text-xs text-foreground/85 truncate">
+            <span className="relative flex size-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
             </span>
-            <span>{resolved.locationName}</span>
+            <span className="truncate">{resolved.locationName}</span>
             {topRowExtra && (
               <>
-                <span className="opacity-30">•</span>
-                <span className="font-normal text-[11px] text-muted-foreground">{topRowExtra}</span>
+                <span className="opacity-30 shrink-0">•</span>
+                <span className="font-normal text-[11px] text-muted-foreground truncate">{topRowExtra}</span>
               </>
             )}
           </div>
         </div>
 
         {topRowEnd && (
-          <div className="text-[11px] text-muted-foreground hidden sm:flex items-center gap-2">
+          <div className="text-[11px] text-muted-foreground hidden sm:flex items-center gap-2 shrink-0">
             {topRowEnd}
           </div>
         )}
@@ -137,10 +141,10 @@ export function Footer({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 2. BOTTOM ROW: Copyright & Navigation Links                  */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full h-8 flex-1 min-h-0 flex items-center justify-between px-3 sm:px-8">
-        <div className="flex items-center">
-          {startOffsetClass && (
-            <div className={cn('hidden sm:block', startOffsetClass)} aria-hidden="true" />
+      <div className="w-full h-6 sm:h-6.5 shrink-0 flex items-center justify-between gap-3 overflow-hidden leading-none">
+        <div className="flex items-center min-w-0">
+          {effectiveStartOffset && (
+            <div className={cn('hidden sm:block', effectiveStartOffset)} aria-hidden="true" />
           )}
           {/* Copyright */}
           <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-300 tracking-wider truncate font-medium shrink-0">
@@ -154,7 +158,7 @@ export function Footer({
         {linksSlot ? (
           linksSlot
         ) : (
-          <nav className="flex items-center gap-2.5 sm:gap-6 text-[10.5px] sm:text-[12px] font-medium shrink-0">
+          <nav className="flex items-center gap-3 sm:gap-6 text-[10.5px] sm:text-[12px] font-medium shrink-0 whitespace-nowrap">
             {linksToRender.map((link, idx) => {
               const isExternal =
                 link.external ||

@@ -24,6 +24,7 @@ import {
   UserPlus,
   UserMinus,
   Sparkles,
+  FolderGit2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,6 +209,13 @@ export function TaskDetailDrawer({
                 </span>
               )}
 
+              {task.relatedProjectTitle && (
+                <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-500/25 flex items-center gap-1.5">
+                  <FolderGit2 className="size-3.5" />
+                  <span>{task.relatedProjectTitle}</span>
+                </span>
+              )}
+
               {task.isManagerDefined && (
                 <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
                   <ShieldAlert className="size-3.5" />
@@ -368,6 +376,17 @@ export function TaskDetailDrawer({
 
               {/* Metadata Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                {task.relatedProjectTitle && (
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-between col-span-1 sm:col-span-2">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <FolderGit2 className="size-3.5 text-primary" />
+                      {t("detailPage.fields.scope")}:
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {task.relatedProjectTitle}
+                    </span>
+                  </div>
+                )}
                 <div className="p-3 rounded-xl bg-muted/20 border border-border/40 flex items-center justify-between">
                   <span className="text-muted-foreground flex items-center gap-1.5">
                     <Building2 className="size-3.5" />

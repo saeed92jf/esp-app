@@ -1293,14 +1293,13 @@ export function DictionaryPage() {
   );
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
       {/* 1. App Header with Tag = "dictionary" */}
       <AppHeader
         tag="dictionary"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
-        position="absolute"
       />
 
       {/* Toast Notification Popup - Strictly centered on screen vertical axis */}
@@ -1318,7 +1317,7 @@ export function DictionaryPage() {
         )}
       </AnimatePresence>
 
-      <div className="flex flex-1 overflow-hidden w-full relative pt-[72px]">
+      <div className="flex flex-1 w-full relative">
         {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
           <div
@@ -1331,8 +1330,8 @@ export function DictionaryPage() {
         {/* 2. Sidebar Navigation (Directly following Profile Page Layout) */}
         <aside
           className={cn(
-            "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none",
-            "absolute md:relative start-0 top-0",
+            "flex flex-col shrink-0 sticky top-[var(--header-height)] self-start max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none",
+            "absolute md:sticky start-0 top-0 md:top-[var(--header-height)]",
             sidebarOpen
               ? "w-64 ps-3 sm:ps-6 pe-4 py-6 translate-x-0 opacity-100 shadow-xl md:shadow-none"
               : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto md:w-[90px] md:px-0 md:py-6"
@@ -1403,7 +1402,7 @@ export function DictionaryPage() {
         </aside>
 
         {/* 3. Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
+        <main className="flex-1 bg-transparent w-full relative z-10 min-h-0">
           {activeTab === "browse" && renderBrowseView()}
           {activeTab === "add" && renderAddWordView()}
           {activeTab === "bookmarks" && renderBookmarksView()}

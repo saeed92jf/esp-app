@@ -65,7 +65,7 @@ export function Header() {
           />
           <NotificationsPopover
             triggerClassName={HEADER_ICON_BUTTON_CLASS}
-            iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+            iconClassName="size-5 shrink-0"
           />
           <AppsPopover
             triggerClassName={cn(HEADER_ICON_BUTTON_CLASS, "hidden xs:inline-flex")}
@@ -113,8 +113,11 @@ export function Header() {
     </div>
   );
 
+  const isSitemapPage = pathname === "/sitemap" || pathname.startsWith("/sitemap/");
+
   return (
     <AppHeader
+      tag={isSitemapPage ? "sitemap" : undefined}
       menuTrigger={<SideMenu />}
       logoHref="/"
       rightActions={rightActions}

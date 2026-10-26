@@ -14,8 +14,8 @@ import type {
   TurningLugData,
   InsulationSupportData,
   AttachmentType
-} from "@/modules/vessel-weight/schemas/attachments.schema";
-import { calcAttachmentWeight } from "@/modules/vessel-weight/calculations/attachments.calc";
+} from "@/modules/esp-flow/vessel/schemas/attachments.schema";
+import { calcAttachmentWeight } from "@/modules/esp-flow/vessel/calculations/attachments.calc";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

@@ -5,19 +5,16 @@ import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence, type Variants } from "motion/react";
 import {
   BookA,
-  BookOpen,
-  CheckSquare,
   Lightbulb,
   Headphones,
   UserPlus,
   LogIn,
 } from "lucide-react";
-import { SquaresFour } from "@phosphor-icons/react";
+import { Kanban, ListChecks, SquaresFour } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
 import { SiteSearch } from "@/components/features/search/site-search";
 import { QuickAccessSection } from "@/components/features/quick-access";
-import { Container } from "@/components/layout/container";
 import { FeaturedModulesCard } from "@/modules/home/components/featured-modules-card";
 import { HomeSidebar } from "@/modules/home/components/home-sidebar";
 import { useHomeSidebar } from "@/modules/home/hooks/use-home-sidebar";
@@ -129,11 +126,11 @@ export function HomeClient() {
 
 
   return (
-    <div className="relative w-full flex-1 flex flex-col min-h-[var(--home-height)] select-none">
+    <div className="relative w-full flex-1 flex flex-col min-h-[var(--home-height)] h-[var(--home-height)] select-none overflow-hidden">
       {/* Docked Inline Home Sidebar */}
       <HomeSidebar />
 
-      <div className="relative flex w-full flex-1">
+      <div className="relative flex w-full flex-1 h-full min-h-0">
         {/* Animated Spacer pushing the content aside on desktop ONLY */}
         <motion.div
           initial={false}
@@ -149,7 +146,7 @@ export function HomeClient() {
         />
 
         {/* Center content container */}
-        <div className="flex-1 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col">
+        <div className="flex-1 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col h-full min-h-0">
           {/* Backdrop click catcher when sidebar is open on desktop */}
           {isOpen && !isMobile && (
             <div
@@ -163,13 +160,13 @@ export function HomeClient() {
             /* ======================================================== */
             /* 1. AUTHENTICATED USER VIEW (HERO + SEARCH + QUICK ACCESS) */
             /* ======================================================== */
-            <div className="relative flex flex-1 w-full flex-col items-center justify-center text-center py-3 sm:py-5 my-auto min-h-0">
-              <Container>
+            <div className="relative w-full flex-1 h-full min-h-0 flex flex-col items-center justify-center p-3 sm:p-6 overflow-y-auto custom-scrollbar">
+              <div className="w-full max-w-4xl mx-auto flex flex-col items-center justify-center my-auto">
                 <motion.div
                   initial="hidden"
                   animate="show"
                   variants={staggerContainer}
-                  className="relative mx-auto w-full flex flex-col items-center"
+                  className="w-full flex flex-col items-center justify-center"
                 >
                   <div className="w-full max-w-2xl flex flex-col items-center">
                     {/* Google-Inspired Logo */}
@@ -190,27 +187,27 @@ export function HomeClient() {
                       />
                     </motion.div>
 
-                    {/* Quick Access Tag-like Buttons under Search */}
+                    {/* Quick Access Tag-like Buttons under Search (In English: project, task, dashboard from left to right) */}
                     <motion.div
                       variants={fadeUp}
-                      className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mt-3 sm:mt-3.5"
+                      className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mt-4 sm:mt-5"
                     >
-                      {/* Dictionary Tag */}
+                      {/* Project Tag */}
                       <Link
-                        href="/dictionary"
+                        href="/dashboard/projects"
                         className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
                       >
-                        <BookOpen className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
-                        <span>{isRtl ? "دیکشنری" : "Dictionary"}</span>
+                        <Kanban className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
+                        <span>{t("hero.tags.projects")}</span>
                       </Link>
 
-                      {/* Did You Know Tag */}
+                      {/* Task Tag */}
                       <Link
-                        href="/did-you-know"
+                        href="/dashboard/tasks"
                         className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
                       >
-                        <Lightbulb className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
-                        <span>{isRtl ? "آیا می‌دانید" : "Did You Know"}</span>
+                        <ListChecks className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
+                        <span>{t("hero.tags.tasks")}</span>
                       </Link>
 
                       {/* Dashboard Tag */}
@@ -219,16 +216,7 @@ export function HomeClient() {
                         className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
                       >
                         <SquaresFour className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
-                        <span>{isRtl ? "داشبورد" : "Dashboard"}</span>
-                      </Link>
-
-                      {/* Tasks Tag */}
-                      <Link
-                        href="/dashboard/tasks"
-                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
-                      >
-                        <CheckSquare className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" />
-                        <span>{isRtl ? "تسک‌ها" : "Tasks"}</span>
+                        <span>{t("hero.tags.dashboard")}</span>
                       </Link>
                     </motion.div>
                   </div>
@@ -238,75 +226,77 @@ export function HomeClient() {
                     <QuickAccessSection onEditModeChange={setIsQuickAccessEditing} />
                   </motion.div>
                 </motion.div>
-              </Container>
+              </div>
             </div>
           ) : (
             /* ======================================================== */
             /* 2. GUEST / UNAUTHENTICATED SHOWCASE (4 TABS)             */
             /* ======================================================== */
-            <div className="relative w-full flex-1 flex flex-col">
-              {/* Tab Content Display Area */}
+            <div className="relative w-full flex-1 flex flex-col h-full min-h-0 justify-between overflow-hidden">
+              {/* Tab Content Display Area: Vertically Centered Parent Container */}
               <div
                 ref={guestScrollRef}
-                className="flex-1 w-full relative flex flex-col"
+                className="flex-1 w-full relative flex flex-col items-center justify-center min-h-0 overflow-y-auto custom-scrollbar px-2 sm:px-4 py-2"
               >
-                <AnimatePresence mode="wait">
-                  {/* TAB 1: DICTIONARY (Specialized Engineering Dictionary & Daily Tips) */}
-                  {activeGuestTab === "dictionary" && (
-                    <motion.div
-                      key="dictionary"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-full flex-1 flex flex-col items-center justify-between pt-0 pb-2 px-2 sm:px-4 h-full min-h-0"
-                    >
-                      <EngineeringDictionary className="flex-1 h-full min-h-0" />
-                    </motion.div>
-                  )}
+                <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center my-auto">
+                  <AnimatePresence mode="wait">
+                    {/* TAB 1: DICTIONARY (Specialized Engineering Dictionary & Daily Tips) */}
+                    {activeGuestTab === "dictionary" && (
+                      <motion.div
+                        key="dictionary"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        <EngineeringDictionary className="w-full justify-center" />
+                      </motion.div>
+                    )}
 
-                  {/* TAB 2: INSIGHTS (Scientific & Engineering Did You Know Cards) */}
-                  {activeGuestTab === "insights" && (
-                    <motion.div
-                      key="insights"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-full flex-1 flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
-                    >
-                      <DidYouKnowSection />
-                    </motion.div>
-                  )}
+                    {/* TAB 2: INSIGHTS (Scientific & Engineering Did You Know Cards) */}
+                    {activeGuestTab === "insights" && (
+                      <motion.div
+                        key="insights"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        <DidYouKnowSection className="w-full justify-center" />
+                      </motion.div>
+                    )}
 
-                  {/* TAB 3: FEATURED (Showcase of latest and most important modules) */}
-                  {activeGuestTab === "featured" && (
-                    <motion.div
-                      key="featured"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-full flex-1 relative flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
-                    >
-                      <FeaturedModulesCard />
-                    </motion.div>
-                  )}
+                    {/* TAB 3: FEATURED (Showcase of latest and most important modules) */}
+                    {activeGuestTab === "featured" && (
+                      <motion.div
+                        key="featured"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        <FeaturedModulesCard className="w-full justify-center" />
+                      </motion.div>
+                    )}
 
-                  {/* TAB 4: SUPPORT (Direct Support Contact & Overview) */}
-                  {activeGuestTab === "support" && (
-                    <motion.div
-                      key="support"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="w-full flex-1 flex flex-col items-center justify-center pt-2 pb-3 px-2 sm:px-4 my-auto"
-                    >
-                      <SupportSection />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                    {/* TAB 4: SUPPORT (Direct Support Contact & Overview) */}
+                    {activeGuestTab === "support" && (
+                      <motion.div
+                        key="support"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full flex flex-col items-center justify-center"
+                      >
+                        <SupportSection className="w-full justify-center" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Bottom Navigation Dock & Action Bar (Cleanly Placed BELOW Content, No Top Border, Transparent Background) */}

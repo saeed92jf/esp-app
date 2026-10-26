@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { ChevronRight } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { AnimatedHamburger } from "@/components/ui/animated-hamburger";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
@@ -14,11 +14,19 @@ import { AppsPopover } from "@/components/layout/apps-popover";
 import { NotificationsPopover } from "@/modules/dashboard/components/notifications/notifications-popover";
 import { DashboardAvatar } from "@/modules/dashboard/components/dashboard-avatar";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
-import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
+import {
+  HEADER_ICON_BUTTON_CLASS,
+  HEADER_ICON_CLASS,
+  isPanelBackgroundRoute,
+} from "@/lib/constants";
 
 export interface AppHeaderProps {
+  /** Optional background variant: 'panel' for non-white pages, 'default' for standard white. Auto-detected from route if omitted. */
+  variant?: "default" | "panel";
   /** Optional page tag / badge displayed in front of the logo in a simple font (e.g. "dashboard", "admin panel", "account") */
   tag?: React.ReactNode;
+  /** Optional secondary sub-tag displayed after tag with a breadcrumb arrow (e.g. "overview") */
+  subTag?: React.ReactNode;
   /** Custom click handler for toggling the page's side menu */
   onToggleMenu?: () => void;
   /** Whether the side menu is currently open */
@@ -47,7 +55,9 @@ export interface AppHeaderProps {
  * Unified Base Header for all application pages (Home, Dashboard, Profile, Admin, etc.)
  */
 export function AppHeader({
+  variant,
   tag,
+  subTag,
   onToggleMenu,
   isMenuOpen,
   showMenuButton = true,
@@ -64,6 +74,12 @@ export function AppHeader({
   const tHeader = useTranslations("Header");
   const locale = useLocale();
   const isFa = locale === "fa";
+  const pathname = usePathname();
+
+  const isPanelBg =
+    variant !== undefined
+      ? variant === "panel"
+      : isPanelBackgroundRoute(pathname);
 
   let displayTag: React.ReactNode = tag;
   if (typeof tag === "string") {
@@ -78,13 +94,27 @@ export function AppHeader({
     }
   }
 
+  let displaySubTag: React.ReactNode = subTag;
+  if (typeof subTag === "string") {
+    const cleanSubKey = subTag.toLowerCase().trim().replace(/^\.+/, "");
+    if (tHeader.has(`tags.${cleanSubKey}`)) {
+      displaySubTag = tHeader(`tags.${cleanSubKey}`);
+    } else {
+      displaySubTag = subTag;
+    }
+    if (!isFa && typeof displaySubTag === "string") {
+      displaySubTag = displaySubTag.toUpperCase();
+    }
+  }
+
   return (
     <header
       className={cn(
-        "z-[60] top-0 left-0 right-0 w-full h-[var(--header-height)] flex items-center justify-between ps-0 pe-2.5 sm:pe-6 shrink-0 bg-transparent backdrop-blur-2xl border-none shadow-none",
-        position === 'sticky' && "sticky",
-        position === 'absolute' && "absolute",
-        position === 'fixed' && "fixed",
+        "top-0 z-[60] left-0 right-0 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] flex items-center justify-between ps-0 pe-2.5 sm:pe-6 shrink-0 backdrop-blur-xl border-none transition-colors shadow-none box-border",
+        position === 'absolute' ? 'absolute' : position === 'fixed' ? 'fixed' : 'sticky',
+        isPanelBg
+          ? "bg-panel/80 dark:bg-background/80"
+          : "bg-background/80 dark:bg-background/80",
         className
       )}
     >
@@ -139,6 +169,24 @@ export function AppHeader({
             >
               {displayTag}
             </span>
+            {subTag && (
+              <>
+                <ChevronRight
+                  className="size-3.5 sm:size-4 text-muted-foreground/60 rtl:rotate-180 shrink-0 stroke-[2.2]"
+                  aria-hidden="true"
+                />
+                <span
+                  className={cn(
+                    "text-[12px] sm:text-[14px] text-foreground font-bold select-none max-w-[120px] sm:max-w-none truncate",
+                    isFa
+                      ? "relative -top-[1.5px] sm:-top-[2px] tracking-normal leading-tight"
+                      : "uppercase tracking-[0.06em] leading-none"
+                  )}
+                >
+                  {displaySubTag}
+                </span>
+              </>
+            )}
           </div>
         )}
 
@@ -160,7 +208,7 @@ export function AppHeader({
             {user && showNotifications && (
               <NotificationsPopover
                 triggerClassName={HEADER_ICON_BUTTON_CLASS}
-                iconClassName="size-[18px] sm:size-[19px] stroke-[2.2]"
+                iconClassName="size-5 shrink-0"
               />
             )}
             <AppsPopover

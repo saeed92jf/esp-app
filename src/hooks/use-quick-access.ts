@@ -15,11 +15,11 @@ export const ALL_SELECTABLE_ITEMS: NavItem[] = NAVIGATION.filter(
 ).flatMap((g) => g.items);
 
 const DEFAULT_HREFS: string[] = [
-  "/projects",
-  "/employees",
-  "/media/images",
-  "/marketing/campaigns",
-  "/documentArchive/documents",
+  "/ESP-Flow",
+  "/dashboard/tasks",
+  "/dashboard/projects",
+  "/dictionary",
+  "/did-you-know",
 ];
 
 export function useQuickAccess() {

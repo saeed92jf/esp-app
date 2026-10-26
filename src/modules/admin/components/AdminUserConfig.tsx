@@ -95,7 +95,7 @@ const INITIAL_FORM: FormState = {
   educationField: "",
   workMode: "office",
   modulesAccess: [
-    { moduleId: "/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+    { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
     { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
   ],
 };
@@ -344,7 +344,7 @@ export function AdminUserConfig({
   const PrevArrow = isRtl ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full max-w-[1440px] mx-auto min-h-0 overflow-y-auto pr-1 pb-12 scrollbar-hide fade-in-0 animate-in zoom-in-95 duration-300 items-start">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 w-full max-w-[1440px] mx-auto min-h-0 overflow-y-auto pr-1 pb-12 scrollbar-hide items-start">
       {/* ======================================================== */}
       {/* MAIN COLUMN: CREATE USER WIZARD (SEGMENT LIST + ACCORDION) */}
       {/* ======================================================== */}

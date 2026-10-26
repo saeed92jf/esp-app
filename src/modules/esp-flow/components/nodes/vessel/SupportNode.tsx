@@ -6,13 +6,13 @@ import { ArrowDownToLine } from "lucide-react";
 
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
-import type { SupportNodeData, SupportType } from "@/modules/vessel-weight/schemas/support.schema";
+import type { SupportNodeData, SupportType } from "@/modules/esp-flow/vessel/schemas/support.schema";
 import {
   calcRectPlateWeight,
   calcAnnularRingWeight,
   calcCylinderWeight,
   calcLegColumnWeight,
-} from "@/modules/vessel-weight/calculations/support.calc";
+} from "@/modules/esp-flow/vessel/calculations/support.calc";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";

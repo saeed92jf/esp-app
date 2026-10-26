@@ -29,7 +29,7 @@ const DISCOVER_ITEMS: DiscoverItem[] = [
   {
     id: "item1",
     icon: Gauge,
-    href: "/Weight-Flow",
+    href: "/ESP-Flow",
     gradient: "from-blue-500/20 via-cyan-500/10 to-transparent",
     accentBadge: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30",
     glowBg: "from-blue-600/10 to-cyan-600/10",
@@ -45,7 +45,7 @@ const DISCOVER_ITEMS: DiscoverItem[] = [
   {
     id: "item3",
     icon: Workflow,
-    href: "/Weight-Flow",
+    href: "/dictionary",
     gradient: "from-amber-500/20 via-orange-500/10 to-transparent",
     accentBadge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30",
     glowBg: "from-amber-600/10 to-orange-600/10",

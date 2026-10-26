@@ -55,40 +55,24 @@ const BILINGUAL_KEYWORDS: Record<
       "diagram",
       "engineering flow",
       "simulation",
-      "claude flow",
       "vessel",
       "pressure vessel",
       "asme",
       "asme sec viii",
-      "asme section 8",
-      "general data",
-      "geometry",
       "shell",
       "head",
       "nozzle",
       "jacket",
       "material",
-      "vacuum",
-      "steam",
-      "operating pressure",
       "design pressure",
       "temperature",
-      "flange",
-      "support",
-      "skirt",
-      "saddle",
-      "weights",
       "calculation",
-      "flowchart",
-      "diagram",
-      "mechanical engineering",
     ],
     fa: [
       "ای اس پی فلو",
       "جریان فرایند",
       "شبیه سازی",
       "دیاگرام مهندسی",
-      "کلود فلو",
       "مخزن",
       "مخازن",
       "مخازن تحت فشار",
@@ -101,35 +85,109 @@ const BILINGUAL_KEYWORDS: Record<
       "فشار طراحی",
       "دمای طراحی",
       "استاندارد ازمی",
-      "ازمه",
-      "وزن",
       "محاسبات مهندسی",
-      "نمودار",
-      "تحت فشار",
-      "پوسته",
-      "عدسی",
-      "ساپورت",
-      "پایپینگ",
     ],
     descriptionEn: "ASME Section VIII Pressure Vessel Design & Interactive Flow",
     descriptionFa: "طراحی و محاسبات جامع مخازن تحت فشار استاندارد ASME",
   },
-
-
-  "/standards": {
+  "/ESP-Flow": {
     en: [
+      "esp flow",
+      "process flow",
+      "diagram",
+      "engineering flow",
+      "simulation",
+      "vessel",
+      "pressure vessel",
+      "asme",
+      "asme sec viii",
+      "calculation",
+    ],
+    fa: [
+      "ای اس پی فلو",
+      "جریان فرایند",
+      "شبیه سازی",
+      "دیاگرام مهندسی",
+      "مخزن",
+      "مخازن تحت فشار",
+      "محاسبات مهندسی",
+    ],
+    descriptionEn: "ASME Section VIII Pressure Vessel Design & Interactive Flow",
+    descriptionFa: "طراحی و محاسبات جامع مخازن تحت فشار استاندارد ASME",
+  },
+  "/dashboard/projects": {
+    en: ["projects", "management", "project list", "deadlines", "engineering portfolio"],
+    fa: ["پروژه‌ها", "مدیریت پروژه", "لیست پروژه‌ها", "پروژه‌های مهندسی", "کارتابل"],
+    descriptionEn: "Engineering Projects Portfolio & Management",
+    descriptionFa: "مدیریت و پیگیری پروژه‌های مهندسی و صنعتی",
+  },
+  "/projects": {
+    en: ["projects", "management", "project list", "deadlines", "engineering"],
+    fa: ["پروژه‌ها", "مدیریت پروژه", "لیست پروژه‌ها", "پروژه‌های مهندسی"],
+  },
+  "/dashboard/tasks": {
+    en: ["tasks", "todo", "activities", "checklist", "assignments", "kanban", "board"],
+    fa: ["وظایف", "تسک‌ها", "کارها", "چک‌لیست", "اقدامات", "کانبان", "برد وظایف"],
+    descriptionEn: "Task Tracking, Kanban Board & Workflow",
+    descriptionFa: "مدیریت وظایف، بردهای کانبان و پیشرفت کارها",
+  },
+  "/tasks": {
+    en: ["tasks", "todo", "activities", "checklist", "assignments"],
+    fa: ["وظایف", "تسک‌ها", "کارها", "چک‌لیست", "اقدامات"],
+  },
+  "/dictionary": {
+    en: [
+      "dictionary",
+      "glossary",
+      "engineering dictionary",
+      "terminology",
       "standards",
-      "api standards",
+      "materials",
       "asme",
       "astm",
-      "din",
-      "tema",
-      "codes",
-      "engineering codes",
     ],
-    fa: ["استانداردها", "استاندارد api", "ازمی", "کدهای مهندسی", "آیین‌نامه‌ها"],
-    descriptionEn: "API, ASME & TEMA Engineering Standards Library",
-    descriptionFa: "مرجع و آرشیو استانداردهای مهندسی API، ASME و TEMA",
+    fa: [
+      "دیکشنری",
+      "واژه‌نامه",
+      "اصطلاحات مهندسی",
+      "دیکشنری تخصصی",
+      "استانداردها",
+      "متریال",
+      "واژگان فنی",
+    ],
+    descriptionEn: "Engineering & Technical Terms Dictionary",
+    descriptionFa: "مرجع واژگان تخصصی مهندسی، متریال و استانداردها",
+  },
+  "/did-you-know": {
+    en: [
+      "did you know",
+      "engineering facts",
+      "science",
+      "formulas",
+      "insights",
+      "tips",
+    ],
+    fa: [
+      "آیا می‌دانید",
+      "دانستنی‌های مهندسی",
+      "نکات علمی",
+      "فرمول‌ها",
+      "رازهای مهندسی",
+    ],
+    descriptionEn: "Engineering Facts, Empirical Formulas & Knowledge Cards",
+    descriptionFa: "دانستنی‌های مهندسی، نکات علمی و فرمول‌های تجربی",
+  },
+  "/aparat": {
+    en: ["videos", "recordings", "clips", "training", "tutorials", "aparat", "education"],
+    fa: ["ویدیوها", "فیلم‌ها", "آموزش‌های ویدیویی", "آپارات", "دوره‌های آموزشی"],
+    descriptionEn: "Educational Video Archive & Engineering Courses",
+    descriptionFa: "آرشیو ویدئوهای آموزشی و دوره‌های تخصصی مهندسی",
+  },
+  "/sitemap": {
+    en: ["sitemap", "map", "structure", "navigation", "flowchart", "architecture"],
+    fa: ["نقشه سایت", "ساختار سامانه", "درخت ناوبری", "مسیرها"],
+    descriptionEn: "Interactive System Sitemap & Tree Hierarchy",
+    descriptionFa: "نمای درختی و تعاملی دسترسی به کلیه بخش‌های سامانه",
   },
   "/dashboard": {
     en: [
@@ -146,96 +204,14 @@ const BILINGUAL_KEYWORDS: Record<
     descriptionEn: "Main Dashboard & Overview Analytics",
     descriptionFa: "داشبورد مرکزی، شاخص‌های کلیدی و آمار عملکرد",
   },
-  "/campaigns": {
-    en: ["campaigns", "marketing", "ads", "advertising", "promotions"],
-    fa: ["کمپین‌ها", "بازاریابی", "تبلیغات", "پروموشن"],
-  },
-  "/social": {
-    en: ["social", "media", "instagram", "linkedin", "telegram", "publishing"],
-    fa: ["شبکه‌های اجتماعی", "سوشال مدیا", "انتشار محتوا", "پست‌ها"],
-  },
-  "/email": {
-    en: ["email", "newsletter", "mailing", "inbox", "outbox"],
-    fa: ["ایمیل", "خبرنامه", "ارسال ایمیل", "پیام‌ها"],
-  },
-  "/analytics": {
-    en: ["analytics", "charts", "graphs", "reports", "insights", "traffic"],
-    fa: ["تحلیل و آمار", "نمودارها", "گزارش‌های تحلیلی", "تحلیل بازدید"],
-  },
-  "/projects": {
-    en: ["projects", "management", "project list", "deadlines", "engineering"],
-    fa: ["پروژه‌ها", "مدیریت پروژه", "لیست پروژه‌ها", "پروژه‌های مهندسی"],
-  },
-  "/tasks": {
-    en: ["tasks", "todo", "activities", "checklist", "assignments"],
-    fa: ["وظایف", "تسک‌ها", "کارها", "چک‌لیست", "اقدامات"],
-  },
-  "/calendar": {
-    en: ["calendar", "schedule", "events", "meetings", "timeline"],
-    fa: ["تقویم", "برنامه‌ریزی", "جلسات", "رویدادها", "زمان‌بندی"],
-  },
-  "/reports": {
-    en: ["reports", "export", "pdf", "excel", "summary", "print"],
-    fa: ["گزارش‌ها", "خروجی", "چاپ", "خلاصه وضعیت", "فایل اکسل"],
-  },
-  "/board": {
-    en: ["board", "kanban", "scrum", "cards", "pipeline"],
-    fa: ["برد کانبان", "برد وظایف", "کارت‌ها", "اسکرام"],
-  },
-  "/documents": {
-    en: ["documents", "docs", "files", "archive", "storage", "pdf"],
-    fa: ["اسناد", "فایل‌ها", "بایگانی اسناد", "مدارک فنی", "آرشیو"],
-  },
-  "/contracts": {
-    en: ["contracts", "agreements", "legal", "signatures", "clients"],
-    fa: ["قراردادها", "توافق‌نامه‌ها", "قرارداد مشتریان", "امضا"],
-  },
-  "/invoices": {
-    en: ["invoices", "billing", "receipts", "financial", "payment", "accounting"],
-    fa: ["فاکتورها", "صورتحساب", "مالی", "حسابداری", "پرداخت‌ها", "قبض"],
-  },
-  "/letters": {
-    en: ["letters", "correspondence", "secretariat", "incoming", "outgoing"],
-    fa: ["نامه‌ها", "مکاتبات", "دبیرخانه", "نامه‌های اداری"],
-  },
-  "/staff": {
-    en: ["staff", "employees", "personnel", "team", "members", "users"],
-    fa: ["کارکنان", "پرسنل", "کارمندان", "اعضای تیم", "کاربران"],
-  },
-  "/departments": {
-    en: ["departments", "organization", "units", "divisions", "teams"],
-    fa: ["دپارتمان‌ها", "بخش‌ها", "واحدهای سازمانی", "تیم‌ها"],
-  },
-  "/attendance": {
-    en: ["attendance", "timesheet", "clock in", "leaves", "vacation"],
-    fa: ["حضور و غیاب", "تردد", "مرخصی‌ها", "ساعت کاری"],
-  },
-  "/payroll": {
-    en: ["payroll", "salary", "wages", "payslip", "compensation"],
-    fa: ["حقوق و دستمزد", "فیش حقوقی", "محاسبه حقوق", "مزایا"],
-  },
-  "/image-gallery": {
-    en: ["image gallery", "photos", "pictures", "album", "media"],
-    fa: ["گالری تصاویر", "عکس‌ها", "تصاویر پروژه", "آلبوم"],
-  },
-  "/videos": {
-    en: ["videos", "recordings", "clips", "training", "tutorials"],
-    fa: ["ویدیوها", "فیلم‌ها", "آموزش‌های ویدیویی", "کلیپ‌ها"],
-  },
-  "/audio": {
-    en: ["audio", "voice", "recordings", "sound", "podcast"],
-    fa: ["صوت", "فایل‌های صوتی", "صدای ضبط‌شده", "پادکست"],
-  },
-  "/media-library": {
-    en: ["media library", "all media", "assets", "resources", "files"],
-    fa: ["کتابخانه چندرسانه‌ای", "رسانه‌ها", "فایل‌های مدیا", "آرشیو"],
-  },
 };
 
 export const NAV_SEARCH_SOURCE: NavSearchSource[] = NAVIGATION.flatMap(
   (group) =>
     group.items.map((item) => {
-      const bilingual = BILINGUAL_KEYWORDS[item.href] || { en: [], fa: [] };
+      const bilingual =
+        BILINGUAL_KEYWORDS[item.href] ||
+        BILINGUAL_KEYWORDS[item.href.toLowerCase()] || { en: [], fa: [] };
       return {
         href: item.href,
         labelKey: item.labelKey,
@@ -249,5 +225,8 @@ export const NAV_SEARCH_SOURCE: NavSearchSource[] = NAVIGATION.flatMap(
 );
 
 export function getBilingualKeywords(href: string) {
-  return BILINGUAL_KEYWORDS[href] ?? { en: [], fa: [] };
+  return (
+    BILINGUAL_KEYWORDS[href] ??
+    BILINGUAL_KEYWORDS[href.toLowerCase()] ?? { en: [], fa: [] }
+  );
 }

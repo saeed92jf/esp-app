@@ -53,7 +53,6 @@ import { TaskRoadmapAnalytics } from "./task-timeline-bar";
 import { TaskDetailView } from "./task-detail-view";
 import { TaskCreateView } from "./task-create-view";
 import { AppHeader } from "@/components/layout/app-header";
-import { Footer, type FooterLinkItem } from "@/components/layout/footer";
 import {
   Tooltip,
   TooltipContent,
@@ -135,6 +134,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
     tasks,
     isAdmin,
     userInvolvedProjects,
+    availableProjects,
     isLoading,
     error,
     filters,
@@ -179,40 +179,6 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
     }
     return NAV_ITEMS;
   }, [isAdmin]);
-
-  const taskFooterLinks: FooterLinkItem[] = useMemo(
-    () => [
-      {
-        href: "/dashboard",
-        label: tCommon("footer.dashboard"),
-      },
-      {
-        href: "/",
-        label: tCommon("footer.home"),
-      },
-      {
-        href: "/dashboard/projects",
-        label: tCommon("footer.projects"),
-        hideOnMobile: true,
-      },
-      {
-        href: "/privacy",
-        label: tCommon("footer.privacyPolicy"),
-        hideOnMobile: true,
-      },
-      {
-        href: "/terms",
-        label: tCommon("footer.termsOfUse"),
-        hideOnMobile: true,
-      },
-      {
-        href: "/sitemap",
-        label: tCommon("footer.sitemap"),
-        hideOnMobile: true,
-      },
-    ],
-    [tCommon]
-  );
 
   const searchParams = useSearchParams();
   const queryTab = searchParams?.get("tab") as TaskTab | null;
@@ -537,6 +503,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
       currentUserName={currentUserName}
       isAdmin={isAdmin}
       userInvolvedProjects={userInvolvedProjects}
+      availableProjects={availableProjects}
     />
   );
 
@@ -1156,6 +1123,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
         onRemoveCollaborator={removeCollaborator}
         onUpdateProgress={updateProgress}
         onUpdateTask={updateTask}
+        availableProjects={availableProjects}
       />
     );
   };
@@ -1163,17 +1131,16 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
 
 
   return (
-    <div className="flex flex-col h-[calc(100vh)] bg-panel dark:bg-background font-sans w-full overflow-hidden relative">
+    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
       {/* ── 1. Top Unified Header (AppHeader with tag="tasks") ── */}
       <AppHeader
         tag="tasks"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
-        position="absolute"
       />
 
-      <div className="flex flex-1 min-h-0 overflow-hidden w-full relative pt-[72px]">
+      <div className="flex flex-1 w-full relative">
         {/* Mobile Backdrop Overlay */}
         {sidebarOpen && (
           <div
@@ -1186,8 +1153,8 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
         {/* ── 2. Sidebar Navigation (Directly following Profile Page Layout) ── */}
         <aside
           className={cn(
-            "flex flex-col shrink-0 h-full bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
-            "absolute md:relative start-0 top-0",
+            "flex flex-col shrink-0 sticky top-[var(--header-height)] self-start max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
+            "absolute md:sticky start-0 top-0 md:top-[var(--header-height)]",
             sidebarOpen
               ? "w-64 translate-x-0 opacity-100 shadow-xl md:shadow-none"
               : "max-md:-translate-x-full max-md:rtl:translate-x-full max-md:opacity-0 max-md:pointer-events-none md:translate-x-0 md:rtl:translate-x-0 rtl:md:translate-x-0 md:opacity-100 md:pointer-events-auto w-[52px] sm:w-[64px]"
@@ -1264,8 +1231,8 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
           </TooltipProvider>
         </aside>
 
-        {/* ── 3. Main Scrollable Content Area ── */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10">
+        {/* ── 3. Main Content Area ── */}
+        <main className="flex-1 bg-transparent w-full relative z-10">
           <div className="pb-10">
             {(activeTab === "kanban" || activeTab === "table") && renderTasksWorkflowView()}
             {(activeTab === "timeline" || activeTab === "analytics") && renderTimelineView()}
@@ -1276,21 +1243,6 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
           </div>
         </main>
       </div>
-
-      {/* ── 4. Full-Width Transparent Bottom Footer (Under sidebar & main content) ── */}
-      <Footer
-        isTransparent={true}
-        links={taskFooterLinks}
-        className="w-full bg-transparent border-t-0 shrink-0 z-20"
-        topRowExtra={
-          <span>
-            {isRtl
-              ? `دیدگاه فعال: ${currentUserName} (${isAdmin && roleMode === "admin" ? "ادمین سازمان" : "کارشناس"})`
-              : `Perspective: ${currentUserName} (${isAdmin && roleMode === "admin" ? "Admin" : "Specialist"})`}
-          </span>
-        }
-        topRowEnd={<span className="font-mono text-[10.5px] opacity-75">ESP Core v2.4</span>}
-      />
     </div>
   );
 }

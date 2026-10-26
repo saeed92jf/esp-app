@@ -217,6 +217,27 @@ export function useTasks(options?: {
   useEffect(() => {
     fetchTasks();
     fetchProjects();
+
+    const handleProjectsSync = () => {
+      fetchProjects();
+    };
+    const handleTasksSync = () => {
+      fetchTasks();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("esp_projects_change", handleProjectsSync);
+      window.addEventListener("esp_tasks_change", handleTasksSync);
+      window.addEventListener("storage", handleProjectsSync);
+    }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("esp_projects_change", handleProjectsSync);
+        window.removeEventListener("esp_tasks_change", handleTasksSync);
+        window.removeEventListener("storage", handleProjectsSync);
+      }
+    };
   }, [fetchTasks, fetchProjects]);
 
   const selectedTask = useMemo(() => {
@@ -455,9 +476,41 @@ export function useTasks(options?: {
     async (taskData: Omit<TaskItem, "id" | "comments" | "attachments" | "activities">) => {
       const created = await tasksService.createTask(taskData);
       setTasks((prev) => [created, ...prev]);
+
+      // If linked to an existing project, sync with the project's internal task list
+      if (taskData.relatedProjectId && taskData.relatedProjectId !== "proj-custom") {
+        try {
+          const targetProj = projects.find((p) => p.id === taskData.relatedProjectId);
+          if (targetProj) {
+            const projTaskStatus =
+              created.status === "completed"
+                ? "done"
+                : created.status === "in_progress"
+                ? "in_progress"
+                : created.status === "review"
+                ? "review"
+                : "todo";
+            await projectsService.addTask(taskData.relatedProjectId, {
+              title: created.title,
+              phaseId: targetProj.phases?.[0]?.id || "ph-1",
+              status: projTaskStatus,
+              priority: created.priority,
+              assignedToName: created.assignedToName,
+              assignedToRole: created.assignedToRole,
+              dueDate: created.dueDate,
+              progressPercent: created.progressPercent || 0,
+              commentsCount: 0,
+              attachmentsCount: 0,
+            });
+          }
+        } catch (syncErr) {
+          console.warn("Failed to sync task with project tasks:", syncErr);
+        }
+      }
+
       return created;
     },
-    []
+    [projects]
   );
 
   const updateTask = useCallback(async (updated: TaskItem) => {
@@ -660,6 +713,7 @@ export function useTasks(options?: {
   return {
     tasks: accessibleTasks,
     allTasksRaw: tasks,
+    availableProjects: projects,
     isAdmin,
     userInvolvedProjectIds,
     userInvolvedProjects,

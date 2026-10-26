@@ -8,29 +8,51 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const TIMEZONES = [
   { id: "thr", labelEn: "Tehran", labelFa: "تهران", tz: "Asia/Tehran", flag: "🇮🇷" },
-  { id: "nyc", labelEn: "New York", labelFa: "نیویورک", tz: "America/New_York", flag: "🇺🇸" },
   { id: "lon", labelEn: "London", labelFa: "لندن", tz: "Europe/London", flag: "🇬🇧" },
-  { id: "bei", labelEn: "Beijing", labelFa: "پکن", tz: "Asia/Shanghai", flag: "🇨🇳" },
-  { id: "mow", labelEn: "Moscow", labelFa: "مسکو", tz: "Europe/Moscow", flag: "🇷🇺" },
-  { id: "tok", labelEn: "Tokyo", labelFa: "توکیو", tz: "Asia/Tokyo", flag: "🇯🇵" },
+  { id: "nyc", labelEn: "New York", labelFa: "نیویورک", tz: "America/New_York", flag: "🇺🇸" },
   { id: "dxb", labelEn: "Dubai", labelFa: "دبی", tz: "Asia/Dubai", flag: "🇦🇪" },
   { id: "par", labelEn: "Paris", labelFa: "پاریس", tz: "Europe/Paris", flag: "🇫🇷" },
+  { id: "bei", labelEn: "Beijing", labelFa: "پکن", tz: "Asia/Shanghai", flag: "🇨🇳" },
+  { id: "tok", labelEn: "Tokyo", labelFa: "توکیو", tz: "Asia/Tokyo", flag: "🇯🇵" },
+  { id: "mow", labelEn: "Moscow", labelFa: "مسکو", tz: "Europe/Moscow", flag: "🇷🇺" },
 ];
+
+const STORAGE_KEY = "dashboard_world_clocks_v2";
 
 export function WorldClockWidget() {
   const t = useTranslations("Dashboard.worldClock");
   const locale = useLocale();
   const isFa = locale === "fa";
 
-  const [selectedIds, setSelectedIds] = React.useState<string[]>(["thr", "lon", "nyc", "bei"]);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.slice(0, 2);
+          }
+        }
+      } catch {}
+    }
+    return ["thr", "lon"];
+  });
+
   const [isEditing, setIsEditing] = React.useState(false);
   const [now, setNow] = React.useState(new Date());
   const [timeOffset, setTimeOffset] = React.useState<number | null>(null);
 
   React.useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedIds));
+    } catch {}
+  }, [selectedIds]);
+
+  React.useEffect(() => {
     fetch("https://timeapi.io/api/Time/current/zone?timeZone=UTC")
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         const internetTime = new Date(data.dateTime + "Z").getTime();
         const localTime = Date.now();
         setTimeOffset(internetTime - localTime);
@@ -53,10 +75,11 @@ export function WorldClockWidget() {
         setSelectedIds(selectedIds.filter((x) => x !== id));
       }
     } else {
-      if (selectedIds.length < 4) {
+      if (selectedIds.length < 2) {
         setSelectedIds([...selectedIds, id]);
       } else {
-        setSelectedIds([...selectedIds.slice(1), id]); // Keep the rest, replace the oldest
+        // Enforce maximum 2 clocks simultaneously: replace the older one
+        setSelectedIds([selectedIds[1], id]);
       }
     }
   };
@@ -64,18 +87,24 @@ export function WorldClockWidget() {
   const selectedClocks = TIMEZONES.filter((tz) => selectedIds.includes(tz.id));
 
   return (
-    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3 sm:p-4 @container min-h-0">
+    <div className="flex flex-col h-full bg-panel dark:bg-card/40 rounded-2xl border border-border/50 overflow-hidden relative transition-all duration-300 p-3.5 sm:p-4 @container min-h-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-1 mb-2 shrink-0 pe-18 sm:pe-20">
+      <div className="flex items-center gap-2 px-1 mb-2.5 shrink-0 pe-18 sm:pe-20">
         <div className="p-2 bg-primary/10 rounded-xl shrink-0">
           <Globe className="size-5 text-primary" />
         </div>
-        <h3 className="font-semibold text-base text-foreground/80 shrink-0">{t("title")}</h3>
+        <div className="flex items-baseline gap-2 min-w-0">
+          <h3 className="font-semibold text-base text-foreground/85 shrink-0">{t("title")}</h3>
+          <span className="text-[11px] text-muted-foreground font-medium fa-num">
+            {isFa ? "(۲ منطقه زمانی)" : "(2 timezones)"}
+          </span>
+        </div>
 
         <button
+          type="button"
           onClick={() => setIsEditing(!isEditing)}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-2",
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border shadow-xs transition-colors duration-150 ms-auto cursor-pointer",
             isEditing
               ? "border-primary/40 bg-white dark:bg-card text-primary ring-1 ring-primary/20"
               : "border-border/50 bg-white dark:bg-card hover:bg-muted/40 text-muted-foreground hover:text-foreground"
@@ -94,36 +123,44 @@ export function WorldClockWidget() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex flex-wrap gap-2 justify-center pb-2"
+              className="flex flex-col items-center gap-3 py-2"
             >
-              {TIMEZONES.map((tz) => {
-                const isSelected = selectedIds.includes(tz.id);
-                return (
-                  <button
-                    key={tz.id}
-                    onClick={() => toggleClock(tz.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
-                      isSelected
-                        ? "bg-primary/10 border-primary text-primary shadow-sm"
-                        : "bg-background border-border hover:bg-muted text-muted-foreground"
-                    )}
-                  >
-                    <span className="text-sm">{tz.flag}</span>
-                    <span>{isFa ? tz.labelFa : tz.labelEn}</span>
-                    {isSelected && <Check className="size-3 ms-1" />}
-                  </button>
-                );
-              })}
+              <div className="flex flex-wrap gap-2 justify-center">
+                {TIMEZONES.map((tz) => {
+                  const isSelected = selectedIds.includes(tz.id);
+                  return (
+                    <button
+                      key={tz.id}
+                      type="button"
+                      onClick={() => toggleClock(tz.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer",
+                        isSelected
+                          ? "bg-primary/10 border-primary text-primary shadow-xs font-semibold"
+                          : "bg-background border-border hover:bg-muted text-muted-foreground"
+                      )}
+                    >
+                      <span className="text-sm">{tz.flag}</span>
+                      <span>{isFa ? tz.labelFa : tz.labelEn}</span>
+                      {isSelected && <Check className="size-3 ms-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center">
+                {isFa
+                  ? "حداکثر ۲ ساعت به صورت همزمان نمایش داده می‌شود."
+                  : "Exactly 2 clocks are displayed simultaneously."}
+              </p>
             </motion.div>
           ) : (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="grid grid-cols-1 @[260px]:grid-cols-2 @[520px]:grid-cols-4 gap-2.5 h-full items-stretch content-start"
+              className="grid grid-cols-1 @[240px]:grid-cols-2 gap-3 h-full items-stretch content-start"
             >
-              {selectedClocks.map((clock, idx) => {
+              {selectedClocks.map((clock) => {
                 const formatterTime = new Intl.DateTimeFormat(isFa ? "fa-IR" : "en-US", {
                   timeZone: clock.tz,
                   hour: "2-digit",
@@ -157,20 +194,20 @@ export function WorldClockWidget() {
                 return (
                   <div
                     key={clock.id}
-                    className="w-full bg-background border border-border/40 rounded-xl p-3 flex flex-col items-center justify-between relative overflow-hidden group shadow-2xs min-h-[140px]"
+                    className="w-full bg-background border border-border/40 rounded-xl p-3.5 sm:p-4 flex flex-col items-center justify-between relative overflow-hidden group shadow-2xs min-h-[150px]"
                   >
-                    <div className="absolute top-2 end-2 text-2xl opacity-10 group-hover:opacity-20 transition-opacity blur-[1px] group-hover:blur-none select-none">
+                    <div className="absolute top-2.5 end-2.5 text-3xl opacity-10 group-hover:opacity-20 transition-opacity blur-[1px] group-hover:blur-none select-none pointer-events-none">
                       {clock.flag}
                     </div>
-                    
+
                     <div className="flex flex-col items-center z-10 w-full my-auto">
-                      <span className="text-xs font-medium text-primary/90 mb-0.5">
+                      <span className="text-xs font-semibold text-primary/90 mb-1">
                         {isFa ? clock.labelFa : clock.labelEn}
                       </span>
-                      <span className="text-2xl @[180px]:text-3xl font-bold text-foreground/80 fa-num tracking-tight tabular-nums">
+                      <span className="text-2xl @[180px]:text-3xl font-extrabold text-foreground/90 fa-num tracking-tight tabular-nums py-0.5">
                         {formatterTime.format(now)}
                       </span>
-                      <div className="flex flex-col items-center gap-1 mt-2.5 bg-muted/30 p-2 rounded-xl w-full text-center">
+                      <div className="flex flex-col items-center gap-1 mt-3 bg-muted/30 p-2 rounded-xl w-full text-center">
                         <span className="text-xs text-foreground/90 font-medium fa-num leading-tight">
                           {formatterDateShamsi.format(now)}
                         </span>
@@ -192,4 +229,3 @@ export function WorldClockWidget() {
     </div>
   );
 }
-

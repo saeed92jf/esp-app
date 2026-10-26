@@ -29,7 +29,13 @@ interface AdminTasksTimeProps {
   onNavigateToAccess?: () => void;
 }
 
-export const AnimatedNumber = ({ value }: { value: number }) => {
+export const AnimatedNumber = ({ 
+  value, 
+  format 
+}: { 
+  value: number; 
+  format?: (val: number) => string | React.ReactNode;
+}) => {
   const [displayValue, setDisplayValue] = useState(value);
   const prevValueRef = useRef(value);
 
@@ -66,7 +72,7 @@ export const AnimatedNumber = ({ value }: { value: number }) => {
     return () => cancelAnimationFrame(animationFrame);
   }, [value]);
 
-  return <>{displayValue}</>;
+  return <>{format ? format(displayValue) : displayValue}</>;
 };
 
 export function AdminTasksTime({ 
@@ -288,11 +294,31 @@ export function AdminTasksTime({
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full">
+    <div className="flex flex-col gap-3 w-full h-full">
       
-      {/* ── Center Header: Department Switcher + Avatars Carousel + Search ── */}
+      {/* ── Center Header: Search + Department Switcher & Avatars Carousel ── */}
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 px-3 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs overflow-visible">
         
+        {/* Quick User Search */}
+        <div className="relative flex items-center h-9 bg-white dark:bg-slate-900 rounded-full border border-border/50 w-full sm:w-[260px] md:w-[300px] lg:w-[340px] px-3 shadow-xs focus-within:ring-1 focus-within:ring-primary/50 shrink-0">
+          <Search size={14} className="text-muted-foreground shrink-0 me-2" />
+          <input
+            type="text"
+            placeholder={t("searchUser")}
+            value={userSearch}
+            onChange={(e) => setUserSearch(e.target.value)}
+            className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground"
+          />
+          {userSearch && (
+            <button 
+              onClick={() => setUserSearch("")}
+              className="text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+
         {/* Department and Avatars */}
         <div className="flex items-center gap-1.5 bg-background/60 dark:bg-slate-900/40 rounded-full h-9 px-2 border border-border/30 max-w-full overflow-visible relative">
           <Button 
@@ -372,29 +398,10 @@ export function AdminTasksTime({
           </Button>
         </div>
 
-        {/* Quick User Search */}
-        <div className="relative flex items-center h-9 bg-background/60 dark:bg-slate-900/40 rounded-full border border-border/30 w-full sm:w-[180px] md:w-[200px] px-3 focus-within:ring-1 focus-within:ring-primary/50 shrink-0">
-          <Search size={14} className="text-muted-foreground shrink-0 me-2" />
-          <input
-            type="text"
-            placeholder={t("searchUser")}
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground"
-          />
-          {userSearch && (
-            <button 
-              onClick={() => setUserSearch("")}
-              className="text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
-            >
-              <X size={12} />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* ── Virtual Grid Row 1: Working Format (col 1), Skills (col 2), Activities (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[220px] max-h-[300px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[220px]">
         
         {/* Module A: Working Format (فرمت کاری) */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">

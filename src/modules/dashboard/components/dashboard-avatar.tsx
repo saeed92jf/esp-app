@@ -94,7 +94,7 @@ export function DashboardAvatar() {
 
   const { colorId } = usePrimaryColor();
   const activeColorPreset = PRIMARY_COLORS.find(c => c.id === (user?.primaryColor || colorId));
-  const avatarBgColor = activeColorPreset?.hex || user?.avatarColor || "#3a86ff";
+  const avatarBgColor = user?.avatarColor || activeColorPreset?.hex || "#3a86ff";
 
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();

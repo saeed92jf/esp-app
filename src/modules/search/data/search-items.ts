@@ -41,30 +41,6 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     ],
   },
   {
-    id: "mod-weight-flow",
-    title: "محاسبه‌گر اوزان و ضخامت مخازن (Weight-Flow)",
-    titleEn: "Vessel Weight & Thickness Calculator (Weight-Flow)",
-    category: "modules",
-    href: "/Weight-Flow",
-    snippet: "ماژول تخصصی محاسبه وزن خالی، وزن تست هیدرواستاتیک و وزن عملیاتی مخازن، وزن کلاهک، پوسته، نازل‌ها و زنگوله‌ها.",
-    snippetEn: "Dedicated module for empty weight, hydrostatic test weight, operating weight, head weight, shell, nozzles, and saddles.",
-    breadcrumbs: ["سامانه پارس", "ابزارها و محاسبات", "Weight-Flow"],
-    breadcrumbsEn: ["ESP Platform", "Tools & Calculations", "Weight-Flow"],
-    iconName: "ChartPolar",
-    badge: "محاسبات وزن",
-    badgeEn: "Weight Tool",
-    metadata: {
-      categoryName: "محاسبات سازه و وزن",
-      standard: "ASME & Weight Codes",
-    },
-    keywords: [
-      "weight", "vessel weight", "thickness", "operating weight", "empty weight",
-      "hydrostatic weight", "shell weight", "head weight", "nozzle weight",
-      "وزن", "محاسبه وزن مخزن", "ضخامت مخزن", "وزن عملیاتی", "وزن خالی", "وزن تست",
-      "وزن تست هیدرواستاتیک", "وزن شل", "وزن هد", "وزن کلاهک", "وزن نازل"
-    ],
-  },
-  {
     id: "mod-dictionary",
     title: "واژه‌نامه تخصصی مهندسی و اصطلاحات صنعتی",
     titleEn: "Engineering Dictionary & Technical Glossary",
@@ -171,27 +147,6 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     keywords: [
       "admin", "administration", "users", "permissions", "access control", "roles", "audit",
       "ادمین", "مدیریت سیستم", "کاربران", "دسترسی ها", "نقش ها", "تایید درخواست", "گزارش فعالیت"
-    ],
-  },
-  {
-    id: "mod-team",
-    title: "معرفی اعضای تیم و چارت سازمانی",
-    titleEn: "Engineering Team & Organizational Structure",
-    category: "modules",
-    href: "/team",
-    snippet: "آشنایی با مهندسان، مدیران پروژه، متخصصان طراحی فرایند و سازه، و تیم فنی سامانه یکپارچه مهندسی.",
-    snippetEn: "Meet the engineers, project managers, process and structural specialists, and technical platform team.",
-    breadcrumbs: ["سامانه پارس", "سازمان", "اعضای تیم"],
-    breadcrumbsEn: ["ESP Platform", "Organization", "Team"],
-    iconName: "UsersThree",
-    badge: "تیم تخصصی",
-    badgeEn: "Team",
-    metadata: {
-      categoryName: "منابع انسانی",
-    },
-    keywords: [
-      "team", "engineers", "staff", "organization", "members", "profiles",
-      "تیم", "اعضای تیم", "مهندسان", "پرسنل", "چارت سازمانی", "همکاران"
     ],
   },
   {

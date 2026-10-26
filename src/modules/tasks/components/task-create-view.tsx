@@ -43,6 +43,7 @@ import {
   TaskScope,
 } from "../types/tasks.types";
 import type { ProjectItem } from "@/modules/projects/types/projects.types";
+import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 
 export type TaskEditingField =
@@ -72,6 +73,7 @@ export interface TaskCreateViewProps {
   currentUserName?: string;
   isAdmin?: boolean;
   userInvolvedProjects?: ProjectItem[];
+  availableProjects?: ProjectItem[];
 }
 
 export function TaskCreateView({
@@ -85,6 +87,7 @@ export function TaskCreateView({
   currentUserName,
   isAdmin = false,
   userInvolvedProjects = [],
+  availableProjects = [],
 }: TaskCreateViewProps) {
   const t = useTranslations("Tasks");
   const locale = useLocale();
@@ -158,16 +161,24 @@ export function TaskCreateView({
     }
   }, [dueDateObj]);
 
+  // All selectable projects combining available organization projects with involved projects
+  const allSelectableProjects = React.useMemo(() => {
+    if (availableProjects.length > 0) return availableProjects;
+    return userInvolvedProjects;
+  }, [availableProjects, userInvolvedProjects]);
+
   // Project pre-selection for personal tasks
   useEffect(() => {
-    if (userInvolvedProjects.length > 0 && !selectedProjectId) {
-      setSelectedProjectId(userInvolvedProjects[0].id);
-      setRelatedProjectTitle(userInvolvedProjects[0].title);
-      if (userInvolvedProjects[0].organization) {
-        setCompany(userInvolvedProjects[0].organization);
+    if (allSelectableProjects.length > 0 && !selectedProjectId) {
+      if (scope === "personal" && personalType === "project") {
+        setSelectedProjectId(allSelectableProjects[0].id);
+        setRelatedProjectTitle(allSelectableProjects[0].title);
+        if (allSelectableProjects[0].organization) {
+          setCompany(allSelectableProjects[0].organization);
+        }
       }
     }
-  }, [userInvolvedProjects, selectedProjectId]);
+  }, [allSelectableProjects, selectedProjectId, scope, personalType]);
 
   const handleAddCollaborator = () => {
     if (!extraCollabName.trim()) return;
@@ -227,7 +238,13 @@ export function TaskCreateView({
       let linkedProjId: string | undefined = undefined;
       let linkedProjTitle: string | undefined = undefined;
 
-      if (isPersonalTask && personalType === "project") {
+      if (isPersonalTask) {
+        if (personalType === "project") {
+          linkedProjId = selectedProjectId || (relatedProjectTitle ? "proj-custom" : undefined);
+          linkedProjTitle = relatedProjectTitle.trim() || undefined;
+        }
+      } else {
+        // Team / Organizational Task can also link to an existing project
         linkedProjId = selectedProjectId || (relatedProjectTitle ? "proj-custom" : undefined);
         linkedProjTitle = relatedProjectTitle.trim() || undefined;
       }
@@ -386,6 +403,95 @@ export function TaskCreateView({
               </div>
             )}
 
+            {/* If team scope: Optional Project Association */}
+            {!isPersonalActive && (
+              <div className="space-y-3 pt-2">
+                <div className="flex flex-col gap-1">
+                  <Label className="rtl:text-right block font-medium text-foreground text-sm">
+                    {t("createModal.optionalProjectLink")}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">
+                    {t("createModal.projectOptionalHint")}
+                  </span>
+                </div>
+
+                {allSelectableProjects.length > 0 ? (
+                  <div className="space-y-2.5">
+                    <Combobox
+                      options={[
+                        {
+                          value: "",
+                          label: isRtl
+                            ? "بدون اتصال به پروژه (وظیفه مستقل سازمانی)"
+                            : "No project link (Standalone team task)",
+                        },
+                        ...allSelectableProjects.map((p) => ({
+                          value: p.id,
+                          label: `${p.title} (${p.code})${p.organization ? ` • ${p.organization}` : ""}`,
+                        })),
+                      ]}
+                      value={selectedProjectId}
+                      onChange={(val) => {
+                        setSelectedProjectId(val);
+                        const found = allSelectableProjects.find((x) => x.id === val);
+                        if (found) {
+                          setRelatedProjectTitle(found.title);
+                          if (found.organization) {
+                            setCompany(found.organization);
+                          }
+                        } else {
+                          setRelatedProjectTitle("");
+                        }
+                      }}
+                      placeholder={t("createModal.selectProjectPlaceholder")}
+                      searchPlaceholder={isRtl ? "جستجوی پروژه..." : "Search project..."}
+                      emptyText={t("createModal.noProjectsFound")}
+                      className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-right"
+                    />
+
+                    {/* Selected Project Card Chip */}
+                    {selectedProjectId && (
+                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 truncate">
+                          <FolderOpen className="size-4 text-primary shrink-0" />
+                          <span className="text-sm font-semibold text-primary truncate">
+                            {relatedProjectTitle}
+                          </span>
+                          {company && (
+                            <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium shrink-0">
+                              {company}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProjectId("");
+                            setRelatedProjectTitle("");
+                          }}
+                          className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+                        >
+                          {isRtl ? "حذف انتخاب" : "Clear"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Input
+                    value={relatedProjectTitle}
+                    onChange={(e) => {
+                      setRelatedProjectTitle(e.target.value);
+                      if (!e.target.value) setSelectedProjectId("");
+                    }}
+                    placeholder={t("createModal.customProjectPlaceholder")}
+                    className="h-12 rounded-xl bg-card border-border/60 text-sm"
+                  />
+                )}
+              </div>
+            )}
+
             {/* If personal scope: choose Project-linked vs Standalone */}
             {isPersonalActive && (
               <div className="space-y-4">
@@ -444,52 +550,81 @@ export function TaskCreateView({
                       {t("createModal.selectProjectLabel")}
                     </Label>
 
-                    {userInvolvedProjects.length > 0 && (
-                      <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scrollbar p-1">
-                        {userInvolvedProjects.map((p) => {
-                          const isSelected = selectedProjectId === p.id;
-                          return (
-                            <div
-                              key={p.id}
-                              onClick={() => {
-                                setSelectedProjectId(p.id);
-                                setRelatedProjectTitle(p.title);
-                                if (p.organization) setCompany(p.organization);
-                              }}
-                              className={cn(
-                                "p-3 rounded-xl border text-start cursor-pointer transition-all flex items-center justify-between",
-                                isSelected
-                                  ? "border-primary bg-primary/10 text-foreground"
-                                  : "border-border/50 hover:bg-muted/40 text-muted-foreground"
-                              )}
-                            >
-                              <div className="flex items-center gap-2.5 truncate">
-                                <FolderOpen className="size-4 text-primary shrink-0" />
-                                <span className="text-sm font-medium truncate">{p.title}</span>
-                                {p.organization && (
-                                  <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground shrink-0">
-                                    {p.organization}
-                                  </span>
-                                )}
-                              </div>
-                              {isSelected && <Check className="size-4 text-primary stroke-[3] shrink-0" />}
-                            </div>
-                          );
-                        })}
+                    {allSelectableProjects.length > 0 && (
+                      <Combobox
+                        options={[
+                          {
+                            value: "",
+                            label: isRtl ? "پروژه دلخواه یا دستی..." : "Custom / manual project...",
+                          },
+                          ...allSelectableProjects.map((p) => ({
+                            value: p.id,
+                            label: `${p.title} (${p.code})${p.organization ? ` • ${p.organization}` : ""}`,
+                          })),
+                        ]}
+                        value={selectedProjectId}
+                        onChange={(val) => {
+                          setSelectedProjectId(val);
+                          const found = allSelectableProjects.find((x) => x.id === val);
+                          if (found) {
+                            setRelatedProjectTitle(found.title);
+                            if (found.organization) {
+                              setCompany(found.organization);
+                            }
+                          } else {
+                            setRelatedProjectTitle("");
+                          }
+                        }}
+                        placeholder={t("createModal.selectProjectPlaceholder")}
+                        searchPlaceholder={isRtl ? "جستجوی پروژه..." : "Search project..."}
+                        emptyText={t("createModal.noProjectsFound")}
+                        className="h-12 rounded-xl bg-card border-border/60 text-sm w-full rtl:text-right"
+                      />
+                    )}
+
+                    {/* Quick Selected Badge */}
+                    {selectedProjectId && (
+                      <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5 truncate">
+                          <FolderOpen className="size-4 text-primary shrink-0" />
+                          <span className="text-sm font-semibold text-primary truncate">
+                            {relatedProjectTitle}
+                          </span>
+                          {company && (
+                            <span className="text-xs px-2 py-0.5 rounded-md bg-primary/10 text-primary font-medium shrink-0">
+                              {company}
+                            </span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProjectId("");
+                            setRelatedProjectTitle("");
+                          }}
+                          className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive cursor-pointer"
+                        >
+                          {isRtl ? "حذف انتخاب" : "Clear"}
+                        </Button>
                       </div>
                     )}
 
-                    <div className="space-y-1.5 pt-1">
-                      <Input
-                        value={relatedProjectTitle}
-                        onChange={(e) => {
-                          setRelatedProjectTitle(e.target.value);
-                          if (!e.target.value) setSelectedProjectId("");
-                        }}
-                        placeholder={t("createModal.customProjectPlaceholder")}
-                        className="h-12 rounded-xl bg-card border-border/60 text-sm"
-                      />
-                    </div>
+                    {/* Or custom project input fallback */}
+                    {!selectedProjectId && (
+                      <div className="space-y-1.5 pt-1">
+                        <Input
+                          value={relatedProjectTitle}
+                          onChange={(e) => {
+                            setRelatedProjectTitle(e.target.value);
+                            if (!e.target.value) setSelectedProjectId("");
+                          }}
+                          placeholder={t("createModal.customProjectPlaceholder")}
+                          className="h-12 rounded-xl bg-card border-border/60 text-sm"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -92,7 +92,7 @@ export const DEFAULT_PROJECT_PHASES: ProjectPhase[] = [
   },
 ];
 
-const INITIAL_PROJECTS: ProjectItem[] = [
+export const INITIAL_PROJECTS: ProjectItem[] = [
   {
     id: "prj-tk-101",
     code: "PRJ-ESP-2024-TK101",
@@ -734,17 +734,36 @@ export class FakeProjectsService implements ProjectsService {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.projects));
+        window.dispatchEvent(
+          new CustomEvent("esp_projects_change", { detail: this.projects })
+        );
       } catch {}
     }
   }
 
   async getProjects(): Promise<ProjectItem[]> {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          this.projects = JSON.parse(stored);
+        }
+      } catch {}
+    }
     return new Promise((resolve) => {
-      setTimeout(() => resolve([...this.projects]), 100);
+      setTimeout(() => resolve([...this.projects]), 80);
     });
   }
 
   async getProjectById(id: string): Promise<ProjectItem | null> {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          this.projects = JSON.parse(stored);
+        }
+      } catch {}
+    }
     return new Promise((resolve) => {
       setTimeout(() => {
         const found = this.projects.find((p) => p.id === id || p.code === id);

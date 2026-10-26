@@ -94,7 +94,7 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-muted/30">
+    <div className="flex min-h-screen items-center justify-center p-4 bg-transparent">
       <Suspense fallback={<div className="flex justify-center"><Loader2 className="size-8 animate-spin" /></div>}>
         <VerifyEmailContent />
       </Suspense>

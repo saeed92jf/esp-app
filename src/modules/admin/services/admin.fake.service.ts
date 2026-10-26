@@ -385,6 +385,33 @@ export class FakeAdminService implements IAdminService {
         localStorage.setItem("esp_admin_users", JSON.stringify(this.users));
       }
 
+      // Also sync dynamic avatarColor and primaryColor from active session and overrides
+      const rawAuth = localStorage.getItem("esp_auth_user");
+      if (rawAuth) {
+        const authUser = JSON.parse(rawAuth);
+        const match = this.users.find(u => u.id === authUser.id || u.email?.toLowerCase() === authUser.email?.toLowerCase());
+        if (match) {
+          if (authUser.avatarColor) match.avatarColor = authUser.avatarColor;
+          if (authUser.primaryColor) match.primaryColor = authUser.primaryColor;
+          if (authUser.fullName) match.name = authUser.fullNameFa || authUser.fullName;
+        }
+      }
+      const rawOverrides = localStorage.getItem("esp_demo_users_override");
+      if (rawOverrides) {
+        const overrides = JSON.parse(rawOverrides);
+        overrides.forEach((o: any) => {
+          const uData = o.user;
+          if (uData) {
+            const match = this.users.find(u => u.id === uData.id || u.email?.toLowerCase() === uData.email?.toLowerCase());
+            if (match) {
+              if (uData.avatarColor) match.avatarColor = uData.avatarColor;
+              if (uData.primaryColor) match.primaryColor = uData.primaryColor;
+              if (uData.fullName) match.name = uData.fullNameFa || uData.fullName;
+            }
+          }
+        });
+      }
+
       // Sync Requests
       const rawRequests = localStorage.getItem("esp_account_requests");
       if (rawRequests) {

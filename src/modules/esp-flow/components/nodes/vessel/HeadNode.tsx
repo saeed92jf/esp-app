@@ -10,14 +10,14 @@ import {
 
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
-import type { HeadNodeData, Head, HeadType, HeadPosition } from "@/modules/vessel-weight/schemas/head.schema";
+import type { HeadNodeData, Head, HeadType, HeadPosition } from "@/modules/esp-flow/vessel/schemas/head.schema";
 import {
   calcElliptical21HeadWeight,
   calcTorishericalHeadWeight,
   calcHemisphericalHeadWeight,
   calcHeadBlankWeight,
-} from "@/modules/vessel-weight/calculations/head.calc";
-import { calcElectrodeConsumption } from "@/modules/vessel-weight/calculations/weld.calc";
+} from "@/modules/esp-flow/vessel/calculations/head.calc";
+import { calcElectrodeConsumption } from "@/modules/esp-flow/vessel/calculations/weld.calc";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";

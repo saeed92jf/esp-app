@@ -10,7 +10,7 @@ import {
 
 const STORAGE_KEY = "esp_tasks_data_v8";
 
-const INITIAL_MOCK_TASKS: TaskItem[] = [
+export const INITIAL_MOCK_TASKS: TaskItem[] = [
   {
     id: "task-mgr-101",
     title: "بازبینی و اعتبارسنجی نقشه‌های P&ID خط تغذیه واحد ۴۰۰",
@@ -674,22 +674,41 @@ export class FakeTasksService implements TasksService {
     if (typeof window !== "undefined") {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.tasks));
+        window.dispatchEvent(
+          new CustomEvent("esp_tasks_change", { detail: this.tasks })
+        );
       } catch {}
     }
   }
 
   async getTasks(): Promise<TaskItem[]> {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          this.tasks = JSON.parse(stored);
+        }
+      } catch {}
+    }
     return new Promise((resolve) => {
-      setTimeout(() => resolve([...this.tasks]), 120);
+      setTimeout(() => resolve([...this.tasks]), 80);
     });
   }
 
   async getTaskById(id: string): Promise<TaskItem | null> {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          this.tasks = JSON.parse(stored);
+        }
+      } catch {}
+    }
     return new Promise((resolve) => {
       setTimeout(() => {
         const found = this.tasks.find((t) => t.id === id);
         resolve(found ? { ...found } : null);
-      }, 80);
+      }, 70);
     });
   }
 

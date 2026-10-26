@@ -134,12 +134,15 @@ export function useAuth() {
     }
   }, [setColor]);
 
-  const updatePrimaryColor = useCallback(async (color: string) => {
-    setColor(color as any);
+  const updateUser = useCallback((partial: Partial<User>) => {
+    store.updateUser(partial);
     if (!store.user) return;
 
-    const updatedUser: User = { ...store.user, primaryColor: color };
-    store.updateUser({ primaryColor: color });
+    const updatedUser: User = { ...store.user, ...partial };
+
+    if (partial.primaryColor) {
+      setColor(partial.primaryColor as any);
+    }
 
     if (typeof window !== 'undefined') {
       try {
@@ -155,7 +158,7 @@ export function useAuth() {
         }
         const idx = users.findIndex((u: any) => u.user.id === updatedUser.id);
         if (idx !== -1) {
-          users[idx].user = { ...users[idx].user, primaryColor: color };
+          users[idx].user = { ...users[idx].user, ...partial };
         } else {
           users.push({
             email: updatedUser.email || '',
@@ -166,24 +169,43 @@ export function useAuth() {
         }
         localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
 
-        // Also update in esp_user_profile if exists
+        // Sync with esp_user_profile if exists
         const storedProfile = localStorage.getItem("esp_user_profile");
         if (storedProfile) {
           const parsedProfile = JSON.parse(storedProfile);
           if (parsedProfile.personal) {
-            parsedProfile.personal.primaryColor = color;
+            if (partial.primaryColor) parsedProfile.personal.primaryColor = partial.primaryColor;
+            if (partial.avatarColor) parsedProfile.personal.avatarColor = partial.avatarColor;
             localStorage.setItem("esp_user_profile", JSON.stringify(parsedProfile));
           }
         }
       } catch {}
+    }
+  }, [store.user, store.updateUser, setColor]);
 
+  const updatePrimaryColor = useCallback(async (color: string) => {
+    setColor(color as any);
+    updateUser({ primaryColor: color });
+
+    if (typeof window !== 'undefined') {
       // Fire and forget update to API services (for real backend mode compliance)
       try {
         api.user.updateProfile({ primaryColor: color }).catch(() => {});
         api.preferences.update({ primaryColor: color }).catch(() => {});
       } catch {}
     }
-  }, [store.user, setColor]);
+  }, [setColor, updateUser]);
+
+  const updateAvatarColor = useCallback(async (color: string) => {
+    updateUser({ avatarColor: color });
+
+    if (typeof window !== 'undefined') {
+      // Fire and forget update to API services (for real backend mode compliance)
+      try {
+        api.user.updateProfile({ avatarColor: color }).catch(() => {});
+      } catch {}
+    }
+  }, [updateUser]);
 
   return {
     user: store.user,
@@ -192,7 +214,8 @@ export function useAuth() {
     login,
     logout,
     updateAvatar: store.updateAvatar,
-    updateUser: store.updateUser,
+    updateAvatarColor,
+    updateUser,
     updatePrimaryColor,
   };
 }

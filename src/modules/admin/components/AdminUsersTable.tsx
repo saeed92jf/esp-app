@@ -7,14 +7,19 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { 
   Search, X, Eye, EyeOff, LayoutDashboard, 
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck,
-  Building, GraduationCap, Calendar, Users, ExternalLink,
-  Building2
+  Building, Calendar, Users, ExternalLink,
+  Building2, Briefcase, DollarSign, Clock, MapPin,
+  Heart, Shield, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -126,12 +131,13 @@ function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPane
       }}
       dir={isRtl ? "rtl" : "ltr"}
       className={cn(
-        "w-full bg-slate-100/95 dark:bg-slate-800/95 border-x border-b border-border/50 rounded-t-none rounded-b-2xl overflow-hidden",
-        "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.09)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
+        "w-full bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md border-x border-b border-border/50 rounded-t-none overflow-hidden",
+        isRtl ? "rounded-bl-none rounded-br-2xl" : "rounded-br-none rounded-bl-2xl",
+        "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
       )}
     >
       <div ref={contentRef} className="p-4 sm:p-5">
-        <div className="w-full max-w-3xl mx-auto">
+        <div className="w-full max-w-5xl mx-auto">
           <motion.div
             key={activeType}
             initial={{ opacity: 0, y: 6 }}
@@ -179,6 +185,9 @@ export function AdminUsersTable({
     type: 'view' | 'password' | 'edit' | 'access';
   } | null>(null);
 
+  // Track hovered user row for smooth slide-out tab animation
+  const [hoveredUserId, setHoveredUserId] = useState<string | null>(null);
+
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -197,6 +206,26 @@ export function AdminUsersTable({
   }, [users]);
 
   const uniqueDepartments = useMemo(() => Object.keys(departmentCounts), [departmentCounts]);
+
+  const departmentOptions: ComboboxOption[] = useMemo(() => {
+    return uniqueDepartments.map(dep => {
+      let depLabel = dep;
+      try {
+        depLabel = t(`departments.${dep}`) || dep;
+      } catch {
+        depLabel = dep;
+      }
+      return {
+        value: dep,
+        label: depLabel,
+      };
+    });
+  }, [uniqueDepartments, t]);
+
+  const roleOptions: ComboboxOption[] = useMemo(() => [
+    { value: "user", label: t("userRole") },
+    { value: "admin", label: t("adminRole") },
+  ], [t]);
 
   const toggleArrayItem = (arr: string[], item: string) => {
     return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
@@ -1036,10 +1065,10 @@ export function AdminUsersTable({
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-border/20">
-            {filteredUsers.length === 0 ? (
+          {filteredUsers.length === 0 ? (
+            <tbody className="divide-y divide-border/20">
               <tr>
-                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={10} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -1056,68 +1085,74 @@ export function AdminUsersTable({
                   </div>
                 </td>
               </tr>
-            ) : (
-              filteredUsers.map((user) => {
-                const isSelected = selectedUser?.id === user.id;
-                const wf = user.workingFormat || { office: 25, factory: 25, mission: 25, leave: 25 };
-                const departmentKey = user.department || 'engineering';
-                let departmentName = departmentKey;
-                try {
-                  departmentName = t(`departments.${departmentKey}`);
-                } catch {
-                  departmentName = departmentKey;
+            </tbody>
+          ) : (
+            filteredUsers.map((user) => {
+              const isSelected = selectedUser?.id === user.id;
+              const wf = user.workingFormat || { office: 25, factory: 25, mission: 25, leave: 25 };
+              const departmentKey = user.department || 'engineering';
+              let departmentName = departmentKey;
+              try {
+                departmentName = t(`departments.${departmentKey}`);
+              } catch {
+                departmentName = departmentKey;
+              }
+
+              const isAccordionOpen = activeAccordion?.userId === user.id;
+              const isRowActive = activeAccordion ? isAccordionOpen : isSelected;
+
+              // Determine unclipped location badge (color & localized label)
+              const getLocationBadge = () => {
+                const loc = user.workLocation?.toLowerCase();
+                if (loc === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
+                if (loc === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
+                if (loc === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
+                if (loc === 'remote') return { colorClass: 'bg-purple-500', label: t("workLocationRemote") };
+                if (loc === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+
+                if (wf) {
+                  const entries = Object.entries(wf) as [string, number][];
+                  entries.sort((a, b) => b[1] - a[1]);
+                  const dominant = entries[0]?.[0];
+                  if (dominant === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
+                  if (dominant === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
+                  if (dominant === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
+                  if (dominant === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
                 }
 
-                const isAccordionOpen = activeAccordion?.userId === user.id;
-                const isRowActive = activeAccordion ? isAccordionOpen : isSelected;
+                if (user.status === 'offline') {
+                  return { colorClass: 'bg-slate-400', label: t("offline") };
+                }
 
-                // Determine unclipped location badge (color & localized label)
-                const getLocationBadge = () => {
-                  const loc = user.workLocation?.toLowerCase();
-                  if (loc === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
-                  if (loc === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
-                  if (loc === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
-                  if (loc === 'remote') return { colorClass: 'bg-purple-500', label: t("workLocationRemote") };
-                  if (loc === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
+                return { colorClass: 'bg-[#22c55e]', label: t("office") };
+              };
+              const locationBadge = getLocationBadge();
+              const userDisplayName = isRtl
+                ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : user.name)
+                : (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name);
 
-                  if (wf) {
-                    const entries = Object.entries(wf) as [string, number][];
-                    entries.sort((a, b) => b[1] - a[1]);
-                    const dominant = entries[0]?.[0];
-                    if (dominant === 'factory') return { colorClass: 'bg-[#3b82f6]', label: t("factory") };
-                    if (dominant === 'mission') return { colorClass: 'bg-[#f59e0b]', label: t("mission") };
-                    if (dominant === 'leave') return { colorClass: 'bg-[#94a3b8]', label: t("leave") };
-                    if (dominant === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
-                  }
+              // Initial letter tailored to current locale (Persian vs English)
+              const getInitialLetter = () => {
+                if (isRtl) {
+                  if (user.firstNameFa?.trim()) return user.firstNameFa.trim().charAt(0);
+                  const match = user.name?.match(/[\u0600-\u06FF]/);
+                  return match ? match[0] : (user.name?.trim().charAt(0) || "ک");
+                } else {
+                  if (user.firstName?.trim()) return user.firstName.trim().charAt(0).toUpperCase();
+                  const match = user.name?.match(/[a-zA-Z]/);
+                  return match ? match[0].toUpperCase() : (user.name?.trim().charAt(0) || "U").toUpperCase();
+                }
+              };
+              const userInitial = getInitialLetter();
+              const avatarBg = getUserAvatarColor(user);
 
-                  if (user.status === 'offline') {
-                    return { colorClass: 'bg-slate-400', label: t("offline") };
-                  }
-
-                  return { colorClass: 'bg-[#22c55e]', label: t("office") };
-                };
-                const locationBadge = getLocationBadge();
-                const userDisplayName = isRtl
-                  ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : user.name)
-                  : (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name);
-
-                // Initial letter tailored to current locale (Persian vs English)
-                const getInitialLetter = () => {
-                  if (isRtl) {
-                    if (user.firstNameFa?.trim()) return user.firstNameFa.trim().charAt(0);
-                    const match = user.name?.match(/[\u0600-\u06FF]/);
-                    return match ? match[0] : (user.name?.trim().charAt(0) || "ک");
-                  } else {
-                    if (user.firstName?.trim()) return user.firstName.trim().charAt(0).toUpperCase();
-                    const match = user.name?.match(/[a-zA-Z]/);
-                    return match ? match[0].toUpperCase() : (user.name?.trim().charAt(0) || "U").toUpperCase();
-                  }
-                };
-                const userInitial = getInitialLetter();
-                const avatarBg = getUserAvatarColor(user);
-
-                return (
-                  <React.Fragment key={user.id}>
+              return (
+                <tbody
+                  key={user.id}
+                  className="group/row"
+                  onMouseEnter={() => setHoveredUserId(user.id)}
+                  onMouseLeave={() => setHoveredUserId((prev) => (prev === user.id ? null : prev))}
+                >
                     
                     {/* ── 1. Main User Data Row ── */}
                     <tr
@@ -1299,14 +1334,26 @@ export function AdminUsersTable({
                       <td colSpan={10} className="p-0 border-0">
                         <div 
                           className={cn(
-                            "w-full flex flex-col px-3 sm:px-4 relative",
-                            isRtl ? "items-start" : "items-end",
-                            isAccordionOpen ? "pb-4" : "pb-2.5"
-                          )} 
-                          dir="ltr"
+                            "grid transition-[grid-template-rows,opacity] duration-250 ease-out",
+                            isAccordionOpen 
+                              ? "grid-rows-[1fr] opacity-100" 
+                              : cn(
+                                  "grid-rows-[0fr] opacity-0 group-hover/row:grid-rows-[1fr] group-hover/row:opacity-100",
+                                  hoveredUserId === user.id && "grid-rows-[1fr] opacity-100"
+                                )
+                          )}
                         >
-                          {/* ── Fixed Continuous Bottom Shadow across the whole row ── */}
-                          <div className="w-full h-1.5 bg-gradient-to-b from-slate-900/[0.06] dark:from-black/30 to-transparent pointer-events-none absolute top-0 inset-x-0 z-10" />
+                          <div className="overflow-hidden min-h-0">
+                            <div 
+                              className={cn(
+                                "w-full flex flex-col px-3 sm:px-4 relative",
+                                isRtl ? "items-start" : "items-end",
+                                isAccordionOpen ? "pb-4" : "pb-2.5"
+                              )} 
+                              dir="ltr"
+                            >
+                              {/* ── Fixed Continuous Bottom Shadow across the whole row ── */}
+                              <div className="w-full h-1.5 bg-gradient-to-b from-slate-900/[0.06] dark:from-black/30 to-transparent pointer-events-none absolute top-0 inset-x-0 z-10" />
 
                           {/* ── A. Content Container on Top (فول واید هم‌اندازه سطر، بدون فیلت در بالا) ── */}
                           <AnimatePresence initial={false}>
@@ -1316,414 +1363,560 @@ export function AdminUsersTable({
                                 activeType={activeAccordion.type}
                                 isRtl={isRtl}
                               >
-                                {/* ── Mode A: View Details ── */}
-                            {activeAccordion.type === 'view' && (
-                              <div className="flex flex-col gap-3">
-                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                                  <div className="flex items-center gap-2">
-                                    <Eye size={15} className="text-primary" />
-                                    <h4 className="text-xs font-bold text-foreground">
-                                      {t("applicantDetailsTitle")} - {user.name}
-                                    </h4>
-                                    <span className="text-[10px] font-mono bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
-                                      #{user.id}
-                                    </span>
-                                  </div>
-                                  <button 
-                                    onClick={() => setActiveAccordion(null)}
-                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
-                                  >
-                                    <X size={14} />
-                                  </button>
-                                </div>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
-                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
-                                    <span className="text-[10px] text-muted-foreground font-medium">{t("company")}</span>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                      <Building2 size={13} className="text-primary shrink-0" />
-                                      {(() => {
-                                        const comp = getCompanyFromEmail(user.email);
-                                        return (
-                                          <span
-                                            className={cn(
-                                              "font-bold text-xs truncate px-1.5 py-0.5 rounded",
-                                              comp.id === "npceram"
-                                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-300"
-                                                : "bg-sky-500/10 text-sky-700 dark:text-sky-300"
-                                            )}
+                                {/* ── Mode A: View Details (اطلاعات کامل و جامع کاربر) ── */}
+                                {activeAccordion.type === 'view' && (() => {
+                                  const comp = getCompanyFromEmail(user.email);
+                                  return (
+                                    <div className="flex flex-col gap-3.5">
+                                      {/* Top Header Bar */}
+                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+                                        <div className="flex items-center gap-3">
+                                          <div 
+                                            className="size-10 rounded-2xl flex items-center justify-center font-medium text-sm text-white shrink-0 shadow-xs"
+                                            style={{ backgroundColor: user.avatarColor || '#0284c7' }}
                                           >
-                                            {isRtl ? comp.nameFa : comp.nameEn}
-                                          </span>
-                                        );
-                                      })()}
-                                    </div>
-                                  </div>
-                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
-                                    <span className="text-[10px] text-muted-foreground font-medium">{t("nationalIdLabel")}</span>
-                                    <span className="font-bold text-foreground mt-0.5 fa-num">{user.nationalId || "0012345678"}</span>
-                                  </div>
-                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
-                                    <span className="text-[10px] text-muted-foreground font-medium">{t("phoneLabel")}</span>
-                                    <span className="font-bold text-foreground mt-0.5 fa-num" dir="ltr">{user.phone || "09120000000"}</span>
-                                  </div>
-                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
-                                    <span className="text-[10px] text-muted-foreground font-medium">{t("education")}</span>
-                                    <span className="font-bold text-foreground mt-0.5 truncate">{user.educationField || t("defaultEducationField")}</span>
-                                  </div>
-                                  <div className="flex flex-col p-2.5 rounded-xl bg-muted/30 border border-border/30">
-                                    <span className="text-[10px] text-muted-foreground font-medium">{t("maritalStatus")} / {t("children")}</span>
-                                    <span className="font-bold text-foreground mt-0.5 fa-num">
-                                      {user.maritalStatus === 'married' ? t("married") : t("single")} ({user.childrenCount ?? 2} {t("child")})
-                                    </span>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center justify-end gap-2 pt-1">
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSelectAndGoHome(user)}
-                                    className="h-8 px-3 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer inline-flex items-center gap-1.5"
-                                  >
-                                    <LayoutDashboard size={13} />
-                                    <span>{t("viewInDashboard")}</span>
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* ── Mode B: Change Password ── */}
-                            {activeAccordion.type === 'password' && (
-                              <form 
-                                onSubmit={(e) => {
-                                  e.preventDefault();
-                                  handleSavePassword(user.id);
-                                }}
-                                autoComplete="off"
-                                className="flex flex-col gap-3"
-                              >
-                                {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
-                                <input 
-                                  type="text" 
-                                  name="fake_username_prevention" 
-                                  tabIndex={-1} 
-                                  style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
-                                  autoComplete="username" 
-                                />
-                                <input 
-                                  type="password" 
-                                  name="fake_password_prevention" 
-                                  tabIndex={-1} 
-                                  style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
-                                  autoComplete="current-password" 
-                                />
-
-                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                                  <div className="flex items-center gap-2">
-                                    <KeyRound size={15} className="text-amber-500" />
-                                    <h4 className="text-xs font-bold text-foreground">
-                                      {t("changePassword")} - {user.name}
-                                    </h4>
-                                  </div>
-                                  <button 
-                                    type="button"
-                                    onClick={() => setActiveAccordion(null)}
-                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
-                                  >
-                                    <X size={14} />
-                                  </button>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-3">
-                                  <div className="flex-1 min-w-[180px]">
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("newPassword")}
-                                    </label>
-                                    <PasswordInput
-                                      id={`new_pwd_${user.id}`}
-                                      name={`new_pwd_${user.id}`}
-                                      autoComplete="new-password"
-                                      data-lpignore="true"
-                                      value={newPassword}
-                                      onChange={(e) => setNewPassword(e.target.value)}
-                                      placeholder="••••••••"
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                      dir="ltr"
-                                    />
-                                  </div>
-
-                                  <div className="flex-1 min-w-[180px]">
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("confirmPassword")}
-                                    </label>
-                                    <PasswordInput
-                                      id={`confirm_pwd_${user.id}`}
-                                      name={`confirm_pwd_${user.id}`}
-                                      autoComplete="new-password"
-                                      data-lpignore="true"
-                                      value={confirmPassword}
-                                      onChange={(e) => setConfirmPassword(e.target.value)}
-                                      placeholder="••••••••"
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                      dir="ltr"
-                                    />
-                                  </div>
-
-                                  <div className="flex items-center gap-2 pt-5">
-                                    <Button
-                                      type="submit"
-                                      size="sm"
-                                      className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer"
-                                    >
-                                      {t("save")}
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => setActiveAccordion(null)}
-                                      className="h-8.5 px-3 rounded-xl text-xs text-muted-foreground cursor-pointer"
-                                    >
-                                      {t("cancel")}
-                                    </Button>
-                                  </div>
-                                </div>
-                              </form>
-                            )}
-
-                            {/* ── Mode C: Quick Edit User Info ── */}
-                            {activeAccordion.type === 'edit' && (
-                              <div className="flex flex-col gap-3">
-                                <div className="flex items-center justify-between pb-2 border-b border-border/40">
-                                  <div className="flex items-center gap-2">
-                                    <Edit2 size={15} className="text-blue-500" />
-                                    <h4 className="text-xs font-bold text-foreground">
-                                      {t("editUserInfo")} - {user.name}
-                                    </h4>
-                                  </div>
-                                  <button 
-                                    onClick={() => setActiveAccordion(null)}
-                                    className="text-muted-foreground hover:text-foreground p-1 rounded-md cursor-pointer"
-                                  >
-                                    <X size={14} />
-                                  </button>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("name")}
-                                    </label>
-                                    <Input
-                                      value={editFormData.name || ""}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("email")}
-                                    </label>
-                                    <Input
-                                      value={editFormData.email || ""}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
-                                      dir="ltr"
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("phoneLabel")}
-                                    </label>
-                                    <Input
-                                      value={editFormData.phone || ""}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                      dir="ltr"
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("department")}
-                                    </label>
-                                    <select
-                                      value={editFormData.department || "engineering"}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, department: e.target.value }))}
-                                      className="h-8.5 w-full text-xs bg-background border border-border/50 rounded-xl px-2.5 outline-none focus:ring-1 focus:ring-primary"
-                                    >
-                                      {uniqueDepartments.map(dep => (
-                                        <option key={dep} value={dep}>
-                                          {t(`departments.${dep}`) || dep}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("role")}
-                                    </label>
-                                    <select
-                                      value={editFormData.role || "user"}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, role: e.target.value as any }))}
-                                      className="h-8.5 w-full text-xs bg-background border border-border/50 rounded-xl px-2.5 outline-none focus:ring-1 focus:ring-primary"
-                                    >
-                                      <option value="user">{t("userRole")}</option>
-                                      <option value="admin">{t("adminRole")}</option>
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                                      {t("jobTitle")}
-                                    </label>
-                                    <Input
-                                      value={editFormData.jobTitle || ""}
-                                      onChange={(e) => setEditFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
-                                      className="h-8.5 text-xs bg-background rounded-xl border-border/50"
-                                    />
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setActiveAccordion(null)}
-                                    className="h-8.5 px-3 rounded-xl text-xs text-muted-foreground cursor-pointer"
-                                  >
-                                    {t("cancel")}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSaveEdit(user.id)}
-                                    className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
-                                  >
-                                    {t("save")}
-                                  </Button>
-                                </div>
-                              </div>
-                            )}
-
-                            {/* ── Mode D: Module Access (دسترسی ماژول‌ها) ── */}
-                            {activeAccordion.type === 'access' && (
-                              <div className="flex flex-col gap-3.5">
-                                <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
-                                  <div className="flex items-center gap-2.5">
-                                    <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                                      <ShieldCheck size={18} />
-                                    </div>
-                                    <div>
-                                      <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
-                                        <span>{t("moduleAccess")}</span>
-                                        <span className="text-[11px] font-normal text-muted-foreground">({user.name})</span>
-                                      </h4>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        {t("changeUserAccess")}
-                                      </p>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                      {(user.modulesAccess?.filter(m => m.hasAccess).length || 0)} {t("activeStatus")}
-                                    </span>
-
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => handleSelectAndGoConfig(user)}
-                                      className="h-7.5 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                                      title={t("managePermissions")}
-                                    >
-                                      <ExternalLink size={12} />
-                                      <span className="hidden sm:inline">{t("managePermissions")}</span>
-                                    </Button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => setActiveAccordion(null)}
-                                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer"
-                                      title={t("cancel")}
-                                    >
-                                      <X size={14} />
-                                    </button>
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[300px] overflow-y-auto custom-scrollbar p-1">
-                                  {NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard").map(group => {
-                                    const groupAccess = user.modulesAccess?.find(m => m.moduleId === group.id);
-                                    const hasGroupAccess = groupAccess?.hasAccess ?? false;
-
-                                    let label = group.id;
-                                    try {
-                                      label = tMenu(`sections.${group.labelKey}` as any) || group.id;
-                                    } catch {
-                                      label = group.id;
-                                    }
-
-                                    return (
-                                      <div
-                                        key={group.id}
-                                        className={cn(
-                                          "flex flex-col justify-between p-3 rounded-xl border transition-all",
-                                          hasGroupAccess
-                                            ? "bg-emerald-500/[0.04] border-emerald-500/30 text-foreground"
-                                            : "bg-muted/20 border-border/40 text-muted-foreground opacity-75"
-                                        )}
-                                      >
-                                        <div className="flex items-start justify-between gap-2 mb-2.5">
-                                          <div className="flex items-center gap-2 min-w-0">
-                                            <span className={cn(
-                                              "size-2 rounded-full shrink-0",
-                                              hasGroupAccess ? "bg-emerald-500" : "bg-slate-300 dark:bg-slate-600"
-                                            )} />
-                                            <span className="text-xs font-semibold truncate" title={label}>
-                                              {label}
-                                            </span>
+                                            {user.name ? user.name.slice(0, 2) : "US"}
                                           </div>
-
-                                          {group.items && group.items.length > 0 && (
-                                            <span className="text-[10px] text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded border border-border/40 shrink-0">
-                                              {group.items.length} {t("subItems")}
-                                            </span>
-                                          )}
+                                          <div className="flex flex-col">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                              <h4 className="text-sm font-medium text-foreground">
+                                                {user.name}
+                                              </h4>
+                                              <Badge variant="outline" className="text-[10px] h-5 font-mono bg-muted/60 text-muted-foreground border-border/50">
+                                                #{user.id}
+                                              </Badge>
+                                              <Badge 
+                                                variant="secondary"
+                                                className={cn(
+                                                  "text-[10px] h-5 font-medium",
+                                                  comp.id === "npceram"
+                                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20"
+                                                )}
+                                              >
+                                                {isRtl ? comp.nameFa : comp.nameEn}
+                                              </Badge>
+                                              <Badge 
+                                                variant="secondary"
+                                                className={cn(
+                                                  "text-[10px] h-5 font-medium",
+                                                  user.role === 'admin'
+                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
+                                                    : "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20"
+                                                )}
+                                              >
+                                                {user.role === 'admin' ? t("adminRole") : t("userRole")}
+                                              </Badge>
+                                              <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                                <span className={cn(
+                                                  "size-2 rounded-full shrink-0",
+                                                  user.status === 'online' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
+                                                )} />
+                                                {user.status === 'online' ? t("online") : t("offline")}
+                                              </span>
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground mt-0.5 truncate" dir="ltr">
+                                              {user.email}
+                                            </p>
+                                          </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                                          <span className={cn(
-                                            "text-[10px] font-medium",
-                                            hasGroupAccess ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
-                                          )}>
-                                            {hasGroupAccess ? t("activeStatus") : t("inactiveStatus")}
-                                          </span>
+                                        <div className="flex items-center gap-1.5 self-end sm:self-center">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleSelectAndGoHome(user)}
+                                            className="size-8 rounded-xl flex items-center justify-center text-primary bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
+                                            title={t("viewInDashboard")}
+                                            aria-label={t("viewInDashboard")}
+                                          >
+                                            <LayoutDashboard size={14} className="shrink-0" />
+                                          </button>
+                                          <button 
+                                            type="button"
+                                            onClick={() => setActiveAccordion(null)}
+                                            className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                            title={t("cancel")}
+                                          >
+                                            <X size={15} />
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {/* 4 Clean Dossier Cards */}
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                                        {/* Card 1: Identity & Contact */}
+                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
+                                          <div className="pb-2 mb-2 border-b border-border/40">
+                                            <span className="font-medium text-xs text-foreground/80">{t("identityInfo")}</span>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("nationalIdLabel")}</span>
+                                              <span className="font-normal text-foreground fa-num">{user.nationalId || "0012345678"}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("phoneLabel")}</span>
+                                              <span className="font-normal text-foreground fa-num" dir="ltr">{user.phone || "09120000000"}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("email")}</span>
+                                              <span className="font-normal text-foreground/90 truncate block text-[11px]" dir="ltr">{user.email}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Card 2: Organization & Position */}
+                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
+                                          <div className="pb-2 mb-2 border-b border-border/40">
+                                            <span className="font-medium text-xs text-foreground/80">{t("orgInfo")}</span>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("department")}</span>
+                                              <span className="font-normal text-foreground truncate block">
+                                                {t(`departments.${user.department}`) || user.department}
+                                              </span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("jobTitle")}</span>
+                                              <span className="font-normal text-foreground truncate block">{user.jobTitle || t("unspecified")}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("workLocationLabel")}</span>
+                                              <span className="font-normal text-foreground">
+                                                {user.workLocation === 'factory' ? t("workLocationFactory") : user.workLocation === 'remote' ? t("workLocationRemote") : t("workLocationOffice")}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Card 3: Performance, Tenure & Salary */}
+                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
+                                          <div className="pb-2 mb-2 border-b border-border/40">
+                                            <span className="font-medium text-xs text-foreground/80">{t("statsInfo")}</span>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("tenureCol")}</span>
+                                              <span className="font-normal text-foreground fa-num">
+                                                {user.daysInCompany || 0} {t("daysUnit")}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("projectsCol")}</span>
+                                              <span className="font-normal text-foreground fa-num">
+                                                {user.doneProjects || 0}
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("score")}</span>
+                                              <span className="font-normal text-emerald-600 dark:text-emerald-400 fa-num">
+                                                {user.score || 90} / 100
+                                              </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal">{t("salary")}</span>
+                                              <span className="font-normal text-foreground fa-num">
+                                                ${(user.salary || 12500).toLocaleString()}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Card 4: Personal, Education & Insurance */}
+                                        <div className="flex flex-col p-3 rounded-2xl bg-background/70 dark:bg-slate-800/60 border border-border/50 shadow-xs">
+                                          <div className="pb-2 mb-2 border-b border-border/40">
+                                            <span className="font-medium text-xs text-foreground/80">{t("personalInfo")}</span>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("userAge")} / {t("maritalStatus")}</span>
+                                              <span className="font-normal text-foreground fa-num">
+                                                {user.age || 32} {t("daysUnit") === "روز" ? "سال" : "yrs"} • {user.maritalStatus === 'married' ? t("married") : t("single")} ({user.childrenCount ?? 0} {t("child")})
+                                              </span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("insuranceTypeLabel")}</span>
+                                              <span className="font-normal text-foreground">
+                                                {user.insuranceType === 'complementary' ? t("insuranceOptions.complementary") : user.insuranceType === 'none' ? t("insuranceOptions.none") : t("insuranceOptions.socialSecurity")}
+                                              </span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("education")}</span>
+                                              <span className="font-normal text-foreground truncate block">
+                                                {user.educationDegree || t("degreesOptions.master")} - {user.educationField || user.education || t("defaultEducationField")}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
+
+                                {/* ── Mode B: Change Password (تغییر رمز عبور) ── */}
+                                {activeAccordion.type === 'password' && (
+                                  <form 
+                                    onSubmit={(e) => {
+                                      e.preventDefault();
+                                      handleSavePassword(user.id);
+                                    }}
+                                    autoComplete="off"
+                                    className="flex flex-col gap-3.5"
+                                  >
+                                    {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
+                                    <input 
+                                      type="text" 
+                                      name="fake_username_prevention" 
+                                      tabIndex={-1} 
+                                      style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                      autoComplete="username" 
+                                    />
+                                    <input 
+                                      type="password" 
+                                      name="fake_password_prevention" 
+                                      tabIndex={-1} 
+                                      style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                      autoComplete="current-password" 
+                                    />
+
+                                    <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                                          <KeyRound size={17} />
+                                        </div>
+                                        <div>
+                                          <h4 className="text-xs font-bold text-foreground">
+                                            {t("changePassword")} - {user.name}
+                                          </h4>
+                                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            {t("enterNewPassword")}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <button 
+                                        type="button"
+                                        onClick={() => setActiveAccordion(null)}
+                                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                        title={t("cancel")}
+                                      >
+                                        <X size={15} />
+                                      </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl">
+                                      <div className="space-y-1.5">
+                                        <Label htmlFor={`new_pwd_${user.id}`} className="text-xs font-medium text-foreground">
+                                          {t("newPassword")}
+                                        </Label>
+                                        <PasswordInput
+                                          id={`new_pwd_${user.id}`}
+                                          name={`new_pwd_${user.id}`}
+                                          autoComplete="new-password"
+                                          data-lpignore="true"
+                                          value={newPassword}
+                                          onChange={(e) => setNewPassword(e.target.value)}
+                                          placeholder="••••••••"
+                                          className="h-9 text-xs bg-background rounded-xl border-border/50"
+                                          dir="ltr"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label htmlFor={`confirm_pwd_${user.id}`} className="text-xs font-medium text-foreground">
+                                          {t("confirmPassword")}
+                                        </Label>
+                                        <PasswordInput
+                                          id={`confirm_pwd_${user.id}`}
+                                          name={`confirm_pwd_${user.id}`}
+                                          autoComplete="new-password"
+                                          data-lpignore="true"
+                                          value={confirmPassword}
+                                          onChange={(e) => setConfirmPassword(e.target.value)}
+                                          placeholder="••••••••"
+                                          className="h-9 text-xs bg-background rounded-xl border-border/50"
+                                          dir="ltr"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setActiveAccordion(null)}
+                                        className="h-8.5 px-3.5 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                      >
+                                        {t("cancel")}
+                                      </Button>
+                                      <Button
+                                        type="submit"
+                                        size="sm"
+                                        className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-xs transition-colors"
+                                      >
+                                        {t("save")}
+                                      </Button>
+                                    </div>
+                                  </form>
+                                )}
+
+                                {/* ── Mode C: Quick Edit User Info (ویرایش مشخصات با استفاده از کامپوننت‌های پروژه) ── */}
+                                {activeAccordion.type === 'edit' && (
+                                  <div className="flex flex-col gap-3.5">
+                                    <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                      <div className="flex items-center gap-2.5">
+                                        <div className="size-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                                          <Edit2 size={16} />
+                                        </div>
+                                        <div>
+                                          <h4 className="text-xs font-bold text-foreground">
+                                            {t("editUserInfo")} - {user.name}
+                                          </h4>
+                                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                                            {t("editUserDesc")}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <button 
+                                        type="button"
+                                        onClick={() => setActiveAccordion(null)}
+                                        className="text-muted-foreground hover:text-foreground p-1.5 rounded-lg hover:bg-muted/80 cursor-pointer transition-colors"
+                                        title={t("cancel")}
+                                      >
+                                        <X size={15} />
+                                      </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("name")}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.name || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("email")}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.email || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
+                                          dir="ltr"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("phoneLabel")}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.phone || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, phone: e.target.value }))}
+                                          dir="ltr"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("department")}
+                                        </Label>
+                                        <Combobox
+                                          options={departmentOptions}
+                                          value={editFormData.department || "engineering"}
+                                          onChange={(val) => setEditFormData(prev => ({ ...prev, department: val }))}
+                                          allowClear={false}
+                                          size="sm"
+                                          triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("role")}
+                                        </Label>
+                                        <Combobox
+                                          options={roleOptions}
+                                          value={editFormData.role || "user"}
+                                          onChange={(val) => setEditFormData(prev => ({ ...prev, role: val as any }))}
+                                          allowClear={false}
+                                          size="sm"
+                                          triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {t("jobTitle")}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.jobTitle || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setActiveAccordion(null)}
+                                        className="h-8.5 px-3.5 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                      >
+                                        {t("cancel")}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleSaveEdit(user.id)}
+                                        className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer shadow-xs transition-colors"
+                                      >
+                                        {t("save")}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* ── Mode D: Module Access (دسترسی ماژول‌ها - کارت‌های ساده و شیک) ── */}
+                                {activeAccordion.type === 'access' && (() => {
+                                  const availableGroups = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
+                                  const activeCount = availableGroups.filter(g => user.modulesAccess?.some(m => m.moduleId === g.id && m.hasAccess)).length;
+
+                                  return (
+                                    <div className="flex flex-col gap-3.5">
+                                      <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                        <div className="flex items-center gap-2.5">
+                                          <div className="size-8 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                                            <ShieldCheck size={18} />
+                                          </div>
+                                          <div>
+                                            <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                                              <span>{t("moduleAccess")}</span>
+                                              <span className="text-[11px] font-normal text-muted-foreground">({user.name})</span>
+                                            </h4>
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                              {t("changeUserAccess")}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 fa-num">
+                                            {activeCount} / {availableGroups.length} {t("activeStatus")}
+                                          </Badge>
 
                                           <Button
                                             type="button"
                                             size="sm"
-                                            variant={hasGroupAccess ? "outline" : "default"}
-                                            onClick={() => handleToggleUserAccess(user.id, group.id, !hasGroupAccess)}
-                                            className={cn(
-                                              "h-6 px-2 text-[10px] rounded-lg cursor-pointer transition-all",
-                                              hasGroupAccess
-                                                ? "border-destructive/30 text-destructive hover:bg-destructive/10"
-                                                : "bg-emerald-600 hover:bg-emerald-700 text-white font-medium"
-                                            )}
+                                            variant="outline"
+                                            onClick={() => handleSelectAndGoConfig(user)}
+                                            className="h-7.5 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                                            title={t("managePermissions")}
                                           >
-                                            {hasGroupAccess ? t("revokeAccess") : t("grantAccess")}
+                                            <ExternalLink size={12} />
+                                            <span className="hidden sm:inline">{t("managePermissions")}</span>
                                           </Button>
+
+                                          <button
+                                            type="button"
+                                            onClick={() => setActiveAccordion(null)}
+                                            className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
+                                            title={t("cancel")}
+                                          >
+                                            <X size={14} />
+                                          </button>
                                         </div>
                                       </div>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
+
+                                      {/* Modern, Clean & Complete Module Cards Grid */}
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[340px] overflow-y-auto custom-scrollbar p-1">
+                                        {availableGroups.map(group => {
+                                          const groupAccess = user.modulesAccess?.find(m => m.moduleId === group.id);
+                                          const hasGroupAccess = groupAccess?.hasAccess ?? false;
+
+                                          let label = group.id;
+                                          try {
+                                            label = tMenu(`sections.${group.labelKey}` as any) || group.id;
+                                          } catch {
+                                            label = group.id;
+                                          }
+
+                                          const GroupIcon = group.icon;
+
+                                          return (
+                                            <div
+                                              key={group.id}
+                                              onClick={() => handleToggleUserAccess(user.id, group.id, !hasGroupAccess)}
+                                              className={cn(
+                                                "group flex flex-col justify-between p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
+                                                hasGroupAccess
+                                                  ? "bg-emerald-500/[0.04] dark:bg-emerald-500/[0.07] border-emerald-500/30 shadow-xs"
+                                                  : "bg-background/60 dark:bg-slate-800/50 border-border/50 hover:border-border/80 hover:bg-muted/30"
+                                              )}
+                                            >
+                                              <div className="flex items-start justify-between gap-2.5 mb-3">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                  <div className={cn(
+                                                    "size-8 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                                                    hasGroupAccess 
+                                                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" 
+                                                      : "bg-muted text-muted-foreground"
+                                                  )}>
+                                                    {GroupIcon ? <GroupIcon size={16} weight="duotone" /> : <ShieldCheck size={16} />}
+                                                  </div>
+                                                  <div className="min-w-0">
+                                                    <span className="text-xs font-bold text-foreground block truncate" title={label}>
+                                                      {label}
+                                                    </span>
+                                                    {group.items && group.items.length > 0 && (
+                                                      <span className="text-[10px] text-muted-foreground fa-num">
+                                                        {group.items.length} {t("subItems")}
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                </div>
+
+                                                <div onClick={(e) => e.stopPropagation()}>
+                                                  <Switch
+                                                    size="sm"
+                                                    checked={hasGroupAccess}
+                                                    onCheckedChange={(checked) => handleToggleUserAccess(user.id, group.id, checked)}
+                                                  />
+                                                </div>
+                                              </div>
+
+                                              <div className="flex items-center justify-between pt-2 border-t border-border/30 text-[10px]">
+                                                <span className={cn(
+                                                  "font-semibold inline-flex items-center gap-1",
+                                                  hasGroupAccess 
+                                                    ? "text-emerald-600 dark:text-emerald-400" 
+                                                    : "text-muted-foreground"
+                                                )}>
+                                                  <span className={cn(
+                                                    "size-1.5 rounded-full",
+                                                    hasGroupAccess ? "bg-emerald-500" : "bg-muted-foreground/40"
+                                                  )} />
+                                                  {hasGroupAccess ? t("activeStatus") : t("inactiveStatus")}
+                                                </span>
+
+                                                <span className="text-muted-foreground text-[10px]">
+                                                  {hasGroupAccess ? t("revokeAccess") : t("grantAccess")}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </TableAccordionPanel>
                               )}
                             </AnimatePresence>
@@ -1734,10 +1927,9 @@ export function AdminUsersTable({
                               className={cn(
                                 "flex items-center justify-between px-3 py-1 transition-colors select-none shrink-0",
                                 isAccordionOpen ? "-mt-px" : "mt-0",
-                                "rounded-b-xl shadow-none border-x border-b",
-                                isRowActive
-                                  ? "bg-slate-100/95 dark:bg-slate-800/95 border-primary/30 dark:border-primary/40 text-foreground"
-                                  : "bg-slate-100/95 dark:bg-slate-800/95 border-border/50 text-muted-foreground",
+                                "rounded-b-xl shadow-none border-x border-b border-border/50",
+                                "bg-slate-100/95 dark:bg-slate-800/95",
+                                isRowActive ? "text-foreground" : "text-muted-foreground",
                                 !isAccordionOpen && (isRowActive ? "hover:bg-slate-200/90 dark:hover:bg-slate-700/90" : "hover:bg-slate-200/80 dark:hover:bg-slate-700/80")
                               )}
                             >
@@ -1836,15 +2028,16 @@ export function AdminUsersTable({
                               </div>
                             </div>
 
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
 
-                  </React.Fragment>
+                  </tbody>
                 );
               })
             )}
-          </tbody>
         </table>
       </div>
     </div>

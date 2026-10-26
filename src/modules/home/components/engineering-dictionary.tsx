@@ -570,7 +570,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
     <TooltipProvider>
       <div
         className={cn(
-          "w-full max-w-5xl mx-auto flex flex-col h-full min-h-0",
+          "w-full max-w-5xl mx-auto flex flex-col my-auto justify-center min-h-0",
           className
         )}
       >
@@ -695,7 +695,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
         </div>
 
         {/* 2. Main Content Area */}
-        <div className="flex-1 w-full min-h-0 flex flex-col justify-between overflow-hidden">
+        <div className="w-full min-h-0 flex flex-col justify-center">
           {filteredTerms.length === 0 ? (
             <div className="flex-1 w-full flex flex-col items-center justify-center my-auto py-10 text-center">
               <div className="size-12 rounded-2xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-3">
@@ -718,9 +718,9 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
             </div>
           ) : viewMode === "paginated" ? (
             /* View Mode 1: Paginated - 2 fixed cards centered vertically, pagination bar locked at bottom */
-            <div className="flex-1 w-full min-h-0 flex flex-col justify-between">
+            <div className="w-full min-h-0 flex flex-col justify-center">
               {/* Vertically centered cards occupying the extra vertical space */}
-              <div className="flex-1 w-full flex flex-col items-center justify-center my-auto py-2 sm:py-3 min-h-0">
+              <div className="w-full flex flex-col items-center justify-center py-2 sm:py-3 min-h-0">
                 <motion.div
                   key={currentPage}
                   initial={{ opacity: 0, y: 6 }}
@@ -745,8 +745,8 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                 </motion.div>
               </div>
 
-              {/* Bottom Pagination Bar: Firmly anchored at the bottom edge */}
-              <div className="shrink-0 w-full mt-auto pt-2.5 pb-1 px-1 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
+              {/* Bottom Pagination Bar */}
+              <div className="shrink-0 w-full pt-2.5 pb-1 px-1 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4">
                 {/* Offset & Range Info */}
                 <div className="flex items-center gap-2 select-none shrink-0">
                   <Badge variant="outline" className="font-normal text-xs py-1 px-3 bg-muted/40 border-border/60">
@@ -880,7 +880,7 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
             </div>
           ) : (
             /* View Mode 2: Scroll Mode - Scrolls edge-to-edge, with breathing room at boundaries */
-            <div className="flex-1 w-full min-h-0 flex flex-col justify-between overflow-hidden">
+            <div className="w-full max-h-[50vh] min-h-0 flex flex-col justify-between overflow-hidden">
               {/* Scroll container touches top border line and bottom border line */}
               <div className="flex-1 w-full min-h-0 overflow-y-auto custom-scrollbar px-1 sm:px-2">
                 {/* Inner grid has pt-3.5 and pb-4 padding so at start/end of scroll there is breathing room */}
@@ -902,8 +902,8 @@ export function EngineeringDictionary({ className }: EngineeringDictionaryProps)
                 </div>
               </div>
 
-              {/* Scroll Mode Bottom Summary Bar - Firmly pinned at the bottom */}
-              <div className="shrink-0 w-full mt-auto pt-2 pb-1 px-1 border-t border-border/40 flex items-center justify-between gap-3 select-none">
+              {/* Scroll Mode Bottom Summary Bar */}
+              <div className="shrink-0 w-full pt-2 pb-1 px-1 border-t border-border/40 flex items-center justify-between gap-3 select-none">
                 <Badge variant="outline" className="font-normal text-xs py-1 px-3 bg-muted/40 border-border/60">
                   <span className="text-muted-foreground">{t("showingAll", { count: filteredTerms.length })}</span>
                 </Badge>

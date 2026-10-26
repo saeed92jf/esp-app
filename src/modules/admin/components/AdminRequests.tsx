@@ -62,6 +62,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
+import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
+import { formatRequestSubmissionDate, formatDateFieldForLocale, toAsciiDigits } from "../utils/date-formatter";
 
 interface AdminRequestsProps {
   requests: PendingRequest[];
@@ -96,10 +98,15 @@ export function AdminRequests({
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | RequestStatus>("all");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "hr_approved" | "rejected"
+  >("all");
   const [domainFilter, setDomainFilter] = useState<
     "all" | "euroslotpars.com" | "npceram.com"
   >("all");
+
+  // Reviewer role perspective: HR vs General Manager
+  const [reviewerRole, setReviewerRole] = useState<"hr" | "manager">("manager");
 
   // Selected Request for Review
   const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
@@ -126,14 +133,13 @@ export function AdminRequests({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Metrics calculation
+  // Metrics calculation (Active Account removed per user requirement)
   const metrics = useMemo(() => {
     const total = requests.length;
     const pendingHr = requests.filter((r) => r.status === "pending").length;
     const pendingManager = requests.filter((r) => r.status === "hr_approved").length;
-    const active = requests.filter((r) => r.status === "active").length;
     const rejected = requests.filter((r) => r.status === "rejected").length;
-    return { total, pendingHr, pendingManager, active, rejected };
+    return { total, pendingHr, pendingManager, rejected };
   }, [requests]);
 
   // Fast live filtered requests
@@ -194,6 +200,10 @@ export function AdminRequests({
       if (found) {
         setReviewData({
           ...found,
+          birthDate: formatDateFieldForLocale(found.birthDate, isRtl),
+          joinDate: formatDateFieldForLocale(found.joinDate, isRtl),
+          insuranceValidUntil: formatDateFieldForLocale(found.insuranceValidUntil, isRtl),
+          graduationYear: formatDateFieldForLocale(found.graduationYear, isRtl),
           department: found.department || "engineering",
           maritalStatus: found.maritalStatus || "single",
           childrenCount: found.childrenCount || 0,
@@ -204,7 +214,7 @@ export function AdminRequests({
           educationDegree: found.educationDegree || "bachelors",
           dependents: found.dependents || [],
           modulesAccess: found.modulesAccess || [
-            { moduleId: "/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+            { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
             { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
           ],
           skills: found.skills || [
@@ -216,7 +226,7 @@ export function AdminRequests({
     } else {
       setReviewData(null);
     }
-  }, [selectedReqId, requests]);
+  }, [selectedReqId, requests, isRtl]);
 
   // Options
   const departmentOptions = [
@@ -274,6 +284,7 @@ export function AdminRequests({
     titleKey: string;
     descKey: string;
     stepNumber: number;
+    owner: "hr" | "manager";
   }[] = [
     {
       id: "personal",
@@ -281,6 +292,7 @@ export function AdminRequests({
       titleKey: "reqSegmentPersonal",
       descKey: "reqSegmentPersonalDesc",
       stepNumber: 1,
+      owner: "hr",
     },
     {
       id: "org",
@@ -288,6 +300,7 @@ export function AdminRequests({
       titleKey: "reqSegmentOrg",
       descKey: "reqSegmentOrgDesc",
       stepNumber: 2,
+      owner: "manager",
     },
     {
       id: "insurance",
@@ -295,6 +308,7 @@ export function AdminRequests({
       titleKey: "reqSegmentInsurance",
       descKey: "reqSegmentInsuranceDesc",
       stepNumber: 3,
+      owner: "hr",
     },
     {
       id: "education",
@@ -302,6 +316,7 @@ export function AdminRequests({
       titleKey: "reqSegmentEducation",
       descKey: "reqSegmentEducationDesc",
       stepNumber: 4,
+      owner: "hr",
     },
     {
       id: "modules",
@@ -309,6 +324,7 @@ export function AdminRequests({
       titleKey: "reqSegmentModules",
       descKey: "reqSegmentModulesDesc",
       stepNumber: 5,
+      owner: "manager",
     },
   ];
 
@@ -321,6 +337,13 @@ export function AdminRequests({
       setRequests((prev) =>
         prev.map((r) => (r.id === reviewData.id ? updated : r))
       );
+      addUserNotification({
+        title: isRtl ? "به‌روزرسانی پرونده متقاضی" : "Applicant Dossier Updated",
+        description: isRtl
+          ? `اطلاعات پرونده متقاضی (${reviewData.name}) در سامانه ذخیره شد.`
+          : `Dossier changes for ${reviewData.name} were saved in the system.`,
+        type: "system",
+      });
       toast.success(t("profileChangesSavedSuccess"));
       if (onRefresh) await onRefresh();
     } catch {
@@ -365,28 +388,51 @@ export function AdminRequests({
       // 1. First save any current modifications to request profile
       await api.admin.updateRequest(reviewData.id, dataToSave);
 
-      // 2. Advance stage based on current workflow status
-      if (reviewData.status === "pending") {
-        // HR Stage Approval
-        const updated = await api.admin.approveHr(reviewData.id);
-        setRequests((prev) =>
-          prev.map((r) => (r.id === reviewData.id ? updated : r))
-        );
-        setReviewData((prev) => (prev ? { ...prev, ...updated, status: "hr_approved", hrApproved: true } : null));
-        toast.success(t("hrApproveSuccess", { email: reviewData.email }));
-      } else if (reviewData.status === "hr_approved") {
-        // Manager / Admin Stage Final Approval & Activation with configured modules access
-        const res = await api.admin.approveManager(reviewData.id, {
-          role: "user",
-          modulesAccess: dataToSave.modulesAccess,
-        });
-        setRequests((prev) =>
-          prev.map((r) => (r.id === reviewData.id ? res.request : r))
-        );
-        setReviewData((prev) => (prev ? { ...prev, ...res.request, status: "active", hrApproved: true, managerApproved: true, tempPassword: res.tempPassword || res.request.tempPassword } : null));
-        toast.success(t("managerApproveSuccess", { email: reviewData.email }));
+      // 2. Advance stage based on current reviewer role and status
+      if (reviewerRole === "hr") {
+        if (reviewData.status === "pending") {
+          // HR Stage Approval
+          const updated = await api.admin.approveHr(reviewData.id);
+          setRequests((prev) =>
+            prev.map((r) => (r.id === reviewData.id ? updated : r))
+          );
+          setReviewData((prev) => (prev ? { ...prev, ...updated, status: "hr_approved", hrApproved: true } : null));
+          addUserNotification({
+            title: isRtl ? "تایید مدارک توسط منابع انسانی" : "HR Verification Approved",
+            description: isRtl
+              ? `مدارک و اطلاعات متقاضی (${reviewData.name}) تایید شد و پرونده به مدیریت ارجاع گردید.`
+              : `Application for ${reviewData.name} was approved by HR and submitted to the General Manager.`,
+            type: "system",
+          });
+          toast.success(t("hrApproveSuccess", { email: reviewData.email }));
+        } else {
+          toast.success(t("profileChangesSavedSuccess"));
+        }
       } else {
-        toast.success(t("profileChangesSavedSuccess"));
+        // Manager Perspective
+        if (reviewData.status === "pending") {
+          toast.warning(t("stepAwaitingHr"));
+        } else if (reviewData.status === "hr_approved") {
+          // Manager Final Approval & Activation
+          const res = await api.admin.approveManager(reviewData.id, {
+            role: "user",
+            modulesAccess: dataToSave.modulesAccess,
+          });
+          setRequests((prev) =>
+            prev.map((r) => (r.id === reviewData.id ? res.request : r))
+          );
+          setReviewData((prev) => (prev ? { ...prev, ...res.request, status: "active", hrApproved: true, managerApproved: true, tempPassword: res.tempPassword || res.request.tempPassword } : null));
+          addUserNotification({
+            title: isRtl ? "تایید نهایی و فعال‌سازی حساب کاربری" : "Account Final Approval & Activation",
+            description: isRtl
+              ? `درخواست متقاضی (${reviewData.name}) تایید نهایی شد و حساب کاربری با دسترسی‌های تعیین‌شده فعال گردید.`
+              : `Application for ${reviewData.name} received final approval from the General Manager and the account is now active.`,
+            type: "system",
+          });
+          toast.success(t("managerApproveSuccess", { email: reviewData.email }));
+        } else {
+          toast.success(t("profileChangesSavedSuccess"));
+        }
       }
 
       if (onRefresh) await onRefresh();
@@ -401,13 +447,34 @@ export function AdminRequests({
     if (!reviewData) return;
     try {
       setActionLoadingId(reviewData.id);
-      // First save any current modifications
-      await api.admin.updateRequest(reviewData.id, reviewData);
+      const reqCompany = getCompanyFromEmail(reviewData.email);
+      const dataToSave: PendingRequest = {
+        ...reviewData,
+        company: isRtl ? reqCompany.nameFa : reqCompany.nameEn,
+        companyId: reqCompany.id,
+      };
+      await api.admin.updateRequest(reviewData.id, dataToSave);
       const updated = await api.admin.approveHr(reviewData.id);
       setRequests((prev) =>
         prev.map((r) => (r.id === reviewData.id ? updated : r))
       );
-      setReviewData((prev) => (prev ? { ...prev, ...updated } : null));
+      setReviewData((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...updated,
+              status: "hr_approved",
+              hrApproved: true,
+            }
+          : null
+      );
+      addUserNotification({
+        title: isRtl ? "تایید مدارک توسط منابع انسانی" : "HR Verification Approved",
+        description: isRtl
+          ? `مدارک و اطلاعات متقاضی (${reviewData.name}) تایید شد و پرونده به مدیریت ارجاع گردید.`
+          : `Application for ${reviewData.name} was approved by HR and submitted to the General Manager.`,
+        type: "system",
+      });
       toast.success(t("hrApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
@@ -421,13 +488,39 @@ export function AdminRequests({
     if (!reviewData) return;
     try {
       setActionLoadingId(reviewData.id);
-      // First save any current modifications
-      await api.admin.updateRequest(reviewData.id, reviewData);
-      const res = await api.admin.approveManager(reviewData.id);
+      const reqCompany = getCompanyFromEmail(reviewData.email);
+      const dataToSave: PendingRequest = {
+        ...reviewData,
+        company: isRtl ? reqCompany.nameFa : reqCompany.nameEn,
+        companyId: reqCompany.id,
+      };
+      await api.admin.updateRequest(reviewData.id, dataToSave);
+      const res = await api.admin.approveManager(reviewData.id, {
+        role: "user",
+        modulesAccess: dataToSave.modulesAccess,
+      });
       setRequests((prev) =>
         prev.map((r) => (r.id === reviewData.id ? res.request : r))
       );
-      setReviewData((prev) => (prev ? { ...prev, ...res.request } : null));
+      setReviewData((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...res.request,
+              status: "active",
+              hrApproved: true,
+              managerApproved: true,
+              tempPassword: res.tempPassword || res.request.tempPassword,
+            }
+          : null
+      );
+      addUserNotification({
+        title: isRtl ? "تایید نهایی و فعال‌سازی حساب کاربری" : "Account Final Approval & Activation",
+        description: isRtl
+          ? `درخواست متقاضی (${reviewData.name}) تایید نهایی شد و حساب کاربری با دسترسی‌های تعیین‌شده فعال گردید.`
+          : `Application for ${reviewData.name} received final approval from the General Manager and the account is now active.`,
+        type: "system",
+      });
       toast.success(t("managerApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
@@ -449,6 +542,13 @@ export function AdminRequests({
         prev.map((r) => (r.id === reviewData.id ? updated : r))
       );
       setReviewData((prev) => (prev ? { ...prev, ...updated } : null));
+      addUserNotification({
+        title: isRtl ? "عدم تایید درخواست متقاضی" : "Application Rejected",
+        description: isRtl
+          ? `درخواست متقاضی (${reviewData.name}) رد گردید. دلیل: ${rejectReason}`
+          : `Application for ${reviewData.name} was rejected. Reason: ${rejectReason}`,
+        type: "system",
+      });
       toast.info(t("rejectSuccess", { email: reviewData.email }));
       setRejectModalOpen(false);
       setRejectReason("");
@@ -465,6 +565,13 @@ export function AdminRequests({
     try {
       setActionLoadingId(reviewData.id);
       const res = await api.admin.resendCredentials(reviewData.id);
+      addUserNotification({
+        title: isRtl ? "ارسال مجدد مشخصات ورود" : "Credentials Resent",
+        description: isRtl
+          ? `مشخصات ورود و رمز عبور موقت متقاضی (${reviewData.name}) مجدداً ارسال گردید.`
+          : `Temporary login credentials for ${reviewData.name} were resent.`,
+        type: "system",
+      });
       toast.success(
         t("resendSuccess", {
           email: reviewData.email,
@@ -522,8 +629,8 @@ export function AdminRequests({
   return (
     <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-5 max-w-[1440px] mx-auto w-full space-y-6">
       {/* ─── Top Header & Live KPI Metrics Bar ──────────────────────────────── */}
-      <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
+      <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
           <div className="space-y-1">
             <h2 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground tracking-tight">
               <div className="size-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
@@ -536,7 +643,37 @@ export function AdminRequests({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Reviewer Role Toggle: HR vs General Manager */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setReviewerRole("hr")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
+                  reviewerRole === "hr"
+                    ? "bg-amber-500 text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <UserCheck className="size-3.5" />
+                <span>{t("reviewerRoleHr")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReviewerRole("manager")}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
+                  reviewerRole === "manager"
+                    ? "bg-blue-600 text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Sparkles className="size-3.5" />
+                <span>{t("reviewerRoleManager")}</span>
+              </button>
+            </div>
+
             {onRefresh && (
               <Button
                 variant="outline"
@@ -551,8 +688,8 @@ export function AdminRequests({
           </div>
         </div>
 
-        {/* 4 Metric Overview Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 fa-num">
+        {/* 4 Metric Overview Cards (Tags) */}
+        <div className={cn("grid grid-cols-2 md:grid-cols-4 gap-3", isRtl && "fa-num")}>
           <div
             onClick={() => setStatusFilter("all")}
             className={cn(
@@ -621,12 +758,75 @@ export function AdminRequests({
             </div>
           </div>
         </div>
+
+        {/* Unified Search Bar & Company Tabs Row (Moved out of Applicants Queue) */}
+        <div className="flex flex-col md:flex-row items-center gap-3 pt-1">
+          {/* Fast Search Input */}
+          <div className="relative w-full md:flex-1">
+            <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t("searchRequestsPlaceholder")}
+              className="h-10 ps-10 pe-9 bg-background/90 text-xs rounded-xl border-border/60 shadow-2xs"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Company / Domain Filter Tabs */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold w-full md:w-auto shrink-0 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setDomainFilter("all")}
+              className={cn(
+                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
+                domainFilter === "all"
+                  ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("allCompanies")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDomainFilter("euroslotpars.com")}
+              className={cn(
+                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
+                domainFilter === "euroslotpars.com"
+                  ? "bg-sky-600 text-white font-bold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("companyEuroslot")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setDomainFilter("npceram.com")}
+              className={cn(
+                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
+                domainFilter === "npceram.com"
+                  ? "bg-amber-600 text-white font-bold shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {t("companyNpceram")}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ─── 2-Column Responsive Workspace ──────────────────────────────────── */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* ======================================================== */}
-        {/* LEFT / QUEUE COLUMN: REQUESTS QUEUE & SEARCH */}
+        {/* LEFT / QUEUE COLUMN: APPLICANTS QUEUE ONLY */}
         {/* ======================================================== */}
         <div className="xl:col-span-4 flex flex-col gap-4">
           <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-4">
@@ -637,113 +837,13 @@ export function AdminRequests({
                   {t("requestsQueue")}
                 </span>
               </div>
-              <span className="bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full fa-num">
+              <span className={cn("bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full", isRtl && "fa-num")}>
                 {filteredRequests.length}
               </span>
             </div>
 
-            {/* Fast Search Input */}
-            <div className="relative w-full">
-              <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("searchRequestsPlaceholder")}
-                className="h-10 ps-10 pe-9 bg-background/80 text-xs rounded-xl border-border/60"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Status Tabs */}
-            <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl bg-background/60 border border-border/40 text-[11px] font-medium">
-              <button
-                type="button"
-                onClick={() => setStatusFilter("all")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  statusFilter === "all"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("reqFilterAll")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusFilter("pending")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  statusFilter === "pending"
-                    ? "bg-amber-500 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("reqFilterPending")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStatusFilter("hr_approved")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  statusFilter === "hr_approved"
-                    ? "bg-blue-600 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("reqFilterHrApproved")}
-              </button>
-            </div>
-
-            {/* Company / Domain Filter Tabs */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/60 border border-border/40 text-[11px] font-medium">
-              <button
-                type="button"
-                onClick={() => setDomainFilter("all")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  domainFilter === "all"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("allCompanies")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDomainFilter("euroslotpars.com")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  domainFilter === "euroslotpars.com"
-                    ? "bg-sky-600 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("companyEuroslot")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDomainFilter("npceram.com")}
-                className={cn(
-                  "flex-1 py-1 rounded-lg transition-colors cursor-pointer text-center",
-                  domainFilter === "npceram.com"
-                    ? "bg-amber-600 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("companyNpceram")}
-              </button>
-            </div>
-
             {/* Requests List Cards */}
-            <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
+            <div className="flex flex-col gap-2.5 max-h-[720px] overflow-y-auto pr-1 scrollbar-thin">
               {filteredRequests.length === 0 ? (
                 <div className="py-8 text-center text-xs text-muted-foreground italic">
                   {t("noRequestsFound")}
@@ -789,29 +889,33 @@ export function AdminRequests({
                         {/* Status Badge */}
                         <div className="shrink-0">
                           {req.status === "pending" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                              {t("statusPendingHr")}
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                              <UserCheck className="size-3" />
+                              <span>{t("statusPendingHr")}</span>
                             </span>
                           )}
                           {req.status === "hr_approved" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                              {t("statusHrApproved")}
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
+                              <ShieldCheck className="size-3" />
+                              <span>{t("statusHrApproved")}</span>
                             </span>
                           )}
                           {req.status === "active" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                              {t("statusActive")}
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                              <CheckCircle2 className="size-3" />
+                              <span>{t("statusActive")}</span>
                             </span>
                           )}
                           {req.status === "rejected" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 border border-rose-500/20">
-                              {t("statusRejected")}
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                              <UserX className="size-3" />
+                              <span>{t("statusRejected")}</span>
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30 fa-num">
+                      <div className={cn("flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30", isRtl && "fa-num")}>
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className="truncate max-w-[110px]">{req.department ? t(`departments.${req.department}`) : "---"}</span>
                           {(() => {
@@ -831,7 +935,9 @@ export function AdminRequests({
                             );
                           })()}
                         </div>
-                        <span className="shrink-0">{new Date(req.requestedAt).toLocaleDateString("fa-IR")}</span>
+                        <span className="shrink-0 font-mono">
+                          {formatRequestSubmissionDate(req.requestedAt, isRtl)}
+                        </span>
                       </div>
                     </div>
                   );
@@ -903,6 +1009,71 @@ export function AdminRequests({
 
                   {/* Actions Header Bar */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    {/* Primary Role Workflow Approval Action */}
+                    {reviewerRole === "hr" ? (
+                      reviewData.status === "pending" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleApproveHr}
+                          disabled={actionLoadingId === reviewData.id}
+                          className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
+                        >
+                          {actionLoadingId === reviewData.id ? (
+                            <RotateCw className="size-3.5 animate-spin" />
+                          ) : (
+                            <UserCheck className="size-3.5" />
+                          )}
+                          <span>{t("approveHrBtn")}</span>
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
+                          <CheckCircle2 className="size-3.5 text-emerald-500" />
+                          <span>{t("hrVerifiedBadge")}</span>
+                        </div>
+                      )
+                    ) : (
+                      /* Manager Perspective */
+                      reviewData.status === "hr_approved" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={handleApproveManager}
+                          disabled={actionLoadingId === reviewData.id}
+                          className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
+                        >
+                          {actionLoadingId === reviewData.id ? (
+                            <RotateCw className="size-3.5 animate-spin" />
+                          ) : (
+                            <Sparkles className="size-3.5" />
+                          )}
+                          <span>{t("approveManagerBtn")}</span>
+                        </Button>
+                      ) : reviewData.status === "active" ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
+                          <CheckCircle2 className="size-3.5 text-emerald-500" />
+                          <span>{t("managerVerifiedBadge")}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-xs border border-amber-500/20">
+                          <Clock className="size-3.5 text-amber-500" />
+                          <span>{t("stepAwaitingHr")}</span>
+                        </div>
+                      )
+                    )}
+
+                    {/* Save Button */}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSaveProfileChanges}
+                      disabled={isSaving}
+                      className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/60 hover:bg-background"
+                    >
+                      <Save className="size-3.5 text-muted-foreground" />
+                      <span>{t("saveChangesOnly")}</span>
+                    </Button>
 
                     {/* Reject Button (if not rejected) */}
                     {reviewData.status !== "rejected" && (
@@ -975,193 +1146,13 @@ export function AdminRequests({
                 )}
 
                 {/* =================================================== */}
-                {/* 3-STAGE WORKFLOW APPROVAL PIPELINE */}
-                {/* =================================================== */}
-                {(() => {
-                  const isHrDone =
-                    reviewData.status === "hr_approved" ||
-                    reviewData.status === "active" ||
-                    !!reviewData.hrApproved;
-                  const isHrActive = reviewData.status === "pending";
-
-                  const isManagerDone =
-                    reviewData.status === "active" || !!reviewData.managerApproved;
-                  const isManagerActive = reviewData.status === "hr_approved";
-
-                  const isRejected = reviewData.status === "rejected";
-
-                  return (
-                    <div className="bg-background/70 dark:bg-slate-900/40 border border-border/50 rounded-2xl p-3.5 sm:p-4 shadow-2xs space-y-3">
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <div className="size-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                            <Sparkles className="size-3.5" />
-                          </div>
-                          <span className="text-xs font-bold text-foreground">
-                            {t("orgApprovalPipeline")}
-                          </span>
-                        </div>
-                        <div className="text-[11px] font-medium">
-                          {isRejected ? (
-                            <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
-                              <AlertCircle className="size-3" />
-                              <span>{t("statusRejected")}</span>
-                            </span>
-                          ) : isManagerDone ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                              <CheckCircle2 className="size-3" />
-                              <span>{t("statusActive")}</span>
-                            </span>
-                          ) : isManagerActive ? (
-                            <span className="text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">
-                              <Clock className="size-3" />
-                              <span>{t("statPendingManager")}</span>
-                            </span>
-                          ) : (
-                            <span className="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
-                              <Clock className="size-3" />
-                              <span>{t("statusPendingHr")}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                        {/* Stage 1: Submitted */}
-                        <div className="p-3 rounded-xl border bg-emerald-500/5 border-emerald-500/30 flex items-center gap-3 transition-colors">
-                          <div className="size-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                            <Check className="size-4 stroke-[3]" />
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-foreground truncate">
-                              {t("stageProfileSubmitted")}
-                            </span>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-                              {t("stageCompleted")}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Stage 2: HR Review */}
-                        <div
-                          className={cn(
-                            "p-3 rounded-xl border flex items-center gap-3 transition-all",
-                            isHrDone
-                              ? "bg-emerald-500/5 border-emerald-500/30"
-                              : isHrActive
-                              ? "bg-amber-500/10 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
-                              : isRejected
-                              ? "bg-rose-500/5 border-rose-500/30 opacity-70"
-                              : "bg-muted/30 border-border/40 opacity-70"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "size-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs text-xs font-bold",
-                              isHrDone
-                                ? "bg-emerald-500 text-white"
-                                : isHrActive
-                                ? "bg-amber-500 text-white"
-                                : isRejected
-                                ? "bg-rose-500 text-white"
-                                : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {isHrDone ? (
-                              <Check className="size-4 stroke-[3]" />
-                            ) : (
-                              <span className="fa-num">2</span>
-                            )}
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-foreground truncate">
-                              {t("stageHrApproval")}
-                            </span>
-                            <span
-                              className={cn(
-                                "text-[10px] font-semibold mt-0.5",
-                                isHrDone
-                                  ? "text-emerald-600 dark:text-emerald-400"
-                                : isHrActive
-                                  ? "text-amber-600 dark:text-amber-400"
-                                  : "text-muted-foreground"
-                              )}
-                            >
-                              {isHrDone
-                                ? t("stageCompleted")
-                                : isHrActive
-                                ? t("stageCurrent")
-                                : t("stagePending")}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Stage 3: Manager Approval */}
-                        <div
-                          className={cn(
-                            "p-3 rounded-xl border flex items-center gap-3 transition-all",
-                            isManagerDone
-                              ? "bg-emerald-500/5 border-emerald-500/30"
-                              : isManagerActive
-                              ? "bg-blue-500/10 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
-                              : isRejected
-                              ? "bg-rose-500/5 border-rose-500/30 opacity-70"
-                              : "bg-muted/30 border-border/40 opacity-70"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "size-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs text-xs font-bold",
-                              isManagerDone
-                                ? "bg-emerald-500 text-white"
-                                : isManagerActive
-                                ? "bg-blue-500 text-white"
-                                : isRejected
-                                ? "bg-rose-500 text-white"
-                                : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {isManagerDone ? (
-                              <Check className="size-4 stroke-[3]" />
-                            ) : (
-                              <span className="fa-num">3</span>
-                            )}
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold text-foreground truncate">
-                              {t("stageManagerApproval")}
-                            </span>
-                            <span
-                              className={cn(
-                                "text-[10px] font-semibold mt-0.5",
-                                isManagerDone
-                                  ? "text-emerald-600 dark:text-emerald-400"
-                                : isManagerActive
-                                  ? "text-blue-600 dark:text-blue-400"
-                                  : "text-muted-foreground"
-                              )}
-                            >
-                              {isManagerDone
-                                ? t("stageCompleted")
-                                : isManagerActive
-                                ? t("stageCurrent")
-                                : t("stagePending")}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* =================================================== */}
                 {/* SEGMENTED CONTROL / TABS */}
                 {/* =================================================== */}
                 <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                   {SEGMENTS.map((seg) => {
                     const isActive = activeSegment === seg.id;
                     const isCompleted = completedSteps.has(seg.id);
-                    const Icon = seg.icon;
+                    const isHr = seg.owner === "hr";
 
                     return (
                       <button
@@ -1170,9 +1161,15 @@ export function AdminRequests({
                         onClick={() => {
                           setActiveSegment(seg.id);
                           setOpenSegment(seg.id);
+                          // Untick step when clicked on per user requirement
+                          setCompletedSteps((prev) => {
+                            const nextSet = new Set(prev);
+                            nextSet.delete(seg.id);
+                            return nextSet;
+                          });
                         }}
                         className={cn(
-                          "flex-1 min-w-[140px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
+                          "flex-1 min-w-[140px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : isCompleted
@@ -1182,7 +1179,8 @@ export function AdminRequests({
                       >
                         <div
                           className={cn(
-                            "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold fa-num transition-colors",
+                            "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold transition-colors",
+                            isRtl && "fa-num",
                             isCompleted
                               ? "bg-emerald-500 text-white"
                               : isActive
@@ -1196,7 +1194,21 @@ export function AdminRequests({
                             seg.stepNumber
                           )}
                         </div>
-                        <span className="truncate">{t(seg.titleKey)}</span>
+                        <div className="flex flex-col min-w-0 text-start">
+                          <span className="truncate">{t(seg.titleKey)}</span>
+                          <span
+                            className={cn(
+                              "text-[9px] font-medium leading-none mt-0.5",
+                              isActive
+                                ? "text-primary-foreground/80"
+                                : isHr
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-blue-600 dark:text-blue-400"
+                            )}
+                          >
+                            {isHr ? t("badgeHrRole") : t("badgeManagerRole")}
+                          </span>
+                        </div>
                       </button>
                     );
                   })}
@@ -1211,6 +1223,9 @@ export function AdminRequests({
                   const isOpen = openSegment === seg.id;
                   const isCompleted = completedSteps.has(seg.id);
                   const Icon = seg.icon;
+                  const isFieldReadOnly =
+                    (reviewerRole === "manager" && seg.owner === "hr") ||
+                    (reviewerRole === "hr" && seg.owner === "manager");
 
                   return (
                     <div
@@ -1228,6 +1243,12 @@ export function AdminRequests({
                         onClick={() => {
                           setOpenSegment(isOpen ? null : seg.id);
                           setActiveSegment(seg.id);
+                          // Untick step when clicked on per user requirement
+                          setCompletedSteps((prev) => {
+                            const nextSet = new Set(prev);
+                            nextSet.delete(seg.id);
+                            return nextSet;
+                          });
                         }}
                         className="w-full flex items-center justify-between p-4 sm:p-5 cursor-pointer select-none text-right rtl:text-right ltr:text-left transition-colors"
                       >
@@ -1249,9 +1270,19 @@ export function AdminRequests({
                             )}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="font-bold text-sm sm:text-base text-foreground truncate">
                                 {t(seg.titleKey)}
+                              </span>
+                              <span
+                                className={cn(
+                                  "px-1.5 py-0.2 rounded-md text-[9px] font-bold border",
+                                  seg.owner === "hr"
+                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                    : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
+                                )}
+                              >
+                                {seg.owner === "hr" ? t("badgeHrRole") : t("badgeManagerRole")}
                               </span>
                               {isCompleted && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -1267,8 +1298,8 @@ export function AdminRequests({
                         </div>
 
                         <div className="flex items-center gap-2.5 shrink-0">
-                          <span className="text-[11px] text-muted-foreground font-medium fa-num hidden sm:inline">
-                            {t("stepBadge", { step: seg.stepNumber, total: 4 })}
+                          <span className={cn("text-[11px] text-muted-foreground font-medium hidden sm:inline", isRtl && "fa-num")}>
+                            {t("stepBadge", { step: seg.stepNumber, total: SEGMENTS.length })}
                           </span>
                           <div className="size-7 rounded-lg bg-background/60 flex items-center justify-center text-muted-foreground">
                             <ChevronDown
@@ -1293,6 +1324,28 @@ export function AdminRequests({
                             className="overflow-hidden"
                           >
                             <div className="p-4 sm:p-6 pt-2 border-t border-border/30 flex flex-col gap-5">
+                              {/* Role-based Verification & View-Only Notice Banners */}
+                              {reviewerRole === "manager" && seg.owner === "hr" && (
+                                <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2.5">
+                                  <CheckCircle2 className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
+                                  <div className="flex flex-col">
+                                    <span className="font-bold">{t("hrVerifiedBadge")}</span>
+                                    <span className="text-[11px] opacity-90 mt-0.5">{t("hrReadOnlyNotice")}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {reviewerRole === "hr" && seg.owner === "manager" && (
+                                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2.5">
+                                  <Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                                  <div className="flex flex-col">
+                                    <span className="font-bold">{t("badgeManagerRole")}</span>
+                                    <span className="text-[11px] opacity-90 mt-0.5">{t("managerReadOnlyNotice")}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <fieldset disabled={isFieldReadOnly} className="contents group-disabled:pointer-events-none">
                               {/* ========================================= */}
                               {/* SEGMENT 1: IDENTITY & PERSONAL */}
                               {/* ========================================= */}
@@ -1407,7 +1460,7 @@ export function AdminRequests({
                                           })
                                         }
                                         placeholder="0012345678"
-                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                        className={cn("pl-10 h-11 bg-background border-border/50 rounded-xl text-sm text-left", isRtl && "fa-num")}
                                         dir="ltr"
                                       />
                                     </div>
@@ -1433,7 +1486,7 @@ export function AdminRequests({
                                           })
                                         }
                                         placeholder="0912..."
-                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num text-left"
+                                        className={cn("pl-10 h-11 bg-background border-border/50 rounded-xl text-sm text-left", isRtl && "fa-num")}
                                         dir="ltr"
                                       />
                                     </div>
@@ -1478,11 +1531,12 @@ export function AdminRequests({
                                         onChange={(e) =>
                                           setReviewData({
                                             ...reviewData,
-                                            birthDate: e.target.value,
+                                            birthDate: isRtl ? e.target.value : toAsciiDigits(e.target.value),
                                           })
                                         }
-                                        placeholder="1370/01/01"
-                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        placeholder={isRtl ? "1370/01/01" : "1991/03/21"}
+                                        className={cn("ps-10 h-11 bg-background border-border/50 rounded-xl text-sm", isRtl && "fa-num")}
+                                        dir="ltr"
                                       />
                                     </div>
                                   </div>
@@ -1552,7 +1606,7 @@ export function AdminRequests({
                                         >
                                           <Minus className="size-3.5 stroke-[2.5]" />
                                         </Button>
-                                        <span className="min-w-10 px-2 text-center font-mono font-bold text-sm text-foreground fa-num select-none">
+                                        <span className={cn("min-w-10 px-2 text-center font-mono font-bold text-sm text-foreground select-none", isRtl && "fa-num")}>
                                           {reviewData.childrenCount || 0}
                                         </span>
                                         <Button
@@ -1713,7 +1767,7 @@ export function AdminRequests({
                                         })
                                       }
                                       placeholder="ESP-1001"
-                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      className={cn("h-11 bg-background border-border/50 rounded-xl text-sm", isRtl && "fa-num")}
                                       dir="ltr"
                                     />
                                   </div>
@@ -1727,11 +1781,12 @@ export function AdminRequests({
                                       onChange={(e) =>
                                         setReviewData({
                                           ...reviewData,
-                                          joinDate: e.target.value,
+                                          joinDate: isRtl ? e.target.value : toAsciiDigits(e.target.value),
                                         })
                                       }
-                                      placeholder="1402/01/01"
-                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      placeholder={isRtl ? "1402/01/01" : "2023/03/21"}
+                                      className={cn("h-11 bg-background border-border/50 rounded-xl text-sm", isRtl && "fa-num")}
+                                      dir="ltr"
                                     />
                                   </div>
 
@@ -1761,13 +1816,13 @@ export function AdminRequests({
                                       onChange={(e) =>
                                         setReviewData({
                                           ...reviewData,
-                                          extensionNumber: normalizeDigits(
-                                            e.target.value
-                                          ),
+                                          extensionNumber: isRtl
+                                            ? normalizeDigits(e.target.value)
+                                            : toAsciiDigits(e.target.value),
                                         })
                                       }
                                       placeholder="101"
-                                      className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                      className={cn("h-11 bg-background border-border/50 rounded-xl text-sm", isRtl && "fa-num")}
                                       dir="ltr"
                                     />
                                   </div>
@@ -1835,7 +1890,10 @@ export function AdminRequests({
                                           })
                                         }
                                         placeholder="1234567890"
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        className={cn(
+                                          "h-11 bg-background border-border/50 rounded-xl text-sm",
+                                          isRtl && "fa-num"
+                                        )}
                                         dir="ltr"
                                       />
                                     </div>
@@ -1868,11 +1926,17 @@ export function AdminRequests({
                                         onChange={(e) =>
                                           setReviewData({
                                             ...reviewData,
-                                            insuranceValidUntil: e.target.value,
+                                            insuranceValidUntil: isRtl
+                                              ? e.target.value
+                                              : toAsciiDigits(e.target.value),
                                           })
                                         }
-                                        placeholder="1405/12/29"
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        placeholder={isRtl ? "1405/12/29" : "2027/03/20"}
+                                        className={cn(
+                                          "h-11 bg-background border-border/50 rounded-xl text-sm",
+                                          isRtl && "fa-num"
+                                        )}
+                                        dir="ltr"
                                       />
                                     </div>
 
@@ -1915,7 +1979,10 @@ export function AdminRequests({
                                             })
                                           }
                                           placeholder="IR000000000000000000000000"
-                                          className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm fa-num font-mono text-left"
+                                          className={cn(
+                                            "pl-10 h-11 bg-background border-border/50 rounded-xl text-sm font-mono text-left",
+                                            isRtl && "fa-num"
+                                          )}
                                           dir="ltr"
                                         />
                                       </div>
@@ -1992,7 +2059,10 @@ export function AdminRequests({
                                                     )
                                                   }
                                                   placeholder={t("nationalIdPlaceholder")}
-                                                  className="h-9 text-xs bg-background fa-num"
+                                                  className={cn(
+                                                    "h-9 text-xs bg-background",
+                                                    isRtl && "fa-num"
+                                                  )}
                                                   dir="ltr"
                                                 />
                                                 <Button
@@ -2088,13 +2158,13 @@ export function AdminRequests({
                                         onChange={(e) =>
                                           setReviewData({
                                             ...reviewData,
-                                            graduationYear: normalizeDigits(
-                                              e.target.value
-                                            ),
+                                            graduationYear: isRtl
+                                              ? normalizeDigits(e.target.value)
+                                              : toAsciiDigits(e.target.value),
                                           })
                                         }
-                                        placeholder="1398"
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm fa-num"
+                                        placeholder={isRtl ? "1398" : "2019"}
+                                        className={cn("h-11 bg-background border-border/50 rounded-xl text-sm", isRtl && "fa-num")}
                                         dir="ltr"
                                       />
                                     </div>
@@ -2170,6 +2240,7 @@ export function AdminRequests({
                                   />
                                 </div>
                               )}
+                            </fieldset>
 
                               {/* Accordion Footer Actions */}
                               <div className="flex items-center justify-between pt-3 border-t border-border/30 mt-1">
@@ -2193,6 +2264,19 @@ export function AdminRequests({
                                 </div>
 
                                 <div className="flex items-center gap-2">
+                                  {!isFieldReadOnly && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleSaveProfileChanges}
+                                      disabled={isSaving}
+                                      className="h-9 px-3 rounded-xl font-medium text-xs gap-1.5 cursor-pointer border-border/50 hover:bg-background"
+                                    >
+                                      <Save className="size-3.5 text-muted-foreground" />
+                                      <span>{t("saveChangesOnly")}</span>
+                                    </Button>
+                                  )}
                                   {idx < SEGMENTS.length - 1 ? (
                                     <Button
                                       type="button"
@@ -2215,11 +2299,9 @@ export function AdminRequests({
                                     >
                                       <Save className="size-3.5" />
                                       <span>
-                                        {reviewData.status === "pending"
+                                        {reviewerRole === "hr"
                                           ? t("saveAndApproveHr")
-                                          : reviewData.status === "hr_approved"
-                                          ? t("saveAndApproveManager")
-                                          : t("saveProfileChanges")}
+                                          : t("saveAndApproveManager")}
                                       </span>
                                     </Button>
                                   )}

@@ -443,7 +443,7 @@ export function Dashboard() {
       />
 
       {loading ? (
-        <div className="flex flex-1 w-full relative overflow-hidden pt-[72px]">
+        <div className="flex flex-1 w-full relative overflow-hidden">
           <div className="flex-1 w-full h-full min-w-0 pb-8 px-6 sm:px-12 lg:px-20 pt-6">
             <div className="mx-auto w-full max-w-[1280px]">
               {/* Tabs Skeleton */}
@@ -464,7 +464,7 @@ export function Dashboard() {
           </div>
         </div>
       ) : error || !data ? (
-        <div className="flex flex-1 w-full relative overflow-hidden pt-[72px] items-center justify-center">
+        <div className="flex flex-1 w-full relative overflow-hidden items-center justify-center">
           <div className="mx-auto max-w-7xl px-4 py-8">
             <div className="bg-destructive/10 text-destructive rounded-xl border border-dashed p-6 text-center">
               <p className="font-medium">
@@ -480,7 +480,7 @@ export function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 w-full h-full relative pt-[72px] overflow-hidden bg-white dark:bg-background">
+        <div className="flex flex-1 w-full h-full relative overflow-hidden bg-white dark:bg-background">
           {/* ── Utility Sidebar ── */}
           <div className="flex-shrink-0 flex h-full z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent">
             {/* ── Side Rail (Icons) with Independent Scrolling ── */}

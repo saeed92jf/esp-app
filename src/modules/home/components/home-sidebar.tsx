@@ -65,7 +65,8 @@ export function HomeSidebar() {
               ease: [0.16, 1, 0.3, 1],
             }}
             className={cn(
-              "fixed top-[calc(var(--header-height)+8px)] bottom-[calc(var(--footer-height)+10px)] start-0 z-50 w-[min(320px,calc(100vw-28px))] sm:w-[340px] flex flex-col p-0",
+              "fixed top-[calc(var(--header-height)+8px)] bottom-[calc(var(--footer-height)+8px)] start-0 z-50 w-[min(320px,calc(100vw-28px))] sm:w-[340px] flex flex-col p-0",
+              "h-[calc(100dvh-var(--header-height)-var(--footer-height)-16px)] max-h-[calc(100dvh-var(--header-height)-var(--footer-height)-16px)]",
               "bg-popover/95 backdrop-blur-2xl",
               "rounded-s-none rounded-e-[22px] sm:rounded-e-[26px]",
               "border-y border-e border-s-0 border-border/40",

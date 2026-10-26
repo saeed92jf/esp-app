@@ -1055,3 +1055,28 @@ export class RealDashboardService implements IDashboardService {
     });
   }
 }
+
+export function addUserNotification(item: {
+  title: string;
+  description: string;
+  type?: 'manager_task' | 'event' | 'routine' | 'system';
+}) {
+  if (typeof window === "undefined") return;
+  const newNotif: DashboardNotificationItem = {
+    id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    title: item.title,
+    description: item.description,
+    type: item.type || 'system',
+    date: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+    read: false,
+  };
+  try {
+    const raw = localStorage.getItem("esp_dashboard_notifications");
+    const list: DashboardNotificationItem[] = raw ? JSON.parse(raw) : [...SAMPLE_NOTIFICATIONS];
+    list.unshift(newNotif);
+    localStorage.setItem("esp_dashboard_notifications", JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent("esp_notification_added", { detail: newNotif }));
+  } catch (err) {
+    console.error("Failed to add user notification:", err);
+  }
+}

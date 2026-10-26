@@ -6,10 +6,10 @@ import { Cylinder, Plus } from "lucide-react";
 
 import { useDiagramStore } from "@/modules/esp-flow/store";
 import type { DiagramNodeData, DiagramNodeType } from "@/modules/esp-flow/types";
-import type { ShellNodeData, ShellCourse, ShellType } from "@/modules/vessel-weight/schemas/shell.schema";
-import { calcCylindricalShellWeight, calcShellRawWeight } from "@/modules/vessel-weight/calculations/shell.calc";
-import { calcShellWeldLengths, calcElectrodeConsumption, calcShellGeometry } from "@/modules/vessel-weight/calculations/weld.calc";
-import { PipeDimensions, type NPS, type PipeSchedule } from "@/modules/vessel-weight/calculations/pipe.data";
+import type { ShellNodeData, ShellCourse, ShellType } from "@/modules/esp-flow/vessel/schemas/shell.schema";
+import { calcCylindricalShellWeight, calcShellRawWeight } from "@/modules/esp-flow/vessel/calculations/shell.calc";
+import { calcShellWeldLengths, calcElectrodeConsumption, calcShellGeometry } from "@/modules/esp-flow/vessel/calculations/weld.calc";
+import { PipeDimensions, type NPS, type PipeSchedule } from "@/modules/esp-flow/vessel/calculations/pipe.data";
 
 import { Input } from "@/components/ui/input";
 import { Combobox } from "@/components/ui/combobox";

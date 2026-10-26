@@ -42,6 +42,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
+import { Combobox } from "@/components/ui/combobox";
+import type { ProjectItem } from "@/modules/projects/types/projects.types";
 import {
   TaskItem,
   TaskStatus,
@@ -92,6 +94,7 @@ export interface TaskDetailViewProps {
   onRemoveCollaborator?: (taskId: string, collaboratorId: string) => Promise<void>;
   onUpdateProgress?: (taskId: string, progress: number) => Promise<void>;
   onUpdateTask?: (updated: TaskItem) => Promise<any>;
+  availableProjects?: ProjectItem[];
 }
 
 export function TaskDetailView({
@@ -111,6 +114,7 @@ export function TaskDetailView({
   onRemoveCollaborator,
   onUpdateProgress,
   onUpdateTask,
+  availableProjects = [],
 }: TaskDetailViewProps) {
   const t = useTranslations("Tasks");
   const locale = useLocale();
@@ -139,6 +143,7 @@ export function TaskDetailView({
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [priority, setPriority] = useState<TaskPriority>(task.priority);
   const [progress, setProgress] = useState(task.progressPercent || 0);
+  const [selectedProjectId, setSelectedProjectId] = useState(task.relatedProjectId || "");
   const [relatedProjectTitle, setRelatedProjectTitle] = useState(task.relatedProjectTitle || "");
   const [isPersonal, setIsPersonal] = useState(task.isPersonal || false);
 
@@ -189,6 +194,7 @@ export function TaskDetailView({
     setStatus(task.status);
     setPriority(task.priority);
     setProgress(task.progressPercent || 0);
+    setSelectedProjectId(task.relatedProjectId || "");
     setRelatedProjectTitle(task.relatedProjectTitle || "");
     setIsPersonal(task.isPersonal || false);
     setDueDate(task.dueDate || "");
@@ -593,13 +599,41 @@ export function TaskDetailView({
               <Label htmlFor="project-title" className="rtl:text-right block font-medium text-muted-foreground">
                 {t("createModal.selectProjectLabel")}
               </Label>
-              <Input
-                id="project-title"
-                value={relatedProjectTitle}
-                onChange={(e) => setRelatedProjectTitle(e.target.value)}
-                placeholder={t("createModal.customProjectPlaceholder")}
-                className="h-11 rounded-xl bg-muted/20 border-border/60"
-              />
+              {availableProjects && availableProjects.length > 0 ? (
+                <Combobox
+                  options={[
+                    { value: "", label: t("createModal.optionalProjectLink") },
+                    ...availableProjects.map((p) => ({
+                      value: p.id,
+                      label: `${p.title} (${p.code})${p.organization ? ` • ${p.organization}` : ""}`,
+                    })),
+                  ]}
+                  value={selectedProjectId}
+                  onChange={(val) => {
+                    setSelectedProjectId(val);
+                    const found = availableProjects.find((x) => x.id === val);
+                    if (found) {
+                      setRelatedProjectTitle(found.title);
+                      if (found.organization) {
+                        setCompany(found.organization as any);
+                      }
+                    } else {
+                      setRelatedProjectTitle("");
+                    }
+                  }}
+                  placeholder={t("createModal.selectProjectPlaceholder")}
+                  emptyText={t("createModal.noProjectsFound")}
+                  className="h-11 rounded-xl bg-muted/20 border-border/60 rtl:text-right w-full"
+                />
+              ) : (
+                <Input
+                  id="project-title"
+                  value={relatedProjectTitle}
+                  onChange={(e) => setRelatedProjectTitle(e.target.value)}
+                  placeholder={t("createModal.customProjectPlaceholder")}
+                  className="h-11 rounded-xl bg-muted/20 border-border/60"
+                />
+              )}
             </div>
           </div>
         );
@@ -709,8 +743,10 @@ export function TaskDetailView({
                     description: description.trim(),
                     category: category.trim(),
                     company,
+                    relatedProjectId: selectedProjectId || undefined,
                     relatedProjectTitle: relatedProjectTitle.trim() || undefined,
                     isPersonal,
+                    scope: isPersonal ? "personal" : "team",
                     estimatedHours: estimatedHours ? Number(estimatedHours) : undefined,
                     loggedHours: loggedHours ? Number(loggedHours) : 0,
                   });

@@ -366,6 +366,13 @@
       "saveAndSubmit": "Save & Return to Timeline",
       "savedToast": "Information saved. Returned to status timeline."
     },
+    "picture": {
+      "title": "Avatar Color & Profile Icon",
+      "description": "The initial letter of your name automatically serves as your profile icon. Pick a background color from presets or use the color picker:",
+      "previewTitle": "Profile Icon Preview",
+      "selectedCodeLabel": "Selected Color Code:",
+      "savedToast": "Avatar symbol background color successfully saved."
+    },
     "themeColor": {
       "title": "Primary Theme Color",
       "description": "Select your personalized primary theme color for the application. This setting is stored in your personal profile and database record.",

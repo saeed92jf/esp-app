@@ -97,6 +97,16 @@ export class FakeProfileService implements ProfileService {
         if (stored) {
           this.profile = JSON.parse(stored);
         }
+        const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+        if (rawAuth) {
+          const authUser = JSON.parse(rawAuth);
+          if (authUser.avatarColor && !this.profile.personal.avatarColor) {
+            this.profile.personal.avatarColor = authUser.avatarColor;
+          }
+          if (authUser.primaryColor && !this.profile.personal.primaryColor) {
+            this.profile.personal.primaryColor = authUser.primaryColor;
+          }
+        }
       } catch {
         // ignore
       }
@@ -120,6 +130,9 @@ export class FakeProfileService implements ProfileService {
           if (profile.personal?.primaryColor) {
             authUser.primaryColor = profile.personal.primaryColor;
           }
+          if (profile.personal?.avatarColor) {
+            authUser.avatarColor = profile.personal.avatarColor;
+          }
           if (authUser.accountStatus === "pending_profile") {
             authUser.accountStatus = "pending_approval";
           }
@@ -135,6 +148,9 @@ export class FakeProfileService implements ProfileService {
               if (u) {
                 if (profile.personal?.primaryColor) {
                   u.user.primaryColor = profile.personal.primaryColor;
+                }
+                if (profile.personal?.avatarColor) {
+                  u.user.avatarColor = profile.personal.avatarColor;
                 }
                 localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
               }
