@@ -592,7 +592,7 @@ export class FakeAdminService implements IAdminService {
 
   async approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: 'admin' | 'user' }
+    options?: { tempPassword?: string; role?: 'admin' | 'user'; modulesAccess?: UserModuleAccess[] }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }> {
     await wait(400);
     this.syncFromStorage();
@@ -610,6 +610,9 @@ export class FakeAdminService implements IAdminService {
     req.managerApprovedBy = "مدیر سیستم (System Admin)";
     req.status = "active";
     req.tempPassword = tempPassword;
+    if (options?.modulesAccess) {
+      req.modulesAccess = options.modulesAccess;
+    }
 
     // Create or activate User in Users list
     let existingUser = this.users.find((u) => u.email.toLowerCase() === req.email.toLowerCase());
@@ -636,7 +639,7 @@ export class FakeAdminService implements IAdminService {
         salary: 20000,
         workingFormat: { office: 80, factory: 10, mission: 5, leave: 5 },
         workActivity: generateWorkActivity(),
-        modulesAccess: [
+        modulesAccess: options?.modulesAccess || req.modulesAccess || [
           { moduleId: "marketing", hasAccess: true, accessLevel: "read", hoursSpent: "00:00:00", usagePercentage: 0 }
         ],
         recentActivities: [
@@ -654,6 +657,11 @@ export class FakeAdminService implements IAdminService {
       existingUser.accountStatus = "active";
       existingUser.hrApproved = true;
       existingUser.managerApproved = true;
+      if (options?.modulesAccess) {
+        existingUser.modulesAccess = options.modulesAccess;
+      } else if (req.modulesAccess) {
+        existingUser.modulesAccess = req.modulesAccess;
+      }
     }
 
     this.saveToStorage();

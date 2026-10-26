@@ -464,6 +464,21 @@
     "personnelDetails": "اطلاعات پرسنلی",
     "demographicsTab": "فردی",
     "insuranceTab": "بیمه",
-    "educationTab": "تحصیلات"
+    "educationTab": "تحصیلات",
+    "segmentModules": "دسترسی ماژول‌ها",
+    "segmentModulesDesc": "تعیین سطح دسترسی کاربر به بخش‌ها و زیرسامانه‌ها",
+    "reqSegmentModules": "دسترسی ماژول‌ها",
+    "reqSegmentModulesDesc": "پیکربندی مجوزهای دسترسی کاربر پس از فعال‌سازی",
+    "selectAllModules": "انتخاب همه ماژول‌ها",
+    "deselectAllModules": "لغو همه",
+    "selectedModulesCount": "{count} از {total} ماژول فعال",
+    "searchModulesPlaceholder": "جستجوی ماژول...",
+    "noModulesFound": "ماژولی با این عنوان یافت نشد.",
+    "moduleGroupSelectAll": "همه این بخش",
+    "moduleAccessStepPrompt": "ماژول‌ها و ابزارهایی که این کاربر مجاز به استفاده از آن‌ها است را مشخص کنید.",
+    "grantedModulesPreview": "ماژول‌های مجاز ({count})",
+    "noModulesGranted": "هیچ ماژولی انتخاب نشده است",
+    "moduleActiveBadge": "فعال",
+    "moduleInactiveBadge": "غیرفعال"
   }
 }

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { User } from "../types/admin.types";
+import { User, UserModuleAccess } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,10 +31,12 @@ import {
   Building2,
   CheckCircle2,
   Lock,
+  KeyRound,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
 import { getCompanyFromEmail } from "../utils/company";
+import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
 
 export interface AdminUserConfigProps {
   selectedUser?: User | null;
@@ -47,7 +49,7 @@ export interface AdminUserConfigProps {
   handleToggleAllModulesAccess?: (checked: boolean) => void;
 }
 
-type SegmentId = "identity" | "org" | "personal" | "education";
+type SegmentId = "identity" | "org" | "personal" | "education" | "modules";
 
 interface FormState {
   firstNameFa: string;
@@ -69,6 +71,7 @@ interface FormState {
   educationDegree: string;
   educationField: string;
   workMode: "office" | "factory" | "site" | "remote";
+  modulesAccess: UserModuleAccess[];
 }
 
 const INITIAL_FORM: FormState = {
@@ -91,6 +94,10 @@ const INITIAL_FORM: FormState = {
   educationDegree: "bachelors",
   educationField: "",
   workMode: "office",
+  modulesAccess: [
+    { moduleId: "/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+    { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+  ],
 };
 
 const sanitizePersian = (text: string) => {
@@ -109,6 +116,8 @@ export function AdminUserConfig({
   users,
   setUsers,
   setSelectedUser,
+  availableModules,
+  tMenu,
 }: AdminUserConfigProps) {
   const t = useTranslations("Admin");
   const locale = useLocale();
@@ -183,6 +192,8 @@ export function AdminUserConfig({
         return Boolean(form.age >= 18 && form.maritalStatus && form.insuranceType);
       case "education":
         return Boolean(form.educationDegree && form.educationField.trim().length > 0);
+      case "modules":
+        return true;
       default:
         return false;
     }
@@ -198,8 +209,9 @@ export function AdminUserConfig({
     isSegmentTicked("org"),
     isSegmentTicked("personal"),
     isSegmentTicked("education"),
+    isSegmentTicked("modules"),
   ].filter(Boolean).length;
-  const progressPercent = Math.round((completedCount / 4) * 100);
+  const progressPercent = Math.round((completedCount / 5) * 100);
 
   const SEGMENTS: {
     id: SegmentId;
@@ -236,6 +248,13 @@ export function AdminUserConfig({
       descKey: "segmentEducationDesc",
       stepNumber: 4,
     },
+    {
+      id: "modules",
+      icon: KeyRound,
+      titleKey: "segmentModules",
+      descKey: "segmentModulesDesc",
+      stepNumber: 5,
+    },
   ];
 
   const handleResetForm = () => {
@@ -263,7 +282,7 @@ export function AdminUserConfig({
       setOpenSegment("identity");
       return;
     }
-    setConfirmedSegments((prev) => new Set(prev).add("education"));
+    setConfirmedSegments((prev) => new Set(prev).add("education").add("modules"));
 
     const fullNameFa = `${form.firstNameFa.trim()} ${form.lastNameFa.trim()}`.trim();
     const fullNameEn = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
@@ -302,7 +321,12 @@ export function AdminUserConfig({
         mission: form.workMode === "site" ? 80 : 10,
         leave: 0,
       },
-      modulesAccess: [],
+      modulesAccess: form.modulesAccess && form.modulesAccess.length > 0
+        ? form.modulesAccess
+        : [
+            { moduleId: "/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+            { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" }
+          ],
       recentActivities: [],
       checklists: [],
     };
@@ -1056,6 +1080,21 @@ export function AdminUserConfig({
                         )}
 
                         {/* ========================================= */}
+                        {/* SEGMENT 5: MODULES ACCESS */}
+                        {/* ========================================= */}
+                        {seg.id === "modules" && (
+                          <div className="pt-1">
+                            <AdminModuleAccessStep
+                              modulesAccess={form.modulesAccess}
+                              onChange={(updated) =>
+                                setForm((prev) => ({ ...prev, modulesAccess: updated }))
+                              }
+                              availableModules={availableModules}
+                            />
+                          </div>
+                        )}
+
+                        {/* ========================================= */}
                         {/* ACCORDION BOTTOM ACTIONS */}
                         {/* ========================================= */}
                         <div className="flex items-center justify-between pt-3 border-t border-border/30 mt-1">
@@ -1343,6 +1382,21 @@ export function AdminUserConfig({
                   </span>
                   <span className="text-xs font-bold text-foreground truncate">
                     {t(`insuranceOptions.${form.insuranceType}`)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Modules Access Summary (full width) */}
+              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <KeyRound className="size-3 text-primary shrink-0" />
+                    <span className="text-[10px]">{t("segmentModules")}</span>
+                  </div>
+                  <span className="text-xs font-bold text-primary fa-num">
+                    {t("grantedModulesPreview", {
+                      count: (form.modulesAccess || []).filter((m) => m.hasAccess).length,
+                    })}
                   </span>
                 </div>
               </div>

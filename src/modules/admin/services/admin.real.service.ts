@@ -61,7 +61,7 @@ export class RealAdminService implements IAdminService {
 
   async approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: 'admin' | 'user' }
+    options?: { tempPassword?: string; role?: 'admin' | 'user'; modulesAccess?: UserModuleAccess[] }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }> {
     const res = await this.http.post<{ data: { request: PendingRequest; tempPassword?: string; user: User } }>(
       `/admin/requests/${requestId}/approve-manager`,

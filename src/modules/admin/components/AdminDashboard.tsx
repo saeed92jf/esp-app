@@ -204,6 +204,7 @@ export function AdminDashboard() {
               requests={requests}
               setRequests={setRequests}
               onRefresh={fetchData}
+              availableModules={availableModules}
             />
           )}
 

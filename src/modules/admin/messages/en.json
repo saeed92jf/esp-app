@@ -464,6 +464,21 @@
     "personnelDetails": "Personnel Profile",
     "demographicsTab": "Personal",
     "insuranceTab": "Insurance",
-    "educationTab": "Education"
+    "educationTab": "Education",
+    "segmentModules": "Module Access",
+    "segmentModulesDesc": "Define user access permissions to sections and subsystems",
+    "reqSegmentModules": "Module Access",
+    "reqSegmentModulesDesc": "Configure user access permissions upon account activation",
+    "selectAllModules": "Select All Modules",
+    "deselectAllModules": "Deselect All",
+    "selectedModulesCount": "{count} of {total} modules active",
+    "searchModulesPlaceholder": "Search modules...",
+    "noModulesFound": "No matching modules found.",
+    "moduleGroupSelectAll": "All this section",
+    "moduleAccessStepPrompt": "Select the modules and tools this user is authorized to access.",
+    "grantedModulesPreview": "Granted Modules ({count})",
+    "noModulesGranted": "No modules selected",
+    "moduleActiveBadge": "Active",
+    "moduleInactiveBadge": "Inactive"
   }
 }

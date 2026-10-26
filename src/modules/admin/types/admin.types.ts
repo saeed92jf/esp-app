@@ -94,6 +94,7 @@ export interface PendingRequest {
   rejectionReason?: string;
   tempPassword?: string;
   notes?: string;
+  modulesAccess?: UserModuleAccess[];
 
   // Complete Profile Fields (from User Profile Management)
   firstNameFa?: string;

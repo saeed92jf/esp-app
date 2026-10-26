@@ -61,14 +61,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
 
 interface AdminRequestsProps {
   requests: PendingRequest[];
   setRequests: React.Dispatch<React.SetStateAction<PendingRequest[]>>;
   onRefresh?: () => Promise<void>;
+  availableModules?: any[];
 }
 
-type ReqSegmentId = "personal" | "org" | "insurance" | "education";
+type ReqSegmentId = "personal" | "org" | "insurance" | "education" | "modules";
 
 const sanitizePersian = (text: string) => {
   return text.replace(/[^ \u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, "");
@@ -86,6 +88,7 @@ export function AdminRequests({
   requests,
   setRequests,
   onRefresh,
+  availableModules,
 }: AdminRequestsProps) {
   const t = useTranslations("Admin");
   const locale = useLocale();
@@ -200,6 +203,10 @@ export function AdminRequests({
           supplementaryPlan: found.supplementaryPlan || "none",
           educationDegree: found.educationDegree || "bachelors",
           dependents: found.dependents || [],
+          modulesAccess: found.modulesAccess || [
+            { moduleId: "/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+            { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+          ],
           skills: found.skills || [
             { id: "sk-1", name: t("defaultSkill1"), level: 4 },
             { id: "sk-2", name: t("defaultSkill2"), level: 4 },
@@ -296,6 +303,13 @@ export function AdminRequests({
       descKey: "reqSegmentEducationDesc",
       stepNumber: 4,
     },
+    {
+      id: "modules",
+      icon: KeyRound,
+      titleKey: "reqSegmentModules",
+      descKey: "reqSegmentModulesDesc",
+      stepNumber: 5,
+    },
   ];
 
   // Actions
@@ -339,7 +353,7 @@ export function AdminRequests({
     if (!reviewData) return;
     try {
       setIsSaving(true);
-      setCompletedSteps((prev) => new Set(prev).add("education"));
+      setCompletedSteps((prev) => new Set(prev).add("education").add("modules"));
 
       const reqCompany = getCompanyFromEmail(reviewData.email);
       const dataToSave: PendingRequest = {
@@ -361,8 +375,11 @@ export function AdminRequests({
         setReviewData((prev) => (prev ? { ...prev, ...updated, status: "hr_approved", hrApproved: true } : null));
         toast.success(t("hrApproveSuccess", { email: reviewData.email }));
       } else if (reviewData.status === "hr_approved") {
-        // Manager / Admin Stage Final Approval & Activation
-        const res = await api.admin.approveManager(reviewData.id);
+        // Manager / Admin Stage Final Approval & Activation with configured modules access
+        const res = await api.admin.approveManager(reviewData.id, {
+          role: "user",
+          modulesAccess: dataToSave.modulesAccess,
+        });
         setRequests((prev) =>
           prev.map((r) => (r.id === reviewData.id ? res.request : r))
         );
@@ -2134,6 +2151,23 @@ export function AdminRequests({
                                       ))}
                                     </div>
                                   </div>
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 5: MODULES ACCESS */}
+                              {/* ========================================= */}
+                              {seg.id === "modules" && (
+                                <div className="pt-1">
+                                  <AdminModuleAccessStep
+                                    modulesAccess={reviewData.modulesAccess || []}
+                                    onChange={(updated) =>
+                                      setReviewData((prev) =>
+                                        prev ? { ...prev, modulesAccess: updated } : null
+                                      )
+                                    }
+                                    availableModules={availableModules}
+                                  />
                                 </div>
                               )}
 
