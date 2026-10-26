@@ -394,20 +394,20 @@ export function AdminTasksTime({
       </div>
 
       {/* ── Virtual Grid Row 1: Working Format (col 1), Skills (col 2), Activities (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 shrink-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[220px] max-h-[300px]">
         
         {/* Module A: Working Format (فرمت کاری) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col justify-between shadow-2xs h-[300px] col-span-1">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground">{t("workingFormat")}</h3>
-            <span className="text-[11px] font-medium text-muted-foreground">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
+          <div className="flex items-center justify-between mb-1.5 xl:mb-2 px-0.5">
+            <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground">{t("workingFormat")}</h3>
+            <span className="text-[10px] xl:text-[11px] font-medium text-muted-foreground truncate max-w-[130px]">
               {t("department")}: <span className="font-bold text-foreground">{t(`departments.${deptKey}`) || deptKey}</span>
             </span>
           </div>
 
           {/* Donut Chart */}
-          <div className="w-full relative min-h-[140px] max-h-[165px] my-auto flex items-center justify-center">
-            <svg viewBox="0 0 200 200" className="w-full h-full max-w-[165px] max-h-[165px] drop-shadow-xs">
+          <div className="w-full relative min-h-[110px] max-h-[145px] my-auto flex items-center justify-center">
+            <svg viewBox="0 0 200 200" className="w-full h-full max-w-[135px] max-h-[135px] xl:max-w-[150px] xl:max-h-[150px] drop-shadow-xs">
               {rings.map((ring, index) => {
                 const radius = 55 + ((rings.length - 1 - index) * 13);
                 const circumference = 2 * Math.PI * radius;
@@ -436,15 +436,15 @@ export function AdminTasksTime({
               })}
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xl sm:text-2xl font-bold text-foreground fa-num">
+              <span className="text-lg xl:text-xl font-bold text-foreground fa-num">
                 <AnimatedNumber value={selectedUser?.daysInCompany || 0} />
               </span>
-              <span className="text-[10px] text-muted-foreground font-medium">{t("daysLabel")}</span>
+              <span className="text-[9.5px] xl:text-[10px] text-muted-foreground font-medium">{t("daysLabel")}</span>
             </div>
           </div>
 
           {/* Legend Grid */}
-          <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 mt-2 px-0.5">
+          <div className="grid grid-cols-2 gap-1.5 mt-1 px-0.5">
             {([
               { key: "office", color: "bg-[#22c55e]" },
               { key: "factory", color: "bg-[#3b82f6]" },
@@ -454,14 +454,14 @@ export function AdminTasksTime({
               const pct = selectedUser?.workingFormat?.[item.key] || 0;
               const days = Math.round((pct / 100) * (selectedUser?.daysInCompany || 0));
               return (
-                <div key={item.key} className="flex flex-col items-center p-1.5 rounded-xl bg-background/40 border border-border/30">
+                <div key={item.key} className="flex flex-col items-center p-1 xl:p-1.5 rounded-xl bg-background/40 border border-border/30">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <div className={`size-1.5 rounded-full ${item.color}`}></div>
-                    <span className="text-[11px] font-bold text-foreground fa-num">
+                    <span className="text-[10.5px] font-bold text-foreground fa-num">
                       <AnimatedNumber value={days} /> <span className="text-[0.8em] font-medium text-muted-foreground">{t("daysUnit")}</span>
                     </span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground">{t(item.key)}</span>
+                  <span className="text-[9.5px] text-muted-foreground">{t(item.key)}</span>
                 </div>
               );
             })}
@@ -469,25 +469,25 @@ export function AdminTasksTime({
         </div>
 
         {/* Module B: Skills as a Standalone Module (مهارت‌ها) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col justify-between shadow-2xs h-[300px] col-span-1">
-          <div className="flex items-center justify-between mb-3 shrink-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground">{t("skillsTitle")}</h3>
-              <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
+          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground">{t("skillsTitle")}</h3>
+              <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
                 {skillsToRender.length}
               </span>
             </div>
-            <Sparkles size={16} className="text-muted-foreground opacity-60" />
+            <Sparkles size={14} className="text-muted-foreground opacity-60" />
           </div>
 
-          <div className="flex flex-col gap-2.5 flex-1 justify-center py-1 overflow-hidden">
+          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden">
             {skillsToRender.map((skill, idx) => {
               const details = getSkillDetails(skill.rate);
               return (
-                <div key={idx} className="flex flex-col gap-1 p-2 rounded-xl bg-background/40 border border-border/30">
-                  <div className="flex justify-between items-center text-[12px] font-medium">
-                    <span className="text-foreground font-semibold truncate text-[11px] sm:text-xs">{skill.name}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground">{details.label}</span>
+                <div key={idx} className="flex flex-col gap-1 p-1.5 xl:p-2 rounded-xl bg-background/40 border border-border/30">
+                  <div className="flex justify-between items-center text-[11px] font-medium">
+                    <span className="text-foreground font-semibold truncate text-[10.5px] sm:text-[11px]">{skill.name}</span>
+                    <span className="text-[9.5px] font-bold text-muted-foreground shrink-0">{details.label}</span>
                   </div>
                   <div className="h-1.5 w-full bg-border/40 rounded-full overflow-hidden">
                     <div 
@@ -504,33 +504,33 @@ export function AdminTasksTime({
           </div>
         </div>
 
-        {/* Module C: Activities (فعالیت‌ها - متناظر و هم‌سطح با دو باکس قبلی) */}
-        <div className="col-span-1 h-[300px]">
+        {/* Module C: Activities (فعالیت‌ها) */}
+        <div className="col-span-1 h-full min-h-0 overflow-hidden">
           <AdminActivities selectedUser={selectedUser} />
         </div>
       </div>
 
       {/* ── Virtual Grid Row 2: Urgent Tasks (col 1-2), Module Access (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 flex-1 min-h-[220px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[190px]">
         {/* Module D: Urgent & Overdue Tasks (تسک‌های فوری و معوق - اختصاص ۲ ستون) */}
-        <div className="col-span-1 md:col-span-2 lg:col-span-2 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col h-full min-h-0 shadow-2xs">
-          <div className="flex items-center justify-between mb-3 px-1 shrink-0">
-            <div className="flex items-center gap-2 min-w-0">
-              <AlertTriangle size={16} className="text-amber-500 shrink-0" />
-              <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
+        <div className="col-span-1 md:col-span-2 lg:col-span-2 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
+          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <AlertTriangle size={15} className="text-amber-500 shrink-0" />
+              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
                 {t("urgentAndOverdueTasks")}
               </h3>
-              <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
+              <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full font-bold shrink-0 fa-num">
                 {displayTasks.length}
               </span>
             </div>
 
             <Link
               href="/dashboard/tasks"
-              className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold px-2.5 py-1 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-semibold px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
             >
               <span>{t("viewAllTasks")}</span>
-              <ExternalLink size={12} className="rtl:rotate-180 shrink-0" />
+              <ExternalLink size={11} className="rtl:rotate-180 shrink-0" />
             </Link>
           </div>
 

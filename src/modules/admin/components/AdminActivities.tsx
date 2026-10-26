@@ -15,25 +15,25 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   const activities = selectedUser?.recentActivities || [];
 
   return (
-    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4.5 flex flex-col h-full min-h-0 shadow-2xs">
-      <div className="flex items-center justify-between mb-3 px-1 shrink-0">
+    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
+      <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <Activity size={16} className="text-emerald-500 shrink-0" />
-          <h3 className="font-semibold text-[14px] sm:text-[15px] text-foreground truncate">
+          <Activity size={15} className="text-emerald-500 shrink-0" />
+          <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
             {t("activities")}
           </h3>
         </div>
-        <span className="text-[11px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold fa-num shrink-0">
+        <span className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-bold fa-num shrink-0">
           {activities.length}
         </span>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 xl:space-y-2 pr-0.5 scrollbar-thin">
         {activities.length > 0 ? (
           activities.map((act) => (
             <div 
               key={act.id} 
-              className="p-2.5 bg-background/80 hover:bg-background border border-border/40 hover:border-emerald-500/30 rounded-xl flex items-center justify-between gap-2.5 transition-colors shadow-2xs"
+              className="p-2 xl:p-2.5 bg-background/80 hover:bg-background border border-border/40 hover:border-emerald-500/30 rounded-xl flex items-center justify-between gap-2 transition-colors shadow-2xs"
             >
               <div className="flex flex-col gap-0.5 min-w-0">
                 <p className="font-semibold text-[12px] text-foreground truncate">{act.title}</p>

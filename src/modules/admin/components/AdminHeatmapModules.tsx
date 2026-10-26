@@ -45,13 +45,13 @@ export function AdminHeatmapModules({
 
   return (
     <div className="flex flex-col flex-1 h-full min-h-0">
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-5 flex flex-col flex-1 h-full min-h-0 relative overflow-hidden shadow-2xs">
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col flex-1 h-full min-h-0 relative overflow-hidden shadow-2xs">
         
         {/* Header with Title, Count & Direct Link to Access Section */}
-        <div className="flex items-center justify-between mb-3 relative z-10 gap-2 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
-            <h3 className="font-semibold text-[15px] text-foreground truncate">{t("accesses")}</h3>
-            <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+        <div className="flex items-center justify-between mb-2 xl:mb-2.5 relative z-10 gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">{t("accesses")}</h3>
+            <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
               {grantedItems.length}
             </span>
           </div>
@@ -86,11 +86,11 @@ export function AdminHeatmapModules({
             )}
           </div>
         ) : (
-          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pr-1 scrollbar-thin space-y-2 relative z-10">
+          <div className="flex flex-col flex-1 min-h-0 overflow-y-auto pr-0.5 scrollbar-thin space-y-1.5 xl:space-y-2 relative z-10">
             {grantedItems.map(item => (
               <div 
                 key={item.id} 
-                className="flex items-center gap-3 py-2.5 px-3 rounded-xl bg-background/50 border border-border/40 shadow-2xs hover:border-primary/20 transition-colors"
+                className="flex items-center gap-2.5 py-2 px-2.5 xl:py-2.5 xl:px-3 rounded-xl bg-background/50 border border-border/40 shadow-2xs hover:border-primary/20 transition-colors"
               >
                 <div className="size-6 text-primary flex items-center justify-center shrink-0">
                   {item.icon && <item.icon size={20} weight="duotone" />}

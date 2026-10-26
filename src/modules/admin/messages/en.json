@@ -460,6 +460,10 @@
     "universityPlaceholder": "University of Tehran / Sharif...",
     "submitting": "Submitting...",
     "defaultSkill1": "Teamwork & Organizational Relations",
-    "defaultSkill2": "Administrative Systems Mastery"
+    "defaultSkill2": "Administrative Systems Mastery",
+    "personnelDetails": "Personnel Profile",
+    "demographicsTab": "Personal",
+    "insuranceTab": "Insurance",
+    "educationTab": "Education"
   }
 }

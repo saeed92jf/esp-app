@@ -460,6 +460,10 @@
     "universityPlaceholder": "دانشگاه تهران / صنعتی شریف...",
     "submitting": "در حال ثبت...",
     "defaultSkill1": "کار تیمی و روابط سازمانی",
-    "defaultSkill2": "تسلط بر سیستم‌های اداری"
+    "defaultSkill2": "تسلط بر سیستم‌های اداری",
+    "personnelDetails": "اطلاعات پرسنلی",
+    "demographicsTab": "فردی",
+    "insuranceTab": "بیمه",
+    "educationTab": "تحصیلات"
   }
 }

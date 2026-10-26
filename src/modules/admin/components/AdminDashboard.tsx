@@ -144,14 +144,14 @@ export function AdminDashboard() {
         />
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-transparent h-full w-full relative z-10 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto custom-scrollbar bg-transparent h-full w-full relative z-10 p-2.5 sm:p-3.5 lg:p-4 xl:p-5">
           {loading ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[360px_1fr] gap-3.5 h-full w-full max-w-[1560px] mx-auto items-stretch min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 xl:gap-3.5 h-full w-full max-w-[1600px] mx-auto items-stretch min-h-0">
               <Skeleton className="col-span-1 h-full min-h-0 min-w-0 rounded-[1.5rem] opacity-40 bg-muted/50" />
               <Skeleton className="col-span-1 h-full min-h-0 min-w-0 rounded-[1.5rem] opacity-40 bg-muted/50" />
             </div>
           ) : activeTab === 'home' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-[330px_1fr] xl:grid-cols-[360px_1fr] gap-3.5 h-full w-full max-w-[1560px] mx-auto items-stretch min-h-0">
+            <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 xl:gap-3.5 h-full w-full max-w-[1600px] mx-auto items-stretch min-h-0">
               
               {selectedUser && (
                 <div className="col-span-1 h-full min-h-0 min-w-0">
