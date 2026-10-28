@@ -1,0 +1,25 @@
+[
+  {
+    "id": "clients",
+    "value": 1200,
+    "suffix": "+",
+    "labelKey": "clients"
+  },
+  {
+    "id": "projects",
+    "value": 350,
+    "suffix": "+",
+    "labelKey": "projects"
+  },
+  {
+    "id": "awards",
+    "value": 28,
+    "labelKey": "awards"
+  },
+  {
+    "id": "support",
+    "value": 24,
+    "suffix": "/7",
+    "labelKey": "support"
+  }
+]

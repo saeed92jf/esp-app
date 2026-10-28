@@ -57,7 +57,7 @@ export function ProjectsSlideWidget() {
               onClick={() =>
                 router.push(`/fa/dashboard/projects?id=${project.id}`)
               }
-              className="p-3 rounded-xl border border-border/60 bg-card/50 hover:bg-card hover:border-primary/40 transition-colors cursor-pointer space-y-2.5"
+              className="p-3 rounded-xl border border-border/60 bg-white dark:bg-card hover:bg-white dark:hover:bg-card shadow-2xs hover:border-primary/40 transition-colors cursor-pointer space-y-2.5"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-0.5">

@@ -88,10 +88,26 @@ export class HttpClient {
         // خطای HTTP
         if (!res.ok) {
           const payload = await res.json().catch(() => ({})) as Record<string, unknown>;
-          let code = (payload.code as ErrorCode) ?? 'UNKNOWN';
+          let code = (payload.code as ErrorCode) ?? (payload.error_code as ErrorCode) ?? 'UNKNOWN';
           
           let detailStr = typeof payload.detail === 'string' ? payload.detail : undefined;
-          let message = (payload.message as string) ?? detailStr ?? `HTTP ${res.status}`;
+          let message = (payload.message as string) ?? detailStr;
+
+          if (!message) {
+            if (res.status === 502 || res.status === 504) {
+              code = 'NETWORK_ERROR';
+              message = 'ارتباط با سرور برقرار نشد. سرور مرکزی در دسترس نیست یا پاسخی ارسال نمی‌کند.';
+            } else if (res.status === 503) {
+              code = 'SERVER_ERROR';
+              message = 'سرور موقتاً خارج از سرویس است. لطفاً کمی بعد تلاش کنید.';
+            } else if (res.status === 401) {
+              code = 'UNAUTHORIZED';
+              message = 'احراز هویت انجام نشده یا اعتبار نشست شما منقضی شده است.';
+            } else {
+              message = `خطای سرور (کد ${res.status})`;
+            }
+          }
+
           let details = payload.details as Record<string, string[]> | undefined;
 
           // FastAPI Validation Error

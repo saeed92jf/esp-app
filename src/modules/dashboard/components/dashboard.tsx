@@ -33,6 +33,7 @@ import { BourseWidget } from "./bourse-widget";
 
 // Unified feature components
 import { TaskWidget } from "@/modules/tasks/components/task-widget";
+import { ProjectWidget } from "@/modules/projects/components/project-widget";
 import { PeriodicChecklistWidget } from "./tasks/periodic-checklist-widget";
 import { DailyRoutinesWidget } from "./tasks/daily-routines-widget";
 import { NotesWidget } from "./notes/notes-widget";
@@ -63,7 +64,7 @@ import {
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const SLIDE_STORAGE_KEY = "dashboard_slide_rail_items_v4";
+const SLIDE_STORAGE_KEY = "dashboard_slide_rail_items_v5";
 
 const CustomResizeHandle = React.forwardRef<
   HTMLDivElement,
@@ -96,7 +97,7 @@ export function Dashboard() {
   const [linksSidebarOpen, setLinksSidebarOpen] = React.useState(false);
 
   // Active slide drawer tool
-  const [toolsTab, setToolsTab] = React.useState<string>("checklist");
+  const [toolsTab, setToolsTab] = React.useState<string>("projects");
 
   // Tabs: tasks (1st), custom (2nd), administrative (3rd), market (4th)
   const [dashboardTab, setDashboardTab] = React.useState<TabId>("tasks");
@@ -139,6 +140,14 @@ export function Dashboard() {
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setIsScrolled(e.currentTarget.scrollTop > 10);
   };
+
+  React.useEffect(() => {
+    const onWindowScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", onWindowScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onWindowScroll);
+  }, []);
 
   const handleRefreshAll = React.useCallback(async () => {
     setIsRefreshing(true);
@@ -187,6 +196,13 @@ export function Dashboard() {
   const renderWidgetContent = (id: string) => {
     if (!data) return null;
     switch (id) {
+      case "projects":
+        return (
+          <div className="h-full min-h-0 fa-num">
+            <ProjectWidget />
+          </div>
+        );
+
       case "tasks":
         return (
           <div className="h-full min-h-0 fa-num">
@@ -432,7 +448,7 @@ export function Dashboard() {
   const unreadCount = data?.notifications?.filter((n) => !n.read).length || 0;
 
   return (
-    <div className="flex flex-col w-full h-screen overflow-hidden relative group/dashboard bg-white dark:bg-background">
+    <div className="flex flex-col flex-1 min-h-full w-full relative group/dashboard bg-white dark:bg-background">
       <DashboardHeader
         isScrolled={isScrolled}
         sidebarOpen={linksSidebarOpen}
@@ -480,12 +496,19 @@ export function Dashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 w-full h-full relative overflow-hidden bg-white dark:bg-background">
+        <div className="flex flex-1 w-full relative bg-white dark:bg-background">
           {/* ── Utility Sidebar ── */}
-          <div className="flex-shrink-0 flex h-full z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent">
+          <aside
+            className="flex-shrink-0 flex sticky top-16 self-start z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent"
+            style={{
+              top: 'var(--header-height, 4rem)',
+              height: 'calc(100dvh - var(--header-height, 4rem))',
+              maxHeight: 'calc(100dvh - var(--header-height, 4rem))',
+            }}
+          >
             {/* ── Side Rail (Icons) with Independent Scrolling ── */}
             <TooltipProvider>
-              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20">
+              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20 overflow-y-auto no-scrollbar">
                 {/* 1. Slide Rail Settings Button (FIRST ICON AT TOP) */}
                 <div className="shrink-0 pb-2.5 mb-1.5 border-b border-border/20 w-full flex items-center justify-center">
                   <Tooltip>
@@ -625,7 +648,7 @@ export function Dashboard() {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </aside>
 
           {/* Mobile backdrop for drawer */}
           {linksSidebarOpen && (
@@ -636,10 +659,9 @@ export function Dashboard() {
             />
           )}
 
-          {/* ── Center Content (Scrollable Grid on ALL Tabs) ── */}
+          {/* ── Center Content ── */}
           <div
-            className="flex-1 w-full h-full overflow-y-auto custom-scrollbar bg-white dark:bg-background"
-            onScroll={handleScroll}
+            className="flex-1 w-full min-w-0 bg-white dark:bg-background"
           >
             <div className="min-w-0 pb-8 pt-6 px-3 sm:px-6 lg:px-8">
               <div className="mx-auto w-full max-w-[1240px]">

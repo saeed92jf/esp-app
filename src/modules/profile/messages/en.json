@@ -229,7 +229,18 @@
     "placeholders": {
       "skillName": "e.g. AutoCAD, Python or Project Management..."
     },
-    "search": "Search Profile Account",
+    "search": "Search in Account",
+    "searchPlaceholder": "Search settings, personal info, organization, insurance, skills...",
+    "searchResults": {
+      "noResults": "No results found for \"{query}\"",
+      "noResultsHint": "Try searching for items like: phone, national id, color, insurance, sheba, degrees, or skills.",
+      "resultsCount": "{count} results found",
+      "allResults": "Matching Sections",
+      "jumpTo": "Go to section",
+      "currentValue": "Current: {val}",
+      "clear": "Clear",
+      "keyboardHint": "Use arrow keys to navigate and Enter to select"
+    },
     "pills": {
       "password": "My password",
       "devices": "Devices",

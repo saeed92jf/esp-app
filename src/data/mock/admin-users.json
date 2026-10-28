@@ -1,0 +1,1829 @@
+[
+  {
+    "id": "u-saeed",
+    "name": "سعید جلیلی فرد",
+    "email": "saeed@euroslotpars.com",
+    "role": "admin",
+    "status": "online",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "avatarColor": "#0284c7",
+    "primaryColor": "red",
+    "phone": "09120000000",
+    "nationalId": "0012345678",
+    "joinedAt": "2023-01-01",
+    "daysInCompany": 1100,
+    "doneProjects": 28,
+    "salary": 65000,
+    "department": "Engineering",
+    "manager": "CEO",
+    "education": "Master of Software Engineering",
+    "educationDegree": "master",
+    "educationField": "مهندسی نرم‌افزار",
+    "jobTitle": "Senior System Administrator & Lead Engineer",
+    "workLocation": "office",
+    "workingFormat": {
+      "office": 60,
+      "factory": 20,
+      "mission": 10,
+      "leave": 10
+    },
+    "workActivity": [
+      {
+        "day": 0,
+        "hour": 0,
+        "value": 2
+      },
+      {
+        "day": 0,
+        "hour": 1,
+        "value": 33
+      },
+      {
+        "day": 0,
+        "hour": 2,
+        "value": 42
+      },
+      {
+        "day": 0,
+        "hour": 3,
+        "value": 30
+      },
+      {
+        "day": 0,
+        "hour": 4,
+        "value": 44
+      },
+      {
+        "day": 0,
+        "hour": 5,
+        "value": 61
+      },
+      {
+        "day": 0,
+        "hour": 6,
+        "value": 59
+      },
+      {
+        "day": 0,
+        "hour": 7,
+        "value": 93
+      },
+      {
+        "day": 0,
+        "hour": 8,
+        "value": 60
+      },
+      {
+        "day": 0,
+        "hour": 9,
+        "value": 72
+      },
+      {
+        "day": 0,
+        "hour": 10,
+        "value": 35
+      },
+      {
+        "day": 0,
+        "hour": 11,
+        "value": 96
+      },
+      {
+        "day": 0,
+        "hour": 12,
+        "value": 83
+      },
+      {
+        "day": 0,
+        "hour": 13,
+        "value": 61
+      },
+      {
+        "day": 0,
+        "hour": 14,
+        "value": 58
+      },
+      {
+        "day": 0,
+        "hour": 15,
+        "value": 98
+      },
+      {
+        "day": 0,
+        "hour": 16,
+        "value": 61
+      },
+      {
+        "day": 0,
+        "hour": 17,
+        "value": 8
+      },
+      {
+        "day": 0,
+        "hour": 18,
+        "value": 31
+      },
+      {
+        "day": 0,
+        "hour": 19,
+        "value": 27
+      },
+      {
+        "day": 0,
+        "hour": 20,
+        "value": 98
+      },
+      {
+        "day": 0,
+        "hour": 21,
+        "value": 19
+      },
+      {
+        "day": 0,
+        "hour": 22,
+        "value": 63
+      },
+      {
+        "day": 0,
+        "hour": 23,
+        "value": 7
+      },
+      {
+        "day": 1,
+        "hour": 0,
+        "value": 0
+      },
+      {
+        "day": 1,
+        "hour": 1,
+        "value": 91
+      },
+      {
+        "day": 1,
+        "hour": 2,
+        "value": 54
+      },
+      {
+        "day": 1,
+        "hour": 3,
+        "value": 55
+      },
+      {
+        "day": 1,
+        "hour": 4,
+        "value": 76
+      },
+      {
+        "day": 1,
+        "hour": 5,
+        "value": 27
+      },
+      {
+        "day": 1,
+        "hour": 6,
+        "value": 42
+      },
+      {
+        "day": 1,
+        "hour": 7,
+        "value": 99
+      },
+      {
+        "day": 1,
+        "hour": 8,
+        "value": 15
+      },
+      {
+        "day": 1,
+        "hour": 9,
+        "value": 50
+      },
+      {
+        "day": 1,
+        "hour": 10,
+        "value": 55
+      },
+      {
+        "day": 1,
+        "hour": 11,
+        "value": 52
+      },
+      {
+        "day": 1,
+        "hour": 12,
+        "value": 14
+      },
+      {
+        "day": 1,
+        "hour": 13,
+        "value": 1
+      },
+      {
+        "day": 1,
+        "hour": 14,
+        "value": 55
+      },
+      {
+        "day": 1,
+        "hour": 15,
+        "value": 99
+      },
+      {
+        "day": 1,
+        "hour": 16,
+        "value": 12
+      },
+      {
+        "day": 1,
+        "hour": 17,
+        "value": 1
+      },
+      {
+        "day": 1,
+        "hour": 18,
+        "value": 11
+      },
+      {
+        "day": 1,
+        "hour": 19,
+        "value": 81
+      },
+      {
+        "day": 1,
+        "hour": 20,
+        "value": 53
+      },
+      {
+        "day": 1,
+        "hour": 21,
+        "value": 57
+      },
+      {
+        "day": 1,
+        "hour": 22,
+        "value": 35
+      },
+      {
+        "day": 1,
+        "hour": 23,
+        "value": 77
+      },
+      {
+        "day": 2,
+        "hour": 0,
+        "value": 49
+      },
+      {
+        "day": 2,
+        "hour": 1,
+        "value": 10
+      },
+      {
+        "day": 2,
+        "hour": 2,
+        "value": 50
+      },
+      {
+        "day": 2,
+        "hour": 3,
+        "value": 80
+      },
+      {
+        "day": 2,
+        "hour": 4,
+        "value": 55
+      },
+      {
+        "day": 2,
+        "hour": 5,
+        "value": 83
+      },
+      {
+        "day": 2,
+        "hour": 6,
+        "value": 64
+      },
+      {
+        "day": 2,
+        "hour": 7,
+        "value": 51
+      },
+      {
+        "day": 2,
+        "hour": 8,
+        "value": 21
+      },
+      {
+        "day": 2,
+        "hour": 9,
+        "value": 62
+      },
+      {
+        "day": 2,
+        "hour": 10,
+        "value": 34
+      },
+      {
+        "day": 2,
+        "hour": 11,
+        "value": 87
+      },
+      {
+        "day": 2,
+        "hour": 12,
+        "value": 98
+      },
+      {
+        "day": 2,
+        "hour": 13,
+        "value": 77
+      },
+      {
+        "day": 2,
+        "hour": 14,
+        "value": 20
+      },
+      {
+        "day": 2,
+        "hour": 15,
+        "value": 4
+      },
+      {
+        "day": 2,
+        "hour": 16,
+        "value": 19
+      },
+      {
+        "day": 2,
+        "hour": 17,
+        "value": 37
+      },
+      {
+        "day": 2,
+        "hour": 18,
+        "value": 65
+      },
+      {
+        "day": 2,
+        "hour": 19,
+        "value": 15
+      },
+      {
+        "day": 2,
+        "hour": 20,
+        "value": 65
+      },
+      {
+        "day": 2,
+        "hour": 21,
+        "value": 4
+      },
+      {
+        "day": 2,
+        "hour": 22,
+        "value": 6
+      },
+      {
+        "day": 2,
+        "hour": 23,
+        "value": 30
+      },
+      {
+        "day": 3,
+        "hour": 0,
+        "value": 89
+      },
+      {
+        "day": 3,
+        "hour": 1,
+        "value": 32
+      },
+      {
+        "day": 3,
+        "hour": 2,
+        "value": 77
+      },
+      {
+        "day": 3,
+        "hour": 3,
+        "value": 45
+      },
+      {
+        "day": 3,
+        "hour": 4,
+        "value": 45
+      },
+      {
+        "day": 3,
+        "hour": 5,
+        "value": 74
+      },
+      {
+        "day": 3,
+        "hour": 6,
+        "value": 72
+      },
+      {
+        "day": 3,
+        "hour": 7,
+        "value": 16
+      },
+      {
+        "day": 3,
+        "hour": 8,
+        "value": 60
+      },
+      {
+        "day": 3,
+        "hour": 9,
+        "value": 71
+      },
+      {
+        "day": 3,
+        "hour": 10,
+        "value": 13
+      },
+      {
+        "day": 3,
+        "hour": 11,
+        "value": 43
+      },
+      {
+        "day": 3,
+        "hour": 12,
+        "value": 98
+      },
+      {
+        "day": 3,
+        "hour": 13,
+        "value": 33
+      },
+      {
+        "day": 3,
+        "hour": 14,
+        "value": 50
+      },
+      {
+        "day": 3,
+        "hour": 15,
+        "value": 70
+      },
+      {
+        "day": 3,
+        "hour": 16,
+        "value": 51
+      },
+      {
+        "day": 3,
+        "hour": 17,
+        "value": 61
+      },
+      {
+        "day": 3,
+        "hour": 18,
+        "value": 80
+      },
+      {
+        "day": 3,
+        "hour": 19,
+        "value": 52
+      },
+      {
+        "day": 3,
+        "hour": 20,
+        "value": 49
+      },
+      {
+        "day": 3,
+        "hour": 21,
+        "value": 92
+      },
+      {
+        "day": 3,
+        "hour": 22,
+        "value": 3
+      },
+      {
+        "day": 3,
+        "hour": 23,
+        "value": 61
+      },
+      {
+        "day": 4,
+        "hour": 0,
+        "value": 71
+      },
+      {
+        "day": 4,
+        "hour": 1,
+        "value": 97
+      },
+      {
+        "day": 4,
+        "hour": 2,
+        "value": 1
+      },
+      {
+        "day": 4,
+        "hour": 3,
+        "value": 34
+      },
+      {
+        "day": 4,
+        "hour": 4,
+        "value": 59
+      },
+      {
+        "day": 4,
+        "hour": 5,
+        "value": 20
+      },
+      {
+        "day": 4,
+        "hour": 6,
+        "value": 13
+      },
+      {
+        "day": 4,
+        "hour": 7,
+        "value": 75
+      },
+      {
+        "day": 4,
+        "hour": 8,
+        "value": 39
+      },
+      {
+        "day": 4,
+        "hour": 9,
+        "value": 60
+      },
+      {
+        "day": 4,
+        "hour": 10,
+        "value": 27
+      },
+      {
+        "day": 4,
+        "hour": 11,
+        "value": 61
+      },
+      {
+        "day": 4,
+        "hour": 12,
+        "value": 30
+      },
+      {
+        "day": 4,
+        "hour": 13,
+        "value": 90
+      },
+      {
+        "day": 4,
+        "hour": 14,
+        "value": 25
+      },
+      {
+        "day": 4,
+        "hour": 15,
+        "value": 8
+      },
+      {
+        "day": 4,
+        "hour": 16,
+        "value": 30
+      },
+      {
+        "day": 4,
+        "hour": 17,
+        "value": 24
+      },
+      {
+        "day": 4,
+        "hour": 18,
+        "value": 16
+      },
+      {
+        "day": 4,
+        "hour": 19,
+        "value": 63
+      },
+      {
+        "day": 4,
+        "hour": 20,
+        "value": 73
+      },
+      {
+        "day": 4,
+        "hour": 21,
+        "value": 5
+      },
+      {
+        "day": 4,
+        "hour": 22,
+        "value": 88
+      },
+      {
+        "day": 4,
+        "hour": 23,
+        "value": 70
+      },
+      {
+        "day": 5,
+        "hour": 0,
+        "value": 21
+      },
+      {
+        "day": 5,
+        "hour": 1,
+        "value": 18
+      },
+      {
+        "day": 5,
+        "hour": 2,
+        "value": 62
+      },
+      {
+        "day": 5,
+        "hour": 3,
+        "value": 18
+      },
+      {
+        "day": 5,
+        "hour": 4,
+        "value": 60
+      },
+      {
+        "day": 5,
+        "hour": 5,
+        "value": 5
+      },
+      {
+        "day": 5,
+        "hour": 6,
+        "value": 71
+      },
+      {
+        "day": 5,
+        "hour": 7,
+        "value": 1
+      },
+      {
+        "day": 5,
+        "hour": 8,
+        "value": 3
+      },
+      {
+        "day": 5,
+        "hour": 9,
+        "value": 96
+      },
+      {
+        "day": 5,
+        "hour": 10,
+        "value": 9
+      },
+      {
+        "day": 5,
+        "hour": 11,
+        "value": 65
+      },
+      {
+        "day": 5,
+        "hour": 12,
+        "value": 22
+      },
+      {
+        "day": 5,
+        "hour": 13,
+        "value": 51
+      },
+      {
+        "day": 5,
+        "hour": 14,
+        "value": 4
+      },
+      {
+        "day": 5,
+        "hour": 15,
+        "value": 13
+      },
+      {
+        "day": 5,
+        "hour": 16,
+        "value": 95
+      },
+      {
+        "day": 5,
+        "hour": 17,
+        "value": 80
+      },
+      {
+        "day": 5,
+        "hour": 18,
+        "value": 74
+      },
+      {
+        "day": 5,
+        "hour": 19,
+        "value": 83
+      },
+      {
+        "day": 5,
+        "hour": 20,
+        "value": 20
+      },
+      {
+        "day": 5,
+        "hour": 21,
+        "value": 94
+      },
+      {
+        "day": 5,
+        "hour": 22,
+        "value": 23
+      },
+      {
+        "day": 5,
+        "hour": 23,
+        "value": 28
+      },
+      {
+        "day": 6,
+        "hour": 0,
+        "value": 65
+      },
+      {
+        "day": 6,
+        "hour": 1,
+        "value": 64
+      },
+      {
+        "day": 6,
+        "hour": 2,
+        "value": 7
+      },
+      {
+        "day": 6,
+        "hour": 3,
+        "value": 74
+      },
+      {
+        "day": 6,
+        "hour": 4,
+        "value": 67
+      },
+      {
+        "day": 6,
+        "hour": 5,
+        "value": 70
+      },
+      {
+        "day": 6,
+        "hour": 6,
+        "value": 57
+      },
+      {
+        "day": 6,
+        "hour": 7,
+        "value": 69
+      },
+      {
+        "day": 6,
+        "hour": 8,
+        "value": 8
+      },
+      {
+        "day": 6,
+        "hour": 9,
+        "value": 6
+      },
+      {
+        "day": 6,
+        "hour": 10,
+        "value": 89
+      },
+      {
+        "day": 6,
+        "hour": 11,
+        "value": 76
+      },
+      {
+        "day": 6,
+        "hour": 12,
+        "value": 69
+      },
+      {
+        "day": 6,
+        "hour": 13,
+        "value": 36
+      },
+      {
+        "day": 6,
+        "hour": 14,
+        "value": 88
+      },
+      {
+        "day": 6,
+        "hour": 15,
+        "value": 3
+      },
+      {
+        "day": 6,
+        "hour": 16,
+        "value": 13
+      },
+      {
+        "day": 6,
+        "hour": 17,
+        "value": 87
+      },
+      {
+        "day": 6,
+        "hour": 18,
+        "value": 33
+      },
+      {
+        "day": 6,
+        "hour": 19,
+        "value": 90
+      },
+      {
+        "day": 6,
+        "hour": 20,
+        "value": 0
+      },
+      {
+        "day": 6,
+        "hour": 21,
+        "value": 80
+      },
+      {
+        "day": 6,
+        "hour": 22,
+        "value": 79
+      },
+      {
+        "day": 6,
+        "hour": 23,
+        "value": 12
+      }
+    ],
+    "modulesAccess": [
+      {
+        "moduleId": "marketing",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "120:00:00",
+        "usagePercentage": 50
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "85:00:00",
+        "usagePercentage": 40
+      }
+    ],
+    "recentActivities": [
+      {
+        "id": "a1",
+        "title": "Leave form completed",
+        "date": "Today",
+        "status": "pending"
+      },
+      {
+        "id": "a2",
+        "title": "Architecture doc uploaded",
+        "date": "Yesterday",
+        "status": "approved",
+        "grade": 98
+      }
+    ],
+    "checklists": [
+      {
+        "id": "c1",
+        "title": "Check server logs",
+        "completed": false
+      },
+      {
+        "id": "c2",
+        "title": "Update permissions",
+        "completed": true
+      }
+    ],
+    "age": 34,
+    "maritalStatus": "married",
+    "childrenCount": 1,
+    "insuranceType": "complementary",
+    "isProfileCompleted": true,
+    "hrApproved": true,
+    "managerApproved": true
+  },
+  {
+    "id": "u-guest",
+    "name": "مهمان (Guest)",
+    "email": "guest@npceram.com",
+    "role": "user",
+    "status": "online",
+    "accountStatus": "active",
+    "company": "نانو پالایش",
+    "companyId": "npceram",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "phone": "09120000001",
+    "nationalId": "0023456789",
+    "joinedAt": "2026-01-01",
+    "daysInCompany": 30,
+    "doneProjects": 1,
+    "salary": 15000,
+    "department": "Engineering",
+    "manager": "سعید جلیلی فرد",
+    "education": "Bachelor",
+    "educationDegree": "bachelors",
+    "educationField": "مهندسی کامپیوتر",
+    "jobTitle": "کاربر آزمایشی سامانه",
+    "workLocation": "factory",
+    "workingFormat": {
+      "office": 20,
+      "factory": 65,
+      "mission": 10,
+      "leave": 5
+    },
+    "workActivity": [
+      {
+        "day": 0,
+        "hour": 0,
+        "value": 85
+      },
+      {
+        "day": 0,
+        "hour": 1,
+        "value": 49
+      },
+      {
+        "day": 0,
+        "hour": 2,
+        "value": 37
+      },
+      {
+        "day": 0,
+        "hour": 3,
+        "value": 71
+      },
+      {
+        "day": 0,
+        "hour": 4,
+        "value": 55
+      },
+      {
+        "day": 0,
+        "hour": 5,
+        "value": 4
+      },
+      {
+        "day": 0,
+        "hour": 6,
+        "value": 20
+      },
+      {
+        "day": 0,
+        "hour": 7,
+        "value": 86
+      },
+      {
+        "day": 0,
+        "hour": 8,
+        "value": 85
+      },
+      {
+        "day": 0,
+        "hour": 9,
+        "value": 40
+      },
+      {
+        "day": 0,
+        "hour": 10,
+        "value": 72
+      },
+      {
+        "day": 0,
+        "hour": 11,
+        "value": 60
+      },
+      {
+        "day": 0,
+        "hour": 12,
+        "value": 64
+      },
+      {
+        "day": 0,
+        "hour": 13,
+        "value": 92
+      },
+      {
+        "day": 0,
+        "hour": 14,
+        "value": 84
+      },
+      {
+        "day": 0,
+        "hour": 15,
+        "value": 46
+      },
+      {
+        "day": 0,
+        "hour": 16,
+        "value": 70
+      },
+      {
+        "day": 0,
+        "hour": 17,
+        "value": 1
+      },
+      {
+        "day": 0,
+        "hour": 18,
+        "value": 56
+      },
+      {
+        "day": 0,
+        "hour": 19,
+        "value": 97
+      },
+      {
+        "day": 0,
+        "hour": 20,
+        "value": 9
+      },
+      {
+        "day": 0,
+        "hour": 21,
+        "value": 29
+      },
+      {
+        "day": 0,
+        "hour": 22,
+        "value": 88
+      },
+      {
+        "day": 0,
+        "hour": 23,
+        "value": 82
+      },
+      {
+        "day": 1,
+        "hour": 0,
+        "value": 71
+      },
+      {
+        "day": 1,
+        "hour": 1,
+        "value": 93
+      },
+      {
+        "day": 1,
+        "hour": 2,
+        "value": 50
+      },
+      {
+        "day": 1,
+        "hour": 3,
+        "value": 33
+      },
+      {
+        "day": 1,
+        "hour": 4,
+        "value": 18
+      },
+      {
+        "day": 1,
+        "hour": 5,
+        "value": 53
+      },
+      {
+        "day": 1,
+        "hour": 6,
+        "value": 3
+      },
+      {
+        "day": 1,
+        "hour": 7,
+        "value": 42
+      },
+      {
+        "day": 1,
+        "hour": 8,
+        "value": 40
+      },
+      {
+        "day": 1,
+        "hour": 9,
+        "value": 98
+      },
+      {
+        "day": 1,
+        "hour": 10,
+        "value": 62
+      },
+      {
+        "day": 1,
+        "hour": 11,
+        "value": 99
+      },
+      {
+        "day": 1,
+        "hour": 12,
+        "value": 87
+      },
+      {
+        "day": 1,
+        "hour": 13,
+        "value": 49
+      },
+      {
+        "day": 1,
+        "hour": 14,
+        "value": 64
+      },
+      {
+        "day": 1,
+        "hour": 15,
+        "value": 14
+      },
+      {
+        "day": 1,
+        "hour": 16,
+        "value": 27
+      },
+      {
+        "day": 1,
+        "hour": 17,
+        "value": 31
+      },
+      {
+        "day": 1,
+        "hour": 18,
+        "value": 35
+      },
+      {
+        "day": 1,
+        "hour": 19,
+        "value": 20
+      },
+      {
+        "day": 1,
+        "hour": 20,
+        "value": 44
+      },
+      {
+        "day": 1,
+        "hour": 21,
+        "value": 90
+      },
+      {
+        "day": 1,
+        "hour": 22,
+        "value": 90
+      },
+      {
+        "day": 1,
+        "hour": 23,
+        "value": 71
+      },
+      {
+        "day": 2,
+        "hour": 0,
+        "value": 97
+      },
+      {
+        "day": 2,
+        "hour": 1,
+        "value": 86
+      },
+      {
+        "day": 2,
+        "hour": 2,
+        "value": 42
+      },
+      {
+        "day": 2,
+        "hour": 3,
+        "value": 58
+      },
+      {
+        "day": 2,
+        "hour": 4,
+        "value": 32
+      },
+      {
+        "day": 2,
+        "hour": 5,
+        "value": 47
+      },
+      {
+        "day": 2,
+        "hour": 6,
+        "value": 82
+      },
+      {
+        "day": 2,
+        "hour": 7,
+        "value": 8
+      },
+      {
+        "day": 2,
+        "hour": 8,
+        "value": 36
+      },
+      {
+        "day": 2,
+        "hour": 9,
+        "value": 1
+      },
+      {
+        "day": 2,
+        "hour": 10,
+        "value": 68
+      },
+      {
+        "day": 2,
+        "hour": 11,
+        "value": 52
+      },
+      {
+        "day": 2,
+        "hour": 12,
+        "value": 58
+      },
+      {
+        "day": 2,
+        "hour": 13,
+        "value": 92
+      },
+      {
+        "day": 2,
+        "hour": 14,
+        "value": 88
+      },
+      {
+        "day": 2,
+        "hour": 15,
+        "value": 83
+      },
+      {
+        "day": 2,
+        "hour": 16,
+        "value": 93
+      },
+      {
+        "day": 2,
+        "hour": 17,
+        "value": 21
+      },
+      {
+        "day": 2,
+        "hour": 18,
+        "value": 6
+      },
+      {
+        "day": 2,
+        "hour": 19,
+        "value": 84
+      },
+      {
+        "day": 2,
+        "hour": 20,
+        "value": 13
+      },
+      {
+        "day": 2,
+        "hour": 21,
+        "value": 5
+      },
+      {
+        "day": 2,
+        "hour": 22,
+        "value": 1
+      },
+      {
+        "day": 2,
+        "hour": 23,
+        "value": 84
+      },
+      {
+        "day": 3,
+        "hour": 0,
+        "value": 28
+      },
+      {
+        "day": 3,
+        "hour": 1,
+        "value": 65
+      },
+      {
+        "day": 3,
+        "hour": 2,
+        "value": 54
+      },
+      {
+        "day": 3,
+        "hour": 3,
+        "value": 40
+      },
+      {
+        "day": 3,
+        "hour": 4,
+        "value": 14
+      },
+      {
+        "day": 3,
+        "hour": 5,
+        "value": 48
+      },
+      {
+        "day": 3,
+        "hour": 6,
+        "value": 31
+      },
+      {
+        "day": 3,
+        "hour": 7,
+        "value": 20
+      },
+      {
+        "day": 3,
+        "hour": 8,
+        "value": 89
+      },
+      {
+        "day": 3,
+        "hour": 9,
+        "value": 59
+      },
+      {
+        "day": 3,
+        "hour": 10,
+        "value": 68
+      },
+      {
+        "day": 3,
+        "hour": 11,
+        "value": 91
+      },
+      {
+        "day": 3,
+        "hour": 12,
+        "value": 39
+      },
+      {
+        "day": 3,
+        "hour": 13,
+        "value": 71
+      },
+      {
+        "day": 3,
+        "hour": 14,
+        "value": 86
+      },
+      {
+        "day": 3,
+        "hour": 15,
+        "value": 22
+      },
+      {
+        "day": 3,
+        "hour": 16,
+        "value": 0
+      },
+      {
+        "day": 3,
+        "hour": 17,
+        "value": 4
+      },
+      {
+        "day": 3,
+        "hour": 18,
+        "value": 26
+      },
+      {
+        "day": 3,
+        "hour": 19,
+        "value": 62
+      },
+      {
+        "day": 3,
+        "hour": 20,
+        "value": 46
+      },
+      {
+        "day": 3,
+        "hour": 21,
+        "value": 1
+      },
+      {
+        "day": 3,
+        "hour": 22,
+        "value": 75
+      },
+      {
+        "day": 3,
+        "hour": 23,
+        "value": 17
+      },
+      {
+        "day": 4,
+        "hour": 0,
+        "value": 12
+      },
+      {
+        "day": 4,
+        "hour": 1,
+        "value": 0
+      },
+      {
+        "day": 4,
+        "hour": 2,
+        "value": 52
+      },
+      {
+        "day": 4,
+        "hour": 3,
+        "value": 30
+      },
+      {
+        "day": 4,
+        "hour": 4,
+        "value": 77
+      },
+      {
+        "day": 4,
+        "hour": 5,
+        "value": 81
+      },
+      {
+        "day": 4,
+        "hour": 6,
+        "value": 11
+      },
+      {
+        "day": 4,
+        "hour": 7,
+        "value": 63
+      },
+      {
+        "day": 4,
+        "hour": 8,
+        "value": 20
+      },
+      {
+        "day": 4,
+        "hour": 9,
+        "value": 33
+      },
+      {
+        "day": 4,
+        "hour": 10,
+        "value": 45
+      },
+      {
+        "day": 4,
+        "hour": 11,
+        "value": 56
+      },
+      {
+        "day": 4,
+        "hour": 12,
+        "value": 16
+      },
+      {
+        "day": 4,
+        "hour": 13,
+        "value": 61
+      },
+      {
+        "day": 4,
+        "hour": 14,
+        "value": 0
+      },
+      {
+        "day": 4,
+        "hour": 15,
+        "value": 82
+      },
+      {
+        "day": 4,
+        "hour": 16,
+        "value": 22
+      },
+      {
+        "day": 4,
+        "hour": 17,
+        "value": 22
+      },
+      {
+        "day": 4,
+        "hour": 18,
+        "value": 92
+      },
+      {
+        "day": 4,
+        "hour": 19,
+        "value": 92
+      },
+      {
+        "day": 4,
+        "hour": 20,
+        "value": 96
+      },
+      {
+        "day": 4,
+        "hour": 21,
+        "value": 73
+      },
+      {
+        "day": 4,
+        "hour": 22,
+        "value": 9
+      },
+      {
+        "day": 4,
+        "hour": 23,
+        "value": 69
+      },
+      {
+        "day": 5,
+        "hour": 0,
+        "value": 88
+      },
+      {
+        "day": 5,
+        "hour": 1,
+        "value": 75
+      },
+      {
+        "day": 5,
+        "hour": 2,
+        "value": 68
+      },
+      {
+        "day": 5,
+        "hour": 3,
+        "value": 18
+      },
+      {
+        "day": 5,
+        "hour": 4,
+        "value": 93
+      },
+      {
+        "day": 5,
+        "hour": 5,
+        "value": 7
+      },
+      {
+        "day": 5,
+        "hour": 6,
+        "value": 92
+      },
+      {
+        "day": 5,
+        "hour": 7,
+        "value": 91
+      },
+      {
+        "day": 5,
+        "hour": 8,
+        "value": 42
+      },
+      {
+        "day": 5,
+        "hour": 9,
+        "value": 31
+      },
+      {
+        "day": 5,
+        "hour": 10,
+        "value": 20
+      },
+      {
+        "day": 5,
+        "hour": 11,
+        "value": 93
+      },
+      {
+        "day": 5,
+        "hour": 12,
+        "value": 90
+      },
+      {
+        "day": 5,
+        "hour": 13,
+        "value": 76
+      },
+      {
+        "day": 5,
+        "hour": 14,
+        "value": 24
+      },
+      {
+        "day": 5,
+        "hour": 15,
+        "value": 80
+      },
+      {
+        "day": 5,
+        "hour": 16,
+        "value": 76
+      },
+      {
+        "day": 5,
+        "hour": 17,
+        "value": 93
+      },
+      {
+        "day": 5,
+        "hour": 18,
+        "value": 66
+      },
+      {
+        "day": 5,
+        "hour": 19,
+        "value": 10
+      },
+      {
+        "day": 5,
+        "hour": 20,
+        "value": 69
+      },
+      {
+        "day": 5,
+        "hour": 21,
+        "value": 73
+      },
+      {
+        "day": 5,
+        "hour": 22,
+        "value": 69
+      },
+      {
+        "day": 5,
+        "hour": 23,
+        "value": 75
+      },
+      {
+        "day": 6,
+        "hour": 0,
+        "value": 31
+      },
+      {
+        "day": 6,
+        "hour": 1,
+        "value": 9
+      },
+      {
+        "day": 6,
+        "hour": 2,
+        "value": 48
+      },
+      {
+        "day": 6,
+        "hour": 3,
+        "value": 12
+      },
+      {
+        "day": 6,
+        "hour": 4,
+        "value": 52
+      },
+      {
+        "day": 6,
+        "hour": 5,
+        "value": 86
+      },
+      {
+        "day": 6,
+        "hour": 6,
+        "value": 40
+      },
+      {
+        "day": 6,
+        "hour": 7,
+        "value": 74
+      },
+      {
+        "day": 6,
+        "hour": 8,
+        "value": 22
+      },
+      {
+        "day": 6,
+        "hour": 9,
+        "value": 19
+      },
+      {
+        "day": 6,
+        "hour": 10,
+        "value": 12
+      },
+      {
+        "day": 6,
+        "hour": 11,
+        "value": 95
+      },
+      {
+        "day": 6,
+        "hour": 12,
+        "value": 9
+      },
+      {
+        "day": 6,
+        "hour": 13,
+        "value": 8
+      },
+      {
+        "day": 6,
+        "hour": 14,
+        "value": 97
+      },
+      {
+        "day": 6,
+        "hour": 15,
+        "value": 98
+      },
+      {
+        "day": 6,
+        "hour": 16,
+        "value": 62
+      },
+      {
+        "day": 6,
+        "hour": 17,
+        "value": 72
+      },
+      {
+        "day": 6,
+        "hour": 18,
+        "value": 21
+      },
+      {
+        "day": 6,
+        "hour": 19,
+        "value": 24
+      },
+      {
+        "day": 6,
+        "hour": 20,
+        "value": 4
+      },
+      {
+        "day": 6,
+        "hour": 21,
+        "value": 55
+      },
+      {
+        "day": 6,
+        "hour": 22,
+        "value": 41
+      },
+      {
+        "day": 6,
+        "hour": 23,
+        "value": 53
+      }
+    ],
+    "modulesAccess": [
+      {
+        "moduleId": "marketing",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "05:00:00",
+        "usagePercentage": 10
+      }
+    ],
+    "recentActivities": [
+      {
+        "id": "g1",
+        "title": "Guest session started",
+        "date": "Today",
+        "status": "approved"
+      }
+    ],
+    "checklists": [
+      {
+        "id": "gc1",
+        "title": "Explore modules",
+        "completed": false
+      }
+    ],
+    "age": 26,
+    "maritalStatus": "single",
+    "childrenCount": 0,
+    "insuranceType": "none",
+    "isProfileCompleted": true,
+    "hrApproved": true,
+    "managerApproved": true
+  }
+]

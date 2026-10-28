@@ -3,13 +3,14 @@ import { setRequestLocale } from 'next-intl/server';
 import { TasksManagementPage } from '@/modules/tasks/components/tasks-management-page';
 
 type Props = {
-  params: { locale: string; id: string };
+  params: Promise<{ locale: string; id: string }>;
 };
 
-export default function TaskDetailPage({ params: { locale, id } }: Props) {
+export default async function TaskDetailPage({ params }: Props) {
+  const { locale, id } = await params;
   setRequestLocale(locale);
   return (
-    <Suspense fallback={<div className="min-h-screen bg-panel dark:bg-background" />}>
+    <Suspense fallback={<div className="flex-1 min-h-full bg-panel dark:bg-background" />}>
       <TasksManagementPage initialTab="detail" initialTaskId={id} />
     </Suspense>
   );

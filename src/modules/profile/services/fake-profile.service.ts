@@ -1,91 +1,8 @@
 import { ProfileService } from "./profile.service";
 import { UserProfile } from "../types/profile";
+import profileMockData from "@/data/mock/profile.json";
 
-const MOCK_PROFILE: UserProfile = {
-  personal: {
-    firstName: "Saeed",
-    lastName: "Jalili",
-    firstNameFa: "سعید",
-    lastNameFa: "جلیلی",
-    avatarColor: "#0284c7",
-    primaryColor: "red",
-    nationalId: "0123456789",
-    phone: "09120000000",
-    email: "saeed@euroslotpars.com",
-    address: "تهران، خیابان ولیعصر، برج سپهر",
-    birthDate: "1370/05/12",
-    phoneVerified: true,
-    emailVerified: true,
-    maritalStatus: "married",
-    childrenCount: 1,
-  },
-  organizational: {
-    department: "فناوری اطلاعات",
-    role: "مدیر فنی",
-    employeeId: "ESP-9801",
-    joinDate: "1398/02/01",
-    manager: "علی احمدی",
-    extensionNumber: "105",
-    workLocation: "office",
-    contractType: "full_time",
-    subordinates: ["رضا محمدی", "زهرا کریمی", "مهرداد نوری"],
-    subordinatesCount: 3,
-  },
-  skills: [
-    { id: "1", name: "React", level: 5 },
-    { id: "2", name: "TypeScript", level: 4 },
-    { id: "3", name: "Node.js", level: 4 },
-  ],
-  insurance: {
-    insuranceCode: "12345678",
-    provider: "تامین اجتماعی",
-    corporateProvider: "تامین اجتماعی",
-    validUntil: "1405/12/29",
-    type: "بیمه اجباری",
-    supplementaryPlan: "golden",
-    supplementaryProvider: "SOS",
-    shebaNumber: "IR120120000000001234567890",
-    dependentsCount: 2,
-    dependents: [
-      {
-        id: "dep_1",
-        fullName: "مریم حسینی",
-        relationship: "همسر",
-        nationalId: "0012345678",
-        birthDate: "1372/08/14",
-      },
-      {
-        id: "dep_2",
-        fullName: "آراد جلیلی",
-        relationship: "فرزند",
-        nationalId: "0023456789",
-        birthDate: "1400/03/20",
-      },
-    ],
-  },
-  education: {
-    degree: "کارشناسی ارشد",
-    fieldOfStudy: "مهندسی متالورژی و سرامیک",
-    university: "دانشگاه صنعتی شریف",
-    graduationYear: "1395/04/15",
-    records: [
-      {
-        id: "edu_1",
-        degree: "کارشناسی",
-        fieldOfStudy: "مهندسی متالورژی و مواد",
-        university: "دانشگاه تهران",
-        graduationYear: "1392/04/10",
-      },
-      {
-        id: "edu_2",
-        degree: "کارشناسی ارشد",
-        fieldOfStudy: "مهندسی متالورژی و سرامیک",
-        university: "دانشگاه صنعتی شریف",
-        graduationYear: "1395/04/15",
-      },
-    ],
-  },
-};
+const MOCK_PROFILE: UserProfile = profileMockData as unknown as UserProfile;
 
 export class FakeProfileService implements ProfileService {
   private profile = { ...MOCK_PROFILE };
@@ -100,7 +17,7 @@ export class FakeProfileService implements ProfileService {
         const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
         if (rawAuth) {
           const authUser = JSON.parse(rawAuth);
-          if (authUser.avatarColor && !this.profile.personal.avatarColor) {
+          if (authUser.avatarColor) {
             this.profile.personal.avatarColor = authUser.avatarColor;
           }
           if (authUser.primaryColor && !this.profile.personal.primaryColor) {
@@ -181,4 +98,5 @@ export class FakeProfileService implements ProfileService {
   }
 }
 
-export const profileService = new FakeProfileService();
+export const fakeProfileService = new FakeProfileService();
+export const profileService = fakeProfileService;

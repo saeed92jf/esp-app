@@ -37,6 +37,11 @@ import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
 import { getCompanyFromEmail } from "../utils/company";
 import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
+import {
+  getDepartmentsForCompany,
+  getJobTitlesForDepartment,
+  getManagerialTitlesWithOccupants,
+} from "../data/organization-data";
 
 export interface AdminUserConfigProps {
   selectedUser?: User | null;
@@ -63,6 +68,7 @@ interface FormState {
   department: string;
   role: "admin" | "user";
   jobTitle: string;
+  manager: string;
   salary: number;
   age: number;
   maritalStatus: "single" | "married";
@@ -86,6 +92,7 @@ const INITIAL_FORM: FormState = {
   department: "engineering",
   role: "user",
   jobTitle: "",
+  manager: "",
   salary: 12000,
   age: 28,
   maritalStatus: "single",
@@ -138,14 +145,26 @@ export function AdminUserConfig({
     ? (fullNameFa && fullNameEn ? fullNameEn : "")
     : (fullNameEn && fullNameFa ? fullNameFa : "");
 
-  // Options
-  const departmentOptions = [
-    { value: "engineering", label: t("departments.engineering") },
-    { value: "marketDevelopment", label: t("departments.marketDevelopment") },
-    { value: "projectControl", label: t("departments.projectControl") },
-    { value: "administrative", label: t("departments.administrative") },
-    { value: "rAndD", label: t("departments.rAndD") },
-  ];
+  // Company-scoped dynamic options
+  const departmentOptions = React.useMemo(() => {
+    return getDepartmentsForCompany(detectedCompany.id, isRtl);
+  }, [detectedCompany.id, isRtl]);
+
+  const jobTitleOptions = React.useMemo(() => {
+    return getJobTitlesForDepartment(detectedCompany.id, form.department, isRtl);
+  }, [detectedCompany.id, form.department, isRtl]);
+
+  const managerOptions = React.useMemo(() => {
+    return getManagerialTitlesWithOccupants(detectedCompany.id, users, isRtl);
+  }, [detectedCompany.id, users, isRtl]);
+
+  // Synchronize department when email domain / company switches
+  React.useEffect(() => {
+    const isDeptValid = departmentOptions.some((d) => d.value === form.department);
+    if (!isDeptValid && departmentOptions.length > 0) {
+      setForm((prev) => ({ ...prev, department: departmentOptions[0].value }));
+    }
+  }, [departmentOptions, form.department]);
 
   const roleOptions = [
     { value: "admin", label: t("roleAdmin") },
@@ -303,6 +322,7 @@ export function AdminUserConfig({
       companyId: detectedCompany.id,
       role: form.role,
       jobTitle: form.jobTitle.trim(),
+      manager: form.manager.trim(),
       salary: Number(form.salary) || 10000,
       age: Number(form.age) || 25,
       maritalStatus: form.maritalStatus,
@@ -313,6 +333,7 @@ export function AdminUserConfig({
       status: "offline",
       accountStatus: "active",
       avatar: "",
+      avatarColor: "#0284c7",
       daysInCompany: 0,
       doneProjects: 0,
       workingFormat: {
@@ -832,25 +853,55 @@ export function AdminUserConfig({
                             <div className="flex flex-col gap-2">
                               <Label
                                 htmlFor="jobTitle"
-                                className="text-xs font-semibold text-foreground"
+                                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
                               >
-                                {t("jobTitleLabel")}
+                                <Briefcase className="size-3.5 text-primary" />
+                                <span>{t("jobTitleLabel")}</span>
                               </Label>
-                              <div className="relative">
-                                <Briefcase
-                                  size={18}
-                                  className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
-                                />
-                                <Input
-                                  id="jobTitle"
-                                  value={form.jobTitle}
-                                  onChange={(e) =>
-                                    setForm({ ...form, jobTitle: e.target.value })
-                                  }
-                                  placeholder={t("jobTitlePlaceholder")}
-                                  className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
-                                />
-                              </div>
+                              <Combobox
+                                options={jobTitleOptions}
+                                value={form.jobTitle}
+                                onChange={(val) =>
+                                  setForm((prev) => ({ ...prev, jobTitle: val }))
+                                }
+                                placeholder={t("selectJobTitle")}
+                                searchPlaceholder={
+                                  isRtl
+                                    ? "جستجو یا تایپ سمت جدید..."
+                                    : "Search or type new title..."
+                                }
+                                emptyText={t("noResults")}
+                                creatable={true}
+                                showSearch={true}
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                              />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                              <Label
+                                htmlFor="manager"
+                                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
+                              >
+                                <UserCircle2 className="size-3.5 text-primary" />
+                                <span>{t("managerDirectLabel")}</span>
+                              </Label>
+                              <Combobox
+                                options={managerOptions}
+                                value={form.manager}
+                                onChange={(val) =>
+                                  setForm((prev) => ({ ...prev, manager: val }))
+                                }
+                                placeholder={t("selectManager")}
+                                searchPlaceholder={
+                                  isRtl
+                                    ? "جستجوی مدیر یا تعریف سمت..."
+                                    : "Search manager or type title..."
+                                }
+                                emptyText={t("noResults")}
+                                creatable={true}
+                                showSearch={true}
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                              />
                             </div>
 
                             <div className="flex flex-col gap-2">
@@ -1203,8 +1254,8 @@ export function AdminUserConfig({
           <div className="bg-background/80 dark:bg-background/60 border border-border/50 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative">
             {/* 1. Personnel Header Profile */}
             <div className="flex items-center gap-3.5">
-              <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0 bg-transparent">
-                <AvatarFallback className="bg-transparent text-primary font-bold text-xl rounded-full">
+              <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0">
+                <AvatarFallback className="text-white font-bold text-xl rounded-full" style={{ backgroundColor: "#0284c7" }}>
                   {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
                 </AvatarFallback>
               </Avatar>
@@ -1444,8 +1495,8 @@ export function AdminUserConfig({
                 className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border/40 hover:border-primary/20 transition-colors group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <Avatar className="size-9 rounded-full border border-border/50 shrink-0 bg-transparent">
-                    <AvatarFallback className="bg-transparent text-primary text-xs font-bold rounded-full">
+                  <Avatar className="size-9 rounded-full border border-border/50 shrink-0">
+                    <AvatarFallback className="text-white text-xs font-bold rounded-full" style={{ backgroundColor: u.avatarColor || "#0284c7" }}>
                       {u.name?.[0]}
                     </AvatarFallback>
                   </Avatar>

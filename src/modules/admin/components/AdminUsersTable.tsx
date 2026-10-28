@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { api } from "@/services";
 import { NAVIGATION } from "@/config/navigation";
 import { getCompanyFromEmail } from "../utils/company";
 
@@ -468,6 +469,10 @@ export function AdminUsersTable({
       return updatedUser;
     });
     setUsers(updatedUsers);
+    const targetUser = updatedUsers.find(u => u.id === userId);
+    if (targetUser?.modulesAccess) {
+      api.admin.updateUserModules(userId, targetUser.modulesAccess).catch(console.error);
+    }
     toast.success(t("accessUpdated"));
   };
 
@@ -485,20 +490,29 @@ export function AdminUsersTable({
   };
 
   // Save Quick Edited Info
-  const handleSaveEdit = (userId: string) => {
-    const updatedUsers = users.map(u => {
-      if (u.id === userId) {
-        const updated = { ...u, ...editFormData };
-        if (selectedUser?.id === userId) {
-          setSelectedUser(updated);
-        }
-        return updated;
+  const handleSaveEdit = async (userId: string) => {
+    try {
+      if (editFormData.role) {
+        await api.admin.updateUser(userId, {
+          role: editFormData.role,
+        });
       }
-      return u;
-    });
-    setUsers(updatedUsers);
-    toast.success(t("userInfoUpdatedSuccess"));
-    setActiveAccordion(null);
+      const updatedUsers = users.map(u => {
+        if (u.id === userId) {
+          const updated = { ...u, ...editFormData };
+          if (selectedUser?.id === userId) {
+            setSelectedUser(updated);
+          }
+          return updated;
+        }
+        return u;
+      });
+      setUsers(updatedUsers);
+      toast.success(t("userInfoUpdatedSuccess"));
+      setActiveAccordion(null);
+    } catch (err: any) {
+      toast.error(err?.message || "خطا در ذخیره اطلاعات در سرور");
+    }
   };
 
   /* ── Header Cell Component with Excel Filter Popover ── */
@@ -728,6 +742,22 @@ export function AdminUsersTable({
             >
               <Building2 className="size-3" />
               <span>{t("companyNpceram")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setColFilters(prev => ({
+                ...prev,
+                companies: prev.companies.length === 1 && prev.companies[0] === "holding" ? [] : ["holding"]
+              }))}
+              className={cn(
+                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
+                colFilters.companies.includes("holding") && colFilters.companies.length === 1
+                  ? "bg-purple-600 text-white font-bold shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Building2 className="size-3" />
+              <span>{isRtl ? "هلدینگ و گروه" : "Group / Holding"}</span>
             </button>
           </div>
         </div>
@@ -1224,14 +1254,16 @@ export function AdminUsersTable({
                           return (
                             <span
                               className={cn(
-                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-2xs",
+                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-2xs whitespace-nowrap",
                                 comp.id === "npceram"
                                   ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
+                                  : comp.id === "holding"
+                                  ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
                                   : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
                               )}
                             >
                               <Building2 className="size-3 shrink-0" />
-                              <span className="truncate max-w-[120px]">{isRtl ? comp.nameFa : comp.nameEn}</span>
+                              <span className="whitespace-nowrap">{isRtl ? comp.nameFa : comp.nameEn}</span>
                             </span>
                           );
                         })()}
@@ -1388,9 +1420,11 @@ export function AdminUsersTable({
                                               <Badge 
                                                 variant="secondary"
                                                 className={cn(
-                                                  "text-[10px] h-5 font-medium",
+                                                  "text-[10px] h-5 font-medium whitespace-nowrap",
                                                   comp.id === "npceram"
                                                     ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20"
+                                                    : comp.id === "holding"
+                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
                                                     : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/20"
                                                 )}
                                               >
@@ -1784,10 +1818,16 @@ export function AdminUsersTable({
                                   </div>
                                 )}
 
-                                {/* ── Mode D: Module Access (دسترسی ماژول‌ها - کارت‌های ساده و شیک) ── */}
+                                {/* ── Mode D: Module Access (دسترسی ماژول‌ها همراه با زیرگزینه‌ها) ── */}
                                 {activeAccordion.type === 'access' && (() => {
                                   const availableGroups = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
-                                  const activeCount = availableGroups.filter(g => user.modulesAccess?.some(m => m.moduleId === g.id && m.hasAccess)).length;
+                                  const totalSubItemsCount = availableGroups.reduce((acc, g) => acc + (g.items?.length || 1), 0);
+                                  const activeSubItemsCount = availableGroups.reduce((acc, g) => {
+                                    if (g.items && g.items.length > 0) {
+                                      return acc + g.items.filter(it => user.modulesAccess?.some(m => m.moduleId === it.href && m.hasAccess)).length;
+                                    }
+                                    return acc + (user.modulesAccess?.some(m => m.moduleId === g.id && m.hasAccess) ? 1 : 0);
+                                  }, 0);
 
                                   return (
                                     <div className="flex flex-col gap-3.5">
@@ -1809,7 +1849,7 @@ export function AdminUsersTable({
 
                                         <div className="flex items-center gap-2">
                                           <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 fa-num">
-                                            {activeCount} / {availableGroups.length} {t("activeStatus")}
+                                            {activeSubItemsCount} / {totalSubItemsCount} {t("activeStatus")}
                                           </Badge>
 
                                           <Button
@@ -1835,11 +1875,17 @@ export function AdminUsersTable({
                                         </div>
                                       </div>
 
-                                      {/* Modern, Clean & Complete Module Cards Grid */}
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[340px] overflow-y-auto custom-scrollbar p-1">
+                                      {/* Modern, Clean & Complete Module Cards Grid with All Sub-Items */}
+                                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[460px] overflow-y-auto custom-scrollbar p-1">
                                         {availableGroups.map(group => {
-                                          const groupAccess = user.modulesAccess?.find(m => m.moduleId === group.id);
-                                          const hasGroupAccess = groupAccess?.hasAccess ?? false;
+                                          const items = group.items || [];
+                                          const activeItemsInGroup = items.filter(it => 
+                                            user.modulesAccess?.some(m => m.moduleId === it.href && m.hasAccess)
+                                          );
+                                          const isGroupFullyActive = items.length > 0 
+                                            ? activeItemsInGroup.length === items.length
+                                            : Boolean(user.modulesAccess?.find(m => m.moduleId === group.id)?.hasAccess);
+                                          const isGroupPartiallyActive = items.length > 0 && activeItemsInGroup.length > 0 && !isGroupFullyActive;
 
                                           let label = group.id;
                                           try {
@@ -1853,19 +1899,19 @@ export function AdminUsersTable({
                                           return (
                                             <div
                                               key={group.id}
-                                              onClick={() => handleToggleUserAccess(user.id, group.id, !hasGroupAccess)}
                                               className={cn(
-                                                "group flex flex-col justify-between p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
-                                                hasGroupAccess
-                                                  ? "bg-emerald-500/[0.04] dark:bg-emerald-500/[0.07] border-emerald-500/30 shadow-xs"
-                                                  : "bg-background/60 dark:bg-slate-800/50 border-border/50 hover:border-border/80 hover:bg-muted/30"
+                                                "flex flex-col justify-between p-3.5 rounded-2xl border transition-colors select-none bg-white dark:bg-card shadow-2xs",
+                                                isGroupFullyActive || isGroupPartiallyActive
+                                                  ? "border-emerald-500/35 ring-1 ring-emerald-500/15"
+                                                  : "border-border/60 hover:border-border"
                                               )}
                                             >
-                                              <div className="flex items-start justify-between gap-2.5 mb-3">
+                                              {/* Group Header */}
+                                              <div className="flex items-center justify-between gap-2.5 pb-2.5 border-b border-border/40">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                   <div className={cn(
                                                     "size-8 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                                                    hasGroupAccess 
+                                                    isGroupFullyActive || isGroupPartiallyActive
                                                       ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" 
                                                       : "bg-muted text-muted-foreground"
                                                   )}>
@@ -1875,40 +1921,79 @@ export function AdminUsersTable({
                                                     <span className="text-xs font-bold text-foreground block truncate" title={label}>
                                                       {label}
                                                     </span>
-                                                    {group.items && group.items.length > 0 && (
-                                                      <span className="text-[10px] text-muted-foreground fa-num">
-                                                        {group.items.length} {t("subItems")}
-                                                      </span>
-                                                    )}
+                                                    <span className="text-[10px] text-muted-foreground fa-num">
+                                                      {activeItemsInGroup.length} / {items.length} {t("moduleActiveBadge")}
+                                                    </span>
                                                   </div>
                                                 </div>
 
-                                                <div onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                  <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline">
+                                                    {isGroupFullyActive ? t("revokeAccess") : t("grantAccess")}
+                                                  </span>
                                                   <Switch
                                                     size="sm"
-                                                    checked={hasGroupAccess}
+                                                    checked={isGroupFullyActive}
                                                     onCheckedChange={(checked) => handleToggleUserAccess(user.id, group.id, checked)}
+                                                    className={cn(isGroupPartiallyActive && "opacity-85 ring-1 ring-emerald-500/40")}
                                                   />
                                                 </div>
                                               </div>
 
-                                              <div className="flex items-center justify-between pt-2 border-t border-border/30 text-[10px]">
-                                                <span className={cn(
-                                                  "font-semibold inline-flex items-center gap-1",
-                                                  hasGroupAccess 
-                                                    ? "text-emerald-600 dark:text-emerald-400" 
-                                                    : "text-muted-foreground"
-                                                )}>
-                                                  <span className={cn(
-                                                    "size-1.5 rounded-full",
-                                                    hasGroupAccess ? "bg-emerald-500" : "bg-muted-foreground/40"
-                                                  )} />
-                                                  {hasGroupAccess ? t("activeStatus") : t("inactiveStatus")}
-                                                </span>
+                                              {/* Sub-Items List */}
+                                              <div className="flex flex-col gap-1.5 pt-2.5">
+                                                {items.map((item) => {
+                                                  const ItemIcon = item.icon;
+                                                  const hasItemAccess = user.modulesAccess?.some(m => m.moduleId === item.href && m.hasAccess) ?? false;
 
-                                                <span className="text-muted-foreground text-[10px]">
-                                                  {hasGroupAccess ? t("revokeAccess") : t("grantAccess")}
-                                                </span>
+                                                  let itemLabel = item.labelKey;
+                                                  try {
+                                                    itemLabel = tMenu(`items.${item.labelKey}` as any) || item.labelKey;
+                                                  } catch {
+                                                    itemLabel = item.labelKey;
+                                                  }
+
+                                                  return (
+                                                    <div
+                                                      key={item.href}
+                                                      onClick={() => handleToggleUserAccess(user.id, item.href, !hasItemAccess)}
+                                                      className={cn(
+                                                        "flex items-center justify-between px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer select-none text-xs",
+                                                        hasItemAccess
+                                                          ? "bg-emerald-500/[0.05] dark:bg-emerald-500/[0.08] border-emerald-500/25 text-foreground"
+                                                          : "bg-muted/30 dark:bg-muted/15 border-border/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground hover:border-border/60"
+                                                      )}
+                                                    >
+                                                      <div className="flex items-center gap-2 min-w-0">
+                                                        <div className={cn(
+                                                          "size-6 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                                          hasItemAccess
+                                                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                                            : "bg-muted text-muted-foreground"
+                                                        )}>
+                                                          {ItemIcon ? <ItemIcon size={13} weight="duotone" /> : <Layers size={13} />}
+                                                        </div>
+                                                        <span className="font-medium truncate text-xs" title={itemLabel}>
+                                                          {itemLabel}
+                                                        </span>
+                                                      </div>
+
+                                                      <div onClick={(e) => e.stopPropagation()} className="shrink-0 flex items-center gap-2">
+                                                        <span className={cn(
+                                                          "text-[10px] font-medium hidden sm:inline-block",
+                                                          hasItemAccess ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+                                                        )}>
+                                                          {hasItemAccess ? t("activeStatus") : t("inactiveStatus")}
+                                                        </span>
+                                                        <Switch
+                                                          size="sm"
+                                                          checked={hasItemAccess}
+                                                          onCheckedChange={(checked) => handleToggleUserAccess(user.id, item.href, checked)}
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  );
+                                                })}
                                               </div>
                                             </div>
                                           );

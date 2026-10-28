@@ -44,7 +44,7 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
         <div className="absolute -bottom-[25%] -right-[10%] h-[50%] w-[50%] rounded-full bg-primary/5 blur-[120px]" />
       </div>
 
-      <main className="container relative mx-auto px-6 py-20 md:py-32 max-w-4xl z-10">
+      <div className="container relative mx-auto px-6 py-20 md:py-32 max-w-4xl z-10">
         
         {/* Header Section */}
         <div className="flex flex-col items-center text-center mb-16 space-y-6">
@@ -92,7 +92,7 @@ export default async function PrivacyPage(props: { params: Promise<{ locale: str
             <Link href="/">{isFa ? "بازگشت به صفحه اصلی" : "Back to Home"}</Link>
           </Button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

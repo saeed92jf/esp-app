@@ -3,6 +3,7 @@ import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "@/services/core/types";
 import { HttpClient } from "@/services/core/http";
 import type { User, UserRole, AccountStatus } from "@/types/auth";
 import { companyEmailRe } from "@/lib/validations/auth";
+import authUsersMock from "@/data/mock/auth-users.json";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -73,82 +74,7 @@ export interface IAuthService {
 const FAKE_DELAY = 600;
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const DEMO_USERS: Array<{ email: string; mobile: string; password: string; user: User }> = [
-  {
-    email: "saeed@demo.com",
-    mobile: "09120000000",
-    password: "saeed",
-    user: {
-      id: "u-saeed",
-      fullName: "Saeed Jalili Fard",
-      fullNameFa: "سعید جلیلی فرد",
-      email: "saeed@demo.com",
-      mobile: "09120000000",
-      avatar: "/team/saeed-jalili-fard.webp",
-      role: "admin",
-      primaryColor: "red",
-      accountStatus: "active",
-      isProfileCompleted: true,
-      hrApproved: true,
-      managerApproved: true,
-    },
-  },
-  {
-    email: "guest@demo.com",
-    mobile: "09120000001",
-    password: "guest",
-    user: {
-      id: "u-guest",
-      fullName: "Guest User",
-      fullNameFa: "کاربر مهمان (Gust)",
-      email: "guest@demo.com",
-      mobile: "09120000001",
-      avatar: "/avatar/male-01.webp",
-      role: "customer",
-      primaryColor: "blue",
-      accountStatus: "active",
-      isProfileCompleted: true,
-      hrApproved: true,
-      managerApproved: true,
-    },
-  },
-  {
-    email: "newuser@euroslotpars.com",
-    mobile: "09121111111",
-    password: "password123",
-    user: {
-      id: "u-newuser",
-      fullName: "کاربر جدید (بدون پروفایل)",
-      fullNameFa: "کاربر جدید (بدون پروفایل)",
-      email: "newuser@euroslotpars.com",
-      mobile: "09121111111",
-      role: "staff",
-      primaryColor: "orange",
-      accountStatus: "pending_profile",
-      isProfileCompleted: false,
-      hrApproved: false,
-      managerApproved: false,
-    },
-  },
-  {
-    email: "pending@npceram.com",
-    mobile: "09122222222",
-    password: "password123",
-    user: {
-      id: "u-pending",
-      fullName: "احمد رضایی",
-      fullNameFa: "احمد رضایی",
-      email: "pending@npceram.com",
-      mobile: "09122222222",
-      role: "staff",
-      primaryColor: "green",
-      accountStatus: "pending_approval",
-      isProfileCompleted: true,
-      hrApproved: true,
-      managerApproved: false,
-    },
-  },
-];
+const DEMO_USERS: Array<{ email: string; mobile: string; password: string; user: User }> = authUsersMock as unknown as Array<{ email: string; mobile: string; password: string; user: User }>;
 export { DEMO_USERS };
 
 const ACCOUNT_REQUESTS_KEY = "esp_account_requests";
@@ -426,99 +352,203 @@ export class FakeAuthService implements IAuthService {
 export class RealAuthService implements IAuthService {
   private client: HttpClient;
 
-  constructor(defaultHttp: HttpClient) {
-    this.client = new HttpClient("/api/real");
+  constructor(defaultHttp?: HttpClient) {
+    this.client = defaultHttp || new HttpClient("/api/real");
+  }
+
+  private mapAccountStatus(status: string, requiresOnboarding?: boolean): AccountStatus {
+    const s = (status || "").toUpperCase();
+    if (requiresOnboarding || s === "ONBOARDING_DRAFT" || s === "PENDING_PROFILE") {
+      return "pending_profile";
+    }
+    if (s === "PENDING_HR_APPROVAL" || s === "PENDING_MANAGER_ACCESS_GRANT" || s === "PENDING_APPROVAL") {
+      return "pending_approval";
+    }
+    if (s === "ACTIVE") {
+      return "active";
+    }
+    if (s === "SUSPENDED" || s === "TERMINATED" || s === "REJECTED") {
+      return "rejected";
+    }
+    return "active";
   }
 
   async login(payload: LoginPayload): Promise<LoginResult> {
+    const email = payload.identifier.trim().toLowerCase();
     const apiPayload = {
-      email: payload.identifier,
+      email,
       password: payload.password,
     };
     const res = await this.client.post<any>(`/auth/login`, apiPayload, { auth: false });
-    return {
-      user: {
-        id: res.user.id,
-        fullName: res.user.full_name || res.user.fullName || res.user.email,
-        fullNameFa: res.user.full_name_fa || res.user.fullNameFa,
-        email: res.user.email,
-        role: res.user.role || "staff",
-        accountStatus: res.user.account_status || res.user.accountStatus || "active",
-        isProfileCompleted: res.user.is_profile_completed ?? res.user.isProfileCompleted ?? true,
-        hrApproved: res.user.hr_approved ?? res.user.hrApproved ?? true,
-        managerApproved: res.user.manager_approved ?? res.user.managerApproved ?? true,
-      } as User,
-      token: res.tokens?.access_token || res.token || "",
+    const raw = res?.data ?? res;
+    const token = raw.tokens?.access_token || raw.token || "";
+
+    if (typeof window !== "undefined" && token) {
+      try {
+        localStorage.setItem(AUTH_TOKEN_KEY, token);
+        if (raw.tokens?.refresh_token) {
+          localStorage.setItem("esp-refresh-token", raw.tokens.refresh_token);
+        }
+      } catch {}
+    }
+
+    // Attempt to fetch full user info from /users/me
+    let meUser: any = null;
+    try {
+      const meRes = await this.client.get<any>(`/users/me`, { auth: true });
+      meUser = meRes?.data ?? meRes;
+    } catch {
+      // Fallback to basic info if /users/me fails or is still onboarding
+    }
+
+    const isCompleted = !raw.requires_onboarding;
+    const status = raw.account_status || meUser?.status || "active";
+
+    const userRoleRaw = (meUser?.role || raw?.role || "").toLowerCase();
+    const isAdmin = userRoleRaw === "admin" || userRoleRaw === "administrator" || userRoleRaw === "superuser" || Boolean(meUser?.is_superuser || raw?.is_superuser);
+
+    const user: User = {
+      id: raw.user_id || meUser?.id || "u-real",
+      fullName: meUser?.fullName || meUser?.full_name || email.split("@")[0],
+      fullNameFa: meUser?.fullNameFa || meUser?.full_name_fa,
+      email: email,
+      role: (isAdmin ? "admin" : "staff") as UserRole,
+      avatar: meUser?.avatarUrl || meUser?.avatar,
+      avatarColor: meUser?.avatarColor,
+      primaryColor: meUser?.primaryColor || "blue",
+      accountStatus: this.mapAccountStatus(status, raw.requires_onboarding),
+      isProfileCompleted: isCompleted,
+      hrApproved: status === "ACTIVE" || status === "active" || status === "PENDING_MANAGER_ACCESS_GRANT",
+      managerApproved: status === "ACTIVE" || status === "active",
     };
+
+    return { user, token };
   }
 
   async logout(): Promise<void> {
-    await this.client.post(`/auth/logout`);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
+        localStorage.removeItem("esp-refresh-token");
+        localStorage.removeItem(AUTH_USER_KEY);
+        localStorage.removeItem("esp_auth_user");
+        localStorage.removeItem("esp_demo_users_override");
+      } catch {}
+    }
   }
 
   async me(): Promise<User> {
-    const res = await this.client.get<any>(`/auth/me`);
+    const res = await this.client.get<any>(`/users/me`, { auth: true });
+    const raw = res?.data ?? res;
+    const status = raw.status || "active";
+    const userRoleRaw = (raw.role || "").toLowerCase();
+    const isAdmin = userRoleRaw === "admin" || userRoleRaw === "administrator" || userRoleRaw === "superuser" || Boolean(raw.is_superuser);
+
     return {
-      id: res.id,
-      fullName: res.full_name || res.fullName || res.email,
-      fullNameFa: res.full_name_fa || res.fullNameFa,
-      email: res.email,
-      role: res.role || "staff",
-      accountStatus: res.account_status || res.accountStatus || "active",
-      isProfileCompleted: res.is_profile_completed ?? res.isProfileCompleted ?? true,
-      hrApproved: res.hr_approved ?? res.hrApproved ?? true,
-      managerApproved: res.manager_approved ?? res.managerApproved ?? true,
-    } as User;
+      id: raw.id,
+      fullName: raw.fullName || raw.full_name || raw.email?.split("@")[0] || "User",
+      fullNameFa: raw.fullNameFa || raw.full_name_fa,
+      email: raw.email,
+      role: (isAdmin ? "admin" : "staff") as UserRole,
+      avatar: raw.avatarUrl || raw.avatar,
+      avatarColor: raw.avatarColor,
+      primaryColor: raw.primaryColor || "blue",
+      accountStatus: this.mapAccountStatus(status, false),
+      isProfileCompleted: true,
+      hrApproved: status === "active" || status === "ACTIVE",
+      managerApproved: status === "active" || status === "ACTIVE",
+    };
   }
 
   async refreshToken(): Promise<{ token: string }> {
-    return this.client.post(`/auth/refresh`, undefined, { auth: false });
+    const refreshToken = typeof window !== "undefined" ? localStorage.getItem("esp-refresh-token") : null;
+    if (!refreshToken) throw new ApiError("UNAUTHORIZED", "No refresh token available", 401);
+    const res = await this.client.post<any>(`/auth/refresh`, { refresh_token: refreshToken }, { auth: false });
+    const raw = res?.data ?? res;
+    const token = raw?.tokens?.access_token || raw?.token || "";
+    if (typeof window !== "undefined" && token) {
+      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    }
+    return { token };
   }
 
   async register(payload: RegisterPayload): Promise<LoginResult> {
     const apiPayload = {
-      email: payload.email,
-      password: payload.password,
-      full_name: payload.fullName,
+      email: payload.email.trim().toLowerCase(),
     };
     const res = await this.client.post<any>(`/auth/register`, apiPayload, {
       auth: false,
     });
-    const rawUser = res.user || res;
+    const raw = res?.data ?? res;
     return {
       user: {
-        id: rawUser.id,
-        fullName: rawUser.full_name || rawUser.email,
-        email: rawUser.email,
-        role: rawUser.role || "customer",
-        accountStatus: "active",
-        isProfileCompleted: true,
+        id: raw.user_id || "u-new",
+        fullName: payload.fullName || payload.email.split("@")[0],
+        email: raw.email || payload.email,
+        role: "staff",
+        accountStatus: "pending_profile",
+        isProfileCompleted: false,
       } as User,
-      token: res.tokens?.access_token || "",
+      token: "",
     };
   }
 
   async requestAccount(payload: AccountRequestPayload): Promise<AccountRequestResult> {
-    return this.client.post<AccountRequestResult>(
-      `/auth/account-request`,
-      { email: payload.email },
+    const res = await this.client.post<any>(
+      `/auth/register`,
+      { email: payload.email.trim().toLowerCase() },
+      { auth: false }
+    );
+    const raw = res?.data ?? res;
+    return {
+      success: true,
+      message: raw.message || "درخواست حساب کاربری شما با موفقیت ثبت شد.",
+      requestId: raw.user_id || "",
+    };
+  }
+
+  async checkAccountStatus(_emailOrId?: string): Promise<AccountStatusResult> {
+    try {
+      const user = await this.me();
+      return {
+        status: user.accountStatus || "active",
+        isProfileCompleted: user.isProfileCompleted ?? true,
+        isApproved: Boolean(user.accountStatus === "active" || (user.hrApproved && user.managerApproved)),
+        hrApproved: Boolean(user.hrApproved),
+        managerApproved: Boolean(user.managerApproved),
+      };
+    } catch {
+      return {
+        status: "pending_profile",
+        isProfileCompleted: false,
+        isApproved: false,
+        hrApproved: false,
+        managerApproved: false,
+      };
+    }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    await this.client.post(`/auth/reset-password`, { email: email.trim().toLowerCase() }, { auth: false });
+  }
+
+  async verifyEmail(_token: string): Promise<void> {
+    // verified via magic link / backend
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await this.client.post(
+      `/auth/reset-password/confirm`,
+      { token, new_password: newPassword },
       { auth: false }
     );
   }
 
-  async checkAccountStatus(_emailOrId?: string): Promise<AccountStatusResult> {
-    return this.client.get<AccountStatusResult>(`/auth/account-status`);
-  }
-
-  async forgotPassword(email: string): Promise<void> {
-    await this.client.post(`/auth/forgot-password`, { email }, { auth: false });
-  }
-
-  async verifyEmail(token: string): Promise<void> {
-    await this.client.post(`/auth/verify-email`, { token }, { auth: false });
-  }
-
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    await this.client.post(`/auth/reset-password`, { token, new_password: newPassword }, { auth: false });
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await this.client.post(
+      `/auth/change-password`,
+      { current_password: currentPassword, new_password: newPassword },
+      { auth: true }
+    );
   }
 }

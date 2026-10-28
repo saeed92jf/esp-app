@@ -31,6 +31,13 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`primary-color-${primaryColor}`}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var c=localStorage.getItem('esp-global-primary-color');if(!c){var u=localStorage.getItem('esp-auth-user')||localStorage.getItem('esp_auth_user');if(u){var p=JSON.parse(u);if(p&&p.primaryColor)c=p.primaryColor;}}if(c){var el=document.documentElement;el.className=el.className.replace(/primary-color-[^\\s]+/g,'')+' primary-color-'+c;}}catch(e){}})()`,
+          }}
+        />
+      </head>
       <body className="bg-background text-foreground min-h-dvh antialiased" suppressHydrationWarning>
         {/*
           ThemeProvider lives in the ROOT layout, which never re-renders on a

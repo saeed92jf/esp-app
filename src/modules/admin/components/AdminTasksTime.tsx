@@ -202,7 +202,7 @@ export function AdminTasksTime({
       { name: "Node.js / API Engineering", rate: 65 },
       { name: "Project Management & P&ID", rate: 80 }
     ];
-    return selectedUser?.skills?.length ? selectedUser.skills : defaultSkills;
+    return (selectedUser?.skills?.length ? selectedUser.skills : defaultSkills).slice(0, 4);
   }, [selectedUser]);
 
   const getSkillDetails = (rate: number) => {

@@ -10,7 +10,7 @@ import {
   UserPlus,
   LogIn,
 } from "lucide-react";
-import { Kanban, ListChecks, SquaresFour } from "@phosphor-icons/react";
+import { Kanban, ListChecks, SquaresFour, UserGear } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/brand/logo";
 import { SiteSearch } from "@/components/features/search/site-search";
@@ -146,7 +146,7 @@ export function HomeClient() {
         />
 
         {/* Center content container */}
-        <div className="flex-1 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col h-full min-h-0">
+        <div className="flex-1 min-w-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] relative flex flex-col self-stretch min-h-0">
           {/* Backdrop click catcher when sidebar is open on desktop */}
           {isOpen && !isMobile && (
             <div
@@ -187,42 +187,51 @@ export function HomeClient() {
                       />
                     </motion.div>
 
-                    {/* Quick Access Tag-like Buttons under Search (In English: project, task, dashboard from left to right) */}
+                    {/* Quick Access Tag-like Buttons under Search (Order: Manage Account, Dashboard, Projects, Tasks) */}
                     <motion.div
                       variants={fadeUp}
-                      className="flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mt-4 sm:mt-5"
+                      className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 mt-5.5 sm:mt-6.5"
                     >
-                      {/* Project Tag */}
+                      {/* Manage Account Tag */}
                       <Link
-                        href="/dashboard/projects"
-                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                        href="/dashboard/profile"
+                        className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
                       >
-                        <Kanban className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
-                        <span>{t("hero.tags.projects")}</span>
-                      </Link>
-
-                      {/* Task Tag */}
-                      <Link
-                        href="/dashboard/tasks"
-                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
-                      >
-                        <ListChecks className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
-                        <span>{t("hero.tags.tasks")}</span>
+                        <UserGear className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
+                        <span>{t("hero.tags.manageAccount")}</span>
                       </Link>
 
                       {/* Dashboard Tag */}
                       <Link
                         href="/dashboard"
-                        className="group inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-[13px] font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-all duration-200 active:scale-95"
+                        className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
                       >
-                        <SquaresFour className="size-3.5 text-primary/80 group-hover:text-primary transition-colors" weight="bold" />
+                        <SquaresFour className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
                         <span>{t("hero.tags.dashboard")}</span>
+                      </Link>
+
+                      {/* Projects Tag */}
+                      <Link
+                        href="/dashboard/projects"
+                        className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
+                      >
+                        <Kanban className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
+                        <span>{t("hero.tags.projects")}</span>
+                      </Link>
+
+                      {/* Tasks Tag */}
+                      <Link
+                        href="/dashboard/tasks"
+                        className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
+                      >
+                        <ListChecks className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
+                        <span>{t("hero.tags.tasks")}</span>
                       </Link>
                     </motion.div>
                   </div>
 
-                  {/* Quick Access Shortcuts - Brought slightly lower relative to search */}
-                  <motion.div variants={fadeUp} className="mt-5 sm:mt-6 w-full">
+                  {/* Quick Access Shortcuts - Spaced harmoniously relative to search and tags */}
+                  <motion.div variants={fadeUp} className="mt-6 sm:mt-7 w-full">
                     <QuickAccessSection onEditModeChange={setIsQuickAccessEditing} />
                   </motion.div>
                 </motion.div>

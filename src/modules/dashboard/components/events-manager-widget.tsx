@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
-import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Filter, CalendarX2, CalendarDays, RotateCcw, Plus, Sparkles, ArrowLeft, Search as SearchIcon } from "lucide-react";
+import { Users, Clock, Eye, Calendar as CalendarIcon, X, Flag, Store, PartyPopper, Filter, CalendarX2, RotateCcw, Plus, Search as SearchIcon } from "lucide-react";
 
 const TYPE_ICONS = {
   meeting: Users,
@@ -125,22 +125,7 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
     return `${year}/${String(month).padStart(2, "0")}/${String(day).padStart(2, "0")}`;
   }, [selectedDate]);
 
-  const upcomingNearbyEvents = React.useMemo(() => {
-    const todayJalali = getJalaliDate(new Date());
-    const todayStr = `${todayJalali.year}-${String(todayJalali.month).padStart(2, "0")}-${String(todayJalali.day).padStart(2, "0")}`;
-    return localEvents
-      .filter(e => e.date >= todayStr)
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(0, 3);
-  }, [localEvents]);
 
-  const suggestedFairs = React.useMemo(() => {
-    const fairs = localEvents.filter(e => e.type === "fair");
-    const todayJalali = getJalaliDate(new Date());
-    const todayStr = `${todayJalali.year}-${String(todayJalali.month).padStart(2, "0")}-${String(todayJalali.day).padStart(2, "0")}`;
-    const upcoming = fairs.filter(e => e.date >= todayStr);
-    return (upcoming.length > 0 ? upcoming : fairs).slice(0, 2);
-  }, [localEvents]);
 
   const deleteEvent = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -345,125 +330,43 @@ export function EventsManagerWidget({ events }: { events: CalendarEvent[] }) {
               </ul>
             </div>
           ) : (
-            <div className="flex-1 w-full min-h-0 flex flex-col justify-between bg-white dark:bg-card border border-border/50 shadow-xs rounded-xl p-4 sm:p-5 overflow-hidden">
-              {/* Upper Section: Visual Feedback & Context */}
-              <div className="flex flex-col items-center text-center my-auto">
-                <div className="size-11 sm:size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shadow-xs mb-2">
-                  <CalendarX2 className="size-5 sm:size-6" />
-                </div>
-
-                <h5 className="text-sm font-bold text-foreground mb-1">
-                  {t("emptyTitle")}
-                </h5>
-                <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mb-2.5">
-                  {t("emptyDesc")}
-                </p>
-
-                {/* Selected Date Context Chip */}
-                {selectedDate && (
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-muted/40 border border-border/40 text-[11px] text-muted-foreground mb-3 fa-num">
-                    <CalendarIcon className="size-3 text-primary" />
-                    <span>{t("selectedDateLabel")} {formattedSelectedDate}</span>
-                    <span className="text-border">·</span>
-                    <span>{t(`views.${viewMode}`)}</span>
-                  </div>
-                )}
-
-                {/* Quick Actions */}
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {viewMode === "day" && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setViewMode("month")}
-                      className="h-7 text-xs rounded-lg border-border/60 bg-background hover:bg-muted/50 gap-1.5"
-                    >
-                      <CalendarDays className="size-3 text-primary" />
-                      {t("viewMonth")}
-                    </Button>
-                  )}
-
-                  {(typeFilter !== "all" || timeFilter !== "all") && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setTypeFilter("all");
-                        setTimeFilter("all");
-                      }}
-                      className="h-7 text-xs rounded-lg border-border/60 bg-background hover:bg-muted/50 gap-1.5 text-muted-foreground hover:text-foreground"
-                    >
-                      <RotateCcw className="size-3" />
-                      {t("clearFilters")}
-                    </Button>
-                  )}
-
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => {
-                      const input = document.querySelector<HTMLTextAreaElement>("textarea[placeholder]");
-                      input?.focus();
-                    }}
-                    className="h-7 text-xs rounded-lg gap-1.5 shadow-xs"
-                  >
-                    <Plus className="size-3" />
-                    {t("quickAddEvent")}
-                  </Button>
-                </div>
+            <div className="flex-1 w-full min-h-0 flex flex-col items-center justify-center text-center bg-white dark:bg-card border border-border/50 shadow-xs rounded-xl p-6 sm:p-8">
+              <div className="size-11 sm:size-12 rounded-2xl bg-muted/40 border border-border/40 flex items-center justify-center text-muted-foreground/60 mb-3 shadow-xs">
+                <CalendarX2 className="size-5 sm:size-6" />
               </div>
 
-              {/* Lower Section: Smart Suggestions (Fairs & Highlights) */}
-              <div className="w-full bg-muted/20 dark:bg-muted/10 border border-border/40 rounded-xl p-3 flex flex-col gap-2 mt-auto shrink-0">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <Sparkles className="size-3.5 text-primary" />
-                    {t("suggestions")}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTypeFilter("fair");
-                      setTimeFilter("all");
-                      setViewMode("year");
-                    }}
-                    className="text-xs text-primary hover:underline font-medium flex items-center gap-1 transition-colors"
-                  >
-                    <span>{t("viewUpcomingFairs")}</span>
-                    <ArrowLeft className="size-3 rtl:rotate-0 rotate-180" />
-                  </button>
-                </div>
+              <h5 className="text-sm font-semibold text-foreground/90 mb-1">
+                {t("emptyTitle")}
+              </h5>
+              <p className="text-xs text-muted-foreground/80 leading-relaxed max-w-xs mb-3">
+                {t("emptyDesc")}
+              </p>
 
-                {/* Suggested Exhibition Cards (Responsive Grid) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {suggestedFairs.map((fair) => (
-                    <button
-                      key={fair.id}
-                      type="button"
-                      onClick={() => {
-                        setTypeFilter("fair");
-                        setTimeFilter("all");
-                        setViewMode("year");
-                      }}
-                      className="flex items-center gap-2 p-2 rounded-lg bg-background hover:bg-muted/50 border border-border/40 hover:border-primary/40 transition-all text-start group shadow-xs"
-                    >
-                      <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                        <Store className="size-3.5" />
-                      </div>
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-xs font-medium text-foreground truncate group-hover:text-primary transition-colors">
-                          {fair.titleKey ? t(fair.titleKey as any) : fair.title}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground mt-0.5 fa-num">
-                          {fair.date}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+              {/* Selected Date Context Chip */}
+              {selectedDate && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted/30 border border-border/40 text-[11px] text-muted-foreground mb-3 fa-num">
+                  <CalendarIcon className="size-3 text-primary/70" />
+                  <span>{t("selectedDateLabel")} {formattedSelectedDate}</span>
                 </div>
-              </div>
+              )}
+
+              {/* Clear Filters (if active) */}
+              {(typeFilter !== "all" || timeFilter !== "all" || searchQuery.trim().length > 0) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setTypeFilter("all");
+                    setTimeFilter("all");
+                    setSearchQuery("");
+                  }}
+                  className="h-7 text-xs rounded-lg border-border/60 bg-background hover:bg-muted/50 gap-1.5 text-muted-foreground hover:text-foreground"
+                >
+                  <RotateCcw className="size-3" />
+                  {t("clearFilters")}
+                </Button>
+              )}
             </div>
           )}
         </div>

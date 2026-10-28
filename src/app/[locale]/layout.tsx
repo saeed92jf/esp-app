@@ -4,13 +4,11 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 
-import { ConditionalHeader } from '@/components/layout/conditional-header';
 import { HtmlLangSync } from '@/components/layout/html-lang-sync';
 import { PersianDigitsProvider } from '@/components/PersianDigitsProvider';
-import { ConditionalFooter } from '@/components/layout/conditional-footer';
+import { AppShell } from '@/components/layout/app-shell';
 import { ScrollToTop } from '@/components/layout/scroll-to-top';
 import { routing } from '@/i18n/routing';
-import { GlobalConfirmModal } from '@/components/global-confirm-modal';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
 // Locale-aware metadata stays here, since this layout receives `locale`.
@@ -37,12 +35,7 @@ export default async function LocaleLayout({
       <PersianDigitsProvider enabled={locale === 'fa'} />
       <HtmlLangSync locale={locale} />
       <TooltipProvider>
-        <div className="relative flex flex-col min-h-dvh">
-          <ConditionalHeader />
-          <main className="flex-1 flex flex-col min-h-0">{children}</main>
-          <GlobalConfirmModal />
-          <ConditionalFooter />
-        </div>
+        <AppShell>{children}</AppShell>
         <ScrollToTop />
       </TooltipProvider>
     </NextIntlClientProvider>

@@ -20,7 +20,7 @@ export function FeaturedModulesCard({ className }: FeaturedModulesCardProps) {
       )}
     >
       {/* Sleek Minimalist Featured Card - Layout matching Support Section */}
-      <div className="w-full relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card/85 dark:bg-[#0e1017]/85 backdrop-blur-2xl p-6 sm:p-8 shadow-xl shadow-slate-950/10 dark:shadow-[0_16px_36px_-10px_rgba(0,0,0,0.7)] text-center flex flex-col items-center gap-4 sm:gap-5">
+      <div className="w-full relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border/80 bg-card/85 dark:bg-[#0e1017]/85 backdrop-blur-2xl p-6 sm:p-8 shadow-lg shadow-slate-950/5 dark:shadow-[0_12px_32px_-8px_rgba(0,0,0,0.35)] text-center flex flex-col items-center gap-4 sm:gap-5">
         {/* Subtle Ambient Radial Glow */}
         <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 w-64 h-32 rounded-full blur-3xl opacity-40 bg-gradient-to-b from-primary/30 to-indigo-500/10" />
 

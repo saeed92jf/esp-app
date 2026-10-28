@@ -1,4 +1,19 @@
 {
+  "ServerConnection": {
+    "title": "Server Connection Lost",
+    "noResponseDesc": "No response was received from the server. The backend server may be offline, undergoing maintenance, or unreachable.",
+    "statusLabel": "Status",
+    "codeLabel": "Error Code",
+    "targetLabel": "Backend Server",
+    "timeLabel": "Last Checked",
+    "retryBtn": "Retry Connection",
+    "retrying": "Connecting...",
+    "switchToMockBtn": "Switch to Mock Data",
+    "loginBtn": "Log In Again",
+    "bannerTitle": "Connection to Server Lost",
+    "bannerMsg": "Unable to communicate with the backend server. No response received.",
+    "offlineNotice": "The application cannot reach the central database."
+  },
   "Common": {
     "appName": {
       "lead": "Euroslot Pars",
@@ -122,9 +137,10 @@
       "subtitle": "Powerful tools to help you work smarter, not harder.",
       "searchPlaceholder": "Try searching for 'CRM', 'Projects', 'Invoices'...",
       "tags": {
+        "manageAccount": "Manage Account",
+        "dashboard": "Dashboard",
         "projects": "Projects",
-        "tasks": "Tasks",
-        "dashboard": "Dashboard"
+        "tasks": "Tasks"
       }
     },
     "guestTabs": {
@@ -252,7 +268,7 @@
       "subtitle": "We are here to assist you through every calculation and engineering workflow",
       "description": "Our engineering and development team is ready to answer questions, guide module calculations, and address your technical inquiries and industrial requirements.",
       "emailLabel": "Support Contact Email",
-      "email": "support@esp-app.com",
+      "email": "ESP.Technical.Support@euroslotpars.com",
       "copyEmail": "Copy Email",
       "copied": "Copied",
       "sendEmail": "Send Email",
@@ -453,6 +469,8 @@
     "requestAccount": "Request Account",
     "requestAccountTooltip": "Request Account",
     "emailPrefilledNotice": "Corporate email detected from your link. Please enter your temporary password.",
+    "loginHelperNotice": "Unified access to ESP engineering modules and documents",
+    "troubleLoggingIn": "Technical Support",
     "accountRequest": {
       "title": "Request an Account",
       "subtitle": "Access for Euroslot Pars & NPCeram Personnel",
@@ -460,8 +478,11 @@
       "emailPlaceholder": "name@euroslotpars.com or name@npceram.com",
       "allowedDomains": "Authorized Corporate Domains",
       "allowedNotice": "Registration is strictly restricted to @euroslotpars.com and @npceram.com email addresses.",
-      "submit": "Submit Request to Management",
-      "submitting": "Submitting Request...",
+      "helperNotice": "A verification link and login credentials will be sent to your corporate email.",
+      "needHelp": "Need help?",
+      "supportLink": "Technical Support",
+      "submit": "Submit Request",
+      "submitting": "Submitting...",
       "successTitle": "Request Successfully Submitted",
       "successDesc": "Your account request has been forwarded to the system administrator. Upon verification and approval, temporary credentials and login link will be emailed to your corporate address.",
       "sentToEmail": "Sent for corporate email:",
@@ -748,8 +769,9 @@
     "greeting": "Welcome, {name}",
     "themeSettings": "Theme Settings",
     "tabs": {
-      "tasks": "Tasks",
-      "administrative": "Admin",
+      "tasks": "Projects & Tasks",
+      "administrative": "Administrative",
+      "admin": "Administrative",
       "market": "Market",
       "custom": "Personal"
     },
@@ -814,13 +836,50 @@
       "addPlaceholder": "Add new event...",
       "usefulLinks": "Useful Links"
     },
+    "bourse": {
+      "title": "Bourse",
+      "subtitle": "Latest status of selected symbols",
+      "error": "Failed to fetch stock data",
+      "noData": "No data in this category",
+      "refresh": "Refresh",
+      "source": "Source",
+      "tsetmc": "Tehran Stock Exchange (TSETMC)",
+      "marketName": "Tehran Stock Exchange",
+      "rial": "IRR",
+      "toman": "Toman",
+      "categories": {
+        "petrochemical": "Petrochemical",
+        "refinery": "Refinery"
+      }
+    },
     "miniChart": {
-      "monthlyTrend": "1-Month Trend",
-      "unitDollarPerBarrel": "Unit: $ / Barrel",
-      "unitDollarPerOunce": "Unit: $ / Ounce",
-      "unitDollarPerCoin": "Unit: $ / Coin"
+      "title": "Market Trend Analysis",
+      "monthlyTrend": "Market Trend Analysis",
+      "peak": "Peak",
+      "lowest": "Lowest",
+      "periodChange": "Period Change",
+      "timeframes": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "3M",
+        "1y": "1Y"
+      },
+      "types": {
+        "area": "Area",
+        "line": "Line",
+        "bar": "Bar"
+      },
+      "unitDollarPerBarrel": "USD / Barrel",
+      "unitDollarPerOunce": "USD / Ounce",
+      "unitDollarPerCoin": "USD / Coin",
+      "source": "Source",
+      "selectPlaceholder": "Select...",
+      "searchPlaceholder": "Search...",
+      "emptyText": "Not found."
     },
     "commodities": {
+      "source": "Source",
+      "marketName": "Global Financial & Commodity Markets",
       "helpOunce": "Help: One Troy Ounce is equal to 31.103 grams.",
       "helpMesghal": "Help: One Iranian Mesghal is equal to 4.608 grams.",
       "unitBarrel": "Unit: USD / Barrel",
@@ -981,8 +1040,8 @@
       "activeTabStats": "Active Tab Modules",
       "allCatalogStats": "Total System Modules",
       "editTabModules": "Manage Tab Modules",
-      "tasksTabFixedTooltip": "Tasks tab is fixed and non-editable",
-      "tasksTabLockedNotice": "This tab is fixed by default and only contains the Tasks Workspace.",
+      "tasksTabFixedTooltip": "Projects & Tasks tab is default full-width",
+      "tasksTabLockedNotice": "This tab is system default and contains full-width Projects and Tasks modules.",
       "tabModulesManager": "Tab Modules Manager"
     },
     "notifications": {
@@ -1362,7 +1421,8 @@
   "Combobox": {
     "placeholder": "Select...",
     "searchPlaceholder": "Search...",
-    "emptyText": "No results found."
+    "emptyText": "No results found.",
+    "create": "Add \"{value}\""
   },
   "Hero-Flow": {
     "title": "ESP Flow",
@@ -1908,6 +1968,9 @@
     "insuranceProviderLabel": "Base Insurance Provider",
     "insuranceValidUntilLabel": "Insurance Expiry Date",
     "supplementaryPlanLabel": "Supplementary Insurance Plan",
+    "supplementaryProviderLabel": "Supplementary Insurance Carrier",
+    "selectManager": "Select Manager...",
+    "selectJobTitle": "Select Job Title...",
     "shebaNumberLabel": "Bank IBAN (Sheba)",
     "shebaNumberDesc": "For payroll and company benefits",
     "dependentsTitle": "Dependents",
@@ -1939,7 +2002,7 @@
     "hrVerifiedBadge": "HR Verified",
     "managerVerifiedBadge": "Manager Approved",
     "allCompanies": "All Companies",
-    "companyEuroslot": "Euroslot",
+    "companyEuroslot": "Euroslot Pars",
     "companyNpceram": "NPCeram",
     "noRequestsFound": "No requests found matching criteria.",
     "statusPendingHr": "Step 1: HR Review",
@@ -2113,12 +2176,27 @@
     "resultsStats": "About {count} results ({time} seconds)",
     "tabs": {
       "all": "All",
-      "modules": "Tools & Modules",
-      "tasks": "Projects & Tasks",
       "videos": "Videos",
+      "projects": "Projects",
+      "tasks": "Tasks",
+      "modules": "Tools & Modules",
       "dictionary": "Dictionary & Docs",
       "didYouKnow": "Did You Know"
     },
+    "sort": {
+      "title": "Sort By",
+      "mostRelevant": "Most Relevant",
+      "newest": "Newest",
+      "oldest": "Oldest"
+    },
+    "filterModule": {
+      "title": "Filter by Module",
+      "placeholder": "Select module...",
+      "allModules": "All Modules"
+    },
+    "advancedSearch": "Filters & Search Settings",
+    "close": "Close",
+    "resetFilters": "Reset Filters",
     "noResults": "No results found for \"{query}\"",
     "noResultsTitle": "No results found for \"{query}\".",
     "noResultsSuggestions": "Suggestions to improve your search:",
@@ -2127,6 +2205,10 @@
     "suggestion2": "Try different or more general keywords.",
     "suggestion3": "Try searching in English or Persian (fully bilingual).",
     "suggestion4": "Use the \"All\" tab to check across every category.",
+    "clearSearch": "Clear search query",
+    "searchInAllCategories": "Search all categories",
+    "popularKeywords": "Suggested keywords",
+    "badgeNoSignal": "No signal found!",
     "navigate": "to navigate",
     "select": "Enter to select",
     "escape": "Esc to clear",
@@ -2141,8 +2223,10 @@
     "footer": {
       "headOffice": "Tehran Head Office",
       "factory": "Garmsar Manufacturing Plant",
+      "country": "Iran",
       "fromYourIp": "From your IP address",
       "updateLocation": "Change location",
+      "copyright": "All rights reserved",
       "help": "Help",
       "feedback": "Send feedback",
       "privacy": "Privacy",

@@ -1,4 +1,19 @@
 {
+  "ServerConnection": {
+    "title": "ارتباط با سرور برقرار نشد",
+    "noResponseDesc": "هیچ پاسخی از سرور دریافت نشد. ممکن است سرور مرکزی خاموش باشد، در حال تعمیر باشد یا اتصال شبکه قطع شده باشد.",
+    "statusLabel": "وضعیت پاسخ",
+    "codeLabel": "کد خطا",
+    "targetLabel": "آدرس سرور",
+    "timeLabel": "زمان آخرین بررسی",
+    "retryBtn": "تلاش مجدد برای برقراری ارتباط",
+    "retrying": "در حال اتصال به سرور...",
+    "switchToMockBtn": "تغییر موقت به داده‌های تستی (Mock)",
+    "loginBtn": "ورود مجدد به سامانه",
+    "bannerTitle": "قطع ارتباط با سرور",
+    "bannerMsg": "ارتباط با سرور قطع است و پاسخی دریافت نشد. امکان دریافت و ثبت اطلاعات در سرور وجود ندارد.",
+    "offlineNotice": "سامانه امکان برقراری ارتباط با پایگاه داده مرکزی را ندارد."
+  },
   "Common": {
     "appName": {
       "lead": "سامانه منابع و عملیات های مرکزی",
@@ -91,7 +106,7 @@
     "language": "زبان",
     "tags": {
       "dashboard": "داشبورد",
-      "account": "اکانت",
+      "account": "حساب",
       "admin": "مدیریت",
       "settings": "تنظیمات",
       "profile": "پروفایل",
@@ -122,9 +137,10 @@
       "subtitle": "ابزارهای قدرتمندی که کمک می‌کنند هوشمندانه‌تر کار کنید، نه سخت‌تر.",
       "searchPlaceholder": "جستجو کنید: «CRM»، «پروژه‌ها»، «فاکتورها»...",
       "tags": {
+        "manageAccount": "مدیریت حساب",
+        "dashboard": "داشبورد",
         "projects": "پروژه‌ها",
-        "tasks": "تسک‌ها",
-        "dashboard": "داشبورد"
+        "tasks": "تسک‌ها"
       }
     },
     "guestTabs": {
@@ -252,7 +268,7 @@
       "subtitle": "در تمام مراحل کار با سامانه و انجام محاسبات مهندسی، همراه شما هستیم",
       "description": "تیم مهندسی و توسعه سامانه همواره آماده دریافت پیشنهادات، راهنمایی در استفاده از ماژول‌ها و پیگیری درخواست‌های فنی و محاسباتی شماست.",
       "emailLabel": "ایمیل تماس پشتیبانی",
-      "email": "support@esp-app.com",
+      "email": "ESP.Technical.Support@euroslotpars.com",
       "copyEmail": "کپی ایمیل",
       "copied": "کپی شد",
       "sendEmail": "ارسال ایمیل",
@@ -453,6 +469,8 @@
     "requestAccount": "درخواست اکانت",
     "requestAccountTooltip": "درخواست حساب کاربری",
     "emailPrefilledNotice": "ایمیل سازمانی از لینک ورود شناسایی شد. لطفاً کلمه عبور دریافتی را وارد کنید.",
+    "loginHelperNotice": "دسترسی یکپارچه به ماژول‌های مهندسی و اسناد سازمانی ESP",
+    "troubleLoggingIn": "پشتیبانی فنی",
     "accountRequest": {
       "title": "درخواست حساب کاربری",
       "subtitle": "ورود ویژه همکاران یورو اسلات پارس و صنایع سرامیک نسوز قطران",
@@ -460,8 +478,11 @@
       "emailPlaceholder": "name@euroslotpars.com یا name@npceram.com",
       "allowedDomains": "دامنه‌های مجاز سازمانی",
       "allowedNotice": "ثبت‌نام فقط برای پرسنل با ایمیل‌های euroslotpars.com@ و npceram.com@ امکان‌پذیر است.",
-      "submit": "ارسال درخواست به مدیریت",
-      "submitting": "در حال ثبت و ارسال درخواست...",
+      "helperNotice": "لینک احراز هویت و کلمه عبور به ایمیل سازمانی شما ارسال خواهد شد.",
+      "needHelp": "نیاز به راهنمایی دارید؟",
+      "supportLink": "پشتیبانی فنی",
+      "submit": "ثبت درخواست",
+      "submitting": "در حال ارسال...",
       "successTitle": "درخواست با موفقیت ثبت شد",
       "successDesc": "پیام درخواست برای مدیر سیستم ارسال گردید. پس از بررسی و تأیید هویت، کلمه عبور موقت و لینک فعال‌سازی به ایمیل سازمانی شما ارسال خواهد شد.",
       "sentToEmail": "ارسال شده برای ایمیل سازمانی:",
@@ -748,8 +769,9 @@
     "greeting": "خوش آمدید، {name}",
     "themeSettings": "تنظیمات ظاهر",
     "tabs": {
-      "tasks": "تسک",
+      "tasks": "پروژه‌ها و تسک‌ها",
       "administrative": "اداری",
+      "admin": "اداری",
       "market": "مارکت",
       "custom": "شخصی"
     },
@@ -814,13 +836,50 @@
       "addPlaceholder": "افزودن رویداد جدید...",
       "usefulLinks": "لینک‌های کاربردی"
     },
+    "bourse": {
+      "title": "بورس",
+      "subtitle": "آخرین وضعیت نمادهای منتخب",
+      "error": "خطا در دریافت اطلاعات بورس",
+      "noData": "داده‌ای در این دسته‌بندی یافت نشد",
+      "refresh": "بروزرسانی",
+      "source": "منبع",
+      "tsetmc": "مدیریت فناوری بورس تهران (TSETMC)",
+      "marketName": "بورس اوراق بهادار تهران",
+      "rial": "ریال",
+      "toman": "تومان",
+      "categories": {
+        "petrochemical": "پتروشیمی",
+        "refinery": "پالایشگاه"
+      }
+    },
     "miniChart": {
-      "monthlyTrend": "روند یک ماهه",
-      "unitDollarPerBarrel": "واحد: دلار / بشکه",
-      "unitDollarPerOunce": "واحد: دلار / انس",
-      "unitDollarPerCoin": "واحد: دلار / کوین"
+      "title": "تحلیل روند بازار",
+      "monthlyTrend": "تحلیل روند بازار",
+      "peak": "حداکثر",
+      "lowest": "حداقل",
+      "periodChange": "تغییر دوره",
+      "timeframes": {
+        "7d": "۷ روز",
+        "30d": "۳۰ روز",
+        "90d": "۳ ماه",
+        "1y": "۱ سال"
+      },
+      "types": {
+        "area": "سطحی",
+        "line": "خطی",
+        "bar": "میله‌ای"
+      },
+      "unitDollarPerBarrel": "دلار / بشکه",
+      "unitDollarPerOunce": "دلار / انس",
+      "unitDollarPerCoin": "دلار / کوین",
+      "source": "منبع",
+      "selectPlaceholder": "انتخاب...",
+      "searchPlaceholder": "جستجو...",
+      "emptyText": "یافت نشد."
     },
     "commodities": {
+      "source": "منبع",
+      "marketName": "بازارهای جهانی مالی و کالا",
       "helpOunce": "راهنما: هر اونس جهانی برابر ۳۱.۱۰۳ گرم است.",
       "helpMesghal": "راهنما: هر مثقال طلای ایران برابر ۴.۶۰۸ گرم است.",
       "unitBarrel": "واحد: دلار / بشکه",
@@ -981,8 +1040,8 @@
       "activeTabStats": "ماژول‌های تب فعلی",
       "allCatalogStats": "کل ماژول‌های سامانه",
       "editTabModules": "تنظیمات ماژول‌های تب",
-      "tasksTabFixedTooltip": "تب تسک پیش‌فرض و غیرقابل ویرایش است",
-      "tasksTabLockedNotice": "این تب پیش‌فرض سامانه است و فقط شامل ماژول مدیریت تسک‌ها می‌باشد.",
+      "tasksTabFixedTooltip": "تب پروژه‌ها و تسک‌ها پیش‌فرض و تمام‌عرض است",
+      "tasksTabLockedNotice": "این تب پیش‌فرض سامانه است و شامل ماژول‌های تمام‌عرض پروژه‌ها و تسک‌ها می‌باشد.",
       "tabModulesManager": "مدیریت ماژول‌های تب‌ها"
     },
     "notifications": {
@@ -1362,7 +1421,8 @@
   "Combobox": {
     "placeholder": "انتخاب کنید...",
     "searchPlaceholder": "جستجو...",
-    "emptyText": "موردی یافت نشد."
+    "emptyText": "موردی یافت نشد.",
+    "create": "افزودن «{value}»"
   },
   "Hero-Flow": {
     "title": "ESP Flow",
@@ -1908,6 +1968,9 @@
     "insuranceProviderLabel": "سازمان بیمه‌گر پایه",
     "insuranceValidUntilLabel": "تاریخ اعتبار دفترچه",
     "supplementaryPlanLabel": "طرح بیمه تکمیلی",
+    "supplementaryProviderLabel": "شرکت بیمه‌گر تکمیلی",
+    "selectManager": "انتخاب مدیر مستقیم...",
+    "selectJobTitle": "انتخاب سمت شغلی...",
     "shebaNumberLabel": "شماره شبا بانکی",
     "shebaNumberDesc": "جهت واریز حقوق و مزایا",
     "dependentsTitle": "افراد تحت تکفل",
@@ -1939,8 +2002,8 @@
     "hrVerifiedBadge": "تأیید شده توسط HR",
     "managerVerifiedBadge": "تأیید نهایی مدیریت",
     "allCompanies": "همه شرکت‌ها",
-    "companyEuroslot": "یورواسلات",
-    "companyNpceram": "ان‌پی سرام",
+    "companyEuroslot": "یورواسلات پارس",
+    "companyNpceram": "نانو پالایش",
     "noRequestsFound": "درخواستی با این مشخصات یافت نشد.",
     "statusPendingHr": "مرحله ۱: منابع انسانی",
     "statusHrApproved": "مرحله ۲: تایید مدیر",
@@ -2113,12 +2176,27 @@
     "resultsStats": "حدود {count} نتیجه ({time} ثانیه)",
     "tabs": {
       "all": "همه",
-      "modules": "ماژول‌ها و ابزارها",
-      "tasks": "پروژه‌ها و تسک‌ها",
       "videos": "ویدیوها",
+      "projects": "پروژه‌ها",
+      "tasks": "تسک‌ها",
+      "modules": "ماژول‌ها و ابزارها",
       "dictionary": "واژه‌نامه و مستندات",
       "didYouKnow": "آیا می‌دانید"
     },
+    "sort": {
+      "title": "مرتب‌سازی بر اساس",
+      "mostRelevant": "منطبق‌ترین",
+      "newest": "جدیدترین",
+      "oldest": "قدیمی‌ترین"
+    },
+    "filterModule": {
+      "title": "فیلتر بر اساس ماژول",
+      "placeholder": "انتخاب ماژول...",
+      "allModules": "همه ماژول‌ها"
+    },
+    "advancedSearch": "فیلترها و تنظیمات جستجو",
+    "close": "بستن",
+    "resetFilters": "بازنشانی فیلترها",
     "noResults": "نتیجه‌ای برای «{query}» پیدا نشد",
     "noResultsTitle": "نتیجه‌ای برای «{query}» یافت نشد.",
     "noResultsSuggestions": "پیشنهادات برای بهبود جستجو:",
@@ -2127,6 +2205,10 @@
     "suggestion2": "از کلمات کلیدی عام‌تر یا کوتاه‌تر استفاده کنید.",
     "suggestion3": "عبارت را به انگلیسی یا فارسی امتحان کنید (سیستم کاملاً دو زبانه است).",
     "suggestion4": "از تب «همه» استفاده کنید تا تمام دسته‌بندی‌ها بررسی شوند.",
+    "clearSearch": "پاک کردن عبارت جستجو",
+    "searchInAllCategories": "جستجو در همه دسته‌بندی‌ها",
+    "popularKeywords": "کلمات کلیدی پیشنهادی",
+    "badgeNoSignal": "نتیجه‌ای نیافتیم!",
     "navigate": "برای حرکت",
     "select": "Enter برای انتخاب",
     "escape": "Esc برای پاک کردن",
@@ -2141,8 +2223,10 @@
     "footer": {
       "headOffice": "دفتر مرکزی (تهران)",
       "factory": "کارخانه و سایت تولید (گرمسار)",
-      "fromYourIp": "از روی نشانی IP دستگاه شما",
+      "country": "ایران",
+      "fromYourIp": "بر اساس نشانی IP شما",
       "updateLocation": "تغییر موقعیت",
+      "copyright": "تمامی حقوق محفوظ است",
       "help": "راهنما",
       "feedback": "ارسال بازخورد",
       "privacy": "حریم خصوصی",

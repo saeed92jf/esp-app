@@ -122,8 +122,8 @@ const AVAILABLE_WIDGETS: CustomWidgetMeta[] = [
   },
 ];
 
-const DEFAULT_ACTIVE = ["notes", "custom-links", "calendar", "unit-converter"];
-const STORAGE_KEY = "dashboard_user_custom_active_widgets_v1";
+const DEFAULT_ACTIVE = ["unit-converter", "calendar"];
+const STORAGE_KEY = "dashboard_user_custom_active_widgets_v2";
 
 export function CustomDashboardBuilder({ data }: CustomDashboardBuilderProps) {
   const t = useTranslations("Dashboard.customBuilder");

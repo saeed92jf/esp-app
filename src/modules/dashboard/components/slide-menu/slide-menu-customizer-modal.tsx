@@ -54,14 +54,11 @@ export const ALL_SLIDE_ITEMS: SlideMenuItemDef[] = [
 ];
 
 export const DEFAULT_SLIDE_ITEMS = [
+  "projects",
   "tasks",
-  "checklist",
-  "routines",
   "notes",
   "links",
-  "activity",
-  "calendar",
-  "converter",
+  "routines",
 ];
 
 interface SlideMenuCustomizerModalProps {

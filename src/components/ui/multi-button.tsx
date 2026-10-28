@@ -75,31 +75,31 @@ const SIZE_CONFIG: Record<
   }
 > = {
   sm: {
-    containerHeight: "h-8",
+    containerHeight: "h-8.5",
     icon: "size-3.5",
     text: "text-[11px]",
     baseItemWidth: 54,
-    expandBonus: 72,
-    expandedFlex: 2.6,
-    collapsedFlex: 0.8,
+    expandBonus: 86,
+    expandedFlex: 3.0,
+    collapsedFlex: 0.85,
   },
   md: {
-    containerHeight: "h-9",
+    containerHeight: "h-10",
     icon: "size-4",
-    text: "text-xs",
+    text: "text-xs font-semibold",
     baseItemWidth: 60,
-    expandBonus: 82,
-    expandedFlex: 2.8,
-    collapsedFlex: 0.8,
+    expandBonus: 104,
+    expandedFlex: 3.2,
+    collapsedFlex: 0.85,
   },
   lg: {
-    containerHeight: "h-10",
-    icon: "size-[18px]",
-    text: "text-xs sm:text-sm",
+    containerHeight: "h-11",
+    icon: "size-4.5",
+    text: "text-xs sm:text-sm font-semibold",
     baseItemWidth: 68,
-    expandBonus: 92,
-    expandedFlex: 3.0,
-    collapsedFlex: 0.8,
+    expandBonus: 120,
+    expandedFlex: 3.4,
+    collapsedFlex: 0.85,
   },
 };
 
@@ -186,8 +186,8 @@ const MultiButton = React.forwardRef<HTMLDivElement, MultiButtonProps>(
         role="group"
         onMouseLeave={() => setHoveredId(null)}
         className={cn(
-          "relative inline-flex items-center rounded-full p-0 overflow-hidden select-none",
-          "shadow-none border-0 ring-0",
+          "relative inline-flex items-center rounded-full p-1 overflow-hidden select-none",
+          "shadow-none border border-border/60",
           "bg-slate-200/70 dark:bg-slate-900/80 backdrop-blur-md",
           cfg.containerHeight,
           className
@@ -199,132 +199,113 @@ const MultiButton = React.forwardRef<HTMLDivElement, MultiButtonProps>(
         }}
         {...props}
       >
-        <div className="flex w-full h-full items-stretch">
-          {items.map((item, index) => {
+        <div className="flex w-full h-full items-stretch gap-1">
+          {items.map((item) => {
             const isSelected = selectedId === item.id;
             const isHovered = hoveredId === item.id;
             const isExpanded = isHovered || (expandSelected && isSelected && hoveredId === null);
             const Icon = item.icon;
 
             return (
-              <React.Fragment key={item.id}>
-                {index > 0 && (
-                  <div
-                    className="w-px h-full bg-slate-300/80 dark:bg-slate-700/60 shrink-0 pointer-events-none transition-colors"
-                    aria-hidden="true"
-                  />
-                )}
-                <motion.button
-                  key={item.id}
-                  type="button"
-                  data-state={isSelected ? "active" : "inactive"}
-                  data-multi-button-item-id={item.id}
-                  aria-label={
-                    item.ariaLabel ??
-                    (typeof item.label === "string" ? item.label : item.id)
-                  }
-                  aria-pressed={isSelected}
-                  disabled={item.disabled}
-                  onClick={(event) => {
-                    if (item.disabled) return;
-                    item.onClick?.(event);
-                    onSelect?.(item.id);
-                  }}
-                  onMouseEnter={() => setHoveredId(item.id)}
-                  onFocus={() => setHoveredId(item.id)}
-                  onBlur={() => setHoveredId(null)}
-                  animate={{
-                    flex: isExpanded ? cfg.expandedFlex : cfg.collapsedFlex,
-                  }}
-                  transition={
-                    reduceMotion
-                      ? { duration: 0 }
-                      : {
-                          duration: 0.22,
-                          ease: [0.16, 1, 0.3, 1], // snappy, buttery-smooth gliding
-                        }
-                  }
-                  className={cn(
-                    "relative isolate h-full flex items-center justify-center p-0 m-0 outline-none select-none cursor-pointer overflow-hidden disabled:cursor-not-allowed disabled:opacity-40 transition-colors duration-200",
-                    // Straight cut line between adjacent items (no bean/pill internally)
-                    "rounded-none",
-                    // Edge-to-edge flush coverage with zero padding from borders:
-                    // In Light: Black background (#121212) + White text & icon
-                    // In Dark: Inverted! White background (slate-100) + Black text & icon (slate-950)
-                    isSelected
-                      ? "bg-[#121212] text-white dark:bg-slate-100 dark:text-slate-950 font-semibold shadow-xs"
-                      : isHovered
-                      ? "bg-slate-950/[0.08] text-slate-950 dark:bg-white/[0.12] dark:text-slate-100"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200",
-                    item.hoverClassName,
-                    item.className
-                  )}
-                >
-                  <div className="flex items-center justify-center gap-1.5 px-2.5 overflow-hidden min-w-0">
-                    <Icon
-                      className={cn(
-                        cfg.icon,
-                        "shrink-0 transition-colors duration-150",
-                        isSelected
-                          ? "text-white dark:text-slate-950"
-                          : isHovered
-                          ? "text-slate-950 dark:text-slate-100"
-                          : "text-slate-600 dark:text-slate-400"
-                      )}
-                    />
-
-                    {/* Label appearing and disappearing: both animated, fast & snappy */}
-                    <motion.div
-                      initial={false}
-                      animate={{
-                        maxWidth: isExpanded ? 200 : 0,
-                        opacity: isExpanded ? 1 : 0,
-                        scale: isExpanded ? 1 : 0.72,
-                      }}
-                      transition={
-                        reduceMotion
-                          ? { duration: 0 }
-                          : {
-                              maxWidth: {
-                                duration: isExpanded ? 0.22 : 0.18,
-                                ease: [0.2, 0.8, 0.2, 1],
-                              },
-                              opacity: {
-                                duration: isExpanded ? 0.18 : 0.14,
-                                ease: "easeOut",
-                              },
-                              scale: isExpanded
-                                ? {
-                                    type: "spring",
-                                    stiffness: 420,
-                                    damping: 24,
-                                    mass: 0.5,
-                                  }
-                                : {
-                                    duration: 0.16,
-                                    ease: [0.4, 0, 0.2, 1],
-                                  },
-                            }
+              <motion.button
+                key={item.id}
+                type="button"
+                data-state={isSelected ? "active" : "inactive"}
+                data-multi-button-item-id={item.id}
+                aria-label={
+                  item.ariaLabel ??
+                  (typeof item.label === "string" ? item.label : item.id)
+                }
+                aria-pressed={isSelected}
+                disabled={item.disabled}
+                onClick={(event) => {
+                  if (item.disabled) return;
+                  item.onClick?.(event);
+                  onSelect?.(item.id);
+                }}
+                onMouseEnter={() => setHoveredId(item.id)}
+                onFocus={() => setHoveredId(item.id)}
+                onBlur={() => setHoveredId(null)}
+                animate={{
+                  flex: isExpanded ? cfg.expandedFlex : cfg.collapsedFlex,
+                }}
+                transition={
+                  reduceMotion
+                    ? { duration: 0 }
+                    : {
+                        duration: 0.32,
+                        ease: [0.16, 1, 0.3, 1], // silky-smooth accordion glide matching settings color picker
                       }
-                      className="overflow-hidden whitespace-nowrap flex items-center origin-left rtl:origin-right shrink-0"
+                }
+                className={cn(
+                  "relative isolate h-full flex items-center justify-center p-0 m-0 outline-none select-none cursor-pointer overflow-hidden rounded-full disabled:cursor-not-allowed disabled:opacity-40 transition-colors duration-200",
+                  isSelected
+                    ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-950 font-semibold shadow-xs"
+                    : isHovered
+                    ? "bg-foreground/[0.08] text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground",
+                  item.hoverClassName,
+                  item.className
+                )}
+              >
+                <div className="flex items-center justify-center h-full px-2.5 overflow-hidden min-w-0">
+                  <Icon
+                    className={cn(
+                      cfg.icon,
+                      "shrink-0 transition-colors duration-150",
+                      isSelected
+                        ? "text-white dark:text-slate-950"
+                        : isHovered
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  />
+
+                  {/* Silky smooth label expansion matching primary color settings */}
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      maxWidth: isExpanded ? 180 : 0,
+                      opacity: isExpanded ? 1 : 0,
+                      marginInlineStart: isExpanded ? 6 : 0,
+                    }}
+                    transition={
+                      reduceMotion
+                        ? { duration: 0 }
+                        : {
+                            maxWidth: {
+                              duration: 0.32,
+                              ease: [0.16, 1, 0.3, 1],
+                            },
+                            marginInlineStart: {
+                              duration: 0.3,
+                              ease: [0.16, 1, 0.3, 1],
+                            },
+                            opacity: {
+                              duration: isExpanded ? 0.22 : 0.14,
+                              ease: "easeOut",
+                              delay: isExpanded ? 0.05 : 0,
+                            },
+                          }
+                    }
+                    className="overflow-hidden whitespace-nowrap flex items-center origin-left rtl:origin-right shrink-0"
+                  >
+                    <span
+                      className={cn(
+                        "leading-none whitespace-nowrap select-none transition-colors duration-150",
+                        cfg.text,
+                        isSelected
+                          ? "text-white dark:text-slate-950 font-semibold"
+                          : isHovered
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground"
+                      )}
                     >
-                      <span
-                        className={cn(
-                          "font-medium leading-none whitespace-nowrap select-none transition-colors duration-150",
-                          cfg.text,
-                          isSelected
-                            ? "text-white dark:text-slate-950 font-semibold"
-                            : isHovered
-                            ? "text-slate-950 dark:text-slate-100 font-medium"
-                            : "text-slate-600 dark:text-slate-400"
-                        )}
-                      >
-                        {item.label}
-                      </span>
-                    </motion.div>
-                  </div>
-                </motion.button>
-              </React.Fragment>
+                      {item.label}
+                    </span>
+                  </motion.div>
+                </div>
+              </motion.button>
             );
           })}
         </div>

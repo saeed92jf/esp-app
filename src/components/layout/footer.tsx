@@ -57,9 +57,7 @@ export function Footer({
       ? variant === 'panel'
       : isPanelBackgroundRoute(pathname);
 
-  const isSearchPage = pathname === '/search' || pathname.startsWith('/search/');
-  const effectiveStartOffset =
-    startOffsetClass || (isSearchPage ? 'w-[124px] md:w-[136px] lg:w-[152px] xl:w-[170px] shrink-0' : undefined);
+  const effectiveStartOffset = startOffsetClass;
 
   const [ipAddress, setIpAddress] = useState<string>('192.168.10.45');
 
@@ -98,7 +96,7 @@ export function Footer({
   return (
     <footer
       className={cn(
-        'w-full mt-auto relative text-xs select-none flex flex-col h-[var(--footer-height)] min-h-[var(--footer-height)] max-h-[var(--footer-height)] shrink-0 justify-center border-none z-20 px-3 sm:px-8 box-border overflow-hidden transition-colors',
+        'w-full mt-auto relative text-xs select-none flex flex-col h-[var(--footer-height)] min-h-[var(--footer-height)] max-h-[var(--footer-height)] shrink-0 justify-center border-none z-20 px-3 sm:px-8 box-border overflow-hidden transition-colors -mt-px',
         isTransparent
           ? 'bg-transparent'
           : isPanelBg
@@ -111,7 +109,7 @@ export function Footer({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 1. TOP ROW: Location & Status                                 */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full h-5 sm:h-5.5 shrink-0 flex items-center justify-between gap-2 overflow-hidden leading-none">
+      <div className="w-full shrink-0 flex items-center justify-between gap-2 overflow-hidden leading-tight py-0.5">
         <div className="flex items-center min-w-0">
           {effectiveStartOffset && (
             <div className={cn('hidden sm:block', effectiveStartOffset)} aria-hidden="true" />
@@ -141,7 +139,7 @@ export function Footer({
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 2. BOTTOM ROW: Copyright & Navigation Links                  */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="w-full h-6 sm:h-6.5 shrink-0 flex items-center justify-between gap-3 overflow-hidden leading-none">
+      <div className="w-full shrink-0 flex items-center justify-between gap-3 leading-tight py-0.5">
         <div className="flex items-center min-w-0">
           {effectiveStartOffset && (
             <div className={cn('hidden sm:block', effectiveStartOffset)} aria-hidden="true" />

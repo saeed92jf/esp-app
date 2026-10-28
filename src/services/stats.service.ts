@@ -1,3 +1,4 @@
+import statsMock from "@/data/mock/stats.json";
 // src/services/stats.service.ts
 import type { HttpClient } from './core/http';
 import type { LucideIcon } from 'lucide-react';
@@ -22,12 +23,7 @@ export interface IStatsService {
 
 // ─── Fake ─────────────────────────────────────────────────────────────────────
 
-const FAKE_STATS: StatItem[] = [
-  { id: 'clients',  value: 1200, suffix: '+', labelKey: 'clients',  icon: Users    },
-  { id: 'projects', value: 350,  suffix: '+', labelKey: 'projects', icon: Briefcase },
-  { id: 'awards',   value: 28,                labelKey: 'awards',   icon: Award    },
-  { id: 'support',  value: 24,   suffix: '/7',labelKey: 'support',  icon: Clock    },
-];
+const FAKE_STATS: StatItem[] = statsMock.map((s) => ({ ...s, icon: s.id === 'clients' ? Users : s.id === 'projects' ? Briefcase : s.id === 'awards' ? Award : Clock })) as StatItem[];
 
 export class FakeStatsService implements IStatsService {
   async getHomeStats(): Promise<StatItem[]> {

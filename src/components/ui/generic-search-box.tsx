@@ -278,9 +278,7 @@ export function GenericSearchBox<T>({
   const shouldShowClear = showClearButton !== undefined
     ? showClearButton
     : (compact || !hasAiMode);
-  const aiInteractiveColor = darkFlatWhite
-    ? "text-zinc-700 dark:text-zinc-800 group-hover/ai:text-black dark:group-hover/ai:text-black"
-    : "text-zinc-700 dark:text-zinc-200 group-hover/ai:text-zinc-950 dark:group-hover/ai:text-white";
+  const aiInteractiveColor = "text-muted-foreground group-hover/ai:text-primary transition-colors";
 
   return (
     <div
@@ -298,28 +296,19 @@ export function GenericSearchBox<T>({
           compact ? "rounded-[22px]" : "rounded-[28px]"
         )}
       >
-        {/* Continuous Glow Layer: refined soft shadow (prominent in hero, subtle in search page) */}
+        {/* Continuous Soft Shadow Layer: velvety, gentle elevation for hero and search page */}
         <div 
           className={cn(
-            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none",
+            "absolute inset-0 -z-10 rounded-[inherit] pointer-events-none transition-shadow duration-200",
             compact
-              ? "shadow-[0_1px_4px_rgba(0,0,0,0.05),0_2px_6px_-1px_rgba(0,0,0,0.03)]"
-              : "shadow-[0_2px_10px_-1px_rgba(0,0,0,0.08),0_8px_24px_-4px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.06)]",
-            darkFlatWhite
-              ? compact
-                ? "dark:shadow-none"
-                : "dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.5),0_2px_8px_rgba(0,0,0,0.35)]"
-              : compact
-                ? "dark:shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
-                : "dark:shadow-[0_4px_20px_-2px_color-mix(in_oklab,var(--primary)_20%,transparent),0_8px_28px_-4px_rgba(0,0,0,0.6)]"
+              ? "shadow-[0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_1px_4px_rgba(0,0,0,0.2)]"
+              : "shadow-[0_2px_10px_-2px_rgba(0,0,0,0.03),0_8px_24px_-6px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_24px_-6px_rgba(0,0,0,0.25),0_1px_4px_rgba(0,0,0,0.15)]"
           )}
         />
         {/* Content Container: border is always present in both open and closed states */}
         <div
           className={cn(
-            darkFlatWhite
-              ? "bg-background dark:bg-white text-foreground dark:text-zinc-900 outline-none ring-0 border border-zinc-300 dark:border-zinc-300"
-              : "bg-background dark:bg-[#202124] text-foreground outline-none ring-0 border border-border/90 dark:border-zinc-700",
+            "bg-white dark:bg-[#181d33] text-foreground outline-none ring-0 border border-border/80 dark:border-border/60 hover:border-border dark:hover:border-border/90 focus-within:border-primary/60 dark:focus-within:border-primary/60",
             compact ? "shadow-2xs" : "shadow-none",
             "relative w-full overflow-hidden rounded-[inherit] transition-colors duration-150"
           )}
@@ -333,7 +322,7 @@ export function GenericSearchBox<T>({
           )}
         >
           {isHistoryPreselected ? (
-            <History className={cn("shrink-0 stroke-[1.8]", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground dark:text-zinc-600" : "text-muted-foreground")} />
+            <History className={cn("shrink-0 stroke-[1.8] text-muted-foreground/80 dark:text-muted-foreground/70", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5")} />
           ) : (
             <button
               type="button"
@@ -348,7 +337,7 @@ export function GenericSearchBox<T>({
               className="cursor-pointer focus:outline-none"
               aria-label="Search"
             >
-              <Search className={cn("shrink-0 stroke-[2.2]", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5", darkFlatWhite ? "text-muted-foreground/90 dark:text-zinc-600" : "text-muted-foreground/90")} />
+              <Search className={cn("shrink-0 stroke-[2.2] text-muted-foreground/80 dark:text-muted-foreground/70 group-hover:text-primary transition-colors", compact ? "me-2.5 size-4 sm:size-4.5" : "me-3 size-5")} />
             </button>
           )}
 
@@ -387,7 +376,7 @@ export function GenericSearchBox<T>({
               compact ? "text-[13.5px] sm:text-[14px]" : "text-[14.5px] sm:text-[15px]",
               darkFlatWhite
                 ? "text-foreground dark:text-zinc-900 placeholder:text-muted-foreground/90 dark:placeholder:text-zinc-500"
-                : "text-foreground placeholder:text-muted-foreground/90"
+                : "text-foreground placeholder:text-muted-foreground/75 dark:placeholder:text-muted-foreground/50"
             )}
             aria-label="Search"
             autoComplete="off"
@@ -413,7 +402,7 @@ export function GenericSearchBox<T>({
                   : (hasAiMode ? "end-[94px] sm:end-[102px] size-7 sm:size-8" : "end-[10px] size-7 sm:size-8"),
                 darkFlatWhite
                   ? "text-zinc-400 hover:text-zinc-700 hover:bg-black/5 dark:text-zinc-500 dark:hover:text-zinc-900 dark:hover:bg-black/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:text-muted-foreground/70 dark:hover:text-foreground dark:hover:bg-white/10"
               )}
             >
               <X className={cn(compact ? "size-3.5" : "size-4", "stroke-[2]")} />
@@ -451,7 +440,7 @@ export function GenericSearchBox<T>({
                         : "inset-y-1.5 end-1.5 sm:inset-y-2 sm:end-2 px-3 sm:px-3.5 text-[12px] sm:text-[12.5px]",
                       darkFlatWhite
                         ? "bg-zinc-100 hover:bg-zinc-200/90 dark:bg-zinc-100 dark:hover:bg-zinc-200/90 text-zinc-700 dark:text-zinc-800 border border-zinc-300 dark:border-zinc-300 shadow-2xs hover:shadow-xs active:scale-98"
-                        : "bg-muted/80 hover:bg-muted text-foreground/85 hover:text-foreground border border-border/80 dark:bg-zinc-800/80 dark:hover:bg-zinc-700/80 dark:text-zinc-200 dark:hover:text-white dark:border-zinc-700/80 shadow-2xs hover:shadow-xs active:scale-98"
+                        : "bg-muted/70 hover:bg-muted text-foreground/85 hover:text-foreground border border-border/80 dark:bg-white/[0.06] dark:hover:bg-white/[0.1] dark:text-foreground/80 dark:hover:text-foreground dark:border-white/10 shadow-2xs hover:shadow-xs active:scale-98"
                     )}
                     transition={{ layout: { duration: 0.2, ease: "easeInOut" } }}
                   >
@@ -502,7 +491,7 @@ export function GenericSearchBox<T>({
         </div>
 
         {showDropdown && (
-          <div className="w-full space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[60vh] pt-1 pb-5 sm:pb-6 border-t border-border/30 dark:border-zinc-200/60">
+          <div className="w-full space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar max-h-[60vh] pt-1 pb-5 sm:pb-6 border-t border-border/60 dark:border-white/[0.08]">
             {!showResultsMode &&
               history.map((item, idx) => {
                 const isSelected = idx === selectedIndex;
@@ -524,16 +513,16 @@ export function GenericSearchBox<T>({
                       "group/item relative w-full flex cursor-pointer select-none items-center justify-between px-3 sm:px-3.5 transition-colors",
                       compact ? "h-[38px] text-[13.5px]" : "h-[44px] text-[14px]",
                       isSelected
-                        ? (darkFlatWhite ? "bg-[#e8eaed] dark:bg-[#e8eaed]" : "bg-[#e8eaed] dark:bg-[#303134]")
-                        : (darkFlatWhite ? "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80" : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#303134]/80"),
+                        ? (darkFlatWhite ? "bg-[#e8eaed] dark:bg-[#e8eaed]" : "bg-muted/80 dark:bg-white/[0.09] text-foreground")
+                        : (darkFlatWhite ? "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80" : "hover:bg-muted/50 dark:hover:bg-white/[0.05] text-foreground/90"),
                     )}
                   >
                     {isSelected && (
-                      <span className="absolute inset-y-0 start-0 w-[3.5px] bg-[#1a73e8]" />
+                      <span className="absolute inset-y-0 start-0 w-[3.5px] bg-primary" />
                     )}
                     <div className="flex min-w-0 flex-1 items-center gap-3 pe-8">
-                      <History className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[1.8] text-[#9aa0a6]")} />
-                      <span className={cn("truncate text-start font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-[#202124] dark:text-[#e8eaed]")}>
+                      <History className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[1.8] text-muted-foreground/70 dark:text-muted-foreground/60 group-hover/item:text-primary transition-colors")} />
+                      <span className={cn("truncate text-start font-normal", darkFlatWhite ? "text-[#202124] dark:text-[#202124]" : "text-foreground")}>
                         {item}
                       </span>
                     </div>
@@ -555,7 +544,7 @@ export function GenericSearchBox<T>({
                               "absolute end-3 top-1/2 flex size-6 -translate-y-1/2 items-center justify-center rounded-full transition-all",
                               darkFlatWhite
                                 ? "text-[#70757a] hover:bg-black/10 dark:text-[#70757a] dark:hover:bg-black/10"
-                                : "text-[#70757a] hover:bg-black/10 dark:text-[#9aa0a6] dark:hover:bg-white/15",
+                                : "text-muted-foreground/70 hover:text-foreground hover:bg-black/5 dark:text-muted-foreground/60 dark:hover:text-foreground dark:hover:bg-white/10",
                               isSelected
                                 ? "opacity-100"
                                 : "opacity-0 group-hover/item:opacity-100",
@@ -600,13 +589,13 @@ export function GenericSearchBox<T>({
                     "mx-auto mb-1.5 size-6",
                     darkFlatWhite
                       ? "text-[#70757a] opacity-50 dark:text-[#70757a] dark:opacity-50"
-                      : "opacity-40"
+                      : "text-muted-foreground/50"
                   )}
                 />
                 <p
                   className={cn(
                     "text-xs font-normal",
-                    darkFlatWhite && "text-[#70757a] dark:text-[#70757a]"
+                    darkFlatWhite ? "text-[#70757a] dark:text-[#70757a]" : "text-muted-foreground"
                   )}
                 >
                   {isRtl

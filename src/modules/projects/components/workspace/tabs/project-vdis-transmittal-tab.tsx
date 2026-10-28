@@ -529,7 +529,7 @@ export function ProjectVdisTransmittalTab({
                     </div>
 
                     {/* Cover Letter Body */}
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-card border border-border/40 text-xs sm:text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap">
+                    <div className="p-3 rounded-xl bg-white dark:bg-card border border-border/50 text-xs sm:text-[13px] text-foreground/90 leading-relaxed whitespace-pre-wrap shadow-2xs">
                       {selectedTransmittal.coverLetterText}
                     </div>
 

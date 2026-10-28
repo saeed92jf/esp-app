@@ -303,6 +303,26 @@
       "raciMatrix": "ماتریس RACI",
       "contactInfo": "اطلاعات تماس",
       "managerBadge": "مدیر پروژه / تصمیم‌گیرنده"
+    },
+    "widget": {
+      "title": "مدیریت پروژه‌ها",
+      "subtitle": "پروژه‌های فعال و پایش پیشرفت",
+      "manageAll": "مدیریت کامل پروژه‌ها",
+      "quickSearch": "جستجوی پروژه یا کارفرما...",
+      "newProject": "پروژه جدید",
+      "activeProjects": "پروژه در حال اجرا",
+      "avgProgress": "میانگین پیشرفت",
+      "empty": "پروژه‌ای با این مشخصات یافت نشد",
+      "enterWorkspace": "ورود به فضای کار",
+      "client": "کارفرما",
+      "progress": "پیشرفت",
+      "code": "کد پروژه",
+      "filterAll": "همه",
+      "filterActive": "در حال اجرا",
+      "filterExport": "صادراتی",
+      "filterInternal": "داخلی",
+      "filterRd": "تحقیق و توسعه",
+      "filterCompleted": "تکمیل‌شده"
     }
   }
 }

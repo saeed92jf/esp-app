@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, 
   Briefcase, Eye, EyeOff, Building2
@@ -28,10 +28,21 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
   const { user: currentUser } = useAuth();
 
   const [showSalary, setShowSalary] = useState(false);
+  const [liveAvatarColor, setLiveAvatarColor] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleAvatarColorChange = (e: any) => {
+      if (e?.detail?.avatarColor && selectedUser.id === currentUser?.id) {
+        setLiveAvatarColor(e.detail.avatarColor);
+      }
+    };
+    window.addEventListener("esp_avatar_color_changed", handleAvatarColorChange);
+    return () => window.removeEventListener("esp_avatar_color_changed", handleAvatarColorChange);
+  }, [selectedUser.id, currentUser?.id]);
 
   // Dynamic primary and avatar color syncing with profile management
   const effectiveAvatarColor = selectedUser.id === currentUser?.id
-    ? (currentUser?.avatarColor || selectedUser.avatarColor)
+    ? (liveAvatarColor || currentUser?.avatarColor || selectedUser.avatarColor)
     : selectedUser.avatarColor;
 
   const effectivePrimaryColorId = selectedUser.id === currentUser?.id
@@ -82,7 +93,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
     <div className="flex flex-col gap-3 w-full h-full select-none">
       
       {/* ── 1. Profile Header Card (Avatar, Badges & Contacts) ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3.5 sm:p-4 flex flex-col items-center justify-center text-center shadow-2xs shrink-0">
+      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 flex flex-col items-center justify-center text-center shadow-2xs shrink-0 h-[210px] min-h-[210px] max-h-[210px] overflow-hidden">
         {/* Avatar Ring */}
         <div 
           className={`p-[2.5px] rounded-full shrink-0 transition-transform duration-300 ${
@@ -113,44 +124,46 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
 
         {/* User Name */}
-        <h2 className="text-foreground font-bold text-sm sm:text-base 2xl:text-lg mt-2 truncate max-w-full leading-tight">
+        <h2 className="text-foreground font-bold text-sm sm:text-base 2xl:text-lg mt-1.5 truncate max-w-full leading-tight">
           {selectedUser.name}
         </h2>
 
         {/* Role & Company Badges */}
-        <div className="flex items-center justify-center gap-1.5 flex-wrap mt-1">
+        <div className="flex items-center justify-center gap-1.5 flex-nowrap mt-1 max-w-full overflow-hidden">
           {isAdmin ? (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-2xs">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-2xs shrink-0">
               <ShieldCheck size={11} className="stroke-[2.5]" />
               <span>{t("roleAdmin")}</span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shadow-2xs">
-              <UserCheck size={11} className="stroke-[2.5]" />
-              <span className="truncate max-w-[150px]">{selectedUser.jobTitle || t("roleUser")}</span>
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20 shadow-2xs min-w-0 shrink">
+              <UserCheck size={11} className="stroke-[2.5] shrink-0" />
+              <span className="truncate max-w-[120px]">{selectedUser.jobTitle || t("roleUser")}</span>
             </div>
           )}
 
           <div
             className={cn(
-              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-2xs",
+              "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold border shadow-2xs shrink-0",
               companyInfo.id === "npceram"
                 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
+                : companyInfo.id === "holding"
+                ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
                 : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
             )}
           >
             <Building2 size={10} className="stroke-[2]" />
-            <span>{isRtl ? companyInfo.nameFa : companyInfo.nameEn}</span>
+            <span className="truncate">{isRtl ? companyInfo.nameFa : companyInfo.nameEn}</span>
           </div>
         </div>
 
         {/* Contact Links */}
-        <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 mt-2 w-full text-[11px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-x-2.5 mt-1.5 w-full text-[11px] text-muted-foreground flex-nowrap overflow-hidden max-w-full">
           {selectedUser.email && (
             <a
               href={`mailto:${selectedUser.email}`}
               dir="ltr"
-              className="inline-flex items-center gap-1 hover:text-primary transition-colors truncate max-w-[170px] font-medium"
+              className="inline-flex items-center gap-1 hover:text-primary transition-colors truncate max-w-[150px] font-medium"
               title={selectedUser.email}
             >
               <Mail size={11} className="shrink-0 opacity-70" />
@@ -160,7 +173,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
           {selectedUser.phone && (
             <span
               dir="ltr"
-              className="inline-flex items-center gap-1 font-medium fa-num"
+              className="inline-flex items-center gap-1 font-medium fa-num shrink-0"
               title={selectedUser.phone}
             >
               <Phone size={11} className="shrink-0 opacity-70" />
@@ -174,7 +187,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
       <div className="flex flex-col gap-3 flex-1 min-h-0">
         
         {/* ── 2. Education Card (مستقیماً زیر باکس آواتار) ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-2xl py-2 px-3 sm:px-3.5 flex items-center justify-center text-center shadow-2xs shrink-0 flex-none overflow-hidden">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-2xl py-2 px-3 sm:px-3.5 flex items-center justify-center text-center shadow-2xs shrink-0 h-[44px] min-h-[44px] max-h-[44px] overflow-hidden">
           <div 
             className="flex items-center justify-center gap-2 px-1 max-w-full"
             title={isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
@@ -187,7 +200,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
 
         {/* ── 3. Performance & Career Stats Card ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs flex-[1.6] min-h-[135px] overflow-hidden">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs flex-[1.6] min-h-[145px] max-h-[185px] overflow-hidden">
           <div className="grid grid-cols-2 gap-2 sm:gap-2.5 w-full h-full min-h-0">
             {/* Days in Company */}
             <div className="bg-background/70 dark:bg-slate-900/40 rounded-xl sm:rounded-2xl p-2 sm:p-2.5 flex flex-col justify-center items-center text-center shadow-2xs min-w-0 overflow-hidden flex-1 h-full transition-all">
@@ -251,7 +264,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
 
         {/* ── 4. Personal Demographics Card ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex items-center justify-center shadow-2xs flex-1 min-h-[58px] overflow-hidden">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex items-center justify-center shadow-2xs flex-1 min-h-[75px] max-h-[95px] overflow-hidden">
           <div className="grid grid-cols-3 gap-1 divide-x divide-x-reverse divide-border/30 text-center bg-background/60 dark:bg-slate-900/40 rounded-xl sm:rounded-2xl p-2 sm:p-2.5 lg:p-3 border border-border/30 w-full h-full items-center">
             {/* Age */}
             <div className="flex flex-col items-center justify-center px-1 min-w-0">
@@ -280,7 +293,7 @@ export function AdminProfileStats({ selectedUser }: AdminProfileStatsProps) {
         </div>
 
         {/* ── 5. Insurance & Healthcare Card ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-between shadow-2xs flex-[1.2] min-h-[85px] overflow-hidden">
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-between shadow-2xs flex-[1.2] min-h-[110px] max-h-[135px] overflow-hidden">
           <div className="flex items-center justify-between gap-2 mb-1.5 sm:mb-2 shrink-0">
             <div className="flex flex-col min-w-0">
               <span className="text-xs sm:text-sm lg:text-base font-bold text-foreground truncate">

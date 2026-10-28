@@ -13,7 +13,7 @@ export default function Page({ params: { locale } }: Props) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-panel dark:bg-background">
+        <div className="flex-1 min-h-full flex items-center justify-center bg-panel dark:bg-background">
           <RefreshCw className="w-8 h-8 animate-spin text-primary" />
         </div>
       }

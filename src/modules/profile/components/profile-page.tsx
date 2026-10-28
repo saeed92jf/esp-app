@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
@@ -111,9 +111,10 @@ import {
   Activity, Mail, Pencil, Menu, HelpCircle, Grip, Settings,
   Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, ArrowRight, Map, Upload, Trash, Plus,
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
-  Heart, Users, PhoneCall, CreditCard, Check,
+  Heart, Users, PhoneCall, CreditCard, Check, X,
   Building2, Factory, Laptop, Network, AlertCircle, Info
 } from "lucide-react";
+import { searchProfileItems, type ProfileSearchResult } from "../utils/profile-search";
 import { validateSheba, normalizeSheba, formatSheba, getShebaDigits } from "@/utils/shebaValidator";
 import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh, Palette as PalettePh } from "@phosphor-icons/react";
 import { LocaleSwitcher } from "@/components/ui/locale-switcher";
@@ -298,15 +299,26 @@ export function ProfilePage() {
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
+  const [editingField, setEditingField] = useState<string | null>(initialField);
   const [draftColor, setDraftColor] = useState<PrimaryColorId>(colorId);
+  const initialColorRef = useRef<PrimaryColorId>(colorId);
 
   useEffect(() => {
+    if (editingField === 'primaryColor') {
+      const initial = (user?.primaryColor as PrimaryColorId) || (formData?.personal?.primaryColor as PrimaryColorId) || colorId;
+      if (initial && PRIMARY_COLORS.some(c => c.id === initial)) {
+        initialColorRef.current = initial;
+        setDraftColor(initial);
+      }
+      return;
+    }
+
     if (user?.primaryColor && PRIMARY_COLORS.some(c => c.id === user.primaryColor)) {
       setDraftColor(user.primaryColor as PrimaryColorId);
-    } else {
+    } else if (colorId && PRIMARY_COLORS.some(c => c.id === colorId)) {
       setDraftColor(colorId);
     }
-  }, [user?.primaryColor, colorId]);
+  }, [user?.primaryColor, editingField]);
 
   const tColors = useTranslations("Settings.colors");
   const tSettings = useTranslations("Settings");
@@ -316,7 +328,6 @@ export function ProfilePage() {
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [editingField, setEditingField] = useState<string | null>(initialField);
   const isAccountActive = Boolean(
     user && (user.accountStatus === 'active' || (user.hrApproved && user.managerApproved))
   );
@@ -422,6 +433,84 @@ export function ProfilePage() {
   };
   const [isAvatarAccordionOpen, setIsAvatarAccordionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [searchSelectedIndex, setSearchSelectedIndex] = useState(-1);
+  const searchContainerRef = React.useRef<HTMLDivElement>(null);
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  const searchResults = React.useMemo(() => {
+    return searchProfileItems(searchQuery, locale, formData, user);
+  }, [searchQuery, locale, formData, user]);
+
+  useEffect(() => {
+    setSearchSelectedIndex(searchResults.length > 0 ? 0 : -1);
+  }, [searchQuery, searchResults.length]);
+
+  // Click outside listener to close search dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchFocused(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Global Ctrl+K / Cmd+K shortcut to focus profile search
+  useEffect(() => {
+    function handleGlobalKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setActiveTab("home");
+        setIsSearchFocused(true);
+        setTimeout(() => {
+          searchInputRef.current?.focus();
+        }, 80);
+      }
+    }
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, []);
+
+  const handleSelectSearchResult = (item: ProfileSearchResult) => {
+    setActiveTab(item.tab);
+    if (item.fieldId) {
+      setEditingField(item.fieldId);
+    } else {
+      setEditingField(null);
+    }
+    setSearchQuery("");
+    setIsSearchFocused(false);
+    setSearchSelectedIndex(-1);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        setSearchSelectedIndex((prev) => (prev + 1) % searchResults.length);
+      }
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        setSearchSelectedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+      }
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchResults.length > 0) {
+        const itemToSelect = searchSelectedIndex >= 0 ? searchResults[searchSelectedIndex] : searchResults[0];
+        handleSelectSearchResult(itemToSelect);
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setIsSearchFocused(false);
+      setSearchSelectedIndex(-1);
+    }
+  };
 
   useEffect(() => {
     if (profile) {
@@ -431,7 +520,7 @@ export function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex flex-1 min-h-[calc(100dvh-var(--footer-height))] items-center justify-center bg-panel dark:bg-background">
         <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
@@ -439,7 +528,7 @@ export function ProfilePage() {
 
   if (isError || !formData) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex flex-1 min-h-[calc(100dvh-var(--footer-height))] items-center justify-center bg-panel dark:bg-background">
         <div className="text-center text-destructive p-8 text-xl font-medium">
           {t("errorLoading")}
         </div>
@@ -569,16 +658,7 @@ export function ProfilePage() {
         try {
           localStorage.setItem("esp_auth_user", JSON.stringify(updated));
           localStorage.setItem("esp-auth-user", JSON.stringify(updated));
-
-          const stored = localStorage.getItem("esp_demo_users_override");
-          if (stored) {
-            const users = JSON.parse(stored);
-            const u = users.find((item: any) => item.user.id === user.id);
-            if (u) {
-              u.user = { ...u.user, ...updated };
-              localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
-            }
-          }
+          localStorage.removeItem("esp_demo_users_override");
         } catch {}
       }
     }
@@ -588,24 +668,46 @@ export function ProfilePage() {
     const hex = colorToSave?.trim() || "#0284c7";
     setLiveAvatarColor(hex);
 
-    const updatedProfile: UserProfile = formData ? {
-      ...formData,
-      personal: {
-        ...formData.personal,
-        avatarColor: hex,
-      },
-    } : {
-      personal: { avatarColor: hex } as any,
-      organizational: {} as any,
-      skills: [],
-      insurance: {} as any,
-      education: {} as any,
-    };
+    // 1. Immediately update formData local state and profile service
+    if (formData) {
+      const updatedProfile: UserProfile = {
+        ...formData,
+        personal: {
+          ...formData.personal,
+          avatarColor: hex,
+        },
+      };
+      setFormData(updatedProfile);
+      updateProfile(updatedProfile);
+    }
 
-    handleSave({
-      overrideFormData: updatedProfile,
-      overrideAvatarColor: hex,
-    });
+    // 2. Directly call updateAvatarColor and updateUser to update auth state and all local storages
+    updateAvatarColor(hex);
+    updateUser({ avatarColor: hex });
+
+    // 3. Directly update localStorage keys to ensure immediate persistence across reloads
+    if (typeof window !== "undefined") {
+      try {
+        const storedProfile = localStorage.getItem("esp_user_profile");
+        if (storedProfile) {
+          const parsed = JSON.parse(storedProfile);
+          if (parsed.personal) {
+            parsed.personal.avatarColor = hex;
+            localStorage.setItem("esp_user_profile", JSON.stringify(parsed));
+          }
+        }
+
+        const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+        if (rawAuth) {
+          const authUser = JSON.parse(rawAuth);
+          authUser.avatarColor = hex;
+          localStorage.setItem("esp_auth_user", JSON.stringify(authUser));
+          localStorage.setItem("esp-auth-user", JSON.stringify(authUser));
+        }
+
+        window.dispatchEvent(new CustomEvent("esp_avatar_color_changed", { detail: { avatarColor: hex } }));
+      } catch {}
+    }
 
     toast.success(t("picture.savedToast"));
     setEditingField(null);
@@ -642,7 +744,7 @@ export function ProfilePage() {
           <Avatar className="size-24 sm:size-32">
             <AvatarFallback 
               className="text-6xl sm:text-7xl font-bold text-white shadow-inner" 
-              style={{ backgroundColor: formData?.personal?.avatarColor || user?.avatarColor || "#2563eb" }}
+              style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }}
             >
               {initial}
             </AvatarFallback>
@@ -665,21 +767,158 @@ export function ProfilePage() {
       <h1 className="text-2xl sm:text-3xl font-semibold text-foreground mb-1 text-center">{nameToUse}</h1>
       <p className="text-muted-foreground text-sm sm:text-base mb-10 text-center">{emailToUse}</p>
 
-      {/* Search Input and Keywords */}
-      <div className="w-full max-w-xl mb-6">
+      {/* Search Input and Live Results Dropdown */}
+      <div ref={searchContainerRef} className="w-full max-w-xl mb-6 relative z-30">
         <div className="relative group w-full mb-3">
-          <div className="absolute inset-y-0 start-0 rtl:left-auto rtl:right-0 flex items-center ps-4 rtl:pr-4 rtl:pl-0 pointer-events-none">
-            <Search className="size-5 text-muted-foreground" />
+          <div className="absolute inset-y-0 start-0 flex items-center ps-4 pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
+            <Search className="size-5" />
           </div>
           <Input 
+            ref={searchInputRef}
             type="text" 
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("search")} 
-            className="w-full ps-12 rtl:pr-12 rtl:pl-4 text-start rtl:text-right h-14 rounded-full bg-white dark:bg-card border border-border/80 shadow-sm text-base focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-0 transition-all hover:shadow-md"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSearchFocused(true);
+            }}
+            onFocus={() => setIsSearchFocused(true)}
+            onKeyDown={handleSearchKeyDown}
+            placeholder={t("searchPlaceholder")} 
+            className="w-full ps-12 pe-12 text-start rtl:text-right h-14 rounded-full bg-white dark:bg-card border border-border/80 shadow-sm text-base focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-0 transition-all hover:shadow-md"
             dir="auto"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                searchInputRef.current?.focus();
+              }}
+              className="absolute inset-y-0 end-0 flex items-center pe-4 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              aria-label={t("searchResults.clear")}
+            >
+              <div className="size-6 rounded-full bg-muted/60 hover:bg-muted flex items-center justify-center transition-colors">
+                <X className="size-3.5" />
+              </div>
+            </button>
+          )}
         </div>
+
+        {/* Live Search Dropdown Panel */}
+        <AnimatePresence>
+          {isSearchFocused && searchQuery.trim().length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -6, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: "easeOut" }}
+              className="absolute top-full start-0 end-0 mt-1.5 bg-white/95 dark:bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-xl overflow-hidden z-50 divide-y divide-border/40"
+            >
+              {/* Header Bar */}
+              <div className="px-4 py-2.5 bg-muted/30 flex items-center justify-between text-xs text-muted-foreground select-none">
+                <span className="font-medium text-foreground/85">
+                  {searchResults.length > 0
+                    ? t("searchResults.resultsCount", { count: searchResults.length })
+                    : t("searchResults.allResults")}
+                </span>
+                <span className="text-[11px] font-sans opacity-70 hidden sm:inline">
+                  ESC {locale === "fa" ? "بستن" : "Close"}
+                </span>
+              </div>
+
+              {/* Results List */}
+              {searchResults.length > 0 ? (
+                <div className="max-h-[340px] overflow-y-auto p-1.5 space-y-1 custom-scrollbar">
+                  {searchResults.map((item, idx) => {
+                    const Icon = item.icon;
+                    const isSelected = idx === searchSelectedIndex;
+                    const title = isFa ? item.titleFa : item.titleEn;
+                    const category = isFa ? item.categoryFa : item.categoryEn;
+                    const description = isFa ? item.descriptionFa : item.descriptionEn;
+
+                    return (
+                      <div
+                        key={item.id}
+                        onClick={() => handleSelectSearchResult(item)}
+                        onMouseEnter={() => setSearchSelectedIndex(idx)}
+                        className={cn(
+                          "group flex items-center justify-between gap-3 p-3 rounded-xl cursor-pointer select-none transition-colors duration-150 text-start",
+                          isSelected
+                            ? "bg-primary/10 border border-primary/25 text-foreground"
+                            : "hover:bg-muted/60 border border-transparent text-foreground/90"
+                        )}
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className={cn(
+                            "size-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                            isSelected
+                              ? "bg-primary text-white shadow-xs"
+                              : "bg-muted text-muted-foreground group-hover:text-primary group-hover:bg-primary/10"
+                          )}>
+                            <Icon className="size-4.5" />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-semibold truncate group-hover:text-primary transition-colors">
+                                {title}
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] font-medium border-border/60 text-muted-foreground px-1.5 py-0 shrink-0"
+                              >
+                                {category}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground truncate mt-0.5">
+                              {description}
+                            </p>
+                            {item.currentValue && (
+                              <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[10px] text-muted-foreground/75 font-medium">
+                                  {isFa ? "مقدار فعلی:" : "Current:"}
+                                </span>
+                                <span className="text-[11px] font-mono text-foreground/80 bg-muted/60 px-1.5 py-0.5 rounded border border-border/40 truncate max-w-[280px]">
+                                  {item.currentValue}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 flex items-center gap-1">
+                          <span className={cn(
+                            "text-xs font-medium hidden sm:inline transition-opacity",
+                            isSelected ? "text-primary opacity-100" : "opacity-0 group-hover:opacity-100 text-muted-foreground"
+                          )}>
+                            {t("searchResults.jumpTo")}
+                          </span>
+                          <ChevronRight className={cn(
+                            "size-4 text-muted-foreground rtl:rotate-180 group-hover:text-primary transition-colors",
+                            isSelected && "text-primary"
+                          )} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                /* Empty state when no matches found */
+                <div className="py-8 px-4 text-center flex flex-col items-center justify-center gap-2 select-none">
+                  <div className="size-11 rounded-full bg-muted/80 text-muted-foreground flex items-center justify-center mb-1">
+                    <Search className="size-5" />
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground">
+                    {t("searchResults.noResults", { query: searchQuery })}
+                  </h4>
+                  <p className="text-xs text-muted-foreground max-w-sm leading-relaxed mt-0.5">
+                    {t("searchResults.noResultsHint")}
+                  </p>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Quick Pills */}
@@ -3337,14 +3576,6 @@ export function ProfilePage() {
                       }}
                     />
                   </div>
-
-                  <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
-                    <Button variant="ghost" onClick={() => setEditingField(null)} className="rounded-full px-6 font-medium text-primary hover:bg-primary/5">{t("actions.cancel")}</Button>
-                    <Button onClick={() => handleSaveAvatarColor(liveAvatarColor)} disabled={isUpdating} className="rounded-full px-8 font-medium">
-                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {t("actions.save")}
-                    </Button>
-                  </div>
                 </div>
               )}
 
@@ -3463,7 +3694,7 @@ export function ProfilePage() {
                         <Button 
                           variant="ghost" 
                           onClick={() => {
-                            const originalColor = (user?.primaryColor as PrimaryColorId) || (formData?.personal?.primaryColor as PrimaryColorId) || colorId;
+                            const originalColor = initialColorRef.current;
                             setDraftColor(originalColor);
                             setColor(originalColor);
                             setEditingField(null);
@@ -3476,6 +3707,7 @@ export function ProfilePage() {
                           onClick={async () => {
                             setColor(draftColor);
                             await updatePrimaryColor(draftColor);
+                            initialColorRef.current = draftColor;
                             
                             const updatedProfile: UserProfile = formData ? {
                               ...formData,
@@ -3534,7 +3766,7 @@ export function ProfilePage() {
              <div className="flex items-center justify-end w-2/3 gap-4">
                <Avatar className="size-11 sm:size-12 shadow-none">
                  <AvatarFallback 
-                   style={{ backgroundColor: formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }} 
+                   style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }} 
                    className="text-lg font-bold text-white transition-colors"
                  >
                    {initial}
@@ -3573,14 +3805,36 @@ export function ProfilePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
+    <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* Top Header */}
       <AppHeader
         tag="Account"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
-      />
+      >
+        {activeTab !== "home" && (
+          <div className="hidden sm:flex items-center justify-center flex-1 max-w-xs md:max-w-sm ms-2 sm:ms-4">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("home");
+                setIsSearchFocused(true);
+                setTimeout(() => searchInputRef.current?.focus(), 80);
+              }}
+              className="w-full h-8.5 rounded-full bg-background/80 hover:bg-muted/70 border border-border/60 hover:border-primary/40 px-3 flex items-center justify-between text-xs text-muted-foreground hover:text-foreground shadow-xs transition-colors duration-150 cursor-pointer"
+            >
+              <div className="flex items-center gap-2 truncate">
+                <Search className="size-3.5 text-muted-foreground shrink-0" />
+                <span className="truncate">{t("search")}...</span>
+              </div>
+              <kbd className="inline-flex items-center gap-0.5 text-[10px] font-sans font-semibold bg-muted/70 px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground shrink-0" dir="ltr">
+                Ctrl+k
+              </kbd>
+            </button>
+          </div>
+        )}
+      </AppHeader>
       
       <div className="flex flex-1 w-full relative">
         {/* Mobile Backdrop Overlay */}
@@ -3671,7 +3925,7 @@ export function ProfilePage() {
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
+        <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
@@ -3680,7 +3934,7 @@ export function ProfilePage() {
             activeTab === "education" ? renderEducationView() :
             activeTab === "settings" ? renderSettingsView() :
             null}
-        </main>
+        </div>
 
         {/* Floating Bottom Navigation Bar while account is pending activation */}
         {showPendingBottomPopup && (

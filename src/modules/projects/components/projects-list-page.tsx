@@ -191,7 +191,7 @@ export function ProjectsListPage({
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer fa-num",
             scopeFilter === "all"
               ? "bg-primary text-white shadow-xs"
-              : "bg-card border border-border/60 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+              : "bg-white dark:bg-card border border-border/60 hover:bg-slate-50 dark:hover:bg-muted/60 text-muted-foreground hover:text-foreground shadow-2xs"
           )}
         >
           <FolderKanban className="size-3.5" />
@@ -206,7 +206,7 @@ export function ProjectsListPage({
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer fa-num",
             scopeFilter === "active"
               ? "bg-blue-600 text-white shadow-xs"
-              : "bg-card border border-border/60 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+              : "bg-white dark:bg-card border border-border/60 hover:bg-slate-50 dark:hover:bg-muted/60 text-muted-foreground hover:text-foreground shadow-2xs"
           )}
         >
           <Clock className="size-3.5 text-blue-500" />
@@ -221,7 +221,7 @@ export function ProjectsListPage({
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer fa-num",
             scopeFilter === "export"
               ? "bg-purple-600 text-white shadow-xs"
-              : "bg-card border border-border/60 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+              : "bg-white dark:bg-card border border-border/60 hover:bg-slate-50 dark:hover:bg-muted/60 text-muted-foreground hover:text-foreground shadow-2xs"
           )}
         >
           <Globe2 className="size-3.5 text-purple-500" />
@@ -236,7 +236,7 @@ export function ProjectsListPage({
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer fa-num",
             scopeFilter === "internal"
               ? "bg-amber-600 text-white shadow-xs"
-              : "bg-card border border-border/60 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+              : "bg-white dark:bg-card border border-border/60 hover:bg-slate-50 dark:hover:bg-muted/60 text-muted-foreground hover:text-foreground shadow-2xs"
           )}
         >
           <Building2 className="size-3.5 text-amber-500" />
@@ -251,7 +251,7 @@ export function ProjectsListPage({
             "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 transition-all cursor-pointer fa-num",
             scopeFilter === "rd"
               ? "bg-emerald-600 text-white shadow-xs"
-              : "bg-card border border-border/60 hover:bg-muted/60 text-muted-foreground hover:text-foreground"
+              : "bg-white dark:bg-card border border-border/60 hover:bg-slate-50 dark:hover:bg-muted/60 text-muted-foreground hover:text-foreground shadow-2xs"
           )}
         >
           <Cpu className="size-3.5 text-emerald-500" />
@@ -259,7 +259,7 @@ export function ProjectsListPage({
           <strong className="font-bold">{stats.rdCount}</strong>
         </button>
 
-        <div className="ms-auto shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold fa-num">
+        <div className="ms-auto shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-card border border-border/60 text-primary text-xs font-bold fa-num shadow-2xs">
           <TrendingUp className="size-3.5" />
           <span>{t("stats.avgProgress")}:</span>
           <span>%{stats.avgProgress}</span>
@@ -267,7 +267,7 @@ export function ProjectsListPage({
       </div>
 
       {/* ── 2. Top Controls: Search, Filter Pills & View Switcher ── */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 shadow-xs">
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 p-3 rounded-2xl bg-white dark:bg-card border border-border/60 shadow-xs">
         {/* Left Side: Search & Scope Filter */}
         <div className="flex items-center gap-2.5 flex-1 flex-wrap">
           {/* Search Box */}
@@ -277,7 +277,7 @@ export function ProjectsListPage({
               value={filters.search}
               onChange={(e) => setFilters({ search: e.target.value })}
               placeholder={t("search")}
-              className="h-10 ps-9 pe-8 text-xs rounded-xl bg-background border-border/70 shadow-none focus-visible:ring-1 focus-visible:ring-primary"
+              className="h-10 ps-9 pe-8 text-xs rounded-xl bg-white dark:bg-background border-border/70 shadow-none focus-visible:ring-1 focus-visible:ring-primary"
             />
             {filters.search && (
               <button
@@ -300,7 +300,7 @@ export function ProjectsListPage({
               size="sm"
               variant="outline"
               allowClear={false}
-              className="w-full text-xs rounded-xl"
+              className="w-full text-xs rounded-xl bg-white dark:bg-card"
             />
           </div>
 
@@ -313,7 +313,7 @@ export function ProjectsListPage({
               size="sm"
               variant="outline"
               allowClear={false}
-              className="w-full text-xs rounded-xl"
+              className="w-full text-xs rounded-xl bg-white dark:bg-card"
             />
           </div>
         </div>
@@ -321,7 +321,7 @@ export function ProjectsListPage({
         {/* Right Side: Two-Icon Mode Toggle, Refresh, New Project */}
         <div className="flex items-center gap-2 shrink-0 self-end lg:self-auto flex-wrap">
           {/* Segmented List vs Cards Toggle with Animated Sliding Pill */}
-          <div className="flex items-center p-1 rounded-xl bg-muted/40 border border-border/50 relative">
+          <div className="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-muted/40 border border-border/50 relative">
             <button
               type="button"
               onClick={() => setViewMode("list")}
@@ -397,7 +397,7 @@ export function ProjectsListPage({
 
       {/* ── 3. Display Content (Segmented List View or Cards Grid) ── */}
       {displayedProjects.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-border/70 bg-card/40 p-12 text-center space-y-3">
+        <div className="rounded-3xl border border-dashed border-border/70 bg-white dark:bg-card p-12 text-center space-y-3 shadow-xs">
           <FolderKanban className="size-12 text-muted-foreground mx-auto opacity-40" />
           <h3 className="font-semibold text-base text-foreground">
             {isRtl ? "هیچ پروژه‌ای با این مشخصات یافت نشد" : "No projects found"}
@@ -555,7 +555,7 @@ export function ProjectsListPage({
               <div
                 key={project.id}
                 onClick={() => onSelectProject(project.id)}
-                className="group relative flex flex-col justify-between gap-4 p-5 rounded-3xl bg-card/70 hover:bg-card border border-border/60 hover:border-primary/50 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer select-none"
+                className="group relative flex flex-col justify-between gap-4 p-5 rounded-3xl bg-white dark:bg-card hover:bg-white dark:hover:bg-card border border-border/60 hover:border-primary/50 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer select-none"
               >
                 <div className="space-y-3.5">
                   {/* Top Badges */}
@@ -648,7 +648,7 @@ export function ProjectsListPage({
   /* ──────────────────────────────────────────────────────────── */
   const renderAnalyticsView = () => (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-md p-6 space-y-6 shadow-xs">
+      <div className="rounded-3xl border border-border/60 bg-white dark:bg-card p-6 space-y-6 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h2 className="text-lg font-bold text-foreground">
@@ -667,27 +667,27 @@ export function ProjectsListPage({
 
         {/* 6-stat grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 fa-num">
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.total")}</span>
             <span className="text-2xl font-bold text-foreground">{stats.total}</span>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.active")}</span>
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.active}</span>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.export")}</span>
             <span className="text-2xl font-bold text-purple-600 dark:text-purple-400">{stats.exportCount}</span>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.internal")}</span>
             <span className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.internalCount}</span>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.rd")}</span>
             <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{stats.rdCount}</span>
           </div>
-          <div className="rounded-2xl border border-border/50 bg-background/60 p-4 space-y-1">
+          <div className="rounded-2xl border border-border/50 bg-slate-50/80 dark:bg-muted/30 p-4 space-y-1">
             <span className="text-xs text-muted-foreground block">{t("stats.avgProgress")}</span>
             <span className="text-2xl font-bold text-primary">%{stats.avgProgress}</span>
           </div>
@@ -695,7 +695,7 @@ export function ProjectsListPage({
       </div>
 
       {/* Progress Breakdown list */}
-      <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-md p-6 space-y-4 shadow-xs">
+      <div className="rounded-3xl border border-border/60 bg-white dark:bg-card p-6 space-y-4 shadow-xs">
         <h3 className="font-bold text-base text-foreground">
           {isRtl ? "رتبه‌بندی پیشرفت پروژه‌ها" : "Project Progress Rankings"}
         </h3>
@@ -739,7 +739,7 @@ export function ProjectsListPage({
   /* ──────────────────────────────────────────────────────────── */
   const renderCompaniesView = () => (
     <div className="space-y-6">
-      <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-md p-6 space-y-3 shadow-xs">
+      <div className="rounded-3xl border border-border/60 bg-white dark:bg-card p-6 space-y-3 shadow-xs">
         <h2 className="text-lg font-bold text-foreground">
           {isRtl ? "پورتفولیو و تفکیک سازمانی پروژه‌ها" : "Subsidiary & Corporate Portfolio"}
         </h2>
@@ -763,7 +763,7 @@ export function ProjectsListPage({
           return (
             <div
               key={org}
-              className="rounded-3xl border border-border/60 bg-card/60 p-5 space-y-4 shadow-xs"
+              className="rounded-3xl border border-border/60 bg-white dark:bg-card p-5 space-y-4 shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -819,7 +819,7 @@ export function ProjectsListPage({
   /* ──────────────────────────────────────────────────────────── */
   const renderSettingsView = () => (
     <div className="max-w-2xl mx-auto space-y-6 py-4">
-      <div className="rounded-3xl border border-border/60 bg-card/60 backdrop-blur-md p-6 space-y-6 shadow-xs">
+      <div className="rounded-3xl border border-border/60 bg-white dark:bg-card p-6 space-y-6 shadow-xs">
         <div className="flex items-center gap-3">
           <div className="size-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
             <ShieldCheck className="size-6" />
@@ -849,7 +849,7 @@ export function ProjectsListPage({
                 "p-4 rounded-2xl border text-start transition-all cursor-pointer",
                 roleMode === "admin"
                   ? "border-primary bg-primary/10 text-primary shadow-xs font-bold"
-                  : "border-border/60 bg-background/50 hover:bg-muted/50 text-foreground"
+                  : "border-border/60 bg-slate-50/80 dark:bg-muted/30 hover:bg-muted/50 text-foreground"
               )}
             >
               <div className="flex items-center justify-between mb-1">
@@ -868,7 +868,7 @@ export function ProjectsListPage({
                 "p-4 rounded-2xl border text-start transition-all cursor-pointer",
                 roleMode === "user"
                   ? "border-emerald-600 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-xs font-bold"
-                  : "border-border/60 bg-background/50 hover:bg-muted/50 text-foreground"
+                  : "border-border/60 bg-slate-50/80 dark:bg-muted/30 hover:bg-muted/50 text-foreground"
               )}
             >
               <div className="flex items-center justify-between mb-1">

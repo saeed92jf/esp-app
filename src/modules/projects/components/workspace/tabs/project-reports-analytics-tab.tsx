@@ -66,7 +66,7 @@ export function ProjectReportsAnalyticsTab({
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="p-4 rounded-xl border border-border/60 bg-card/50 backdrop-blur-sm space-y-1">
+      <div className="p-4 rounded-2xl border border-border/60 bg-white dark:bg-card shadow-xs space-y-1">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-lg text-foreground">
@@ -81,7 +81,7 @@ export function ProjectReportsAnalyticsTab({
       {/* KPI Cards: SPI, CPI, VDIS Approval, Schedule Status */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* SPI Index */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm space-y-2">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-blue-500" />
@@ -107,7 +107,7 @@ export function ProjectReportsAnalyticsTab({
         </div>
 
         {/* CPI Index */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm space-y-2">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
@@ -129,7 +129,7 @@ export function ProjectReportsAnalyticsTab({
         </div>
 
         {/* VDIS Approval Rate */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm space-y-2">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <FileCheck2 className="w-3.5 h-3.5 text-purple-500" />
@@ -146,7 +146,7 @@ export function ProjectReportsAnalyticsTab({
         </div>
 
         {/* Schedule Delivery Progress */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-4 backdrop-blur-sm space-y-2">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-4 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-amber-500" />
@@ -164,7 +164,7 @@ export function ProjectReportsAnalyticsTab({
       </div>
 
       {/* S-Curve Chart Visual Container */}
-      <div className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm space-y-4">
+      <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="space-y-1">
             <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
@@ -188,7 +188,7 @@ export function ProjectReportsAnalyticsTab({
         </div>
 
         {/* SVG Graphic S-Curve */}
-        <div className="w-full h-64 bg-background/50 rounded-lg border border-border/40 p-4 relative flex flex-col justify-between">
+        <div className="w-full h-64 bg-slate-50/80 dark:bg-muted/20 rounded-xl border border-border/40 p-4 relative flex flex-col justify-between">
           {/* Grid lines */}
           <div className="absolute inset-x-8 inset-y-6 flex flex-col justify-between pointer-events-none opacity-20">
             <div className="border-b border-border w-full" />
@@ -234,7 +234,7 @@ export function ProjectReportsAnalyticsTab({
       {/* VDIS Status Breakdown & Phase Progress */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* VDIS Documents Distribution */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm space-y-4">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
           <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
             <FileCheck2 className="w-4 h-4 text-purple-500" />
             وضعیت اسناد و ترنسمیتال‌های VDIS
@@ -280,7 +280,7 @@ export function ProjectReportsAnalyticsTab({
         </div>
 
         {/* Phase-by-Phase Progress Summary */}
-        <div className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm space-y-4">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
           <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
             پیشرفت تفکیکی فازهای پروژه

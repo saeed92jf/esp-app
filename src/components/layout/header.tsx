@@ -51,13 +51,18 @@ export function Header() {
     );
   }
 
-  const rightActions = (
+  const rightActions = loading ? (
+    <div className="flex items-center gap-1.5 sm:gap-2.5">
+      <Skeleton className="size-8 sm:size-9 rounded-full" />
+      <Skeleton className="size-8 sm:size-9 rounded-full" />
+      <Skeleton className="size-8 sm:size-9 rounded-full" />
+      <Skeleton className="h-8 sm:h-9 w-24 sm:w-28 rounded-full hidden sm:block" />
+    </div>
+  ) : (
     <div className="flex items-center gap-1.5 sm:gap-2.5">
       <ThemeToggle />
       <LocaleSwitcher />
-      {loading ? (
-        <Skeleton className="h-9 w-9 rounded-full" />
-      ) : user ? (
+      {user ? (
         <>
           <HelpPopover 
             triggerClassName={HEADER_ICON_BUTTON_CLASS}

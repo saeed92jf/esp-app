@@ -87,7 +87,7 @@ export function ProjectStrategicOkrsTab({
   return (
     <div className="space-y-6">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/60 bg-card/50 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border/60 bg-white dark:bg-card shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-primary" />
@@ -114,7 +114,7 @@ export function ProjectStrategicOkrsTab({
         {goals.map((goal) => (
           <div
             key={goal.id}
-            className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm hover:border-primary/40 transition-colors space-y-3"
+            className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs hover:border-primary/40 transition-colors space-y-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">

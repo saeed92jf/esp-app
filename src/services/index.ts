@@ -82,7 +82,7 @@ export type ApiMode = "fake" | "real";
 const GLOBAL_API_MODE: ApiMode =
   (process.env.NEXT_PUBLIC_API_MODE as ApiMode) ?? "fake";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/real";
 
 const http = new HttpClient(API_BASE_URL);
 
@@ -101,14 +101,14 @@ const http = new HttpClient(API_BASE_URL);
 
 const SERVICE_MODES = {
   // ──────────────────────────────────── Backend سرویس‌های
-  auth:          'fake',     // 🟢 FAKE  — موقتا برای تست لاگین (سعید جلیلی)
+  auth:          'real',     // 🟢 REAL  — متصل به بک‌اند واقعی (http://192.168.0.171:8080)
   dashboard:     'inherit',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
   navigation:    'inherit',  // 🔴 Fake  — منوی ناوبری هنوز static است
   search:        'inherit',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
   stats:         'inherit',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
-  user:          'inherit',  // 🔴 Fake  — پروفایل کاربری هنوز backend ندارد
-  preferences:   'inherit',  // 🔴 Fake  — تنظیمات در localStorage ذخیره می‌شوند
-  admin:         'inherit',  // 🔴 Fake  — مدیریت کاربران و درخواست‌ها
+  user:          'real',     // 🟢 REAL  — پروفایل کاربری به backend واقعی متصل است
+  preferences:   'real',     // 🟢 REAL  — تنظیمات کاربر در backend واقعی ذخیره می‌شوند
+  admin:         'real',     // 🟢 REAL  — مدیریت کاربران و درخواست‌ها به backend واقعی متصل است
 
   // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
   commodities:   'real',     // 🟢 REAL   — کریپتو از Finnhub، کالا/فارکس از Yahoo Finance

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "ph-1",
+    "name": "مهندسی و طراحی تفصیلی (Engineering)",
+    "description": "محاسبات هیدرولیک، طراحی مکانیک، نقشه‌های P&ID و تایید دیتاشیت‌ها",
+    "order": 1,
+    "progressPercent": 90,
+    "startDate": "1403/05/01",
+    "endDate": "1403/06/30",
+    "status": "completed",
+    "leadName": "سعید جلیلی"
+  },
+  {
+    "id": "ph-2",
+    "name": "خرید و تدارکات متریال (Procurement)",
+    "description": "سفارش‌گذاری ورق‌های HIC، فلنج‌ها، پیچ و مهره و الکترودهای خاص",
+    "order": 2,
+    "progressPercent": 75,
+    "startDate": "1403/06/15",
+    "endDate": "1403/08/10",
+    "status": "in_progress",
+    "leadName": "مهندس ناصری"
+  },
+  {
+    "id": "ph-3",
+    "name": "ساخت و مونتاژ تجهیز (Fabrication)",
+    "description": "رولینگ ورق‌ها، جوشکاری طولی و محیطی، مونتاژ عدسی‌ها و نازل‌ها",
+    "order": 3,
+    "progressPercent": 45,
+    "startDate": "1403/07/20",
+    "endDate": "1403/09/30",
+    "status": "in_progress",
+    "leadName": "مهندس خسروی"
+  },
+  {
+    "id": "ph-4",
+    "name": "کنترل کیفیت و آزمون‌های NDT (QC & Testing)",
+    "description": "رادیوگرافی جوش، تست آلتراسونیک، آزمون هیدرواستاتیک و PMI",
+    "order": 4,
+    "progressPercent": 20,
+    "startDate": "1403/09/15",
+    "endDate": "1403/10/20",
+    "status": "pending",
+    "leadName": "سارا محمدی"
+  },
+  {
+    "id": "ph-5",
+    "name": "رنگ‌آمیزی و حفاظت سطح (Coating)",
+    "description": "سندبلاست SA 2.5 و اعمال سیستم رنگ اپوکسی سه لایه",
+    "order": 5,
+    "progressPercent": 0,
+    "startDate": "1403/10/20",
+    "endDate": "1403/11/05",
+    "status": "pending",
+    "leadName": "مهندس امیری"
+  },
+  {
+    "id": "ph-6",
+    "name": "بسته‌بندی، ترخیص و حمل (Logistics)",
+    "description": "بسته‌بندی سدل‌ها، مهاربندی تریلر بوژی و حمل فوق‌سنگین به سایت",
+    "order": 6,
+    "progressPercent": 0,
+    "startDate": "1403/11/05",
+    "endDate": "1403/11/20",
+    "status": "pending",
+    "leadName": "محسن مرادی"
+  },
+  {
+    "id": "ph-7",
+    "name": "نصب و راه‌اندازی (Commissioning)",
+    "description": "ترازسازی در سایت، آزمون نشتی اتصالات و تحویل موقت به کارفرما",
+    "order": 7,
+    "progressPercent": 0,
+    "startDate": "1403/11/25",
+    "endDate": "1403/12/15",
+    "status": "pending",
+    "leadName": "مهندس علیرضا رضایی"
+  }
+]

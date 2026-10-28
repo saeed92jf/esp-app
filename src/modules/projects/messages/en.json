@@ -303,6 +303,26 @@
       "raciMatrix": "RACI Matrix",
       "contactInfo": "Contact Info",
       "managerBadge": "Project Manager / Decision Maker"
+    },
+    "widget": {
+      "title": "Projects Management",
+      "subtitle": "Active projects & progress tracking",
+      "manageAll": "Manage All Projects",
+      "quickSearch": "Search project or client...",
+      "newProject": "New Project",
+      "activeProjects": "Active projects",
+      "avgProgress": "Avg Progress",
+      "empty": "No projects found matching criteria",
+      "enterWorkspace": "Open Workspace",
+      "client": "Client",
+      "progress": "Progress",
+      "code": "Project Code",
+      "filterAll": "All",
+      "filterActive": "In Progress",
+      "filterExport": "Export",
+      "filterInternal": "Domestic",
+      "filterRd": "R&D",
+      "filterCompleted": "Completed"
     }
   }
 }

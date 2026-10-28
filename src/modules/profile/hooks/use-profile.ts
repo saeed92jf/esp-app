@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { profileService } from "../services/fake-profile.service";
+import { profileService } from "../services/profile.service";
 import { UserProfile } from "../types/profile";
 import { toast } from "sonner";
 

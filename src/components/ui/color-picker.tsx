@@ -54,16 +54,19 @@ export function ColorPicker({
   onCancel,
 }: ColorPickerProps) {
   const t = useTranslations("ColorPicker");
-  const tColors = useTranslations("Profile.avatarColors");
 
-  // Keep local draft state so parent background doesn't mutate in real time
+  // Keep track of the baseline color against which changes are compared
+  const baselineColorRef = React.useRef<string>(value || "#0284c7");
   const [draftColor, setDraftColor] = useState<string>(value || "#0284c7");
   const [hexInput, setHexInput] = useState<string>(value || "#0284c7");
   const [copied, setCopied] = useState(false);
+  const nativeInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  // Sync draft if external value changes (e.g. initial load or profile refresh)
+  // Sync draft only when external value genuinely changes outside current draft
   useEffect(() => {
-    if (value) {
+    if (value && value.toLowerCase() !== draftColor.toLowerCase()) {
+      // If external value changed independently, update baseline & draft
+      baselineColorRef.current = value;
       setDraftColor(value);
       setHexInput(value);
     }
@@ -73,28 +76,39 @@ export function ColorPicker({
     return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(hex);
   };
 
+  const normalizeHex = (hex: string) => {
+    if (!hex) return "#0284c7";
+    let cleaned = hex.trim();
+    // Convert Persian / Arabic numerals to English ASCII
+    cleaned = cleaned
+      .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+      .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+    if (!cleaned.startsWith("#")) cleaned = "#" + cleaned;
+    return cleaned;
+  };
+
   const handlePickerChange = (newColor: string) => {
-    setDraftColor(newColor);
-    setHexInput(newColor);
-    if (onDraftChange) onDraftChange(newColor);
+    const clean = newColor.toLowerCase();
+    setDraftColor(clean);
+    setHexInput(clean);
+    if (onDraftChange) onDraftChange(clean);
   };
 
   const handleHexInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let input = e.target.value;
-    if (!input.startsWith("#")) {
-      input = "#" + input;
-    }
-    setHexInput(input);
-    if (isValidHex(input)) {
-      setDraftColor(input);
-      if (onDraftChange) onDraftChange(input);
+    const raw = e.target.value;
+    const normalized = normalizeHex(raw);
+    setHexInput(normalized);
+    if (isValidHex(normalized)) {
+      setDraftColor(normalized);
+      if (onDraftChange) onDraftChange(normalized);
     }
   };
 
   const handlePresetClick = (hex: string) => {
-    setDraftColor(hex);
-    setHexInput(hex);
-    if (onDraftChange) onDraftChange(hex);
+    const clean = hex.toLowerCase();
+    setDraftColor(clean);
+    setHexInput(clean);
+    if (onDraftChange) onDraftChange(clean);
   };
 
   const handleCopy = () => {
@@ -105,21 +119,39 @@ export function ColorPicker({
   };
 
   const handleReset = () => {
-    setDraftColor(value);
-    setHexInput(value);
-    if (onDraftChange) onDraftChange(value);
+    const original = baselineColorRef.current;
+    setDraftColor(original);
+    setHexInput(original);
+    if (onDraftChange) onDraftChange(original);
     if (onCancel) onCancel();
   };
 
   const handleApply = () => {
+    baselineColorRef.current = draftColor;
     onChange(draftColor);
     if (onSave) onSave(draftColor);
     toast.success(t("colorApplied"));
   };
 
+  const handleEyeDropper = async () => {
+    if (typeof window !== "undefined" && "EyeDropper" in window) {
+      try {
+        const eyeDropper = new (window as any).EyeDropper();
+        const result = await eyeDropper.open();
+        if (result?.sRGBHex) {
+          handlePickerChange(result.sRGBHex.toLowerCase());
+        }
+      } catch {
+        // User cancelled Eyedropper
+      }
+    }
+  };
+
+  const hasEyeDropper = typeof window !== "undefined" && "EyeDropper" in window;
+
   const hasChanged = useMemo(() => {
-    return draftColor.toLowerCase() !== (value || "").toLowerCase();
-  }, [draftColor, value]);
+    return draftColor.toLowerCase() !== baselineColorRef.current.toLowerCase();
+  }, [draftColor]);
 
   return (
     <div
@@ -128,6 +160,17 @@ export function ColorPicker({
         className
       )}
     >
+      {/* Hidden native color input for power users */}
+      <input
+        ref={nativeInputRef}
+        type="color"
+        value={draftColor.length === 7 ? draftColor : "#0284c7"}
+        onChange={(e) => handlePickerChange(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-border/40">
         <div>
@@ -136,13 +179,13 @@ export function ColorPicker({
           </h4>
         </div>
 
-        {/* Live Swatches: Current vs Draft */}
+        {/* Live Swatches: Baseline vs Draft */}
         <div className="flex items-center gap-2 bg-muted/40 p-1.5 rounded-2xl border border-border/50">
           {/* Current Saved Color */}
           <div className="flex flex-col items-center">
             <div
-              style={{ backgroundColor: value || "#0284c7" }}
-              className="size-7 rounded-xl shadow-xs border border-white/20"
+              style={{ backgroundColor: baselineColorRef.current || "#0284c7" }}
+              className="size-7 rounded-xl shadow-xs border border-white/20 shrink-0"
               title={t("current")}
             />
             <span className="text-[9px] text-muted-foreground mt-0.5 font-sans">
@@ -152,11 +195,13 @@ export function ColorPicker({
 
           <span className="text-muted-foreground text-xs font-mono">→</span>
 
-          {/* Draft Selected Color */}
+          {/* Draft Selected Color (Click opens native picker) */}
           <div className="flex flex-col items-center">
-            <div
+            <button
+              type="button"
+              onClick={() => nativeInputRef.current?.click()}
               style={{ backgroundColor: draftColor }}
-              className="size-7 rounded-xl shadow-sm border-2 border-primary ring-2 ring-primary/20 transition-colors"
+              className="size-7 rounded-xl shadow-sm border-2 border-primary ring-2 ring-primary/20 transition-colors shrink-0 cursor-pointer"
               title={t("draft")}
             />
             <span className="text-[9px] font-bold text-primary mt-0.5 font-sans">
@@ -166,8 +211,8 @@ export function ColorPicker({
         </div>
       </div>
 
-      {/* React-Colorful Interactive Saturation & Hue Box */}
-      <div className="w-full relative">
+      {/* React-Colorful Interactive Saturation & Hue Box (FORCED LTR FOR PROPER TOUCH/MOUSE DRAGGING) */}
+      <div className="w-full relative" dir="ltr">
         <HexColorPicker
           color={draftColor}
           onChange={handlePickerChange}
@@ -175,32 +220,51 @@ export function ColorPicker({
         />
       </div>
 
-      {/* Hex Code Input with Copy Button */}
+      {/* Hex Code Input with Eyedropper & Copy Button */}
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-muted-foreground">
           {t("hexInput")}
         </Label>
         <div className="relative flex items-center">
-          <div
+          <button
+            type="button"
+            onClick={() => nativeInputRef.current?.click()}
             style={{ backgroundColor: draftColor }}
-            className="absolute start-2.5 size-5 rounded-md shadow-xs border border-border/50"
+            className="absolute start-2.5 size-5 rounded-md shadow-xs border border-border/50 cursor-pointer transition-transform active:scale-95"
+            title={t("draft")}
           />
           <Input
             value={hexInput}
             onChange={handleHexInputChange}
             dir="ltr"
             maxLength={7}
-            className="ps-10 pe-10 font-mono text-sm tracking-wider h-10 rounded-xl bg-muted/20 border-border/60 uppercase"
+            className="ps-10 pe-16 font-mono text-sm tracking-wider h-10 rounded-xl bg-muted/20 border-border/60 uppercase"
             placeholder="#0284C7"
           />
-          <button
-            type="button"
-            onClick={handleCopy}
-            className="absolute end-2 size-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
-            title={t("copyHex")}
-          >
-            {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
-          </button>
+          <div className="absolute end-1.5 flex items-center gap-0.5">
+            {hasEyeDropper && (
+              <button
+                type="button"
+                onClick={handleEyeDropper}
+                className="size-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
+                title="Eyedropper"
+              >
+                <Palette className="size-3.5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="size-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
+              title={t("copyHex")}
+            >
+              {copied ? (
+                <Check className="size-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="size-3.5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -211,7 +275,7 @@ export function ColorPicker({
             <Label className="text-xs font-semibold text-muted-foreground">
               {t("paletteTitle")}
             </Label>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[10px] text-muted-foreground fa-num">
               {presets.length} {t("colorsCount")}
             </span>
           </div>
@@ -219,10 +283,7 @@ export function ColorPicker({
             {presets.map((preset) => {
               const isSelected =
                 draftColor.toLowerCase() === preset.hex.toLowerCase();
-              const label =
-                preset.key
-                  ? tColors(preset.key)
-                  : preset.label || preset.hex;
+              const label = preset.label || preset.hex;
 
               return (
                 <button
@@ -233,8 +294,8 @@ export function ColorPicker({
                   className={cn(
                     "size-8 rounded-full transition-all outline-none cursor-pointer flex items-center justify-center relative",
                     isSelected
-                      ? "ring-2 ring-primary ring-offset-2 ring-offset-card shadow-md"
-                      : "opacity-80 hover:opacity-100 hover:ring-2 hover:ring-muted-foreground/30 shadow-xs"
+                      ? "ring-2 ring-primary ring-offset-2 ring-offset-card shadow-md scale-105"
+                      : "opacity-85 hover:opacity-100 hover:ring-2 hover:ring-muted-foreground/30 shadow-xs"
                   )}
                   style={{ backgroundColor: preset.hex }}
                 >
@@ -257,7 +318,7 @@ export function ColorPicker({
             size="sm"
             onClick={handleReset}
             disabled={!hasChanged}
-            className="h-9 text-xs font-semibold gap-1.5 rounded-xl text-muted-foreground hover:text-foreground"
+            className="h-9 text-xs font-semibold gap-1.5 rounded-xl text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <RotateCcw className="size-3.5" />
             <span>{t("reset")}</span>
@@ -267,8 +328,8 @@ export function ColorPicker({
             type="button"
             size="sm"
             onClick={handleApply}
-            disabled={!hasChanged}
-            className="h-9 px-5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl gap-1.5 transition-all"
+            disabled={!draftColor || !isValidHex(draftColor)}
+            className="h-9 px-5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm rounded-xl gap-1.5 transition-all cursor-pointer"
           >
             <Check className="size-3.5 stroke-[2.5]" />
             <span>{t("saveColor")}</span>

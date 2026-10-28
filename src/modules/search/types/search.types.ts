@@ -4,9 +4,10 @@
 
 export type SearchCategory =
   | "all"
-  | "modules"
-  | "tasks"
   | "videos"
+  | "projects"
+  | "tasks"
+  | "modules"
   | "dictionary"
   | "didYouKnow";
 

@@ -9,9 +9,9 @@ import { Dashboard } from "@/modules/dashboard/components/dashboard";
 export default function HomePage() {
   return (
     <AuthGate>
-      <main className="w-full">
+      <div className="w-full flex-1 flex flex-col min-h-full">
         <Dashboard />
-      </main>
+      </div>
     </AuthGate>
   );
 }

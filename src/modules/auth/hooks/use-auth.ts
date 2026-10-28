@@ -46,59 +46,62 @@ export function useAuth() {
     // Only hydrate once globally
     if (store.hydrated) return;
     
-    try {
-      const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
-      if (raw) {
-        let parsed = JSON.parse(raw) as User;
-        
-        // Auto-fix malformed cached users from previous unmapped API responses
-        if (!parsed.role) parsed.role = 'customer';
-        if (!parsed.fullName && (parsed as any).full_name) parsed.fullName = (parsed as any).full_name;
-        if (!parsed.fullName) parsed.fullName = parsed.email || 'User';
-        
-        // Sync with fake API mock users / dynamic overrides
-        try {
-          const stored = localStorage.getItem("esp_demo_users_override");
-          if (stored) {
-            const dynamicUsers = JSON.parse(stored);
-            const match = dynamicUsers?.find((d: any) => d.user.id === parsed.id);
-            if (match) {
-              parsed = { ...match.user, ...parsed };
+    const initAuth = async () => {
+      try {
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("esp_demo_users_override");
+        }
+
+        const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
+        if (token) {
+          try {
+            const user = await api.auth.me();
+            if (user) {
+              if (typeof window !== "undefined") {
+                localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+                localStorage.setItem("esp_auth_user", JSON.stringify(user));
+              }
+              if (user.primaryColor) {
+                setColor(user.primaryColor as any);
+              }
+              store.setUser(user);
+              return;
             }
-          } else {
-            const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
-            const match = DEMO_USERS?.find((d: any) => d.user.id === parsed.id);
-            if (match) {
-              parsed = { ...match.user, ...parsed };
+          } catch (err: any) {
+            if (err?.status === 401 || err?.code === "UNAUTHORIZED" || err?.code === "MISSING_TOKEN") {
+              if (typeof window !== "undefined") {
+                localStorage.removeItem(AUTH_TOKEN_KEY);
+                localStorage.removeItem("esp-refresh-token");
+                localStorage.removeItem(AUTH_USER_KEY);
+                localStorage.removeItem("esp_auth_user");
+              }
+              store.setUser(null);
+              setColor(DEFAULT_PRIMARY_COLOR);
+              return;
+            }
+            if (typeof window !== "undefined") {
+              const raw = localStorage.getItem(AUTH_USER_KEY);
+              if (raw) {
+                const cached = JSON.parse(raw) as User;
+                store.setUser(cached);
+                if (cached.primaryColor) setColor(cached.primaryColor as any);
+                return;
+              }
             }
           }
-          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
-          localStorage.setItem("esp_auth_user", JSON.stringify(parsed));
-        } catch (e) {
-          // ignore
         }
 
-        // Load custom avatar if it exists
-        const customAvatar = localStorage.getItem(`esp_custom_avatar_${parsed.id}`);
-        if (customAvatar) {
-          parsed.avatar = customAvatar;
-        }
-
-        if (parsed.primaryColor) {
-          setColor(parsed.primaryColor as any);
-        }
-
-        store.setUser(parsed);
-      } else {
         store.setUser(null);
         setColor(DEFAULT_PRIMARY_COLOR);
+      } catch {
+        store.setUser(null);
+      } finally {
+        store.setLoading(false);
+        store.setHydrated(true);
       }
-    } catch {
-      // ignore
-    } finally {
-      store.setLoading(false);
-      store.setHydrated(true);
-    }
+    };
+
+    initAuth();
   }, [store.hydrated, setColor]);
 
   const login = useCallback(async (identifier: string, password: string) => {
@@ -136,9 +139,18 @@ export function useAuth() {
 
   const updateUser = useCallback((partial: Partial<User>) => {
     store.updateUser(partial);
-    if (!store.user) return;
+    
+    // Retrieve latest user from store or local storage fallback
+    const currentUser = useAuthStore.getState().user || (
+      typeof window !== 'undefined'
+        ? JSON.parse(localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user') || 'null')
+        : null
+    );
 
-    const updatedUser: User = { ...store.user, ...partial };
+    if (!currentUser) return;
+
+    const updatedUser: User = { ...currentUser, ...partial };
+    useAuthStore.getState().setUser(updatedUser);
 
     if (partial.primaryColor) {
       setColor(partial.primaryColor as any);
@@ -148,26 +160,6 @@ export function useAuth() {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
         localStorage.setItem("esp_auth_user", JSON.stringify(updatedUser));
-
-        // Persist in mock database (esp_demo_users_override)
-        const stored = localStorage.getItem("esp_demo_users_override");
-        let users = stored ? JSON.parse(stored) : [];
-        if (!users.length) {
-          const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
-          users = JSON.parse(JSON.stringify(DEMO_USERS));
-        }
-        const idx = users.findIndex((u: any) => u.user.id === updatedUser.id);
-        if (idx !== -1) {
-          users[idx].user = { ...users[idx].user, ...partial };
-        } else {
-          users.push({
-            email: updatedUser.email || '',
-            mobile: updatedUser.mobile || '',
-            password: '',
-            user: updatedUser,
-          });
-        }
-        localStorage.setItem("esp_demo_users_override", JSON.stringify(users));
 
         // Sync with esp_user_profile if exists
         const storedProfile = localStorage.getItem("esp_user_profile");
@@ -179,9 +171,13 @@ export function useAuth() {
             localStorage.setItem("esp_user_profile", JSON.stringify(parsedProfile));
           }
         }
+
+        if (partial.avatarColor) {
+          window.dispatchEvent(new CustomEvent("esp_avatar_color_changed", { detail: { avatarColor: partial.avatarColor } }));
+        }
       } catch {}
     }
-  }, [store.user, store.updateUser, setColor]);
+  }, [setColor]);
 
   const updatePrimaryColor = useCallback(async (color: string) => {
     setColor(color as any);

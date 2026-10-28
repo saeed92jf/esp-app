@@ -8,6 +8,7 @@ import { HelpPopover } from "@/components/layout/help-popover";
 import { AppsPopover } from "@/components/layout/apps-popover";
 import { NotificationsPopover } from "./notifications/notifications-popover";
 import { DashboardAvatar } from "./dashboard-avatar";
+import { cn } from "@/lib/utils";
 import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import type {
   DashboardNotificationItem,
@@ -38,6 +39,7 @@ export function DashboardHeader({
   notifications,
   tasks,
   unreadNotificationsCount = 0,
+  isScrolled = false,
 }: DashboardHeaderProps) {
   const isOpen = sidebarOpen ?? linksSidebarOpen ?? false;
   const toggle = () => {
@@ -51,6 +53,11 @@ export function DashboardHeader({
       onToggleMenu={toggle}
       isMenuOpen={isOpen}
       logoHref="/"
+      position="sticky"
+      className={cn(
+        "sticky top-0 z-[60] shadow-none",
+        isScrolled && "border-b border-border/40"
+      )}
       rightActions={
         <>
           <ThemeToggle />

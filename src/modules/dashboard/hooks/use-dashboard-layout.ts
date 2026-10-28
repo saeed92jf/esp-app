@@ -13,8 +13,8 @@ import {
 export type Layouts = Record<string, any[]>;
 export type Layout = any;
 
-const STORAGE_KEY_TAB_LAYOUTS = "dashboard_tab_layouts_v6";
-const STORAGE_KEY_TAB_WIDGETS = "dashboard_tab_widgets_v6";
+const STORAGE_KEY_TAB_LAYOUTS = "dashboard_tab_layouts_v10";
+const STORAGE_KEY_TAB_WIDGETS = "dashboard_tab_widgets_v10";
 
 const enforceItemConstraints = (item: any) => {
   const meta = getModuleMeta(item.i);

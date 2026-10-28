@@ -167,7 +167,7 @@ export function ProjectBoardsTab({
   return (
     <div className="space-y-6">
       {/* Top Controller Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-border/60 bg-card/50 backdrop-blur-sm">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl border border-border/60 bg-white dark:bg-card shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Kanban className="w-5 h-5 text-primary" />
@@ -182,13 +182,13 @@ export function ProjectBoardsTab({
 
         <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end flex-wrap">
           {/* My Tasks vs All Tasks Filter */}
-          <div className="inline-flex rounded-lg border border-border/60 p-0.5 bg-background">
+          <div className="inline-flex rounded-lg border border-border/60 p-0.5 bg-slate-50/80 dark:bg-muted/40">
             <button
               type="button"
               onClick={() => setTaskFilter("all")}
               className={`px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition-colors ${
                 taskFilter === "all"
-                  ? "bg-secondary text-foreground shadow-2xs font-semibold"
+                  ? "bg-white dark:bg-card text-foreground shadow-2xs font-semibold"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -209,11 +209,11 @@ export function ProjectBoardsTab({
           </div>
 
           {/* View Toggle */}
-          <div className="inline-flex rounded-lg border border-border/60 p-0.5 bg-background">
+          <div className="inline-flex rounded-lg border border-border/60 p-0.5 bg-slate-50/80 dark:bg-muted/40">
             <Button
               size="sm"
               variant={activeView === "kanban" ? "secondary" : "ghost"}
-              className="h-7 px-3 text-xs gap-1.5"
+              className="h-7 px-3 text-xs gap-1.5 cursor-pointer"
               onClick={() => setActiveView("kanban")}
             >
               <Kanban className="w-3.5 h-3.5" />
@@ -222,7 +222,7 @@ export function ProjectBoardsTab({
             <Button
               size="sm"
               variant={activeView === "scrum" ? "secondary" : "ghost"}
-              className="h-7 px-3 text-xs gap-1.5"
+              className="h-7 px-3 text-xs gap-1.5 cursor-pointer"
               onClick={() => setActiveView("scrum")}
             >
               <ListTodo className="w-3.5 h-3.5" />
@@ -232,7 +232,7 @@ export function ProjectBoardsTab({
 
           <Button
             size="sm"
-            className="h-8 gap-1.5 text-xs"
+            className="h-8 gap-1.5 text-xs cursor-pointer"
             onClick={() => setIsAddOpen(true)}
           >
             <Plus className="w-4 h-4" />
@@ -255,7 +255,7 @@ export function ProjectBoardsTab({
             return (
               <div
                 key={col.id}
-                className="flex flex-col rounded-xl border border-border/60 bg-card/40 backdrop-blur-sm p-3 min-w-[260px] h-full"
+                className="flex flex-col rounded-2xl border border-border/50 bg-slate-50/70 dark:bg-muted/20 p-3 min-w-[260px] h-full"
               >
                 {/* Column Header */}
                 <div className="flex items-center justify-between pb-3 mb-2 border-b border-border/40">
@@ -281,7 +281,7 @@ export function ProjectBoardsTab({
                       return (
                       <div
                         key={task.id}
-                        className={`rounded-lg border bg-background/80 p-3.5 space-y-3 shadow-xs transition-colors ${
+                        className={`rounded-xl border bg-white dark:bg-card p-3.5 space-y-3 shadow-xs transition-colors ${
                           isMyTask
                             ? "border-primary/40 ring-1 ring-primary/20 hover:border-primary"
                             : "border-border/60 hover:border-primary/50"
@@ -365,7 +365,7 @@ export function ProjectBoardsTab({
 
       {/* Scrum Sprint View */}
       {activeView === "scrum" && (
-        <div className="rounded-xl border border-border/60 bg-card/60 p-5 backdrop-blur-sm space-y-4">
+        <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Flame className="w-5 h-5 text-amber-500" />

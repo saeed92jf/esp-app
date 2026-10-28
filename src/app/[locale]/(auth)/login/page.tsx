@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations, useLocale } from "next-intl";
-import { Loader2, MailCheck } from "lucide-react";
+import { Loader2, MailCheck, Mail, Lock, LogIn, HelpCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import { useRouter, Link } from "@/i18n/navigation";
@@ -97,76 +97,81 @@ export default function LoginPage() {
     }
   }
 
-
-
   return (
-    <div className="w-full flex-1 h-[var(--home-height)] max-h-[var(--home-height)] flex items-center justify-center p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-transparent">
-      <Card className="w-full max-w-md shadow-xl border-border/40 bg-card/85 dark:bg-card/75 backdrop-blur-md rounded-2xl py-3.5 sm:py-4 gap-3 sm:gap-3.5 my-auto shrink-0">
-        <CardHeader className="space-y-1.5 text-center pb-2">
+    <div className="w-full flex-1 h-[var(--home-height)] max-h-[var(--home-height)] flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto custom-scrollbar bg-transparent">
+      <Card className="w-full max-w-[500px] shadow-2xl border-border/50 bg-card/90 dark:bg-card/80 backdrop-blur-xl rounded-3xl p-6 sm:p-8 my-auto shrink-0 transition-all">
+        
+        {/* Header */}
+        <CardHeader className="space-y-3 text-center p-0 pb-6">
           <div className="flex justify-center mb-1">
-            <div className="bg-primary/5 dark:bg-primary/10 px-2 py-0.5 rounded-md border border-primary/10">
-              <Logo className="text-[11px] sm:text-[12px]" showText={false} />
+            <div className="bg-primary/10 px-2.5 py-1 rounded-xl border border-primary/20 shadow-xs">
+              <Logo className="text-xs sm:text-sm" showText={false} />
             </div>
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl sm:text-[28px] md:text-3xl font-extrabold tracking-tight text-foreground">
+          <div className="space-y-1.5">
+            <CardTitle className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               {t("loginTitle")}
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm text-muted-foreground">
+            <CardDescription className="text-xs sm:text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed">
               {t("loginSubtitle")}
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent>
+        <CardContent className="p-0">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3 sm:space-y-3.5">
-              <div className="space-y-2.5 sm:space-y-3">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 sm:space-y-6">
+              
+              <div className="space-y-4">
+                {/* Identifier (Email / Mobile) */}
                 <FormField
                   control={form.control}
                   name="identifier"
                   render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <FormLabel className="text-xs sm:text-sm">
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-xs sm:text-sm font-medium">
                         {t("emailOrMobile")}
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder={
-                            t("emailPlaceholder")
-                          }
-                          autoComplete="username"
-                          dir="ltr"
-                          disabled={isLoading}
-                          className="h-9 sm:h-9.5 text-sm"
-                          {...field}
-                        />
+                        <div className="relative">
+                          {/* Rule 12: Fixed icon positioning for LTR input */}
+                          <Input
+                            placeholder={t("emailPlaceholder")}
+                            autoComplete="username"
+                            dir="ltr"
+                            disabled={isLoading}
+                            className="h-11 sm:h-12 text-sm sm:text-base pl-10 pr-3 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors"
+                            {...field}
+                          />
+                          <Mail className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                        </div>
                       </FormControl>
                       <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
 
+                {/* Password Field */}
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <FormLabel className="text-xs sm:text-sm">{t("password")}</FormLabel>
-                        <Link href="/forgot-password" className="text-xs text-primary hover:underline" tabIndex={-1}>
-                          {t("forgotPassword")}
-                        </Link>
-                      </div>
+                    <FormItem className="space-y-2">
+                      <FormLabel className="text-xs sm:text-sm font-medium">
+                        {t("password")}
+                      </FormLabel>
                       <FormControl>
-                        <PasswordInput
-                          placeholder="••••••••"
-                          autoComplete="current-password"
-                          dir="ltr"
-                          disabled={isLoading}
-                          className="h-9 sm:h-9.5 text-sm"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <PasswordInput
+                            placeholder="••••••••"
+                            autoComplete="current-password"
+                            dir="ltr"
+                            disabled={isLoading}
+                            className="h-11 sm:h-12 text-sm sm:text-base pl-10 pr-10 font-sans rounded-xl border-border/60 bg-background/60 focus:bg-background transition-colors"
+                            {...field}
+                          />
+                          <Lock className="size-4.5 text-muted-foreground/70 absolute top-1/2 -translate-y-1/2 left-3.5 pointer-events-none" />
+                        </div>
                       </FormControl>
                       <FormMessage className="text-xs" />
                     </FormItem>
@@ -174,39 +179,63 @@ export default function LoginPage() {
                 />
               </div>
 
+              {/* Explanatory / Links Row providing generous separation between input and submit button */}
+              <div className="flex items-center justify-between text-xs sm:text-sm px-1 py-1">
+                <Link
+                  href="/forgot-password"
+                  className="text-primary hover:underline font-medium inline-flex items-center gap-1"
+                >
+                  <span>{t("forgotPassword")}</span>
+                </Link>
+                <a
+                  href="mailto:ESP.Technical.Support@euroslotpars.com"
+                  className="text-muted-foreground hover:text-foreground transition-colors font-medium inline-flex items-center gap-1 text-xs"
+                >
+                  <HelpCircle className="size-3.5 text-muted-foreground" />
+                  <span>{t("troubleLoggingIn")}</span>
+                </a>
+              </div>
+
               {emailParam && (
-                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
-                  <MailCheck className="size-4 shrink-0 text-primary" />
+                <div className="flex items-center gap-2.5 p-3 rounded-xl bg-primary/10 border border-primary/20 text-xs sm:text-sm text-primary font-medium">
+                  <MailCheck className="size-4.5 shrink-0 text-primary" />
                   <span>{t("emailPrefilledNotice")}</span>
                 </div>
               )}
 
               {errorMsg && (
-                <div className="text-xs sm:text-sm font-medium text-destructive text-center bg-destructive/10 p-2 rounded-md border border-destructive/20">
+                <div className="text-xs sm:text-sm font-medium text-destructive text-center bg-destructive/10 p-3 rounded-xl border border-destructive/20">
                   {errorMsg}
                 </div>
               )}
 
+              {/* Concise Submit Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-9.5 sm:h-10 text-sm sm:text-base font-semibold"
+                className="w-full h-11 sm:h-12 text-sm sm:text-base font-semibold rounded-xl shadow-md shadow-primary/20 hover:opacity-95 active:scale-[0.99] transition-all"
               >
                 {isLoading ? (
                   <Loader2 className="mr-2 size-4 sm:size-5 animate-spin" />
-                ) : null}
-                {t("login")}
+                ) : (
+                  <LogIn className="mr-2 size-4 sm:size-4.5" />
+                )}
+                {isLoading ? t("loggingIn") : t("login")}
               </Button>
 
-              <div className="mt-3 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm gap-2.5">
-                <Link href="/" className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium">
+              {/* Bottom Navigation Links */}
+              <div className="pt-2 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm gap-3">
+                <Link
+                  href="/"
+                  className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 font-medium"
+                >
                   <span className="rtl:rotate-180">&larr;</span> {t("backToHome")}
                 </Link>
                 <div>
                   <span className="text-muted-foreground">{t("noAccount")}</span>{" "}
                   <Link
                     href="/account-request"
-                    className="font-medium text-primary hover:underline"
+                    className="font-semibold text-primary hover:underline"
                   >
                     {t("requestAccount")}
                   </Link>

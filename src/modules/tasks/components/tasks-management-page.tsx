@@ -38,12 +38,13 @@ import {
   Check,
   FolderKanban,
   PlusCircle,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Combobox } from "@/components/ui/combobox";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { useTasks } from "../hooks/use-tasks";
 import { TaskItem, TaskStatus, TaskPriority } from "../types/tasks.types";
@@ -125,6 +126,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
   const tCommon = useTranslations("Common");
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const router = useRouter();
 
   const { user } = useAuth();
   const initialRole = user?.role === "admin" ? "admin" : "user";
@@ -1075,11 +1077,23 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
   /* TAB 8: DEDICATED FULL-PAGE TASK DETAIL VIEW                  */
   /* ──────────────────────────────────────────────────────────── */
   const renderDetailView = () => {
+    const targetId = initialTaskId || queryTaskId;
     const currentTask = selectedTask
       ? tasks.find((t) => t.id === selectedTask.id) || selectedTask
-      : null;
+      : (targetId ? tasks.find((t) => t.id === targetId) || null : null);
 
     if (!currentTask) {
+      if (isLoading) {
+        return (
+          <div className="max-w-7xl mx-auto py-24 px-4 text-center flex flex-col items-center justify-center gap-3">
+            <Loader2 className="size-8 text-primary animate-spin" />
+            <p className="text-xs text-muted-foreground">
+              {isRtl ? "در حال بارگذاری اطلاعات تسک..." : "Loading task details..."}
+            </p>
+          </div>
+        );
+      }
+
       return (
         <div className="max-w-7xl mx-auto py-16 px-4 text-center space-y-4">
           <h3 className="text-lg font-bold text-foreground">
@@ -1089,6 +1103,9 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
             onClick={() => {
               setSelectedTask(null);
               setActiveTab("kanban");
+              if (initialTaskId) {
+                router.push("/dashboard/tasks");
+              }
             }}
             className="rounded-full"
           >
@@ -1105,6 +1122,9 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
         onBack={() => {
           setSelectedTask(null);
           setActiveTab("kanban");
+          if (initialTaskId) {
+            router.push("/dashboard/tasks");
+          }
         }}
         onUpdateStatus={changeTaskStatus}
         onToggleSubtask={toggleSubtask}
@@ -1118,6 +1138,9 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
           await deleteTask(id);
           setSelectedTask(null);
           setActiveTab("kanban");
+          if (initialTaskId) {
+            router.push("/dashboard/tasks");
+          }
         }}
         onAssignCollaborator={assignCollaborator}
         onRemoveCollaborator={removeCollaborator}
@@ -1131,7 +1154,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
 
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
+    <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* ── 1. Top Unified Header (AppHeader with tag="tasks") ── */}
       <AppHeader
         tag="tasks"

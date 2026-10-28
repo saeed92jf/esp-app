@@ -50,7 +50,6 @@ import { ProjectPhasesWbsTab } from "./project-phases-wbs-tab";
 import { ProjectBoardsTab } from "./project-boards-tab";
 import { ProjectVdisTransmittalTab } from "./project-vdis-transmittal-tab";
 import { ProjectRisksTab } from "./project-risks-tab";
-import { ProjectMiroRoadmapTab } from "./project-miro-roadmap-tab";
 import { ProjectStrategicOkrsTab } from "./project-strategic-okrs-tab";
 import { ProjectReportsAnalyticsTab } from "./project-reports-analytics-tab";
 
@@ -79,7 +78,6 @@ type SegmentKey =
   | "boards"
   | "vdis"
   | "risks"
-  | "roadmap"
   | "strategic"
   | "reports";
 
@@ -112,7 +110,6 @@ export function ProjectOverviewTab({
     boards: false,
     vdis: false,
     risks: false,
-    roadmap: false,
     strategic: false,
     reports: false,
   });
@@ -134,7 +131,6 @@ export function ProjectOverviewTab({
       boards: nextVal,
       vdis: nextVal,
       risks: nextVal,
-      roadmap: nextVal,
       strategic: nextVal,
       reports: nextVal,
     });
@@ -242,7 +238,7 @@ export function ProjectOverviewTab({
                 {/* 1.1 Specification Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Client & Organization */}
-                  <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <Building2 className="size-3.5 text-primary" />
@@ -264,7 +260,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Quotation & Contract */}
-                  <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <FileText className="size-3.5 text-amber-500" />
@@ -287,7 +283,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Budget & Currency */}
-                  <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <DollarSign className="size-3.5 text-emerald-500" />
@@ -309,7 +305,7 @@ export function ProjectOverviewTab({
                   </div>
 
                   {/* Schedule & Duration */}
-                  <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-4 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 space-y-2">
                     <div className="flex items-center justify-between text-muted-foreground text-xs">
                       <span className="flex items-center gap-1.5 font-medium">
                         <Calendar className="size-3.5 text-blue-500" />
@@ -329,7 +325,7 @@ export function ProjectOverviewTab({
                 </div>
 
                 {/* 1.2 DMS Storage & Network Path Banner */}
-                <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-lg bg-primary/10 text-primary shrink-0">
                       <Server className="size-5" />
@@ -381,7 +377,7 @@ export function ProjectOverviewTab({
 
                 {/* 1.3 Description & Technical Scope */}
                 {project.description && (
-                  <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-5 space-y-2">
+                  <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-2">
                     <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                       <Briefcase className="size-3.5 text-primary" />
                       <span>{t("accordion.scopeSubtitle")}</span>
@@ -393,7 +389,7 @@ export function ProjectOverviewTab({
                 )}
 
                 {/* 1.4 Multi-tier Hierarchy (Sub-packages / Modules) */}
-                <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-5 space-y-4">
+                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -463,7 +459,7 @@ export function ProjectOverviewTab({
                 </div>
 
                 {/* 1.5 Team RACI Matrix */}
-                <div className="rounded-2xl border border-border/50 bg-slate-50/60 dark:bg-card/40 p-5 space-y-4">
+                <div className="rounded-2xl border border-border/50 bg-white dark:bg-[#1a1a1a] shadow-2xs p-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -814,64 +810,7 @@ export function ProjectOverviewTab({
         </AnimatePresence>
       </div>
 
-      {/* ── Segment 6: Miro Roadmap ── */}
-      <div className="segmented-list w-full">
-        <button
-          type="button"
-          onClick={() => toggleSegment("roadmap")}
-          className={cn(
-            "segmented-item group relative flex items-center justify-between gap-3.5 p-4 sm:p-5 w-full outline-none cursor-pointer text-start select-none bg-white dark:bg-[#121212]",
-            getSegmentedAccordionHeaderClass(openSegments.roadmap, {
-              isTopRounded: true,
-              fullCapsuleWhenClosed: true,
-            })
-          )}
-        >
-          <div className="relative z-10 flex items-center gap-3.5 min-w-0">
-            <div className="p-2.5 rounded-xl shrink-0 bg-emerald-500/10 text-emerald-500">
-              <Compass className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-semibold text-foreground">
-                  {t("accordion.roadmapTitle")}
-                </h3>
-                <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
-                  Miro Canvas
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">
-                {t("accordion.roadmapSubtitle")}
-              </p>
-            </div>
-          </div>
-          <div className="relative z-10 flex items-center gap-2 shrink-0">
-            <ChevronDown
-              className={cn(
-                "size-5 text-muted-foreground shrink-0 transition-transform duration-300 ease-out",
-                openSegments.roadmap && "rotate-180"
-              )}
-            />
-          </div>
-        </button>
-
-        <AnimatePresence initial={false}>
-          {openSegments.roadmap && (
-            <motion.div
-              initial={segmentedAccordionMotion.initial}
-              animate={segmentedAccordionMotion.animate}
-              exit={segmentedAccordionMotion.exit}
-              className="overflow-hidden flex flex-col gap-[2px] rounded-b-[32px]"
-            >
-              <div className="segmented-item no-hover-bg p-4 sm:p-6 w-full bg-white dark:bg-[#121212]">
-                <ProjectMiroRoadmapTab project={project} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Segment 7: Strategic OKRs ── */}
+      {/* ── Segment 6: Strategic OKRs ── */}
       <div className="segmented-list w-full">
         <button
           type="button"
@@ -928,7 +867,7 @@ export function ProjectOverviewTab({
         </AnimatePresence>
       </div>
 
-      {/* ── Segment 8: Reports & Analytics ── */}
+      {/* ── Segment 7: Reports & Analytics ── */}
       <div className="segmented-list w-full">
         <button
           type="button"

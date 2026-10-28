@@ -95,18 +95,6 @@ export function CommoditiesWidget() {
                 </span>
               </h3>
             </div>
-
-            {/* Source label */}
-            <div className="hidden @[460px]:flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-md px-2 py-1 text-[11px]">
-              <span className="text-muted-foreground">{t('source')}:</span>
-              <span className="font-bold flex items-center gap-1">
-                {activeCategory === 'crypto' ? (
-                  <a href="https://finnhub.io" target="_blank" className="text-primary hover:underline">Finnhub</a>
-                ) : (
-                  <a href="https://finance.yahoo.com" target="_blank" className="text-primary hover:underline">Yahoo Finance</a>
-                )}
-              </span>
-            </div>
           </div>
         </div>
 
@@ -258,6 +246,35 @@ export function CommoditiesWidget() {
           )}
         </div>
       </ScrollArea>
+
+      {/* ── Footer Source (با ذکر منبع مانند بورس) ───────────────── */}
+      <div className="px-3.5 py-2 border-t border-border/40 bg-muted/10 flex items-center justify-between text-[11px] text-muted-foreground shrink-0 fa-num">
+        <div className="flex items-center gap-1.5">
+          <span>{t("source")}:</span>
+          {activeCategory === "crypto" ? (
+            <a
+              href="https://finnhub.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold"
+            >
+              Finnhub
+            </a>
+          ) : (
+            <a
+              href="https://finance.yahoo.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold"
+            >
+              Yahoo Finance
+            </a>
+          )}
+        </div>
+        <span className="text-[10px] text-muted-foreground/70 hidden @[320px]:inline-block">
+          {t("marketName")}
+        </span>
+      </div>
     </div>
   );
 }

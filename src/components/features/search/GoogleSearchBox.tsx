@@ -34,7 +34,7 @@ export function GoogleSearchBox({
   onQueryChange,
   onSubmitSearch,
   compact = false,
-  darkFlatWhite = true,
+  darkFlatWhite = false,
   showAiModeButton,
   showClearButton,
 }: GoogleSearchBoxProps) {
@@ -92,26 +92,26 @@ export function GoogleSearchBox({
           "group/sugg relative w-full flex cursor-pointer select-none items-center justify-between px-3 sm:px-3.5 transition-colors",
           compact ? "h-[38px] text-[13.5px]" : "h-[44px] text-[14px]",
           isSelected
-            ? "bg-[#e8eaed] dark:bg-[#e8eaed]"
-            : "hover:bg-[#e8eaed]/80 dark:hover:bg-[#e8eaed]/80"
+            ? "bg-muted/80 dark:bg-white/[0.09] text-foreground"
+            : "hover:bg-muted/50 dark:hover:bg-white/[0.05] text-foreground/90"
         )}
       >
         {isSelected && (
-          <span className="absolute inset-y-0 start-0 w-[3.5px] bg-[#1a73e8]" />
+          <span className="absolute inset-y-0 start-0 w-[3.5px] bg-primary" />
         )}
 
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <Search className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[2] text-[#9aa0a6] dark:text-[#70757a]")} />
-          <span className="truncate text-start font-normal leading-normal text-[#202124] dark:text-[#202124]">
+          <Search className={cn(compact ? "size-4" : "size-4.5", "shrink-0 stroke-[2] text-muted-foreground/70 dark:text-muted-foreground/60 group-hover/sugg:text-primary transition-colors")} />
+          <span className="truncate text-start font-normal leading-normal text-foreground">
             <HighlightMatch
               text={item.text}
               query={query}
-              highlightClassName="font-semibold text-[#1a73e8] dark:text-[#1a73e8] bg-blue-50 dark:bg-blue-900/30 px-1 py-0.5 rounded-xs"
+              highlightClassName="font-semibold text-primary dark:text-primary bg-primary/10 dark:bg-primary/20 px-1 py-0.5 rounded-xs"
             />
           </span>
         </div>
 
-        <div className="text-zinc-400 dark:text-zinc-500 shrink-0 pe-1 ms-2 opacity-0 group-hover/sugg:opacity-100 transition-opacity">
+        <div className="text-muted-foreground/50 dark:text-muted-foreground/40 group-hover/sugg:text-foreground shrink-0 pe-1 ms-2 opacity-0 group-hover/sugg:opacity-100 transition-opacity">
           {isItemEn ? (
             <ArrowUpRight className="size-3.5" />
           ) : isRtl ? (

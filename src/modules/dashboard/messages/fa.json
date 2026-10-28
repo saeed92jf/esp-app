@@ -57,8 +57,9 @@
     "selectStats": "انتخاب کارت‌ها",
     "greeting": "خوش آمدید، {name}",
     "tabs": {
-      "tasks": "تسک",
+      "tasks": "پروژه‌ها و تسک‌ها",
       "administrative": "اداری",
+      "admin": "اداری",
       "market": "مارکت",
       "custom": "شخصی"
     },
@@ -228,11 +229,45 @@
       }
     },
     "bourse": {
-      "title": "شرکت‌های بورسی (پتروشیمی و پالایشگاهی)",
+      "title": "بورس",
       "subtitle": "آخرین وضعیت نمادهای منتخب",
       "error": "خطا در دریافت اطلاعات بورس",
-      "noData": "داده‌ای یافت نشد",
-      "refresh": "بروزرسانی"
+      "noData": "داده‌ای در این دسته‌بندی یافت نشد",
+      "refresh": "بروزرسانی",
+      "source": "منبع",
+      "tsetmc": "مدیریت فناوری بورس تهران (TSETMC)",
+      "marketName": "بورس اوراق بهادار تهران",
+      "rial": "ریال",
+      "toman": "تومان",
+      "categories": {
+        "petrochemical": "پتروشیمی",
+        "refinery": "پالایشگاه"
+      }
+    },
+    "miniChart": {
+      "title": "تحلیل روند بازار",
+      "monthlyTrend": "تحلیل روند بازار",
+      "peak": "حداکثر",
+      "lowest": "حداقل",
+      "periodChange": "تغییر دوره",
+      "timeframes": {
+        "7d": "۷ روز",
+        "30d": "۳۰ روز",
+        "90d": "۳ ماه",
+        "1y": "۱ سال"
+      },
+      "types": {
+        "area": "سطحی",
+        "line": "خطی",
+        "bar": "میله‌ای"
+      },
+      "unitDollarPerBarrel": "دلار / بشکه",
+      "unitDollarPerOunce": "دلار / انس",
+      "unitDollarPerCoin": "دلار / کوین",
+      "source": "منبع",
+      "selectPlaceholder": "انتخاب...",
+      "searchPlaceholder": "جستجو...",
+      "emptyText": "یافت نشد."
     },
     "themeSettings": "تنظیمات ظاهری",
     "checklist": {
@@ -346,6 +381,7 @@
       "aluminum": "آلومینیوم",
       "heating_oil": "نفت کوره (Heating Oil)",
       "source": "منبع",
+      "marketName": "بازارهای جهانی مالی و کالا",
       "activeRateText": "نرخ فعلی: {rate}",
       "unitG": "گرم",
       "unitKg": "کیلوگرم",

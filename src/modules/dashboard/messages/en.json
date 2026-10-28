@@ -57,8 +57,9 @@
     "selectStats": "Select Cards",
     "greeting": "Welcome, {name}",
     "tabs": {
-      "tasks": "Tasks",
-      "administrative": "Admin",
+      "tasks": "Projects & Tasks",
+      "administrative": "Administrative",
+      "admin": "Administrative",
       "market": "Market",
       "custom": "Personal"
     },
@@ -228,11 +229,45 @@
       }
     },
     "bourse": {
-      "title": "Bourse (Petrochemical & Refinery)",
+      "title": "Bourse",
       "subtitle": "Latest status of selected symbols",
       "error": "Failed to fetch stock data",
-      "noData": "No data found",
-      "refresh": "Refresh"
+      "noData": "No data in this category",
+      "refresh": "Refresh",
+      "source": "Source",
+      "tsetmc": "Tehran Stock Exchange (TSETMC)",
+      "marketName": "Tehran Stock Exchange",
+      "rial": "IRR",
+      "toman": "Toman",
+      "categories": {
+        "petrochemical": "Petrochemical",
+        "refinery": "Refinery"
+      }
+    },
+    "miniChart": {
+      "title": "Market Trend Analysis",
+      "monthlyTrend": "Market Trend Analysis",
+      "peak": "Peak",
+      "lowest": "Lowest",
+      "periodChange": "Period Change",
+      "timeframes": {
+        "7d": "7D",
+        "30d": "30D",
+        "90d": "3M",
+        "1y": "1Y"
+      },
+      "types": {
+        "area": "Area",
+        "line": "Line",
+        "bar": "Bar"
+      },
+      "unitDollarPerBarrel": "USD / Barrel",
+      "unitDollarPerOunce": "USD / Ounce",
+      "unitDollarPerCoin": "USD / Coin",
+      "source": "Source",
+      "selectPlaceholder": "Select...",
+      "searchPlaceholder": "Search...",
+      "emptyText": "Not found."
     },
     "themeSettings": "Theme Settings",
     "checklist": {
@@ -346,6 +381,7 @@
       "aluminum": "Aluminum",
       "heating_oil": "Heating Oil",
       "source": "Source",
+      "marketName": "Global Financial & Commodity Markets",
       "activeRateText": "Current rate: {rate}",
       "unitG": "Gram",
       "unitKg": "Kilogram",

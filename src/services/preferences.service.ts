@@ -1,3 +1,4 @@
+import preferencesMock from "@/data/mock/preferences.json";
 // src/services/preferences.service.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // تنظیمات کاربر که فعلاً در localStorage است (quick-access, theme, primary-color).
@@ -14,11 +15,7 @@ export interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
 }
 
-const DEFAULT_PREFS: UserPreferences = {
-  quickAccessHrefs: [],
-  primaryColor: 'blue',
-  theme: 'system',
-};
+const DEFAULT_PREFS: UserPreferences = preferencesMock as unknown as UserPreferences;
 
 const STORAGE_KEY = 'esp-user-preferences';
 
@@ -55,17 +52,7 @@ export class FakePreferencesService implements IPreferencesService {
             const user = JSON.parse(raw);
             user.primaryColor = patch.primaryColor;
             localStorage.setItem('esp-auth-user', JSON.stringify(user));
-            localStorage.setItem('esp_auth_user', JSON.stringify(user));
-
-            const stored = localStorage.getItem('esp_demo_users_override');
-            if (stored) {
-              const users = JSON.parse(stored);
-              const u = users.find((item: any) => item.user.id === user.id);
-              if (u) {
-                u.user.primaryColor = patch.primaryColor;
-                localStorage.setItem('esp_demo_users_override', JSON.stringify(users));
-              }
-            }
+            localStorage.removeItem('esp_demo_users_override');
           }
         }
       } catch {}

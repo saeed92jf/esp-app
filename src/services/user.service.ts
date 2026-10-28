@@ -52,18 +52,7 @@ export class FakeUserService implements IUserService {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
         localStorage.setItem('esp_auth_user', JSON.stringify(updated));
 
-        // Sync with mock users database (esp_demo_users_override)
-        const stored = localStorage.getItem('esp_demo_users_override');
-        let users = stored ? JSON.parse(stored) : [];
-        if (!users.length) {
-          const { DEMO_USERS } = require('@/modules/auth/services/auth.service');
-          users = JSON.parse(JSON.stringify(DEMO_USERS));
-        }
-        const idx = users.findIndex((u: any) => u.user.id === updated.id);
-        if (idx !== -1) {
-          users[idx].user = { ...users[idx].user, ...updated };
-          localStorage.setItem('esp_demo_users_override', JSON.stringify(users));
-        }
+        localStorage.removeItem('esp_demo_users_override');
       } catch {}
     }
     return updated;
@@ -86,20 +75,44 @@ export class FakeUserService implements IUserService {
 export class RealUserService implements IUserService {
   constructor(private http: HttpClient) {}
 
+  private mapUser(raw: any): User {
+    const s = (raw.status || "active").toLowerCase();
+    return {
+      id: raw.id,
+      fullName: raw.fullName || raw.full_name || raw.email?.split("@")[0] || "User",
+      fullNameFa: raw.fullNameFa || raw.full_name_fa,
+      email: raw.email,
+      role: (raw.role === "admin" ? "admin" : "staff") as any,
+      avatar: raw.avatarUrl || raw.avatar,
+      avatarColor: raw.avatarColor,
+      primaryColor: raw.primaryColor || "blue",
+      accountStatus: s === "active" ? "active" : "pending_approval",
+      isProfileCompleted: true,
+      hrApproved: s === "active",
+      managerApproved: s === "active",
+    };
+  }
+
   async getProfile(): Promise<User> {
-    return this.http.get<User>('/users/me');
+    const res = await this.http.get<any>('/users/me');
+    const raw = res?.data ?? res;
+    return this.mapUser(raw);
   }
 
   async updateProfile(payload: UpdateProfilePayload): Promise<User> {
-    return this.http.patch<User>('/users/me', payload);
+    const res = await this.http.patch<any>('/users/me', payload);
+    const raw = res?.data ?? res;
+    return this.mapUser(raw);
   }
 
   async changePassword(payload: ChangePasswordPayload): Promise<void> {
-    await this.http.post('/users/me/change-password', payload);
+    await this.http.post('/auth/change-password', {
+      current_password: payload.currentPassword,
+      new_password: payload.newPassword,
+    });
   }
 
   async uploadAvatar(file: File): Promise<{ url: string }> {
-    // آپلود فایل از الگوی JSON body پیروی نمی‌کند — fetch مستقیم با FormData
     const form = new FormData();
     form.append('avatar', file);
 
@@ -107,13 +120,14 @@ export class RealUserService implements IUserService {
       ? localStorage.getItem('esp-auth-token')
       : null;
 
-    const res = await fetch(`${(this.http as unknown as { baseUrl: string }).baseUrl}/users/me/avatar`, {
+    const res = await fetch(`/api/real/users/me/avatar`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: form,
     });
 
     if (!res.ok) throw new ApiError('SERVER_ERROR', 'آپلود تصویر ناموفق بود.', res.status);
-    return res.json();
+    const json = await res.json();
+    return json?.data ?? json;
   }
 }

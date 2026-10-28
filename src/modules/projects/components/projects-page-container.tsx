@@ -149,12 +149,6 @@ export function ProjectsPageContainer() {
       icon: AlertTriangle,
     },
     {
-      id: "roadmap",
-      labelFa: "نقشه راه Miro",
-      labelEn: "Miro Roadmap",
-      icon: Compass,
-    },
-    {
       id: "strategic",
       labelFa: "اهداف استراتژیک OKRs",
       labelEn: "Strategic OKRs",
@@ -186,7 +180,7 @@ export function ProjectsPageContainer() {
   };
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative fa-num">
+    <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative fa-num">
       {/* ── 1. Top Unified Header (AppHeader with tag="projects" and subTag) ── */}
       <AppHeader
         tag="projects"
@@ -287,7 +281,7 @@ export function ProjectsPageContainer() {
         </aside>
 
         {/* ── 3. Main Content Area ── */}
-        <main className="flex-1 bg-transparent w-full relative z-10 px-3 sm:px-6">
+        <div className="flex-1 bg-transparent w-full relative z-10 px-3 sm:px-6 pt-5 sm:pt-6">
           <div className="pb-10 max-w-7xl mx-auto w-full">
             {projectId ? (
               <ProjectWorkspacePage
@@ -305,7 +299,7 @@ export function ProjectsPageContainer() {
               />
             )}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

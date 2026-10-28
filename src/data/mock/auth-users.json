@@ -1,0 +1,77 @@
+[
+  {
+    "email": "saeed@demo.com",
+    "mobile": "09120000000",
+    "password": "saeed",
+    "user": {
+      "id": "u-saeed",
+      "fullName": "Saeed Jalili Fard",
+      "fullNameFa": "سعید جلیلی فرد",
+      "email": "saeed@demo.com",
+      "mobile": "09120000000",
+      "avatar": "/team/saeed-jalili-fard.webp",
+      "role": "admin",
+      "primaryColor": "red",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true
+    }
+  },
+  {
+    "email": "guest@demo.com",
+    "mobile": "09120000001",
+    "password": "guest",
+    "user": {
+      "id": "u-guest",
+      "fullName": "Guest User",
+      "fullNameFa": "کاربر مهمان (Gust)",
+      "email": "guest@demo.com",
+      "mobile": "09120000001",
+      "avatar": "/avatar/male-01.webp",
+      "role": "customer",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true
+    }
+  },
+  {
+    "email": "newuser@euroslotpars.com",
+    "mobile": "09121111111",
+    "password": "password123",
+    "user": {
+      "id": "u-newuser",
+      "fullName": "کاربر جدید (بدون پروفایل)",
+      "fullNameFa": "کاربر جدید (بدون پروفایل)",
+      "email": "newuser@euroslotpars.com",
+      "mobile": "09121111111",
+      "role": "staff",
+      "primaryColor": "orange",
+      "accountStatus": "pending_profile",
+      "isProfileCompleted": false,
+      "hrApproved": false,
+      "managerApproved": false
+    }
+  },
+  {
+    "email": "pending@npceram.com",
+    "mobile": "09122222222",
+    "password": "password123",
+    "user": {
+      "id": "u-pending",
+      "fullName": "احمد رضایی",
+      "fullNameFa": "احمد رضایی",
+      "email": "pending@npceram.com",
+      "mobile": "09122222222",
+      "role": "staff",
+      "primaryColor": "green",
+      "accountStatus": "pending_approval",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": false
+    }
+  }
+]
+

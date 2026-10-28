@@ -90,11 +90,23 @@ export function DashboardAvatar() {
     }
   }, []);
 
+  const [liveBgColor, setLiveBgColor] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const handleAvatarColorChange = (e: any) => {
+      if (e?.detail?.avatarColor) {
+        setLiveBgColor(e.detail.avatarColor);
+      }
+    };
+    window.addEventListener("esp_avatar_color_changed", handleAvatarColorChange);
+    return () => window.removeEventListener("esp_avatar_color_changed", handleAvatarColorChange);
+  }, []);
+
   if (!user) return null;
 
   const { colorId } = usePrimaryColor();
   const activeColorPreset = PRIMARY_COLORS.find(c => c.id === (user?.primaryColor || colorId));
-  const avatarBgColor = user?.avatarColor || activeColorPreset?.hex || "#3a86ff";
+  const avatarBgColor = liveBgColor || user?.avatarColor || activeColorPreset?.hex || "#3a86ff";
 
   const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();

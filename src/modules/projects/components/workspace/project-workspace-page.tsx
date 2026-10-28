@@ -32,7 +32,6 @@ import { ProjectPhasesWbsTab } from "./tabs/project-phases-wbs-tab";
 import { ProjectBoardsTab } from "./tabs/project-boards-tab";
 import { ProjectVdisTransmittalTab } from "./tabs/project-vdis-transmittal-tab";
 import { ProjectRisksTab } from "./tabs/project-risks-tab";
-import { ProjectMiroRoadmapTab } from "./tabs/project-miro-roadmap-tab";
 import { ProjectStrategicOkrsTab } from "./tabs/project-strategic-okrs-tab";
 import { ProjectReportsAnalyticsTab } from "./tabs/project-reports-analytics-tab";
 
@@ -42,7 +41,6 @@ type TabKey =
   | "boards"
   | "vdis"
   | "risks"
-  | "roadmap"
   | "strategic"
   | "reports";
 
@@ -191,15 +189,17 @@ export function ProjectWorkspacePage({
       badge: criticalRisksCount,
       badgeColor: "bg-rose-500 text-white",
     },
-    { key: "roadmap", label: t("tabs.roadmap"), icon: Compass },
     { key: "strategic", label: t("tabs.strategic"), icon: Target },
     { key: "reports", label: t("tabs.reports"), icon: BarChart3 },
   ];
 
+  const currentTab = tabsConfig.find((t) => t.key === activeTab) || tabsConfig[0];
+  const ActiveTabIcon = currentTab.icon;
+
   return (
     <div className="space-y-6 pb-12">
       {/* Top Breadcrumb & Header Banner */}
-      <div className="rounded-2xl border border-border/60 bg-gradient-to-b from-card/80 to-card/40 backdrop-blur-md p-6 space-y-6 shadow-xs">
+      <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-6 space-y-6 shadow-xs">
         {/* Navigation Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <button
@@ -211,6 +211,20 @@ export function ProjectWorkspacePage({
           </button>
 
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Active Section Tag from Side Menu */}
+            <Badge
+              variant="default"
+              className="bg-primary text-primary-foreground border-primary text-xs font-semibold px-3 py-1 flex items-center gap-1.5 shadow-2xs transition-all duration-200"
+            >
+              <ActiveTabIcon className="w-3.5 h-3.5" />
+              <span>{currentTab.label}</span>
+              {currentTab.badge !== undefined && currentTab.badge > 0 && (
+                <span className="bg-primary-foreground/20 text-primary-foreground text-[10px] px-1.5 py-0.2 rounded-full font-bold fa-num">
+                  {currentTab.badge}
+                </span>
+              )}
+            </Badge>
+
             {activeRoleMode === "admin" ? (
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">
                 {t("roles.workspaceAdminBadge")}
@@ -229,7 +243,7 @@ export function ProjectWorkspacePage({
             </Badge>
             <Badge
               variant="outline"
-              className="text-xs font-mono bg-background/50 border-border/80 fa-num"
+              className="text-xs font-mono bg-muted/60 border-border/80 fa-num"
             >
               {project.code}
             </Badge>
@@ -239,10 +253,22 @@ export function ProjectWorkspacePage({
         {/* Project Title and Stats Header */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 max-w-3xl">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
                 {project.title}
               </h1>
+              <Badge
+                variant="outline"
+                className="bg-primary/10 border-primary/30 text-primary text-xs font-semibold px-2.5 py-1 flex items-center gap-1.5 shadow-2xs"
+              >
+                <ActiveTabIcon className="w-3.5 h-3.5" />
+                <span>{currentTab.label}</span>
+                {currentTab.badge !== undefined && currentTab.badge > 0 && (
+                  <span className="bg-primary text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold fa-num">
+                    {currentTab.badge}
+                  </span>
+                )}
+              </Badge>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
               <span>
@@ -269,7 +295,7 @@ export function ProjectWorkspacePage({
           </div>
 
           {/* Quick Progress Indicator */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-background/60 border border-border/40 p-3.5 rounded-xl min-w-[280px]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-50/80 dark:bg-muted/30 border border-border/50 p-3.5 rounded-xl min-w-[280px]">
             <div className="space-y-1.5 w-full">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground font-medium">
@@ -292,39 +318,6 @@ export function ProjectWorkspacePage({
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Tabs Navigation Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-border/40 no-scrollbar">
-          {tabsConfig.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                  isActive
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold fa-num ${
-                      isActive
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : tab.badgeColor || "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
         </div>
       </div>
 
@@ -384,9 +377,6 @@ export function ProjectWorkspacePage({
             onAddRisk={addRisk}
             onUpdateRiskStatus={updateRiskStatus}
           />
-        )}
-        {activeTab === "roadmap" && (
-          <ProjectMiroRoadmapTab project={project} />
         )}
         {activeTab === "strategic" && (
           <ProjectStrategicOkrsTab project={project} />

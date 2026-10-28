@@ -46,12 +46,32 @@ export class ApiError extends Error {
 export function toApiError(err: unknown): ApiError {
   if (err instanceof ApiError) return err;
 
-  if (err instanceof TypeError && err.message.includes('fetch')) {
-    return new ApiError('NETWORK_ERROR', 'اتصال به سرور برقرار نشد. اینترنت خود را بررسی کنید.', 0);
+  const errStr = String((err as any)?.message || err || '').toLowerCase();
+
+  if (
+    (err instanceof TypeError && errStr.includes('fetch')) ||
+    errStr.includes('network') ||
+    errStr.includes('failed to fetch') ||
+    errStr.includes('econnrefused') ||
+    errStr.includes('connection refused') ||
+    errStr.includes('load failed')
+  ) {
+    return new ApiError(
+      'NETWORK_ERROR',
+      'ارتباط با سرور برقرار نشد. سرور مرکزی در دسترس نیست یا ارتباط با سرور قطع است.',
+      0
+    );
   }
 
-  if (err instanceof DOMException && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
-    return new ApiError('TIMEOUT', 'پاسخ سرور با تأخیر همراه بود. دوباره امتحان کنید.', 408);
+  if (
+    (err instanceof DOMException && (err.name === 'AbortError' || err.name === 'TimeoutError')) ||
+    errStr.includes('timeout')
+  ) {
+    return new ApiError(
+      'TIMEOUT',
+      'پاسخ سرور با تأخیر همراه بود و پاسخی دریافت نشد. لطفاً دوباره تلاش کنید.',
+      408
+    );
   }
 
   if (err instanceof Error) {

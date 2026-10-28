@@ -29,7 +29,7 @@ export function useUniversalSearch(options: UseUniversalSearchOptions = {}) {
     total: 0,
     query: options.initialQuery || "",
     executionTime: 0.03,
-    categoryCounts: { all: 0, modules: 0, tasks: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
+    categoryCounts: { all: 0, modules: 0, tasks: 0, projects: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
     relatedSearches: [],
   });
   const [isSearching, setIsSearching] = useState(false);
@@ -47,7 +47,7 @@ export function useUniversalSearch(options: UseUniversalSearchOptions = {}) {
         total: 0,
         query: "",
         executionTime: 0.01,
-        categoryCounts: { all: 0, modules: 0, tasks: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
+        categoryCounts: { all: 0, modules: 0, tasks: 0, projects: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
         relatedSearches: [],
       });
       setIsSearching(false);

@@ -5,18 +5,10 @@ import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link, useRouter } from "@/i18n/navigation";
 import {
-  Search,
-  X,
   ArrowRight,
   ArrowLeft,
-  Layers,
-  Kanban,
-  Video,
-  BookOpen,
-  Lightbulb,
-  Sparkles,
   SlidersHorizontal,
-  type LucideIcon,
+  ChevronDown,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { GoogleSearchBox } from "@/components/features/search/GoogleSearchBox";
@@ -31,15 +23,11 @@ import { Button } from "@/components/ui/button";
 import { HEADER_ICON_BUTTON_CLASS, HEADER_ICON_CLASS } from "@/lib/constants";
 import { HighlightMatch } from "@/components/ui/highlight-match";
 import { cn } from "@/lib/utils";
+import { SearchEmptyState } from "./search-empty-state";
+import { SearchFooter } from "./search-footer";
 import { useUniversalSearch } from "../hooks/use-universal-search";
 import type { SearchCategory, SearchItem } from "../types/search.types";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import {
   Tooltip,
   TooltipContent,
@@ -47,10 +35,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { AnimatedHamburger } from "@/components/ui/animated-hamburger";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Calendar, Filter, Globe, RotateCcw } from "lucide-react";
 
-const START_OFFSET_CLASS = "sm:w-[185px] md:w-[200px] shrink-0";
+const START_OFFSET_CLASS = "sm:w-[220px] md:w-[240px] shrink-0";
 
 export function SearchResultsClient() {
   const t = useTranslations("Search");
@@ -76,16 +62,7 @@ export function SearchResultsClient() {
     initialCategory: urlCategory,
   });
 
-  const [isScrolled, setIsScrolled] = useState(false);
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   // Sync state if URL changes externally
   useEffect(() => {
@@ -128,34 +105,83 @@ export function SearchResultsClient() {
   };
 
   const [isAdvancedMenuOpen, setIsAdvancedMenuOpen] = useState(false);
-  const [filterOnlyFormulas, setFilterOnlyFormulas] = useState(false);
-  const [filterOnlyStandards, setFilterOnlyStandards] = useState(false);
-  const [languageFilter, setLanguageFilter] = useState<"all" | "fa" | "en">("all");
+  const [sortBy, setSortBy] = useState<"most_relevant" | "newest" | "oldest">("most_relevant");
+  const [selectedModule, setSelectedModule] = useState<string>("all");
 
-  const categoryTabs: { id: SearchCategory; label: string; icon: LucideIcon }[] = [
-    { id: "all", label: t("tabs.all"), icon: SlidersHorizontal },
-    { id: "modules", label: t("tabs.modules"), icon: Layers },
-    { id: "tasks", label: t("tabs.tasks"), icon: Kanban },
-    { id: "videos", label: t("tabs.videos"), icon: Video },
-    { id: "dictionary", label: t("tabs.dictionary"), icon: BookOpen },
-    { id: "didYouKnow", label: t("tabs.didYouKnow"), icon: Lightbulb },
+  const categoryTabs: { id: SearchCategory; label: string }[] = [
+    { id: "all", label: t("tabs.all") },
+    { id: "videos", label: t("tabs.videos") },
+    { id: "projects", label: t("tabs.projects") },
+    { id: "tasks", label: t("tabs.tasks") },
   ];
 
+  const moduleOptions: ComboboxOption[] = useMemo(
+    () => [
+      { value: "all", label: t("filterModule.allModules") },
+      { value: "esp-flow", label: "ESP-Flow (محاسبات فرایندی)" },
+      { value: "projects", label: isRtl ? "مدیریت پروژه‌ها (VDIS)" : "Projects Management (VDIS)" },
+      { value: "tasks", label: isRtl ? "مدیریت تسک‌ها و وظایف" : "Tasks & Kanban Management" },
+      { value: "dictionary", label: isRtl ? "واژه‌نامه تخصصی مهندسی" : "Engineering Dictionary" },
+      { value: "did-you-know", label: isRtl ? "دانستنی‌های علمی" : "Did You Know" },
+      { value: "aparat", label: isRtl ? "ویدیوها و آموزش‌ها" : "Video Tutorials" },
+      { value: "dashboard", label: isRtl ? "داشبورد مرکزی" : "Central Dashboard" },
+      { value: "admin", label: isRtl ? "پنل ادمین و سیستم" : "Admin Panel" },
+    ],
+    [isRtl, t]
+  );
+
   const displayedResults = useMemo<SearchItem[]>(() => {
-    let list = response.results;
-    if (filterOnlyFormulas) {
-      list = list.filter((item) => item.category === "didYouKnow" || /[\=×÷\+\-\_σ\^]/.test(item.snippet || ""));
+    let list = [...response.results];
+
+    // Module filter from Combobox
+    if (selectedModule && selectedModule !== "all") {
+      list = list.filter((item) => {
+        if (selectedModule === "esp-flow") return item.id.includes("esp-flow") || item.href.includes("ESP-Flow");
+        if (selectedModule === "projects") return item.category === "projects" || item.id.startsWith("proj-") || item.href.includes("/projects");
+        if (selectedModule === "tasks") return item.category === "tasks" || item.id.startsWith("task-") || item.href.includes("/tasks");
+        if (selectedModule === "dictionary") return item.category === "dictionary" || item.href.includes("/dictionary");
+        if (selectedModule === "did-you-know") return item.category === "didYouKnow" || item.href.includes("/did-you-know");
+        if (selectedModule === "aparat") return item.category === "videos" || item.href.includes("/aparat");
+        if (selectedModule === "dashboard") return item.id.includes("dashboard") || item.href.includes("/dashboard");
+        if (selectedModule === "admin") return item.id.includes("admin") || item.href.includes("/admin");
+        return true;
+      });
     }
-    if (filterOnlyStandards) {
-      list = list.filter((item) => Boolean(item.metadata?.standard));
+
+    // Sorting: most_relevant, newest, oldest
+    if (sortBy === "newest") {
+      list.sort((a, b) => {
+        const dateA = a.metadata?.date || "";
+        const dateB = b.metadata?.date || "";
+        if (dateA && dateB) return dateB.localeCompare(dateA);
+        if (dateA) return -1;
+        if (dateB) return 1;
+        return (b.score || 0) - (a.score || 0);
+      });
+    } else if (sortBy === "oldest") {
+      list.sort((a, b) => {
+        const dateA = a.metadata?.date || "";
+        const dateB = b.metadata?.date || "";
+        if (dateA && dateB) return dateA.localeCompare(dateB);
+        if (dateA) return 1;
+        if (dateB) return -1;
+        return (a.score || 0) - (b.score || 0);
+      });
     }
-    if (languageFilter === "fa") {
-      list = list.filter((item) => !item.snippetEn || /[\u0600-\u06FF]/.test(item.title));
-    } else if (languageFilter === "en") {
-      list = list.filter((item) => Boolean(item.titleEn));
-    }
+
     return list;
-  }, [response.results, filterOnlyFormulas, filterOnlyStandards, languageFilter]);
+  }, [response.results, selectedModule, sortBy]);
+
+  const [visibleCount, setVisibleCount] = useState<number>(10);
+
+  // Reset pagination when query, category or filters change
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [response.query, category, sortBy, selectedModule]);
+
+  const paginatedResults = useMemo(() => {
+    return displayedResults.slice(0, visibleCount);
+  }, [displayedResults, visibleCount]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
@@ -164,7 +190,7 @@ export function SearchResultsClient() {
       {/* ──────────────────────────────────────────────────────────── */}
       <header
         className={cn(
-          "sticky top-0 z-40 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] bg-background/80 dark:bg-background/80 backdrop-blur-xl border-none box-border transition-colors duration-150"
+          "sticky top-0 z-40 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] bg-background/95 dark:bg-[#121212]/95 backdrop-blur-md border-none box-border transition-colors duration-150"
         )}
       >
         <div className="w-full h-full px-2.5 sm:px-6 flex items-center justify-between gap-2.5 sm:gap-6">
@@ -177,7 +203,7 @@ export function SearchResultsClient() {
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      onClick={() => setIsAdvancedMenuOpen(true)}
+                      onClick={() => setIsAdvancedMenuOpen((prev) => !prev)}
                       className={cn(
                         HEADER_ICON_BUTTON_CLASS,
                         "me-1.5 sm:me-2.5 shrink-0 cursor-pointer text-foreground/80 hover:text-foreground",
@@ -247,9 +273,9 @@ export function SearchResultsClient() {
       </header>
 
       {/* ──────────────────────────────────────────────────────────── */}
-      {/* 2. CATEGORY TABS (With top margin, aligned with Search Box)  */}
+      {/* 2. CATEGORY TABS (Scrolls naturally with page content)       */}
       {/* ──────────────────────────────────────────────────────────── */}
-      <div className="mt-2.5 sm:mt-3.5 border-b border-border/60 bg-background/80 dark:bg-[#141414]/80 backdrop-blur-sm">
+      <div className="w-full bg-background dark:bg-[#121212] pt-1 sm:pt-1.5 transition-colors">
         <div className="w-full px-2.5 sm:px-6">
           <div className="flex items-center">
             {/* Spacer to align categories vertically with search box */}
@@ -262,7 +288,6 @@ export function SearchResultsClient() {
               {categoryTabs.map((tab) => {
                 const isActive = category === tab.id;
                 const count = response.categoryCounts[tab.id] ?? 0;
-                const Icon = tab.icon;
 
                 return (
                   <button
@@ -276,7 +301,6 @@ export function SearchResultsClient() {
                         : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    <Icon className="size-4 stroke-[2]" />
                     <span>{tab.label}</span>
                     {count > 0 && (
                       <span
@@ -299,17 +323,112 @@ export function SearchResultsClient() {
                 );
               })}
             </nav>
+
+            {/* Advanced Filters Toggle Button (Icon only) */}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setIsAdvancedMenuOpen((prev) => !prev)}
+                    className={cn(
+                      "ms-auto size-8 flex items-center justify-center rounded-full border transition-colors cursor-pointer shrink-0",
+                      isAdvancedMenuOpen
+                        ? "bg-primary/10 border-primary/40 text-primary"
+                        : "border-border/70 hover:bg-muted text-muted-foreground hover:text-foreground"
+                    )}
+                    aria-label={t("advancedSearch")}
+                  >
+                    <SlidersHorizontal className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {t("advancedSearch")}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
       </div>
+
+      {/* Pinned border line under header upon scroll */}
+      <div
+        className="sticky top-[var(--header-height)] z-30 w-full h-px bg-border/60 dark:bg-border/40"
+        aria-hidden="true"
+      />
 
       {/* ──────────────────────────────────────────────────────────── */}
       {/* 3. RESULTS AREA (Vertically aligned with Search Box)        */}
       {/* ──────────────────────────────────────────────────────────── */}
       <main className="w-full flex-1 px-2.5 sm:px-6 py-5">
-        <div className="flex items-start">
-          {/* Spacer to align results vertically with search box */}
-          <div className={cn("hidden sm:block", START_OFFSET_CLASS)} aria-hidden="true" />
+        <div className="flex flex-col sm:flex-row items-start w-full">
+          {/* Side Menu & Spacer: Anchored to START_OFFSET_CLASS so results NEVER move/shift */}
+          <aside
+            className={cn(
+              "self-start pe-3 sm:pe-4 transition-all duration-150",
+              START_OFFSET_CLASS,
+              isAdvancedMenuOpen
+                ? "block mb-5 sm:mb-0 sm:sticky sm:top-[calc(var(--header-height)+16px)]"
+                : "hidden sm:block sm:invisible pointer-events-none select-none"
+            )}
+            aria-hidden={!isAdvancedMenuOpen}
+          >
+            <div className="space-y-4 pt-0.5">
+              {/* Sorting: جدیدترین - منطبق‌ترین - قدیمی‌ترین */}
+              <div className="space-y-1">
+                {[
+                  { id: "newest", label: t("sort.newest") },
+                  { id: "most_relevant", label: t("sort.mostRelevant") },
+                  { id: "oldest", label: t("sort.oldest") },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setSortBy(opt.id as typeof sortBy)}
+                    className={cn(
+                      "w-full text-start px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center justify-between",
+                      sortBy === opt.id
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <span>{opt.label}</span>
+                    {sortBy === opt.id && <span className="size-1.5 rounded-full bg-primary" />}
+                  </button>
+                ))}
+              </div>
+
+              {/* Modules Combobox */}
+              <div>
+                <Combobox
+                  options={moduleOptions}
+                  value={selectedModule}
+                  onChange={(val) => setSelectedModule(val || "all")}
+                  placeholder={t("filterModule.placeholder")}
+                  searchPlaceholder={t("filterModule.placeholder")}
+                  size="sm"
+                  className="w-full"
+                  triggerClassName="w-full justify-between rtl:text-right text-xs h-8 bg-transparent hover:bg-muted/40 border-border/60"
+                  align={isRtl ? "end" : "start"}
+                  allowClear={false}
+                />
+              </div>
+
+              {/* Reset Filters Link */}
+              {(sortBy !== "most_relevant" || selectedModule !== "all") && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortBy("most_relevant");
+                    setSelectedModule("all");
+                  }}
+                  className="text-[11px] text-primary hover:underline cursor-pointer block px-1"
+                >
+                  {t("resetFilters")}
+                </button>
+              )}
+            </div>
+          </aside>
 
           <div className="w-full max-w-3xl min-w-0">
             {/* Search Stats Line (Google Style) */}
@@ -332,66 +451,79 @@ export function SearchResultsClient() {
           {/* ──────────────────────────────────────────────────────────── */}
           {displayedResults.length > 0 ? (
             <div className="space-y-7 w-full">
-              {displayedResults.map((item) => (
-                <SearchResultCard
-                  key={item.id}
-                  item={item}
-                  query={response.query}
-                  locale={locale}
-                  isRtl={isRtl}
-                  t={t}
-                />
-              ))}
+              {paginatedResults.map((item, idx) => {
+                const midpointIndex = Math.min(3, Math.max(1, Math.floor(paginatedResults.length / 2)));
+                const showRelatedHere = response.relatedSearches.length > 0 && idx === midpointIndex - 1;
 
-              {/* Related Searches Pills (Like Google) */}
-              {response.relatedSearches.length > 0 && (
-                <div className="mt-10 rounded-2xl border border-border/70 bg-card/60 p-5 shadow-xs w-full max-w-3xl">
-                  <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-                    <Sparkles className="size-4 text-primary" />
-                    <span>{t("relatedSearches")}</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {response.relatedSearches.map((term) => (
-                      <button
-                        key={term}
-                        type="button"
-                        onClick={() => handleRelatedClick(term)}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-border/80 bg-background/80 px-3.5 py-1.5 text-xs font-medium text-foreground/90 transition-all hover:border-primary/60 hover:bg-primary/5 hover:text-primary cursor-pointer shadow-xs active:scale-98"
-                      >
-                        <Search className="size-3 text-muted-foreground" />
-                        <span>{term}</span>
-                      </button>
-                    ))}
-                  </div>
+                return (
+                  <React.Fragment key={item.id}>
+                    <SearchResultCard
+                      item={item}
+                      query={response.query}
+                      locale={locale}
+                      isRtl={isRtl}
+                      t={t}
+                    />
+
+                    {/* Engineering-Style Related Searches (In the middle of results, No Icons, No Fillet / Sharp Corners) */}
+                    {showRelatedHere && (
+                      <div className="my-7 sm:my-9 rounded-none border border-border/80 bg-muted/20 dark:bg-muted/10 p-4 sm:p-5 backdrop-blur-xs">
+                        <div className="mb-3 flex items-center justify-between text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <span>{t("relatedSearches")}</span>
+                          <span className="text-[11px] font-mono text-muted-foreground/60 fa-num">
+                            {response.relatedSearches.length} {isRtl ? "مورد" : "items"}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {response.relatedSearches.map((term) => (
+                            <button
+                              key={term}
+                              type="button"
+                              onClick={() => handleRelatedClick(term)}
+                              className="px-3 py-1.5 rounded-none border border-border/80 bg-background/90 hover:bg-muted/70 text-foreground/90 hover:text-foreground text-xs font-medium transition-colors cursor-pointer hover:border-primary/50 shadow-2xs"
+                            >
+                              {term}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </React.Fragment>
+                );
+              })}
+
+              {/* Load More Button for Speed & High Performance */}
+              {displayedResults.length > visibleCount && (
+                <div className="pt-4 pb-2 flex flex-col items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleCount((prev) => prev + 10)}
+                    className="h-10 px-6 rounded-full border border-border/80 bg-background hover:bg-muted font-medium text-xs shadow-xs hover:border-primary/50 transition-all cursor-pointer"
+                  >
+                    <ChevronDown className="size-4 me-1.5" />
+                    <span>{isRtl ? "بارگذاری موارد بیشتر" : "Load More Results"}</span>
+                    <span className="ms-1.5 text-muted-foreground text-[11px] fa-num">
+                      ({displayedResults.length - visibleCount} {isRtl ? "مورد دیگر" : "more"})
+                    </span>
+                  </Button>
+                  <span className="text-[11px] text-muted-foreground fa-num">
+                    {isRtl
+                      ? `نمایش ۱ تا ${Math.min(visibleCount, displayedResults.length)} از ${displayedResults.length} نتیجه`
+                      : `Showing 1 - ${Math.min(visibleCount, displayedResults.length)} of ${displayedResults.length} results`}
+                  </span>
                 </div>
               )}
             </div>
           ) : (
             /* ──────────────────────────────────────────────────────────── */
-            /* EMPTY STATE: NO RESULTS (Google Style)                      */
+            /* EMPTY STATE: NO RESULTS (Google Style + Animated Robot SVG) */
             /* ──────────────────────────────────────────────────────────── */
             !isSearching && response.query.trim().length > 0 && (
-              <div className="mt-6 rounded-2xl border border-dashed border-border/90 bg-muted/20 p-6 sm:p-8 w-full max-w-3xl">
-                <div className="flex items-start gap-3 sm:gap-4">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                    <Search className="size-5" />
-                  </div>
-                  <div className="space-y-3">
-                    <h2 className="text-base font-semibold text-foreground">
-                      {t("noResultsTitle", { query: response.query })}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {t("noResultsSuggestions")}
-                    </p>
-                    <ul className="list-disc space-y-1.5 ps-5 text-sm text-muted-foreground/90">
-                      <li>{t("suggestion1")}</li>
-                      <li>{t("suggestion2")}</li>
-                      <li>{t("suggestion3")}</li>
-                      <li>{t("suggestion4")}</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
+              <SearchEmptyState
+                query={response.query}
+                isRtl={isRtl}
+                t={t}
+              />
             )
           )}
         </div>
@@ -399,138 +531,11 @@ export function SearchResultsClient() {
     </main>
 
     {/* ──────────────────────────────────────────────────────────── */}
-    {/* ADVANCED GOOGLE-STYLE SEARCH SIDE MENU DRAWER                */}
+    {/* 4. DEDICATED SEARCH RESULTS FOOTER                          */}
     {/* ──────────────────────────────────────────────────────────── */}
-    <Sheet open={isAdvancedMenuOpen} onOpenChange={setIsAdvancedMenuOpen}>
-      <SheetContent
-        side={isRtl ? "right" : "left"}
-        className="w-[320px] sm:w-[380px] p-6 flex flex-col justify-between overflow-y-auto"
-      >
-        <div>
-          <SheetHeader className="mb-6 text-start">
-            <SheetTitle className="flex items-center gap-2 text-lg font-bold">
-              <SlidersHorizontal className="size-5 text-primary" />
-              <span>{isRtl ? "تنظیمات پیشرفته جستجو" : "Advanced Search Settings"}</span>
-            </SheetTitle>
-            <SheetDescription className="text-xs text-muted-foreground">
-              {isRtl ? "فیلتر دقیق و ابزارهای جستجوی حرفه‌ای گوگل" : "Google-style search tools and precision filters"}
-            </SheetDescription>
-          </SheetHeader>
-
-          <div className="space-y-6">
-            {/* Category Quick Filter */}
-            <div>
-              <span className="text-xs font-bold text-muted-foreground mb-2.5 block">
-                {isRtl ? "دسته‌بندی نتایج" : "Search Domain"}
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {categoryTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => handleCategoryChange(tab.id)}
-                    className={cn(
-                      "px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
-                      category === tab.id
-                        ? "bg-primary text-white border-primary"
-                        : "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border-border/50"
-                    )}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Language Filter */}
-            <div>
-              <span className="text-xs font-bold text-muted-foreground mb-2.5 flex items-center gap-1.5">
-                <Globe className="size-3.5 text-primary" />
-                <span>{isRtl ? "زبان محتوا" : "Content Language"}</span>
-              </span>
-              <div className="grid grid-cols-3 gap-1.5">
-                {[
-                  { id: "all", label: isRtl ? "همه" : "All" },
-                  { id: "fa", label: "فارسی" },
-                  { id: "en", label: "English" },
-                ].map((lang) => (
-                  <button
-                    key={lang.id}
-                    type="button"
-                    onClick={() => setLanguageFilter(lang.id as any)}
-                    className={cn(
-                      "py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center",
-                      languageFilter === lang.id
-                        ? "bg-primary text-white border-primary"
-                        : "bg-muted/50 hover:bg-muted text-muted-foreground border-border/50"
-                    )}
-                  >
-                    {lang.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Precision Filters */}
-            <div>
-              <span className="text-xs font-bold text-muted-foreground mb-2.5 flex items-center gap-1.5">
-                <Filter className="size-3.5 text-primary" />
-                <span>{isRtl ? "فیلترهای اختصاصی مهندسی" : "Engineering Precision"}</span>
-              </span>
-              <div className="space-y-2.5 bg-muted/30 p-3.5 rounded-2xl border border-border/50">
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium">
-                  <input
-                    type="checkbox"
-                    checked={filterOnlyFormulas}
-                    onChange={(e) => setFilterOnlyFormulas(e.target.checked)}
-                    className="size-4 rounded-md accent-primary"
-                  />
-                  <span>{isRtl ? "فقط موارد دارای فرمول ریاضی" : "Formulas & Equations Only"}</span>
-                </label>
-
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs font-medium">
-                  <input
-                    type="checkbox"
-                    checked={filterOnlyStandards}
-                    onChange={(e) => setFilterOnlyStandards(e.target.checked)}
-                    className="size-4 rounded-md accent-primary"
-                  />
-                  <span>{isRtl ? "فقط موارد دارای استاندارد ASME/API" : "Codes & Standards Only"}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Reset Button */}
-        <div className="pt-4 border-t border-border/40 flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setFilterOnlyFormulas(false);
-              setFilterOnlyStandards(false);
-              setLanguageFilter("all");
-              handleCategoryChange("all");
-            }}
-            className="rounded-full text-xs"
-          >
-            <RotateCcw className="size-3.5 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
-            <span>{isRtl ? "بازنشانی فیلترها" : "Reset Filters"}</span>
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setIsAdvancedMenuOpen(false)}
-            className="rounded-full px-5 text-xs font-semibold"
-          >
-            <span>{isRtl ? "مشاهده نتایج" : "Done"}</span>
-          </Button>
-        </div>
-      </SheetContent>
-    </Sheet>
-  </div>
-);
+    <SearchFooter startOffsetClass={START_OFFSET_CLASS} />
+    </div>
+  );
 }
 
 /**

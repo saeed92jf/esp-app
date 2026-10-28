@@ -180,7 +180,7 @@ export class FakeSearchService implements ISearchService {
         total: 0,
         query: "",
         executionTime: 0.01,
-        categoryCounts: { all: 0, modules: 0, tasks: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
+        categoryCounts: { all: 0, modules: 0, tasks: 0, projects: 0, videos: 0, dictionary: 0, didYouKnow: 0 },
         relatedSearches: [],
       };
     }
@@ -321,11 +321,21 @@ export class FakeSearchService implements ISearchService {
     scoredItems.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     // Calculate category counts across all results
+    const isProject = (i: SearchItem) =>
+      i.category === "projects" || i.id.startsWith("proj-") || Boolean(i.href?.includes("/projects"));
+
+    const isTask = (i: SearchItem) =>
+      !isProject(i) && (i.category === "tasks" || i.id.startsWith("task-") || Boolean(i.href?.includes("/tasks")));
+
+    const isVideo = (i: SearchItem) =>
+      i.category === "videos" || i.id.startsWith("vid-") || Boolean(i.href?.includes("/aparat"));
+
     const categoryCounts: Record<SearchCategory, number> = {
       all: scoredItems.length,
+      videos: scoredItems.filter(isVideo).length,
+      projects: scoredItems.filter(isProject).length,
+      tasks: scoredItems.filter(isTask).length,
       modules: scoredItems.filter((i) => i.category === "modules").length,
-      tasks: scoredItems.filter((i) => i.category === "tasks").length,
-      videos: scoredItems.filter((i) => i.category === "videos").length,
       dictionary: scoredItems.filter((i) => i.category === "dictionary").length,
       didYouKnow: scoredItems.filter((i) => i.category === "didYouKnow").length,
     };
@@ -334,6 +344,12 @@ export class FakeSearchService implements ISearchService {
     const filteredResults =
       category === "all"
         ? scoredItems
+        : category === "projects"
+        ? scoredItems.filter(isProject)
+        : category === "tasks"
+        ? scoredItems.filter(isTask)
+        : category === "videos"
+        ? scoredItems.filter(isVideo)
         : scoredItems.filter((item) => item.category === category);
 
     // Generate related searches matching query language (Google style)

@@ -1,3 +1,4 @@
+import exchangeRatesMock from "@/data/mock/exchange-rates.json";
 // src/modules/dashboard/services/exchange-rates.service.ts
 // ─────────────────────────────────────────────────────────────────────────────
 // این سرویس همیشه در حالت 'real' اجرا می‌شود (در services/index.ts تنظیم شده)
@@ -23,12 +24,7 @@ export interface IExchangeRatesService {
 // ─── Fake ─────────────────────────────────────────────────────────────────────
 export class FakeExchangeRatesService implements IExchangeRatesService {
   async getRates(): Promise<ExchangeRates> {
-    return {
-      cbi: 420000,
-      sana: 2000000,
-      free: 2441500, // مقدار نزدیک به واقعیت برای توسعه
-      source: 'fake',
-    };
+    return exchangeRatesMock as unknown as ExchangeRates;
   }
 }
 

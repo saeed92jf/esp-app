@@ -174,14 +174,14 @@ export function DashboardControlHubModal({
             </button>
             <button
               type="button"
-              onClick={() => onApplyPreset(currentTab, ["commodities", "chart", "stats-overview", "bourse"])}
+              onClick={() => onApplyPreset(currentTab, ["commodities", "bourse", "stats-overview", "chart"])}
               className="px-2.5 py-1 text-[11px] rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer font-medium"
             >
               {t("presetMarketAnalysis")}
             </button>
             <button
               type="button"
-              onClick={() => onApplyPreset(currentTab, ["events-manager", "calendar", "unit-converter", "custom-links"])}
+              onClick={() => onApplyPreset(currentTab, ["events-manager", "world-clock"])}
               className="px-2.5 py-1 text-[11px] rounded-lg bg-background border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer font-medium"
             >
               {t("presetAdminTools")}

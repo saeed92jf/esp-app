@@ -44,8 +44,15 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
-import { PendingRequest, RequestStatus } from "../types/admin.types";
+import { PendingRequest, RequestStatus, User } from "../types/admin.types";
 import { getCompanyFromEmail } from "../utils/company";
+import {
+  getDepartmentsForCompany,
+  getJobTitlesForDepartment,
+  getManagerialTitlesWithOccupants,
+  SUPPLEMENTARY_INSURANCE_PROVIDERS,
+  BASIC_INSURANCE_PROVIDERS,
+} from "../data/organization-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,6 +75,7 @@ import { formatRequestSubmissionDate, formatDateFieldForLocale, toAsciiDigits } 
 interface AdminRequestsProps {
   requests: PendingRequest[];
   setRequests: React.Dispatch<React.SetStateAction<PendingRequest[]>>;
+  users?: User[];
   onRefresh?: () => Promise<void>;
   availableModules?: any[];
 }
@@ -89,6 +97,7 @@ const normalizeDigits = (val: string) => {
 export function AdminRequests({
   requests,
   setRequests,
+  users = [],
   onRefresh,
   availableModules,
 }: AdminRequestsProps) {
@@ -211,6 +220,7 @@ export function AdminRequests({
           contractType: found.contractType || "full_time",
           insuranceProvider: found.insuranceProvider || t("insuranceOptions.socialSecurity"),
           supplementaryPlan: found.supplementaryPlan || "none",
+          supplementaryProvider: found.supplementaryProvider || "SOS",
           educationDegree: found.educationDegree || "bachelors",
           dependents: found.dependents || [],
           modulesAccess: found.modulesAccess || [
@@ -228,14 +238,32 @@ export function AdminRequests({
     }
   }, [selectedReqId, requests, isRtl]);
 
-  // Options
-  const departmentOptions = [
-    { value: "engineering", label: t("departments.engineering") },
-    { value: "marketDevelopment", label: t("departments.marketDevelopment") },
-    { value: "projectControl", label: t("departments.projectControl") },
-    { value: "administrative", label: t("departments.administrative") },
-    { value: "rAndD", label: t("departments.rAndD") },
-  ];
+  // Dynamic company detection from applicant's email
+  const detectedCompany = useMemo(() => {
+    return getCompanyFromEmail(reviewData?.email || "");
+  }, [reviewData?.email]);
+
+  const departmentOptions = useMemo(() => {
+    return getDepartmentsForCompany(detectedCompany.id, isRtl);
+  }, [detectedCompany.id, isRtl]);
+
+  const jobTitleOptions = useMemo(() => {
+    return getJobTitlesForDepartment(detectedCompany.id, reviewData?.department, isRtl);
+  }, [detectedCompany.id, reviewData?.department, isRtl]);
+
+  const managerOptions = useMemo(() => {
+    return getManagerialTitlesWithOccupants(detectedCompany.id, users, isRtl);
+  }, [detectedCompany.id, users, isRtl]);
+
+  // Synchronize department when email domain / company switches
+  useEffect(() => {
+    if (reviewData?.department && departmentOptions.length > 0) {
+      const isValid = departmentOptions.some((d) => d.value === reviewData.department);
+      if (!isValid) {
+        setReviewData((prev) => (prev ? { ...prev, department: departmentOptions[0].value } : null));
+      }
+    }
+  }, [departmentOptions, reviewData?.department]);
 
   const maritalOptions = [
     { value: "single", label: t("maritalStatusOptions.single") },
@@ -627,330 +655,71 @@ export function AdminRequests({
   const PrevArrow = isRtl ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-5 max-w-[1440px] mx-auto w-full space-y-6">
-      {/* ─── Top Header & Live KPI Metrics Bar ──────────────────────────────── */}
-      <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-border/40">
-          <div className="space-y-1">
-            <h2 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground tracking-tight">
-              <div className="size-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
-                <ShieldAlert className="size-6" />
-              </div>
-              <span>{t("tabReqTitle")}</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {t("tabReqDesc")}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            {/* Reviewer Role Toggle: HR vs General Manager */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setReviewerRole("hr")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
-                  reviewerRole === "hr"
-                    ? "bg-amber-500 text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <UserCheck className="size-3.5" />
-                <span>{t("reviewerRoleHr")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setReviewerRole("manager")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
-                  reviewerRole === "manager"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <Sparkles className="size-3.5" />
-                <span>{t("reviewerRoleManager")}</span>
-              </button>
-            </div>
-
-            {onRefresh && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onRefresh}
-                className="h-9 px-3.5 text-xs rounded-xl gap-1.5 cursor-pointer border-border/50 hover:bg-background/80"
-              >
-                <RotateCw className="size-3.5" />
-                <span>{t("refreshBtn")}</span>
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* 4 Metric Overview Cards (Tags) */}
-        <div className={cn("grid grid-cols-2 md:grid-cols-4 gap-3", isRtl && "fa-num")}>
-          <div
-            onClick={() => setStatusFilter("all")}
-            className={cn(
-              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
-              statusFilter === "all"
-                ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20"
-                : "bg-background/60 border-border/40 hover:bg-background"
-            )}
-          >
-            <div className="text-[11px] text-muted-foreground font-medium">
-              {t("statTotalRequests")}
-            </div>
-            <div className="text-xl sm:text-2xl font-extrabold text-foreground mt-1">
-              {metrics.total}
-            </div>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter("pending")}
-            className={cn(
-              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
-              statusFilter === "pending"
-                ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
-                : "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10"
-            )}
-          >
-            <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-              {t("statPendingHr")}
-            </div>
-            <div className="text-xl sm:text-2xl font-extrabold text-amber-600 dark:text-amber-400 mt-1">
-              {metrics.pendingHr}
-            </div>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter("hr_approved")}
-            className={cn(
-              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
-              statusFilter === "hr_approved"
-                ? "bg-blue-500/15 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
-                : "bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
-            )}
-          >
-            <div className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
-              {t("statPendingManager")}
-            </div>
-            <div className="text-xl sm:text-2xl font-extrabold text-blue-600 dark:text-blue-400 mt-1">
-              {metrics.pendingManager}
-            </div>
-          </div>
-
-          <div
-            onClick={() => setStatusFilter("rejected")}
-            className={cn(
-              "p-3.5 rounded-2xl border transition-colors cursor-pointer select-none",
-              statusFilter === "rejected"
-                ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20"
-                : "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10"
-            )}
-          >
-            <div className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
-              {t("statRejected")}
-            </div>
-            <div className="text-xl sm:text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">
-              {metrics.rejected}
-            </div>
-          </div>
-        </div>
-
-        {/* Unified Search Bar & Company Tabs Row (Moved out of Applicants Queue) */}
-        <div className="flex flex-col md:flex-row items-center gap-3 pt-1">
-          {/* Fast Search Input */}
-          <div className="relative w-full md:flex-1">
-            <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t("searchRequestsPlaceholder")}
-              className="h-10 ps-10 pe-9 bg-background/90 text-xs rounded-xl border-border/60 shadow-2xs"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
-              >
-                <X className="size-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Company / Domain Filter Tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold w-full md:w-auto shrink-0 shadow-2xs">
-            <button
-              type="button"
-              onClick={() => setDomainFilter("all")}
-              className={cn(
-                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
-                domainFilter === "all"
-                  ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("allCompanies")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDomainFilter("euroslotpars.com")}
-              className={cn(
-                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
-                domainFilter === "euroslotpars.com"
-                  ? "bg-sky-600 text-white font-bold shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("companyEuroslot")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDomainFilter("npceram.com")}
-              className={cn(
-                "flex-1 md:flex-initial px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer text-center",
-                domainFilter === "npceram.com"
-                  ? "bg-amber-600 text-white font-bold shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("companyNpceram")}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── 2-Column Responsive Workspace ──────────────────────────────────── */}
+    <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-5 max-w-[1440px] mx-auto w-full">
+      {/* ─── 2-Column Responsive Workspace (Matches New User Config Layout) ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* ======================================================== */}
-        {/* LEFT / QUEUE COLUMN: APPLICANTS QUEUE ONLY */}
+        {/* MAIN COLUMN: STAGES & APPROVAL PIPELINE (LEFT IN EN, RIGHT IN FA) */}
         {/* ======================================================== */}
-        <div className="xl:col-span-4 flex flex-col gap-4">
-          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <Users className="size-4 text-primary" />
-                <span className="font-bold text-sm text-foreground">
-                  {t("requestsQueue")}
-                </span>
-              </div>
-              <span className={cn("bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full", isRtl && "fa-num")}>
-                {filteredRequests.length}
-              </span>
+        <div className="xl:col-span-7 flex flex-col gap-5">
+          {/* Header Card */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-extrabold flex items-center gap-2.5 text-foreground tracking-tight">
+                <div className="size-11 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
+                  <ShieldAlert className="size-6" />
+                </div>
+                <span>{t("tabReqTitle")}</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {t("tabReqDesc")}
+              </p>
             </div>
 
-            {/* Requests List Cards */}
-            <div className="flex flex-col gap-2.5 max-h-[720px] overflow-y-auto pr-1 scrollbar-thin">
-              {filteredRequests.length === 0 ? (
-                <div className="py-8 text-center text-xs text-muted-foreground italic">
-                  {t("noRequestsFound")}
-                </div>
-              ) : (
-                filteredRequests.map((req) => {
-                  const isSelected = selectedReqId === req.id;
-                  const isEuroslot = req.email
-                    .toLowerCase()
-                    .includes("@euroslotpars.com");
+            <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Reviewer Role Toggle: HR vs General Manager */}
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setReviewerRole("hr")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
+                    reviewerRole === "hr"
+                      ? "bg-amber-500 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <UserCheck className="size-3.5" />
+                  <span>{t("reviewerRoleHr")}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReviewerRole("manager")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
+                    reviewerRole === "manager"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Sparkles className="size-3.5" />
+                  <span>{t("reviewerRoleManager")}</span>
+                </button>
+              </div>
 
-                  return (
-                    <div
-                      key={req.id}
-                      onClick={() => setSelectedReqId(req.id)}
-                      className={cn(
-                        "p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex flex-col gap-2 relative",
-                        isSelected
-                          ? "bg-background border-primary shadow-xs ring-1 ring-primary/20"
-                          : "bg-background/60 border-border/40 hover:border-border hover:bg-background"
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Avatar className="size-9 rounded-full border border-border/50 shrink-0 bg-transparent">
-                            <AvatarFallback className="bg-transparent text-primary text-xs font-bold rounded-full">
-                              {req.name ? req.name.charAt(0) : "؟"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-xs text-foreground truncate">
-                              {req.name || req.email.split("@")[0]}
-                            </span>
-                            <span
-                              className="text-[11px] text-muted-foreground truncate"
-                              dir="ltr"
-                            >
-                              {req.email}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Status Badge */}
-                        <div className="shrink-0">
-                          {req.status === "pending" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
-                              <UserCheck className="size-3" />
-                              <span>{t("statusPendingHr")}</span>
-                            </span>
-                          )}
-                          {req.status === "hr_approved" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
-                              <ShieldCheck className="size-3" />
-                              <span>{t("statusHrApproved")}</span>
-                            </span>
-                          )}
-                          {req.status === "active" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                              <CheckCircle2 className="size-3" />
-                              <span>{t("statusActive")}</span>
-                            </span>
-                          )}
-                          {req.status === "rejected" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                              <UserX className="size-3" />
-                              <span>{t("statusRejected")}</span>
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className={cn("flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30", isRtl && "fa-num")}>
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="truncate max-w-[110px]">{req.department ? t(`departments.${req.department}`) : "---"}</span>
-                          {(() => {
-                            const comp = getCompanyFromEmail(req.email);
-                            return (
-                              <span
-                                className={cn(
-                                  "px-1.5 py-0.2 rounded font-bold text-[9px] border shrink-0 flex items-center gap-1",
-                                  comp.id === "npceram"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
-                                )}
-                              >
-                                <Building2 className="size-2.5" />
-                                <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
-                              </span>
-                            );
-                          })()}
-                        </div>
-                        <span className="shrink-0 font-mono">
-                          {formatRequestSubmissionDate(req.requestedAt, isRtl)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })
+              {onRefresh && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onRefresh}
+                  className="h-9 px-3.5 text-xs rounded-xl gap-1.5 cursor-pointer border-border/50 hover:bg-background/80"
+                >
+                  <RotateCw className="size-3.5" />
+                  <span>{t("refreshBtn")}</span>
+                </Button>
               )}
             </div>
           </div>
-        </div>
-
-        {/* ======================================================== */}
-        {/* RIGHT / MAIN COLUMN: SEGMENTED ACCORDION REVIEW WORKSPACE */}
-        {/* ======================================================== */}
-        <div className="xl:col-span-8 flex flex-col gap-5">
           {!reviewData ? (
             <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-12 text-center shadow-xs space-y-3">
               <CheckCircle2 className="size-10 text-muted-foreground/50 mx-auto" />
@@ -967,8 +736,11 @@ export function AdminRequests({
               <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col gap-5 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <Avatar className="size-14 rounded-full border-2 border-border/60 shadow-xs shrink-0 bg-transparent">
-                      <AvatarFallback className="bg-transparent text-primary text-xl font-bold rounded-full">
+                    <Avatar className="size-14 rounded-full border-2 border-border/60 shadow-xs shrink-0">
+                      <AvatarFallback 
+                        className="text-white text-xl font-bold rounded-full"
+                        style={{ backgroundColor: (reviewData as any).avatarColor || "#0284c7" }}
+                      >
                         {reviewData.name ? reviewData.name.charAt(0) : "؟"}
                       </AvatarFallback>
                     </Avatar>
@@ -989,6 +761,8 @@ export function AdminRequests({
                                 "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border",
                                 comp.id === "npceram"
                                   ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                  : comp.id === "holding"
+                                  ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20"
                                   : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
                               )}
                             >
@@ -1700,6 +1474,8 @@ export function AdminRequests({
                                               "ps-10 pe-10 h-11 border rounded-xl text-sm font-bold cursor-not-allowed select-none",
                                               comp.id === "npceram"
                                                 ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                                : comp.id === "holding"
+                                                ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30"
                                                 : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
                                             )}
                                           />
@@ -1732,26 +1508,29 @@ export function AdminRequests({
                                   </div>
 
                                   <div className="flex flex-col gap-2">
-                                    <Label className="text-xs font-semibold text-foreground">
-                                      {t("jobTitleLabel")}
+                                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                      <Briefcase className="size-3.5 text-primary" />
+                                      <span>{t("jobTitleLabel")}</span>
                                     </Label>
-                                    <div className="relative">
-                                      <Briefcase
-                                        size={18}
-                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
-                                      />
-                                      <Input
-                                        value={reviewData.jobTitle || ""}
-                                        onChange={(e) =>
-                                          setReviewData({
-                                            ...reviewData,
-                                            jobTitle: e.target.value,
-                                          })
-                                        }
-                                        placeholder={t("jobTitlePlaceholder")}
-                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
-                                      />
-                                    </div>
+                                    <Combobox
+                                      options={jobTitleOptions}
+                                      value={reviewData.jobTitle || ""}
+                                      onChange={(val) =>
+                                        setReviewData((prev) =>
+                                          prev ? { ...prev, jobTitle: val } : null
+                                        )
+                                      }
+                                      placeholder={t("selectJobTitle")}
+                                      searchPlaceholder={
+                                        isRtl
+                                          ? "جستجو یا تایپ سمت جدید..."
+                                          : "Search or type new title..."
+                                      }
+                                      emptyText={t("noResults")}
+                                      creatable={true}
+                                      showSearch={true}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
                                   </div>
 
                                   <div className="flex flex-col gap-2">
@@ -1791,19 +1570,28 @@ export function AdminRequests({
                                   </div>
 
                                   <div className="flex flex-col gap-2">
-                                    <Label className="text-xs font-semibold text-foreground">
-                                      {t("managerDirectLabel")}
+                                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                      <UserCircle2 className="size-3.5 text-primary" />
+                                      <span>{t("managerDirectLabel")}</span>
                                     </Label>
-                                    <Input
+                                    <Combobox
+                                      options={managerOptions}
                                       value={reviewData.manager || ""}
-                                      onChange={(e) =>
-                                        setReviewData({
-                                          ...reviewData,
-                                          manager: e.target.value,
-                                        })
+                                      onChange={(val) =>
+                                        setReviewData((prev) =>
+                                          prev ? { ...prev, manager: val } : null
+                                        )
                                       }
-                                      placeholder={t("managerDirectPlaceholder")}
-                                      className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                      placeholder={t("selectManager")}
+                                      searchPlaceholder={
+                                        isRtl
+                                          ? "جستجوی مدیر یا تعریف سمت..."
+                                          : "Search manager or type title..."
+                                      }
+                                      emptyText={t("noResults")}
+                                      creatable={true}
+                                      showSearch={true}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
                                     />
                                   </div>
 
@@ -1902,18 +1690,27 @@ export function AdminRequests({
                                       <Label className="text-xs font-semibold text-foreground">
                                         {t("insuranceProviderLabel")}
                                       </Label>
-                                      <Input
+                                      <Combobox
+                                        options={BASIC_INSURANCE_PROVIDERS}
                                         value={
-                                          reviewData.insuranceProvider ||
-                                          t("insuranceOptions.socialSecurity")
+                                          reviewData.insuranceProvider || "socialSecurity"
                                         }
-                                        onChange={(e) =>
+                                        onChange={(val) =>
                                           setReviewData({
                                             ...reviewData,
-                                            insuranceProvider: e.target.value,
+                                            insuranceProvider: val,
                                           })
                                         }
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                        placeholder={t("insuranceProviderLabel")}
+                                        searchPlaceholder={
+                                          isRtl
+                                            ? "جستجو یا ثبت بیمه‌گر پایه..."
+                                            : "Search or type basic provider..."
+                                        }
+                                        emptyText={t("noResults")}
+                                        creatable={true}
+                                        showSearch={true}
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
                                       />
                                     </div>
 
@@ -1937,6 +1734,32 @@ export function AdminRequests({
                                           isRtl && "fa-num"
                                         )}
                                         dir="ltr"
+                                      />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("supplementaryProviderLabel")}
+                                      </Label>
+                                      <Combobox
+                                        options={SUPPLEMENTARY_INSURANCE_PROVIDERS}
+                                        value={reviewData.supplementaryProvider || "SOS"}
+                                        onChange={(val) =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            supplementaryProvider: val,
+                                          })
+                                        }
+                                        placeholder={t("supplementaryProviderLabel")}
+                                        searchPlaceholder={
+                                          isRtl
+                                            ? "جستجو یا ثبت بیمه‌گر تکمیلی..."
+                                            : "Search or type provider..."
+                                        }
+                                        emptyText={t("noResults")}
+                                        creatable={true}
+                                        showSearch={true}
+                                        className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
                                       />
                                     </div>
 
@@ -2317,6 +2140,277 @@ export function AdminRequests({
               </div>
             </div>
           )}
+        </div>
+
+        {/* ======================================================== */}
+        {/* SIDE COLUMN: TAGS, SEARCH & APPLICANTS QUEUE (RIGHT IN EN, LEFT IN FA) */}
+        {/* ======================================================== */}
+        <div className="xl:col-span-5 flex flex-col gap-4">
+          {/* Card 1: 4 Metric Overview Cards (Tags) */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-4 text-primary" />
+                <span className="font-bold text-xs sm:text-sm text-foreground">
+                  {t("statTotalRequests")}
+                </span>
+              </div>
+              <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20", isRtl && "fa-num")}>
+                {metrics.total}
+              </span>
+            </div>
+
+            <div className={cn("grid grid-cols-2 gap-2.5", isRtl && "fa-num")}>
+              <div
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
+                  statusFilter === "all"
+                    ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20"
+                    : "bg-background/60 border-border/40 hover:bg-background"
+                )}
+              >
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">
+                  {t("reqFilterAll")}
+                </div>
+                <div className="text-lg sm:text-xl font-extrabold text-foreground mt-0.5">
+                  {metrics.total}
+                </div>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("pending")}
+                className={cn(
+                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
+                  statusFilter === "pending"
+                    ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
+                    : "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10"
+                )}
+              >
+                <div className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium truncate">
+                  {t("statPendingHr")}
+                </div>
+                <div className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
+                  {metrics.pendingHr}
+                </div>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("hr_approved")}
+                className={cn(
+                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
+                  statusFilter === "hr_approved"
+                    ? "bg-blue-500/15 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
+                    : "bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
+                )}
+              >
+                <div className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium truncate">
+                  {t("statPendingManager")}
+                </div>
+                <div className="text-lg sm:text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
+                  {metrics.pendingManager}
+                </div>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("rejected")}
+                className={cn(
+                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
+                  statusFilter === "rejected"
+                    ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20"
+                    : "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10"
+                )}
+              >
+                <div className="text-[10px] sm:text-[11px] text-rose-600 dark:text-rose-400 font-medium truncate">
+                  {t("statRejected")}
+                </div>
+                <div className="text-lg sm:text-xl font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">
+                  {metrics.rejected}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: Unified Search Bar & Company Tabs */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3">
+            {/* Fast Search Input */}
+            <div className="relative w-full">
+              <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("searchRequestsPlaceholder")}
+                className="h-10 ps-10 pe-9 bg-background/90 text-xs rounded-xl border-border/60 shadow-2xs"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
+                >
+                  <X className="size-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Company / Domain Filter Tabs */}
+            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold w-full shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setDomainFilter("all")}
+                className={cn(
+                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
+                  domainFilter === "all"
+                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("allCompanies")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDomainFilter("euroslotpars.com")}
+                className={cn(
+                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
+                  domainFilter === "euroslotpars.com"
+                    ? "bg-sky-600 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("companyEuroslot")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDomainFilter("npceram.com")}
+                className={cn(
+                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
+                  domainFilter === "npceram.com"
+                    ? "bg-amber-600 text-white font-bold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {t("companyNpceram")}
+              </button>
+            </div>
+          </div>
+
+          {/* Card 3: Applicants Queue (لیست درخواست‌ها) */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <Users className="size-4 text-primary" />
+                <span className="font-bold text-sm text-foreground">
+                  {t("requestsQueue")}
+                </span>
+              </div>
+              <span className={cn("bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full", isRtl && "fa-num")}>
+                {filteredRequests.length}
+              </span>
+            </div>
+
+            {/* Requests List Cards */}
+            <div className="flex flex-col gap-2.5 max-h-[640px] overflow-y-auto pr-1 scrollbar-thin">
+              {filteredRequests.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground italic">
+                  {t("noRequestsFound")}
+                </div>
+              ) : (
+                filteredRequests.map((req) => {
+                  const isSelected = selectedReqId === req.id;
+
+                  return (
+                    <div
+                      key={req.id}
+                      onClick={() => setSelectedReqId(req.id)}
+                      className={cn(
+                        "p-3.5 rounded-2xl border transition-all cursor-pointer select-none flex flex-col gap-2 relative",
+                        isSelected
+                          ? "bg-background border-primary shadow-xs ring-1 ring-primary/20"
+                          : "bg-background/60 border-border/40 hover:border-border hover:bg-background"
+                      )}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <Avatar className="size-9 rounded-full border border-border/50 shrink-0">
+                            <AvatarFallback 
+                              className="text-white text-xs font-bold rounded-full"
+                              style={{ backgroundColor: (req as any).avatarColor || "#0284c7" }}
+                            >
+                              {req.name ? req.name.charAt(0) : "؟"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-xs text-foreground truncate">
+                              {req.name || req.email.split("@")[0]}
+                            </span>
+                            <span
+                              className="text-[11px] text-muted-foreground truncate"
+                              dir="ltr"
+                            >
+                              {req.email}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className="shrink-0">
+                          {req.status === "pending" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
+                              <UserCheck className="size-3" />
+                              <span>{t("statusPendingHr")}</span>
+                            </span>
+                          )}
+                          {req.status === "hr_approved" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
+                              <ShieldCheck className="size-3" />
+                              <span>{t("statusHrApproved")}</span>
+                            </span>
+                          )}
+                          {req.status === "active" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                              <CheckCircle2 className="size-3" />
+                              <span>{t("statusActive")}</span>
+                            </span>
+                          )}
+                          {req.status === "rejected" && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                              <UserX className="size-3" />
+                              <span>{t("statusRejected")}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className={cn("flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30", isRtl && "fa-num")}>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="truncate max-w-[110px]">{req.department ? t(`departments.${req.department}`) : "---"}</span>
+                          {(() => {
+                            const comp = getCompanyFromEmail(req.email);
+                            return (
+                              <span
+                                className={cn(
+                                  "px-1.5 py-0.2 rounded font-bold text-[9px] border shrink-0 flex items-center gap-1",
+                                  comp.id === "npceram"
+                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                                )}
+                              >
+                                <Building2 className="size-2.5" />
+                                <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
+                              </span>
+                            );
+                          })()}
+                        </div>
+                        <span className="shrink-0 font-mono">
+                          {formatRequestSubmissionDate(req.requestedAt, isRtl)}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

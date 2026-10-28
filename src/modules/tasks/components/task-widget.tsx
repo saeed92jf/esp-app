@@ -17,37 +17,24 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTasks } from "../hooks/use-tasks";
 import { TaskItem, TaskPriority } from "../types/tasks.types";
-import { TaskDetailDrawer } from "./task-detail-drawer";
 import { cn } from "@/lib/utils";
 
 export function TaskWidget() {
   const t = useTranslations("Tasks");
   const locale = useLocale();
+  const router = useRouter();
   const {
     tasks,
     isLoading,
     stats,
     createTask,
     toggleTaskComplete,
-    changeTaskStatus,
-    toggleSubtask,
-    addSubtask,
-    addComment,
-    addReply,
-    uploadAttachment,
-    deleteAttachment,
-    deleteTask,
-    assignCollaborator,
-    removeCollaborator,
-    updateProgress,
   } = useTasks();
 
   const [quickTitle, setQuickTitle] = useState("");
-  const [selectedTask, setSelectedTask] = useState<TaskItem | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [filterTab, setFilterTab] = useState<"all" | "inProgress" | "manager">("all");
 
   const handleQuickAdd = async (e: React.FormEvent) => {
@@ -187,111 +174,91 @@ export function TaskWidget() {
       </form>
 
       {/* ── Scrollable Tasks List ── */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-1.5 pe-1 min-h-[140px]">
+      <div className="flex-1 overflow-y-auto custom-scrollbar pe-1 min-h-[140px]">
         {displayedTasks.length === 0 ? (
           <div className="h-full flex items-center justify-center text-center text-xs text-muted-foreground/60 select-none py-6">
             {t("widget.empty")}
           </div>
         ) : (
-          displayedTasks.map((task) => {
-            const isCompleted = task.status === "completed";
+          <div className="grid grid-cols-1 @2xl:grid-cols-2 gap-2">
+            {displayedTasks.map((task) => {
+              const isCompleted = task.status === "completed";
 
-            return (
-              <div
-                key={task.id}
-                onClick={() => {
-                  setSelectedTask(task);
-                  setIsDrawerOpen(true);
-                }}
-                className={cn(
-                  "p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer shadow-2xs group select-none",
-                  isCompleted
-                    ? "bg-muted/20 border-border/30 opacity-70"
-                    : "bg-white/80 dark:bg-card/70 border-border/50 hover:border-primary/40 hover:bg-white dark:hover:bg-card"
-                )}
-              >
-                {/* Left: Checkbox + Title */}
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleTaskComplete(task);
-                    }}
-                    className={cn(
-                      "size-4 rounded-md flex items-center justify-center shrink-0 border transition-colors cursor-pointer",
-                      isCompleted
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "border-border/80 bg-background hover:border-primary"
-                    )}
-                  >
-                    {isCompleted && <Check className="size-2.5 stroke-[3]" />}
-                  </button>
-
-                  <div className="flex flex-col min-w-0">
-                    <span
+              return (
+                <div
+                  key={task.id}
+                  onClick={() => {
+                    router.push(`/dashboard/tasks/${encodeURIComponent(task.id)}`);
+                  }}
+                  className={cn(
+                    "p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer shadow-2xs group select-none",
+                    isCompleted
+                      ? "bg-muted/20 border-border/30 opacity-70"
+                      : "bg-white/80 dark:bg-card/70 border-border/50 hover:border-primary/40 hover:bg-white dark:hover:bg-card"
+                  )}
+                >
+                  {/* Left: Checkbox + Title */}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTaskComplete(task);
+                      }}
                       className={cn(
-                        "text-xs font-medium truncate",
+                        "size-4 rounded-md flex items-center justify-center shrink-0 border transition-colors cursor-pointer",
                         isCompleted
-                          ? "line-through text-muted-foreground"
-                          : "text-foreground group-hover:text-primary transition-colors"
+                          ? "bg-primary border-primary text-primary-foreground"
+                          : "border-border/80 bg-background hover:border-primary"
                       )}
                     >
-                      {task.title}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground truncate">
-                      {task.category}
-                      {task.dueDate && ` • ${task.dueDate}`}
+                      {isCompleted && <Check className="size-2.5 stroke-[3]" />}
+                    </button>
+
+                    <div className="flex flex-col min-w-0">
+                      <span
+                        className={cn(
+                          "text-xs font-medium truncate",
+                          isCompleted
+                            ? "line-through text-muted-foreground"
+                            : "text-foreground group-hover:text-primary transition-colors"
+                        )}
+                      >
+                        {task.title}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {task.category}
+                        {task.dueDate && ` • ${task.dueDate}`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Right: Badges */}
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {task.isManagerDefined && (
+                      <div
+                        className="text-amber-500"
+                        title={t("widget.managerBadge")}
+                      >
+                        <ShieldAlert className="size-3.5" />
+                      </div>
+                    )}
+
+                    <span
+                      className={cn(
+                        "px-1.5 py-0.5 rounded text-[9px] font-semibold border",
+                        getPriorityBadgeClass(task.priority)
+                      )}
+                    >
+                      {t(`priority.${task.priority}`)}
                     </span>
                   </div>
                 </div>
-
-                {/* Right: Badges */}
-                <div className="flex items-center gap-1.5 shrink-0">
-                  {task.isManagerDefined && (
-                    <div
-                      className="text-amber-500"
-                      title={t("widget.managerBadge")}
-                    >
-                      <ShieldAlert className="size-3.5" />
-                    </div>
-                  )}
-
-                  <span
-                    className={cn(
-                      "px-1.5 py-0.5 rounded text-[9px] font-semibold border",
-                      getPriorityBadgeClass(task.priority)
-                    )}
-                  >
-                    {t(`priority.${task.priority}`)}
-                  </span>
-                </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
-
-      {/* ── Task Detail Modal ── */}
-      <TaskDetailDrawer
-        task={selectedTask}
-        open={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedTask(null);
-        }}
-        onUpdateStatus={changeTaskStatus}
-        onToggleSubtask={toggleSubtask}
-        onAddSubtask={addSubtask}
-        onAddComment={addComment}
-        onAddReply={addReply}
-        onUploadAttachment={uploadAttachment}
-        onDeleteAttachment={deleteAttachment}
-        onDeleteTask={deleteTask}
-        onAssignCollaborator={assignCollaborator}
-        onRemoveCollaborator={removeCollaborator}
-        onUpdateProgress={updateProgress}
-      />
     </div>
   );
 }

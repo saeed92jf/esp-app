@@ -1134,7 +1134,7 @@ export function DidYouKnowPage() {
   );
 
   return (
-    <div className="flex flex-col min-h-[calc(100dvh-var(--header-height,0px))] bg-panel dark:bg-background font-sans w-full relative">
+    <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* 1. App Header with Tag = "didYouKnow" */}
       <AppHeader
         tag="didYouKnow"

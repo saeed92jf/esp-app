@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Plus } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -62,6 +62,10 @@ export interface ComboboxProps {
    */
   id?: string;
   /**
+   * Allow user to create / select a custom value typed into the search box
+   */
+  creatable?: boolean;
+  /**
    * Custom render function for trigger content
    */
   renderTrigger?: (selected: ComboboxOption | undefined, open: boolean) => React.ReactNode;
@@ -94,6 +98,7 @@ export function Combobox({
   sideOffset,
   allowClear = true,
   id,
+  creatable = false,
   renderTrigger,
 }: ComboboxProps) {
   const t = useTranslations("Combobox");
@@ -101,6 +106,8 @@ export function Combobox({
   const isRtl = locale === "fa" || locale === "ar";
 
   const [open, setOpen] = React.useState(false);
+  const [searchValue, setSearchValue] = React.useState("");
+
   const selected = options.find(
     (o) => o.value === value || (value && o.label.toLowerCase() === value.toLowerCase())
   );
@@ -109,14 +116,32 @@ export function Combobox({
   const resolvedEmptyText = emptyText ?? (t ? t("emptyText") : "No results.");
 
   const shouldShowSearch =
-    typeof showSearch === "boolean"
+    creatable ||
+    (typeof showSearch === "boolean"
       ? showSearch
-      : options.length > searchThreshold;
+      : options.length > searchThreshold);
+
+  const trimmedSearch = searchValue.trim();
+  const showCreateOption =
+    creatable &&
+    trimmedSearch.length > 0 &&
+    !options.some(
+      (opt) =>
+        opt.value.toLowerCase() === trimmedSearch.toLowerCase() ||
+        opt.label.toLowerCase() === trimmedSearch.toLowerCase()
+    );
 
   const isUnderline = variant === "underline";
 
   return (
-    <Popover open={open} onOpenChange={setOpen} modal={false}>
+    <Popover
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (!next) setSearchValue("");
+      }}
+      modal={false}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -188,9 +213,33 @@ export function Combobox({
         dir={isRtl ? "rtl" : "ltr"}
       >
         <Command>
-          {shouldShowSearch && <CommandInput placeholder={resolvedSearchPlaceholder} className="rtl:text-right" />}
+          {shouldShowSearch && (
+            <CommandInput
+              value={searchValue}
+              onValueChange={setSearchValue}
+              placeholder={resolvedSearchPlaceholder}
+              className="rtl:text-right"
+            />
+          )}
           <CommandList>
             <CommandEmpty>{resolvedEmptyText}</CommandEmpty>
+            {showCreateOption && (
+              <CommandGroup>
+                <CommandItem
+                  value={trimmedSearch}
+                  keywords={[trimmedSearch]}
+                  onSelect={() => {
+                    onChange?.(trimmedSearch);
+                    setSearchValue("");
+                    setOpen(false);
+                  }}
+                  className="group rtl:text-right w-full flex items-center gap-2 px-2.5 py-1.5 cursor-pointer text-primary font-medium border-b border-border/30 mb-1"
+                >
+                  <Plus className="size-3.5 shrink-0" />
+                  <span className="truncate">{t("create", { value: trimmedSearch })}</span>
+                </CommandItem>
+              </CommandGroup>
+            )}
             <CommandGroup>
               {options.map((opt) => (
                 <CommandItem 
