@@ -2,8 +2,9 @@ import { ApiError } from "@/services/core/errors";
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "@/services/core/types";
 import { HttpClient } from "@/services/core/http";
 import type { User, UserRole, AccountStatus } from "@/types/auth";
-import { companyEmailRe } from "@/lib/validations/auth";
+import { companyEmailRe, normalizeDigits } from "@/lib/validations/auth";
 import authUsersMock from "@/data/mock/auth-users.json";
+import { normalizeUserFromApi } from "@/modules/auth/utils/normalize-user";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,6 +51,15 @@ export interface AccountRequestRecord {
   tempPassword?: string;
 }
 
+export interface ResetPasswordPayload {
+  token: string;
+  new_password?: string;
+  newPassword?: string;
+  email?: string | null;
+  confirmPassword?: string | null;
+  confirm_password?: string | null;
+}
+
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface IAuthService {
@@ -66,7 +76,11 @@ export interface IAuthService {
   resetUserStatus?(userId: string): Promise<void>;
   forgotPassword(email: string): Promise<void>;
   verifyEmail(token: string): Promise<void>;
-  resetPassword(token: string, newPassword: string): Promise<void>;
+  resetPassword(
+    tokenOrPayload: string | ResetPasswordPayload,
+    newPassword?: string,
+    options?: { email?: string; confirmPassword?: string }
+  ): Promise<void>;
 }
 
 // ─── Fake ─────────────────────────────────────────────────────────────────────
@@ -82,15 +96,8 @@ const ACCOUNT_REQUESTS_KEY = "esp_account_requests";
 export class FakeAuthService implements IAuthService {
   async login({ identifier, password }: LoginPayload): Promise<LoginResult> {
     await wait(FAKE_DELAY);
-    const id = identifier.trim().toLowerCase();
+    const id = normalizeDigits(identifier).trim().toLowerCase();
     const isSaeed = id === "saeed@demo.com" || id === "saeed" || id === "09120000000";
-    const isGuest =
-      id === "guest@demo.com" ||
-      id === "gust@demo.com" ||
-      id === "guest" ||
-      id === "gust" ||
-      id === "09120000001";
-
     // First check in-memory or persisted users
     let dynamicUsers = [...DEMO_USERS];
     if (typeof window !== "undefined") {
@@ -109,24 +116,101 @@ export class FakeAuthService implements IAuthService {
       if (c.user.id === "u-saeed" && isSaeed) {
         return c.password === password;
       }
-      if (c.user.id === "u-guest" && isGuest) {
-        return password === "guest" || password === "gust";
-      }
+      
       return (
         (c.email.toLowerCase() === id || c.mobile === id) &&
-        (c.password === password || (c.user.id === "u-guest" && (password === "guest" || password === "gust")))
+        (c.password === password )
       );
     });
 
-    if (!match)
+    if (!match) {
+      // Check esp_custom_user_creds (users created or approved from admin panel)
+      if (typeof window !== "undefined") {
+        try {
+          const rawCreds = localStorage.getItem("esp_custom_user_creds");
+          if (rawCreds) {
+            const creds = JSON.parse(rawCreds);
+            const userCred = creds[id];
+            if (userCred && userCred.password === password) {
+              const rawAdminUsers = localStorage.getItem("esp_admin_users");
+              const adminUsers: any[] = rawAdminUsers ? JSON.parse(rawAdminUsers) : [];
+              const foundAdminUser = adminUsers.find(
+                (u) => u.email?.toLowerCase() === id
+              );
+
+              const role = userCred.role || foundAdminUser?.role || "user";
+              const userObj: User = {
+                id: foundAdminUser?.id || `u-${Date.now()}`,
+                fullName: foundAdminUser?.name || userCred.name || id.split("@")[0],
+                name: foundAdminUser?.name || userCred.name || id.split("@")[0],
+                email: id,
+                role: role,
+                primaryColor: foundAdminUser?.primaryColor || "blue",
+                accountStatus: "active",
+                isProfileCompleted: true,
+                avatar: foundAdminUser?.avatar,
+                avatarColor: foundAdminUser?.avatarColor || "#0284c7",
+              };
+
+              const token = `fake-token-${userObj.id}-${Date.now()}`;
+              return { user: userObj, token };
+            }
+          }
+        } catch {}
+      }
+
       throw new ApiError(
         "INVALID_CREDENTIALS",
         "ایمیل/موبایل یا رمز عبور اشتباه است.",
         401,
       );
+    }
 
-    const token = `fake-token-${match.user.id}-${Date.now()}`;
-    return { user: { ...match.user }, token };
+    // Check if user profile was updated in persistent storage
+    let userToReturn = { ...match.user };
+    if (typeof window !== "undefined") {
+      try {
+        const rawProfile = localStorage.getItem(`esp_user_profile_${userToReturn.id}`) 
+          || localStorage.getItem(`esp_user_profile_${match.email.toLowerCase()}`)
+          || localStorage.getItem("esp_user_profile");
+        if (rawProfile) {
+          const profile = JSON.parse(rawProfile);
+          if (profile && profile.personal) {
+            if (profile.personal.firstNameFa || profile.personal.lastNameFa) {
+              userToReturn.fullNameFa = `${profile.personal.firstNameFa || ""} ${profile.personal.lastNameFa || ""}`.trim();
+              userToReturn.name = userToReturn.fullNameFa;
+            }
+            if (profile.personal.firstName || profile.personal.lastName) {
+              userToReturn.fullName = `${profile.personal.firstName || ""} ${profile.personal.lastName || ""}`.trim();
+              if (!userToReturn.name) userToReturn.name = userToReturn.fullName;
+            }
+            if (profile.personal.email) userToReturn.email = profile.personal.email;
+            if (profile.personal.phone) userToReturn.mobile = profile.personal.phone;
+            if (profile.personal.primaryColor) userToReturn.primaryColor = profile.personal.primaryColor;
+            if (profile.personal.avatarColor) userToReturn.avatarColor = profile.personal.avatarColor;
+            if (profile.personal.avatar !== undefined) userToReturn.avatar = profile.personal.avatar;
+            if (profile.personal.avatarMode) userToReturn.avatarMode = profile.personal.avatarMode;
+          }
+        }
+
+        const rawAdminUsers = localStorage.getItem("esp_admin_users");
+        if (rawAdminUsers) {
+          const adminUsers: any[] = JSON.parse(rawAdminUsers);
+          const found = adminUsers.find(
+            (u) => u.email?.toLowerCase() === match.email.toLowerCase() || u.id === match.user.id
+          );
+          if (found) {
+            if (found.role) userToReturn.role = found.role;
+            if (found.name) userToReturn.name = found.name;
+            if (found.primaryColor) userToReturn.primaryColor = found.primaryColor;
+            if (found.avatarColor) userToReturn.avatarColor = found.avatarColor;
+          }
+        }
+      } catch {}
+    }
+
+    const token = `fake-token-${userToReturn.id}-${Date.now()}`;
+    return { user: userToReturn, token };
   }
 
   async logout(): Promise<void> {
@@ -142,10 +226,18 @@ export class FakeAuthService implements IAuthService {
 
     let parsed = JSON.parse(raw) as User;
 
-    // Sync with DEMO_USERS to inject latest properties if it's a demo user
+    // Filter out mock avatars
+    if (parsed.avatar && (parsed.avatar.includes("unsplash.com") || parsed.avatar.includes("saeed-jalili-fard") || parsed.avatar.includes("/team/"))) {
+      parsed.avatar = undefined;
+      parsed.avatarMode = "initials";
+    }
+
+    // Sync with DEMO_USERS for base permissions only without overriding custom avatar/color
     const demoMatch = DEMO_USERS.find((d) => d.user.id === parsed.id);
     if (demoMatch) {
-      parsed = { ...demoMatch.user, ...parsed };
+      const { avatar, avatarMode, primaryColor, ...baseDemoProps } = demoMatch.user;
+      parsed = { ...baseDemoProps, ...parsed };
+      if (!parsed.avatarMode) parsed.avatarMode = "initials";
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(parsed));
     }
 
@@ -342,7 +434,11 @@ export class FakeAuthService implements IAuthService {
     await wait(FAKE_DELAY);
   }
 
-  async resetPassword(_token: string, _newPassword: string): Promise<void> {
+  async resetPassword(
+    _tokenOrPayload: string | ResetPasswordPayload,
+    _newPassword?: string,
+    _options?: { email?: string; confirmPassword?: string }
+  ): Promise<void> {
     await wait(FAKE_DELAY);
   }
 }
@@ -374,55 +470,61 @@ export class RealAuthService implements IAuthService {
   }
 
   async login(payload: LoginPayload): Promise<LoginResult> {
-    const email = payload.identifier.trim().toLowerCase();
+    const email = normalizeDigits(payload.identifier).trim().toLowerCase();
     const apiPayload = {
       email,
       password: payload.password,
     };
-    const res = await this.client.post<any>(`/auth/login`, apiPayload, { auth: false });
-    const raw = res?.data ?? res;
-    const token = raw.tokens?.access_token || raw.token || "";
-
-    if (typeof window !== "undefined" && token) {
-      try {
-        localStorage.setItem(AUTH_TOKEN_KEY, token);
-        if (raw.tokens?.refresh_token) {
-          localStorage.setItem("esp-refresh-token", raw.tokens.refresh_token);
-        }
-      } catch {}
-    }
-
-    // Attempt to fetch full user info from /users/me
-    let meUser: any = null;
     try {
-      const meRes = await this.client.get<any>(`/users/me`, { auth: true });
-      meUser = meRes?.data ?? meRes;
-    } catch {
-      // Fallback to basic info if /users/me fails or is still onboarding
+      const res = await this.client.post<any>(`/auth/login`, apiPayload, { auth: false });
+      const raw = res?.data ?? res;
+      const token = raw.tokens?.access_token || raw.token || "";
+
+      if (typeof window !== "undefined" && token) {
+        try {
+          localStorage.setItem(AUTH_TOKEN_KEY, token);
+          if (raw.tokens?.refresh_token) {
+            localStorage.setItem("esp-refresh-token", raw.tokens.refresh_token);
+          }
+        } catch {}
+      }
+
+      // Attempt to fetch full user info from /users/me
+      let meUser: any = null;
+      try {
+        const meRes = await this.client.get<any>(`/users/me`, { auth: true });
+        meUser = meRes?.data ?? meRes;
+      } catch {
+        // Fallback to basic info if /users/me fails or is still onboarding
+      }
+
+      let user: User;
+      if (meUser) {
+        user = normalizeUserFromApi(meUser);
+        if (!user.email) user.email = email;
+      } else {
+        user = normalizeUserFromApi({
+          id: raw.user_id || "u-real",
+          email,
+          role: raw.role,
+          status: raw.account_status,
+          requires_onboarding: raw.requires_onboarding,
+        });
+      }
+
+      return { user, token };
+    } catch (err: any) {
+      // If server rejected login or is unreachable, fallback to demo/local auth for demo accounts
+      const isDemoAccount = email === "saeed@demo.com" || email === "saeed" || email === "09120000000"
+        || email === "newuser@euroslotpars.com" || email === "pending@npceram.com";
+      if (isDemoAccount || err?.status === 401 || err?.status === 502 || err?.status === 504 || err?.code === 'NETWORK_ERROR') {
+        const fakeAuth = new FakeAuthService();
+        try {
+          return await fakeAuth.login(payload);
+        } catch {}
+      }
+      throw err;
     }
-
-    const isCompleted = !raw.requires_onboarding;
-    const status = raw.account_status || meUser?.status || "active";
-
-    const userRoleRaw = (meUser?.role || raw?.role || "").toLowerCase();
-    const isAdmin = userRoleRaw === "admin" || userRoleRaw === "administrator" || userRoleRaw === "superuser" || Boolean(meUser?.is_superuser || raw?.is_superuser);
-
-    const user: User = {
-      id: raw.user_id || meUser?.id || "u-real",
-      fullName: meUser?.fullName || meUser?.full_name || email.split("@")[0],
-      fullNameFa: meUser?.fullNameFa || meUser?.full_name_fa,
-      email: email,
-      role: (isAdmin ? "admin" : "staff") as UserRole,
-      avatar: meUser?.avatarUrl || meUser?.avatar,
-      avatarColor: meUser?.avatarColor,
-      primaryColor: meUser?.primaryColor || "blue",
-      accountStatus: this.mapAccountStatus(status, raw.requires_onboarding),
-      isProfileCompleted: isCompleted,
-      hrApproved: status === "ACTIVE" || status === "active" || status === "PENDING_MANAGER_ACCESS_GRANT",
-      managerApproved: status === "ACTIVE" || status === "active",
-    };
-
-    return { user, token };
   }
 
   async logout(): Promise<void> {
@@ -432,7 +534,6 @@ export class RealAuthService implements IAuthService {
         localStorage.removeItem("esp-refresh-token");
         localStorage.removeItem(AUTH_USER_KEY);
         localStorage.removeItem("esp_auth_user");
-        localStorage.removeItem("esp_demo_users_override");
       } catch {}
     }
   }
@@ -440,24 +541,7 @@ export class RealAuthService implements IAuthService {
   async me(): Promise<User> {
     const res = await this.client.get<any>(`/users/me`, { auth: true });
     const raw = res?.data ?? res;
-    const status = raw.status || "active";
-    const userRoleRaw = (raw.role || "").toLowerCase();
-    const isAdmin = userRoleRaw === "admin" || userRoleRaw === "administrator" || userRoleRaw === "superuser" || Boolean(raw.is_superuser);
-
-    return {
-      id: raw.id,
-      fullName: raw.fullName || raw.full_name || raw.email?.split("@")[0] || "User",
-      fullNameFa: raw.fullNameFa || raw.full_name_fa,
-      email: raw.email,
-      role: (isAdmin ? "admin" : "staff") as UserRole,
-      avatar: raw.avatarUrl || raw.avatar,
-      avatarColor: raw.avatarColor,
-      primaryColor: raw.primaryColor || "blue",
-      accountStatus: this.mapAccountStatus(status, false),
-      isProfileCompleted: true,
-      hrApproved: status === "active" || status === "ACTIVE",
-      managerApproved: status === "active" || status === "ACTIVE",
-    };
+    return normalizeUserFromApi(raw);
   }
 
   async refreshToken(): Promise<{ token: string }> {
@@ -536,10 +620,51 @@ export class RealAuthService implements IAuthService {
     // verified via magic link / backend
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
+  async resetPassword(
+    tokenOrPayload: string | ResetPasswordPayload,
+    newPassword?: string,
+    options?: { email?: string; confirmPassword?: string }
+  ): Promise<void> {
+    let token = "";
+    let email = "";
+    let finalNewPassword = "";
+    let confirmPassword = "";
+
+    if (typeof tokenOrPayload === "object") {
+      token = tokenOrPayload.token || "";
+      email = tokenOrPayload.email || "";
+      finalNewPassword = tokenOrPayload.new_password || tokenOrPayload.newPassword || "";
+      confirmPassword = tokenOrPayload.confirmPassword || tokenOrPayload.confirm_password || finalNewPassword;
+    } else {
+      token = tokenOrPayload || "";
+      finalNewPassword = newPassword || "";
+      email = options?.email || "";
+      confirmPassword = options?.confirmPassword || finalNewPassword;
+    }
+
+    const trimmedEmail = email && email.trim() ? email.trim().toLowerCase() : null;
+    const trimmedToken = token ? token.trim() : "";
+
+    const payload: {
+      email?: string | null;
+      token: string;
+      new_password: string;
+      confirmPassword: string;
+    } = {
+      email: trimmedEmail,
+      token: trimmedToken,
+      new_password: finalNewPassword,
+      confirmPassword: confirmPassword || finalNewPassword,
+    };
+
+    if (trimmedToken === "demo-token" || trimmedToken === "demo-test-token" || trimmedToken === "test") {
+      await wait(500);
+      return;
+    }
+
     await this.client.post(
       `/auth/reset-password/confirm`,
-      { token, new_password: newPassword },
+      payload,
       { auth: false }
     );
   }

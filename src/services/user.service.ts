@@ -3,6 +3,7 @@ import type { HttpClient } from './core/http';
 import { ApiError } from './core/errors';
 import { AUTH_USER_KEY } from './core/types';
 import type { User } from '@/types/auth';
+import { normalizeUserFromApi } from '@/modules/auth/utils/normalize-user';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,8 +52,9 @@ export class FakeUserService implements IUserService {
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
         localStorage.setItem('esp_auth_user', JSON.stringify(updated));
-
-        localStorage.removeItem('esp_demo_users_override');
+        if (payload.primaryColor) {
+          localStorage.setItem('esp-global-primary-color', payload.primaryColor);
+        }
       } catch {}
     }
     return updated;
@@ -65,7 +67,6 @@ export class FakeUserService implements IUserService {
 
   async uploadAvatar(file: File): Promise<{ url: string }> {
     await wait(800);
-    // در fake mode از URL.createObjectURL استفاده می‌کنیم (فقط در همان session کار می‌کند)
     return { url: URL.createObjectURL(file) };
   }
 }
@@ -76,21 +77,7 @@ export class RealUserService implements IUserService {
   constructor(private http: HttpClient) {}
 
   private mapUser(raw: any): User {
-    const s = (raw.status || "active").toLowerCase();
-    return {
-      id: raw.id,
-      fullName: raw.fullName || raw.full_name || raw.email?.split("@")[0] || "User",
-      fullNameFa: raw.fullNameFa || raw.full_name_fa,
-      email: raw.email,
-      role: (raw.role === "admin" ? "admin" : "staff") as any,
-      avatar: raw.avatarUrl || raw.avatar,
-      avatarColor: raw.avatarColor,
-      primaryColor: raw.primaryColor || "blue",
-      accountStatus: s === "active" ? "active" : "pending_approval",
-      isProfileCompleted: true,
-      hrApproved: s === "active",
-      managerApproved: s === "active",
-    };
+    return normalizeUserFromApi(raw);
   }
 
   async getProfile(): Promise<User> {
@@ -100,7 +87,27 @@ export class RealUserService implements IUserService {
   }
 
   async updateProfile(payload: UpdateProfilePayload): Promise<User> {
-    const res = await this.http.patch<any>('/users/me', payload);
+    const body: any = {
+      ...payload,
+      personal: {
+        ...(payload.fullName ? { fullName: payload.fullName } : {}),
+        ...(payload.fullNameFa ? { fullNameFa: payload.fullNameFa } : {}),
+        ...(payload.email ? { email: payload.email } : {}),
+        ...(payload.mobile ? { phone: payload.mobile } : {}),
+        ...(payload.avatar !== undefined ? { avatar: payload.avatar, avatarUrl: payload.avatar } : {}),
+        ...(payload.avatarColor ? { avatarColor: payload.avatarColor } : {}),
+        ...(payload.primaryColor ? { primaryColor: payload.primaryColor } : {}),
+      },
+    };
+
+    if (payload.primaryColor && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('esp-global-primary-color', payload.primaryColor);
+        await this.http.patch<any>('/users/me/preferences', { primaryColor: payload.primaryColor }).catch(() => {});
+      } catch {}
+    }
+
+    const res = await this.http.patch<any>('/users/me', body);
     const raw = res?.data ?? res;
     return this.mapUser(raw);
   }

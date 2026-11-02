@@ -47,6 +47,7 @@
     "followers": "دنبال‌کننده‌ها",
     "startDate": "شروع فعالیت",
     "totalViews": "بازدید کل",
-    "noVideosFound": "ویدیویی در این دسته یافت نشد"
+    "noVideosFound": "ویدیویی در این دسته یافت نشد",
+    "loadingMoreVideos": "در حال بارگذاری ویدیوهای بیشتر..."
   }
 }

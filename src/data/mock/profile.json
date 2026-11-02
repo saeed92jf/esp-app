@@ -1,11 +1,17 @@
 {
+  "id": "prof_esp_9801",
+  "userId": "usr_9801",
   "personal": {
     "firstName": "Saeed",
     "lastName": "Jalili",
     "firstNameFa": "سعید",
     "lastNameFa": "جلیلی",
+    "avatar": null,
+    "avatarUrl": null,
     "avatarColor": "#0284c7",
-    "primaryColor": "red",
+    "avatarBgColor": "transparent",
+    "avatarMode": "initials",
+    "primaryColor": "emerald",
     "nationalId": "0123456789",
     "phone": "09120000000",
     "email": "saeed@euroslotpars.com",
@@ -22,20 +28,72 @@
     "employeeId": "ESP-9801",
     "joinDate": "1398/02/01",
     "manager": "علی احمدی",
+    "managerId": "usr_1001",
     "extensionNumber": "105",
     "workLocation": "office",
     "contractType": "full_time",
     "subordinates": [
-      "رضا محمدی",
-      "زهرا کریمی",
-      "مهرداد نوری"
+      {
+        "id": "usr_2041",
+        "employeeId": "ESP-2041",
+        "name": "علی محمدی",
+        "nameFa": "علی محمدی",
+        "nameEn": "Ali Mohammadi",
+        "jobTitle": "کارشناس مکانیک",
+        "department": "مهندسی (مکانیک، پروسس و پکیج)",
+        "email": "a.mohammadi@euroslotpars.com",
+        "avatar": "/team/ali-mohammadi.webp",
+        "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
+        "avatarColor": "#2563eb",
+        "status": "online"
+      },
+      {
+        "id": "usr_2042",
+        "employeeId": "ESP-2042",
+        "name": "حسین مرادی",
+        "nameFa": "حسین مرادی",
+        "nameEn": "Hossein Moradi",
+        "jobTitle": "کارشناس مکانیک",
+        "department": "مهندسی (مکانیک، پروسس و پکیج)",
+        "email": "h.moradi@euroslotpars.com",
+        "avatar": "/team/hossein-moradi.webp",
+        "avatarUrl": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&auto=format&fit=crop&q=80",
+        "avatarColor": "#7c3aed",
+        "status": "offline"
+      },
+      {
+        "id": "usr_3011",
+        "employeeId": "ESP-3011",
+        "name": "سارا کریمی",
+        "nameFa": "سارا کریمی",
+        "nameEn": "Sara Karimi",
+        "jobTitle": "کارشناس کنترل پروژه",
+        "department": "کنترل و مدیریت پروژه‌ها",
+        "email": "s.karimi@euroslotpars.com",
+        "avatar": "/team/sara-karimi.webp",
+        "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80",
+        "avatarColor": "#db2777",
+        "status": "online"
+      }
     ],
     "subordinatesCount": 3
   },
   "skills": [
-    { "id": "1", "name": "React", "level": 5 },
-    { "id": "2", "name": "TypeScript", "level": 4 },
-    { "id": "3", "name": "Node.js", "level": 4 }
+    {
+      "id": "skill_1",
+      "name": "React",
+      "level": 5
+    },
+    {
+      "id": "skill_2",
+      "name": "TypeScript",
+      "level": 4
+    },
+    {
+      "id": "skill_3",
+      "name": "Node.js",
+      "level": 4
+    }
   ],
   "insurance": {
     "insuranceCode": "12345678",
@@ -51,14 +109,14 @@
       {
         "id": "dep_1",
         "fullName": "مریم حسینی",
-        "relationship": "همسر",
+        "relationship": "spouse",
         "nationalId": "0012345678",
         "birthDate": "1372/08/14"
       },
       {
         "id": "dep_2",
         "fullName": "آراد جلیلی",
-        "relationship": "فرزند",
+        "relationship": "child",
         "nationalId": "0023456789",
         "birthDate": "1400/03/20"
       }
@@ -85,6 +143,62 @@
         "graduationYear": "1395/04/15"
       }
     ]
-  }
+  },
+  "documents": [
+    {
+      "id": "doc_national_front",
+      "category": "national_card_front",
+      "title": "تصویر روی کارت ملی",
+      "fileName": "national_card_front_saeed_jalili.jpg",
+      "fileSize": 1843200,
+      "fileType": "image/jpeg",
+      "uploadedAt": "1402/10/15",
+      "verified": true,
+      "fileUrl": "https://images.unsplash.com/photo-1633265486064-086b219458ec?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "doc_national_back",
+      "category": "national_card_back",
+      "title": "تصویر پشت کارت ملی",
+      "fileName": "national_card_back_saeed_jalili.jpg",
+      "fileSize": 1658880,
+      "fileType": "image/jpeg",
+      "uploadedAt": "1402/10/15",
+      "verified": true,
+      "fileUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "doc_birth_cert",
+      "category": "birth_certificate",
+      "title": "تصویر صفحات شناسنامه",
+      "fileName": "birth_certificate_pages_1_2.jpg",
+      "fileSize": 2457600,
+      "fileType": "image/jpeg",
+      "uploadedAt": "1402/10/16",
+      "verified": true,
+      "fileUrl": "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "doc_degree",
+      "category": "university_degree",
+      "title": "تصویر آخرین مدرک دانشگاهی",
+      "fileName": "sharif_university_master_diploma.jpg",
+      "fileSize": 3145728,
+      "fileType": "image/jpeg",
+      "uploadedAt": "1402/10/16",
+      "verified": true,
+      "fileUrl": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80"
+    },
+    {
+      "id": "doc_cert_scrum",
+      "category": "other",
+      "title": "تصویر دوره‌ها یا گواهی‌های تخصصی (اختیاری)",
+      "fileName": "professional_scrum_master_cert.png",
+      "fileSize": 1048576,
+      "fileType": "image/png",
+      "uploadedAt": "1403/02/20",
+      "verified": true,
+      "fileUrl": "https://images.unsplash.com/photo-1589330694653-dad6d3240a2a?w=800&auto=format&fit=crop&q=80"
+    }
+  ]
 }
-

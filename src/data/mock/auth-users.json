@@ -9,28 +9,9 @@
       "fullNameFa": "سعید جلیلی فرد",
       "email": "saeed@demo.com",
       "mobile": "09120000000",
-      "avatar": "/team/saeed-jalili-fard.webp",
+      "avatarMode": "initials",
       "role": "admin",
-      "primaryColor": "red",
-      "accountStatus": "active",
-      "isProfileCompleted": true,
-      "hrApproved": true,
-      "managerApproved": true
-    }
-  },
-  {
-    "email": "guest@demo.com",
-    "mobile": "09120000001",
-    "password": "guest",
-    "user": {
-      "id": "u-guest",
-      "fullName": "Guest User",
-      "fullNameFa": "کاربر مهمان (Gust)",
-      "email": "guest@demo.com",
-      "mobile": "09120000001",
-      "avatar": "/avatar/male-01.webp",
-      "role": "customer",
-      "primaryColor": "blue",
+      "primaryColor": "emerald",
       "accountStatus": "active",
       "isProfileCompleted": true,
       "hrApproved": true,
@@ -74,4 +55,3 @@
     }
   }
 ]
-

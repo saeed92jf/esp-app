@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User } from "../types/admin.types";
+import type { UserUploadedDocument } from "@/types/auth";
 import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -12,7 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Search, X, Eye, EyeOff, LayoutDashboard, 
+  Search, X, Eye, EyeOff, LayoutDashboard,
+  FileCheck, CheckCheck, XCircle, ZoomIn, ZoomOut, RotateCw, FileText, CheckCircle2,
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
@@ -26,6 +28,7 @@ import { toast } from "sonner";
 import { api } from "@/services";
 import { NAVIGATION } from "@/config/navigation";
 import { getCompanyFromEmail } from "../utils/company";
+import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -161,6 +164,18 @@ export function AdminUsersTable({
   setActiveTab
 }: AdminUsersTableProps) {
   const t = useTranslations("Admin");
+
+  const getRoleLabel = (role?: string) => {
+    switch (role) {
+      case "admin": return t("roleAdmin");
+      case "manager": return t("roleManager");
+      case "engineer": return t("roleEngineer");
+      case "staff": return t("roleStaff");
+      case "customer": return t("roleCustomer");
+      case "user": return t("roleUser");
+      default: return t("roleUser");
+    }
+  };
   const tMenu = useTranslations("Menu");
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -183,7 +198,7 @@ export function AdminUsersTable({
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
     userId: string;
-    type: 'view' | 'password' | 'edit' | 'access';
+    type: 'view' | 'password' | 'edit' | 'access' | 'documents';
   } | null>(null);
 
   // Track hovered user row for smooth slide-out tab animation
@@ -192,6 +207,52 @@ export function AdminUsersTable({
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+
+  // Escape key listener for lightbox
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxDoc(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const handleToggleVerifyUserDoc = (userId: string, docId: string) => {
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+    const currentDocs = targetUser.documents || [];
+    const updatedDocs = currentDocs.map((doc) => {
+      if (doc.id === docId) {
+        const nextVerified = !doc.verified;
+        toast.success(
+          nextVerified
+            ? (isRtl ? `مدرک «${doc.title}» تأیید شد.` : `Document "${doc.title}" verified.`)
+            : (isRtl ? `تأیید مدرک «${doc.title}» لغو شد.` : `Verification for "${doc.title}" revoked.`)
+        );
+        return { ...doc, verified: nextVerified };
+      }
+      return doc;
+    });
+    const updatedUser = { ...targetUser, documents: updatedDocs };
+    setUsers(users.map((u) => (u.id === userId ? updatedUser : u)));
+    if (selectedUser?.id === userId) setSelectedUser(updatedUser);
+    api.admin.updateUser(userId, updatedUser).catch(() => {});
+  };
+
+  const handleVerifyAllUserDocs = (userId: string) => {
+    const targetUser = users.find((u) => u.id === userId);
+    if (!targetUser) return;
+    const currentDocs = targetUser.documents || [];
+    const updatedDocs = currentDocs.map((doc) => ({ ...doc, verified: true }));
+    const updatedUser = { ...targetUser, documents: updatedDocs };
+    setUsers(users.map((u) => (u.id === userId ? updatedUser : u)));
+    if (selectedUser?.id === userId) setSelectedUser(updatedUser);
+    api.admin.updateUser(userId, updatedUser).catch(() => {});
+    toast.success(isRtl ? "تمامی مدارک پرسنل با موفقیت تأیید شدند." : "All personnel documents verified successfully.");
+  };
 
   // State for Quick Edit accordion
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
@@ -212,7 +273,7 @@ export function AdminUsersTable({
     return uniqueDepartments.map(dep => {
       let depLabel = dep;
       try {
-        depLabel = t(`departments.${dep}`) || dep;
+        depLabel = t.has(`departments.${dep}`) ? t(`departments.${dep}`) : dep;
       } catch {
         depLabel = dep;
       }
@@ -393,7 +454,7 @@ export function AdminUsersTable({
   };
 
   // Accordion Toggle
-  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit' | 'access') => {
+  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit' | 'access' | 'documents') => {
     const targetUser = users.find(x => x.id === userId);
     if (targetUser) {
       setSelectedUser(targetUser);
@@ -492,14 +553,10 @@ export function AdminUsersTable({
   // Save Quick Edited Info
   const handleSaveEdit = async (userId: string) => {
     try {
-      if (editFormData.role) {
-        await api.admin.updateUser(userId, {
-          role: editFormData.role,
-        });
-      }
+      const updatedUser = await api.admin.updateUser(userId, editFormData);
       const updatedUsers = users.map(u => {
         if (u.id === userId) {
-          const updated = { ...u, ...editFormData };
+          const updated = { ...u, ...updatedUser, ...editFormData };
           if (selectedUser?.id === userId) {
             setSelectedUser(updated);
           }
@@ -724,7 +781,6 @@ export function AdminUsersTable({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-3" />
               <span>{t("companyEuroslot")}</span>
             </button>
             <button
@@ -740,7 +796,6 @@ export function AdminUsersTable({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-3" />
               <span>{t("companyNpceram")}</span>
             </button>
             <button
@@ -756,8 +811,7 @@ export function AdminUsersTable({
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Building2 className="size-3" />
-              <span>{isRtl ? "هلدینگ و گروه" : "Group / Holding"}</span>
+              <span>{isRtl ? "هلدینگ" : "Holding"}</span>
             </button>
           </div>
         </div>
@@ -824,7 +878,7 @@ export function AdminUsersTable({
                     </div>
 
                     <span className="font-semibold text-foreground/80 text-[10px] mt-1">{t("role")}</span>
-                    {(['admin', 'user'] as const).map(role => (
+                    {(['admin', 'manager', 'engineer', 'staff', 'customer', 'user'] as const).map(role => (
                       <label key={role} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.userRoles.includes(role)}
@@ -833,7 +887,7 @@ export function AdminUsersTable({
                             userRoles: toggleArrayItem(prev.userRoles, role)
                           }))}
                         />
-                        <span>{role === 'admin' ? t("adminRole") : t("userRole")}</span>
+                        <span>{getRoleLabel(role)}</span>
                       </label>
                     ))}
                   </div>
@@ -853,7 +907,7 @@ export function AdminUsersTable({
                     {uniqueDepartments.map(dep => {
                       let depName = dep;
                       try {
-                        depName = t(`departments.${dep}`);
+                        depName = t.has(`departments.${dep}`) ? t(`departments.${dep}`) : dep;
                       } catch {
                         depName = dep;
                       }
@@ -891,7 +945,8 @@ export function AdminUsersTable({
                     <span className="font-semibold text-foreground/80 text-[10px]">{t("filterByCompany")}</span>
                     {[
                       { id: "euroslot", label: t("companyEuroslot") },
-                      { id: "npceram", label: t("companyNpceram") }
+                      { id: "npceram", label: t("companyNpceram") },
+                      { id: "holding", label: isRtl ? "هلدینگ" : "Holding" }
                     ].map((comp) => (
                       <label key={comp.id} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
@@ -1123,7 +1178,7 @@ export function AdminUsersTable({
               const departmentKey = user.department || 'engineering';
               let departmentName = departmentKey;
               try {
-                departmentName = t(`departments.${departmentKey}`);
+                departmentName = t.has(`departments.${departmentKey}`) ? t(`departments.${departmentKey}`) : departmentKey;
               } catch {
                 departmentName = departmentKey;
               }
@@ -1229,7 +1284,7 @@ export function AdminUsersTable({
                               </span>
                             </div>
                             <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
-                              {user.role === 'admin' ? t("adminRole") : t("userRole")}
+                              {getRoleLabel(user.role)}
                             </span>
                           </div>
                         </div>
@@ -1262,7 +1317,6 @@ export function AdminUsersTable({
                                   : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
                               )}
                             >
-                              <Building2 className="size-3 shrink-0" />
                               <span className="whitespace-nowrap">{isRtl ? comp.nameFa : comp.nameEn}</span>
                             </span>
                           );
@@ -1433,13 +1487,21 @@ export function AdminUsersTable({
                                               <Badge 
                                                 variant="secondary"
                                                 className={cn(
-                                                  "text-[10px] h-5 font-medium",
+                                                  "text-[10px] h-5 font-semibold",
                                                   user.role === 'admin'
-                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20"
-                                                    : "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20"
+                                                    ? "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25"
+                                                    : user.role === 'manager'
+                                                    ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/25"
+                                                    : user.role === 'engineer'
+                                                    ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25"
+                                                    : user.role === 'staff'
+                                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
+                                                    : user.role === 'customer'
+                                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25"
+                                                    : "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25"
                                                 )}
                                               >
-                                                {user.role === 'admin' ? t("adminRole") : t("userRole")}
+                                                {getRoleLabel(user.role)}
                                               </Badge>
                                               <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
                                                 <span className={cn(
@@ -1508,7 +1570,7 @@ export function AdminUsersTable({
                                             <div>
                                               <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("department")}</span>
                                               <span className="font-normal text-foreground truncate block">
-                                                {t(`departments.${user.department}`) || user.department}
+                                                {t.has(`departments.${user.department}`) ? t(`departments.${user.department}`) : user.department}
                                               </span>
                                             </div>
                                             <div>
@@ -1519,6 +1581,33 @@ export function AdminUsersTable({
                                               <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("workLocationLabel")}</span>
                                               <span className="font-normal text-foreground">
                                                 {user.workLocation === 'factory' ? t("workLocationFactory") : user.workLocation === 'remote' ? t("workLocationRemote") : t("workLocationOffice")}
+                                              </span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("managerDirectLabel")}</span>
+                                              <span className="font-normal text-foreground truncate block">{user.manager || t("unspecified")}</span>
+                                            </div>
+                                            <div>
+                                              <span className="text-[10px] text-muted-foreground/75 font-normal block">{t("directSubordinatesTitle")}</span>
+                                              <span className="font-normal text-foreground truncate block fa-num">
+                                                {(() => {
+                                                  const directReports = users.filter((u) => 
+                                                    (user.subordinates && user.subordinates.includes(u.id)) ||
+                                                    (u.manager && (u.manager.includes(user.name) || (user.employeeId && u.manager.includes(user.employeeId))))
+                                                  );
+                                                  if (directReports.length === 0) {
+                                                    return <span className="text-muted-foreground">{isRtl ? "فاقد پرسنل زیردست" : "No direct reports"}</span>;
+                                                  }
+                                                  return (
+                                                    <span className="text-primary font-semibold">
+                                                      {directReports.length} {isRtl ? "نفر تحت امر" : "reports"}
+                                                      {" ("}
+                                                      {directReports.slice(0, 2).map(r => r.name).join("، ")}
+                                                      {directReports.length > 2 ? "..." : ""}
+                                                      {")"}
+                                                    </span>
+                                                  );
+                                                })()}
                                               </span>
                                             </div>
                                           </div>
@@ -2002,6 +2091,237 @@ export function AdminUsersTable({
                                     </div>
                                   );
                                 })()}
+
+                                {/* ── Mode E: Documents & Verification (مدارک و تأیید مدارک پرسنل - زیر هم و ساده) ── */}
+                                {activeAccordion.type === 'documents' && (() => {
+                                  const userDocs: UserUploadedDocument[] = user.documents && user.documents.length > 0 ? user.documents : [
+                                    {
+                                      id: `doc-${user.id}-1`,
+                                      category: "national_card_front",
+                                      title: isRtl ? "تصویر روی کارت ملی" : "National ID Card (Front)",
+                                      fileName: "national_card_front.jpg",
+                                      fileSize: "1.4 MB",
+                                      fileType: "image/jpeg",
+                                      fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%230284c7'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((user.name || "پرسنل") + " - روی کارت ملی")}</text></svg>`,
+                                      uploadedAt: "2026-10-28T07:45:00.000Z",
+                                      verified: true,
+                                    },
+                                    {
+                                      id: `doc-${user.id}-2`,
+                                      category: "national_card_back",
+                                      title: isRtl ? "تصویر پشت کارت ملی" : "National ID Card (Back)",
+                                      fileName: "national_card_back.jpg",
+                                      fileSize: "1.2 MB",
+                                      fileType: "image/jpeg",
+                                      fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%23059669'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((user.name || "پرسنل") + " - پشت کارت ملی")}</text></svg>`,
+                                      uploadedAt: "2026-10-28T07:46:00.000Z",
+                                      verified: true,
+                                    },
+                                    {
+                                      id: `doc-${user.id}-3`,
+                                      category: "university_degree",
+                                      title: isRtl ? "تصویر آخرین مدرک دانشگاهی" : "Latest University Degree",
+                                      fileName: "degree_certificate.jpg",
+                                      fileSize: "2.3 MB",
+                                      fileType: "image/jpeg",
+                                      fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%237c3aed'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((user.name || "پرسنل") + " - دانشنامه تحصیلی")}</text></svg>`,
+                                      uploadedAt: "2026-10-28T07:48:00.000Z",
+                                      verified: true,
+                                    },
+                                  ];
+
+                                  const verifiedCount = userDocs.filter(d => d.verified).length;
+
+                                  return (
+                                    <div className="flex flex-col gap-3">
+                                      {/* Header Bar */}
+                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
+                                        <div className="flex items-center gap-3">
+                                          <div className="size-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                                            <FileCheck className="size-5" />
+                                          </div>
+                                          <div>
+                                            <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                                              <span>{t("userDocumentsTitle")}</span>
+                                              <span className="text-xs text-muted-foreground font-normal">({user.name})</span>
+                                            </h4>
+                                            <p className="text-xs text-muted-foreground">
+                                              {t("userDocumentsDesc")}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2.5 self-end sm:self-auto">
+                                          <Badge
+                                            variant="outline"
+                                            className={cn(
+                                              "text-xs font-semibold px-2.5 py-1 gap-1.5",
+                                              verifiedCount === userDocs.length
+                                                ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400"
+                                                : "border-amber-500/30 text-amber-600 bg-amber-500/10 dark:text-amber-400",
+                                              isRtl && "fa-num"
+                                            )}
+                                          >
+                                            <CheckCircle2 className="size-3.5" />
+                                            <span>
+                                              {t("docsVerifiedCount", { verified: verifiedCount, total: userDocs.length })}
+                                            </span>
+                                          </Badge>
+
+                                          <Button
+                                            type="button"
+                                            size="sm"
+                                            onClick={() => handleVerifyAllUserDocs(user.id)}
+                                            disabled={verifiedCount === userDocs.length}
+                                            className="h-8 px-3 rounded-lg text-xs gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                                          >
+                                            <CheckCheck className="size-3.5" />
+                                            <span>{t("verifyAllDocs")}</span>
+                                          </Button>
+
+                                          <button
+                                            type="button"
+                                            onClick={() => setActiveAccordion(null)}
+                                            className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
+                                            title={t("cancel")}
+                                          >
+                                            <X size={15} />
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {/* Documents List (زیر هم و ساده) */}
+                                      <div className="flex flex-col gap-2">
+                                        {userDocs.map((doc) => {
+                                          const isDocVerified = !!doc.verified;
+                                          const imageSrc = doc.fileData || doc.fileUrl || "";
+
+                                          return (
+                                            <div
+                                              key={doc.id}
+                                              className={cn(
+                                                "rounded-xl border p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all",
+                                                "bg-card/70 hover:bg-card border-border/60 shadow-2xs hover:shadow-xs",
+                                                isDocVerified && "border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10"
+                                              )}
+                                            >
+                                              {/* Thumbnail + Title + Meta */}
+                                              <div className="flex items-center gap-3 min-w-0">
+                                                <div
+                                                  onClick={() => {
+                                                    if (imageSrc) {
+                                                      setLightboxDoc({
+                                                        src: imageSrc,
+                                                        title: getLocalizedDocumentTitle(doc, locale),
+                                                        fileName: doc.fileName,
+                                                      });
+                                                      setZoom(1);
+                                                      setRotation(0);
+                                                    }
+                                                  }}
+                                                  className="relative size-12 sm:size-14 rounded-lg overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center cursor-pointer group select-none"
+                                                  title={t("viewDocumentFull")}
+                                                >
+                                                  {imageSrc ? (
+                                                    <>
+                                                      <img
+                                                        src={imageSrc}
+                                                        alt={getLocalizedDocumentTitle(doc, locale)}
+                                                        className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                                      />
+                                                      <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                                        <Eye className="size-4" />
+                                                      </div>
+                                                    </>
+                                                  ) : (
+                                                    <FileText className="size-6 text-muted-foreground" />
+                                                  )}
+                                                </div>
+
+                                                <div className="flex flex-col min-w-0">
+                                                  <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                                                      {getLocalizedDocumentTitle(doc, locale)}
+                                                    </span>
+                                                    {isDocVerified ? (
+                                                      <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 gap-1 text-[10px] shrink-0 font-medium px-2 py-0.5">
+                                                        <CheckCircle2 className="size-3" />
+                                                        <span>{t("docStatusVerified")}</span>
+                                                      </Badge>
+                                                    ) : (
+                                                      <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-[10px] shrink-0 font-medium px-2 py-0.5">
+                                                        <Clock className="size-3" />
+                                                        <span>{t("docStatusPending")}</span>
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                                                    <span className="truncate max-w-[200px] font-mono text-[11px]" dir="ltr">
+                                                      {doc.fileName}
+                                                    </span>
+                                                    <span>•</span>
+                                                    <span className={cn("font-medium", isRtl && "fa-num")}>
+                                                      {doc.fileSize}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              {/* Actions */}
+                                              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                                <Button
+                                                  type="button"
+                                                  variant="outline"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    if (imageSrc) {
+                                                      setLightboxDoc({
+                                                        src: imageSrc,
+                                                        title: getLocalizedDocumentTitle(doc, locale),
+                                                        fileName: doc.fileName,
+                                                      });
+                                                      setZoom(1);
+                                                      setRotation(0);
+                                                    }
+                                                  }}
+                                                  className="h-8 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted cursor-pointer"
+                                                >
+                                                  <Eye className="size-3.5 text-muted-foreground" />
+                                                  <span>{isRtl ? "مشاهده" : "View"}</span>
+                                                </Button>
+
+                                                <Button
+                                                  type="button"
+                                                  variant={isDocVerified ? "outline" : "default"}
+                                                  size="sm"
+                                                  onClick={() => handleToggleVerifyUserDoc(user.id, doc.id)}
+                                                  className={cn(
+                                                    "h-8 px-3 rounded-lg text-xs gap-1.5 cursor-pointer font-medium transition-all",
+                                                    isDocVerified
+                                                      ? "border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30"
+                                                      : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+                                                  )}
+                                                >
+                                                  {isDocVerified ? (
+                                                    <>
+                                                      <XCircle className="size-3.5" />
+                                                      <span>{t("unverifyDocBtn")}</span>
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <Check className="size-3.5" />
+                                                      <span>{t("verifyDocBtn")}</span>
+                                                    </>
+                                                  )}
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </TableAccordionPanel>
                               )}
                             </AnimatePresence>
@@ -2083,6 +2403,22 @@ export function AdminUsersTable({
                                   <span className="hidden sm:inline">{t("moduleAccess")}</span>
                                 </button>
 
+                                {/* 5. Documents & Verification (مدارک و تأیید) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'documents')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'documents'
+                                      ? "bg-purple-600 text-white shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={t("viewDocumentsBtn")}
+                                >
+                                  <FileCheck size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{t("viewDocumentsBtn")}</span>
+                                </button>
+
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 
                                 {/* 5. Open in Dashboard (مشاهده در داشبورد - بدون اسم، آیکون آخر) */}
@@ -2125,6 +2461,87 @@ export function AdminUsersTable({
             )}
         </table>
       </div>
+      {/* ─── Fullscreen Lightbox Modal ─────────────────────────────── */}
+      {lightboxDoc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setLightboxDoc(null)}
+        >
+          {/* Top Controls */}
+          <div
+            className="absolute top-4 inset-x-4 flex items-center justify-between z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-white">
+              <span className="font-bold text-sm">{lightboxDoc.title}</span>
+              <span className="text-xs text-white/60 font-mono" dir="ltr">
+                {lightboxDoc.fileName}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <ZoomIn className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <ZoomOut className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setRotation((r) => (r + 90) % 360)}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <RotateCw className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setZoom(1);
+                  setRotation(0);
+                }}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono cursor-pointer"
+              >
+                1:1
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLightboxDoc(null)}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <X className="size-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Image Canvas */}
+          <div
+            className="relative max-w-[90vw] max-h-[85vh] overflow-hidden flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightboxDoc.src}
+              alt={lightboxDoc.title}
+              style={{
+                transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                transition: "transform 0.2s ease-out",
+              }}
+              className="max-w-full max-h-[80vh] object-contain rounded-xl select-none shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

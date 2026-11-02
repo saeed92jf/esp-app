@@ -5,10 +5,11 @@ import { ProjectsPageContainer } from "@/modules/projects/components/projects-pa
 import { RefreshCw } from "lucide-react";
 
 type Props = {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 };
 
-export default function Page({ params: { locale } }: Props) {
+export default async function Page({ params }: Props) {
+  const { locale } = await params;
   setRequestLocale(locale);
   return (
     <Suspense

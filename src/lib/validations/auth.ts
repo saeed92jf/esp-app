@@ -1,7 +1,14 @@
 // src/lib/validations/auth.ts
 import { z } from 'zod';
 
-// identifier accepts an Iranian mobile (09xxxxxxxxx) OR a basic email.
+export function normalizeDigits(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776 + 48))
+    .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632 + 48));
+}
+
+// identifier accepts an Iranian mobile (09xxxxxxxxx), an email, or a username/account
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const mobileRe = /^09\d{9}$/;
 
@@ -10,7 +17,11 @@ export const getLoginSchema = (t: (key: string) => string) => z.object({
     .string()
     .trim()
     .min(1, { message: t('required') })
-    .refine((v) => emailRe.test(v) || mobileRe.test(v) || ['saeed', 'guest', 'gust'].includes(v.toLowerCase()), { message: t('invalidIdentifier') }),
+    .transform(normalizeDigits)
+    .refine(
+      (v) => emailRe.test(v) || mobileRe.test(v) || v.toLowerCase() === 'saeed' || v.length >= 2,
+      { message: t('invalidIdentifier') }
+    ),
   password: z.string().min(1, { message: t('required') }),
 });
 
@@ -31,4 +42,3 @@ export const getAccountRequestSchema = (t: (key: string) => string) => z.object(
 });
 
 export type AccountRequestInput = { email: string };
-

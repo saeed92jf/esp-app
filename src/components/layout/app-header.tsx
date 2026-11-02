@@ -110,7 +110,8 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "top-0 z-[60] left-0 right-0 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] flex items-center justify-between ps-0 pe-2.5 sm:pe-6 shrink-0 backdrop-blur-xl border-none transition-colors shadow-none box-border",
+        "top-0 z-[60] left-0 right-0 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] flex items-center justify-between shrink-0 backdrop-blur-xl border-none transition-colors shadow-none box-border",
+        (menuTrigger || showMenuButton) ? "ps-0 pe-2.5 sm:pe-6" : "px-4 sm:px-6",
         position === 'absolute' ? 'absolute' : position === 'fixed' ? 'fixed' : 'sticky',
         isPanelBg
           ? "bg-panel/80 dark:bg-background/80"
@@ -143,10 +144,9 @@ export function AppHeader({
         {/* Brand Logo (in Anta font) */}
         <Link
           href={logoHref}
-          dir="ltr"
           className={cn(
             "flex items-center select-none outline-none cursor-pointer transition-opacity duration-150 hover:opacity-90 shrink-0",
-            (menuTrigger || showMenuButton) ? "ms-0.5 sm:ms-1" : "ps-2.5 sm:ps-6"
+            (menuTrigger || showMenuButton) && "ms-0.5 sm:ms-1"
           )}
         >
           <Logo compact short={logoShort} className="text-[13px] sm:text-[15px]" />
@@ -205,7 +205,7 @@ export function AppHeader({
               triggerClassName={HEADER_ICON_BUTTON_CLASS}
               iconClassName={HEADER_ICON_CLASS}
             />
-            {user && showNotifications && (
+            {showNotifications && (
               <NotificationsPopover
                 triggerClassName={HEADER_ICON_BUTTON_CLASS}
                 iconClassName="size-5 shrink-0"

@@ -1,15 +1,41 @@
 // src/types/auth.ts
 
 // Application roles used for routing and access decisions
-export type UserRole = 'admin' | 'engineer' | 'customer' | 'staff';
+export type UserRole = 'admin' | 'manager' | 'engineer' | 'staff' | 'customer' | 'user';
 
-export type AccountStatus = 'pending_profile' | 'pending_approval' | 'active' | 'rejected';
+export type AccountStatus =
+  | 'pending_initial'
+  | 'pending_profile'
+  | 'pending_manager'
+  | 'pending_approval'
+  | 'active'
+  | 'rejected';
+
+export type DocumentCategory =
+  | 'national_card_front'
+  | 'national_card_back'
+  | 'birth_certificate'
+  | 'university_degree'
+  | 'other';
+
+export interface UserUploadedDocument {
+  id: string;
+  category: DocumentCategory;
+  title: string;
+  fileName: string;
+  fileSize: number | string;
+  fileType: string;
+  fileData?: string; // Base64 data URL for preview
+  fileUrl?: string;
+  uploadedAt: string;
+  verified?: boolean;
+}
 
 // Authenticated user stored in the client session.
-// `mobile` and `email` are both optional since a user may register with either one.
 export interface User {
   id: string;
   fullName: string;
+  name?: string;
   fullNameFa?: string;
   mobile?: string;
   email?: string;
@@ -17,11 +43,14 @@ export interface User {
   role: UserRole;
   imageUrl?: string;
   avatarColor?: string;
+  avatarBgColor?: string;
+  avatarMode?: 'photo' | 'initials';
   primaryColor?: string;
   accountStatus?: AccountStatus;
   isProfileCompleted?: boolean;
-  hrApproved?: boolean;
   managerApproved?: boolean;
+  documents?: UserUploadedDocument[];
+  // Deprecated HR field kept for backward compatibility
+  hrApproved?: boolean;
 }
 export type AppUser = User;
-

@@ -4,8 +4,9 @@ import React, { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { api } from "@/services";
 import { User, PendingRequest } from "../types/admin.types";
+import type { UserRole } from "@/types/auth";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, Settings, CheckCircle2, Mail, Clock, Send, UserCheck } from "lucide-react";
+import { ShieldAlert, Settings, CheckCircle2, Mail, Clock, Send, UserCheck, UserCircle2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { NAVIGATION } from "@/config/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,10 +18,12 @@ import {
   ServerConnectionError,
   ServerConnectionErrorInfo,
 } from "@/components/ui/server-connection-error";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminProfileStats } from "./AdminProfileStats";
 import { AdminTasksTime } from "./AdminTasksTime";
+import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
@@ -53,6 +56,7 @@ export function AdminDashboard() {
   const tMenu = useTranslations("Menu");
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const { user: currentUser, updateUser: updateUserStore } = useAuth();
   
   const [users, setUsers] = useState<User[]>([]);
   const [requests, setRequests] = useState<PendingRequest[]>([]);
@@ -65,8 +69,21 @@ export function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
+    // Purge only legacy mock users from local storage
+    if (typeof window !== "undefined") {
+      try {
+        const rawUsers = localStorage.getItem("esp_admin_users");
+        if (rawUsers && (rawUsers.includes("u-rezaei") || rawUsers.includes("u-ali-m"))) {
+          localStorage.removeItem("esp_admin_users");
+        }
+        const rawReqs = localStorage.getItem("esp_account_requests");
+        if (rawReqs && (rawReqs.includes("req-1") || rawReqs.includes("req-2"))) {
+          localStorage.removeItem("esp_account_requests");
+        }
+      } catch {}
+    }
     fetchData();
-  }, []);
+  }, [currentUser]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -77,9 +94,95 @@ export function AdminDashboard() {
         api.admin.getUsers(),
         api.admin.getPendingRequests(),
       ]);
-      setUsers(u);
-      if (u.length > 0) setSelectedUser(u[0]);
-      setRequests(r);
+      let userList: User[] = u || [];
+
+      // If currentUser is logged in, ensure the authenticated administrator is in userList and selectable
+      if (currentUser) {
+        const adminEmail = currentUser.email?.toLowerCase();
+        const foundIdx = userList.findIndex(
+          (item) => (adminEmail && item.email?.toLowerCase() === adminEmail) || item.id === currentUser.id
+        );
+
+        const adminName = currentUser.fullNameFa || currentUser.name || currentUser.fullName || "سعید جلیلی";
+        if (foundIdx === -1) {
+          const adminAsUser: User = {
+            id: currentUser.id || "u-saeed",
+            name: adminName,
+            firstNameFa: currentUser.fullNameFa?.split(" ")[0] || "سعید",
+            lastNameFa: currentUser.fullNameFa?.split(" ").slice(1).join(" ") || "جلیلی",
+            firstName: currentUser.fullName?.split(" ")[0] || "Saeed",
+            lastName: currentUser.fullName?.split(" ").slice(1).join(" ") || "Jalili",
+            email: currentUser.email || "saeed@euroslotpars.com",
+            role: "admin",
+            status: "online",
+            accountStatus: "active",
+            avatar: currentUser.avatar,
+            avatarColor: currentUser.avatarColor,
+            avatarBgColor: currentUser.avatarBgColor || currentUser.avatarColor,
+            avatarMode: currentUser.avatarMode || "photo",
+            primaryColor: currentUser.primaryColor || "red",
+            phone: currentUser.mobile || "09123456789",
+            nationalId: "0012345678",
+            department: "engineering",
+            jobTitle: isRtl ? "مدیر ارشد سیستم / سرپرست فنی" : "System Administrator",
+            company: isRtl ? "یورو اسلات پارس" : "Euroslot Pars",
+            companyId: "euroslot",
+            joinedAt: new Date().toISOString(),
+            daysInCompany: 120,
+            doneProjects: 14,
+            salary: 450000000,
+            hasOvertime: true,
+            maxOvertimeHours: 40,
+            monthlyBonusType: "cash",
+            monthlyBonusAmount: 35000000,
+            monthlyBonusTitle: isRtl ? "پاداش مدیریت و راهبری سیستم" : "System Leadership Bonus",
+            monthlyBonuses: [],
+            score: 95,
+            age: 34,
+            maritalStatus: "single",
+            childrenCount: 0,
+            insuranceType: "complementary",
+            educationDegree: "master",
+            educationField: isRtl ? "مهندسی نرم‌افزار / مکانیک" : "Software & Mechanical Engineering",
+            skills: [
+              { name: "System Architecture", rate: 95 },
+              { name: "Fullstack Engineering", rate: 90 },
+              { name: "Security & Dual-Gate Access", rate: 90 },
+              { name: "Industrial ERP & P&ID", rate: 85 },
+            ],
+            workingFormat: { office: 60, factory: 20, mission: 10, leave: 10 },
+            modulesAccess: [],
+            recentActivities: [],
+            checklists: [],
+            isProfileCompleted: true,
+            adminApproved: true,
+            managerApproved: true,
+            documents: [],
+            subordinates: [],
+          };
+          userList = [adminAsUser, ...userList];
+        } else {
+          userList[foundIdx] = {
+            ...userList[foundIdx],
+            name: adminName,
+            avatar: currentUser.avatar || userList[foundIdx].avatar,
+            avatarColor: currentUser.avatarColor || userList[foundIdx].avatarColor,
+            primaryColor: currentUser.primaryColor || userList[foundIdx].primaryColor,
+          };
+        }
+      }
+
+      setUsers(userList);
+      if (userList.length > 0) {
+        // Default to the current logged-in admin if available, or first user
+        const adminUser = currentUser
+          ? userList.find((item) => (currentUser.email && item.email?.toLowerCase() === currentUser.email.toLowerCase()) || item.id === currentUser.id)
+          : null;
+        setSelectedUser(adminUser || userList[0]);
+      } else {
+        setSelectedUser(null);
+      }
+      setRequests(r || []);
       setConnectionError(null);
     } catch (err) {
       console.error("Admin dashboard fetch error:", err);
@@ -95,31 +198,6 @@ export function AdminDashboard() {
     } finally {
       setLoading(false);
       setIsRetrying(false);
-    }
-  };
-
-  const handleSwitchToMock = async () => {
-    setLoading(true);
-    try {
-      const { FakeAdminService } = await import("../services/admin.fake.service");
-      const fakeAdmin = new FakeAdminService();
-      const [u, r] = await Promise.all([
-        fakeAdmin.getUsers(),
-        fakeAdmin.getPendingRequests(),
-      ]);
-      setUsers(u);
-      if (u.length > 0) setSelectedUser(u[0]);
-      setRequests(r);
-      setConnectionError(null);
-      toast.success(
-        isRtl
-          ? "داده‌های شبیه‌سازی (Mock) با موفقیت بارگذاری شدند."
-          : "Mock data loaded successfully."
-      );
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -196,6 +274,24 @@ export function AdminDashboard() {
     toast.success(t("accessUpdated"));
   };
 
+  const handleUpdateUserRole = async (userId: string, newRole: UserRole) => {
+    try {
+      const updated = await api.admin.updateUser(userId, { role: newRole });
+      setSelectedUser(prev => prev && prev.id === userId ? { ...prev, role: newRole } : prev);
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      if (currentUser && (currentUser.id === userId || currentUser.email === updated.email)) {
+        updateUserStore({ role: newRole });
+      }
+      toast.success(
+        isRtl
+          ? `نقش کاربر «${updated.name}» با موفقیت به‌روزرسانی شد.`
+          : `Role for "${updated.name}" updated successfully.`
+      );
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی نقش کاربر" : "Failed to update user role"));
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-full bg-background font-sans w-full relative">
       {/* Top Header */}
@@ -236,7 +332,6 @@ export function AdminDashboard() {
                 error={connectionError}
                 onRetry={fetchData}
                 isRetrying={isRetrying}
-                onSwitchToMock={handleSwitchToMock}
                 targetUrl="http://192.168.0.171:8080/api/v1"
                 variant="full"
               />
@@ -261,25 +356,54 @@ export function AdminDashboard() {
                   />
                 )}
                 {activeTab === 'home' && (
-                  <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full max-w-[1600px] mx-auto items-stretch pb-4 lg:min-h-full flex-1">
-                    {selectedUser && (
-                      <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
-                        <AdminProfileStats selectedUser={selectedUser} />
-                      </div>
-                    )}
-                    
-                    <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
-                      <AdminTasksTime 
-                        selectedUser={selectedUser}
+                  <div className="flex flex-col w-full max-w-[1600px] mx-auto pb-4 flex-1">
+                    {/* On small screens (< lg): Top Search & Avatars Header */}
+                    <div className="block lg:hidden w-full mb-3">
+                      <AdminUserSearchAvatars
                         users={users}
-                        setUsers={setUsers}
+                        selectedUser={selectedUser}
                         setSelectedUser={setSelectedUser}
-                        availableModules={availableModules}
-                        tMenu={tMenu}
-                        handleToggleModuleAccess={handleToggleModuleAccess}
-                        handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-                        onNavigateToAccess={() => setActiveTab('add')}
                       />
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[330px_1fr] 2xl:grid-cols-[360px_1fr] gap-3 w-full items-stretch flex-1">
+                      {selectedUser ? (
+                        <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+                          <AdminProfileStats 
+                            selectedUser={selectedUser} 
+                            onUpdateRole={handleUpdateUserRole}
+                          />
+                        </div>
+                      ) : (
+                        <div className="col-span-1 w-full min-w-0 flex flex-col h-full items-center justify-center p-6 bg-slate-100/90 dark:bg-slate-800/40 rounded-[1.75rem] border border-border/40 text-center">
+                          <UserCircle2 className="size-12 text-muted-foreground/40 mb-3" />
+                          <h3 className="text-sm font-bold text-foreground mb-1">
+                            {isRtl ? "کاربری در سیستم یافت نشد" : "No Users Found"}
+                          </h3>
+                          <p className="text-xs text-muted-foreground max-w-xs mb-4">
+                            {isRtl ? "هنوز کاربری در سرور ثبت نشده است. می‌توانید از بخش ساخت کاربر، کاربر جدید اضافه کنید." : "No users registered on the server yet. You can create a new user."}
+                          </p>
+                          <Button size="sm" onClick={() => setActiveTab('add')} className="rounded-xl gap-1.5 cursor-pointer">
+                            <UserPlus className="size-3.5" />
+                            <span>{isRtl ? "افزودن کاربر جدید" : "Add New User"}</span>
+                          </Button>
+                        </div>
+                      )}
+                      
+                      <div className="col-span-1 w-full min-w-0 flex flex-col h-full">
+                        <AdminTasksTime 
+                          selectedUser={selectedUser}
+                          users={users}
+                          setUsers={setUsers}
+                          setSelectedUser={setSelectedUser}
+                          availableModules={availableModules}
+                          tMenu={tMenu}
+                          handleToggleModuleAccess={handleToggleModuleAccess}
+                          handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                          onNavigateToAccess={() => setActiveTab('add')}
+                          hideSearchAvatarsOnMobile={true}
+                        />
+                      </div>
                     </div>
                   </div>
                 )}

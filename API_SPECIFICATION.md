@@ -188,7 +188,8 @@ interface UserProfile {
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/api/admin/users` | لیست پرسنل و کاربران سیستم | `?role=...&status=...&page=1&limit=20` | `{ "data": User[], "total": 120 }` | Admin |
 | **GET** | `/api/admin/users/:id` | مشاهده پرونده کامل کاربر توسط ادمین | — | `{ "data": User }` | Admin |
-| **PATCH** | `/api/admin/users/:id` | تغییر نقش یا مسدودسازی کاربر | `{ "role": "admin"\|"staff", "accountStatus": "active"\|"blocked" }` | `{ "data": User }` | Admin |
+| **POST** | `/api/admin/users` | تعریف و ثبت پرسنل جدید در سامانه | داده‌های کامل پرسنلی + نقش (`admin`\|`user`) + رمز عبور | `{ "data": User }` | Admin |
+| **PATCH** | `/api/admin/users/:id` | تغییر/ارتقای نقش کاربر (`admin`\|`user`) یا ویرایش مشخصات | `{ "role": "admin"\|"user", ... }` | `{ "data": User }` | Admin |
 | **PUT** | `/api/admin/users/:id/modules` | تنظیم سطوح دسترسی ماژول‌ها برای کاربر | `{ "modules": [{ "moduleId": "projects", "hasAccess": true, "permission": "write" }] }` | `{ "data": User }` | Admin |
 | **DELETE** | `/api/admin/users/:id` | حذف حساب کاربری | — | `{ "success": true }` | Admin |
 | **GET** | `/api/admin/requests` | دریافت لیست درخواست‌های معلق حساب پرسنل | `?status=pending` | `{ "data": PendingRequest[] }` | Admin / HR |
@@ -209,7 +210,54 @@ interface UserProfile {
 
 ---
 
-## ۸. نمونه فراخوانی کلاینت (cURL Examples)
+## ۸. ماژول اعلان‌ها و نوتیفیکیشن‌های سازمانی (Notifications API)
+
+این ماژول وظیفه توزیع اعلان‌های آنی، تسک‌های محوله از طرف مدیر، رویدادهای تقویم، روتین‌های روزانه و درخواست‌های در انتظار تأیید ادمین را بر عهده دارد.
+
+### ۸.۱. جدول مسیرهای ارتباطی (Endpoints)
+
+| متد | مسیر (Endpoint) | شرح عملیات | پارامترها / بدنه درخواست | پاسخ مورد انتظار (Response) | احراز هویت |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/api/notifications` | دریافت لیست اعلان‌های کاربر جاری | Query: `?unreadOnly=false&type=system&limit=30&offset=0` | `{ "notifications": AppNotification[], "total": 14, "unreadCount": 3 }` | Bearer Token |
+| **GET** | `/api/notifications/unread-count` | دریافت سریع تعداد پیام‌های خوانده‌نشده | — | `{ "count": 3 }` | Bearer Token |
+| **PATCH** | `/api/notifications/:id/read` | علامت‌گذاری یک اعلان به عنوان خوانده‌شده | — | `{ "success": true, "id": "notif-1" }` | Bearer Token |
+| **PATCH** | `/api/notifications/read-all` | علامت‌گذاری کلیه اعلان‌های کاربر به عنوان خوانده‌شده | — | `{ "success": true, "count": 3 }` | Bearer Token |
+| **DELETE** | `/api/notifications/:id` | حذف یا بایگانی اعلان | — | `{ "success": true, "id": "notif-1" }` | Bearer Token |
+| **POST** | `/api/notifications` | ایجاد و ارسال اعلان جدید (ادمین یا سیستم) | `CreateNotificationInput` | آبجکت اعلان ثبت‌شده `AppNotification` | Bearer Token (Admin) |
+
+---
+
+### ۸.۲. ساختار مدل اعلان (AppNotification Schema)
+```json
+{
+  "id": "notif-98213",
+  "title": "درخواست عضویت جدید در پنل ادمین",
+  "description": "متقاضی جدید با ایمیل سازمانی منتظر تأیید مدارک و تعیین سمت شغلی است.",
+  "type": "approval_req",
+  "priority": "high",
+  "date": "امروز - ۱۰:۳۰",
+  "createdAt": "2026-11-01T10:30:00Z",
+  "read": false,
+  "actionUrl": "/admin?tab=requests",
+  "actionText": "بررسی درخواست",
+  "taskId": "task-m1",
+  "emailPreview": {
+    "subject": "[Euroslot Pars] درخواست تایید عضویت پرسنلی",
+    "from": "system@euroslotpars.com",
+    "to": "saeed@euroslotpars.com",
+    "sentAt": "2026-11-01T10:30:00Z",
+    "body": "یک درخواست جدید از طرف محمدرضا رضایی ثبت شد."
+  },
+  "metadata": {
+    "applicantId": "req_1042",
+    "companyId": "npceram"
+  }
+}
+```
+
+---
+
+## ۹. نمونه فراخوانی کلاینت (cURL Examples)
 
 ### ۱. ورود به سامانه (Login):
 ```bash

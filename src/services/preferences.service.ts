@@ -52,7 +52,7 @@ export class FakePreferencesService implements IPreferencesService {
             const user = JSON.parse(raw);
             user.primaryColor = patch.primaryColor;
             localStorage.setItem('esp-auth-user', JSON.stringify(user));
-            localStorage.removeItem('esp_demo_users_override');
+            localStorage.setItem('esp_auth_user', JSON.stringify(user));
           }
         }
       } catch {}
@@ -71,6 +71,18 @@ export class RealPreferencesService implements IPreferencesService {
   }
 
   async update(patch: Partial<UserPreferences>): Promise<UserPreferences> {
+    if (patch.primaryColor && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('esp-global-primary-color', patch.primaryColor);
+        const rawAuth = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
+        if (rawAuth) {
+          const u = JSON.parse(rawAuth);
+          u.primaryColor = patch.primaryColor;
+          localStorage.setItem('esp_auth_user', JSON.stringify(u));
+          localStorage.setItem('esp-auth-user', JSON.stringify(u));
+        }
+      } catch {}
+    }
     return this.http.patch<UserPreferences>('/users/me/preferences', patch);
   }
 }

@@ -29,6 +29,7 @@ import {
   PhoneCall,
   CreditCard,
   Plus,
+  ChevronDown,
   Minus,
   X,
   KeyRound,
@@ -62,6 +63,10 @@ import { DatePicker, jalaliToGregorianDate, getJalaliDate } from "@/components/u
 import { toPersianDigits } from "@/utils/textDirection";
 import { useRouter } from "@/i18n/navigation";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import {
+  getAllDepartmentOptions,
+  getJobTitlesForDepartment,
+} from "@/modules/admin/data/organization-data";
 import {
   getDegreeOptions,
   getStudyFieldOptions,
@@ -105,27 +110,16 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
   const [otpError, setOtpError] = useState("");
 
   const isFa = locale === "fa";
+  const userRoleLower = (user?.role || '').toLowerCase();
+  const isAdmin = userRoleLower === 'admin' || userRoleLower === 'administrator' || userRoleLower === 'superuser' || Boolean((user as any)?.is_superuser);
 
-  const DEPARTMENTS: ComboboxOption[] = [
-    { value: "مهندسی و طراحی", label: isFa ? "مهندسی و طراحی" : "Engineering & Design" },
-    { value: "تولید و فرآوری نسوز", label: isFa ? "تولید و فرآوری نسوز" : "Refractory Production" },
-    { value: "کنترل کیفیت و آزمایشگاه", label: isFa ? "کنترل کیفیت و آزمایشگاه" : "QA & Laboratory" },
-    { value: "فناوری اطلاعات و سیستم‌ها", label: isFa ? "فناوری اطلاعات و سیستم‌ها" : "IT & Systems" },
-    { value: "منابع انسانی و اداری", label: isFa ? "منابع انسانی و اداری" : "Human Resources" },
-    { value: "بازرگانی و فروش", label: isFa ? "بازرگانی و فروش" : "Commercial & Sales" },
-    { value: "مالی و حسابداری", label: isFa ? "مالی و حسابداری" : "Finance & Accounting" },
-  ];
+  const DEPARTMENTS: ComboboxOption[] = React.useMemo(() => {
+    return getAllDepartmentOptions(isFa);
+  }, [isFa]);
 
-  const ROLES: ComboboxOption[] = [
-    { value: "مدیر دپارتمان", label: isFa ? "مدیر دپارتمان" : "Department Manager" },
-    { value: "سرپرست کارگاه / شیفت", label: isFa ? "سرپرست کارگاه / شیفت" : "Supervisor" },
-    { value: "مهندس فرآیند و متالورژی", label: isFa ? "مهندس فرآیند و متالورژی" : "Process Engineer" },
-    { value: "کارشناس ارشد نسوز و سرامیک", label: isFa ? "کارشناس ارشد نسوز" : "Refractory Specialist" },
-    { value: "کارشناس کنترل کیفیت", label: isFa ? "کارشناس کنترل کیفیت" : "QC Specialist" },
-    { value: "کارشناس فناوری اطلاعات", label: isFa ? "کارشناس فناوری اطلاعات" : "IT Specialist" },
-    { value: "کارشناس اداری و پرسنلی", label: isFa ? "کارشناس اداری و پرسنلی" : "HR Specialist" },
-    { value: "کارشناس فروش و بازرگانی", label: isFa ? "کارشناس فروش و بازرگانی" : "Sales Specialist" },
-  ];
+  const ROLES: ComboboxOption[] = React.useMemo(() => {
+    return getJobTitlesForDepartment("holding", formData.organizational?.department, isFa);
+  }, [formData.organizational?.department, isFa]);
 
   const DEGREES: ComboboxOption[] = [
     { value: "دیپلم", label: isFa ? "دیپلم" : "High School Diploma" },
@@ -139,6 +133,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
   const MARITAL_STATUS_OPTIONS: ComboboxOption[] = [
     { value: "single", label: t("fields.maritalSingle") },
     { value: "married", label: t("fields.maritalMarried") },
+    { value: "other", label: isFa ? "سایر" : "Other" },
   ];
 
   const SUPPLEMENTARY_PLAN_OPTIONS: ComboboxOption[] = [
@@ -146,6 +141,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
     { value: "silver", label: t("fields.planSilver") },
     { value: "special", label: t("fields.planSpecial") },
     { value: "none", label: t("fields.planNone") },
+    { value: "other", label: isFa ? "سایر طرح‌ها" : "Other Plan" },
   ];
 
   const WORK_LOCATION_OPTIONS: ComboboxOption[] = [
@@ -153,6 +149,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
     { value: "factory", label: isFa ? "کارخانه / سایت تولیدی" : "Factory / Plant" },
     { value: "remote", label: isFa ? "دورکاری" : "Remote" },
     { value: "hybrid", label: isFa ? "هیبریدی / ترکیبی" : "Hybrid" },
+    { value: "other", label: isFa ? "سایر محل‌ها" : "Other Location" },
   ];
 
   const CONTRACT_TYPE_OPTIONS: ComboboxOption[] = [
@@ -161,6 +158,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
     { value: "hourly", label: isFa ? "ساعتی" : "Hourly" },
     { value: "contractual", label: isFa ? "قراردادی / پروژه‌ای" : "Contractual / Project-based" },
     { value: "internship", label: isFa ? "کارآموزی" : "Internship" },
+    { value: "other", label: isFa ? "سایر انواع قرارداد" : "Other Contract" },
   ];
 
   const [newSubordinate, setNewSubordinate] = useState("");
@@ -168,6 +166,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
   const [isManualUniversity, setIsManualUniversity] = useState(false);
 
   // Dependents state
+  const [isAddDependentOpen, setIsAddDependentOpen] = useState(false);
   const [newDepFullName, setNewDepFullName] = useState("");
   const [newDepRelationship, setNewDepRelationship] = useState("spouse");
   const [newDepNationalId, setNewDepNationalId] = useState("");
@@ -235,6 +234,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
     setNewDepNationalId("");
     setNewDepBirthDate("");
     setNewDepRelationship("spouse");
+    setIsAddDependentOpen(false);
     toast.success(t("fields.dependentAddedSuccess"));
   };
 
@@ -663,15 +663,23 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               <Input
                 id="email"
                 value={formData.personal.email || user?.email || ""}
-                disabled
-                readOnly
+                onChange={isAdmin ? (e) => handleFieldChange("personal", "email", e.target.value) : undefined}
+                disabled={!isAdmin}
+                readOnly={!isAdmin}
                 dir="ltr"
-                className="h-10 font-sans text-sm text-left pl-9 pr-3 bg-muted/40 cursor-not-allowed text-foreground opacity-90"
+                className={cn(
+                  "h-10 font-sans text-sm text-left pl-9 pr-3 text-foreground",
+                  isAdmin 
+                    ? "bg-background focus-visible:ring-1 focus-visible:ring-primary" 
+                    : "bg-muted/40 cursor-not-allowed opacity-90"
+                )}
               />
               <Mail className="size-4 text-emerald-500 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
             </div>
             <p className="text-[11px] text-muted-foreground">
-              {t("personnelForm.corporateEmailHelp")}
+              {isAdmin 
+                ? (isFa ? "به عنوان مدیر سیستم، ویرایش ایمیل سازمانی برای شما مجاز است." : "As an admin, corporate email editing is enabled.")
+                : t("personnelForm.corporateEmailHelp")}
             </p>
           </div>
 
@@ -1007,15 +1015,17 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
             {/* Badges list */}
             {formData.organizational.subordinates && formData.organizational.subordinates.length > 0 && (
               <div className="flex flex-wrap gap-2 pt-1">
-                {formData.organizational.subordinates.map((sub, idx) => (
-                  <div
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs border border-border/60 transition-colors"
-                  >
-                    <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {sub.charAt(0) || "U"}
-                    </span>
-                    <span className="font-medium">{sub}</span>
+                {formData.organizational.subordinates.map((sub, idx) => {
+                  const subName = typeof sub === "string" ? sub : (sub.name || "");
+                  return (
+                    <div
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted/60 hover:bg-muted text-foreground text-xs border border-border/60 transition-colors"
+                    >
+                      <span className="size-5 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
+                        {subName.charAt(0) || "U"}
+                      </span>
+                      <span className="font-medium">{subName}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -1034,7 +1044,8 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
                       <X className="size-3.5" />
                     </button>
                   </div>
-                ))}
+                );
+              })}
               </div>
             )}
             <p className="text-[11px] text-muted-foreground">{t("personnelForm.subordinatesHelp")}</p>
@@ -1346,86 +1357,132 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
               </div>
             </div>
 
-            {/* Input Form to Add Dependent */}
-            <div className="p-4 rounded-xl border border-border/60 bg-muted/20 space-y-3">
-              <h5 className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Plus className="size-3.5 text-primary" />
-                <span>{t("fields.newDependentTitle")}</span>
-              </h5>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {/* Full Name */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-foreground">
-                    {t("fields.dependentFullName")}
-                  </Label>
-                  <Input
-                    value={newDepFullName}
-                    onChange={(e) => setNewDepFullName(e.target.value)}
-                    placeholder={t("fields.fullNamePlaceholder")}
-                    className="h-9 text-xs"
-                  />
+            {/* Input Form to Add Dependent (Collapsible Accordion با فضای اینپوت گسترده) */}
+            <div className="rounded-xl border border-border/60 bg-muted/20 overflow-hidden transition-all duration-200 shadow-xs">
+              <button
+                type="button"
+                onClick={() => setIsAddDependentOpen(!isAddDependentOpen)}
+                className="w-full p-4 flex items-center justify-between text-start cursor-pointer hover:bg-muted/30 transition-colors select-none group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                    <Plus className={cn("size-3.5 transition-transform duration-200", isAddDependentOpen && "rotate-45 text-muted-foreground")} />
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold text-foreground">
+                      {t("fields.newDependentTitle")}
+                    </h5>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {isFa 
+                        ? "جهت ثبت همسر، فرزندان یا والدین تحت تکفل کلیک کنید." 
+                        : "Click to register family dependents."}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Relationship */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-foreground">
-                    {t("fields.relationship")}
-                  </Label>
-                  <Combobox
-                    options={RELATIONSHIP_OPTIONS}
-                    value={newDepRelationship}
-                    onChange={(val) => setNewDepRelationship(val)}
-                    placeholder={t("fields.selectRelationship")}
-                    className="w-full h-9 text-xs rtl:text-right"
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs font-medium text-primary hidden sm:inline">
+                    {isAddDependentOpen
+                      ? (isFa ? "بستن فرم" : "Close Form")
+                      : (isFa ? "افزودن فرد جدید" : "Add New")}
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      "size-4.5 text-muted-foreground transition-transform duration-200 shrink-0",
+                      isAddDependentOpen && "rotate-180 text-primary"
+                    )}
                   />
                 </div>
+              </button>
 
-                {/* National ID */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-foreground">
-                    {t("fields.nationalIdPlaceholder")}
-                  </Label>
-                  <Input
-                    value={newDepNationalId}
-                    onChange={(e) => {
-                      const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
-                      setNewDepNationalId(digits);
-                    }}
-                    maxLength={10}
-                    placeholder="1234567890"
-                    dir="ltr"
-                    className="h-9 text-xs font-mono text-left ltr"
-                  />
+              {isAddDependentOpen && (
+                <div className="px-4 pb-5 pt-2 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
+                  {/* 2-Column Responsive Grid with Generous Spacing for Inputs */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    {/* Full Name */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground">
+                        {t("fields.dependentFullName")} <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        value={newDepFullName}
+                        onChange={(e) => setNewDepFullName(e.target.value)}
+                        placeholder={t("fields.fullNamePlaceholder")}
+                        className="h-10 text-xs rounded-lg"
+                      />
+                    </div>
+
+                    {/* Relationship */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground">
+                        {t("fields.relationship")} <span className="text-destructive">*</span>
+                      </Label>
+                      <Combobox
+                        options={RELATIONSHIP_OPTIONS}
+                        value={newDepRelationship}
+                        onChange={(val) => setNewDepRelationship(val)}
+                        placeholder={t("fields.selectRelationship")}
+                        className="w-full h-10 text-xs rtl:text-right rounded-lg"
+                      />
+                    </div>
+
+                    {/* National ID */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground">
+                        {t("fields.nationalIdPlaceholder")} <span className="text-[11px] font-normal text-muted-foreground">({isFa ? "۱۰ رقم" : "10 digits"})</span>
+                      </Label>
+                      <Input
+                        value={newDepNationalId}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+                          setNewDepNationalId(digits);
+                        }}
+                        maxLength={10}
+                        placeholder="1234567890"
+                        dir="ltr"
+                        className="h-10 text-xs font-mono text-start ltr rounded-lg"
+                      />
+                    </div>
+
+                    {/* Birth Date */}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-foreground">
+                        {t("fields.selectBirthDate")}
+                      </Label>
+                      <DatePicker
+                        value={parseDateString(newDepBirthDate)}
+                        onChange={(date) => setNewDepBirthDate(formatDateToString(date))}
+                        isJalali={isFa}
+                        placeholder={t("fields.selectBirthDate")}
+                        className="w-full h-10"
+                        triggerClassName="w-full h-10 justify-between text-xs rounded-lg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border/40">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsAddDependentOpen(false)}
+                      className="h-9 px-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      {isFa ? "انصراف" : "Cancel"}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddDependent}
+                      className="h-9 px-5 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
+                    >
+                      <Plus className="size-3.5" />
+                      <span>{t("fields.addDependentSubmit")}</span>
+                    </Button>
+                  </div>
                 </div>
-
-                {/* Birth Date */}
-                <div className="space-y-1">
-                  <Label className="text-xs font-medium text-foreground">
-                    {t("fields.selectBirthDate")}
-                  </Label>
-                  <DatePicker
-                    value={parseDateString(newDepBirthDate)}
-                    onChange={(date) => setNewDepBirthDate(formatDateToString(date))}
-                    isJalali={isFa}
-                    placeholder={t("fields.selectBirthDate")}
-                    className="w-full h-9"
-                    triggerClassName="w-full h-9 justify-between text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleAddDependent}
-                  className="h-9 px-4 text-xs font-semibold gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Plus className="size-3.5" />
-                  <span>{t("fields.addDependentSubmit")}</span>
-                </Button>
-              </div>
+              )}
             </div>
 
             {/* Row-by-Row Table Layout (سطری) */}

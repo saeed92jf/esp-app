@@ -18,7 +18,7 @@ function Avatar({
       data-slot="avatar"
       data-size={size}
       className={cn(
-        'group/avatar after:border-border relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten',
+        'group/avatar relative flex size-8 shrink-0 rounded-full select-none overflow-hidden data-[size=lg]:size-10 data-[size=sm]:size-6',
         className,
       )}
       {...props}
@@ -34,18 +34,16 @@ function AvatarImage({
   if (!src || typeof src !== 'string') return null;
 
   return (
-    <AvatarPrimitive.Image asChild src={src} {...props}>
-      <Image
-        src={src as string}
-        alt={alt || "Avatar"}
-        fill
-        sizes="50px"
-        className={cn(
-          'aspect-square size-full rounded-full object-cover',
-          className,
-        )}
-      />
-    </AvatarPrimitive.Image>
+    // eslint-disable-next-line @next/next/no-img-element
+    <AvatarPrimitive.Image
+      src={src}
+      alt={alt || "Avatar"}
+      className={cn(
+        'aspect-square size-full rounded-full object-cover',
+        className,
+      )}
+      {...props}
+    />
   );
 }
 

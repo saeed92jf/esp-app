@@ -32,15 +32,32 @@ export function Header() {
   const pathname = usePathname();
 
   const isPendingPage = pathname === "/account-pending" || pathname.startsWith("/account-pending/");
+  const isAuthPage =
+    pathname === "/login" ||
+    pathname.startsWith("/login/") ||
+    pathname === "/register" ||
+    pathname.startsWith("/register/") ||
+    pathname === "/account-request" ||
+    pathname.startsWith("/account-request/") ||
+    pathname === "/account-pending" ||
+    pathname.startsWith("/account-pending/") ||
+    pathname === "/forgot-password" ||
+    pathname.startsWith("/forgot-password/") ||
+    pathname === "/reset-password" ||
+    pathname.startsWith("/reset-password/") ||
+    pathname === "/set-new-password" ||
+    pathname.startsWith("/set-new-password/") ||
+    pathname === "/verify-email" ||
+    pathname.startsWith("/verify-email/");
 
-  // On the pending page: side menu is disabled, page tag is shown next to logo, and only Theme & Locale icons appear
-  if (isPendingPage) {
+  // On all authentication pages: clean minimal header with Theme and Locale toggle (no skeleton, no clutter)
+  if (isAuthPage) {
     return (
       <AppHeader
-        tag="pending"
+        tag={isPendingPage ? "pending" : undefined}
         showMenuButton={false}
         menuTrigger={null}
-        logoHref="/account-pending"
+        logoHref="/"
         rightActions={
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <ThemeToggle />

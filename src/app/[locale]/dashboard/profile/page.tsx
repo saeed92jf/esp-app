@@ -2,10 +2,11 @@ import { setRequestLocale } from 'next-intl/server';
 import { ProfilePage } from '@/modules/profile/components/profile-page';
 
 type Props = {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 };
 
-export default function Page({ params: { locale } }: Props) {
+export default async function Page({ params }: Props) {
+  const { locale } = await params;
   setRequestLocale(locale);
   return <ProfilePage />;
 }

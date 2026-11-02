@@ -37,7 +37,7 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
     ],
   },
 
-  allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.0.71"],
+  allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.0.242", "192.168.0.171"],
 
   experimental: {
     serverActions: { allowedOrigins: ["*"] },
@@ -45,6 +45,18 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
 
   async rewrites() {
     return [
+      {
+        source: "/api/real/notifications/:path*",
+        destination: "/api/notifications/:path*",
+      },
+      {
+        source: "/api/real/admin/:path*",
+        destination: "/api/admin/:path*",
+      },
+      {
+        source: "/api/real/users/:path*",
+        destination: "/api/users/:path*",
+      },
       {
         source: "/api/real/:path*",
         destination: "http://192.168.0.171:8080/api/v1/:path*",

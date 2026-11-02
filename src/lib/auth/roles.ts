@@ -5,7 +5,9 @@ import type { UserRole } from '@/types/auth';
 // role-aware dashboard at "/". Change paths here if you split per-role routes.
 export const ROLE_HOME: Record<UserRole, string> = {
   admin: '/',
+  manager: '/',
   engineer: '/',
   staff: '/',
   customer: '/',
+  user: '/',
 };

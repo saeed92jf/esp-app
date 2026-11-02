@@ -196,8 +196,8 @@ export const ALL_JOB_TITLES: JobTitleDefinition[] = [
   },
   {
     id: "group_ceo",
-    titleFa: "مدیرعامل گروه / هلدینگ",
-    titleEn: "Group CEO / Managing Director",
+    titleFa: "مدیرعامل هلدینگ",
+    titleEn: "Holding CEO / Managing Director",
     departmentId: "administrative",
     companyIds: ["euroslot", "npceram", "holding"],
     isManagerial: true,
@@ -966,33 +966,64 @@ export const ALL_JOB_TITLES: JobTitleDefinition[] = [
  * دریافت لیست دپارتمان‌های فیلتر شده بر اساس شرکت
  */
 export function getDepartmentsForCompany(companyId: CompanyId, isRtl: boolean = true): ComboboxOption[] {
-  return ALL_DEPARTMENTS
+  const list: ComboboxOption[] = ALL_DEPARTMENTS
     .filter((d) => companyId === "holding" || d.companyIds.includes(companyId) || d.companyIds.includes("holding"))
     .map((d) => ({
       value: d.id,
       label: isRtl ? d.nameFa : d.nameEn,
     }));
+  list.push({
+    value: "other",
+    label: isRtl ? "سایر واحدها / دپارتمان‌ها" : "Other Department",
+  });
+  return list;
+}
+
+/**
+ * دریافت کلیه دپارتمان‌های سازمان در قالب ComboboxOption
+ */
+export function getAllDepartmentOptions(isRtl: boolean = true): ComboboxOption[] {
+  return ALL_DEPARTMENTS.map((d) => ({
+    value: isRtl ? d.nameFa : d.nameEn,
+    label: isRtl ? d.nameFa : d.nameEn,
+  }));
+}
+
+/**
+ * دریافت کلیه عناوین شغلی در قالب ComboboxOption
+ */
+export function getAllJobTitleOptions(isRtl: boolean = true): ComboboxOption[] {
+  return ALL_JOB_TITLES.map((t) => ({
+    value: isRtl ? t.titleFa : t.titleEn,
+    label: isRtl ? t.titleFa : t.titleEn,
+  }));
 }
 
 /**
  * دریافت لیست سمت‌های شغلی فیلتر شده بر اساس شرکت و دپارتمان (آبشاری)
  */
 export function getJobTitlesForDepartment(
-  companyId: CompanyId,
+  companyId: CompanyId = "holding",
   departmentId?: string,
   isRtl: boolean = true
 ): ComboboxOption[] {
   let list = ALL_JOB_TITLES.filter(
     (t) => companyId === "holding" || t.companyIds.includes(companyId) || t.companyIds.includes("holding")
   );
-  if (departmentId) {
-    list = list.filter((t) => t.departmentId === departmentId);
+  if (departmentId && departmentId !== "other") {
+    const deptDef = ALL_DEPARTMENTS.find(d => d.id === departmentId || d.nameFa === departmentId || d.nameEn === departmentId);
+    const resolvedDeptId = deptDef ? deptDef.id : departmentId;
+    const filtered = list.filter((t) => t.departmentId === resolvedDeptId);
+    if (filtered.length > 0) {
+      list = filtered;
+    }
   }
 
-  return list.map((t) => ({
+  const options: ComboboxOption[] = list.map((t) => ({
     value: isRtl ? t.titleFa : t.titleEn,
     label: isRtl ? t.titleFa : t.titleEn,
   }));
+  return options;
 }
 
 /**
@@ -1021,16 +1052,58 @@ export function getManagerialTitlesForCompany(
  */
 export function getManagerialTitlesWithOccupants(
   companyId: CompanyId,
-  users: Array<{ name?: string; firstNameFa?: string; lastNameFa?: string; jobTitle?: string }> = [],
+  users: Array<{ id?: string; name?: string; firstNameFa?: string; lastNameFa?: string; jobTitle?: string; employeeId?: string; department?: string }> = [],
   isRtl: boolean = true
 ): ComboboxOption[] {
+  const options: ComboboxOption[] = [];
+  const addedValues = new Set<string>();
+
+  // 1. First, list active persons who hold managerial/leadership roles or active employees
+  const activeLeaders = users.filter((u) => {
+    const title = (u.jobTitle || "").toLowerCase();
+    return (
+      title.includes("مدیر") ||
+      title.includes("سرپرست") ||
+      title.includes("رئیس") ||
+      title.includes("مسئول") ||
+      title.includes("lead") ||
+      title.includes("head") ||
+      title.includes("manager") ||
+      title.includes("director") ||
+      title.includes("supervisor")
+    );
+  });
+
+  const priorityUsers = activeLeaders.length > 0 ? activeLeaders : users;
+
+  priorityUsers.forEach((u) => {
+    const faName = `${u.firstNameFa || ""} ${u.lastNameFa || ""}`.trim();
+    const displayName = (isRtl ? (faName || u.name) : (u.name || faName)) || "";
+    if (!displayName) return;
+
+    const code = u.employeeId ? ` (${u.employeeId})` : "";
+    const title = u.jobTitle ? ` - ${u.jobTitle}` : "";
+    const label = `${displayName}${code}${title}`;
+
+    if (!addedValues.has(label)) {
+      addedValues.add(label);
+      options.push({
+        value: label,
+        label: label,
+        hint: isRtl ? "شخص متصدی" : "Incumbent",
+        hintClassName: "text-emerald-600 bg-emerald-500/15 dark:text-emerald-400 font-medium",
+      });
+    }
+  });
+
+  // 2. Standard organizational managerial posts from the catalogue
   const managers = ALL_JOB_TITLES.filter(
     (t) =>
       (companyId === "holding" || t.companyIds.includes(companyId) || t.companyIds.includes("holding")) &&
       t.isManagerial
   );
 
-  return managers.map((t) => {
+  managers.forEach((t) => {
     const title = isRtl ? t.titleFa : t.titleEn;
     const occupant = users.find((u) => {
       const uTitle = (u.jobTitle || "").trim().toLowerCase();
@@ -1049,22 +1122,27 @@ export function getManagerialTitlesWithOccupants(
         : occupant.name || faName || "";
     }
 
-    const label = occupantName ? `${title} - ${occupantName}` : title;
-    return {
-      value: label,
-      label: label,
-      hint: occupantName
-        ? isRtl
-          ? "تخصیص‌یافته"
-          : "Assigned"
-        : isRtl
-        ? "پست خالی"
-        : "Vacant",
-      hintClassName: occupantName
-        ? "text-emerald-600 bg-emerald-500/15 dark:text-emerald-400"
-        : "text-amber-600 bg-amber-500/15 dark:text-amber-400",
-    };
+    const label = occupantName ? `${title} - ${occupantName}` : `${title} (${isRtl ? "پست سازمانی" : "Org Post"})`;
+    if (!addedValues.has(label)) {
+      addedValues.add(label);
+      options.push({
+        value: label,
+        label: label,
+        hint: occupantName
+          ? isRtl
+            ? "تخصیص‌یافته"
+            : "Assigned"
+          : isRtl
+          ? "پست خالی"
+          : "Vacant",
+        hintClassName: occupantName
+          ? "text-emerald-600 bg-emerald-500/15 dark:text-emerald-400"
+          : "text-amber-600 bg-amber-500/15 dark:text-amber-400",
+      });
+    }
   });
+
+  return options;
 }
 
 /**
@@ -1082,6 +1160,7 @@ export const SUPPLEMENTARY_INSURANCE_PROVIDERS: ComboboxOption[] = [
   { value: "Karafarin", label: "بیمه کارآفرین (Karafarin)" },
   { value: "Novin", label: "بیمه نوین (Novin)" },
   { value: "Ma", label: "بیمه ما (Ma)" },
+  { value: "other", label: "سایر شرکت‌های بیمه تکمیلی (Other)" },
 ];
 
 /**

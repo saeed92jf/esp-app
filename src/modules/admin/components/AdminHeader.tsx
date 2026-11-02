@@ -90,7 +90,7 @@ export function AdminHeader({ users, selectedUser, setSelectedUser, searchQuery,
 
           {/* Department Name */}
           <div className="w-[110px] text-left font-bold text-foreground text-[13px] whitespace-nowrap truncate px-1" dir="ltr">
-            {departments.length > 0 ? t(`departments.${departments[depIndex]}`) : '...'}
+            {departments.length > 0 ? (t.has(`departments.${departments[depIndex]}`) ? t(`departments.${departments[depIndex]}`) : departments[depIndex]) : '...'}
           </div>
 
           {/* Inner Left (RTL Right) - Prev User */}

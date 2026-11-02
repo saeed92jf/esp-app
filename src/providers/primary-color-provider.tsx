@@ -11,9 +11,14 @@ const GLOBAL_STORAGE_KEY = 'esp-global-primary-color';
 const ALL_COLOR_CLASSES = PRIMARY_COLORS.map((c) => `primary-color-${c.id}`);
 
 function applyColorClass(id: PrimaryColorId) {
+  if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.classList.remove(...ALL_COLOR_CLASSES);
   root.classList.add(`primary-color-${id}`);
+  if (document.body) {
+    document.body.classList.remove(...ALL_COLOR_CLASSES);
+    document.body.classList.add(`primary-color-${id}`);
+  }
 }
 
 type PrimaryColorContextType = {
@@ -29,7 +34,14 @@ export function PrimaryColorProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(GLOBAL_STORAGE_KEY) as PrimaryColorId;
+      let stored = localStorage.getItem(GLOBAL_STORAGE_KEY) as PrimaryColorId;
+      if (!stored) {
+        const rawAuth = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
+        if (rawAuth) {
+          const u = JSON.parse(rawAuth);
+          if (u?.primaryColor) stored = u.primaryColor;
+        }
+      }
       if (stored && PRIMARY_COLORS.some((c) => c.id === stored)) {
         setColorId(stored);
         applyColorClass(stored);
@@ -72,6 +84,13 @@ export function PrimaryColorProvider({ children }: { children: ReactNode }) {
     setColorId(id);
     try {
       localStorage.setItem(GLOBAL_STORAGE_KEY, id);
+      const rawAuth = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
+      if (rawAuth) {
+        const u = JSON.parse(rawAuth);
+        u.primaryColor = id;
+        localStorage.setItem('esp_auth_user', JSON.stringify(u));
+        localStorage.setItem('esp-auth-user', JSON.stringify(u));
+      }
     } catch {}
     // Dispatch custom event for other listeners in the same window
     window.dispatchEvent(new CustomEvent('esp-primary-color-change', { detail: id }));

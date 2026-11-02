@@ -38,6 +38,53 @@ export function isHoldingExecutiveEmail(email?: string): boolean {
   );
 }
 
+export const ALLOWED_COMPANY_DOMAINS = ["euroslotpars.com", "npceram.com"] as const;
+export type AllowedCompanyDomain = (typeof ALLOWED_COMPANY_DOMAINS)[number];
+
+export const CORPORATE_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@(euroslotpars\.com|npceram\.com)$/i;
+
+/**
+ * بررسی صحت ساختار ایمیل و تعلق آن به دامنه‌های رسمی یورواسلات پارس یا نانو پالایش
+ */
+export function isValidCorporateEmail(email?: string): boolean {
+  if (!email) return false;
+  const trimmed = email.trim().toLowerCase();
+  return CORPORATE_EMAIL_REGEX.test(trimmed) || isHoldingExecutiveEmail(trimmed);
+}
+
+/**
+ * استخراج نام کاربری پیش از علامت @
+ */
+export function extractEmailUsername(email?: string): string {
+  if (!email) return "";
+  const atIndex = email.indexOf("@");
+  return atIndex >= 0 ? email.slice(0, atIndex).trim() : email.trim();
+}
+
+/**
+ * استخراج دامنه پس از علامت @
+ */
+export function extractEmailDomain(email?: string): string | null {
+  if (!email) return null;
+  const atIndex = email.indexOf("@");
+  return atIndex >= 0 ? email.slice(atIndex + 1).trim().toLowerCase() : null;
+}
+
+/**
+ * اعمال دامنه سازمانی هدف به ایمیل فعلی
+ * اگر قبلاً نام کاربری وارد شده باشد، دامنه آن جایگزین می‌شود.
+ */
+export function formatEmailWithDomain(
+  currentEmail: string,
+  targetDomain: AllowedCompanyDomain
+): string {
+  const username = extractEmailUsername(currentEmail);
+  if (!username) {
+    return `@${targetDomain}`;
+  }
+  return `${username}@${targetDomain}`;
+}
+
 export const COMPANIES: Record<CompanyId, CompanyInfo> = {
   euroslot: {
     id: "euroslot",
@@ -53,8 +100,8 @@ export const COMPANIES: Record<CompanyId, CompanyInfo> = {
   },
   holding: {
     id: "holding",
-    nameFa: "هلدینگ و گروه (هر دو شرکت)",
-    nameEn: "Group / Holding",
+    nameFa: "هلدینگ",
+    nameEn: "Holding",
     domain: "euroslotpars.com",
   },
 };

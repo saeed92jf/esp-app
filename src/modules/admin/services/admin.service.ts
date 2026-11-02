@@ -1,3 +1,4 @@
+import type { UserRole } from '@/types/auth';
 import { 
   User, 
   PendingRequest, 
@@ -10,6 +11,7 @@ export interface IAdminService {
   // Users Management
   getUsers(params?: UserQueryParams): Promise<User[]>;
   getUserById(id: string): Promise<User | null>;
+  createUser(user: Partial<User> & { password?: string }): Promise<User>;
   updateUser(id: string, updates: Partial<User>): Promise<User>;
   updateUserModules(id: string, modules: UserModuleAccess[]): Promise<User>;
   deleteUser(id: string): Promise<void>;
@@ -21,7 +23,7 @@ export interface IAdminService {
   approveHr(requestId: string, notes?: string): Promise<PendingRequest>;
   approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: 'admin' | 'user'; modulesAccess?: UserModuleAccess[] }
+    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[] }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }>;
   rejectRequest(requestId: string, reason: string): Promise<PendingRequest>;
   resendCredentials(requestId: string): Promise<{ success: boolean; tempPassword?: string }>;

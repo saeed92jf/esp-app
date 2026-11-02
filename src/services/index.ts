@@ -68,6 +68,11 @@ import {
 import {
   RealAdminService,
 } from "@/modules/admin/services/admin.real.service";
+import {
+  FakeNotificationsService,
+  RealNotificationsService,
+  type INotificationsService,
+} from './notifications.service';
 import type { IAdminService } from "@/modules/admin/services/admin.service";
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -109,6 +114,7 @@ const SERVICE_MODES = {
   user:          'real',     // 🟢 REAL  — پروفایل کاربری به backend واقعی متصل است
   preferences:   'real',     // 🟢 REAL  — تنظیمات کاربر در backend واقعی ذخیره می‌شوند
   admin:         'real',     // 🟢 REAL  — مدیریت کاربران و درخواست‌ها به backend واقعی متصل است
+  notifications: 'real',     // 🟢 REAL  — سیستم اعلان‌ها و نوتیفیکیشن‌های سازمانی
 
   // ──────────────────────────────────── سرویس‌های داده خارجی (Third-Party)
   commodities:   'real',     // 🟢 REAL   — کریپتو از Finnhub، کالا/فارکس از Yahoo Finance
@@ -186,6 +192,12 @@ export const api = {
 
   // آپارات — همیشه Real (مستقل از GLOBAL_API_MODE)
   aparat: new AparatService() as IAparatService,
+
+  // سیستم اعلان‌ها و نوتیفیکیشن‌های سازمانی (Real / Fake)
+  notifications: pickService<INotificationsService>('notifications',
+    new FakeNotificationsService(),
+    new RealNotificationsService(http),
+  ),
 
   // مدیریت کاربران و درخواست‌های سازمانی (HR و Admin)
   admin: pickService<IAdminService>('admin',

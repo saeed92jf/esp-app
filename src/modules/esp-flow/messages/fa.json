@@ -270,13 +270,12 @@
       "doNotUseNozzleMdmtInterpretation": "عدم استفاده از تفسیر MDMT نازل VIII-1-01-37",
       "jobSpecificParams": "پارامترهای خاص پروژه",
       "nozzleAnalysisDirectives": "دستورالعمل‌های تحلیل نازل",
-      "jobSpecificParams": "پارامترهای خاص پروژه",
-      "nozzleAnalysisDirectives": "دستورالعمل‌های تحلیل نازل",
       "exportDataSheet": "خروجی دیتا شیت",
       "generatePdf": "تولید گزارش PDF",
       "saveLocation": "محل ذخیره",
       "browseLocation": "مرور...",
-      "downloadDefault": "دانلود در پوشه پیش‌فرض"
+      "downloadDefault": "دانلود در پوشه پیش‌فرض",
+      "asmeDirectives": "دستورالعمل‌ها و استانداردهای ASME"
     },
     "shortcuts": {
       "undo": "واگرد",
@@ -312,7 +311,8 @@
       "copiedToClipboard": "در کلیپ‌بورد کپی شد",
       "noDiagrams": "هنوز دیاگرامی ذخیره نشده",
       "createFirst": "اولین دیاگرام خود را بسازید",
-      "nodeCount": "{count} گره"
+      "nodeCount": "{count} گره",
+      "deletedSuccessfully": "با موفقیت حذف شد"
     },
     "contextMenu": {
       "addNode": "افزودن گره",
@@ -350,7 +350,7 @@
   "VesselWeight": {
     "generalDataBody": "اطلاعات کلی بدنه (GENERAL DATA BODY)",
     "tagNoQty": "شماره تگ / تعداد:",
-    "equipmentType": "نوع تجهیز:",
+    "equipmentType": "نوع تجهیز",
     "subType": "زیرمجموعه:",
     "service": "سرویس:",
     "special": "الزامات ویژه:",
@@ -498,7 +498,6 @@
     "email": "ایمیل",
     "phoneNumber": "تلفن",
     "mobileNumber": "موبایل",
-    "equipmentType": "نوع تجهیز",
     "uploadDocuments": "بارگذاری اسناد",
     "descriptionRemarks": "توضیحات / ملاحظات",
     "equipmentItems": "تجهیزات و اقلام پروژه",

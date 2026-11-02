@@ -1,5 +1,6 @@
-// src/modules/dashboard/components/notifications/notifications-popover.tsx
 "use client";
+// src/modules/dashboard/components/notifications/notifications-popover.tsx
+import { api } from "@/services";
 
 import * as React from "react";
 import { useState, useRef, useEffect, useMemo } from "react";

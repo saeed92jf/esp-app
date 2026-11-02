@@ -5,7 +5,11 @@ export interface PersonalInfo {
   lastName: string;
   firstNameFa?: string;
   lastNameFa?: string;
+  avatar?: string;
+  avatarUrl?: string;
   avatarColor?: string;
+  avatarBgColor?: string;
+  avatarMode?: 'photo' | 'initials';
   primaryColor?: string;
   nationalId: string;
   phone: string;
@@ -21,16 +25,32 @@ export interface PersonalInfo {
 export type WorkLocation = "office" | "factory" | "remote" | "hybrid";
 export type ContractType = "full_time" | "part_time" | "hourly" | "contractual" | "internship";
 
+export interface SubordinateItem {
+  id: string;
+  employeeId?: string;
+  name: string;
+  nameFa?: string;
+  nameEn?: string;
+  jobTitle?: string;
+  department?: string;
+  avatar?: string;
+  avatarUrl?: string;
+  avatarColor?: string;
+  email?: string;
+  status?: 'online' | 'offline';
+}
+
 export interface OrganizationalInfo {
   department: string;
   role: string;
   employeeId: string;
   joinDate: string;
   manager: string;
+  managerId?: string;
   extensionNumber?: string;
   workLocation?: WorkLocation | string;
   contractType?: ContractType | string;
-  subordinates?: string[];
+  subordinates?: (string | SubordinateItem)[];
   subordinatesCount?: number;
 }
 
@@ -80,10 +100,33 @@ export interface EducationInfo {
   records?: EducationRecord[];
 }
 
+export type DocumentCategory =
+  | 'national_card_front'
+  | 'national_card_back'
+  | 'birth_certificate'
+  | 'university_degree'
+  | 'other';
+
+export interface UserUploadedDocument {
+  id: string;
+  category: DocumentCategory;
+  title: string;
+  fileName: string;
+  fileSize: number | string;
+  fileType: string;
+  fileData?: string; // Data URL for preview
+  fileUrl?: string;
+  uploadedAt: string;
+  verified?: boolean;
+}
+
 export interface UserProfile {
+  id?: string;
+  userId?: string;
   personal: PersonalInfo;
   organizational: OrganizationalInfo;
   skills: Skill[];
   insurance: InsuranceInfo;
   education: EducationInfo;
+  documents?: UserUploadedDocument[];
 }

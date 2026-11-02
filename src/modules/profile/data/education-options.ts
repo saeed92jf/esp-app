@@ -26,6 +26,7 @@ export const DEGREE_DEFINITIONS: DegreeDefinition[] = [
   { key: "master", labelFa: "کارشناسی ارشد (فوق لیسانس)", labelEn: "Master's Degree" },
   { key: "doctorate", labelFa: "دکتری تخصصی (Ph.D.)", labelEn: "Doctorate (Ph.D.)" },
   { key: "post_doc", labelFa: "پسادکتری", labelEn: "Post-Doctorate" },
+  { key: "other", labelFa: "سایر مدارک / دوره‌های تخصصی", labelEn: "Other / Specialized Courses" },
 ];
 
 export const STUDY_FIELD_DEFINITIONS: StudyFieldDefinition[] = [
@@ -73,6 +74,7 @@ export const STUDY_FIELD_DEFINITIONS: StudyFieldDefinition[] = [
   // HSE & Safety
   { key: "hse_engineering", category: "hse", labelFa: "مهندسی بهداشت، ایمنی و محیط زیست (HSE)", labelEn: "Health, Safety & Environment Engineering (HSE)" },
   { key: "industrial_safety", category: "hse", labelFa: "مهندسی ایمنی صنعتی و پدافند غیرعامل", labelEn: "Industrial Safety Engineering" },
+  { key: "other", category: "management", labelFa: "سایر رشته‌ها و گرایش‌های تحصیلی", labelEn: "Other Fields of Study" },
 ];
 
 export const UNIVERSITY_DEFINITIONS: UniversityDefinition[] = [
@@ -99,6 +101,7 @@ export const UNIVERSITY_DEFINITIONS: UniversityDefinition[] = [
   { key: "ia_other", labelFa: "دانشگاه آزاد اسلامی (سایر واحدها)", labelEn: "Islamic Azad University (Other Branches)" },
   { key: "pnu", labelFa: "دانشگاه پیام نور", labelEn: "Payame Noor University" },
   { key: "foreign", labelFa: "دانشگاه‌های بین‌المللی و خارج از کشور", labelEn: "International & Foreign Universities" },
+  { key: "other", labelFa: "سایر دانشگاه‌ها و موسسات آموزش عالی", labelEn: "Other Universities & Higher Education Institutions" },
 ];
 
 /**

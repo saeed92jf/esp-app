@@ -1,3 +1,4 @@
+import type { UserRole } from '@/types/auth';
 import adminUsersMock from "@/data/mock/admin-users.json";
 import adminRequestsMock from "@/data/mock/admin-requests.json";
 import { 
@@ -20,254 +21,9 @@ const generateWorkActivity = (): { day: number; hour: number; value: number }[] 
   return data;
 };
 
-// Initial realistic users
-const INITIAL_USERS: User[] = adminUsersMock as unknown as User[];
-
-// Initial realistic requests covering all stages
-const INITIAL_REQUESTS: PendingRequest[] = [
-  {
-    id: "req-1",
-    name: "محمد محمدی",
-    email: "m.mohammadi@euroslotpars.com",
-    phone: "09121112233",
-    nationalId: "0019876543",
-    department: "engineering",
-    jobTitle: "مهندس متالورژی و متریال",
-    requestedAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-    status: "pending",
-    isProfileCompleted: true,
-    hrApproved: false,
-    managerApproved: false,
-    firstNameFa: "محمد",
-    lastNameFa: "محمدی",
-    firstName: "Mohammad",
-    lastName: "Mohammadi",
-    birthDate: "1368/04/15",
-    address: "تهران، شهرک غرب، بلوار پاک‌نژاد، کوچه نگار، پلاک ۱۲",
-    maritalStatus: "married",
-    childrenCount: 1,
-    phoneVerified: true,
-    emailVerified: true,
-    employeeId: "ESP-4028",
-    joinDate: "1402/10/01",
-    manager: "سعید جلیلی فرد",
-    extensionNumber: "104",
-    workLocation: "factory",
-    contractType: "full_time",
-    insuranceCode: "1098453210",
-    insuranceProvider: "تامین اجتماعی",
-    insuranceValidUntil: "1405/12/29",
-    supplementaryPlan: "golden",
-    supplementaryProvider: "کمک‌رسان ایران (SOS)",
-    shebaNumber: "IR980120000000012345678901",
-    dependents: [
-      { id: "dep-1", fullName: "زهرا حسینی", relationship: "spouse", nationalId: "0018765432" },
-      { id: "dep-2", fullName: "امیرعلی محمدی", relationship: "child", nationalId: "0029876541" }
-    ],
-    educationDegree: "master",
-    educationField: "مهندسی مواد و متالورژی",
-    university: "دانشگاه صنعتی شریف",
-    graduationYear: "1394",
-    skills: [
-      { id: "s-1", name: "متالورژی فیزیکی و نسوز", level: 5 },
-      { id: "s-2", name: "طراحی کوره صنعتی", level: 4 },
-      { id: "s-3", name: "کنترل کیفیت متریال", level: 4 }
-    ]
-  },
-  {
-    id: "req-2",
-    name: "کیوان کریمی",
-    email: "k.karimi@npceram.com",
-    phone: "09123334455",
-    nationalId: "0028765432",
-    department: "projectControl",
-    jobTitle: "کارشناس ارشد کنترل پروژه",
-    requestedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-    status: "pending",
-    isProfileCompleted: true,
-    hrApproved: false,
-    managerApproved: false,
-    firstNameFa: "کیوان",
-    lastNameFa: "کریمی",
-    firstName: "Keyvan",
-    lastName: "Karimi",
-    birthDate: "1372/08/20",
-    address: "اصفهان، خیابان چهارباغ بالا، مجتمع کوثر",
-    maritalStatus: "single",
-    childrenCount: 0,
-    phoneVerified: true,
-    emailVerified: true,
-    employeeId: "NPC-3012",
-    joinDate: "1403/01/15",
-    manager: "علیرضا رضایی",
-    extensionNumber: "215",
-    workLocation: "office",
-    contractType: "contractual",
-    insuranceCode: "2087654312",
-    insuranceProvider: "تامین اجتماعی",
-    insuranceValidUntil: "1406/06/31",
-    supplementaryPlan: "silver",
-    supplementaryProvider: "بیمه ایران",
-    shebaNumber: "IR550170000000109876543210",
-    dependents: [],
-    educationDegree: "bachelors",
-    educationField: "مهندسی صنایع",
-    university: "دانشگاه صنعتی امیرکبیر",
-    graduationYear: "1396",
-    skills: [
-      { id: "s-4", name: "Primavera P6", level: 5 },
-      { id: "s-5", name: "مدیریت چابک و اسکرام", level: 4 },
-      { id: "s-6", name: "برنامه‌ریزی و کنترل هزینه (EVM)", level: 4 }
-    ]
-  },
-  {
-    id: "req-3",
-    name: "سارا رضایی",
-    email: "s.rezaei@euroslotpars.com",
-    phone: "09125556677",
-    nationalId: "0037654321",
-    department: "marketDevelopment",
-    jobTitle: "مدیر توسعه بازار بین‌الملل",
-    requestedAt: new Date(Date.now() - 3600000 * 32).toISOString(),
-    status: "hr_approved",
-    isProfileCompleted: true,
-    hrApproved: true,
-    hrApprovedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    hrApprovedBy: "واحد منابع انسانی (HR)",
-    managerApproved: false,
-    firstNameFa: "سارا",
-    lastNameFa: "رضایی",
-    firstName: "Sara",
-    lastName: "Rezaei",
-    birthDate: "1370/11/05",
-    address: "تهران، پاسداران، خیابان گلستان پنجم، پلاک ۲۸",
-    maritalStatus: "single",
-    childrenCount: 0,
-    phoneVerified: true,
-    emailVerified: true,
-    employeeId: "ESP-2055",
-    joinDate: "1402/08/01",
-    manager: "سعید جلیلی فرد",
-    extensionNumber: "120",
-    workLocation: "remote",
-    contractType: "full_time",
-    insuranceCode: "3056781290",
-    insuranceProvider: "تامین اجتماعی",
-    insuranceValidUntil: "1406/10/30",
-    supplementaryPlan: "special",
-    supplementaryProvider: "بیمه دانا",
-    shebaNumber: "IR120560000000009876543211",
-    dependents: [],
-    educationDegree: "master",
-    educationField: "مدیریت کسب و کار بین‌الملل (MBA)",
-    university: "دانشگاه تهران",
-    graduationYear: "1395",
-    skills: [
-      { id: "s-7", name: "مذاکرات تجاری بین‌الملل", level: 5 },
-      { id: "s-8", name: "توسعه بازارهای صادراتی", level: 5 },
-      { id: "s-9", name: "تسلط کامل به زبان انگلیسی و آلمانی", level: 5 }
-    ]
-  },
-  {
-    id: "req-4",
-    name: "علی نوری",
-    email: "a.nouri@euroslotpars.com",
-    phone: "09128889900",
-    nationalId: "0046543210",
-    department: "engineering",
-    jobTitle: "تکنسین ارشد خط تولید",
-    requestedAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-    status: "active",
-    isProfileCompleted: true,
-    hrApproved: true,
-    hrApprovedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    hrApprovedBy: "واحد منابع انسانی (HR)",
-    managerApproved: true,
-    managerApprovedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-    managerApprovedBy: "مدیر ارشد سیستم",
-    tempPassword: "Esp@User2026",
-    firstNameFa: "علی",
-    lastNameFa: "نوری",
-    firstName: "Ali",
-    lastName: "Nouri",
-    birthDate: "1365/02/12",
-    address: "کرج، مهرشهر، فاز ۲، خیابان ۲۰۵",
-    maritalStatus: "married",
-    childrenCount: 2,
-    phoneVerified: true,
-    emailVerified: true,
-    employeeId: "ESP-1018",
-    joinDate: "1400/03/01",
-    manager: "محمد محمدی",
-    extensionNumber: "140",
-    workLocation: "factory",
-    contractType: "full_time",
-    insuranceCode: "4098123456",
-    insuranceProvider: "تامین اجتماعی",
-    insuranceValidUntil: "1407/01/01",
-    supplementaryPlan: "golden",
-    supplementaryProvider: "کمک‌رسان ایران (SOS)",
-    shebaNumber: "IR340620000000007890123456",
-    dependents: [
-      { id: "dep-3", fullName: "فاطمه رضایی", relationship: "spouse", nationalId: "0041239876" },
-      { id: "dep-4", fullName: "سینا نوری", relationship: "child", nationalId: "0059871234" }
-    ],
-    educationDegree: "diploma",
-    educationField: "مکانیک خودرو و ماشین‌آلات",
-    university: "هنرستان شهید بهشتی",
-    graduationYear: "1384",
-    skills: [
-      { id: "s-10", name: "تعمیر و نگهداری هیدرولیک", level: 5 },
-      { id: "s-11", name: "تجهیزات و خطوط اتوماتیک", level: 4 }
-    ]
-  },
-  {
-    id: "req-5",
-    name: "فرزاد مرادی",
-    email: "f.moradi@npceram.com",
-    phone: "09127778899",
-    nationalId: "0055432109",
-    department: "administrative",
-    jobTitle: "کارشناس امور اداری",
-    requestedAt: new Date(Date.now() - 3600000 * 96).toISOString(),
-    status: "rejected",
-    isProfileCompleted: false,
-    hrApproved: false,
-    managerApproved: false,
-    rejectedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    rejectedBy: "واحد منابع انسانی (HR)",
-    rejectionReason: "عدم تایید مدارک شناسایی و عدم تطابق اطلاعات با پرسنل فعال کارخانه",
-    firstNameFa: "فرزاد",
-    lastNameFa: "مرادی",
-    firstName: "Farzad",
-    lastName: "Moradi",
-    birthDate: "1374/06/18",
-    address: "یزد، بلوار جمهوری، کوچه ارکیده",
-    maritalStatus: "single",
-    childrenCount: 0,
-    phoneVerified: false,
-    emailVerified: true,
-    employeeId: "NPC-9011",
-    joinDate: "1403/02/01",
-    manager: "علیرضا رضایی",
-    extensionNumber: "105",
-    workLocation: "office",
-    contractType: "part_time",
-    insuranceCode: "5012349876",
-    insuranceProvider: "تامین اجتماعی",
-    insuranceValidUntil: "1404/12/29",
-    supplementaryPlan: "none",
-    shebaNumber: "IR770150000000001234567890",
-    dependents: [],
-    educationDegree: "bachelors",
-    educationField: "مدیریت دولتی",
-    university: "دانشگاه یزد",
-    graduationYear: "1398",
-    skills: [
-      { id: "s-12", name: "اتوماسیون اداری و مکاتبات", level: 4 }
-    ]
-  },
-];
+// Initial clean empty stores
+const INITIAL_USERS: User[] = [];
+const INITIAL_REQUESTS: PendingRequest[] = [];
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -292,9 +48,17 @@ export class FakeAdminService implements IAdminService {
       // Sync Users
       const rawUsers = localStorage.getItem("esp_admin_users");
       if (rawUsers) {
-        this.users = JSON.parse(rawUsers);
+        try {
+          const parsed = JSON.parse(rawUsers);
+          // purge old dummy users
+          this.users = Array.isArray(parsed)
+            ? parsed.filter((u: any) => !['u-saeed', 'u-rezaei', 'u-ali-m', 'u-hossein-m', 'u-amir-g', 'u-sara-k', 'u-nima-t'].includes(u.id))
+            : [];
+        } catch {
+          this.users = [];
+        }
       } else {
-        localStorage.setItem("esp_admin_users", JSON.stringify(this.users));
+        this.users = [];
       }
 
       // Also sync dynamic avatarColor and primaryColor from active session and overrides
@@ -426,10 +190,91 @@ export class FakeAdminService implements IAdminService {
     return this.users.find((u) => u.id === id) || null;
   }
 
+  async createUser(user: Partial<User> & { password?: string }): Promise<User> {
+    await wait(250);
+    this.syncFromStorage();
+
+    const id = user.id || `u_${Date.now()}`;
+    const name = user.name || user.email?.split("@")[0] || "کاربر جدید";
+    const newUser: User = {
+      id,
+      name,
+      firstNameFa: user.firstNameFa || "",
+      lastNameFa: user.lastNameFa || "",
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      role: user.role || "user",
+      status: "offline",
+      accountStatus: "active",
+      avatar: user.avatar || "",
+      avatarColor: user.avatarColor || "#0284c7",
+      phone: user.phone || "",
+      nationalId: user.nationalId || "",
+      department: user.department || "engineering",
+      company: user.company || "یورواسلات پارس",
+      companyId: user.companyId || "euroslot",
+      jobTitle: user.jobTitle || "پرسنل سازمانی",
+      workLocation: user.workLocation || "office",
+      manager: user.manager || "",
+      joinedAt: user.joinedAt || new Date().toISOString().split("T")[0],
+      daysInCompany: 1,
+      doneProjects: 0,
+      salary: user.salary ?? 350000000,
+      hasOvertime: user.hasOvertime ?? true,
+      maxOvertimeHours: user.maxOvertimeHours ?? 40,
+      monthlyBonusType: user.monthlyBonusType || "cash",
+      monthlyBonusAmount: user.monthlyBonusAmount ?? 25000000,
+      monthlyBonusTitle: user.monthlyBonusTitle || "پاداش حسن انجام کار و بهره‌وری",
+      monthlyBonuses: user.monthlyBonuses || [],
+      age: user.age || 30,
+      maritalStatus: user.maritalStatus || "single",
+      childrenCount: user.childrenCount ?? 0,
+      insuranceType: user.insuranceType || "socialSecurity",
+      educationDegree: user.educationDegree || "bachelors",
+      educationField: user.educationField || "",
+      workingFormat: user.workingFormat || { office: 80, factory: 10, mission: 5, leave: 5 },
+      workActivity: generateWorkActivity(),
+      modulesAccess: user.modulesAccess && user.modulesAccess.length > 0 ? user.modulesAccess : [
+        { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", hoursSpent: "00:00:00", usagePercentage: 0 },
+        { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", hoursSpent: "00:00:00", usagePercentage: 0 }
+      ],
+      recentActivities: [
+        { id: `act-${Date.now()}`, title: "حساب کاربری توسط مدیر ایجاد شد", date: "هم‌اکنون", status: "approved" }
+      ],
+      checklists: [],
+      skills: user.skills || [],
+      isProfileCompleted: true,
+      adminApproved: true,
+      managerApproved: true,
+      documents: user.documents || [],
+    };
+
+    this.users = this.users.filter((u) => u.email.toLowerCase() !== newUser.email.toLowerCase());
+    this.users.unshift(newUser);
+    this.saveToStorage();
+
+    if (typeof window !== "undefined" && user.email && user.password) {
+      try {
+        const rawCreds = localStorage.getItem("esp_custom_user_creds");
+        const creds = rawCreds ? JSON.parse(rawCreds) : {};
+        creds[user.email.toLowerCase()] = {
+          password: user.password,
+          role: newUser.role,
+          name: newUser.name,
+          accountStatus: "active"
+        };
+        localStorage.setItem("esp_custom_user_creds", JSON.stringify(creds));
+      } catch {}
+    }
+
+    return newUser;
+  }
+
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
     await wait(250);
     this.syncFromStorage();
-    const index = this.users.findIndex((u) => u.id === id);
+    const index = this.users.findIndex((u) => u.id === id || u.email.toLowerCase() === id.toLowerCase());
     if (index === -1) {
       throw new Error(`User with id ${id} not found`);
     }
@@ -437,6 +282,34 @@ export class FakeAdminService implements IAdminService {
     const updated = { ...this.users[index], ...updates };
     this.users[index] = updated;
     this.saveToStorage();
+
+    // Sync credentials if role was updated
+    if (typeof window !== "undefined" && updated.email && updates.role) {
+      try {
+        const rawCreds = localStorage.getItem("esp_custom_user_creds");
+        const creds = rawCreds ? JSON.parse(rawCreds) : {};
+        if (creds[updated.email.toLowerCase()]) {
+          creds[updated.email.toLowerCase()].role = updates.role;
+          localStorage.setItem("esp_custom_user_creds", JSON.stringify(creds));
+        }
+      } catch {}
+    }
+
+    // If currently logged-in user matches this ID or email, immediately update active auth session
+    if (typeof window !== "undefined" && updates.role) {
+      try {
+        const rawAuth = localStorage.getItem("esp_auth_user");
+        if (rawAuth) {
+          const authUser = JSON.parse(rawAuth);
+          if (authUser.id === id || authUser.email?.toLowerCase() === updated.email?.toLowerCase()) {
+            authUser.role = updates.role;
+            localStorage.setItem("esp_auth_user", JSON.stringify(authUser));
+            localStorage.setItem("esp-auth-user", JSON.stringify(authUser));
+          }
+        }
+      } catch {}
+    }
+
     return updated;
   }
 
@@ -531,7 +404,7 @@ export class FakeAdminService implements IAdminService {
 
   async approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: 'admin' | 'user'; modulesAccess?: UserModuleAccess[] }
+    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[] }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }> {
     await wait(400);
     this.syncFromStorage();
@@ -542,7 +415,8 @@ export class FakeAdminService implements IAdminService {
     }
 
     const tempPassword = options?.tempPassword || "Esp@" + Math.floor(100000 + Math.random() * 900000);
-
+    const targetRole = options?.role || req.role || "user";
+    req.role = targetRole;
     req.hrApproved = true;
     req.managerApproved = true;
     req.managerApprovedAt = new Date().toISOString();
@@ -560,7 +434,7 @@ export class FakeAdminService implements IAdminService {
         id: `u-${Date.now()}`,
         name: req.name || req.email.split("@")[0],
         email: req.email,
-        role: options?.role || "user",
+        role: targetRole,
         status: "offline",
         accountStatus: "active",
         avatar: "",
@@ -575,7 +449,13 @@ export class FakeAdminService implements IAdminService {
         joinedAt: new Date().toISOString().split("T")[0],
         daysInCompany: 1,
         doneProjects: 0,
-        salary: 20000,
+        salary: req.salary ?? 350000000,
+        hasOvertime: req.hasOvertime ?? true,
+        maxOvertimeHours: req.maxOvertimeHours ?? 40,
+        monthlyBonusType: req.monthlyBonusType ?? "cash",
+        monthlyBonusAmount: req.monthlyBonusAmount ?? 25000000,
+        monthlyBonusTitle: req.monthlyBonusTitle ?? "پاداش حسن انجام کار و بهره‌وری",
+        monthlyBonuses: req.monthlyBonuses ?? [],
         workingFormat: { office: 80, factory: 10, mission: 5, leave: 5 },
         workActivity: generateWorkActivity(),
         modulesAccess: options?.modulesAccess || req.modulesAccess || [
@@ -594,8 +474,16 @@ export class FakeAdminService implements IAdminService {
       existingUser = newUser;
     } else {
       existingUser.accountStatus = "active";
+      existingUser.role = targetRole;
       existingUser.hrApproved = true;
       existingUser.managerApproved = true;
+      if (req.salary !== undefined) existingUser.salary = req.salary;
+      if (req.hasOvertime !== undefined) existingUser.hasOvertime = req.hasOvertime;
+      if (req.maxOvertimeHours !== undefined) existingUser.maxOvertimeHours = req.maxOvertimeHours;
+      if (req.monthlyBonusType) existingUser.monthlyBonusType = req.monthlyBonusType;
+      if (req.monthlyBonusAmount !== undefined) existingUser.monthlyBonusAmount = req.monthlyBonusAmount;
+      if (req.monthlyBonusTitle) existingUser.monthlyBonusTitle = req.monthlyBonusTitle;
+      if (req.monthlyBonuses) existingUser.monthlyBonuses = req.monthlyBonuses;
       if (options?.modulesAccess) {
         existingUser.modulesAccess = options.modulesAccess;
       } else if (req.modulesAccess) {
@@ -604,6 +492,21 @@ export class FakeAdminService implements IAdminService {
     }
 
     this.saveToStorage();
+
+    // Persist custom credentials for direct login
+    if (typeof window !== "undefined" && req.email) {
+      try {
+        const rawCreds = localStorage.getItem("esp_custom_user_creds");
+        const creds = rawCreds ? JSON.parse(rawCreds) : {};
+        creds[req.email.toLowerCase()] = {
+          password: tempPassword,
+          role: targetRole,
+          name: req.name,
+          accountStatus: "active"
+        };
+        localStorage.setItem("esp_custom_user_creds", JSON.stringify(creds));
+      } catch {}
+    }
 
     // If current logged-in demo user matches this email, activate their session too
     if (typeof window !== "undefined") {
@@ -696,3 +599,4 @@ export class FakeAdminService implements IAdminService {
 
 export const AdminFakeService = new FakeAdminService();
 export { INITIAL_USERS, INITIAL_REQUESTS };
+export const fakeAdminService = AdminFakeService;

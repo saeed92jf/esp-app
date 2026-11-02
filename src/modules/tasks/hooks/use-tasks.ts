@@ -62,18 +62,7 @@ function matchesUserIdentity(
     if (t.includes(fnFa) || fnFa.includes(t)) return true;
   }
 
-  // Common aliases for guest and saeed
-  if (t.includes("مهمان") || t.includes("guest") || t.includes("gust")) {
-    const isGuest =
-      user?.email?.toLowerCase().includes("guest") ||
-      user?.email?.toLowerCase().includes("gust") ||
-      user?.fullName?.toLowerCase().includes("guest") ||
-      user?.fullNameFa?.toLowerCase().includes("مهمان") ||
-      currentUserName?.toLowerCase().includes("guest") ||
-      currentUserName?.toLowerCase().includes("gust") ||
-      currentUserName?.includes("مهمان");
-    if (isGuest) return true;
-  }
+  // Aliases for saeed
 
   if (t.includes("سعید") || t.includes("saeed") || t.includes("jalili")) {
     return true;

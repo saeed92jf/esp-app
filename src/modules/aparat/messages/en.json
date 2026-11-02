@@ -47,6 +47,7 @@
     "followers": "Followers",
     "startDate": "Start Date",
     "totalViews": "Total Views",
-    "noVideosFound": "No videos found in this category"
+    "noVideosFound": "No videos found in this category",
+    "loadingMore": "Loading more videos..."
   }
 }

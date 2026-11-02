@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useLocale, useTranslations } from 'next-intl';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -68,27 +68,18 @@ export function DashboardAvatar() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    // Clear photo from history/storage completely per user request
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("esp_auth_user");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (parsed?.avatar) {
-            delete parsed.avatar;
-            localStorage.setItem("esp_auth_user", JSON.stringify(parsed));
-          }
-        }
-        Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith("esp_custom_avatar")) {
-            localStorage.removeItem(key);
-          }
-        });
-      } catch (e) {
-        // ignore
-      }
-    }
+    const handleAvatarChange = (e: any) => {
+      setAvatarUrl(e?.detail?.avatar ?? null);
+    };
+    window.addEventListener("esp_avatar_changed", handleAvatarChange);
+    return () => window.removeEventListener("esp_avatar_changed", handleAvatarChange);
   }, []);
+
+  React.useEffect(() => {
+    if (user?.avatar !== undefined) {
+      setAvatarUrl(user.avatar || null);
+    }
+  }, [user?.avatar]);
 
   const [liveBgColor, setLiveBgColor] = React.useState<string | null>(null);
 
@@ -108,9 +99,20 @@ export function DashboardAvatar() {
   const activeColorPreset = PRIMARY_COLORS.find(c => c.id === (user?.primaryColor || colorId));
   const avatarBgColor = liveBgColor || user?.avatarColor || activeColorPreset?.hex || "#3a86ff";
 
-  const nameToUse = locale === 'fa' ? (user.fullNameFa || user.fullName) : (user.fullName || user.fullNameFa);
+  const nameToUse = locale === 'fa' 
+    ? (user.fullNameFa || user.name || user.fullName || '') 
+    : (user.fullName || user.name || user.fullNameFa || '');
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
   const isAdmin = user?.role?.toLowerCase() === 'admin';
+
+  const photoCandidate = avatarUrl || user?.avatar;
+  const hasValidPhoto = Boolean(
+    (user as any)?.avatarMode !== 'initials' &&
+    photoCandidate &&
+    !photoCandidate.includes('unsplash.com') &&
+    !photoCandidate.includes('saeed-jalili-fard') &&
+    !photoCandidate.includes('/team/')
+  );
 
   const avatarButton = (
     <button
@@ -132,13 +134,25 @@ export function DashboardAvatar() {
         </span>
       )}
       <div className="relative z-10 size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
-        <Avatar className="size-full rounded-full overflow-hidden">
-          <AvatarFallback 
-            style={{ backgroundColor: avatarBgColor }}
-            className="text-xs sm:text-sm font-bold text-white transition-colors"
-          >
-            <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
-          </AvatarFallback>
+        <Avatar
+          key={avatarUrl || user?.avatar || "avatar-btn"}
+          className="size-full rounded-full overflow-hidden"
+          style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
+        >
+          {hasValidPhoto ? (
+            <AvatarImage
+              src={photoCandidate!}
+              alt={nameToUse}
+              className="size-full object-cover"
+            />
+          ) : (
+            <AvatarFallback 
+              style={{ backgroundColor: avatarBgColor }}
+              className="text-xs sm:text-sm font-bold text-white transition-colors"
+            >
+              <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
+            </AvatarFallback>
+          )}
         </Avatar>
         <span
           className={cn(
@@ -210,18 +224,42 @@ export function DashboardAvatar() {
                   <div className="relative shrink-0 flex items-center justify-center p-[2px] rounded-full">
                     <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)]" />
                     <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
-                      <Avatar className="size-7 sm:size-7.5">
-                        <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
-                          <span>{initial}</span>
-                        </AvatarFallback>
+                      <Avatar
+                        key={avatarUrl || user?.avatar || "admin-scrolled"}
+                        className="size-7 sm:size-7.5 rounded-full overflow-hidden"
+                        style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
+                      >
+                        {hasValidPhoto ? (
+                          <AvatarImage
+                            src={photoCandidate!}
+                            alt={nameToUse}
+                            className="size-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
+                            <span>{initial}</span>
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                     </div>
                   </div>
                 ) : (
-                  <Avatar className="size-8 shrink-0 ring-2 ring-primary ring-offset-1 ring-offset-background border border-transparent">
-                    <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
-                      <span>{initial}</span>
-                    </AvatarFallback>
+                  <Avatar
+                    key={avatarUrl || user?.avatar || "user-scrolled"}
+                    className="size-8 shrink-0 rounded-full overflow-hidden ring-2 ring-primary ring-offset-1 ring-offset-background border border-transparent"
+                    style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
+                  >
+                    {hasValidPhoto ? (
+                      <AvatarImage
+                        src={photoCandidate!}
+                        alt={nameToUse}
+                        className="size-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
+                        <span>{initial}</span>
+                      </AvatarFallback>
+                    )}
                   </Avatar>
                 )}
               </div>
@@ -288,11 +326,22 @@ export function DashboardAvatar() {
                        )} 
                      />
                      <div className="relative z-10 bg-white dark:bg-black rounded-full p-0.5">
-                       <Avatar className="size-14 sm:size-16">
-                         
-                         <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xl sm:text-2xl font-bold text-white">
-                           <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
-                         </AvatarFallback>
+                       <Avatar
+                         key={avatarUrl || user?.avatar || "popover-avatar"}
+                         className="size-14 sm:size-16 rounded-full overflow-hidden"
+                         style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
+                       >
+                         {hasValidPhoto ? (
+                           <AvatarImage
+                             src={photoCandidate!}
+                             alt={nameToUse}
+                             className="size-full object-cover rounded-full"
+                           />
+                         ) : (
+                           <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xl sm:text-2xl font-bold text-white">
+                             <span className={cn(locale === 'fa' && "-translate-y-0.5")}>{initial}</span>
+                           </AvatarFallback>
+                         )}
                        </Avatar>
                      </div>
                      

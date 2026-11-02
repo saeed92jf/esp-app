@@ -49,9 +49,9 @@ export function UserMenu({
   const locale = useLocale();
   const router = useRouter();
 
-  const displayName = name ?? t("guest");
-  const initial = displayName.charAt(0).toUpperCase();
   const isRTL = locale === "fa";
+  const displayName = name ?? (isRTL ? "کاربر سامانه" : "User");
+  const initial = displayName.charAt(0).toUpperCase();
 
   async function handleLogout() {
     await onLogout?.();

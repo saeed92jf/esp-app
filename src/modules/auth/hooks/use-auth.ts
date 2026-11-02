@@ -1,6 +1,7 @@
-// src/hooks/use-auth.ts
+// src/modules/auth/hooks/use-auth.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Refactored to use Zustand to prevent state loss and UI flashing on client navigations.
+// Zustand-based unified authentication and session store.
+// Guarantees cross-tab and cross-window session persistence and instant hydration.
 
 'use client';
 
@@ -25,17 +26,70 @@ interface AuthState {
   updateUser: (partial: Partial<User>) => void;
 }
 
+/**
+ * Synchronously retrieves cached user session from localStorage.
+ * Enables zero-flash, instant user state in new tabs and windows.
+ */
+function getInitialUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      const fullName = parsed.fullName || parsed.name || (parsed.email ? parsed.email.split('@')[0] : '');
+      const fullNameFa = parsed.fullNameFa || parsed.name || fullName;
+      const name = fullNameFa || fullName || 'سعید جلیلی';
+      return {
+        ...parsed,
+        name,
+        fullName: fullName || name,
+        fullNameFa: fullNameFa || name,
+      } as User;
+    }
+  } catch {}
+  return null;
+}
+
+const initialUser = getInitialUser();
+
 const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  loading: true,
+  user: initialUser,
+  loading: !initialUser,
   isLoggingIn: false,
-  hydrated: false,
-  setUser: (user) => set({ user }),
+  hydrated: !!initialUser,
+  setUser: (user) => {
+    if (user && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+        localStorage.setItem('esp_auth_user', JSON.stringify(user));
+      } catch {}
+    }
+    set({ user });
+  },
   setLoading: (loading) => set({ loading }),
   setIsLoggingIn: (isLoggingIn) => set({ isLoggingIn }),
   setHydrated: (hydrated) => set({ hydrated }),
-  updateAvatar: (url) => set((state) => ({ user: state.user ? { ...state.user, avatar: url || undefined } : null })),
-  updateUser: (partial) => set((state) => ({ user: state.user ? { ...state.user, ...partial } : null })),
+  updateAvatar: (url) => set((state) => {
+    const updated = state.user ? { ...state.user, avatar: url || undefined } : null;
+    if (updated && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
+        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return { user: updated };
+  }),
+  updateUser: (partial) => set((state) => {
+    const updated = state.user ? { ...state.user, ...partial } : null;
+    if (updated && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updated));
+        localStorage.setItem('esp_auth_user', JSON.stringify(updated));
+      } catch {}
+    }
+    return { user: updated };
+  }),
 }));
 
 export function useAuth() {
@@ -43,15 +97,36 @@ export function useAuth() {
   const { setColor } = usePrimaryColor();
 
   useEffect(() => {
-    // Only hydrate once globally
-    if (store.hydrated) return;
+    // Synchronize initial color if available
+    if (store.user?.primaryColor) {
+      setColor(store.user.primaryColor as any);
+    }
+  }, [store.user?.primaryColor, setColor]);
+
+  useEffect(() => {
+    // Only re-validate once per page load
+    if (store.hydrated && store.user) {
+      // Re-validate in background with /users/me without flashing
+      const token = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
+      if (token) {
+        api.auth.me().then((freshUser) => {
+          if (freshUser) {
+            const preferredColor = (typeof window !== "undefined" ? localStorage.getItem('esp-global-primary-color') : null) || freshUser.primaryColor;
+            const mergedUser = { ...freshUser, primaryColor: preferredColor || freshUser.primaryColor };
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(mergedUser));
+            localStorage.setItem('esp_auth_user', JSON.stringify(mergedUser));
+            store.setUser(mergedUser);
+            if (preferredColor) setColor(preferredColor as any);
+          }
+        }).catch(() => {
+          // If backend check fails, keep existing authenticated session intact
+        });
+      }
+      return;
+    }
     
     const initAuth = async () => {
       try {
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("esp_demo_users_override");
-        }
-
         const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
         if (token) {
           try {
@@ -68,6 +143,21 @@ export function useAuth() {
               return;
             }
           } catch (err: any) {
+            // Check if we have a valid cached user in localStorage
+            if (typeof window !== "undefined") {
+              const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
+              if (raw) {
+                try {
+                  const cached = JSON.parse(raw) as User;
+                  if (cached && (cached.email || cached.fullName || cached.name)) {
+                    store.setUser(cached);
+                    if (cached.primaryColor) setColor(cached.primaryColor as any);
+                    return;
+                  }
+                } catch {}
+              }
+            }
+
             if (err?.status === 401 || err?.code === "UNAUTHORIZED" || err?.code === "MISSING_TOKEN") {
               if (typeof window !== "undefined") {
                 localStorage.removeItem(AUTH_TOKEN_KEY);
@@ -79,15 +169,21 @@ export function useAuth() {
               setColor(DEFAULT_PRIMARY_COLOR);
               return;
             }
-            if (typeof window !== "undefined") {
-              const raw = localStorage.getItem(AUTH_USER_KEY);
-              if (raw) {
-                const cached = JSON.parse(raw) as User;
+          }
+        }
+
+        // If no token, check if we have a valid cached user session
+        if (typeof window !== "undefined") {
+          const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
+          if (raw) {
+            try {
+              const cached = JSON.parse(raw) as User;
+              if (cached && (cached.email || cached.fullName || cached.name)) {
                 store.setUser(cached);
                 if (cached.primaryColor) setColor(cached.primaryColor as any);
                 return;
               }
-            }
+            } catch {}
           }
         }
 
@@ -102,7 +198,7 @@ export function useAuth() {
     };
 
     initAuth();
-  }, [store.hydrated, setColor]);
+  }, [store.hydrated, store.user, setColor]);
 
   const login = useCallback(async (identifier: string, password: string) => {
     store.setIsLoggingIn(true);
@@ -184,10 +280,13 @@ export function useAuth() {
     updateUser({ primaryColor: color });
 
     if (typeof window !== 'undefined') {
-      // Fire and forget update to API services (for real backend mode compliance)
       try {
-        api.user.updateProfile({ primaryColor: color }).catch(() => {});
-        api.preferences.update({ primaryColor: color }).catch(() => {});
+        localStorage.setItem('esp-global-primary-color', color);
+        window.dispatchEvent(new CustomEvent('esp-primary-color-change', { detail: color }));
+        await Promise.allSettled([
+          api.user.updateProfile({ primaryColor: color }),
+          api.preferences.update({ primaryColor: color }),
+        ]);
       } catch {}
     }
   }, [setColor, updateUser]);
@@ -196,7 +295,6 @@ export function useAuth() {
     updateUser({ avatarColor: color });
 
     if (typeof window !== 'undefined') {
-      // Fire and forget update to API services (for real backend mode compliance)
       try {
         api.user.updateProfile({ avatarColor: color }).catch(() => {});
       } catch {}

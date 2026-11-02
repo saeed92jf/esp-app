@@ -16,6 +16,7 @@ import { tasksService } from "@/modules/tasks/services";
 import { TaskItem } from "@/modules/tasks/types/tasks.types";
 import { AdminActivities } from "./AdminActivities";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
+import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
 
 interface AdminTasksTimeProps {
   selectedUser: User | null;
@@ -27,6 +28,7 @@ interface AdminTasksTimeProps {
   handleToggleModuleAccess?: (moduleId: string, checked: boolean) => void;
   handleToggleAllModulesAccess?: (checked: boolean) => void;
   onNavigateToAccess?: () => void;
+  hideSearchAvatarsOnMobile?: boolean;
 }
 
 export const AnimatedNumber = ({ 
@@ -84,7 +86,8 @@ export function AdminTasksTime({
   tMenu,
   handleToggleModuleAccess = () => {},
   handleToggleAllModulesAccess = () => {},
-  onNavigateToAccess
+  onNavigateToAccess,
+  hideSearchAvatarsOnMobile = true,
 }: AdminTasksTimeProps) {
   const t = useTranslations("Admin");
   
@@ -212,192 +215,16 @@ export function AdminTasksTime({
     return { label: t("skillLevels.expert"), width: 100, gradient: "bg-gradient-to-r from-blue-600 to-blue-400" };
   };
 
-  // Departments & Avatars Navigation
-  const departments = useMemo(() => {
-    return Array.from(new Set(users.map(u => u.department || 'engineering')));
-  }, [users]);
-
-  const [depIndex, setDepIndex] = useState(0);
-  const [userSearch, setUserSearch] = useState('');
-
-  // Sync department when selectedUser changes
-  useEffect(() => {
-    if (selectedUser?.department) {
-      const idx = departments.indexOf(selectedUser.department);
-      if (idx !== -1 && idx !== depIndex) {
-        setDepIndex(idx);
-      }
-    }
-  }, [selectedUser?.department, departments]);
-
-  // Sync selectedUser when department changes
-  useEffect(() => {
-    const depUsers = users.filter(u => (u.department || 'engineering') === departments[depIndex]);
-    if (depUsers.length > 0 && !depUsers.find(u => u.id === selectedUser?.id)) {
-      setSelectedUser(depUsers[0]);
-    }
-  }, [depIndex, users, selectedUser, setSelectedUser, departments]);
-
-  const currentDepUsers = useMemo(() => {
-    return users.filter(u => (u.department || 'engineering') === departments[depIndex]);
-  }, [users, departments, depIndex]);
-
-  const displayedPool = useMemo(() => {
-    if (!userSearch.trim()) return currentDepUsers;
-    const q = userSearch.trim().toLowerCase();
-    const matches = users.filter(u => 
-      u.name?.toLowerCase().includes(q) || 
-      u.email?.toLowerCase().includes(q) ||
-      u.id?.includes(q)
-    );
-    return matches.length > 0 ? matches : currentDepUsers;
-  }, [currentDepUsers, users, userSearch]);
-
-  const displayUsers = useMemo(() => {
-    if (displayedPool.length === 0) return [];
-    const sIdx = displayedPool.findIndex(u => u.id === selectedUser?.id);
-    const len = displayedPool.length;
-    if (len <= 4) return displayedPool;
-    
-    const res: User[] = [];
-    const half = Math.floor(Math.min(5, len) / 2);
-    for (let i = -half; i <= half; i++) {
-      let idx = (sIdx + i) % len;
-      if (idx < 0) idx += len;
-      if (!res.some(u => u.id === displayedPool[idx].id)) {
-        res.push(displayedPool[idx]);
-      }
-    }
-    return res;
-  }, [displayedPool, selectedUser]);
-
-  const handleNextUser = () => {
-    if (displayedPool.length === 0) return;
-    const sIdx = displayedPool.findIndex(u => u.id === selectedUser?.id);
-    const nextIdx = (sIdx + 1) % displayedPool.length;
-    setSelectedUser(displayedPool[nextIdx]);
-  };
-
-  const handlePrevUser = () => {
-    if (displayedPool.length === 0) return;
-    const sIdx = displayedPool.findIndex(u => u.id === selectedUser?.id);
-    const prevIdx = (sIdx - 1 + displayedPool.length) % displayedPool.length;
-    setSelectedUser(displayedPool[prevIdx]);
-  };
-
-  const handleNextDep = () => {
-    setDepIndex((prev) => (prev + 1) % departments.length);
-  };
-
-  const handlePrevDep = () => {
-    setDepIndex((prev) => (prev - 1 + departments.length) % departments.length);
-  };
-
   return (
     <div className="flex flex-col gap-3 w-full h-full">
       
       {/* ── Center Header: Search + Department Switcher & Avatars Carousel ── */}
-      <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 px-3 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-2xs overflow-visible">
-        
-        {/* Quick User Search */}
-        <div className="relative flex items-center h-9 bg-white dark:bg-slate-900 rounded-full border border-border/50 w-full sm:w-[260px] md:w-[300px] lg:w-[340px] px-3 shadow-xs focus-within:ring-1 focus-within:ring-primary/50 shrink-0">
-          <Search size={14} className="text-muted-foreground shrink-0 me-2" />
-          <input
-            type="text"
-            placeholder={t("searchUser")}
-            value={userSearch}
-            onChange={(e) => setUserSearch(e.target.value)}
-            className="w-full bg-transparent border-none outline-none text-xs text-foreground placeholder:text-muted-foreground"
-          />
-          {userSearch && (
-            <button 
-              onClick={() => setUserSearch("")}
-              className="text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
-            >
-              <X size={12} />
-            </button>
-          )}
-        </div>
-
-        {/* Department and Avatars */}
-        <div className="flex items-center gap-1.5 bg-background/60 dark:bg-slate-900/40 rounded-full h-9 px-2 border border-border/30 max-w-full overflow-visible relative">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full size-7 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer" 
-            onClick={handlePrevDep}
-          >
-            <ChevronsRight size={15} className="rtl:rotate-0 rotate-180" />
-          </Button>
-
-          <div className="flex items-center gap-1.5 px-1.5 py-0.5 shrink-0 select-none">
-            <span className={`size-2 rounded-full ${currentDept.iconBg}`}></span>
-            <span className="text-xs font-bold text-foreground truncate max-w-[90px] sm:max-w-[120px]">
-              {t(`departments.${deptKey}`) || deptKey}
-            </span>
-          </div>
-
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full size-7 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer" 
-            onClick={handleNextDep}
-          >
-            <ChevronsRight size={15} className="rtl:rotate-180 rotate-0" />
-          </Button>
-
-          <div className="h-4 w-px bg-border/40 mx-0.5 shrink-0" />
-
-          {/* User navigation */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full size-6 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer" 
-            onClick={handlePrevUser}
-          >
-            <ChevronRight size={13} className="rtl:rotate-0 rotate-180" />
-          </Button>
-
-          {/* Protruding Avatar Circles that stick out of the capsule bounds without clipping */}
-          <div className="flex items-center gap-1.5 overflow-visible px-1 py-1">
-            {displayUsers.map((u) => {
-              const isSelected = u.id === selectedUser?.id;
-              const initial = u.name?.trim().charAt(0).toUpperCase() || "U";
-              return (
-                <button
-                  key={u.id}
-                  onClick={() => setSelectedUser(u)}
-                  className={cn(
-                    "relative rounded-full transition-all shrink-0 cursor-pointer -my-2.5",
-                    isSelected 
-                      ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110 z-20" 
-                      : "opacity-75 hover:opacity-100 hover:scale-105 z-10"
-                  )}
-                  title={u.name}
-                >
-                  <Avatar className="size-9 text-xs font-bold border-2 border-background dark:border-slate-800 shadow-md">
-                    <AvatarFallback 
-                      className="bg-primary/20 text-primary"
-                      style={u.avatarColor ? { backgroundColor: u.avatarColor, color: "#fff" } : undefined}
-                    >
-                      {initial}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              );
-            })}
-          </div>
-
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="rounded-full size-6 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 cursor-pointer" 
-            onClick={handleNextUser}
-          >
-            <ChevronLeft size={13} className="rtl:rotate-0 rotate-180" />
-          </Button>
-        </div>
-
+      <div className={cn("w-full shrink-0", hideSearchAvatarsOnMobile ? "hidden lg:block" : "block")}>
+        <AdminUserSearchAvatars
+          users={users}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+        />
       </div>
 
       {/* ── Virtual Grid Row 1: Working Format (col 1), Skills (col 2), Activities (col 3) ── */}
@@ -408,7 +235,7 @@ export function AdminTasksTime({
           <div className="flex items-center justify-between mb-1.5 xl:mb-2 px-0.5">
             <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground">{t("workingFormat")}</h3>
             <span className="text-[10px] xl:text-[11px] font-medium text-muted-foreground truncate max-w-[130px]">
-              {t("department")}: <span className="font-bold text-foreground">{t(`departments.${deptKey}`) || deptKey}</span>
+              {t("department")}: <span className="font-bold text-foreground">{t.has(`departments.${deptKey}`) ? t(`departments.${deptKey}`) : deptKey}</span>
             </span>
           </div>
 

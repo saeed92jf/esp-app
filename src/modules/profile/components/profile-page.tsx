@@ -1,5 +1,7 @@
 "use client";
 
+import { DocumentUploadSection } from "./document-upload-section";
+
 import React, { useState, useEffect, useTransition, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
@@ -104,7 +106,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ColorPicker } from "@/components/ui/color-picker";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Loader2, Home, User, Briefcase, Star, Shield, ShieldAlert,
   GraduationCap, Search, KeyRound, Smartphone, Lock, 
@@ -112,7 +114,8 @@ import {
   Camera, Fingerprint, Calendar, Phone, MapPin, ChevronRight, ArrowLeft, ArrowRight, Map, Upload, Trash, Plus,
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
   Heart, Users, PhoneCall, CreditCard, Check, X,
-  Building2, Factory, Laptop, Network, AlertCircle, Info
+  Building2, Factory, Laptop, Network, AlertCircle, Info,
+  FileCheck
 } from "lucide-react";
 import { searchProfileItems, type ProfileSearchResult } from "../utils/profile-search";
 import { validateSheba, normalizeSheba, formatSheba, getShebaDigits } from "@/utils/shebaValidator";
@@ -269,6 +272,7 @@ const AVATAR_COLOR_PRESETS = [
 const NAV_ITEMS = [
   { id: "home", icon: Home, labelKey: "nav.home" },
   { id: "personal", icon: User, labelKey: "nav.personal" },
+  { id: "documents", icon: FileCheck, labelKey: "nav.documents" },
   { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
   { id: "skills", icon: Star, labelKey: "nav.skills" },
   { id: "insurance", icon: Shield, labelKey: "nav.insurance" },
@@ -324,9 +328,19 @@ export function ProfilePage() {
   const tSettings = useTranslations("Settings");
   const locale = useLocale();
   const isFa = locale === "fa";
+  const isRtl = isFa;
   const isAdmin = user?.role?.toLowerCase() === 'admin';
 
   const [activeTab, setActiveTab] = useState(initialTab);
+  const handleTabChange = (newTab: string) => {
+    setEditingField(null);
+    setActiveEducationRecord(null);
+    setIsAddingCustomSkill(false);
+    setActiveTab(newTab);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setSidebarOpen(false);
+    }
+  };
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAccountActive = Boolean(
     user && (user.accountStatus === 'active' || (user.hrApproved && user.managerApproved))
@@ -375,6 +389,110 @@ export function ProfilePage() {
   const [liveAvatarColor, setLiveAvatarColor] = useState<string>(
     formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"
   );
+  const [liveAvatarImage, setLiveAvatarImage] = useState<string | null>(
+    formData?.personal?.avatar || (user as any)?.avatar || null
+  );
+  const [avatarSubTab, setAvatarSubTab] = useState<"photo" | "color">("photo");
+  const avatarFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const img = formData?.personal?.avatar || (user as any)?.avatar;
+    if (img !== undefined) {
+      setLiveAvatarImage(img || null);
+    }
+  }, [formData?.personal?.avatar, user]);
+
+  const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error(isRtl ? "لطفاً یک فایل تصویری انتخاب کنید." : "Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(isRtl ? "حجم تصویر نباید بیشتر از ۵ مگابایت باشد." : "Image size must not exceed 5MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setLiveAvatarImage(dataUrl);
+      toast.info(isRtl ? "تصویر بارگذاری شد. جهت اعمال، دکمه ذخیره را بزنید." : "Image loaded. Click save to apply.");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveAvatarImage = async (imgToSave: string | null) => {
+    try {
+      setLiveAvatarImage(imgToSave);
+
+      setFormData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          personal: {
+            ...prev.personal,
+            avatar: imgToSave || undefined,
+            avatarUrl: imgToSave || undefined,
+          },
+        };
+      });
+
+      updateUser({
+        avatar: imgToSave || undefined,
+        imageUrl: imgToSave || undefined,
+      });
+
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("esp_user_profile");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            parsed.personal.avatar = imgToSave || undefined;
+            parsed.personal.avatarUrl = imgToSave || undefined;
+            localStorage.setItem("esp_user_profile", JSON.stringify(parsed));
+          }
+
+          const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+          if (rawAuth) {
+            const authUser = JSON.parse(rawAuth);
+            authUser.avatar = imgToSave || undefined;
+            authUser.imageUrl = imgToSave || undefined;
+            localStorage.setItem("esp_auth_user", JSON.stringify(authUser));
+            localStorage.setItem("esp-auth-user", JSON.stringify(authUser));
+          }
+
+          const rawDemo = localStorage.getItem("esp_demo_users_override");
+          if (rawDemo) {
+            const demoUsers = JSON.parse(rawDemo);
+            if (Array.isArray(demoUsers)) {
+              demoUsers.forEach((u: any) => {
+                if (u.user) {
+                  u.user.avatar = imgToSave || undefined;
+                  u.user.imageUrl = imgToSave || undefined;
+                }
+              });
+              localStorage.setItem("esp_demo_users_override", JSON.stringify(demoUsers));
+            }
+          }
+
+          window.dispatchEvent(new CustomEvent("esp_avatar_changed", { detail: { avatar: imgToSave } }));
+        } catch {}
+      }
+
+      if (imgToSave) {
+        toast.success(t("picture.photoSavedToast"));
+      } else {
+        toast.success(t("picture.photoRemovedToast"));
+      }
+      setEditingField(null);
+    } catch {
+      toast.error(isRtl ? "خطا در ذخیره تصویر پروفایل" : "Error saving profile picture");
+    }
+  };
 
   useEffect(() => {
     const col = formData?.personal?.avatarColor || user?.avatarColor;
@@ -548,10 +666,7 @@ export function ProfilePage() {
       if (!prev) return prev;
       return {
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
-        },
+        [section]: typeof prev[section] === "object" && prev[section] !== null && !Array.isArray(prev[section]) ? { ...(prev[section] as any), [field]: value } : value,
       };
     });
   };
@@ -647,9 +762,9 @@ export function ProfilePage() {
           avatarColor: effectiveAvatarColor,
           primaryColor: effectivePrimaryColor,
           isProfileCompleted: true,
-          accountStatus: isAlreadyActive ? user.accountStatus : (isOnboarding ? ("pending_approval" as const) : user.accountStatus),
-          hrApproved: isAlreadyActive ? user.hrApproved : false,
+          accountStatus: isAlreadyActive ? user.accountStatus : ("pending_manager" as const),
           managerApproved: isAlreadyActive ? user.managerApproved : false,
+          documents: finalProfile.documents || user.documents || [],
         };
 
         // Immediately update Zustand in-memory auth state across the whole app
@@ -658,7 +773,20 @@ export function ProfilePage() {
         try {
           localStorage.setItem("esp_auth_user", JSON.stringify(updated));
           localStorage.setItem("esp-auth-user", JSON.stringify(updated));
-          localStorage.removeItem("esp_demo_users_override");
+          
+          const rawDemo = localStorage.getItem("esp_demo_users_override");
+          let demoUsers = rawDemo ? JSON.parse(rawDemo) : [];
+          if (!Array.isArray(demoUsers) || demoUsers.length === 0) {
+            const authUsersMock = require("@/data/mock/auth-users.json");
+            demoUsers = Array.isArray(authUsersMock) ? [...authUsersMock] : [];
+          }
+          demoUsers = demoUsers.map((item: any) => {
+            if (item.user?.id === user.id || (user.id === "u-saeed" && (item.email === "saeed@demo.com" || item.mobile === "09120000000"))) {
+              return { ...item, user: { ...item.user, ...updated } };
+            }
+            return item;
+          });
+          localStorage.setItem("esp_demo_users_override", JSON.stringify(demoUsers));
         } catch {}
       }
     }
@@ -741,7 +869,14 @@ export function ProfilePage() {
         />
         {/* Avatar Core */}
         <div className="relative z-10 bg-white dark:bg-card rounded-full p-0.5 shadow-sm transition-shadow">
-          <Avatar className="size-24 sm:size-32">
+          <Avatar className="size-24 sm:size-32 border border-border/40">
+            {(liveAvatarImage || formData?.personal?.avatar || (user as any)?.avatar) ? (
+              <AvatarImage
+                src={liveAvatarImage || formData?.personal?.avatar || (user as any)?.avatar}
+                alt={nameToUse}
+                className="object-cover size-full rounded-full"
+              />
+            ) : null}
             <AvatarFallback 
               className="text-6xl sm:text-7xl font-bold text-white shadow-inner" 
               style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }}
@@ -936,7 +1071,7 @@ export function ProfilePage() {
 
         <Button
           variant="outline"
-          onClick={() => setActiveTab("skills")}
+          onClick={() => handleTabChange("skills")}
           className="rounded-full px-5 h-10 bg-white dark:bg-card border border-border/70 hover:bg-muted/50 text-foreground font-medium shadow-sm transition-all hover:shadow-md text-sm"
         >
           <span dir="auto" className="flex items-center gap-2">
@@ -966,8 +1101,187 @@ export function ProfilePage() {
     </div>
   );
 
+  const renderPictureEditor = () => {
+    const currentImg = liveAvatarImage || formData?.personal?.avatar || (user as any)?.avatar;
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted/40 border border-border/50 max-w-xs">
+          <button
+            type="button"
+            onClick={() => setAvatarSubTab("photo")}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+              avatarSubTab === "photo"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Camera className="size-3.5" />
+            <span>{t("picture.avatarTabPhoto")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAvatarSubTab("color")}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+              avatarSubTab === "color"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <PalettePh weight="bold" className="size-3.5" />
+            <span>{t("picture.avatarTabColor")}</span>
+          </button>
+        </div>
+
+        {avatarSubTab === "photo" ? (
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+            <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+              <div
+                style={{
+                  backgroundColor: currentImg
+                    ? "transparent"
+                    : liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7",
+                }}
+                className="size-28 sm:size-32 rounded-full flex items-center justify-center text-white text-4xl font-black shadow-md ring-4 ring-background overflow-hidden select-none shrink-0 mb-3 border-2 border-border/40"
+              >
+                {currentImg ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={currentImg}
+                    alt={nameToUse}
+                    className="size-full object-cover rounded-full"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+              <h4 className="text-sm font-bold text-foreground">
+                {currentImg ? (isRtl ? "تصویر چهره فعال" : "Active Profile Photo") : t("picture.previewTitle")}
+              </h4>
+              <span className="text-[11px] text-muted-foreground mt-0.5">
+                {currentImg ? (isRtl ? "عکس پرسنلی بارگذاری شده" : "Custom photo uploaded") : (isRtl ? "نشان متنی بر اساس نام" : "Initials symbol")}
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-foreground">
+                  {t("picture.uploadPhotoTitle")}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {t("picture.uploadPhotoDesc")}
+                </p>
+              </div>
+
+              <input
+                type="file"
+                ref={avatarFileInputRef}
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarFileSelect}
+              />
+
+              <div className="flex items-center gap-2.5 flex-wrap pt-2">
+                <Button
+                  type="button"
+                  onClick={() => avatarFileInputRef.current?.click()}
+                  className="gap-2 text-xs font-semibold rounded-xl h-10 px-4 cursor-pointer"
+                >
+                  <Upload className="size-4" />
+                  <span>{currentImg ? t("picture.changePhotoButton") : t("picture.uploadButton")}</span>
+                </Button>
+
+                {currentImg && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleSaveAvatarImage(null)}
+                    className="gap-1.5 text-xs font-medium rounded-xl h-10 px-3.5 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 border-border/60 cursor-pointer"
+                  >
+                    <Trash className="size-3.5" />
+                    <span>{t("picture.removePhotoButton")}</span>
+                  </Button>
+                )}
+              </div>
+
+              {liveAvatarImage && liveAvatarImage !== (formData?.personal?.avatar || (user as any)?.avatar) && (
+                <div className="pt-4 border-t border-border/40 flex items-center gap-2.5">
+                  <Button
+                    type="button"
+                    onClick={() => handleSaveAvatarImage(liveAvatarImage)}
+                    className="gap-1.5 text-xs font-bold rounded-xl h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
+                  >
+                    <Check className="size-4" />
+                    <span>{t("picture.savePhotoButton")}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setLiveAvatarImage(formData?.personal?.avatar || (user as any)?.avatar || null);
+                      setEditingField(null);
+                    }}
+                    className="text-xs rounded-xl h-9 px-3 cursor-pointer"
+                  >
+                    {t("actions.cancel")}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+            <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
+              <div
+                style={{
+                  backgroundColor:
+                    liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7",
+                }}
+                className="size-24 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-md ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-3"
+              >
+                {initial}
+              </div>
+              <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("picture.selectedCodeLabel")}{" "}
+                <span className="font-mono font-semibold" dir="ltr">
+                  {liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
+                </span>
+              </p>
+            </div>
+
+            <ColorPicker
+              value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
+              presets={AVATAR_COLOR_PRESETS}
+              showSaveButton={true}
+              onDraftChange={(newHex: string) => {
+                setLiveAvatarColor(newHex);
+              }}
+              onChange={(savedHex: string) => {
+                setLiveAvatarColor(savedHex);
+              }}
+              onSave={(savedHex: string) => {
+                handleSaveAvatarColor(savedHex);
+              }}
+              onCancel={() => {
+                setLiveAvatarColor(formData?.personal?.avatarColor || user?.avatarColor || "#0284c7");
+                setEditingField(null);
+              }}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderPersonalView = () => {
-    if (editingField) {
+    const PERSONAL_FIELDS = [
+      'avatarPhoto', 'avatarInitials', 'picture', 'name', 'nationalId',
+      'birthDate', 'gender', 'maritalStatus', 'childrenCount', 'phone', 'address'
+    ];
+    if (editingField && PERSONAL_FIELDS.includes(editingField)) {
       let title = "";
       let description = "";
       let content = null;
@@ -975,44 +1289,7 @@ export function ProfilePage() {
       switch(editingField) {
         case 'picture':
           title = t("picture.title");
-          content = (
-            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
-              {/* Profile Avatar Current Status Preview */}
-              <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
-                <div 
-                  style={{ backgroundColor: liveAvatarColor || formData.personal.avatarColor || "#0284c7" }}
-                  className="size-24 sm:size-28 rounded-full flex items-center justify-center text-white text-3xl sm:text-4xl font-black shadow-md ring-4 ring-background transition-colors duration-200 select-none shrink-0 mb-3"
-                >
-                  {initial}
-                </div>
-                <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("picture.selectedCodeLabel")}{" "}
-                  <span className="font-mono font-semibold" dir="ltr">{liveAvatarColor || formData.personal.avatarColor || "#0284c7"}</span>
-                </p>
-              </div>
-
-              {/* Shadcn Color Picker with live draft change & Save button */}
-              <ColorPicker
-                value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
-                presets={AVATAR_COLOR_PRESETS}
-                showSaveButton={true}
-                onDraftChange={(newHex: string) => {
-                  setLiveAvatarColor(newHex);
-                }}
-                onChange={(savedHex: string) => {
-                  setLiveAvatarColor(savedHex);
-                }}
-                onSave={(savedHex: string) => {
-                  handleSaveAvatarColor(savedHex);
-                }}
-                onCancel={() => {
-                  setLiveAvatarColor(formData?.personal?.avatarColor || user?.avatarColor || "#0284c7");
-                  setEditingField(null);
-                }}
-              />
-            </div>
-          );
+          content = renderPictureEditor();
           break;
         case 'name':
           title = t("fields.name");
@@ -1746,7 +2023,11 @@ export function ProfilePage() {
   };
 
   const renderOrganizationalView = () => {
-    if (editingField) {
+    const ORG_FIELDS = [
+      'department', 'role', 'workLocation', 'contractType', 'employeeId',
+      'extensionNumber', 'joinDate', 'manager', 'subordinates'
+    ];
+    if (editingField && ORG_FIELDS.includes(editingField)) {
       let title = "";
       let fieldKey = editingField as keyof UserProfile["organizational"];
       
@@ -1760,7 +2041,7 @@ export function ProfilePage() {
         case 'joinDate': title = t("fields.joinDate"); break;
         case 'manager': title = t("fields.manager"); break;
         case 'subordinates': title = t("fields.subordinates"); break;
-        default: return null;
+        default: break;
       }
       
       const value = typeof formData.organizational[fieldKey] === "string" ? (formData.organizational[fieldKey] as string) : "";
@@ -1944,7 +2225,9 @@ export function ProfilePage() {
                           </div>
                         ) : (
                           <div className="divide-y divide-border/40 border border-border/60 rounded-2xl overflow-hidden bg-card">
-                            {formData.organizational.subordinates.map((subName, index) => (
+                            {formData.organizational.subordinates.map((subItem, index) => {
+                                const subName = typeof subItem === "string" ? subItem : ((subItem as any)?.name || "");
+                                return (
                               <div
                                 key={index}
                                 className="flex items-center justify-between p-3.5 sm:px-5 hover:bg-muted/30 transition-colors"
@@ -1969,7 +2252,7 @@ export function ProfilePage() {
                                   <Trash className="size-4" />
                                 </Button>
                               </div>
-                            ))}
+                            );})}
                           </div>
                         )}
                       </div>
@@ -2235,7 +2518,7 @@ export function ProfilePage() {
                   </Badge>
                   {formData.organizational.subordinates && formData.organizational.subordinates.length > 0 && (
                     <span className="text-xs text-muted-foreground truncate hidden sm:inline">
-                      ({formData.organizational.subordinates.slice(0, 2).join("، ")}{formData.organizational.subordinates.length > 2 ? ` +${formData.organizational.subordinates.length - 2}` : ""})
+                      ({formData.organizational.subordinates.slice(0, 2).map((s: any) => typeof s === "string" ? s : (s?.name || "")).join("، ")}{formData.organizational.subordinates.length > 2 ? ` +${formData.organizational.subordinates.length - 2}` : ""})
                     </span>
                   )}
                 </div>
@@ -2256,7 +2539,7 @@ export function ProfilePage() {
       const skillId = editingField.replace('skill_', '');
       const skill = formData.skills.find(s => s.id === skillId);
       
-      if (!skill) return null;
+      if (skill) {
 
       const title = t("fields.skillName");
       
@@ -2394,6 +2677,7 @@ export function ProfilePage() {
           </div>
         </div>
       );
+      }
     }
 
     return (
@@ -2496,7 +2780,11 @@ export function ProfilePage() {
 
     const shebaStatus = validateSheba(formData.insurance.shebaNumber);
 
-    if (editingField) {
+    const INS_FIELDS = [
+      'provider', 'type', 'insuranceCode', 'validUntil', 'supplementaryPlan',
+      'shebaNumber', 'dependentsCount', 'dependents'
+    ];
+    if (editingField && INS_FIELDS.includes(editingField)) {
       let title = "";
       let fieldKey = editingField as keyof UserProfile["insurance"];
       
@@ -2509,7 +2797,7 @@ export function ProfilePage() {
         case 'shebaNumber': title = t("fields.shebaNumber"); break;
         case 'dependentsCount':
         case 'dependents': title = t("fields.dependents"); break;
-        default: return null;
+        default: break;
       }
       
       const value = (formData.insurance[fieldKey] as string) || "";
@@ -3538,46 +3826,7 @@ export function ProfilePage() {
           
           <div className="ps-0 sm:ps-14">
             <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-              {editingField === 'picture' && (
-                <div>
-                  <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
-                    {/* Profile Avatar Current Status Preview */}
-                    <div className="flex flex-col items-center justify-center text-center p-6 rounded-3xl bg-muted/20 border border-border/50">
-                      <div 
-                        style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }}
-                        className="size-24 rounded-full flex items-center justify-center text-white text-3xl font-black shadow-md ring-4 ring-background transition-colors duration-300 select-none shrink-0 mb-3"
-                      >
-                        {initial}
-                      </div>
-                      <h4 className="text-sm font-bold text-foreground">{t("picture.previewTitle")}</h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t("picture.selectedCodeLabel")}{" "}
-                        <span className="font-mono font-semibold" dir="ltr">{liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}</span>
-                      </p>
-                    </div>
-
-                    {/* Shadcn Color Picker with local draft state & Save button */}
-                    <ColorPicker
-                      value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
-                      presets={AVATAR_COLOR_PRESETS}
-                      showSaveButton={true}
-                      onDraftChange={(newHex: string) => {
-                        setLiveAvatarColor(newHex);
-                      }}
-                      onChange={(savedHex: string) => {
-                        setLiveAvatarColor(savedHex);
-                      }}
-                      onSave={(savedHex: string) => {
-                        handleSaveAvatarColor(savedHex);
-                      }}
-                      onCancel={() => {
-                        setLiveAvatarColor(formData?.personal?.avatarColor || user?.avatarColor || "#0284c7");
-                        setEditingField(null);
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
+              {editingField === 'picture' && renderPictureEditor()}
 
               {editingField === 'primaryColor' && (
                 <div>
@@ -3764,7 +4013,14 @@ export function ProfilePage() {
                 <span className="text-sm font-medium text-foreground">{t("fields.profilePicture")}</span>
              </div>
              <div className="flex items-center justify-end w-2/3 gap-4">
-               <Avatar className="size-11 sm:size-12 shadow-none">
+               <Avatar className="size-11 sm:size-12 shadow-none border border-border/40">
+                 {(liveAvatarImage || formData?.personal?.avatar || (user as any)?.avatar) ? (
+                   <AvatarImage
+                     src={liveAvatarImage || formData?.personal?.avatar || (user as any)?.avatar}
+                     alt={nameToUse}
+                     className="object-cover size-full rounded-full"
+                   />
+                 ) : null}
                  <AvatarFallback 
                    style={{ backgroundColor: liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7" }} 
                    className="text-lg font-bold text-white transition-colors"
@@ -3804,6 +4060,62 @@ export function ProfilePage() {
     );
   };
 
+
+  const renderDocumentsView = () => {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto pb-12 animate-in fade-in duration-200">
+        <Card className="rounded-3xl border border-border/60 bg-card shadow-sm p-6 sm:p-8">
+          <CardHeader className="p-0 pb-6 border-b border-border/40">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <CardTitle className="text-xl sm:text-2xl font-black text-foreground">
+                  {isRtl ? "مدارک شناسایی و دانشگاهی" : "Identification & Academic Documents"}
+                </CardTitle>
+                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  {isRtl
+                    ? "بارگذاری تصاویر کارت ملی، شناسنامه و مدرک تحصیلی یا دانشنامه دانشگاهی جهت بررسی و تایید توسط مدیریت"
+                    : "Upload scans/photos of your national ID, birth certificate, and university degree for manager verification."}
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => {
+                  handleSave();
+                  toast.success(
+                    isRtl
+                      ? "مدارک و اطلاعات ذخیره شد و برای بررسی مدیر ارسال گردید."
+                      : "Documents saved and sent for manager review."
+                  );
+                  router.push("/account-pending");
+                }}
+                disabled={isUpdating}
+                className="gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+              >
+                {isUpdating ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                <span>{isRtl ? "ذخیره و ارسال برای مدیر" : "Save & Submit for Manager"}</span>
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 pt-6">
+            <DocumentUploadSection
+              documents={formData?.documents || []}
+              onChange={(newDocs) => {
+                setFormData((prev) => (prev ? { ...prev, documents: newDocs } : prev));
+                if (typeof window !== "undefined") {
+                  try {
+                    const stored = localStorage.getItem("esp_user_profile");
+                    const parsed = stored ? JSON.parse(stored) : {};
+                    parsed.documents = newDocs;
+                    localStorage.setItem("esp_user_profile", JSON.stringify(parsed));
+                  } catch {}
+                }
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
       {/* Top Header */}
@@ -3818,7 +4130,7 @@ export function ProfilePage() {
             <button
               type="button"
               onClick={() => {
-                setActiveTab("home");
+                handleTabChange("home");
                 setIsSearchFocused(true);
                 setTimeout(() => searchInputRef.current?.focus(), 80);
               }}
@@ -3872,10 +4184,7 @@ export function ProfilePage() {
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      if (window.innerWidth < 768) setSidebarOpen(false);
-                    }}
+                    onClick={() => handleTabChange(item.id)}
                     className={cn(
                       "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
                       sidebarOpen
@@ -3928,6 +4237,7 @@ export function ProfilePage() {
         <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
+            activeTab === "documents" ? renderDocumentsView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
             activeTab === "skills" ? renderSkillsView() :
             activeTab === "insurance" ? renderInsuranceView() :

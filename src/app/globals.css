@@ -120,6 +120,31 @@ a svg,
   direction: auto;
 }
 
+/* ============================================
+   BILINGUAL AUTH FORM INPUT STYLES
+   Ensures email and password fields type strictly LTR
+   from left-to-right with clear cursor alignment,
+   while Persian placeholders render smoothly with RTL direction
+   when the field is empty.
+   ============================================ */
+.auth-input-ltr {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+html[dir="rtl"] .auth-input-ltr::placeholder,
+[dir="rtl"] .auth-input-ltr::placeholder {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+html[dir="ltr"] .auth-input-ltr::placeholder,
+[dir="ltr"] .auth-input-ltr::placeholder {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+
 html {
   direction: auto;
   min-width: 320px;

@@ -1,9 +1,16 @@
 "use client";
+import type { UserRole } from "@/types/auth";
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import {
   ShieldAlert,
+  FileText,
+  FileCheck,
+  CheckCheck,
+  XCircle,
+  ZoomIn,
+  ZoomOut,
   Search,
   X,
   Clock,
@@ -40,12 +47,18 @@ import {
   Star,
   Users,
   Lock,
+  Banknote,
+  Coins,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
 import { PendingRequest, RequestStatus, User } from "../types/admin.types";
-import { getCompanyFromEmail } from "../utils/company";
+import {
+  getCompanyFromEmail,
+  isValidCorporateEmail,
+  formatEmailWithDomain,
+} from "../utils/company";
 import {
   getDepartmentsForCompany,
   getJobTitlesForDepartment,
@@ -54,6 +67,7 @@ import {
   BASIC_INSURANCE_PROVIDERS,
 } from "../data/organization-data";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,8 +83,20 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
+import {
+  getDegreeOptions,
+  getStudyFieldOptions,
+  getUniversityOptions,
+  resolveDegreeLabel,
+  resolveStudyFieldLabel,
+  resolveUniversityLabel,
+} from "@/modules/profile/data/education-options";
+import type { UserUploadedDocument } from "@/types/auth";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
 import { formatRequestSubmissionDate, formatDateFieldForLocale, toAsciiDigits } from "../utils/date-formatter";
+import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
+import { PRESET_SUGGESTED_SKILLS } from "./AdminUserConfig";
+import { SubordinateSelector } from "./SubordinateSelector";
 
 interface AdminRequestsProps {
   requests: PendingRequest[];
@@ -80,7 +106,7 @@ interface AdminRequestsProps {
   availableModules?: any[];
 }
 
-type ReqSegmentId = "personal" | "org" | "insurance" | "education" | "modules";
+type ReqSegmentId = "personal" | "org" | "insurance" | "education" | "skills" | "documents" | "modules" | "compensation";
 
 const sanitizePersian = (text: string) => {
   return text.replace(/[^ \u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, "");
@@ -92,6 +118,13 @@ const sanitizeEnglish = (text: string) => {
 
 const normalizeDigits = (val: string) => {
   return val.replace(/[۰-۹]/g, (d) => "۰۱۲۳۴۵۶۷۸۹".indexOf(d).toString());
+};
+
+const formatNumberWithCommas = (val: number | string | undefined | null) => {
+  if (val === undefined || val === null || val === "") return "";
+  const str = typeof val === "string" ? val.replace(/,/g, "") : val.toString();
+  const num = parseInt(str, 10);
+  return isNaN(num) ? "" : num.toLocaleString();
 };
 
 export function AdminRequests({
@@ -107,15 +140,11 @@ export function AdminRequests({
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "pending" | "hr_approved" | "rejected"
-  >("all");
-  const [domainFilter, setDomainFilter] = useState<
-    "all" | "euroslotpars.com" | "npceram.com"
-  >("all");
-
-  // Reviewer role perspective: HR vs General Manager
-  const [reviewerRole, setReviewerRole] = useState<"hr" | "manager">("manager");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "active" | "rejected">("all");
+  const [domainFilter, setDomainFilter] = useState<"all" | "euroslotpars.com" | "npceram.com">("all");
+  const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
 
   // Selected Request for Review
   const [selectedReqId, setSelectedReqId] = useState<string | null>(null);
@@ -129,11 +158,22 @@ export function AdminRequests({
 
   // Dialog states for rejection
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [isManualFieldOfStudy, setIsManualFieldOfStudy] = useState(false);
+  const [isManualUniversity, setIsManualUniversity] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+  // Escape key listener for lightbox
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxDoc(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   // Copy helper
   const handleCopy = (text: string, id: string) => {
@@ -145,10 +185,10 @@ export function AdminRequests({
   // Metrics calculation (Active Account removed per user requirement)
   const metrics = useMemo(() => {
     const total = requests.length;
-    const pendingHr = requests.filter((r) => r.status === "pending").length;
-    const pendingManager = requests.filter((r) => r.status === "hr_approved").length;
+    const pending = requests.filter((r) => r.status === "pending" || r.status === "hr_approved").length;
+    const active = requests.filter((r) => r.status === "active").length;
     const rejected = requests.filter((r) => r.status === "rejected").length;
-    return { total, pendingHr, pendingManager, rejected };
+    return { total, pending, active, rejected };
   }, [requests]);
 
   // Fast live filtered requests
@@ -231,6 +271,55 @@ export function AdminRequests({
             { id: "sk-1", name: t("defaultSkill1"), level: 4 },
             { id: "sk-2", name: t("defaultSkill2"), level: 4 },
           ],
+          salary: found.salary ?? 350000000,
+          hasOvertime: found.hasOvertime ?? true,
+          maxOvertimeHours: found.maxOvertimeHours ?? 40,
+          monthlyBonusType: found.monthlyBonusType || "cash",
+          monthlyBonusAmount: found.monthlyBonusAmount ?? 25000000,
+          monthlyBonusTitle: found.monthlyBonusTitle || (isRtl ? "پاداش حسن انجام کار و بهره‌وری" : "Performance & Productivity Bonus"),
+          monthlyBonuses: found.monthlyBonuses && found.monthlyBonuses.length > 0 ? found.monthlyBonuses : [
+            {
+              id: `b-${found.id}-1`,
+              title: found.monthlyBonusTitle || (isRtl ? "پاداش حسن انجام کار و بهره‌وری" : "Performance & Productivity Bonus"),
+              type: (found.monthlyBonusType as any) || "cash",
+              amount: found.monthlyBonusAmount ?? 25000000,
+            }
+          ],
+          documents: found.documents && found.documents.length > 0 ? found.documents : [
+            {
+              id: `doc-${found.id}-front`,
+              category: "national_card_front",
+              title: isRtl ? "تصویر روی کارت ملی" : "National ID Card (Front)",
+              fileName: "national_id_front.jpg",
+              fileSize: "1.4 MB",
+              fileType: "image/jpeg",
+              fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%230284c7'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((found.name || "متقاضی") + " - کارت ملی")}</text></svg>`,
+              uploadedAt: new Date().toISOString(),
+              verified: found.adminApproved ?? false,
+            },
+            {
+              id: `doc-${found.id}-back`,
+              category: "national_card_back",
+              title: isRtl ? "تصویر پشت کارت ملی" : "National ID Card (Back)",
+              fileName: "national_id_back.jpg",
+              fileSize: "1.2 MB",
+              fileType: "image/jpeg",
+              fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%23059669'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((found.name || "متقاضی") + " - پشت کارت ملی")}</text></svg>`,
+              uploadedAt: new Date().toISOString(),
+              verified: found.adminApproved ?? false,
+            },
+            {
+              id: `doc-${found.id}-degree`,
+              category: "university_degree",
+              title: isRtl ? "تصویر آخرین مدرک دانشگاهی" : "Latest University Degree",
+              fileName: "degree_certificate.jpg",
+              fileSize: "2.1 MB",
+              fileType: "image/jpeg",
+              fileData: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%237c3aed'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>${encodeURIComponent((found.name || "متقاضی") + " - دانشنامه")}</text></svg>`,
+              uploadedAt: new Date().toISOString(),
+              verified: found.adminApproved ?? false,
+            },
+          ],
         });
       }
     } else {
@@ -312,7 +401,6 @@ export function AdminRequests({
     titleKey: string;
     descKey: string;
     stepNumber: number;
-    owner: "hr" | "manager";
   }[] = [
     {
       id: "personal",
@@ -320,7 +408,6 @@ export function AdminRequests({
       titleKey: "reqSegmentPersonal",
       descKey: "reqSegmentPersonalDesc",
       stepNumber: 1,
-      owner: "hr",
     },
     {
       id: "org",
@@ -328,7 +415,6 @@ export function AdminRequests({
       titleKey: "reqSegmentOrg",
       descKey: "reqSegmentOrgDesc",
       stepNumber: 2,
-      owner: "manager",
     },
     {
       id: "insurance",
@@ -336,7 +422,6 @@ export function AdminRequests({
       titleKey: "reqSegmentInsurance",
       descKey: "reqSegmentInsuranceDesc",
       stepNumber: 3,
-      owner: "hr",
     },
     {
       id: "education",
@@ -344,17 +429,119 @@ export function AdminRequests({
       titleKey: "reqSegmentEducation",
       descKey: "reqSegmentEducationDesc",
       stepNumber: 4,
-      owner: "hr",
+    },
+    {
+      id: "skills",
+      icon: Star,
+      titleKey: "reqSegmentSkills",
+      descKey: "reqSegmentSkillsDesc",
+      stepNumber: 5,
+    },
+    {
+      id: "documents",
+      icon: FileCheck,
+      titleKey: "reqSegmentDocuments",
+      descKey: "reqSegmentDocumentsDesc",
+      stepNumber: 6,
     },
     {
       id: "modules",
       icon: KeyRound,
       titleKey: "reqSegmentModules",
       descKey: "reqSegmentModulesDesc",
-      stepNumber: 5,
-      owner: "manager",
+      stepNumber: 7,
+    },
+    {
+      id: "compensation",
+      icon: Banknote,
+      titleKey: "reqSegmentCompensation",
+      descKey: "reqSegmentCompensationDesc",
+      stepNumber: 8,
     },
   ];
+
+  // Document Verification Actions
+  const handleToggleVerifyDocument = (docId: string) => {
+    if (!reviewData) return;
+    const currentDocs = reviewData.documents || [];
+    const updatedDocs = currentDocs.map((doc) => {
+      if (doc.id === docId) {
+        const nextVerified = !doc.verified;
+        toast.success(
+          nextVerified
+            ? (isRtl ? `مدرک «${doc.title}» تأیید شد.` : `Document "${doc.title}" verified.`)
+            : (isRtl ? `تأیید مدرک «${doc.title}» لغو شد.` : `Verification for "${doc.title}" revoked.`)
+        );
+        return { ...doc, verified: nextVerified };
+      }
+      return doc;
+    });
+    setReviewData({
+      ...reviewData,
+      documents: updatedDocs,
+    });
+  };
+
+  const handleVerifyAllDocuments = () => {
+    if (!reviewData) return;
+    const currentDocs = reviewData.documents || [];
+    const updatedDocs = currentDocs.map((doc) => ({ ...doc, verified: true }));
+    setReviewData({
+      ...reviewData,
+      documents: updatedDocs,
+    });
+    toast.success(isRtl ? "تمامی مدارک متقاضی با موفقیت تأیید شدند." : "All applicant documents were successfully verified.");
+  };
+
+  // Skills Management Handlers
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillLevel, setNewSkillLevel] = useState(4);
+
+  const handleAddRequestSkill = (name?: string, level?: number) => {
+    if (!reviewData) return;
+    const skillTitle = (name || newSkillName).trim();
+    if (!skillTitle) return;
+    const skillLvl = level ?? newSkillLevel;
+    const exists = (reviewData.skills || []).some(
+      (s) => s.name.toLowerCase() === skillTitle.toLowerCase()
+    );
+    if (exists) {
+      toast.warning(isRtl ? "این مهارت قبلاً اضافه شده است." : "This skill already exists.");
+      return;
+    }
+    const newSkill = {
+      id: `sk-${Date.now()}`,
+      name: skillTitle,
+      level: skillLvl,
+    };
+    setReviewData({
+      ...reviewData,
+      skills: [...(reviewData.skills || []), newSkill],
+    });
+    setNewSkillName("");
+    toast.success(isRtl ? `مهارت «${skillTitle}» افزوده شد.` : `Added skill "${skillTitle}".`);
+  };
+
+  const handleRemoveRequestSkill = (skillIdOrName: string) => {
+    if (!reviewData) return;
+    setReviewData({
+      ...reviewData,
+      skills: (reviewData.skills || []).filter(
+        (s) => s.id !== skillIdOrName && s.name !== skillIdOrName
+      ),
+    });
+    toast.info(isRtl ? "مهارت حذف شد." : "Skill removed.");
+  };
+
+  const handleUpdateRequestSkillLevel = (skillIdOrName: string, level: number) => {
+    if (!reviewData) return;
+    setReviewData({
+      ...reviewData,
+      skills: (reviewData.skills || []).map((s) =>
+        s.id === skillIdOrName || s.name === skillIdOrName ? { ...s, level } : s
+      ),
+    });
+  };
 
   // Actions
   const handleSaveProfileChanges = async () => {
@@ -399,12 +586,12 @@ export function AdminRequests({
     setOpenSegment(prevSegmentId);
   };
 
-  // Final Step Action: Save and Advance Stage depending on status (HR vs Admin)
+  // Final Step Action: Save and Advance Stage directly with Admin Approval
   const handleSaveAndAdvance = async () => {
     if (!reviewData) return;
     try {
       setIsSaving(true);
-      setCompletedSteps((prev) => new Set(prev).add("education").add("modules"));
+      setCompletedSteps((prev) => new Set(prev).add("education").add("skills").add("documents").add("modules").add("compensation"));
 
       const reqCompany = getCompanyFromEmail(reviewData.email);
       const dataToSave: PendingRequest = {
@@ -413,54 +600,38 @@ export function AdminRequests({
         companyId: reqCompany.id,
       };
 
-      // 1. First save any current modifications to request profile
       await api.admin.updateRequest(reviewData.id, dataToSave);
 
-      // 2. Advance stage based on current reviewer role and status
-      if (reviewerRole === "hr") {
-        if (reviewData.status === "pending") {
-          // HR Stage Approval
-          const updated = await api.admin.approveHr(reviewData.id);
-          setRequests((prev) =>
-            prev.map((r) => (r.id === reviewData.id ? updated : r))
-          );
-          setReviewData((prev) => (prev ? { ...prev, ...updated, status: "hr_approved", hrApproved: true } : null));
-          addUserNotification({
-            title: isRtl ? "تایید مدارک توسط منابع انسانی" : "HR Verification Approved",
-            description: isRtl
-              ? `مدارک و اطلاعات متقاضی (${reviewData.name}) تایید شد و پرونده به مدیریت ارجاع گردید.`
-              : `Application for ${reviewData.name} was approved by HR and submitted to the General Manager.`,
-            type: "system",
-          });
-          toast.success(t("hrApproveSuccess", { email: reviewData.email }));
-        } else {
-          toast.success(t("profileChangesSavedSuccess"));
-        }
+      if (reviewData.status !== "active") {
+        const res = await api.admin.approveManager(reviewData.id, {
+          role: reviewData.role || "user",
+          modulesAccess: dataToSave.modulesAccess,
+        });
+        setRequests((prev) =>
+          prev.map((r) => (r.id === reviewData.id ? res.request : r))
+        );
+        setReviewData((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...res.request,
+                status: "active",
+                adminApproved: true,
+                managerApproved: true,
+                tempPassword: res.tempPassword || res.request.tempPassword,
+              }
+            : null
+        );
+        addUserNotification({
+          title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
+          description: isRtl
+            ? `درخواست متقاضی (${reviewData.name}) توسط مدیر تأیید و حساب کاربری فعال گردید.`
+            : `Application for ${reviewData.name} was approved and activated by Admin.`,
+          type: "system",
+        });
+        toast.success(t("adminApproveSuccess", { email: reviewData.email }));
       } else {
-        // Manager Perspective
-        if (reviewData.status === "pending") {
-          toast.warning(t("stepAwaitingHr"));
-        } else if (reviewData.status === "hr_approved") {
-          // Manager Final Approval & Activation
-          const res = await api.admin.approveManager(reviewData.id, {
-            role: "user",
-            modulesAccess: dataToSave.modulesAccess,
-          });
-          setRequests((prev) =>
-            prev.map((r) => (r.id === reviewData.id ? res.request : r))
-          );
-          setReviewData((prev) => (prev ? { ...prev, ...res.request, status: "active", hrApproved: true, managerApproved: true, tempPassword: res.tempPassword || res.request.tempPassword } : null));
-          addUserNotification({
-            title: isRtl ? "تایید نهایی و فعال‌سازی حساب کاربری" : "Account Final Approval & Activation",
-            description: isRtl
-              ? `درخواست متقاضی (${reviewData.name}) تایید نهایی شد و حساب کاربری با دسترسی‌های تعیین‌شده فعال گردید.`
-              : `Application for ${reviewData.name} received final approval from the General Manager and the account is now active.`,
-            type: "system",
-          });
-          toast.success(t("managerApproveSuccess", { email: reviewData.email }));
-        } else {
-          toast.success(t("profileChangesSavedSuccess"));
-        }
+        toast.success(t("profileChangesSavedSuccess"));
       }
 
       if (onRefresh) await onRefresh();
@@ -471,48 +642,7 @@ export function AdminRequests({
     }
   };
 
-  const handleApproveHr = async () => {
-    if (!reviewData) return;
-    try {
-      setActionLoadingId(reviewData.id);
-      const reqCompany = getCompanyFromEmail(reviewData.email);
-      const dataToSave: PendingRequest = {
-        ...reviewData,
-        company: isRtl ? reqCompany.nameFa : reqCompany.nameEn,
-        companyId: reqCompany.id,
-      };
-      await api.admin.updateRequest(reviewData.id, dataToSave);
-      const updated = await api.admin.approveHr(reviewData.id);
-      setRequests((prev) =>
-        prev.map((r) => (r.id === reviewData.id ? updated : r))
-      );
-      setReviewData((prev) =>
-        prev
-          ? {
-              ...prev,
-              ...updated,
-              status: "hr_approved",
-              hrApproved: true,
-            }
-          : null
-      );
-      addUserNotification({
-        title: isRtl ? "تایید مدارک توسط منابع انسانی" : "HR Verification Approved",
-        description: isRtl
-          ? `مدارک و اطلاعات متقاضی (${reviewData.name}) تایید شد و پرونده به مدیریت ارجاع گردید.`
-          : `Application for ${reviewData.name} was approved by HR and submitted to the General Manager.`,
-        type: "system",
-      });
-      toast.success(t("hrApproveSuccess", { email: reviewData.email }));
-      if (onRefresh) await onRefresh();
-    } catch {
-      toast.error(t("errorApproveHr"));
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
-
-  const handleApproveManager = async () => {
+  const handleApproveAdmin = async () => {
     if (!reviewData) return;
     try {
       setActionLoadingId(reviewData.id);
@@ -524,7 +654,7 @@ export function AdminRequests({
       };
       await api.admin.updateRequest(reviewData.id, dataToSave);
       const res = await api.admin.approveManager(reviewData.id, {
-        role: "user",
+        role: reviewData.role || "user",
         modulesAccess: dataToSave.modulesAccess,
       });
       setRequests((prev) =>
@@ -536,20 +666,20 @@ export function AdminRequests({
               ...prev,
               ...res.request,
               status: "active",
-              hrApproved: true,
+              adminApproved: true,
               managerApproved: true,
               tempPassword: res.tempPassword || res.request.tempPassword,
             }
           : null
       );
       addUserNotification({
-        title: isRtl ? "تایید نهایی و فعال‌سازی حساب کاربری" : "Account Final Approval & Activation",
+        title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
         description: isRtl
-          ? `درخواست متقاضی (${reviewData.name}) تایید نهایی شد و حساب کاربری با دسترسی‌های تعیین‌شده فعال گردید.`
-          : `Application for ${reviewData.name} received final approval from the General Manager and the account is now active.`,
+          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت توسط مدیر سیستم تأیید و فعال شد.`
+          : `Application for ${reviewData.name} was approved and activated by Admin.`,
         type: "system",
       });
-      toast.success(t("managerApproveSuccess", { email: reviewData.email }));
+      toast.success(t("adminApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
     } catch {
       toast.error(t("errorApproveManager"));
@@ -655,13 +785,13 @@ export function AdminRequests({
   const PrevArrow = isRtl ? ArrowRight : ArrowLeft;
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-5 max-w-[1440px] mx-auto w-full">
+    <div className="h-full overflow-y-auto custom-scrollbar p-2 sm:p-4 lg:p-6 w-full max-w-[1720px] 2xl:max-w-[1840px] mx-auto">
       {/* ─── 2-Column Responsive Workspace (Matches New User Config Layout) ─── */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* ======================================================== */}
         {/* MAIN COLUMN: STAGES & APPROVAL PIPELINE (LEFT IN EN, RIGHT IN FA) */}
         {/* ======================================================== */}
-        <div className="xl:col-span-7 flex flex-col gap-5">
+        <div className="xl:col-span-8 flex flex-col gap-5">
           {/* Header Card */}
           <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -677,36 +807,6 @@ export function AdminRequests({
             </div>
 
             <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Reviewer Role Toggle: HR vs General Manager */}
-              <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setReviewerRole("hr")}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
-                    reviewerRole === "hr"
-                      ? "bg-amber-500 text-white shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <UserCheck className="size-3.5" />
-                  <span>{t("reviewerRoleHr")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReviewerRole("manager")}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5",
-                    reviewerRole === "manager"
-                      ? "bg-blue-600 text-white shadow-xs"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Sparkles className="size-3.5" />
-                  <span>{t("reviewerRoleManager")}</span>
-                </button>
-              </div>
-
               {onRefresh && (
                 <Button
                   variant="outline"
@@ -745,12 +845,15 @@ export function AdminRequests({
                       </AvatarFallback>
                     </Avatar>
 
-                    <div className="flex flex-col min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-extrabold text-base sm:text-lg text-foreground truncate">
-                          {reviewData.name || reviewData.email.split("@")[0]}
-                        </h3>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      {/* Name on its own line: full space, never cut off */}
+                      <h3 className="font-extrabold text-base sm:text-xl text-foreground break-words leading-snug">
+                        {reviewData.name || reviewData.email.split("@")[0]}
+                      </h3>
+
+                      {/* Tags brought DOWN below the name */}
+                      <div className="flex items-center gap-2 flex-wrap mt-1.5">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20 shrink-0">
                           {reviewData.id}
                         </span>
                         {(() => {
@@ -758,7 +861,7 @@ export function AdminRequests({
                           return (
                             <span
                               className={cn(
-                                "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border",
+                                "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 border shrink-0",
                                 comp.id === "npceram"
                                   ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
                                   : comp.id === "holding"
@@ -766,74 +869,42 @@ export function AdminRequests({
                                   : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
                               )}
                             >
-                              <Building2 className="size-2.5" />
                               <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
                             </span>
                           );
                         })()}
+                        <span
+                          className="text-xs text-muted-foreground font-mono"
+                          dir="ltr"
+                        >
+                          {reviewData.email}
+                        </span>
                       </div>
-                      <span
-                        className="text-xs text-muted-foreground truncate mt-0.5"
-                        dir="ltr"
-                      >
-                        {reviewData.email}
-                      </span>
                     </div>
                   </div>
 
                   {/* Actions Header Bar */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    {/* Primary Role Workflow Approval Action */}
-                    {reviewerRole === "hr" ? (
-                      reviewData.status === "pending" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleApproveHr}
-                          disabled={actionLoadingId === reviewData.id}
-                          className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-amber-500 hover:bg-amber-600 text-white shadow-xs"
-                        >
-                          {actionLoadingId === reviewData.id ? (
-                            <RotateCw className="size-3.5 animate-spin" />
-                          ) : (
-                            <UserCheck className="size-3.5" />
-                          )}
-                          <span>{t("approveHrBtn")}</span>
-                        </Button>
-                      ) : (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
-                          <CheckCircle2 className="size-3.5 text-emerald-500" />
-                          <span>{t("hrVerifiedBadge")}</span>
-                        </div>
-                      )
+                    {reviewData.status !== "active" ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={handleApproveAdmin}
+                        disabled={actionLoadingId === reviewData.id}
+                        className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary hover:bg-primary/90 text-white shadow-xs"
+                      >
+                        {actionLoadingId === reviewData.id ? (
+                          <RotateCw className="size-3.5 animate-spin" />
+                        ) : (
+                          <ShieldCheck className="size-3.5" />
+                        )}
+                        <span>{t("approveAdminBtn")}</span>
+                      </Button>
                     ) : (
-                      /* Manager Perspective */
-                      reviewData.status === "hr_approved" ? (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={handleApproveManager}
-                          disabled={actionLoadingId === reviewData.id}
-                          className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-blue-600 hover:bg-blue-700 text-white shadow-xs"
-                        >
-                          {actionLoadingId === reviewData.id ? (
-                            <RotateCw className="size-3.5 animate-spin" />
-                          ) : (
-                            <Sparkles className="size-3.5" />
-                          )}
-                          <span>{t("approveManagerBtn")}</span>
-                        </Button>
-                      ) : reviewData.status === "active" ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
-                          <CheckCircle2 className="size-3.5 text-emerald-500" />
-                          <span>{t("managerVerifiedBadge")}</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-xs border border-amber-500/20">
-                          <Clock className="size-3.5 text-amber-500" />
-                          <span>{t("stepAwaitingHr")}</span>
-                        </div>
-                      )
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
+                        <CheckCircle2 className="size-3.5 text-emerald-500" />
+                        <span>{t("statusActive")}</span>
+                      </div>
                     )}
 
                     {/* Save Button */}
@@ -920,13 +991,12 @@ export function AdminRequests({
                 )}
 
                 {/* =================================================== */}
-                {/* SEGMENTED CONTROL / TABS */}
+                {/* SEGMENTED CONTROL / TABS (FLEXIBLE WRAP - NO SCROLL) */}
                 {/* =================================================== */}
-                <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-2 flex flex-wrap items-center gap-1.5">
                   {SEGMENTS.map((seg) => {
                     const isActive = activeSegment === seg.id;
                     const isCompleted = completedSteps.has(seg.id);
-                    const isHr = seg.owner === "hr";
 
                     return (
                       <button
@@ -943,7 +1013,7 @@ export function AdminRequests({
                           });
                         }}
                         className={cn(
-                          "flex-1 min-w-[140px] flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
+                          "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
                           isActive
                             ? "bg-primary text-primary-foreground shadow-sm"
                             : isCompleted
@@ -968,21 +1038,7 @@ export function AdminRequests({
                             seg.stepNumber
                           )}
                         </div>
-                        <div className="flex flex-col min-w-0 text-start">
-                          <span className="truncate">{t(seg.titleKey)}</span>
-                          <span
-                            className={cn(
-                              "text-[9px] font-medium leading-none mt-0.5",
-                              isActive
-                                ? "text-primary-foreground/80"
-                                : isHr
-                                ? "text-amber-600 dark:text-amber-400"
-                                : "text-blue-600 dark:text-blue-400"
-                            )}
-                          >
-                            {isHr ? t("badgeHrRole") : t("badgeManagerRole")}
-                          </span>
-                        </div>
+                        <span className="truncate">{t(seg.titleKey)}</span>
                       </button>
                     );
                   })}
@@ -997,9 +1053,7 @@ export function AdminRequests({
                   const isOpen = openSegment === seg.id;
                   const isCompleted = completedSteps.has(seg.id);
                   const Icon = seg.icon;
-                  const isFieldReadOnly =
-                    (reviewerRole === "manager" && seg.owner === "hr") ||
-                    (reviewerRole === "hr" && seg.owner === "manager");
+                  const isFieldReadOnly = reviewData?.status === "rejected";
 
                   return (
                     <div
@@ -1048,16 +1102,7 @@ export function AdminRequests({
                               <span className="font-bold text-sm sm:text-base text-foreground truncate">
                                 {t(seg.titleKey)}
                               </span>
-                              <span
-                                className={cn(
-                                  "px-1.5 py-0.2 rounded-md text-[9px] font-bold border",
-                                  seg.owner === "hr"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                                    : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
-                                )}
-                              >
-                                {seg.owner === "hr" ? t("badgeHrRole") : t("badgeManagerRole")}
-                              </span>
+                              
                               {isCompleted && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                                   <Check className="size-2.5" />
@@ -1098,27 +1143,6 @@ export function AdminRequests({
                             className="overflow-hidden"
                           >
                             <div className="p-4 sm:p-6 pt-2 border-t border-border/30 flex flex-col gap-5">
-                              {/* Role-based Verification & View-Only Notice Banners */}
-                              {reviewerRole === "manager" && seg.owner === "hr" && (
-                                <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-xs text-blue-700 dark:text-blue-300 flex items-center gap-2.5">
-                                  <CheckCircle2 className="size-4 shrink-0 text-blue-600 dark:text-blue-400" />
-                                  <div className="flex flex-col">
-                                    <span className="font-bold">{t("hrVerifiedBadge")}</span>
-                                    <span className="text-[11px] opacity-90 mt-0.5">{t("hrReadOnlyNotice")}</span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {reviewerRole === "hr" && seg.owner === "manager" && (
-                                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-400 flex items-center gap-2.5">
-                                  <Lock className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                                  <div className="flex flex-col">
-                                    <span className="font-bold">{t("badgeManagerRole")}</span>
-                                    <span className="text-[11px] opacity-90 mt-0.5">{t("managerReadOnlyNotice")}</span>
-                                  </div>
-                                </div>
-                              )}
-
                               <fieldset disabled={isFieldReadOnly} className="contents group-disabled:pointer-events-none">
                               {/* ========================================= */}
                               {/* SEGMENT 1: IDENTITY & PERSONAL */}
@@ -1268,13 +1292,34 @@ export function AdminRequests({
 
                                   {/* Email & Birth Date */}
                                   <div className="flex flex-col gap-2">
-                                    <Label className="text-xs font-semibold text-foreground">
-                                      {t("email")}
-                                    </Label>
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-semibold text-foreground">
+                                        {t("email")}
+                                      </Label>
+                                      {isValidCorporateEmail(reviewData.email) ? (
+                                        <Badge
+                                          variant="outline"
+                                          className={cn(
+                                            "text-[10px] px-2 py-0 border gap-1 font-semibold",
+                                            reviewData.email.toLowerCase().includes("npceram")
+                                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                                              : "bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/30"
+                                          )}
+                                        >
+                                          <CheckCircle2 className="size-2.5" />
+                                          <span>{reviewData.email.toLowerCase().includes("npceram") ? "@npceram.com" : "@euroslotpars.com"}</span>
+                                        </Badge>
+                                      ) : reviewData.email ? (
+                                        <Badge variant="outline" className="text-[10px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 gap-1 font-semibold">
+                                          <AlertCircle className="size-2.5" />
+                                          <span>{isRtl ? "دامنه غیرمجاز" : "Unauthorized"}</span>
+                                        </Badge>
+                                      ) : null}
+                                    </div>
                                     <div className="relative">
                                       <Mail
                                         size={18}
-                                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
+                                        className="absolute start-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
                                       />
                                       <Input
                                         type="email"
@@ -1282,12 +1327,41 @@ export function AdminRequests({
                                         onChange={(e) =>
                                           setReviewData({
                                             ...reviewData,
-                                            email: e.target.value,
+                                            email: e.target.value.trim(),
                                           })
                                         }
-                                        className="pl-10 h-11 bg-background border-border/50 rounded-xl text-sm"
+                                        className="ps-10 h-11 bg-background border-border/50 rounded-xl text-sm"
                                         dir="ltr"
                                       />
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground pt-0.5">
+                                      <span className="text-[10px]">{isRtl ? "تغییر دامنه سازمانی:" : "Switch domain:"}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            email: formatEmailWithDomain(reviewData.email, "euroslotpars.com"),
+                                          })
+                                        }
+                                        className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/25 cursor-pointer transition-colors"
+                                        dir="ltr"
+                                      >
+                                        @euroslotpars.com
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setReviewData({
+                                            ...reviewData,
+                                            email: formatEmailWithDomain(reviewData.email, "npceram.com"),
+                                          })
+                                        }
+                                        className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/25 cursor-pointer transition-colors"
+                                        dir="ltr"
+                                      >
+                                        @npceram.com
+                                      </button>
                                     </div>
                                   </div>
 
@@ -1534,6 +1608,31 @@ export function AdminRequests({
                                   </div>
 
                                   <div className="flex flex-col gap-2">
+                                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                      <ShieldAlert className="size-3.5 text-primary" />
+                                      <span>{t("role")}</span>
+                                    </Label>
+                                    <Combobox
+                                      options={[
+                                        { value: "admin", label: t("roleAdmin") },
+                                        { value: "manager", label: t("roleManager") },
+                                        { value: "engineer", label: t("roleEngineer") },
+                                        { value: "staff", label: t("roleStaff") },
+                                        { value: "customer", label: t("roleCustomer") },
+                                        { value: "user", label: t("roleUser") },
+                                      ]}
+                                      value={reviewData.role || "user"}
+                                      onChange={(val) =>
+                                        setReviewData((prev) =>
+                                          prev ? { ...prev, role: val as UserRole } : null
+                                        )
+                                      }
+                                      placeholder={t("selectRole")}
+                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+
+                                  <div className="flex flex-col gap-2">
                                     <Label className="text-xs font-semibold text-foreground">
                                       {t("employeeIdLabel")}
                                     </Label>
@@ -1652,6 +1751,21 @@ export function AdminRequests({
                                       placeholder={t("contractTypeLabel")}
                                       emptyText={t("noResults")}
                                       className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                    />
+                                  </div>
+
+                                  {/* Direct Subordinates Multi-Selector */}
+                                  <div className="sm:col-span-2 pt-3 border-t border-border/40">
+                                    <SubordinateSelector
+                                      selectedIds={reviewData.subordinates || []}
+                                      onChange={(newIds) =>
+                                        setReviewData((prev) =>
+                                          prev ? { ...prev, subordinates: newIds } : null
+                                        )
+                                      }
+                                      allUsers={users}
+                                      currentEmail={reviewData.email}
+                                      isRtl={isRtl}
                                     />
                                   </div>
                                 </div>
@@ -1917,14 +2031,17 @@ export function AdminRequests({
                               {seg.id === "education" && (
                                 <div className="flex flex-col gap-5">
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {/* Degree Level Combobox */}
                                     <div className="flex flex-col gap-2">
                                       <Label className="text-xs font-semibold text-foreground">
                                         {t("degreeLevelLabel")}
                                       </Label>
                                       <Combobox
-                                        options={degreeOptions}
+                                        options={getDegreeOptions(locale)}
                                         value={
-                                          reviewData.educationDegree || "bachelors"
+                                          reviewData.educationDegree === "bachelors"
+                                            ? "bachelor"
+                                            : reviewData.educationDegree || "bachelor"
                                         }
                                         onChange={(val) =>
                                           setReviewData({
@@ -1938,40 +2055,115 @@ export function AdminRequests({
                                       />
                                     </div>
 
+                                    {/* Field of Study Combobox with Search & Manual Toggle */}
                                     <div className="flex flex-col gap-2">
-                                      <Label className="text-xs font-semibold text-foreground">
-                                        {t("studyFieldLabel")}
-                                      </Label>
-                                      <Input
-                                        value={reviewData.educationField || ""}
-                                        onChange={(e) =>
-                                          setReviewData({
-                                            ...reviewData,
-                                            educationField: e.target.value,
-                                          })
-                                        }
-                                        placeholder={t("studyFieldPlaceholder")}
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
-                                      />
+                                      <div className="flex items-center justify-between gap-2">
+                                        <Label className="text-xs font-semibold text-foreground">
+                                          {t("studyFieldLabel")}
+                                        </Label>
+                                        <button
+                                          type="button"
+                                          onClick={() => setIsManualFieldOfStudy(!isManualFieldOfStudy)}
+                                          className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                                        >
+                                          {isManualFieldOfStudy
+                                            ? (isRtl ? "انتخاب از لیست" : "Select from list")
+                                            : (isRtl ? "سایر / ورود دستی" : "Other / Manual entry")}
+                                        </button>
+                                      </div>
+                                      {isManualFieldOfStudy ? (
+                                        <Input
+                                          value={reviewData.educationField || ""}
+                                          onChange={(e) =>
+                                            setReviewData({
+                                              ...reviewData,
+                                              educationField: e.target.value,
+                                            })
+                                          }
+                                          placeholder={t("studyFieldPlaceholder")}
+                                          className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                          autoFocus
+                                        />
+                                      ) : (
+                                        <Combobox
+                                          options={getStudyFieldOptions(
+                                            locale,
+                                            isRtl ? "سایر / ورود دستی رشته..." : "Other / Manual entry..."
+                                          )}
+                                          value={reviewData.educationField || ""}
+                                          onChange={(val) => {
+                                            if (val === "__manual__" || val === "other") {
+                                              setIsManualFieldOfStudy(true);
+                                            } else {
+                                              setReviewData({
+                                                ...reviewData,
+                                                educationField: val,
+                                              });
+                                            }
+                                          }}
+                                          placeholder={t("studyFieldPlaceholder")}
+                                          showSearch={true}
+                                          emptyText={t("noResults")}
+                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        />
+                                      )}
                                     </div>
 
+                                    {/* University Combobox with Search & Manual Toggle */}
                                     <div className="flex flex-col gap-2">
-                                      <Label className="text-xs font-semibold text-foreground">
-                                        {t("universityLabel")}
-                                      </Label>
-                                      <Input
-                                        value={reviewData.university || ""}
-                                        onChange={(e) =>
-                                          setReviewData({
-                                            ...reviewData,
-                                            university: e.target.value,
-                                          })
-                                        }
-                                        placeholder={t("universityPlaceholder")}
-                                        className="h-11 bg-background border-border/50 rounded-xl text-sm"
-                                      />
+                                      <div className="flex items-center justify-between gap-2">
+                                        <Label className="text-xs font-semibold text-foreground">
+                                          {t("universityLabel")}
+                                        </Label>
+                                        <button
+                                          type="button"
+                                          onClick={() => setIsManualUniversity(!isManualUniversity)}
+                                          className="text-xs text-primary hover:underline flex items-center gap-1 font-medium cursor-pointer"
+                                        >
+                                          {isManualUniversity
+                                            ? (isRtl ? "انتخاب از لیست" : "Select from list")
+                                            : (isRtl ? "سایر / ورود دستی" : "Other / Manual entry")}
+                                        </button>
+                                      </div>
+                                      {isManualUniversity ? (
+                                        <Input
+                                          value={reviewData.university || ""}
+                                          onChange={(e) =>
+                                            setReviewData({
+                                              ...reviewData,
+                                              university: e.target.value,
+                                            })
+                                          }
+                                          placeholder={t("universityPlaceholder")}
+                                          className="h-11 bg-background border-border/50 rounded-xl text-sm"
+                                          autoFocus
+                                        />
+                                      ) : (
+                                        <Combobox
+                                          options={getUniversityOptions(
+                                            locale,
+                                            isRtl ? "سایر / ورود دستی نام دانشگاه..." : "Other / Manual entry..."
+                                          )}
+                                          value={reviewData.university || ""}
+                                          onChange={(val) => {
+                                            if (val === "__manual__" || val === "other") {
+                                              setIsManualUniversity(true);
+                                            } else {
+                                              setReviewData({
+                                                ...reviewData,
+                                                university: val,
+                                              });
+                                            }
+                                          }}
+                                          placeholder={t("universityPlaceholder")}
+                                          showSearch={true}
+                                          emptyText={t("noResults")}
+                                          className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                                        />
+                                      )}
                                     </div>
 
+                                    {/* Graduation Year */}
                                     <div className="flex flex-col gap-2">
                                       <Label className="text-xs font-semibold text-foreground">
                                         {t("graduationYearLabel")}
@@ -1992,63 +2184,365 @@ export function AdminRequests({
                                       />
                                     </div>
                                   </div>
+                                </div>
+                              )}
 
-                                  {/* Skills Sub-Section */}
-                                  <div className="flex flex-col gap-3 pt-3 border-t border-border/30">
-                                    <Label className="text-xs font-bold text-foreground flex items-center gap-2">
-                                      <Star className="size-4 text-amber-500" />
-                                      <span>{t("skillsTitle")}</span>
-                                    </Label>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                      {(reviewData.skills || []).map((sk) => (
-                                        <div
-                                          key={sk.id}
-                                          className="p-3 rounded-xl bg-background/60 border border-border/40 flex items-center justify-between gap-3"
-                                        >
-                                          <span className="text-xs font-semibold text-foreground truncate">
-                                            {sk.name}
-                                          </span>
-                                          <div className="flex items-center gap-1 shrink-0">
-                                            {[1, 2, 3, 4, 5].map((lvl) => (
-                                              <button
-                                                key={lvl}
-                                                type="button"
-                                                onClick={() => {
-                                                  const newSkills = (
-                                                    reviewData.skills || []
-                                                  ).map((s) =>
-                                                    s.id === sk.id
-                                                      ? { ...s, level: lvl }
-                                                      : s
-                                                  );
-                                                  setReviewData({
-                                                    ...reviewData,
-                                                    skills: newSkills,
-                                                  });
-                                                }}
-                                                className="cursor-pointer"
-                                              >
-                                                <Star
-                                                  className={cn(
-                                                    "size-3.5",
-                                                    lvl <= sk.level
-                                                      ? "fill-amber-400 text-amber-400"
-                                                      : "text-muted-foreground/30"
-                                                  )}
-                                                />
-                                              </button>
-                                            ))}
-                                          </div>
+                              {/* ========================================= */}
+                              {/* SEGMENT 5: SKILLS & EXPERTISE */}
+                              {/* ========================================= */}
+                              {seg.id === "skills" && (
+                                <div className="flex flex-col gap-5">
+                                  {/* Add New Skill Card */}
+                                  <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                        <Star className="size-4 text-amber-500 fill-amber-500" />
+                                        <span>{t("addSkillBtn")}</span>
+                                      </Label>
+                                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <span>{t("skillLevelLabel")}:</span>
+                                        <div className="flex items-center gap-1">
+                                          {[1, 2, 3, 4, 5].map((lvl) => (
+                                            <button
+                                              key={lvl}
+                                              type="button"
+                                              onClick={() => setNewSkillLevel(lvl)}
+                                              className={cn(
+                                                "p-0.5 rounded hover:scale-110 transition-transform cursor-pointer",
+                                                lvl <= newSkillLevel ? "text-amber-500" : "text-muted-foreground/30 hover:text-amber-300"
+                                              )}
+                                              title={`${lvl} / 5`}
+                                            >
+                                              <Star className={cn("size-4", lvl <= newSkillLevel && "fill-amber-500")} />
+                                            </button>
+                                          ))}
                                         </div>
-                                      ))}
+                                      </div>
                                     </div>
+
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="text"
+                                        value={newSkillName}
+                                        onChange={(e) => setNewSkillName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            handleAddRequestSkill();
+                                          }
+                                        }}
+                                        placeholder={t("skillNamePlaceholder")}
+                                        className="h-10 bg-background border-border/50 rounded-xl text-xs flex-1"
+                                      />
+                                      <Button
+                                        type="button"
+                                        onClick={() => handleAddRequestSkill()}
+                                        disabled={!newSkillName.trim()}
+                                        className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                                      >
+                                        <Plus className="size-4" />
+                                        <span>{t("addSkillBtn")}</span>
+                                      </Button>
+                                    </div>
+
+                                    {/* Preset Suggestions */}
+                                    <div className="flex flex-col gap-1.5 pt-1">
+                                      <span className="text-[11px] font-medium text-muted-foreground">
+                                        {t("suggestedSkills")}
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {PRESET_SUGGESTED_SKILLS.map((sk, idx) => (
+                                          <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => handleAddRequestSkill(isRtl ? sk.fa : sk.en, 4)}
+                                            className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-background/80 hover:bg-primary/10 hover:text-primary border border-border/40 hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground flex items-center gap-1"
+                                          >
+                                            <Plus className="size-3 opacity-60" />
+                                            <span>{isRtl ? sk.fa : sk.en}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Current Skills List */}
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-bold text-foreground">
+                                        {t("skillsTitle")} ({(reviewData.skills || []).length})
+                                      </Label>
+                                    </div>
+
+                                    {(!reviewData.skills || reviewData.skills.length === 0) ? (
+                                      <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-1">
+                                        <Star className="size-7 mx-auto opacity-30 text-amber-500" />
+                                        <p>{t("noSkillsYet")}</p>
+                                      </div>
+                                    ) : (
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                        {reviewData.skills.map((sk) => (
+                                          <div
+                                            key={sk.id || sk.name}
+                                            className="p-3 rounded-xl bg-background/80 border border-border/50 flex items-center justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors group"
+                                          >
+                                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                              <div className="size-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                <Star className="size-3.5 fill-amber-500/30 text-amber-600" />
+                                              </div>
+                                              <span className="text-xs font-semibold text-foreground truncate" title={sk.name}>
+                                                {sk.name}
+                                              </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                              {/* 5-Star Interactive Rating */}
+                                              <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((lvl) => (
+                                                  <button
+                                                    key={lvl}
+                                                    type="button"
+                                                    onClick={() => handleUpdateRequestSkillLevel(sk.id || sk.name, lvl)}
+                                                    className={cn(
+                                                      "p-0.5 transition-transform hover:scale-110 cursor-pointer",
+                                                      lvl <= (sk.level ?? (sk as any).rate ?? 4)
+                                                        ? "text-amber-500"
+                                                        : "text-muted-foreground/30 hover:text-amber-400"
+                                                    )}
+                                                    title={`${lvl} / 5`}
+                                                  >
+                                                    <Star
+                                                      className={cn(
+                                                        "size-3.5",
+                                                        lvl <= (sk.level ?? (sk as any).rate ?? 4) && "fill-amber-500"
+                                                      )}
+                                                    />
+                                                  </button>
+                                                ))}
+                                              </div>
+
+                                              {/* Delete Button */}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleRemoveRequestSkill(sk.id || sk.name)}
+                                                className="size-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center cursor-pointer"
+                                                title={t("deleteSkill")}
+                                              >
+                                                <Trash2 className="size-3.5" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
 
                               {/* ========================================= */}
-                              {/* SEGMENT 5: MODULES ACCESS */}
+                              {/* SEGMENT 5: UPLOADED DOCUMENTS & VERIFICATION */}
+                              {/* ========================================= */}
+                              {seg.id === "documents" && (
+                                <div className="flex flex-col gap-5">
+                                  {/* Header bar: summary and batch actions */}
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-muted/20 border border-border/50">
+                                    <div className="flex items-center gap-3">
+                                      <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                        <FileCheck className="size-5" />
+                                      </div>
+                                      <div>
+                                        <h4 className="text-sm font-bold text-foreground">
+                                          {t("uploadedDocsTitle")}
+                                        </h4>
+                                        <p className="text-xs text-muted-foreground">
+                                          {t("reqSegmentDocumentsDesc")}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2.5 self-end sm:self-auto">
+                                      {/* Verified count badge */}
+                                      <Badge
+                                        variant="outline"
+                                        className={cn(
+                                          "text-xs font-semibold px-3 py-1 gap-1.5",
+                                          (reviewData.documents || []).length > 0 &&
+                                            (reviewData.documents || []).every((d) => d.verified)
+                                            ? "border-emerald-500/30 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400"
+                                            : "border-amber-500/30 text-amber-600 bg-amber-500/10 dark:text-amber-400",
+                                          isRtl && "fa-num"
+                                        )}
+                                      >
+                                        <CheckCircle2 className="size-3.5" />
+                                        <span>
+                                          {t("docsVerifiedCount", {
+                                            verified: (reviewData.documents || []).filter((d) => d.verified).length,
+                                            total: (reviewData.documents || []).length,
+                                          })}
+                                        </span>
+                                      </Badge>
+
+                                      {/* Verify All Documents button */}
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleVerifyAllDocuments}
+                                        disabled={
+                                          (reviewData.documents || []).length === 0 ||
+                                          (reviewData.documents || []).every((d) => d.verified)
+                                        }
+                                        className="h-8 px-3 rounded-xl text-xs gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
+                                      >
+                                        <CheckCheck className="size-3.5" />
+                                        <span>{t("verifyAllDocs")}</span>
+                                      </Button>
+                                    </div>
+                                  </div>
+
+                                  {/* Documents List (زیر هم و ساده) */}
+                                  {(!reviewData.documents || reviewData.documents.length === 0) ? (
+                                    <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-2">
+                                      <FileText className="size-8 mx-auto opacity-40" />
+                                      <p>{t("noDocUploaded")}</p>
+                                    </div>
+                                  ) : (
+                                    <div className="flex flex-col gap-2.5">
+                                      {reviewData.documents.map((doc) => {
+                                        const isDocVerified = !!doc.verified;
+                                        const imageSrc = doc.fileData || doc.fileUrl || "";
+
+                                        return (
+                                          <div
+                                            key={doc.id}
+                                            className={cn(
+                                              "rounded-xl border p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all",
+                                              "bg-card/70 hover:bg-card border-border/60 shadow-2xs hover:shadow-xs",
+                                              isDocVerified && "border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10"
+                                            )}
+                                          >
+                                            {/* Thumbnail + Title + Meta */}
+                                            <div className="flex items-center gap-3 min-w-0">
+                                              {/* Clickable Small Thumbnail */}
+                                              <div
+                                                onClick={() => {
+                                                  if (imageSrc) {
+                                                    setLightboxDoc({
+                                                      src: imageSrc,
+                                                      title: getLocalizedDocumentTitle(doc, locale),
+                                                      fileName: doc.fileName,
+                                                    });
+                                                    setZoom(1);
+                                                    setRotation(0);
+                                                  }
+                                                }}
+                                                className="relative size-12 sm:size-14 rounded-lg overflow-hidden bg-muted/50 border border-border/50 shrink-0 flex items-center justify-center cursor-pointer group select-none"
+                                                title={t("viewDocumentFull")}
+                                              >
+                                                {imageSrc ? (
+                                                  <>
+                                                    <img
+                                                      src={imageSrc}
+                                                      alt={getLocalizedDocumentTitle(doc, locale)}
+                                                      className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-110"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                                      <Eye className="size-4" />
+                                                    </div>
+                                                  </>
+                                                ) : (
+                                                  <FileText className="size-6 text-muted-foreground" />
+                                                )}
+                                              </div>
+
+                                              {/* Title & File Meta */}
+                                              <div className="flex flex-col min-w-0">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                  <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                                                    {getLocalizedDocumentTitle(doc, locale)}
+                                                  </span>
+                                                  {/* Status Badge */}
+                                                  {isDocVerified ? (
+                                                    <Badge className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 gap-1 text-[10px] shrink-0 font-medium px-2 py-0.5">
+                                                      <CheckCircle2 className="size-3" />
+                                                      <span>{t("docStatusVerified")}</span>
+                                                    </Badge>
+                                                  ) : (
+                                                    <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-[10px] shrink-0 font-medium px-2 py-0.5">
+                                                      <Clock className="size-3" />
+                                                      <span>{t("docStatusPending")}</span>
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                                <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1">
+                                                  <span className="truncate max-w-[200px] font-mono text-[11px]" dir="ltr">
+                                                    {doc.fileName}
+                                                  </span>
+                                                  <span>•</span>
+                                                  <span className={cn("font-medium", isRtl && "fa-num")}>
+                                                    {doc.fileSize}
+                                                  </span>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Action Buttons: Preview & Verify Toggle */}
+                                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                                              <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  if (imageSrc) {
+                                                    setLightboxDoc({
+                                                      src: imageSrc,
+                                                      title: getLocalizedDocumentTitle(doc, locale),
+                                                      fileName: doc.fileName,
+                                                    });
+                                                    setZoom(1);
+                                                    setRotation(0);
+                                                  }
+                                                }}
+                                                className="h-8 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted cursor-pointer"
+                                              >
+                                                <Eye className="size-3.5 text-muted-foreground" />
+                                                <span>{isRtl ? "مشاهده" : "View"}</span>
+                                              </Button>
+
+                                              <Button
+                                                type="button"
+                                                variant={isDocVerified ? "outline" : "default"}
+                                                size="sm"
+                                                onClick={() => handleToggleVerifyDocument(doc.id)}
+                                                className={cn(
+                                                  "h-8 px-3 rounded-lg text-xs gap-1.5 cursor-pointer font-medium transition-all",
+                                                  isDocVerified
+                                                    ? "border-emerald-500/30 text-emerald-700 dark:text-emerald-400 hover:bg-rose-500/10 hover:text-rose-600 hover:border-rose-500/30"
+                                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs"
+                                                )}
+                                              >
+                                                {isDocVerified ? (
+                                                  <>
+                                                    <XCircle className="size-3.5" />
+                                                    <span>{t("unverifyDocBtn")}</span>
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <Check className="size-3.5" />
+                                                    <span>{t("verifyDocBtn")}</span>
+                                                  </>
+                                                )}
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 6: MODULES ACCESS */}
                               {/* ========================================= */}
                               {seg.id === "modules" && (
                                 <div className="pt-1">
@@ -2061,6 +2555,520 @@ export function AdminRequests({
                                     }
                                     availableModules={availableModules}
                                   />
+                                </div>
+                              )}
+
+                              {/* ========================================= */}
+                              {/* SEGMENT 7: COMPENSATION & BENEFITS */}
+                              {/* ========================================= */}
+                              {seg.id === "compensation" && (
+                                <div className="flex flex-col gap-4 pt-1">
+                                  {/* Top Header Card */}
+                                  <div className="bg-background/80 dark:bg-slate-900/50 border border-border/40 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+                                    <div className="flex items-center gap-3">
+                                      <div className="size-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20">
+                                        <Banknote className="size-5" />
+                                      </div>
+                                      <div>
+                                        <h4 className="text-sm font-bold text-foreground">
+                                          {t("compensationSectionTitle")}
+                                        </h4>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                          {t("compensationSectionDesc")}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Quick Live Summary Badges */}
+                                    <div className="flex items-center gap-2 flex-wrap text-xs">
+                                      <div className="bg-muted/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-border/40 flex items-center gap-1.5 shrink-0">
+                                        <span className="text-muted-foreground font-medium">{t("compensationSummarySalary")}</span>
+                                        <span className="font-bold text-foreground fa-num">
+                                          {formatNumberWithCommas(reviewData.salary || 0)} {t("currencyRials")}
+                                        </span>
+                                      </div>
+                                      <div className="bg-muted/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-border/40 flex items-center gap-1.5 shrink-0">
+                                        <span className="text-muted-foreground font-medium">{t("compensationSummaryOvertime")}</span>
+                                        <span className={cn("font-bold fa-num", reviewData.hasOvertime ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}>
+                                          {reviewData.hasOvertime 
+                                            ? (isRtl ? `${reviewData.maxOvertimeHours || 0} ساعت مجاز` : `${reviewData.maxOvertimeHours || 0}h Allowed`)
+                                            : (isRtl ? "غیرمشمول" : "No")}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* 1. Base Salary Card */}
+                                  <div className="bg-background/70 dark:bg-slate-900/40 border border-border/40 rounded-2xl p-4 flex flex-col gap-3 shadow-2xs">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                        <CreditCard className="size-3.5 text-primary" />
+                                        <span>{t("baseSalaryTitle")}</span>
+                                      </Label>
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {t("baseSalaryDesc")}
+                                      </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-center">
+                                      <div className="relative">
+                                        <Banknote className="absolute start-3.5 top-1/2 -translate-y-1/2 size-4 text-primary pointer-events-none" />
+                                        <Input
+                                          type="text"
+                                          disabled={isFieldReadOnly}
+                                          value={formatNumberWithCommas(reviewData.salary)}
+                                          onChange={(e) => {
+                                            const raw = toAsciiDigits(e.target.value.replace(/,/g, "").replace(/\D/g, ""));
+                                            const num = raw ? parseInt(raw, 10) : 0;
+                                            setReviewData({ ...reviewData, salary: num });
+                                          }}
+                                          placeholder={t("salaryAmountPlaceholder")}
+                                          className="ps-10 pe-16 h-11 bg-background border-border/50 rounded-xl text-sm font-bold fa-num"
+                                          dir="ltr"
+                                        />
+                                        <div className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground pointer-events-none">
+                                          {t("currencyRials")}
+                                        </div>
+                                      </div>
+
+                                      {/* Quick Preset Buttons */}
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        {[250000000, 350000000, 450000000, 550000000].map((preset) => (
+                                          <Button
+                                            key={preset}
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={isFieldReadOnly}
+                                            onClick={() => setReviewData({ ...reviewData, salary: preset })}
+                                            className={cn(
+                                              "h-8 px-2.5 text-[11px] rounded-lg cursor-pointer transition-all",
+                                              reviewData.salary === preset
+                                                ? "bg-primary/10 text-primary border-primary/40 font-bold"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                          >
+                                            <span className="fa-num">{(preset / 10000000).toLocaleString()} {isRtl ? "م تومان" : "M T"}</span>
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {reviewData.salary && reviewData.salary > 0 ? (
+                                      <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 fa-num">
+                                        <span>≈</span>
+                                        <span className="font-semibold text-foreground">
+                                          {formatNumberWithCommas(Math.round(reviewData.salary / 10))} {t("currencyTomans")}
+                                        </span>
+                                      </p>
+                                    ) : null}
+                                  </div>
+
+                                  {/* 2. Overtime Allowance & Hours Limit Card */}
+                                  <div className="bg-background/70 dark:bg-slate-900/40 border border-border/40 rounded-2xl p-4 flex flex-col gap-4 shadow-2xs">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                      <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                        <Clock className="size-3.5 text-primary" />
+                                        <span>{t("overtimeSectionTitle")}</span>
+                                      </Label>
+                                      <span className="text-[11px] text-muted-foreground">
+                                        {t("overtimeSectionDesc")}
+                                      </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                                      {/* Overtime Eligibility Switch */}
+                                      <div className="flex flex-col gap-2">
+                                        <span className="text-xs font-medium text-foreground">{t("hasOvertimeLabel")}</span>
+                                        <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-xl border border-border/40">
+                                          <button
+                                            type="button"
+                                            disabled={isFieldReadOnly}
+                                            onClick={() => setReviewData({ ...reviewData, hasOvertime: true, maxOvertimeHours: reviewData.maxOvertimeHours || 40 })}
+                                            className={cn(
+                                              "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                                              reviewData.hasOvertime
+                                                ? "bg-emerald-600 text-white shadow-xs"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                          >
+                                            <CheckCircle2 className="size-3.5" />
+                                            <span>{t("overtimeEligible")}</span>
+                                          </button>
+                                          <button
+                                            type="button"
+                                            disabled={isFieldReadOnly}
+                                            onClick={() => setReviewData({ ...reviewData, hasOvertime: false, maxOvertimeHours: 0 })}
+                                            className={cn(
+                                              "flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                                              !reviewData.hasOvertime
+                                                ? "bg-slate-700 text-white shadow-xs"
+                                                : "text-muted-foreground hover:text-foreground"
+                                            )}
+                                          >
+                                            <XCircle className="size-3.5" />
+                                            <span>{t("overtimeNotEligible")}</span>
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {/* Max Allowed Overtime Hours */}
+                                      <div className="flex flex-col gap-2">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-xs font-medium text-foreground">{t("maxOvertimeHoursLabel")}</span>
+                                          {reviewData.hasOvertime && (
+                                            <span className="text-[10px] text-primary font-bold fa-num">
+                                              {reviewData.maxOvertimeHours || 0} {t("hoursPerMonth")}
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        {reviewData.hasOvertime ? (
+                                          <div className="flex flex-col gap-2">
+                                            <div className="relative">
+                                              <Clock className="absolute start-3.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                                              <Input
+                                                type="number"
+                                                min={0}
+                                                max={200}
+                                                disabled={isFieldReadOnly}
+                                                value={reviewData.maxOvertimeHours || ""}
+                                                onChange={(e) => {
+                                                  const val = parseInt(toAsciiDigits(e.target.value), 10) || 0;
+                                                  setReviewData({ ...reviewData, maxOvertimeHours: val });
+                                                }}
+                                                placeholder={t("maxOvertimeHoursPlaceholder")}
+                                                className="ps-10 pe-24 h-10 bg-background border-border/50 rounded-xl text-xs font-semibold fa-num"
+                                              />
+                                              <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                                                {t("hoursPerMonth")}
+                                              </span>
+                                            </div>
+
+                                            {/* Quick Hour Preset Pills */}
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                              {[20, 40, 60, 80, 100].map((hrs) => (
+                                                <button
+                                                  key={hrs}
+                                                  type="button"
+                                                  disabled={isFieldReadOnly}
+                                                  onClick={() => setReviewData({ ...reviewData, maxOvertimeHours: hrs })}
+                                                  className={cn(
+                                                    "px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors cursor-pointer fa-num",
+                                                    reviewData.maxOvertimeHours === hrs
+                                                      ? "bg-primary/10 border-primary/30 text-primary font-bold"
+                                                      : "border-border/40 text-muted-foreground hover:bg-muted/50"
+                                                  )}
+                                                >
+                                                  {hrs} {isRtl ? "ساعت" : "hrs"}
+                                                </button>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <div className="h-10 px-3 flex items-center bg-muted/30 border border-dashed border-border/50 rounded-xl text-xs text-muted-foreground">
+                                            <AlertCircle className="size-3.5 me-2 text-muted-foreground shrink-0" />
+                                            <span>{t("overtimeNotEligibleHint")}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* 3. Monthly Bonus / Incentive Card (Mission Days or Rial Amount with Title) */}
+                                  <div className="bg-background/70 dark:bg-slate-900/40 border border-border/40 rounded-2xl p-4 flex flex-col gap-4 shadow-2xs">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                      <div>
+                                        <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                          <Sparkles className="size-3.5 text-primary" />
+                                          <span>{t("bonusSectionTitle")}</span>
+                                        </Label>
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                          {t("bonusSectionDesc")}
+                                        </p>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isFieldReadOnly}
+                                        onClick={() => {
+                                          const newId = `b-${Date.now()}`;
+                                          const list = reviewData.monthlyBonuses || [];
+                                          const updatedList = [
+                                            ...list,
+                                            {
+                                              id: newId,
+                                              title: isRtl ? "پاداش بهره‌وری و پروژه‌ای" : "Productivity Bonus",
+                                              type: "cash" as const,
+                                              amount: 20000000,
+                                            },
+                                          ];
+                                          setReviewData({
+                                            ...reviewData,
+                                            monthlyBonuses: updatedList,
+                                            monthlyBonusTitle: updatedList[0]?.title,
+                                            monthlyBonusType: updatedList[0]?.type,
+                                            monthlyBonusAmount: updatedList[0]?.amount,
+                                          });
+                                        }}
+                                        className="h-8 px-2.5 text-xs rounded-xl gap-1 text-primary hover:text-primary cursor-pointer border-primary/20 hover:bg-primary/5"
+                                      >
+                                        <Plus className="size-3.5" />
+                                        <span>{t("addBonusBtn")}</span>
+                                      </Button>
+                                    </div>
+
+                                    {/* Bonus Items List */}
+                                    <div className="flex flex-col gap-3">
+                                      {((reviewData.monthlyBonuses && reviewData.monthlyBonuses.length > 0)
+                                        ? reviewData.monthlyBonuses
+                                        : [
+                                            {
+                                              id: "b-default",
+                                              title: reviewData.monthlyBonusTitle || (isRtl ? "پاداش حسن انجام کار و بهره‌وری" : "Performance & Productivity Bonus"),
+                                              type: reviewData.monthlyBonusType === "mission_days" ? ("mission_days" as const) : ("cash" as const),
+                                              amount: reviewData.monthlyBonusAmount ?? 25000000,
+                                            },
+                                          ]
+                                      ).map((bonus, bIdx) => (
+                                        <div
+                                          key={bonus.id || bIdx}
+                                          className="bg-card/90 dark:bg-slate-900/70 border border-border/50 rounded-xl p-3 sm:p-3.5 flex flex-col gap-3 transition-all hover:border-primary/30"
+                                        >
+                                          {/* Title & Delete Row */}
+                                          <div className="flex items-start justify-between gap-2">
+                                            <div className="flex-1 flex flex-col gap-1.5">
+                                              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                                                <span>{t("bonusTitleLabel")}</span>
+                                                <span className="text-[10px] text-muted-foreground font-normal fa-num">
+                                                  (#{bIdx + 1})
+                                                </span>
+                                              </span>
+                                              <Input
+                                                type="text"
+                                                disabled={isFieldReadOnly}
+                                                value={bonus.title}
+                                                onChange={(e) => {
+                                                  const list = [...(reviewData.monthlyBonuses || [])];
+                                                  if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                  list[bIdx] = { ...list[bIdx], title: e.target.value };
+                                                  setReviewData({
+                                                    ...reviewData,
+                                                    monthlyBonuses: list,
+                                                    monthlyBonusTitle: list[0]?.title,
+                                                    monthlyBonusType: list[0]?.type,
+                                                    monthlyBonusAmount: list[0]?.amount,
+                                                  });
+                                                }}
+                                                placeholder={t("bonusTitlePlaceholder")}
+                                                className="h-9 bg-background text-xs rounded-xl"
+                                              />
+                                              {/* Preset Suggestions */}
+                                              <div className="flex items-center gap-1 flex-wrap">
+                                                {[
+                                                  t("presetBonusPerformance"),
+                                                  t("presetBonusProduction"),
+                                                  t("presetBonusSupervision"),
+                                                  t("presetBonusMission"),
+                                                ].map((presetTitle) => (
+                                                  <button
+                                                    key={presetTitle}
+                                                    type="button"
+                                                    disabled={isFieldReadOnly}
+                                                    onClick={() => {
+                                                      const list = [...(reviewData.monthlyBonuses || [])];
+                                                      if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                      list[bIdx] = { ...list[bIdx], title: presetTitle };
+                                                      setReviewData({
+                                                        ...reviewData,
+                                                        monthlyBonuses: list,
+                                                        monthlyBonusTitle: list[0]?.title,
+                                                      });
+                                                    }}
+                                                    className="text-[10px] px-2 py-0.5 rounded-md bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border/30"
+                                                  >
+                                                    {presetTitle}
+                                                  </button>
+                                                ))}
+                                              </div>
+                                            </div>
+
+                                            {(reviewData.monthlyBonuses || []).length > 1 && (
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                disabled={isFieldReadOnly}
+                                                onClick={() => {
+                                                  const list = (reviewData.monthlyBonuses || []).filter((_, idx) => idx !== bIdx);
+                                                  setReviewData({
+                                                    ...reviewData,
+                                                    monthlyBonuses: list,
+                                                    monthlyBonusTitle: list[0]?.title || "",
+                                                    monthlyBonusType: list[0]?.type || "cash",
+                                                    monthlyBonusAmount: list[0]?.amount || 0,
+                                                  });
+                                                }}
+                                                className="size-8 p-0 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 cursor-pointer shrink-0 mt-1"
+                                                title={t("deleteBonusBtn")}
+                                              >
+                                                <Trash2 className="size-4" />
+                                              </Button>
+                                            )}
+                                          </div>
+
+                                          {/* Type & Amount Row */}
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-border/30">
+                                            {/* Type Selector (Cash vs Mission Days) */}
+                                            <div className="flex flex-col gap-1.5">
+                                              <span className="text-[11px] font-semibold text-foreground">{t("bonusTypeLabel")}</span>
+                                              <div className="grid grid-cols-2 gap-1.5 p-1 bg-muted/50 rounded-xl border border-border/40">
+                                                <button
+                                                  type="button"
+                                                  disabled={isFieldReadOnly}
+                                                  onClick={() => {
+                                                    const list = [...(reviewData.monthlyBonuses || [])];
+                                                    if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                    const defaultAmount = list[bIdx].type === "mission_days" ? 25000000 : list[bIdx].amount;
+                                                    list[bIdx] = { ...list[bIdx], type: "cash", amount: defaultAmount };
+                                                    setReviewData({
+                                                      ...reviewData,
+                                                      monthlyBonuses: list,
+                                                      monthlyBonusType: list[0]?.type,
+                                                      monthlyBonusAmount: list[0]?.amount,
+                                                    });
+                                                  }}
+                                                  className={cn(
+                                                    "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                                                    bonus.type === "cash"
+                                                      ? "bg-background text-primary shadow-xs border border-primary/20 font-bold"
+                                                      : "text-muted-foreground hover:text-foreground"
+                                                  )}
+                                                >
+                                                  <Banknote className="size-3.5 text-emerald-600 shrink-0" />
+                                                  <span>{t("bonusTypeCash")}</span>
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  disabled={isFieldReadOnly}
+                                                  onClick={() => {
+                                                    const list = [...(reviewData.monthlyBonuses || [])];
+                                                    if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                    const defaultAmount = list[bIdx].type === "cash" ? 3 : list[bIdx].amount;
+                                                    list[bIdx] = { ...list[bIdx], type: "mission_days", amount: defaultAmount };
+                                                    setReviewData({
+                                                      ...reviewData,
+                                                      monthlyBonuses: list,
+                                                      monthlyBonusType: list[0]?.type,
+                                                      monthlyBonusAmount: list[0]?.amount,
+                                                    });
+                                                  }}
+                                                  className={cn(
+                                                    "flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all cursor-pointer",
+                                                    bonus.type === "mission_days"
+                                                      ? "bg-background text-primary shadow-xs border border-primary/20 font-bold"
+                                                      : "text-muted-foreground hover:text-foreground"
+                                                  )}
+                                                >
+                                                  <Calendar className="size-3.5 text-amber-500 shrink-0" />
+                                                  <span>{t("bonusTypeMission")}</span>
+                                                </button>
+                                              </div>
+                                            </div>
+
+                                            {/* Amount / Days Input */}
+                                            <div className="flex flex-col gap-1.5">
+                                              <span className="text-[11px] font-semibold text-foreground">{t("bonusAmountLabel")}</span>
+                                              {bonus.type === "cash" ? (
+                                                <div className="relative">
+                                                  <Banknote className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                                                  <Input
+                                                    type="text"
+                                                    disabled={isFieldReadOnly}
+                                                    value={formatNumberWithCommas(bonus.amount || 0)}
+                                                    onChange={(e) => {
+                                                      const raw = toAsciiDigits(e.target.value.replace(/,/g, "").replace(/\D/g, ""));
+                                                      const num = raw ? parseInt(raw, 10) : 0;
+                                                      const list = [...(reviewData.monthlyBonuses || [])];
+                                                      if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                      list[bIdx] = { ...list[bIdx], amount: num };
+                                                      setReviewData({
+                                                        ...reviewData,
+                                                        monthlyBonuses: list,
+                                                        monthlyBonusAmount: list[0]?.amount,
+                                                      });
+                                                    }}
+                                                    className="ps-9 pe-14 h-9 bg-background border-border/50 rounded-xl text-xs font-semibold fa-num"
+                                                    dir="ltr"
+                                                  />
+                                                  <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-muted-foreground pointer-events-none">
+                                                    {t("currencyRials")}
+                                                  </span>
+                                                </div>
+                                              ) : (
+                                                <div className="flex items-center gap-2">
+                                                  <div className="relative flex-1">
+                                                    <Calendar className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                                                    <Input
+                                                      type="number"
+                                                      min={0}
+                                                      max={31}
+                                                      disabled={isFieldReadOnly}
+                                                      value={bonus.amount ?? ""}
+                                                      onChange={(e) => {
+                                                        const num = parseInt(toAsciiDigits(e.target.value), 10) || 0;
+                                                        const list = [...(reviewData.monthlyBonuses || [])];
+                                                        if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                        list[bIdx] = { ...list[bIdx], amount: num };
+                                                        setReviewData({
+                                                          ...reviewData,
+                                                          monthlyBonuses: list,
+                                                          monthlyBonusAmount: list[0]?.amount,
+                                                        });
+                                                      }}
+                                                      className="ps-9 pe-20 h-9 bg-background border-border/50 rounded-xl text-xs font-semibold fa-num"
+                                                    />
+                                                    <span className="absolute end-3 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground pointer-events-none">
+                                                      {t("missionDaysUnit")}
+                                                    </span>
+                                                  </div>
+                                                  <div className="flex items-center gap-1">
+                                                    <button
+                                                      type="button"
+                                                      disabled={isFieldReadOnly || (bonus.amount || 0) <= 0}
+                                                      onClick={() => {
+                                                        const list = [...(reviewData.monthlyBonuses || [])];
+                                                        if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                        list[bIdx] = { ...list[bIdx], amount: Math.max(0, (list[bIdx].amount || 0) - 1) };
+                                                        setReviewData({ ...reviewData, monthlyBonuses: list, monthlyBonusAmount: list[0]?.amount });
+                                                      }}
+                                                      className="size-9 rounded-lg border border-border/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-40"
+                                                    >
+                                                      <Minus className="size-3.5" />
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      disabled={isFieldReadOnly}
+                                                      onClick={() => {
+                                                        const list = [...(reviewData.monthlyBonuses || [])];
+                                                        if (!list[bIdx]) list[bIdx] = { ...bonus };
+                                                        list[bIdx] = { ...list[bIdx], amount: (list[bIdx].amount || 0) + 1 };
+                                                        setReviewData({ ...reviewData, monthlyBonuses: list, monthlyBonusAmount: list[0]?.amount });
+                                                      }}
+                                                      className="size-9 rounded-lg border border-border/40 hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
+                                                    >
+                                                      <Plus className="size-3.5" />
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
                               )}
                             </fieldset>
@@ -2121,11 +3129,7 @@ export function AdminRequests({
                                       className="h-9 px-5 rounded-xl font-semibold text-xs gap-2 cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
                                     >
                                       <Save className="size-3.5" />
-                                      <span>
-                                        {reviewerRole === "hr"
-                                          ? t("saveAndApproveHr")
-                                          : t("saveAndApproveManager")}
-                                      </span>
+                                      <span>{t("saveAndApproveAdmin")}</span>
                                     </Button>
                                   )}
                                 </div>
@@ -2145,7 +3149,7 @@ export function AdminRequests({
         {/* ======================================================== */}
         {/* SIDE COLUMN: TAGS, SEARCH & APPLICANTS QUEUE (RIGHT IN EN, LEFT IN FA) */}
         {/* ======================================================== */}
-        <div className="xl:col-span-5 flex flex-col gap-4">
+        <div className="xl:col-span-4 flex flex-col gap-4">
           {/* Card 1: 4 Metric Overview Cards (Tags) */}
           <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -2188,27 +3192,27 @@ export function AdminRequests({
                 )}
               >
                 <div className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium truncate">
-                  {t("statPendingHr")}
+                  {t("statPendingAdmin")}
                 </div>
                 <div className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
-                  {metrics.pendingHr}
+                  {metrics.pending}
                 </div>
               </div>
 
               <div
-                onClick={() => setStatusFilter("hr_approved")}
+                onClick={() => setStatusFilter("active")}
                 className={cn(
                   "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
-                  statusFilter === "hr_approved"
-                    ? "bg-blue-500/15 border-blue-500/40 shadow-xs ring-1 ring-blue-500/20"
-                    : "bg-blue-500/5 border-blue-500/20 hover:bg-blue-500/10"
+                  statusFilter === "active"
+                    ? "bg-emerald-500/15 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
+                    : "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10"
                 )}
               >
-                <div className="text-[10px] sm:text-[11px] text-blue-600 dark:text-blue-400 font-medium truncate">
-                  {t("statPendingManager")}
+                <div className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
+                  {t("statApproved")}
                 </div>
-                <div className="text-lg sm:text-xl font-extrabold text-blue-600 dark:text-blue-400 mt-0.5">
-                  {metrics.pendingManager}
+                <div className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {metrics.active}
                 </div>
               </div>
 
@@ -2329,79 +3333,124 @@ export function AdminRequests({
                           : "bg-background/60 border-border/40 hover:border-border hover:bg-background"
                       )}
                     >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <Avatar className="size-9 rounded-full border border-border/50 shrink-0">
-                            <AvatarFallback 
-                              className="text-white text-xs font-bold rounded-full"
-                              style={{ backgroundColor: (req as any).avatarColor || "#0284c7" }}
-                            >
-                              {req.name ? req.name.charAt(0) : "؟"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-xs text-foreground truncate">
-                              {req.name || req.email.split("@")[0]}
-                            </span>
-                            <span
-                              className="text-[11px] text-muted-foreground truncate"
-                              dir="ltr"
-                            >
-                              {req.email}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Status Badge */}
-                        <div className="shrink-0">
-                          {req.status === "pending" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1">
-                              <UserCheck className="size-3" />
-                              <span>{t("statusPendingHr")}</span>
-                            </span>
-                          )}
-                          {req.status === "hr_approved" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1">
-                              <ShieldCheck className="size-3" />
-                              <span>{t("statusHrApproved")}</span>
-                            </span>
-                          )}
-                          {req.status === "active" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                              <CheckCircle2 className="size-3" />
-                              <span>{t("statusActive")}</span>
-                            </span>
-                          )}
-                          {req.status === "rejected" && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                              <UserX className="size-3" />
-                              <span>{t("statusRejected")}</span>
-                            </span>
-                          )}
+                      {/* Top Row: Avatar + Full Name (No truncation or squishing!) */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar className="size-10 rounded-full border border-border/50 shrink-0">
+                          <AvatarFallback 
+                            className="text-white text-xs font-bold rounded-full"
+                            style={{ backgroundColor: (req as any).avatarColor || "#0284c7" }}
+                          >
+                            {req.name ? req.name.charAt(0) : "؟"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <span className="font-bold text-xs sm:text-sm text-foreground break-words leading-tight">
+                            {req.name || req.email.split("@")[0]}
+                          </span>
+                          <span
+                            className="text-[11px] text-muted-foreground font-mono truncate mt-0.5"
+                            dir="ltr"
+                          >
+                            {req.email}
+                          </span>
                         </div>
                       </div>
 
-                      <div className={cn("flex items-center justify-between text-[10px] text-muted-foreground pt-1 border-t border-border/30", isRtl && "fa-num")}>
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="truncate max-w-[110px]">{req.department ? t(`departments.${req.department}`) : "---"}</span>
-                          {(() => {
-                            const comp = getCompanyFromEmail(req.email);
-                            return (
-                              <span
-                                className={cn(
-                                  "px-1.5 py-0.2 rounded font-bold text-[9px] border shrink-0 flex items-center gap-1",
-                                  comp.id === "npceram"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
-                                )}
-                              >
-                                <Building2 className="size-2.5" />
-                                <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
-                              </span>
-                            );
-                          })()}
-                        </div>
-                        <span className="shrink-0 font-mono">
+                      {/* Middle Row: Tags brought DOWN below the name! */}
+                      <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                        {/* Status Badge */}
+                        {req.status === "pending" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">
+                            <UserCheck className="size-3" />
+                            <span>{t("statusPendingHr")}</span>
+                          </span>
+                        )}
+                        {req.status === "hr_approved" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 flex items-center gap-1 shrink-0">
+                            <ShieldCheck className="size-3" />
+                            <span>{t("statusHrApproved")}</span>
+                          </span>
+                        )}
+                        {req.status === "active" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
+                            <CheckCircle2 className="size-3" />
+                            <span>{t("statusActive")}</span>
+                          </span>
+                        )}
+                        {req.status === "rejected" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1 shrink-0">
+                            <UserX className="size-3" />
+                            <span>{t("statusRejected")}</span>
+                          </span>
+                        )}
+
+                        {/* Company Badge */}
+                        {(() => {
+                          const comp = getCompanyFromEmail(req.email);
+                          return (
+                            <span
+                              className={cn(
+                                "px-1.5 py-0.5 rounded-full font-bold text-[9px] border shrink-0 flex items-center gap-1",
+                                comp.id === "npceram"
+                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                                  : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                              )}
+                            >
+                              <span>{isRtl ? comp.nameFa : comp.nameEn}</span>
+                            </span>
+                          );
+                        })()}
+
+                        {/* Department Tag */}
+                        {req.department && (
+                          <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md border border-border/30 truncate max-w-[130px]">
+                            {t.has(`departments.${req.department}`) ? t(`departments.${req.department}`) : req.department}
+                          </span>
+                        )}
+
+                        {/* Role Badge */}
+                        <span
+                          className={cn(
+                            "text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1 shrink-0 font-medium",
+                            req.role === "admin"
+                              ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20 font-bold"
+                              : req.role === "manager"
+                              ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20 font-bold"
+                              : req.role === "engineer"
+                              ? "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
+                              : req.role === "staff"
+                              ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                              : req.role === "customer"
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                              : "bg-primary/10 text-primary border-primary/20"
+                          )}
+                        >
+                          {req.role === "admin" ? (
+                            <ShieldAlert className="size-3 shrink-0" />
+                          ) : req.role === "manager" ? (
+                            <Users className="size-3 shrink-0" />
+                          ) : req.role === "engineer" ? (
+                            <Briefcase className="size-3 shrink-0" />
+                          ) : (
+                            <UserCheck className="size-3 shrink-0" />
+                          )}
+                          <span>
+                            {req.role === "admin" ? t("roleAdmin") :
+                             req.role === "manager" ? t("roleManager") :
+                             req.role === "engineer" ? t("roleEngineer") :
+                             req.role === "staff" ? t("roleStaff") :
+                             req.role === "customer" ? t("roleCustomer") :
+                             t("roleUser")}
+                          </span>
+                        </span>
+                      </div>
+
+                      {/* Bottom Row: Submission Date */}
+                      <div className={cn("flex items-center justify-between text-[10px] text-muted-foreground pt-1.5 border-t border-border/30", isRtl && "fa-num")}>
+                        <span className="text-[10px] text-muted-foreground">
+                          {isRtl ? "تاریخ ثبت درخواست:" : "Requested:"}
+                        </span>
+                        <span className="font-mono text-[10px]">
                           {formatRequestSubmissionDate(req.requestedAt, isRtl)}
                         </span>
                       </div>
@@ -2413,6 +3462,88 @@ export function AdminRequests({
           </div>
         </div>
       </div>
+
+      {/* ─── Fullscreen Lightbox Modal ─────────────────────────────── */}
+      {lightboxDoc && (
+        <div
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setLightboxDoc(null)}
+        >
+          {/* Top Controls */}
+          <div
+            className="absolute top-4 inset-x-4 flex items-center justify-between z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 text-white">
+              <span className="font-bold text-sm">{lightboxDoc.title}</span>
+              <span className="text-xs text-white/60 font-mono" dir="ltr">
+                {lightboxDoc.fileName}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.min(3, z + 0.25))}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <ZoomIn className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <ZoomOut className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setRotation((r) => (r + 90) % 360)}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <RotateCw className="size-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setZoom(1);
+                  setRotation(0);
+                }}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-mono cursor-pointer"
+              >
+                1:1
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLightboxDoc(null)}
+                className="size-9 rounded-full bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <X className="size-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Image Canvas */}
+          <div
+            className="relative max-w-[90vw] max-h-[85vh] overflow-hidden flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={lightboxDoc.src}
+              alt={lightboxDoc.title}
+              style={{
+                transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                transition: "transform 0.2s ease-out",
+              }}
+              className="max-w-full max-h-[80vh] object-contain rounded-xl select-none shadow-2xl"
+            />
+          </div>
+        </div>
+      )}
 
       {/* ─── Rejection Reason Dialog ───────────────────────────────────────── */}
       <Dialog open={rejectModalOpen} onOpenChange={setRejectModalOpen}>

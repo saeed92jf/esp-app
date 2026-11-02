@@ -823,15 +823,6 @@
         "email": "farahmand@nanopalayesh.com",
         "isManager": false,
         "raci": "Responsible"
-      },
-      {
-        "id": "tm-guest",
-        "name": "کاربر مهمان",
-        "role": "کارشناس ناظر مهمان",
-        "department": "R&D و ارزیابی",
-        "email": "guest@demo.com",
-        "isManager": false,
-        "raci": "Consulted"
       }
     ],
     "tasks": [],
