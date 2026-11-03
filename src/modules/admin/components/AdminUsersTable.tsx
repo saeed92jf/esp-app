@@ -699,7 +699,7 @@ export function AdminUsersTable({
     isFiltered,
     onClear,
     children,
-    align = "center"
+    align = "start"
   }: {
     title: string;
     field: string;
@@ -1053,7 +1053,28 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column: Company (شرکت) ── */}
+              {/* ── Column 3: Contact (مستقیماً بعد از دپارتمان) ── */}
+              {renderExcelHeader({
+                title: t("contactCol"),
+                field: "phone",
+                align: "start",
+                isFiltered: colFilters.hasPhoneOnly,
+                onClear: () => setColFilters(prev => ({ ...prev, hasPhoneOnly: false })),
+                children: (
+                  <div className="flex flex-col gap-1.5">
+                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
+                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
+                      <Checkbox
+                        checked={colFilters.hasPhoneOnly}
+                        onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasPhoneOnly: Boolean(c) }))}
+                      />
+                      <span>{t("hasPhone")}</span>
+                    </label>
+                  </div>
+                )
+              })}
+
+              {/* ── Column 4: Company (شرکت) ── */}
               {renderExcelHeader({
                 title: t("companyCol"),
                 field: "company",
@@ -1083,38 +1104,11 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 3: Contact Channels ── */}
+              {/* ── Column 5: Projects & Experience (پروژه و تجربه در یک ستون) ── */}
               {renderExcelHeader({
-                title: t("contactCol"),
-                field: "email",
-                align: "start",
-                isFiltered: colFilters.hasEmailOnly || colFilters.hasPhoneOnly,
-                onClear: () => setColFilters(prev => ({ ...prev, hasEmailOnly: false, hasPhoneOnly: false })),
-                children: (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterValues")}</span>
-                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                      <Checkbox
-                        checked={colFilters.hasEmailOnly}
-                        onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasEmailOnly: Boolean(c) }))}
-                      />
-                      <span>{t("hasEmail")}</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                      <Checkbox
-                        checked={colFilters.hasPhoneOnly}
-                        onCheckedChange={(c) => setColFilters(prev => ({ ...prev, hasPhoneOnly: Boolean(c) }))}
-                      />
-                      <span>{t("hasPhone")}</span>
-                    </label>
-                  </div>
-                )
-              })}
-
-              {/* ── Column 4: Projects ── */}
-              {renderExcelHeader({
-                title: t("projectsCol"),
+                title: isRtl ? "پروژه و تجربه" : "Projects & Exp",
                 field: "doneProjects",
+                align: "start",
                 isFiltered: colFilters.projectRanges.length > 0,
                 onClear: () => setColFilters(prev => ({ ...prev, projectRanges: [] })),
                 children: (
@@ -1140,19 +1134,11 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 5: Experience ── */}
-              {renderExcelHeader({
-                title: t("experienceCol"),
-                field: "score",
-                isFiltered: false,
-                onClear: () => {},
-                children: <span className="text-muted-foreground text-[11px]">{t("score")}</span>
-              })}
-
               {/* ── Column 6: Tenure (Days in company) ── */}
               {renderExcelHeader({
                 title: t("tenureCol"),
                 field: "daysInCompany",
+                align: "start",
                 isFiltered: colFilters.tenureRanges.length > 0,
                 onClear: () => setColFilters(prev => ({ ...prev, tenureRanges: [] })),
                 children: (
@@ -1182,6 +1168,7 @@ export function AdminUsersTable({
               {renderExcelHeader({
                 title: t("salaryCol"),
                 field: "salary",
+                align: "start",
                 isFiltered: colFilters.salaryRanges.length > 0,
                 onClear: () => setColFilters(prev => ({ ...prev, salaryRanges: [] })),
                 children: (
@@ -1207,12 +1194,11 @@ export function AdminUsersTable({
                 )
               })}
 
-
-
-              {/* ── Column 9: Status ── */}
+              {/* ── Column 8: Status ── */}
               {renderExcelHeader({
                 title: t("statusCol"),
                 field: "status",
+                align: "start",
                 isFiltered: colFilters.statuses.length > 0,
                 onClear: () => setColFilters(prev => ({ ...prev, statuses: [] })),
                 children: (
@@ -1245,7 +1231,7 @@ export function AdminUsersTable({
           {filteredUsers.length === 0 ? (
             <tbody className="divide-y divide-border/20">
               <tr>
-                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={8} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -1346,7 +1332,7 @@ export function AdminUsersTable({
                           : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/30"
                       )}
                     >
-                      {/* Column 1: User */}
+                      {/* Column 1: User (نام + ایمیل در زیر نام + نقش) */}
                       <td className="py-3 px-3 text-start">
                         <div className="flex items-center gap-2.5">
                           {/* Avatar with unclipped location tag */}
@@ -1367,13 +1353,20 @@ export function AdminUsersTable({
                             />
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-xs text-foreground truncate max-w-[130px]">
-                                {userDisplayName}
-                              </span>
-
-                            </div>
-                            <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
+                            <span className="font-bold text-xs text-foreground truncate max-w-[150px]">
+                              {userDisplayName}
+                            </span>
+                            {user.email && (
+                              <a
+                                href={`mailto:${user.email}`}
+                                onClick={(e) => e.stopPropagation()}
+                                dir="ltr"
+                                className="text-[11px] text-muted-foreground hover:text-primary transition-colors truncate max-w-[160px] font-normal leading-tight mt-0.5"
+                              >
+                                {user.email}
+                              </a>
+                            )}
+                            <span className="text-[10px] text-muted-foreground/75 truncate max-w-[150px] mt-0.5">
                               {getRoleLabel(user.role)}
                             </span>
                           </div>
@@ -1392,7 +1385,27 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column: Company (شرکت) */}
+                      {/* Column 3: Contact (مستقیماً بعد از دپارتمان با فونت بزرگتر و بولدتر) */}
+                      <td className="py-3 px-3 text-start">
+                        <div className="flex flex-col gap-1 min-w-0">
+                          {user.phone ? (
+                            <span className="text-[13px] font-bold text-foreground flex items-center gap-1.5" dir="ltr">
+                              <Phone className="size-3.5 shrink-0 text-muted-foreground" />
+                              <span>{user.phone}</span>
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                          {user.extensionNumber && (
+                            <span className="text-[13px] font-extrabold text-foreground flex items-center gap-1.5" dir="ltr">
+                              <span className="text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">EXT.</span>
+                              <span>{user.extensionNumber}</span>
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Column 4: Company (شرکت) */}
                       <td className="py-3 px-3 text-start">
                         {(() => {
                           const comp = getCompanyFromEmail(user.email);
@@ -1413,62 +1426,35 @@ export function AdminUsersTable({
                         })()}
                       </td>
 
-                      {/* Column 3: Contact */}
+                      {/* Column 5: Projects & Experience (پروژه و تجربه در یک ستون، چپ‌چین) */}
                       <td className="py-3 px-3 text-start">
-                        <div className="flex flex-col gap-0.5 min-w-0 text-xs">
-                          {user.email ? (
-                            <a
-                              href={`mailto:${user.email}`}
-                              onClick={(e) => e.stopPropagation()}
-                              dir="ltr"
-                              className="text-primary hover:underline truncate max-w-[160px] flex items-center gap-1 font-medium"
-                            >
-                              <Mail className="size-3 shrink-0 text-muted-foreground" />
-                              <span className="truncate">{user.email}</span>
-                            </a>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                          {user.phone && (
-                            <span className="text-[11px] text-muted-foreground flex items-center gap-1" dir="ltr">
-                              <Phone className="size-2.5 shrink-0" />
-                              <span>{user.phone}</span>
-                            </span>
-                          )}
-                          {user.extensionNumber && (
-                            <span className="text-[12px] font-bold text-foreground flex items-center gap-1" dir="ltr">
-                              <span className="text-[10px] font-semibold text-muted-foreground">EXT.</span>
-                              {user.extensionNumber}
-                            </span>
-                          )}
+                        <div className="flex items-center gap-2">
+                          <span 
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs"
+                            title={isRtl ? `${user.doneProjects || 0} پروژه انجام‌شده` : `${user.doneProjects || 0} Done Projects`}
+                          >
+                            <FolderKanban className="size-3.5" />
+                            <span>{user.doneProjects || 0}</span>
+                          </span>
+                          <span 
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs"
+                            title={isRtl ? `امتیاز تجربه: ${user.score || 350}` : `Experience Score: ${user.score || 350}`}
+                          >
+                            <Award className="size-3.5" />
+                            <span>{user.score || 350}</span>
+                          </span>
                         </div>
                       </td>
 
-                      {/* Column 4: Projects */}
-                      <td className="py-3 px-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                          <FolderKanban className="size-3" />
-                          <span>{user.doneProjects || 0}</span>
-                        </span>
-                      </td>
-
-                      {/* Column 5: Experience */}
-                      <td className="py-3 px-3 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs">
-                          <Award className="size-3" />
-                          <span>350</span>
-                        </span>
-                      </td>
-
-                      {/* Column 6: Tenure */}
-                      <td className="py-3 px-3 text-center">
+                      {/* Column 6: Tenure (چپ‌چین) */}
+                      <td className="py-3 px-3 text-start">
                         <span className="text-xs font-medium text-foreground">
                           {user.daysInCompany || 0} <span className="text-[10px] text-muted-foreground">{t("daysUnit")}</span>
                         </span>
                       </td>
 
-                      {/* Column 7: Salary */}
-                      <td className="py-3 px-3 text-center">
+                      {/* Column 7: Salary (چپ‌چین) */}
+                      <td className="py-3 px-3 text-start">
                         <span className="font-mono text-xs font-bold text-foreground">
                           {showSalaries 
                             ? `$${(user.salary || 10000).toLocaleString()}` 
@@ -1476,12 +1462,10 @@ export function AdminUsersTable({
                         </span>
                       </td>
 
-
-
-                      {/* Column 9: Status */}
-                      <td className="py-3 px-3 text-center">
+                      {/* Column 8: Status (چپ‌چین) */}
+                      <td className="py-3 px-3 text-start">
                         <span className={cn(
-                          "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold",
+                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold",
                           user.status === 'online'
                             ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
                             : "bg-slate-500/15 text-slate-700 dark:text-slate-400"
@@ -1497,7 +1481,7 @@ export function AdminUsersTable({
 
                     {/* ── 2. Paper Pull-out & Folder Tab (سمت چپ در فارسی، راست در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
-                      <td colSpan={9} className="p-0 border-0">
+                      <td colSpan={8} className="p-0 border-0">
                         <div 
                           className={cn(
                             "grid transition-[grid-template-rows,opacity] duration-250 ease-out",
