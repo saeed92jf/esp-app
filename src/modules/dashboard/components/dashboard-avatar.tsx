@@ -456,7 +456,7 @@ export function DashboardAvatar() {
               {/* Dashboard Button */}
               <div className={cn(
                 "segmented-item flex flex-col overflow-hidden",
-                (user.role === 'admin' || user.role === 'superadmin') ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
+                Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role)) ? "rounded-t-[32px] rounded-b-[6px]" : "rounded-[32px]"
               )}>
                 <Link 
                    href="/dashboard" 
@@ -470,7 +470,7 @@ export function DashboardAvatar() {
               </div>
 
               {/* Admin Panel Button */}
-              {user.role === 'admin' && (
+              {Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role)) && (
                 <div className="segmented-item flex flex-col overflow-hidden rounded-t-[6px] rounded-b-[32px]">
                   <Link 
                      href="/admin" 

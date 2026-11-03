@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 export default function AdminPage() {
   return (
-    <AuthGate allowedRoles={['admin']}>
+    <AuthGate allowedRoles={['superadmin', 'admin', 'dept_admin', 'office_admin']}>
       <AdminDashboard />
     </AuthGate>
   );

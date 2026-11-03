@@ -33,7 +33,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
     if (mounted && !loading) {
       if (!user) {
         router.replace(`/login?redirect=${encodeURIComponent(pathname || "/")}`);
-      } else if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+      } else if (allowedRoles && allowedRoles.length > 0 && user.role !== 'superadmin' && !allowedRoles.includes(user.role)) {
         toast.error(locale === "fa" ? "شما مجوز دسترسی به این بخش مدیریتی را ندارید." : "You do not have permission to access this section.");
         router.replace("/dashboard");
       }
@@ -48,7 +48,7 @@ export function AuthGate({ children, allowedRoles }: AuthGateProps) {
     );
   }
 
-  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+  if (allowedRoles && allowedRoles.length > 0 && user.role !== 'superadmin' && !allowedRoles.includes(user.role)) {
     return null;
   }
 

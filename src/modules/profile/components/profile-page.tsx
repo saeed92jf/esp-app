@@ -330,7 +330,7 @@ export function ProfilePage() {
   const locale = useLocale();
   const isFa = locale === "fa";
   const isRtl = isFa;
-  const isAdmin = user?.role?.toLowerCase() === 'admin';
+  const isAdmin = Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role.toLowerCase()));
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const handleTabChange = (newTab: string) => {
