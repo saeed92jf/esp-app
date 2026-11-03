@@ -1,6 +1,7 @@
 // src/app/api/admin/requests/[id]/reject/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { rejectServerAdminRequest } from "@/lib/server/admin-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function POST(
   req: NextRequest,
@@ -9,7 +10,27 @@ export async function POST(
   try {
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
+    const authHeader = req.headers.get("authorization");
     const reason = body?.reason || "عدم احراز شرایط مورد نیاز";
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${encodeURIComponent(id)}/reject`, {
+        method: "POST",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ reason }),
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        rejectServerAdminRequest(id, reason);
+        return NextResponse.json(remoteData);
+      }
+    } catch {}
 
     const reqItem = rejectServerAdminRequest(id, reason);
     if (!reqItem) {
@@ -32,4 +53,3 @@ export async function POST(
     );
   }
 }
-

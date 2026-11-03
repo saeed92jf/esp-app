@@ -4,13 +4,14 @@ import {
   getServerUserProfile,
   updateServerUserPreferences,
 } from "@/lib/server/user-profile-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
     if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
       try {
-        const remoteRes = await fetch("http://192.168.0.171:8080/api/v1/users/me/preferences", {
+        const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
           headers: {
             Authorization: authHeader,
             Accept: "application/json",
@@ -49,7 +50,7 @@ export async function PATCH(req: NextRequest) {
 
     if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
       try {
-        await fetch("http://192.168.0.171:8080/api/v1/users/me/preferences", {
+        await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
           method: "PATCH",
           headers: {
             Authorization: authHeader,

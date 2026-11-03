@@ -21,11 +21,16 @@ import { useHomeSidebar } from "@/modules/home/hooks/use-home-sidebar";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 export function SideMenu() {
+  const [mounted, setMounted] = useState(false);
   const locale = useLocale();
   const pathname = usePathname();
   const tMenu = useTranslations("Menu");
   const { user } = useAuth();
-  const isAuthenticated = Boolean(user);
+  const isAuthenticated = mounted && Boolean(user);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const homeSidebar = useHomeSidebar();
   const isHomePage = pathname === "/" || pathname === "";

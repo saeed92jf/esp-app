@@ -257,6 +257,8 @@ export function createServerAdminRequest(payload: Partial<PendingRequest>): Pend
     jobTitle: payload.jobTitle || "کارشناس مهندسی مکانیک",
     requestedAt: payload.requestedAt || new Date().toISOString(),
     status: (payload.status as RequestStatus) || "pending",
+    requestType: payload.requestType || "edit_profile",
+    requestTag: payload.requestTag,
     notes: payload.notes || "",
     salary: payload.salary ?? 350000000,
     hasOvertime: payload.hasOvertime ?? true,

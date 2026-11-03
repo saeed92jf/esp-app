@@ -30,6 +30,8 @@ export interface User {
   primaryColor?: string;
   phone?: string;
   nationalId?: string;
+  extensionNumber?: string;
+  password?: string;
   joinedAt?: string;
   daysInCompany?: number;
   doneProjects?: number;
@@ -147,6 +149,8 @@ export interface PendingRequest {
   role?: UserRole;
   requestedAt: string;
   status: RequestStatus;
+  requestType?: 'registration' | 'edit_profile';
+  requestTag?: string;
   isProfileCompleted?: boolean;
   
   // Unified Admin Approval

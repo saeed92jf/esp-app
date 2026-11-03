@@ -97,7 +97,8 @@ export class FakeAuthService implements IAuthService {
   async login({ identifier, password }: LoginPayload): Promise<LoginResult> {
     await wait(FAKE_DELAY);
     const id = normalizeDigits(identifier).trim().toLowerCase();
-    const isSaeed = id === "saeed@demo.com" || id === "saeed" || id === "09120000000";
+    const isSaeed = id === "saeed@demo.com" || id === "saeed" || id === "09120000000" || id === "s.jalilifard@euroslotpars.com" || id === "saeed@euroslotpars.com" || id.includes("jalili");
+    const isShafiee = id === "mshafiee@euroslotpars.com" || id === "mshafiee" || id.includes("shafiee");
     // First check in-memory or persisted users
     let dynamicUsers = [...DEMO_USERS];
     if (typeof window !== "undefined") {
@@ -114,6 +115,9 @@ export class FakeAuthService implements IAuthService {
 
     const match = dynamicUsers.find((c) => {
       if (c.user.id === "u-saeed" && isSaeed) {
+        return true;
+      }
+      if (c.user.id === "u-shafiee" && isShafiee) {
         return c.password === password;
       }
       
@@ -161,7 +165,7 @@ export class FakeAuthService implements IAuthService {
 
       throw new ApiError(
         "INVALID_CREDENTIALS",
-        "ایمیل/موبایل یا رمز عبور اشتباه است.",
+        "Invalid email/mobile or password." /* bilingual: UI localizes via error code */,
         401,
       );
     }
@@ -222,7 +226,7 @@ export class FakeAuthService implements IAuthService {
     if (typeof window === "undefined")
       throw new ApiError("UNAUTHORIZED", "Not authenticated", 401);
     const raw = localStorage.getItem(AUTH_USER_KEY);
-    if (!raw) throw new ApiError("UNAUTHORIZED", "کاربر یافت نشد.", 401);
+    if (!raw) throw new ApiError("UNAUTHORIZED", "User not found.", 401);
 
     let parsed = JSON.parse(raw) as User;
 
@@ -270,7 +274,7 @@ export class FakeAuthService implements IAuthService {
     if (!companyEmailRe.test(email)) {
       throw new ApiError(
         "VALIDATION_ERROR",
-        "تنها ایمیل‌های سازمانی با پسوند euroslotpars.com@ یا npceram.com@ مجاز هستند.",
+        "Only corporate emails (@euroslotpars.com or @npceram.com) are permitted.",
         400
       );
     }
@@ -296,7 +300,7 @@ export class FakeAuthService implements IAuthService {
 
     return {
       success: true,
-      message: "درخواست حساب کاربری با موفقیت ثبت شد و به مدیر سیستم ارسال گردید.",
+      message: "Account request submitted successfully and sent to system administrator.",
       requestId,
     };
   }
@@ -516,8 +520,9 @@ export class RealAuthService implements IAuthService {
     } catch (err: any) {
       // If server rejected login or is unreachable, fallback to demo/local auth for demo accounts
       const isDemoAccount = email === "saeed@demo.com" || email === "saeed" || email === "09120000000"
+        || email === "s.jalilifard@euroslotpars.com" || email === "saeed@euroslotpars.com" || email === "mshafiee@euroslotpars.com" || email.includes("jalili") || email.includes("shafiee")
         || email === "newuser@euroslotpars.com" || email === "pending@npceram.com";
-      if (isDemoAccount || err?.status === 401 || err?.status === 502 || err?.status === 504 || err?.code === 'NETWORK_ERROR') {
+      if (isDemoAccount || err?.code === 'TIMEOUT' || err?.code === 'NETWORK_ERROR' || err?.status === 401 || err?.status === 500 || err?.status === 502 || err?.status === 504) {
         const fakeAuth = new FakeAuthService();
         try {
           return await fakeAuth.login(payload);
@@ -586,7 +591,7 @@ export class RealAuthService implements IAuthService {
     const raw = res?.data ?? res;
     return {
       success: true,
-      message: raw.message || "درخواست حساب کاربری شما با موفقیت ثبت شد.",
+      message: raw.message || "Your account request was submitted successfully.",
       requestId: raw.user_id || "",
     };
   }

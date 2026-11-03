@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { User, UserModuleAccess, MonthlyBonusItem } from "../types/admin.types";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,8 @@ import {
 import { toast } from "sonner";
 import { useConfirm } from "@/hooks/use-confirm";
 import { api } from "@/services";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { UserCog } from "lucide-react";
 import {
   CompanyId,
   getCompanyFromEmail,
@@ -245,6 +247,7 @@ const normalizeDigits = (val: string) => {
 };
 
 export function AdminUserConfig({
+  selectedUser,
   users,
   setUsers,
   setSelectedUser,
@@ -255,11 +258,63 @@ export function AdminUserConfig({
   const locale = useLocale();
   const isRtl = locale === "fa";
   const { confirm } = useConfirm();
+  const { user: currentUser, updateUser: updateUserStore } = useAuth();
+
+  const [isEditMode, setIsEditMode] = useState<boolean>(Boolean(selectedUser));
 
   const [form, setForm] = useState<FormState>(() => ({
     ...INITIAL_FORM,
     password: generateRandomPassword(),
   }));
+
+  useEffect(() => {
+    if (selectedUser && isEditMode) {
+      setForm({
+        firstNameFa: selectedUser.firstNameFa || selectedUser.fullNameFa?.split(" ")[0] || "",
+        lastNameFa: selectedUser.lastNameFa || selectedUser.fullNameFa?.split(" ").slice(1).join(" ") || "",
+        firstName: selectedUser.firstName || selectedUser.fullName?.split(" ")[0] || "",
+        lastName: selectedUser.lastName || selectedUser.fullName?.split(" ").slice(1).join(" ") || "",
+        name: selectedUser.name || "",
+        email: selectedUser.email || "",
+        password: "",
+        phone: selectedUser.phone || "",
+        nationalId: selectedUser.nationalId || "",
+        role: selectedUser.role || "user",
+        companyId: (selectedUser.companyId as CompanyId) || "euroslot",
+        department: selectedUser.department || "engineering",
+        jobTitle: selectedUser.jobTitle || "",
+        manager: selectedUser.manager || "",
+        subordinates: selectedUser.subordinates || [],
+        employeeId: selectedUser.employeeId || "",
+        joinDate: selectedUser.joinDate || "",
+        contractType: selectedUser.contractType || "full_time",
+        workMode: (selectedUser.workLocation as any) || "office",
+        age: selectedUser.age || 30,
+        birthDate: selectedUser.birthDate || "",
+        maritalStatus: selectedUser.maritalStatus || "single",
+        childrenCount: selectedUser.childrenCount ?? 0,
+        insuranceType: selectedUser.insuranceType || "complementary",
+        insuranceCode: selectedUser.insuranceCode || "",
+        supplementaryPlan: (selectedUser.supplementaryPlan as any) || "golden",
+        supplementaryProvider: selectedUser.supplementaryProvider || "SOS",
+        shebaNumber: selectedUser.shebaNumber || "",
+        educationDegree: selectedUser.educationDegree || "master",
+        educationField: selectedUser.educationField || "",
+        university: selectedUser.university || "",
+        graduationYear: selectedUser.graduationYear || "",
+        skills: selectedUser.skills?.map((s, idx) => ({ id: `sk-${idx}`, name: s.name, level: Math.round(s.rate / 20) || 4 })) || [],
+        documents: selectedUser.documents || [],
+        modulesAccess: selectedUser.modulesAccess || [],
+        salary: selectedUser.salary || 350000000,
+        hasOvertime: selectedUser.hasOvertime ?? true,
+        maxOvertimeHours: selectedUser.maxOvertimeHours || 40,
+        monthlyBonusType: selectedUser.monthlyBonusType || "cash",
+        monthlyBonusAmount: selectedUser.monthlyBonusAmount || 25000000,
+        monthlyBonusTitle: selectedUser.monthlyBonusTitle || "",
+        monthlyBonuses: selectedUser.monthlyBonuses || [],
+      });
+    }
+  }, [selectedUser, isEditMode]);
   const [activeSegment, setActiveSegment] = useState<SegmentId>("identity");
   const [openSegment, setOpenSegment] = useState<SegmentId | null>("identity");
   const [confirmedSegments, setConfirmedSegments] = useState<Set<SegmentId>>(new Set());
@@ -708,6 +763,92 @@ export function AdminUserConfig({
       const fullNameEn = `${form.firstName.trim()} ${form.lastName.trim()}`.trim();
       const finalDisplayName = (isRtl ? (fullNameFa || fullNameEn) : (fullNameEn || fullNameFa)) || form.name.trim();
 
+      // If in edit mode, update existing user
+      if (isEditMode && selectedUser) {
+        const updatedUserPayload: Partial<User> = {
+          name: finalDisplayName,
+          fullNameFa: fullNameFa || finalDisplayName,
+          fullName: fullNameEn || finalDisplayName,
+          firstNameFa: form.firstNameFa.trim(),
+          lastNameFa: form.lastNameFa.trim(),
+          firstName: form.firstName.trim(),
+          lastName: form.lastName.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          nationalId: form.nationalId.trim(),
+          department: form.department,
+          company: isRtl ? detectedCompany.nameFa : detectedCompany.nameEn,
+          companyId: detectedCompany.id,
+          role: form.role,
+          jobTitle: form.jobTitle.trim(),
+          manager: form.manager.trim(),
+          subordinates: form.subordinates || [],
+          employeeId: form.employeeId?.trim() || selectedUser.employeeId,
+          joinDate: form.joinDate?.trim() || selectedUser.joinDate,
+          workLocation: form.workMode,
+          contractType: form.contractType || "full_time",
+          salary: Number(form.salary) || 350000000,
+          hasOvertime: form.hasOvertime ?? true,
+          maxOvertimeHours: form.hasOvertime ? (Number(form.maxOvertimeHours) || 40) : 0,
+          monthlyBonusType: form.monthlyBonusType || "cash",
+          monthlyBonusAmount: Number(form.monthlyBonusAmount) || 25000000,
+          monthlyBonusTitle: form.monthlyBonusTitle?.trim(),
+          monthlyBonuses: form.monthlyBonuses || [],
+          age: Number(form.age) || 28,
+          birthDate: form.birthDate?.trim() || "",
+          maritalStatus: form.maritalStatus,
+          childrenCount: Number(form.childrenCount) || 0,
+          insuranceType: form.insuranceType,
+          insuranceCode: form.insuranceCode?.trim() || "",
+          supplementaryPlan: form.supplementaryPlan || "golden",
+          supplementaryProvider: form.supplementaryProvider || "SOS",
+          shebaNumber: form.shebaNumber?.trim() || "",
+          educationDegree: form.educationDegree,
+          educationField: form.educationField.trim(),
+          university: form.university?.trim() || "",
+          graduationYear: form.graduationYear?.trim() || "",
+          skills: (form.skills || []).map((s: any) => ({ name: s.name, rate: (s.rate ?? s.level ?? 4) * 20 })),
+          documents: form.documents || [],
+          modulesAccess: form.modulesAccess,
+        };
+
+        const updated = await api.admin.updateUser(selectedUser.id, updatedUserPayload);
+        const mergedUser = { ...selectedUser, ...updated, ...updatedUserPayload } as User;
+
+        setUsers(users.map(u => u.id === selectedUser.id ? mergedUser : u));
+        if (setSelectedUser) setSelectedUser(mergedUser);
+
+        if (currentUser && (currentUser.id === selectedUser.id || (currentUser.email && mergedUser.email && currentUser.email.toLowerCase() === mergedUser.email.toLowerCase()))) {
+          updateUserStore({
+            ...updatedUserPayload,
+            name: finalDisplayName,
+            fullNameFa: fullNameFa || finalDisplayName,
+            fullName: fullNameEn || finalDisplayName,
+            email: mergedUser.email,
+            mobile: mergedUser.phone,
+            department: mergedUser.department,
+            jobTitle: mergedUser.jobTitle,
+            role: mergedUser.role,
+          });
+
+          try {
+            const rawAuth = localStorage.getItem("esp_auth_user");
+            if (rawAuth) {
+              const authObj = JSON.parse(rawAuth);
+              localStorage.setItem("esp_auth_user", JSON.stringify({ ...authObj, ...updatedUserPayload }));
+              localStorage.setItem("esp-auth-user", JSON.stringify({ ...authObj, ...updatedUserPayload }));
+            }
+          } catch {}
+        }
+
+        toast.success(
+          isRtl
+            ? `مشخصات «${mergedUser.name}» با موفقیت به‌روزرسانی و ذخیره شد.`
+            : `User "${mergedUser.name}" successfully updated and saved.`
+        );
+        return;
+      }
+
       const createdUserPayload: Partial<User> & { password?: string } = {
         name: finalDisplayName,
         firstNameFa: form.firstNameFa.trim(),
@@ -833,25 +974,46 @@ export function AdminUserConfig({
                 <UserPlus className="size-6" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground">
-                  {t("addNewUserTitle")}
+                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <span>{isEditMode && selectedUser ? (isRtl ? `ویرایش مشخصات: ${selectedUser.name}` : `Edit Profile: ${selectedUser.name}`) : t("addNewUserTitle")}</span>
+                  {isEditMode && selectedUser && (
+                    <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
+                      {isRtl ? "حالت ویرایش" : "Edit Mode"}
+                    </Badge>
+                  )}
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {t("addNewUserDesc")}
+                  {isEditMode && selectedUser
+                    ? (isRtl ? "مشخصات هویتی، شغلی و سطح دسترسی کاربر را تغییر دهید و ذخیره کنید." : "Modify identity, career, and access levels for the selected user.")
+                    : t("addNewUserDesc")}
                 </p>
               </div>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleResetForm}
-              className="h-9 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground border-border/50 hover:bg-background/80 transition-colors gap-1.5 cursor-pointer"
-            >
-              <RotateCcw className="size-3.5" />
-              <span>{t("resetForm")}</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              {selectedUser && (
+                <Button
+                  type="button"
+                  variant={isEditMode ? "secondary" : "default"}
+                  size="sm"
+                  onClick={() => setIsEditMode(!isEditMode)}
+                  className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
+                >
+                  <UserCog className="size-3.5" />
+                  <span>{isEditMode ? (isRtl ? "افزودن کاربر جدید" : "New User") : (isRtl ? "ویرایش کاربر انتخابی" : "Edit Selected")}</span>
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleResetForm}
+                className="h-9 px-3 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground border-border/50 hover:bg-background/80 transition-colors gap-1.5 cursor-pointer"
+              >
+                <RotateCcw className="size-3.5" />
+                <span>{t("resetForm")}</span>
+              </Button>
+            </div>
           </div>
 
           {/* =================================================== */}

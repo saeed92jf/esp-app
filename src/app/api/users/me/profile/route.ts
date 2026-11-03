@@ -4,27 +4,26 @@ import {
   getServerUserProfile,
   updateServerUserProfile,
 } from "@/lib/server/user-profile-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
-    if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
-      try {
-        const remoteRes = await fetch("http://192.168.0.171:8080/api/v1/users/me/profile", {
-          headers: {
-            Authorization: authHeader,
-            Accept: "application/json",
-          },
-          signal: AbortSignal.timeout(3000),
-        });
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/profile`, {
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(3000),
+      });
 
-        if (remoteRes.ok) {
-          const remoteData = await remoteRes.json();
-          return NextResponse.json(remoteData);
-        }
-      } catch {
-        // Fallback to server persistent store
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData.profile ? remoteData : { success: true, profile: remoteData });
       }
+    } catch {
+      // Fallback to server persistent store
     }
 
     const profile = getServerUserProfile();
@@ -46,21 +45,25 @@ export async function PATCH(req: NextRequest) {
     const body = await req.json();
     const authHeader = req.headers.get("authorization");
 
-    if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
-      try {
-        await fetch("http://192.168.0.171:8080/api/v1/users/me/profile", {
-          method: "PATCH",
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(3000),
-        });
-      } catch {
-        // Fallback persists in server store below
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/profile`, {
+        method: "PATCH",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(3000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        updateServerUserProfile(body);
+        return NextResponse.json(remoteData);
       }
+    } catch {
+      // Fallback persists in server store below
     }
 
     const updated = updateServerUserProfile(body);

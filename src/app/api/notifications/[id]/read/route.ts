@@ -1,6 +1,7 @@
 // src/app/api/notifications/[id]/read/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { markServerNotificationAsRead } from "@/lib/server/notifications-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function PATCH(
   req: NextRequest,
@@ -8,6 +9,23 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
+    const authHeader = req.headers.get("authorization");
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/notifications/${id}/read`, {
+        method: "PATCH",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(3000),
+      });
+      if (remoteRes.ok) {
+        const data = await remoteRes.json();
+        return NextResponse.json(data);
+      }
+    } catch {}
+
     const ok = markServerNotificationAsRead(id);
 
     if (!ok) {

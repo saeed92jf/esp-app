@@ -1,6 +1,7 @@
 // src/app/api/admin/requests/[id]/resend-credentials/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { resendServerAdminRequestCredentials } from "@/lib/server/admin-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function POST(
   req: NextRequest,
@@ -8,9 +9,26 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const res = resendServerAdminRequestCredentials(id);
+    const authHeader = req.headers.get("authorization");
 
-    if (!res) {
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${encodeURIComponent(id)}/resend-credentials`, {
+        method: "POST",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData);
+      }
+    } catch {}
+
+    const result = resendServerAdminRequestCredentials(id);
+    if (!result) {
       return NextResponse.json(
         { error_code: "NOT_FOUND", message: `درخواست با شناسه ${id} یافت نشد.` },
         { status: 404 }
@@ -19,8 +37,8 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: "اطلاعات ورود و رمز موقت با موفقیت مجدداً ارسال گردید.",
-      tempPassword: res.tempPassword,
+      message: "اطلاعات ورود مجدداً ارسال گردید.",
+      tempPassword: result.tempPassword,
     });
   } catch (err: any) {
     console.error("POST /api/admin/requests/[id]/resend-credentials error:", err);
@@ -30,4 +48,3 @@ export async function POST(
     );
   }
 }
-

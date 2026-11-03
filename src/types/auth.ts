@@ -50,7 +50,12 @@ export interface User {
   isProfileCompleted?: boolean;
   managerApproved?: boolean;
   documents?: UserUploadedDocument[];
+  department?: string;
+  jobTitle?: string;
+  nationalId?: string;
   // Deprecated HR field kept for backward compatibility
   hrApproved?: boolean;
+  extensionNumber?: string;
+  password?: string;
 }
 export type AppUser = User;

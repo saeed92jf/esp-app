@@ -39,7 +39,7 @@ function getInitialUser(): User | null {
     if (parsed && typeof parsed === 'object') {
       const fullName = parsed.fullName || parsed.name || (parsed.email ? parsed.email.split('@')[0] : '');
       const fullNameFa = parsed.fullNameFa || parsed.name || fullName;
-      const name = fullNameFa || fullName || 'سعید جلیلی';
+      const name = fullNameFa || fullName || (parsed.email ? parsed.email.split('@')[0] : '');
       return {
         ...parsed,
         name,
@@ -51,13 +51,11 @@ function getInitialUser(): User | null {
   return null;
 }
 
-const initialUser = getInitialUser();
-
 const useAuthStore = create<AuthState>((set) => ({
-  user: initialUser,
-  loading: !initialUser,
+  user: null,
+  loading: true,
   isLoggingIn: false,
-  hydrated: !!initialUser,
+  hydrated: false,
   setUser: (user) => {
     if (user && typeof window !== 'undefined') {
       try {
@@ -105,7 +103,22 @@ export function useAuth() {
 
   useEffect(() => {
     // Only re-validate once per page load
-    if (store.hydrated && store.user) {
+    if (store.hydrated) {
+      return;
+    }
+
+    // Immediately hydrate cached user from localStorage on client mount
+    const cached = getInitialUser();
+    if (cached) {
+      store.setUser(cached);
+      store.setLoading(false);
+      store.setHydrated(true);
+      if (cached.primaryColor) {
+        setColor(cached.primaryColor as any);
+      }
+    }
+
+    if (store.user) {
       // Re-validate in background with /users/me without flashing
       const token = typeof window !== 'undefined' ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
       if (token) {

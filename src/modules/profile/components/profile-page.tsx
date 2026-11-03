@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
 import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan } from "../types/profile";
+import { api } from "@/services";
 import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { toPersianDigits } from "@/utils/textDirection";
@@ -345,7 +346,7 @@ export function ProfilePage() {
   const isAccountActive = Boolean(
     user && (user.accountStatus === 'active' || (user.hrApproved && user.managerApproved))
   );
-  const isApprovedByHrAndManager = isAccountActive;
+  const isApprovedByHrAndManager = isAccountActive && !isAdmin;
   const showPendingBottomPopup = Boolean(user && !isAccountActive);
   const isProfileIncomplete = Boolean(
     user && (!user.isProfileCompleted || user.accountStatus === 'pending_profile' || isOnboarding)
@@ -363,10 +364,8 @@ export function ProfilePage() {
   const [newDepBirthDate, setNewDepBirthDate] = useState("");
 
   useEffect(() => {
-    if (editingField === 'email') {
-      setEditingField(null);
-    }
-    if (isApprovedByHrAndManager && editingField) {
+    // Only lock org/insurance fields for regular non-admin staff after approval
+    if (isApprovedByHrAndManager && editingField && !isAdmin) {
       const isOrgField = ['department', 'role', 'workLocation', 'contractType', 'employeeId', 'extensionNumber', 'joinDate', 'manager', 'subordinates'].includes(editingField);
       const isInsField = ['provider', 'type', 'insuranceCode', 'validUntil', 'supplementaryPlan', 'shebaNumber', 'dependentsCount', 'dependents'].includes(editingField);
       if (isOrgField || isInsField) {
@@ -769,6 +768,40 @@ export function ProfilePage() {
 
         // Immediately update Zustand in-memory auth state across the whole app
         updateUser(updated);
+
+        // Also sync with backend user service and admin service so changes save to server database
+        try {
+          api.user.updateProfile({
+            fullName: fullNameEnglish,
+            fullNameFa: fullNamePersian,
+            email: finalProfile.personal.email,
+            mobile: finalProfile.personal.phone,
+            avatar: finalProfile.personal.avatar,
+            avatarColor: effectiveAvatarColor,
+            primaryColor: effectivePrimaryColor,
+          }).catch(() => {});
+        } catch {}
+
+        try {
+          api.admin.updateUser(user.id, {
+            name: isRtl ? (fullNamePersian || fullNameEnglish) : (fullNameEnglish || fullNamePersian),
+            fullName: fullNameEnglish,
+            fullNameFa: fullNamePersian,
+            firstNameFa: finalProfile.personal.firstNameFa,
+            lastNameFa: finalProfile.personal.lastNameFa,
+            firstName: finalProfile.personal.firstName,
+            lastName: finalProfile.personal.lastName,
+            email: finalProfile.personal.email,
+            phone: finalProfile.personal.phone,
+            nationalId: finalProfile.personal.nationalId,
+            maritalStatus: finalProfile.personal.maritalStatus as any,
+            childrenCount: finalProfile.personal.childrenCount,
+            department: finalProfile.organizational?.department,
+            jobTitle: finalProfile.organizational?.role,
+            insuranceType: finalProfile.insurance?.type as any,
+            supplementaryPlan: finalProfile.insurance?.supplementaryPlan as any,
+          }).catch(() => {});
+        } catch {}
 
         try {
           localStorage.setItem("esp_auth_user", JSON.stringify(updated));

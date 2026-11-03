@@ -19,6 +19,7 @@ export interface IAdminService {
 
   // Account Requests & HR / Manager Approvals
   getPendingRequests(params?: RequestQueryParams): Promise<PendingRequest[]>;
+  createRequest(request: Partial<PendingRequest>): Promise<PendingRequest>;
   searchRequests(query: string, filters?: RequestQueryParams): Promise<PendingRequest[]>;
   approveHr(requestId: string, notes?: string): Promise<PendingRequest>;
   approveManager(
@@ -29,4 +30,5 @@ export interface IAdminService {
   resendCredentials(requestId: string): Promise<{ success: boolean; tempPassword?: string }>;
   approveRequest(requestId: string): Promise<{ email: string; tempPassword: string }>;
   updateRequest(requestId: string, updates: Partial<PendingRequest>): Promise<PendingRequest>;
+  sendPassword(userId: string): Promise<{ success: boolean; password?: string }>;
 }

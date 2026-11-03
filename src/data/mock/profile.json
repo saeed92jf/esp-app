@@ -3,80 +3,39 @@
   "userId": "usr_9801",
   "personal": {
     "firstName": "Saeed",
-    "lastName": "Jalili",
+    "lastName": "Jalili Fard",
     "firstNameFa": "سعید",
-    "lastNameFa": "جلیلی",
+    "lastNameFa": "جلیلی فرد",
     "avatar": null,
     "avatarUrl": null,
     "avatarColor": "#0284c7",
     "avatarBgColor": "transparent",
     "avatarMode": "initials",
-    "primaryColor": "emerald",
-    "nationalId": "0123456789",
-    "phone": "09120000000",
-    "email": "saeed@euroslotpars.com",
-    "address": "تهران، خیابان ولیعصر، برج سپهر",
-    "birthDate": "1370/05/12",
-    "phoneVerified": true,
+    "primaryColor": "blue",
+    "nationalId": "2530095760",
+    "phone": "09179528781",
+    "email": "s.jalilifard@euroslotpars.com",
+    "address": "تهران، خیابان امام خمینی، خیابان کارون، بین خ هاشمی و خ دامپزشکی بعد از خ بوستان سعدی، کوچه هنجنی، پلاک 16، واحد 2",
+    "birthDate": "1371/05/25",
+    "phoneVerified": false,
     "emailVerified": true,
-    "maritalStatus": "married",
-    "childrenCount": 1
+    "maritalStatus": "single",
+    "childrenCount": 0,
+    "fullName": "Saeed Jalili Fard",
+    "fullNameFa": "سعید جلیلی فرد"
   },
   "organizational": {
-    "department": "فناوری اطلاعات",
-    "role": "مدیر فنی",
-    "employeeId": "ESP-9801",
-    "joinDate": "1398/02/01",
+    "department": "",
+    "role": "مدیر ارشد سیستم و سرپرست فنی",
+    "employeeId": "205",
+    "joinDate": "1403/03/13",
     "manager": "علی احمدی",
     "managerId": "usr_1001",
-    "extensionNumber": "105",
+    "extensionNumber": "187",
     "workLocation": "office",
     "contractType": "full_time",
-    "subordinates": [
-      {
-        "id": "usr_2041",
-        "employeeId": "ESP-2041",
-        "name": "علی محمدی",
-        "nameFa": "علی محمدی",
-        "nameEn": "Ali Mohammadi",
-        "jobTitle": "کارشناس مکانیک",
-        "department": "مهندسی (مکانیک، پروسس و پکیج)",
-        "email": "a.mohammadi@euroslotpars.com",
-        "avatar": "/team/ali-mohammadi.webp",
-        "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80",
-        "avatarColor": "#2563eb",
-        "status": "online"
-      },
-      {
-        "id": "usr_2042",
-        "employeeId": "ESP-2042",
-        "name": "حسین مرادی",
-        "nameFa": "حسین مرادی",
-        "nameEn": "Hossein Moradi",
-        "jobTitle": "کارشناس مکانیک",
-        "department": "مهندسی (مکانیک، پروسس و پکیج)",
-        "email": "h.moradi@euroslotpars.com",
-        "avatar": "/team/hossein-moradi.webp",
-        "avatarUrl": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&auto=format&fit=crop&q=80",
-        "avatarColor": "#7c3aed",
-        "status": "offline"
-      },
-      {
-        "id": "usr_3011",
-        "employeeId": "ESP-3011",
-        "name": "سارا کریمی",
-        "nameFa": "سارا کریمی",
-        "nameEn": "Sara Karimi",
-        "jobTitle": "کارشناس کنترل پروژه",
-        "department": "کنترل و مدیریت پروژه‌ها",
-        "email": "s.karimi@euroslotpars.com",
-        "avatar": "/team/sara-karimi.webp",
-        "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&auto=format&fit=crop&q=80",
-        "avatarColor": "#db2777",
-        "status": "online"
-      }
-    ],
-    "subordinatesCount": 3
+    "subordinates": [],
+    "subordinatesCount": 0
   },
   "skills": [
     {
@@ -104,23 +63,8 @@
     "supplementaryPlan": "golden",
     "supplementaryProvider": "SOS",
     "shebaNumber": "IR120120000000001234567890",
-    "dependentsCount": 2,
-    "dependents": [
-      {
-        "id": "dep_1",
-        "fullName": "مریم حسینی",
-        "relationship": "spouse",
-        "nationalId": "0012345678",
-        "birthDate": "1372/08/14"
-      },
-      {
-        "id": "dep_2",
-        "fullName": "آراد جلیلی",
-        "relationship": "child",
-        "nationalId": "0023456789",
-        "birthDate": "1400/03/20"
-      }
-    ]
+    "dependentsCount": 0,
+    "dependents": []
   },
   "education": {
     "degree": "کارشناسی ارشد",

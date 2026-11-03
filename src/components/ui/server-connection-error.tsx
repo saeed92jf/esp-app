@@ -31,7 +31,7 @@ export function ServerConnectionError({
   onRetry,
   isRetrying = false,
   onSwitchToMock,
-  targetUrl = "http://192.168.0.171:8080/api/v1",
+  targetUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1",
   variant = "full",
   className,
   onDismiss,

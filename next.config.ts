@@ -4,6 +4,11 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+const BACKEND_INTERNAL_URL =
+  process.env.BACKEND_API_URL ||
+  process.env.NEXT_PUBLIC_BACKEND_URL ||
+  "http://localhost:8080/api/v1";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-three-text'],
@@ -59,7 +64,7 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
       },
       {
         source: "/api/real/:path*",
-        destination: "http://192.168.0.171:8080/api/v1/:path*",
+        destination: `${BACKEND_INTERNAL_URL}/:path*`,
       },
     ];
   },

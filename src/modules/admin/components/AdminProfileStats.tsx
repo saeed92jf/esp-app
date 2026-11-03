@@ -259,6 +259,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
             </span>
           )}
         </div>
+
       </div>
 
       {/* ── Boxes Under Avatar: Expanded down to the end of the page ── */}
@@ -561,6 +562,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   );
 }

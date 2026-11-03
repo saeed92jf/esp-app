@@ -18,6 +18,7 @@ import {
   UserCheck,
   ShieldCheck,
   UserX,
+  UserCog,
   Eye,
   RotateCw,
   KeyRound,
@@ -856,6 +857,16 @@ export function AdminRequests({
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20 shrink-0">
                           {reviewData.id}
                         </span>
+                        {reviewData.requestType === "edit_profile" ? (
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
+                            <UserCog className="size-3" />
+                            <span>{isRtl ? "درخواست ویرایش اطلاعات کاربر" : "User Edit Request"}</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/50 flex items-center gap-1 shrink-0">
+                            <span>{isRtl ? "درخواست ثبت‌نام کاربر" : "New User Registration"}</span>
+                          </span>
+                        )}
                         {(() => {
                           const comp = getCompanyFromEmail(reviewData.email);
                           return (
@@ -3358,6 +3369,17 @@ export function AdminRequests({
 
                       {/* Middle Row: Tags brought DOWN below the name! */}
                       <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                        {/* Request Type Tag */}
+                        {req.requestType === "edit_profile" ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
+                            <UserCog className="size-3" />
+                            <span>{isRtl ? "ویرایش مشخصات" : "Profile Edit"}</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20 flex items-center gap-1 shrink-0">
+                            <span>{isRtl ? "ثبت‌نام جدید" : "Registration"}</span>
+                          </span>
+                        )}
                         {/* Status Badge */}
                         {req.status === "pending" && (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">

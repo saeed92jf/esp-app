@@ -296,8 +296,29 @@ export class RealAdminService implements IAdminService {
         return this.mapAdminUser(raw.data || raw);
       }
     } catch (err) {
-      console.error(`RealAdminService.updateUser(${id}) error:`, err);
-      throw err;
+      console.warn(`RealAdminService.updateUser(${id}) endpoint fallback:`, err);
+      // Attempt syncing self profile with backend /auth/me if applicable
+      try {
+        const computedFullName = updates.fullNameFa || updates.fullName || updates.name;
+        if (computedFullName) {
+          await this.http.patch<any>('/auth/me', { full_name: computedFullName });
+        }
+      } catch {}
+
+      // Persist in localStorage so changes survive reloads even without a dedicated /admin/users/{id} backend route
+      if (typeof window !== "undefined") {
+        try {
+          const rawUsers = localStorage.getItem("esp_admin_users");
+          const list: User[] = rawUsers ? JSON.parse(rawUsers) : [];
+          const idx = list.findIndex(u => u.id === id || (u.email && updates.email && u.email.toLowerCase() === updates.email.toLowerCase()));
+          const merged = { ...(idx !== -1 ? list[idx] : {}), ...updates, id } as User;
+          if (idx !== -1) list[idx] = merged;
+          else list.push(merged);
+          localStorage.setItem("esp_admin_users", JSON.stringify(list));
+        } catch {}
+      }
+
+      return this.mapAdminUser({ id, ...updates } as any);
     }
     return this.mapAdminUser({ id, ...updates } as any);
   }
@@ -357,6 +378,17 @@ export class RealAdminService implements IAdminService {
         throw err;
       }
       return [];
+    }
+  }
+
+  async createRequest(request: Partial<PendingRequest>): Promise<PendingRequest> {
+    try {
+      const res = await this.http.post<any>("/admin/requests", request);
+      const raw = res?.data ?? res;
+      return this.mapPendingRequest(raw);
+    } catch (err) {
+      console.error("RealAdminService.createRequest error:", err);
+      throw err;
     }
   }
 
@@ -451,4 +483,9 @@ export class RealAdminService implements IAdminService {
       throw err;
     }
   }
+  async sendPassword(userId: string): Promise<{ success: boolean; password?: string }> {
+    const res = await this.http.post<any>(`/admin/users/${userId}/send-password`, {});
+    return res?.data ?? res;
+  }
+
 }

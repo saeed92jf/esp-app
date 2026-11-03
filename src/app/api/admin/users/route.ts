@@ -4,6 +4,7 @@ import {
   getServerAdminUsers,
   createServerAdminUser,
 } from "@/lib/server/admin-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 import type { UserRole } from "@/types/auth";
 
 export async function GET(req: NextRequest) {
@@ -17,32 +18,31 @@ export async function GET(req: NextRequest) {
     const page = searchParams.get("page") ? Number(searchParams.get("page")) : 1;
     const limit = searchParams.get("limit") ? Number(searchParams.get("limit")) : 50;
 
-    // Optional proxy to remote backend if Bearer token is provided and remote succeeds
     const authHeader = req.headers.get("authorization");
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      try {
-        const remoteUrl = new URL("http://192.168.0.171:8080/api/v1/admin/users");
-        if (search) remoteUrl.searchParams.set("search", search);
-        if (role) remoteUrl.searchParams.set("role", role);
-        if (status) remoteUrl.searchParams.set("status", status);
-        if (page) remoteUrl.searchParams.set("page", String(page));
-        if (limit) remoteUrl.searchParams.set("limit", String(limit));
+    try {
+      const remoteUrl = new URL(`${BACKEND_API_URL}/admin/users`);
+      if (search) remoteUrl.searchParams.set("search", search);
+      if (role) remoteUrl.searchParams.set("role", role);
+      if (status) remoteUrl.searchParams.set("status", status);
+      if (department) remoteUrl.searchParams.set("department", department);
+      if (company) remoteUrl.searchParams.set("company", company);
+      if (page) remoteUrl.searchParams.set("page", String(page));
+      if (limit) remoteUrl.searchParams.set("limit", String(limit));
 
-        const remoteRes = await fetch(remoteUrl.toString(), {
-          headers: {
-            Authorization: authHeader,
-            Accept: "application/json",
-          },
-          signal: AbortSignal.timeout(3000),
-        });
+      const remoteRes = await fetch(remoteUrl.toString(), {
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(4000),
+      });
 
-        if (remoteRes.ok) {
-          const remoteData = await remoteRes.json();
-          return NextResponse.json(remoteData);
-        }
-      } catch {
-        // Fallback transparently to server persistent store
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData);
       }
+    } catch {
+      // Fallback transparently to server store
     }
 
     const result = getServerAdminUsers({
@@ -68,12 +68,33 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const authHeader = req.headers.get("authorization");
 
     if (!body.email || !body.email.trim()) {
       return NextResponse.json(
         { error_code: "VALIDATION_ERROR", message: "ایمیل سازمانی الزامی است." },
         { status: 422 }
       );
+    }
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/users`, {
+        method: "POST",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData, { status: 201 });
+      }
+    } catch {
+      // Fallback
     }
 
     const created = createServerAdminUser(body);
@@ -86,4 +107,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

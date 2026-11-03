@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { User } from "../types/admin.types";
+import { User, PendingRequest } from "../types/admin.types";
 import type { UserUploadedDocument } from "@/types/auth";
 import { useTranslations, useLocale } from "next-intl";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,7 @@ import {
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
-  AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck,
+  AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
   Building, Calendar, Users, ExternalLink,
   Building2, Briefcase, DollarSign, Clock, MapPin,
   Heart, Shield, Layers
@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { api } from "@/services";
 import { NAVIGATION } from "@/config/navigation";
 import { getCompanyFromEmail } from "../utils/company";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 
 interface AdminUsersTableProps {
@@ -36,6 +37,7 @@ interface AdminUsersTableProps {
   selectedUser: User | null;
   setSelectedUser: (u: User) => void;
   setActiveTab: (tab: any) => void;
+  onRefresh?: () => Promise<void> | void;
 }
 
 interface ColumnFilterState {
@@ -161,8 +163,10 @@ export function AdminUsersTable({
   setUsers,
   selectedUser,
   setSelectedUser,
-  setActiveTab
+  setActiveTab,
+  onRefresh,
 }: AdminUsersTableProps) {
+  const { user: currentUser, updateUser: updateUserStore } = useAuth();
   const t = useTranslations("Admin");
 
   const getRoleLabel = (role?: string) => {
@@ -482,6 +486,85 @@ export function AdminUsersTable({
     }
   };
 
+  const [creatingReqUserId, setCreatingReqUserId] = useState<string | null>(null);
+
+  const handleCreateEditRequest = async (targetUser: User) => {
+    try {
+      setCreatingReqUserId(targetUser.id);
+      const comp = getCompanyFromEmail(targetUser.email);
+      const newReqPayload: Partial<PendingRequest> = {
+        userId: targetUser.id,
+        name: targetUser.name || targetUser.fullNameFa || targetUser.fullName || targetUser.email.split("@")[0],
+        fullName: targetUser.fullName || targetUser.name,
+        fullNameFa: targetUser.fullNameFa || targetUser.name,
+        firstName: targetUser.firstName,
+        lastName: targetUser.lastName,
+        firstNameFa: targetUser.firstNameFa,
+        lastNameFa: targetUser.lastNameFa,
+        email: targetUser.email,
+        phone: targetUser.phone,
+        nationalId: targetUser.nationalId,
+        department: targetUser.department,
+        company: isRtl ? comp.nameFa : comp.nameEn,
+        companyId: comp.id,
+        jobTitle: targetUser.jobTitle,
+        role: targetUser.role,
+        workLocation: targetUser.workLocation,
+        contractType: targetUser.contractType,
+        salary: targetUser.salary,
+        hasOvertime: targetUser.hasOvertime,
+        maxOvertimeHours: targetUser.maxOvertimeHours,
+        monthlyBonusType: targetUser.monthlyBonusType,
+        monthlyBonusAmount: targetUser.monthlyBonusAmount,
+        monthlyBonusTitle: targetUser.monthlyBonusTitle,
+        monthlyBonuses: targetUser.monthlyBonuses,
+        maritalStatus: targetUser.maritalStatus,
+        childrenCount: targetUser.childrenCount,
+        insuranceType: targetUser.insuranceType,
+        insuranceCode: targetUser.insuranceCode,
+        insuranceProvider: targetUser.insuranceProvider,
+        insuranceValidUntil: targetUser.insuranceValidUntil,
+        supplementaryPlan: targetUser.supplementaryPlan as any,
+        supplementaryProvider: targetUser.supplementaryProvider,
+        shebaNumber: targetUser.shebaNumber,
+        educationDegree: targetUser.educationDegree,
+        educationField: targetUser.educationField,
+        university: targetUser.university,
+        graduationYear: targetUser.graduationYear,
+        skills: targetUser.skills as any,
+        modulesAccess: targetUser.modulesAccess,
+        documents: targetUser.documents,
+        manager: targetUser.manager,
+        subordinates: targetUser.subordinates,
+        status: "pending",
+        requestType: "edit_profile",
+        requestTag: "ویرایش اطلاعات کاربر",
+        notes: isRtl
+          ? `درخواست بازنگری و ویرایش اطلاعات پرونده پرسنلی برای «${targetUser.name}» (#${targetUser.id})`
+          : `Profile information update request for ${targetUser.name} (#${targetUser.id})`,
+      };
+
+      await api.admin.createRequest(newReqPayload);
+      toast.success(
+        isRtl
+          ? `درخواست ویرایش برای «${targetUser.name}» ثبت گردید و به کارتابل درخواست‌ها منتقل شد.`
+          : `Edit request created for "${targetUser.name}" and sent to Requests.`
+      );
+
+      if (onRefresh) {
+        await onRefresh();
+      }
+      if (setActiveTab) {
+        setActiveTab("requests");
+      }
+    } catch (err: any) {
+      console.error("handleCreateEditRequest error:", err);
+      toast.error(isRtl ? "خطا در ثبت درخواست ویرایش اطلاعات." : "Failed to create edit request.");
+    } finally {
+      setCreatingReqUserId(null);
+    }
+  };
+
   // Toggle user module access directly from table accordion
   const handleToggleUserAccess = (userId: string, moduleId: string, checked: boolean) => {
     const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
@@ -565,6 +648,28 @@ export function AdminUsersTable({
         return u;
       });
       setUsers(updatedUsers);
+
+      // If the edited user is the currently logged in admin, update active session immediately
+      if (currentUser && (currentUser.id === userId || (currentUser.email && editFormData.email && currentUser.email.toLowerCase() === editFormData.email.toLowerCase()))) {
+        updateUserStore({
+          name: editFormData.name,
+          email: editFormData.email,
+          mobile: editFormData.phone,
+          department: editFormData.department,
+          jobTitle: editFormData.jobTitle,
+          role: editFormData.role,
+        });
+        try {
+          const raw = localStorage.getItem("esp_auth_user");
+          if (raw) {
+            const authObj = JSON.parse(raw);
+            const merged = { ...authObj, ...editFormData, mobile: editFormData.phone || authObj.mobile };
+            localStorage.setItem("esp_auth_user", JSON.stringify(merged));
+            localStorage.setItem("esp-auth-user", JSON.stringify(merged));
+          }
+        } catch {}
+      }
+
       toast.success(t("userInfoUpdatedSuccess"));
       setActiveAccordion(null);
     } catch (err: any) {
@@ -1087,35 +1192,7 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 8: Working Format ── */}
-              {renderExcelHeader({
-                title: t("workingFormatCol"),
-                field: "primaryFormat",
-                isFiltered: colFilters.workingFormats.length > 0,
-                onClear: () => setColFilters(prev => ({ ...prev, workingFormats: [] })),
-                children: (
-                  <div className="flex flex-col gap-1.5">
-                    <span className="font-semibold text-foreground/80 text-[10px]">{t("filterPrimaryFormat")}</span>
-                    {[
-                      { key: 'office', label: t("office") },
-                      { key: 'factory', label: t("factory") },
-                      { key: 'mission', label: t("mission") },
-                      { key: 'leave', label: t("leave") }
-                    ].map(item => (
-                      <label key={item.key} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
-                        <Checkbox
-                          checked={colFilters.workingFormats.includes(item.key)}
-                          onCheckedChange={() => setColFilters(prev => ({
-                            ...prev,
-                            workingFormats: toggleArrayItem(prev.workingFormats, item.key)
-                          }))}
-                        />
-                        <span>{item.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                )
-              })}
+
 
               {/* ── Column 9: Status ── */}
               {renderExcelHeader({
@@ -1153,7 +1230,7 @@ export function AdminUsersTable({
           {filteredUsers.length === 0 ? (
             <tbody className="divide-y divide-border/20">
               <tr>
-                <td colSpan={10} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -1213,8 +1290,8 @@ export function AdminUsersTable({
               };
               const locationBadge = getLocationBadge();
               const userDisplayName = isRtl
-                ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : user.name)
-                : (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.name);
+                ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : (user.fullNameFa || user.name))
+                : (user.fullName || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : (user.email?.split('@')[0] || user.name)));
 
               // Initial letter tailored to current locale (Persian vs English)
               const getInitialLetter = () => {
@@ -1279,9 +1356,7 @@ export function AdminUsersTable({
                               <span className="font-bold text-xs text-foreground truncate max-w-[130px]">
                                 {userDisplayName}
                               </span>
-                              <span className="text-[10px] font-mono font-medium px-1.5 py-0.2 rounded bg-muted text-muted-foreground shrink-0">
-                                #{user.id}
-                              </span>
+
                             </div>
                             <span className="text-[11px] text-muted-foreground truncate max-w-[150px]">
                               {getRoleLabel(user.role)}
@@ -1345,6 +1420,12 @@ export function AdminUsersTable({
                               <span>{user.phone}</span>
                             </span>
                           )}
+                          {user.extensionNumber && (
+                            <span className="text-[12px] font-bold text-foreground flex items-center gap-1" dir="ltr">
+                              <span className="text-[10px] font-semibold text-muted-foreground">EXT.</span>
+                              {user.extensionNumber}
+                            </span>
+                          )}
                         </div>
                       </td>
 
@@ -1380,23 +1461,7 @@ export function AdminUsersTable({
                         </span>
                       </td>
 
-                      {/* Column 8: Working Format */}
-                      <td className="py-3 px-3 text-center">
-                        <div className="flex flex-col items-center gap-1 w-26 mx-auto">
-                          <div className="w-full h-2 rounded-full overflow-hidden flex bg-muted/60">
-                            <div style={{ width: `${wf.office}%` }} className="bg-[#22c55e] h-full" title={`${t("office")}: ${wf.office}%`} />
-                            <div style={{ width: `${wf.factory}%` }} className="bg-[#3b82f6] h-full" title={`${t("factory")}: ${wf.factory}%`} />
-                            <div style={{ width: `${wf.mission}%` }} className="bg-[#f59e0b] h-full" title={`${t("mission")}: ${wf.mission}%`} />
-                            <div style={{ width: `${wf.leave}%` }} className="bg-[#94a3b8] h-full" title={`${t("leave")}: ${wf.leave}%`} />
-                          </div>
-                          <div className="flex items-center justify-between w-full text-[9px] text-muted-foreground font-medium">
-                            <span className="text-emerald-600 dark:text-emerald-400">{wf.office}%</span>
-                            <span className="text-blue-600 dark:text-blue-400">{wf.factory}%</span>
-                            <span className="text-amber-600 dark:text-amber-400">{wf.mission}%</span>
-                            <span>{wf.leave}%</span>
-                          </div>
-                        </div>
-                      </td>
+
 
                       {/* Column 9: Status */}
                       <td className="py-3 px-3 text-center">
@@ -1417,7 +1482,7 @@ export function AdminUsersTable({
 
                     {/* ── 2. Paper Pull-out & Folder Tab (سمت چپ در فارسی، راست در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
-                      <td colSpan={10} className="p-0 border-0">
+                      <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
                             "grid transition-[grid-template-rows,opacity] duration-250 ease-out",
@@ -1518,6 +1583,25 @@ export function AdminUsersTable({
                                         </div>
 
                                         <div className="flex items-center gap-1.5 self-end sm:self-center">
+                                          <button
+                                            type="button"
+                                            onClick={() => handleCreateEditRequest(user)}
+                                            disabled={creatingReqUserId === user.id}
+                                            className={cn(
+                                              "h-8 px-2.5 rounded-xl flex items-center gap-1.5 text-xs font-semibold cursor-pointer transition-all shadow-2xs",
+                                              "bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25",
+                                              creatingReqUserId === user.id && "opacity-70 pointer-events-none"
+                                            )}
+                                            title={isRtl ? "ایجاد درخواست ویرایش اطلاعات (انتقال به بخش درخواست‌ها)" : "Create Edit Request"}
+                                            aria-label={isRtl ? "ایجاد درخواست ویرایش اطلاعات" : "Create Edit Request"}
+                                          >
+                                            {creatingReqUserId === user.id ? (
+                                              <RotateCw className="size-3.5 animate-spin" />
+                                            ) : (
+                                              <UserCog className="size-3.5" />
+                                            )}
+                                            <span className="hidden sm:inline">{isRtl ? "درخواست ویرایش" : "Request Edit"}</span>
+                                          </button>
                                           <button
                                             type="button"
                                             onClick={() => handleSelectAndGoHome(user)}
@@ -1710,7 +1794,7 @@ export function AdminUsersTable({
                                         </div>
                                         <div>
                                           <h4 className="text-xs font-bold text-foreground">
-                                            {t("changePassword")} - {user.name}
+                                            {isRtl ? "رمز عبور" : "Password"} — {userDisplayName}
                                           </h4>
                                           <p className="text-[10px] text-muted-foreground mt-0.5">
                                             {t("enterNewPassword")}
@@ -1725,6 +1809,30 @@ export function AdminUsersTable({
                                       >
                                         <X size={15} />
                                       </button>
+                                    </div>
+
+                                    {/* Current registered password */}
+                                    <div className="space-y-2 p-3 bg-muted/30 rounded-xl border border-border/30">
+                                      <p className="text-[10px] font-medium text-muted-foreground">
+                                        {isRtl ? "رمز عبور فعلی ثبت‌شده در سامانه" : "Current Registered Password"}
+                                      </p>
+                                      <div className="flex items-center gap-2">
+                                        <span className="flex-1 font-mono text-sm text-foreground bg-background rounded-lg px-3 py-2 border border-border/40 tracking-widest select-all">
+                                          {user.password || "—"}
+                                        </span>
+                                        <Button
+                                          type="button"
+                                          size="sm"
+                                          onClick={() => {
+                                            api.admin.sendPassword(user.id)
+                                              .then(() => toast.success(isRtl ? "رمز عبور برای کاربر ارسال شد" : "Password sent to user"))
+                                              .catch(() => toast.error(isRtl ? "خطا در ارسال رمز عبور" : "Failed to send password"));
+                                          }}
+                                          className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-xs shrink-0"
+                                        >
+                                          {isRtl ? "ارسال برای کاربر" : "Send to User"}
+                                        </Button>
+                                      </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl">
@@ -2365,27 +2473,12 @@ export function AdminUsersTable({
                                       ? "bg-amber-500 text-white shadow-2xs font-semibold"
                                       : "text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 hover:bg-background/80 dark:hover:bg-card"
                                   )}
-                                  title={t("changePassword")}
+                                  title={isRtl ? "رمز عبور" : "Password"}
                                 >
                                   <KeyRound size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("changePassword")}</span>
+                                  <span className="hidden sm:inline">{isRtl ? "رمز عبور" : "Password"}</span>
                                 </button>
 
-                                {/* 3. Edit User Info (ویرایش مشخصات) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'edit')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'edit'
-                                      ? "bg-blue-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("editUserInfo")}
-                                >
-                                  <Edit2 size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("editUserInfo")}</span>
-                                </button>
 
                                 {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
                                 <button
@@ -2403,21 +2496,6 @@ export function AdminUsersTable({
                                   <span className="hidden sm:inline">{t("moduleAccess")}</span>
                                 </button>
 
-                                {/* 5. Documents & Verification (مدارک و تأیید) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'documents')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'documents'
-                                      ? "bg-purple-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("viewDocumentsBtn")}
-                                >
-                                  <FileCheck size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("viewDocumentsBtn")}</span>
-                                </button>
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 

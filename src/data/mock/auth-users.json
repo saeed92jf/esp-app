@@ -11,11 +11,34 @@
       "mobile": "09120000000",
       "avatarMode": "initials",
       "role": "admin",
-      "primaryColor": "emerald",
+      "primaryColor": "blue",
       "accountStatus": "active",
       "isProfileCompleted": true,
       "hrApproved": true,
-      "managerApproved": true
+      "managerApproved": true,
+      "avatarColor": "#0284c7",
+      "avatar": null
+    }
+  },
+  {
+    "email": "Mshafiee@euroslotpars.com",
+    "mobile": "09121110000",
+    "password": "mShafiee@espAdmin!",
+    "user": {
+      "id": "u-shafiee",
+      "fullName": "M. Shafiee",
+      "fullNameFa": "مهندس شفیعی",
+      "email": "Mshafiee@euroslotpars.com",
+      "mobile": "09121110000",
+      "avatarMode": "initials",
+      "role": "admin",
+      "primaryColor": "purple",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#8b5cf6",
+      "avatar": null
     }
   },
   {

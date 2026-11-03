@@ -117,14 +117,24 @@ export function NotificationsPopover({
     return items;
   }, [activeSegment, items, unreadItems]);
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await api.notifications.markAllAsRead();
+    } catch {}
   };
 
-  const handleToggleRead = (id: string) => {
+  const handleToggleRead = async (id: string) => {
+    const item = items.find((n) => n.id === id);
+    const willBeRead = item ? !item.read : true;
     setItems((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n))
     );
+    if (willBeRead) {
+      try {
+        await api.notifications.markAsRead(id);
+      } catch {}
+    }
   };
 
   const handleOpenEmail = (
@@ -217,7 +227,7 @@ export function NotificationsPopover({
         />
 
         <PopoverContent
-          className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
+          className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] h-[520px] sm:h-[560px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
           align={
             anchorEdge === "left"
               ? dir === "rtl"
@@ -294,7 +304,7 @@ export function NotificationsPopover({
               setIsScrolled(e.currentTarget.scrollTop > 8);
             }}
           >
-            <div className="flex flex-col w-full p-3 sm:p-4 pt-[50px] sm:pt-[54px]">
+            <div className="flex flex-col w-full ps-3 sm:ps-4 pe-4.5 sm:pe-5.5 pt-[50px] sm:pt-[54px] pb-4">
               <div className="segmented-list flex flex-col gap-[2px] w-full">
                 {/* ── Main Accordion Trigger (آیکون بولد آبی شارپ بزرگ و بج قرمز) ── */}
                 <button

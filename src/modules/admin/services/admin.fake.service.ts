@@ -52,7 +52,7 @@ export class FakeAdminService implements IAdminService {
           const parsed = JSON.parse(rawUsers);
           // purge old dummy users
           this.users = Array.isArray(parsed)
-            ? parsed.filter((u: any) => !['u-saeed', 'u-rezaei', 'u-ali-m', 'u-hossein-m', 'u-amir-g', 'u-sara-k', 'u-nima-t'].includes(u.id))
+            ? parsed.filter((u: any) => !['u-rezaei', 'u-mohammadi', 'u-karimi', 'u-nouri', 'u-moradi', 'u-req-1', 'u-ali-m', 'u-hossein-m', 'u-amir-g', 'u-sara-k', 'u-nima-t'].includes(u.id))
             : [];
         } catch {
           this.users = [];
@@ -274,9 +274,34 @@ export class FakeAdminService implements IAdminService {
   async updateUser(id: string, updates: Partial<User>): Promise<User> {
     await wait(250);
     this.syncFromStorage();
-    const index = this.users.findIndex((u) => u.id === id || u.email.toLowerCase() === id.toLowerCase());
+    let index = this.users.findIndex((u) => u.id === id || (u.email && updates.email && u.email.toLowerCase() === updates.email.toLowerCase()) || (u.email && u.email.toLowerCase() === id.toLowerCase()));
     if (index === -1) {
-      throw new Error(`User with id ${id} not found`);
+      if (typeof window !== "undefined") {
+        try {
+          const rawAuth = localStorage.getItem("esp_auth_user");
+          if (rawAuth) {
+            const authUser = JSON.parse(rawAuth);
+            if (authUser.id === id || (authUser.email && (authUser.email.toLowerCase() === id.toLowerCase() || (updates.email && authUser.email.toLowerCase() === updates.email.toLowerCase())))) {
+              const newEntry: User = { ...authUser, ...updates, id: authUser.id || id };
+              this.users.push(newEntry);
+              index = this.users.length - 1;
+            }
+          }
+        } catch {}
+      }
+    }
+    if (index === -1) {
+      const fallbackUser: User = {
+        id,
+        name: updates.name || "User",
+        email: updates.email || `${id}@euroslotpars.com`,
+        role: updates.role || "user",
+        status: "online",
+        accountStatus: "active",
+        ...updates,
+      } as any;
+      this.users.push(fallbackUser);
+      index = this.users.length - 1;
     }
 
     const updated = { ...this.users[index], ...updates };
@@ -296,15 +321,25 @@ export class FakeAdminService implements IAdminService {
     }
 
     // If currently logged-in user matches this ID or email, immediately update active auth session
-    if (typeof window !== "undefined" && updates.role) {
+    if (typeof window !== "undefined") {
       try {
         const rawAuth = localStorage.getItem("esp_auth_user");
         if (rawAuth) {
           const authUser = JSON.parse(rawAuth);
-          if (authUser.id === id || authUser.email?.toLowerCase() === updated.email?.toLowerCase()) {
-            authUser.role = updates.role;
-            localStorage.setItem("esp_auth_user", JSON.stringify(authUser));
-            localStorage.setItem("esp-auth-user", JSON.stringify(authUser));
+          if (authUser.id === id || (authUser.email && authUser.email?.toLowerCase() === updated.email?.toLowerCase())) {
+            const updatedAuth = {
+              ...authUser,
+              ...updates,
+              fullNameFa: updates.fullNameFa || authUser.fullNameFa,
+              fullName: updates.fullName || authUser.fullName,
+              name: updates.name || authUser.name,
+              mobile: updates.phone || authUser.mobile,
+              department: updates.department || authUser.department,
+              jobTitle: updates.jobTitle || authUser.jobTitle,
+              role: updates.role || authUser.role,
+            };
+            localStorage.setItem("esp_auth_user", JSON.stringify(updatedAuth));
+            localStorage.setItem("esp-auth-user", JSON.stringify(updatedAuth));
           }
         }
       } catch {}
@@ -362,6 +397,28 @@ export class FakeAdminService implements IAdminService {
     list.sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime());
 
     return list;
+  }
+
+  async createRequest(request: Partial<PendingRequest>): Promise<PendingRequest> {
+    await wait(200);
+    this.syncFromStorage();
+    const newReq: PendingRequest = {
+      id: request.id || `req-${Date.now()}`,
+      userId: request.userId || `u-${Date.now()}`,
+      name: request.name || "کاربر",
+      email: request.email || "",
+      status: "pending",
+      requestedAt: new Date().toISOString(),
+      requestType: request.requestType || "edit_profile",
+      ...request,
+    };
+    this.requests.unshift(newReq);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("esp_account_requests", JSON.stringify(this.requests));
+      } catch {}
+    }
+    return newReq;
   }
 
   async searchRequests(query: string, filters?: RequestQueryParams): Promise<PendingRequest[]> {
@@ -595,6 +652,12 @@ export class FakeAdminService implements IAdminService {
     this.saveToStorage();
     return { ...updated };
   }
+  async sendPassword(userId: string): Promise<{ success: boolean; password?: string }> {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    const user = this.users.find(u => u.id === userId);
+    return { success: true, password: user?.password || 'EspDev2026!' };
+  }
+
 }
 
 export const AdminFakeService = new FakeAdminService();

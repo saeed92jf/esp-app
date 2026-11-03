@@ -30,25 +30,18 @@ export function normalizeUserFromApi(raw: any): User {
   const email = (personal.email || raw.email || raw.data?.email || "").trim();
   const mobile = (personal.phone || raw.phone || raw.mobile || "").trim();
 
-  // If email is saeed or id contains saeed, provide proper full name
+  // Resolve missing name fields from available data
   if (!fullNameFa && !fullName) {
-    if (email.toLowerCase().includes("saeed") || String(raw.id || raw.userId).includes("saeed")) {
-      fullNameFa = "سعید جلیلی";
-      fullName = "Saeed Jalili";
-    } else if (email) {
+    if (email) {
       const username = email.split("@")[0];
       fullName = username.charAt(0).toUpperCase() + username.slice(1);
       fullNameFa = fullName;
     } else {
-      fullNameFa = "سعید جلیلی";
-      fullName = "Saeed Jalili";
+      fullName = "";
+      fullNameFa = "";
     }
   } else if (!fullNameFa && fullName) {
-    if (fullName.toLowerCase().includes("saeed") || fullName.toLowerCase().includes("jalili")) {
-      fullNameFa = "سعید جلیلی";
-    } else {
-      fullNameFa = fullName;
-    }
+    fullNameFa = fullName;
   } else if (!fullName && fullNameFa) {
     fullName = fullNameFa;
   }

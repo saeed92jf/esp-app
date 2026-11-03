@@ -1,13 +1,14 @@
 // src/app/api/users/me/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerUserProfile } from "@/lib/server/user-profile-store";
+import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
     if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
       try {
-        await fetch("http://192.168.0.171:8080/api/v1/users/me/submit", {
+        await fetch(`${BACKEND_API_URL}/users/me/submit`, {
           method: "POST",
           headers: {
             Authorization: authHeader,

@@ -28,6 +28,8 @@ import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1";
+
 const tabMotionVariants: Variants = {
   initial: {
     opacity: 0,
@@ -73,11 +75,11 @@ export function AdminDashboard() {
     if (typeof window !== "undefined") {
       try {
         const rawUsers = localStorage.getItem("esp_admin_users");
-        if (rawUsers && (rawUsers.includes("u-rezaei") || rawUsers.includes("u-ali-m"))) {
+        if (rawUsers && (rawUsers.includes("u-rezaei") || rawUsers.includes("u-mohammadi") || rawUsers.includes("u-karimi") || rawUsers.includes("u-nouri") || rawUsers.includes("u-moradi") || rawUsers.includes("u-req-1") || rawUsers.includes("u-ali-m"))) {
           localStorage.removeItem("esp_admin_users");
         }
         const rawReqs = localStorage.getItem("esp_account_requests");
-        if (rawReqs && (rawReqs.includes("req-1") || rawReqs.includes("req-2"))) {
+        if (rawReqs && (rawReqs.includes("req-1") || rawReqs.includes("req-2") || rawReqs.includes("req-3"))) {
           localStorage.removeItem("esp_account_requests");
         }
       } catch {}
@@ -94,7 +96,9 @@ export function AdminDashboard() {
         api.admin.getUsers(),
         api.admin.getPendingRequests(),
       ]);
-      let userList: User[] = u || [];
+      let userList: User[] = (u || []).filter(
+        (item) => !["u-rezaei", "u-mohammadi", "u-karimi", "u-nouri", "u-moradi", "u-req-1"].includes(item.id)
+      );
 
       // If currentUser is logged in, ensure the authenticated administrator is in userList and selectable
       if (currentUser) {
@@ -192,7 +196,7 @@ export function AdminDashboard() {
         message: apiErr.message,
         status: apiErr.status,
         timestamp: new Date(),
-        endpoint: "http://192.168.0.171:8080/api/v1",
+        endpoint: BACKEND_URL,
       });
       toast.error(apiErr.message);
     } finally {
@@ -292,6 +296,91 @@ export function AdminDashboard() {
     }
   };
 
+  const handleUpdateProfile = async (userId: string, updates: Partial<User>) => {
+    try {
+      const updated = await api.admin.updateUser(userId, updates);
+      const mergedUser = { ...selectedUser, ...updated, ...updates } as User;
+
+      // Update selectedUser state
+      setSelectedUser(prev => prev && prev.id === userId ? mergedUser : prev);
+
+      // Update users list
+      setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...mergedUser } : u));
+
+      // If currentUser is being updated (admin profile):
+      if (currentUser && (currentUser.id === userId || (currentUser.email && mergedUser.email && currentUser.email.toLowerCase() === mergedUser.email.toLowerCase()))) {
+        const computedFullNameFa = mergedUser.fullNameFa || (mergedUser.firstNameFa && mergedUser.lastNameFa ? `${mergedUser.firstNameFa} ${mergedUser.lastNameFa}` : mergedUser.name);
+        const computedFullNameEn = mergedUser.fullName || (mergedUser.firstName && mergedUser.lastName ? `${mergedUser.firstName} ${mergedUser.lastName}` : mergedUser.name);
+
+        updateUserStore({
+          ...updates,
+          fullNameFa: computedFullNameFa,
+          fullName: computedFullNameEn,
+          name: isRtl ? (computedFullNameFa || computedFullNameEn) : (computedFullNameEn || computedFullNameFa),
+          email: mergedUser.email,
+          mobile: mergedUser.phone,
+          role: mergedUser.role,
+          department: mergedUser.department,
+          jobTitle: mergedUser.jobTitle,
+          avatarColor: mergedUser.avatarColor,
+          primaryColor: mergedUser.primaryColor,
+        });
+
+        // Synchronize active localStorage auth session
+        try {
+          const rawAuth = localStorage.getItem("esp_auth_user");
+          if (rawAuth) {
+            const authObj = JSON.parse(rawAuth);
+            const newAuthObj = {
+              ...authObj,
+              ...updates,
+              fullNameFa: computedFullNameFa,
+              fullName: computedFullNameEn,
+              name: isRtl ? (computedFullNameFa || computedFullNameEn) : (computedFullNameEn || computedFullNameFa),
+              email: mergedUser.email,
+              mobile: mergedUser.phone,
+              role: mergedUser.role,
+              department: mergedUser.department,
+              jobTitle: mergedUser.jobTitle,
+            };
+            localStorage.setItem("esp_auth_user", JSON.stringify(newAuthObj));
+            localStorage.setItem("esp-auth-user", JSON.stringify(newAuthObj));
+          }
+        } catch {}
+
+        // Attempt user service profile update if available
+        try {
+          await api.user?.updateProfile?.({
+            fullName: computedFullNameEn,
+            fullNameFa: computedFullNameFa,
+            mobile: mergedUser.phone,
+            email: mergedUser.email,
+          });
+        } catch {}
+      }
+
+      // Persist to esp_admin_users in localStorage
+      try {
+        const rawStored = localStorage.getItem("esp_admin_users");
+        const list: User[] = rawStored ? JSON.parse(rawStored) : [];
+        const idx = list.findIndex(u => u.id === userId || (u.email && mergedUser.email && u.email.toLowerCase() === mergedUser.email.toLowerCase()));
+        if (idx !== -1) list[idx] = mergedUser;
+        else list.push(mergedUser);
+        localStorage.setItem("esp_admin_users", JSON.stringify(list));
+      } catch {}
+
+      toast.success(
+        isRtl
+          ? `اطلاعات «${mergedUser.name}» با موفقیت ذخیره شد.`
+          : `Profile for "${mergedUser.name}" successfully updated.`
+      );
+    } catch (err: any) {
+      console.error("Failed to update profile:", err);
+      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی اطلاعات" : "Failed to update profile"));
+      throw err;
+    }
+  };
+
   return (
     <div className="flex flex-col flex-1 min-h-full bg-background font-sans w-full relative">
       {/* Top Header */}
@@ -332,7 +421,7 @@ export function AdminDashboard() {
                 error={connectionError}
                 onRetry={fetchData}
                 isRetrying={isRetrying}
-                targetUrl="http://192.168.0.171:8080/api/v1"
+                targetUrl={BACKEND_URL}
                 variant="full"
               />
             ) : (
@@ -349,7 +438,7 @@ export function AdminDashboard() {
                     error={connectionError}
                     onRetry={fetchData}
                     isRetrying={isRetrying}
-                    targetUrl="http://192.168.0.171:8080/api/v1"
+                    targetUrl={BACKEND_URL}
                     variant="banner"
                     className="mb-4"
                     onDismiss={() => setConnectionError(null)}
@@ -416,6 +505,7 @@ export function AdminDashboard() {
                       selectedUser={selectedUser}
                       setSelectedUser={setSelectedUser}
                       setActiveTab={setActiveTab}
+                      onRefresh={fetchData}
                     />
                   </div>
                 )}
