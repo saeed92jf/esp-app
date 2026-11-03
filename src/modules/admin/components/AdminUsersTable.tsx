@@ -874,66 +874,6 @@ export function AdminUsersTable({
             )}
           </div>
 
-          {/* Quick Company Filters */}
-          <div className="hidden lg:flex items-center gap-1 p-1 rounded-xl bg-background/80 dark:bg-card/80 border border-border/50 text-[11px] font-medium shrink-0">
-            <button
-              type="button"
-              onClick={() => setColFilters(prev => ({ ...prev, companies: [] }))}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer",
-                colFilters.companies.length === 0
-                  ? "bg-primary text-primary-foreground font-bold shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t("allCompanies")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setColFilters(prev => ({
-                ...prev,
-                companies: prev.companies.length === 1 && prev.companies[0] === "euroslot" ? [] : ["euroslot"]
-              }))}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
-                colFilters.companies.includes("euroslot") && colFilters.companies.length === 1
-                  ? "bg-sky-600 text-white font-bold shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span>{t("companyEuroslot")}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setColFilters(prev => ({
-                ...prev,
-                companies: prev.companies.length === 1 && prev.companies[0] === "npceram" ? [] : ["npceram"]
-              }))}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
-                colFilters.companies.includes("npceram") && colFilters.companies.length === 1
-                  ? "bg-amber-600 text-white font-bold shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span>{t("companyNpceram")}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setColFilters(prev => ({
-                ...prev,
-                companies: prev.companies.length === 1 && prev.companies[0] === "holding" ? [] : ["holding"]
-              }))}
-              className={cn(
-                "px-2.5 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1",
-                colFilters.companies.includes("holding") && colFilters.companies.length === 1
-                  ? "bg-purple-600 text-white font-bold shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <span>{isRtl ? "هلدینگ" : "Holding"}</span>
-            </button>
-          </div>
         </div>
 
         {/* Right Side: Filters Clear & Salary Masking */}
