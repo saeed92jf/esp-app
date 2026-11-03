@@ -13,6 +13,23 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const authHeader = req.headers.get("authorization");
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${encodeURIComponent(id)}`, {
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData);
+      }
+    } catch {}
+
     const item = getServerAdminRequestById(id);
 
     if (!item) {
@@ -39,6 +56,26 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
+    const authHeader = req.headers.get("authorization");
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${encodeURIComponent(id)}`, {
+        method: "PUT",
+        headers: {
+          ...(authHeader ? { Authorization: authHeader } : {}),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        updateServerAdminRequest(id, body);
+        return NextResponse.json(remoteData);
+      }
+    } catch {}
 
     const updated = updateServerAdminRequest(id, body);
     if (!updated) {
@@ -57,6 +94,8 @@ export async function PUT(
     );
   }
 }
+
+export const PATCH = PUT;
 
 export async function DELETE(
   req: NextRequest,
