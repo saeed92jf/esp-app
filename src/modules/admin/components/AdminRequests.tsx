@@ -1726,7 +1726,10 @@ export function AdminRequests({
                                     </Label>
                                     <Combobox
                                       options={[
+                                        ...(currentUser?.role === "superadmin" ? [{ value: "superadmin", label: t("roleSuperadmin") }] : []),
                                         { value: "admin", label: t("roleAdmin") },
+                                        { value: "dept_admin", label: t("roleDeptAdmin") },
+                                        { value: "office_admin", label: t("roleOfficeAdmin") },
                                         { value: "manager", label: t("roleManager") },
                                         { value: "engineer", label: t("roleEngineer") },
                                         { value: "staff", label: t("roleStaff") },
@@ -3561,17 +3564,22 @@ export function AdminRequests({
                               : "bg-primary/10 text-primary border-primary/20"
                           )}
                         >
-                          {req.role === "admin" ? (
+                          {req.role === "superadmin" || req.role === "admin" ? (
                             <ShieldAlert className="size-3 shrink-0" />
-                          ) : req.role === "manager" ? (
+                          ) : req.role === "dept_admin" || req.role === "manager" ? (
                             <Users className="size-3 shrink-0" />
+                          ) : req.role === "office_admin" ? (
+                            <Building2 className="size-3 shrink-0" />
                           ) : req.role === "engineer" ? (
                             <Briefcase className="size-3 shrink-0" />
                           ) : (
                             <UserCheck className="size-3 shrink-0" />
                           )}
                           <span>
-                            {req.role === "admin" ? t("roleAdmin") :
+                            {req.role === "superadmin" ? t("roleSuperadmin") :
+                             req.role === "dept_admin" ? t("roleDeptAdmin") :
+                             req.role === "office_admin" ? t("roleOfficeAdmin") :
+                             req.role === "admin" ? t("roleAdmin") :
                              req.role === "manager" ? t("roleManager") :
                              req.role === "engineer" ? t("roleEngineer") :
                              req.role === "staff" ? t("roleStaff") :

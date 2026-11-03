@@ -190,8 +190,14 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
             title={isRtl ? "کلیک جهت تغییر نقش و سطح دسترسی" : "Click to manage user role and access"}
             className={cn(
               "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-semibold border shadow-2xs shrink-0 transition-colors cursor-pointer group",
-              selectedUser.role === 'admin'
-                ? "bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border-rose-500/20"
+              selectedUser.role === 'superadmin'
+                ? "bg-rose-500/15 hover:bg-rose-500/25 text-rose-700 dark:text-rose-300 border-rose-500/35 font-bold"
+                : selectedUser.role === 'admin'
+                ? "bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 border-amber-500/35 font-bold"
+                : selectedUser.role === 'dept_admin'
+                ? "bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
+                : selectedUser.role === 'office_admin'
+                ? "bg-teal-500/10 hover:bg-teal-500/20 text-teal-600 dark:text-teal-400 border-teal-500/20"
                 : selectedUser.role === 'manager'
                 ? "bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/20"
                 : selectedUser.role === 'engineer'
@@ -203,17 +209,22 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
                 : "bg-slate-500/10 hover:bg-slate-500/20 text-slate-600 dark:text-slate-400 border-slate-500/20"
             )}
           >
-            {selectedUser.role === 'admin' ? (
+            {selectedUser.role === 'superadmin' || selectedUser.role === 'admin' ? (
               <ShieldCheck size={11} className="stroke-[2.5]" />
-            ) : selectedUser.role === 'manager' ? (
+            ) : selectedUser.role === 'dept_admin' || selectedUser.role === 'manager' ? (
               <Users size={11} className="stroke-[2.5]" />
+            ) : selectedUser.role === 'office_admin' ? (
+              <Building2 size={11} className="stroke-[2.5]" />
             ) : selectedUser.role === 'engineer' ? (
               <Briefcase size={11} className="stroke-[2.5]" />
             ) : (
               <UserCheck size={11} className="stroke-[2.5]" />
             )}
             <span>
-              {selectedUser.role === 'admin' ? t("roleAdmin") :
+              {selectedUser.role === 'superadmin' ? t("roleSuperadmin") :
+               selectedUser.role === 'admin' ? t("roleAdmin") :
+               selectedUser.role === 'dept_admin' ? t("roleDeptAdmin") :
+               selectedUser.role === 'office_admin' ? t("roleOfficeAdmin") :
                selectedUser.role === 'manager' ? t("roleManager") :
                selectedUser.role === 'engineer' ? t("roleEngineer") :
                selectedUser.role === 'staff' ? t("roleStaff") :
@@ -439,15 +450,45 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 py-3 max-h-[60vh] overflow-y-auto pe-1">
             {[
+              ...(currentUser?.role === 'superadmin' ? [{
+                role: "superadmin" as const,
+                label: t("roleSuperadmin"),
+                desc: t("roleSuperadminDesc"),
+                icon: ShieldAlert,
+                color: "text-rose-600 dark:text-rose-400",
+                bg: "bg-rose-500/10",
+                border: "border-rose-500 bg-rose-500/5 ring-1 ring-rose-500/30",
+                checkBg: "bg-rose-600",
+              }] : []),
               {
                 role: "admin" as const,
                 label: t("roleAdmin"),
                 desc: t("roleAdminDesc"),
                 icon: ShieldCheck,
-                color: "text-rose-600 dark:text-rose-400",
-                bg: "bg-rose-500/10",
-                border: "border-rose-500 bg-rose-500/5 ring-1 ring-rose-500/30",
-                checkBg: "bg-rose-500",
+                color: "text-amber-600 dark:text-amber-400",
+                bg: "bg-amber-500/10",
+                border: "border-amber-500 bg-amber-500/5 ring-1 ring-amber-500/30",
+                checkBg: "bg-amber-600",
+              },
+              {
+                role: "dept_admin" as const,
+                label: t("roleDeptAdmin"),
+                desc: t("roleDeptAdminDesc"),
+                icon: Users,
+                color: "text-indigo-600 dark:text-indigo-400",
+                bg: "bg-indigo-500/10",
+                border: "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/30",
+                checkBg: "bg-indigo-600",
+              },
+              {
+                role: "office_admin" as const,
+                label: t("roleOfficeAdmin"),
+                desc: t("roleOfficeAdminDesc"),
+                icon: Building2,
+                color: "text-teal-600 dark:text-teal-400",
+                bg: "bg-teal-500/10",
+                border: "border-teal-500 bg-teal-500/5 ring-1 ring-teal-500/30",
+                checkBg: "bg-teal-600",
               },
               {
                 role: "manager" as const,

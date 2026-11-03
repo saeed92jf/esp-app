@@ -1571,8 +1571,14 @@ export function AdminUsersTable({
                                                 variant="secondary"
                                                 className={cn(
                                                   "text-[10px] h-5 font-semibold",
-                                                  user.role === 'admin'
-                                                    ? "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25"
+                                                  user.role === 'superadmin'
+                                                    ? "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/35 font-bold"
+                                                  : user.role === 'admin'
+                                                    ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35 font-bold"
+                                                  : user.role === 'dept_admin'
+                                                    ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/25"
+                                                  : user.role === 'office_admin'
+                                                    ? "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/25"
                                                     : user.role === 'manager'
                                                     ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/25"
                                                     : user.role === 'engineer'
