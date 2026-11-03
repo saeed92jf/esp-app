@@ -139,7 +139,7 @@ function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPane
       dir={isRtl ? "rtl" : "ltr"}
       className={cn(
         "w-full bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-md border-x border-b border-border/50 rounded-t-none overflow-hidden",
-        isRtl ? "rounded-bl-none rounded-br-2xl" : "rounded-br-none rounded-bl-2xl",
+        isRtl ? "rounded-br-none rounded-bl-2xl" : "rounded-bl-none rounded-br-2xl",
         "shadow-[inset_0_4px_8px_-3px_rgba(15,23,42,0.08)] dark:shadow-[inset_0_4px_8px_-3px_rgba(0,0,0,0.4)]"
       )}
     >
@@ -1421,7 +1421,7 @@ export function AdminUsersTable({
                       </td>
                     </tr>
 
-                    {/* ── 2. Paper Pull-out & Folder Tab (سمت چپ در فارسی، راست در انگلیسی) ── */}
+                    {/* ── 2. Paper Pull-out & Folder Tab (سمت راست در فارسی، سمت چپ در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
                       <td colSpan={8} className="p-0 border-0">
                         <div 
@@ -1439,7 +1439,7 @@ export function AdminUsersTable({
                             <div 
                               className={cn(
                                 "w-full flex flex-col px-3 sm:px-4 relative",
-                                isRtl ? "items-start" : "items-end",
+                                isRtl ? "items-end" : "items-start",
                                 isAccordionOpen ? "pb-4" : "pb-2.5"
                               )} 
                               dir="ltr"
@@ -2407,7 +2407,7 @@ export function AdminUsersTable({
                               )}
                             </AnimatePresence>
 
-                            {/* ── B. Icon Tab (در پایین کانتینر محتوا - سمت چپ در فارسی، سمت راست در انگلیسی) ── */}
+                            {/* ── B. Icon Tab (در پایین کانتینر محتوا - سمت راست در فارسی، سمت چپ در انگلیسی) ── */}
                             <div 
                               dir={isRtl ? "rtl" : "ltr"}
                               className={cn(
