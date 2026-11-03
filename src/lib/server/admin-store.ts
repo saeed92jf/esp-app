@@ -314,7 +314,7 @@ export function approveServerAdminRequestHr(id: string, notes?: string): Pending
 
 export function approveServerAdminRequestManager(
   id: string,
-  options?: { tempPassword?: string; role?: "admin" | "user"; modulesAccess?: UserModuleAccess[] }
+  options?: { tempPassword?: string; role?: any; modulesAccess?: UserModuleAccess[] }
 ): { request: PendingRequest; tempPassword: string; user: User } | null {
   const reqs = globalThis.__espServerAdminRequests || [];
   const req = reqs.find((r) => r.id === id);
@@ -391,7 +391,7 @@ export function approveServerAdminRequestManager(
     });
   }
 
-  globalThis.__espServerAdminRequests = reqs;
+  globalThis.__espServerAdminRequests = reqs.filter((r) => r.id !== id);
   return { request: req, tempPassword, user };
 }
 
@@ -402,7 +402,7 @@ export function rejectServerAdminRequest(id: string, reason: string): PendingReq
 
   req.status = "rejected";
   req.notes = (req.notes ? `${req.notes} | ` : "") + `علت رد: ${reason}`;
-  globalThis.__espServerAdminRequests = reqs;
+  globalThis.__espServerAdminRequests = reqs.filter((r) => r.id !== id);
   return req;
 }
 

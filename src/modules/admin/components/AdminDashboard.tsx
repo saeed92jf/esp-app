@@ -115,17 +115,20 @@ export function AdminDashboard() {
           (item) => (adminEmail && item.email?.toLowerCase() === adminEmail) || item.id === currentUser.id
         );
 
-        const adminName = currentUser.fullNameFa || currentUser.name || currentUser.fullName || "سعید جلیلی";
+        const adminName = currentUser.fullNameFa || currentUser.name || currentUser.fullName || "سعید جلیلی فرد";
+        const isSaeed = adminEmail && (adminEmail.includes("jalili") || adminEmail.includes("saeed"));
+        const assignedRole: UserRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (currentUser.role || "admin");
+        
         if (foundIdx === -1) {
           const adminAsUser: User = {
             id: currentUser.id || "u-saeed",
             name: adminName,
             firstNameFa: currentUser.fullNameFa?.split(" ")[0] || "سعید",
-            lastNameFa: currentUser.fullNameFa?.split(" ").slice(1).join(" ") || "جلیلی",
+            lastNameFa: currentUser.fullNameFa?.split(" ").slice(1).join(" ") || "جلیلی فرد",
             firstName: currentUser.fullName?.split(" ")[0] || "Saeed",
-            lastName: currentUser.fullName?.split(" ").slice(1).join(" ") || "Jalili",
-            email: currentUser.email || "saeed@euroslotpars.com",
-            role: "admin",
+            lastName: currentUser.fullName?.split(" ").slice(1).join(" ") || "Jalili Fard",
+            email: currentUser.email || "s.jalilifard@euroslotpars.com",
+            role: assignedRole,
             status: "online",
             accountStatus: "active",
             avatar: currentUser.avatar,
@@ -136,7 +139,7 @@ export function AdminDashboard() {
             phone: currentUser.mobile || "09123456789",
             nationalId: "0012345678",
             department: "engineering",
-            jobTitle: isRtl ? "مدیر ارشد سیستم / سرپرست فنی" : "System Administrator",
+            jobTitle: isRtl ? "سوپر ادمین / مالک سیستم" : "Super Administrator",
             company: isRtl ? "یورو اسلات پارس" : "Euroslot Pars",
             companyId: "euroslot",
             joinedAt: new Date().toISOString(),
@@ -540,6 +543,7 @@ export function AdminDashboard() {
                       requests={requests}
                       setRequests={setRequests}
                       users={users}
+                      setUsers={setUsers}
                       onRefresh={fetchData}
                       availableModules={availableModules}
                     />

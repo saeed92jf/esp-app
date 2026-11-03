@@ -104,6 +104,7 @@ interface AdminRequestsProps {
   requests: PendingRequest[];
   setRequests: React.Dispatch<React.SetStateAction<PendingRequest[]>>;
   users?: User[];
+  setUsers?: React.Dispatch<React.SetStateAction<User[]>>;
   onRefresh?: () => Promise<void>;
   availableModules?: any[];
 }
@@ -133,6 +134,7 @@ export function AdminRequests({
   requests,
   setRequests,
   users = [],
+  setUsers,
   onRefresh,
   availableModules,
 }: AdminRequestsProps) {
@@ -610,26 +612,34 @@ export function AdminRequests({
           role: reviewData.role || "user",
           modulesAccess: dataToSave.modulesAccess,
         });
-        setRequests((prev) =>
-          prev.map((r) => (r.id === reviewData.id ? res.request : r))
-        );
-        setReviewData((prev) =>
-          prev
-            ? {
-                ...prev,
-                ...res.request,
-                status: "active",
-                adminApproved: true,
-                managerApproved: true,
-                tempPassword: res.tempPassword || res.request.tempPassword,
-              }
-            : null
-        );
+        
+        // Remove from active queue immediately
+        setRequests((prev) => prev.filter((r) => r.id !== reviewData.id));
+        setSelectedReqId(null);
+        setReviewData(null);
+
+        // Update users list immediately
+        if (res?.user && setUsers) {
+          setUsers((prev) => {
+            const targetId = res.user.id;
+            const targetEmail = res.user.email?.toLowerCase();
+            const existingIdx = prev.findIndex(
+              (u) => (targetId && u.id === targetId) || (targetEmail && u.email?.toLowerCase() === targetEmail)
+            );
+            if (existingIdx !== -1) {
+              const copy = [...prev];
+              copy[existingIdx] = { ...copy[existingIdx], ...res.user };
+              return copy;
+            }
+            return [res.user, ...prev];
+          });
+        }
+
         addUserNotification({
           title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
           description: isRtl
-            ? `درخواست متقاضی (${reviewData.name}) توسط مدیر تأیید و حساب کاربری فعال گردید.`
-            : `Application for ${reviewData.name} was approved and activated by Admin.`,
+            ? `درخواست متقاضی (${reviewData.name}) تأیید شد و از صف خارج گردید.`
+            : `Application for ${reviewData.name} was approved and removed from queue.`,
           type: "system",
         });
         toast.success(t("adminApproveSuccess", { email: reviewData.email }));
@@ -708,26 +718,34 @@ export function AdminRequests({
         role: reviewData.role || "user",
         modulesAccess: dataToSave.modulesAccess,
       });
-      setRequests((prev) =>
-        prev.map((r) => (r.id === reviewData.id ? res.request : r))
-      );
-      setReviewData((prev) =>
-        prev
-          ? {
-              ...prev,
-              ...res.request,
-              status: "active",
-              adminApproved: true,
-              managerApproved: true,
-              tempPassword: res.tempPassword || res.request.tempPassword,
-            }
-          : null
-      );
+
+      // Remove from active queue immediately
+      setRequests((prev) => prev.filter((r) => r.id !== reviewData.id));
+      setSelectedReqId(null);
+      setReviewData(null);
+
+      // Update users list immediately
+      if (res?.user && setUsers) {
+        setUsers((prev) => {
+          const targetId = res.user.id;
+          const targetEmail = res.user.email?.toLowerCase();
+          const existingIdx = prev.findIndex(
+            (u) => (targetId && u.id === targetId) || (targetEmail && u.email?.toLowerCase() === targetEmail)
+          );
+          if (existingIdx !== -1) {
+            const copy = [...prev];
+            copy[existingIdx] = { ...copy[existingIdx], ...res.user };
+            return copy;
+          }
+          return [res.user, ...prev];
+        });
+      }
+
       addUserNotification({
         title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
         description: isRtl
-          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت توسط مدیر سیستم تأیید و فعال شد.`
-          : `Application for ${reviewData.name} was approved and activated by Admin.`,
+          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت تأیید شد و از صف درخواست‌ها خارج گردید.`
+          : `Application for ${reviewData.name} was approved and removed from active queue.`,
         type: "system",
       });
       toast.success(t("adminApproveSuccess", { email: reviewData.email }));
@@ -743,19 +761,21 @@ export function AdminRequests({
     if (!reviewData) return;
     try {
       setIsRejecting(true);
-      const updated = await api.admin.rejectRequest(
+      await api.admin.rejectRequest(
         reviewData.id,
         rejectReason
       );
-      setRequests((prev) =>
-        prev.map((r) => (r.id === reviewData.id ? updated : r))
-      );
-      setReviewData((prev) => (prev ? { ...prev, ...updated } : null));
+
+      // Remove from active queue immediately
+      setRequests((prev) => prev.filter((r) => r.id !== reviewData.id));
+      setSelectedReqId(null);
+      setReviewData(null);
+
       addUserNotification({
         title: isRtl ? "عدم تایید درخواست متقاضی" : "Application Rejected",
         description: isRtl
-          ? `درخواست متقاضی (${reviewData.name}) رد گردید. دلیل: ${rejectReason}`
-          : `Application for ${reviewData.name} was rejected. Reason: ${rejectReason}`,
+          ? `درخواست متقاضی (${reviewData.name}) رد و از صف خارج گردید. دلیل: ${rejectReason}`
+          : `Application for ${reviewData.name} was rejected and removed from queue. Reason: ${rejectReason}`,
         type: "system",
       });
       toast.info(t("rejectSuccess", { email: reviewData.email }));

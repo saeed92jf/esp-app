@@ -491,11 +491,32 @@ export function AdminUserConfig({
 
   const roleOptions: { value: UserRole; label: string; desc: string; badge: string; color: string }[] = React.useMemo(() => [
     {
+      value: "superadmin",
+      label: t("roleSuperadmin"),
+      desc: t("roleSuperadminDesc"),
+      badge: isRtl ? "دسترسی کامل و نامحدود" : "Super Admin",
+      color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
+    },
+    {
       value: "admin",
       label: t("roleAdmin"),
       desc: t("roleAdminDesc"),
-      badge: isRtl ? "دسترسی کامل" : "Full Access",
-      color: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30",
+      badge: isRtl ? "مدیر سیستم" : "System Admin",
+      color: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30",
+    },
+    {
+      value: "dept_admin",
+      label: t("roleDeptAdmin"),
+      desc: t("roleDeptAdminDesc"),
+      badge: isRtl ? "ادمین دپارتمان" : "Dept Admin",
+      color: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30",
+    },
+    {
+      value: "office_admin",
+      label: t("roleOfficeAdmin"),
+      desc: t("roleOfficeAdminDesc"),
+      badge: isRtl ? "ادمین اداری" : "Office Admin",
+      color: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/30",
     },
     {
       value: "manager",
@@ -533,6 +554,16 @@ export function AdminUserConfig({
       color: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30",
     },
   ], [t, isRtl]);
+
+  const assignableRoleOptions = React.useMemo(() => {
+    if (currentUser?.role === 'superadmin') {
+      return roleOptions;
+    }
+    if (currentUser?.role === 'admin') {
+      return roleOptions.filter((r) => r.value !== 'superadmin' && (r.value !== 'admin' || (selectedUser && selectedUser.id === currentUser.id)));
+    }
+    return roleOptions.filter((r) => r.value !== 'superadmin' && r.value !== 'admin');
+  }, [roleOptions, currentUser?.role, currentUser?.id, selectedUser]);
 
   const currentRoleMeta = roleOptions.find((r) => r.value === form.role) || roleOptions[5];
 
@@ -1802,7 +1833,7 @@ export function AdminUserConfig({
                                 </Badge>
                               </div>
                               <Combobox
-                                options={roleOptions}
+                                options={assignableRoleOptions}
                                 value={form.role}
                                 onChange={(val) =>
                                   setForm({
@@ -2488,12 +2519,23 @@ export function AdminUserConfig({
                         {/* ========================================= */}
                         {seg.id === "modules" && (
                           <div className="pt-1">
+                            {currentUser?.role === 'office_admin' && (
+                              <div className="flex items-center gap-2 p-3 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                                <AlertCircle size={16} className="shrink-0" />
+                                <span>
+                                  {isRtl
+                                    ? "مدیر اداری دسترسی تغییر سطوح دسترسی ماژول‌ها را ندارد. این بخش در حالت فقط‌خواندنی نمایش داده می‌شود."
+                                    : "Office admin cannot modify module permissions. This section is displayed in read-only mode."}
+                                </span>
+                              </div>
+                            )}
                             <AdminModuleAccessStep
                               modulesAccess={form.modulesAccess}
                               onChange={(updated) =>
                                 setForm((prev) => ({ ...prev, modulesAccess: updated }))
                               }
                               availableModules={availableModules}
+                              readOnly={currentUser?.role === 'office_admin'}
                             />
                           </div>
                         )}

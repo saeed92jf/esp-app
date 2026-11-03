@@ -10,7 +10,7 @@
       "email": "saeed@demo.com",
       "mobile": "09120000000",
       "avatarMode": "initials",
-      "role": "admin",
+      "role": "superadmin",
       "primaryColor": "blue",
       "accountStatus": "active",
       "isProfileCompleted": true,

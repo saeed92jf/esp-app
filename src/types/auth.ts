@@ -1,7 +1,7 @@
 // src/types/auth.ts
 
 // Application roles used for routing and access decisions
-export type UserRole = 'admin' | 'manager' | 'engineer' | 'staff' | 'customer' | 'user';
+export type UserRole = 'superadmin' | 'admin' | 'dept_admin' | 'office_admin' | 'manager' | 'engineer' | 'staff' | 'customer' | 'user';
 
 export type AccountStatus =
   | 'pending_initial'

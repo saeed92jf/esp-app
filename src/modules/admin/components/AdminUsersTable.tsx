@@ -173,13 +173,16 @@ export function AdminUsersTable({
 
   const getRoleLabel = (role?: string) => {
     switch (role) {
+      case "superadmin": return t("roleSuperadmin");
+      case "dept_admin": return t("roleDeptAdmin");
+      case "office_admin": return t("roleOfficeAdmin");
       case "admin": return t("roleAdmin");
       case "manager": return t("roleManager");
       case "engineer": return t("roleEngineer");
       case "staff": return t("roleStaff");
       case "customer": return t("roleCustomer");
       case "user": return t("roleUser");
-      default: return t("roleUser");
+      default: return role || t("roleUser");
     }
   };
   const tMenu = useTranslations("Menu");
@@ -291,10 +294,22 @@ export function AdminUsersTable({
     });
   }, [uniqueDepartments, t]);
 
-  const roleOptions: ComboboxOption[] = useMemo(() => [
-    { value: "user", label: t("userRole") },
-    { value: "admin", label: t("adminRole") },
-  ], [t]);
+  const roleOptions: ComboboxOption[] = useMemo(() => {
+    const all = [
+      { value: "superadmin", label: t("roleSuperadmin") },
+      { value: "admin", label: t("roleAdmin") },
+      { value: "dept_admin", label: t("roleDeptAdmin") },
+      { value: "office_admin", label: t("roleOfficeAdmin") },
+      { value: "manager", label: t("roleManager") },
+      { value: "engineer", label: t("roleEngineer") },
+      { value: "staff", label: t("roleStaff") },
+      { value: "customer", label: t("roleCustomer") },
+      { value: "user", label: t("roleUser") },
+    ];
+    if (currentUser?.role === 'superadmin') return all;
+    if (currentUser?.role === 'admin') return all.filter(r => r.value !== 'superadmin');
+    return all.filter(r => r.value !== 'superadmin' && r.value !== 'admin');
+  }, [t, currentUser?.role]);
 
   const toggleArrayItem = (arr: string[], item: string) => {
     return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
@@ -332,6 +347,34 @@ export function AdminUsersTable({
   // Filtered & Sorted Users
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
+      // 0. Role-based Visibility & Permission Scope
+      if (currentUser?.role === 'superadmin') {
+        // Superadmin has full unrestricted visibility across all users and admins
+      } else if (currentUser?.role === 'admin') {
+        // Admin sees themselves and all non-admin roles (cannot see other admins or superadmins)
+        const isSelf = user.id === currentUser.id || (Boolean(user.email) && Boolean(currentUser.email) && user.email.toLowerCase() === currentUser.email?.toLowerCase());
+        if (!isSelf && (user.role === 'admin' || user.role === 'superadmin')) {
+          return false;
+        }
+      } else if (currentUser?.role === 'dept_admin') {
+        // Dept admin sees themselves and non-admin members of their department
+        const isSelf = user.id === currentUser.id || (Boolean(user.email) && Boolean(currentUser.email) && user.email.toLowerCase() === currentUser.email?.toLowerCase());
+        if (!isSelf) {
+          if (user.role === 'admin' || user.role === 'superadmin') return false;
+          const userDept = (user.department || '').toLowerCase();
+          const curDept = (currentUser.department || '').toLowerCase();
+          if (!userDept || !curDept || userDept !== curDept) {
+            return false;
+          }
+        }
+      } else if (currentUser?.role === 'office_admin') {
+        // Office admin sees themselves and all non-admin roles across company
+        const isSelf = user.id === currentUser.id || (Boolean(user.email) && Boolean(currentUser.email) && user.email.toLowerCase() === currentUser.email?.toLowerCase());
+        if (!isSelf && (user.role === 'admin' || user.role === 'superadmin')) {
+          return false;
+        }
+      }
+
       // 0. Global Search
       if (globalSearch.trim()) {
         const q = globalSearch.toLowerCase().trim();
@@ -579,6 +622,10 @@ export function AdminUsersTable({
 
   // Toggle user module access directly from table accordion
   const handleToggleUserAccess = (userId: string, moduleId: string, checked: boolean) => {
+    if (currentUser?.role === 'office_admin') {
+      toast.error(isRtl ? "مدیر اداری مجاز به تغییر دسترسی‌های ماژول‌ها نمی‌باشد." : "Office admin cannot change module permissions.");
+      return;
+    }
     const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
     const updatedUsers = users.map(u => {
       if (u.id !== userId) return u;
@@ -941,7 +988,13 @@ export function AdminUsersTable({
                     </div>
 
                     <span className="font-semibold text-foreground/80 text-[10px] mt-1">{t("role")}</span>
-                    {(['admin', 'manager', 'engineer', 'staff', 'customer', 'user'] as const).map(role => (
+                    {(['superadmin', 'admin', 'dept_admin', 'office_admin', 'manager', 'engineer', 'staff', 'customer', 'user'] as const)
+                      .filter(r => {
+                        if (currentUser?.role === 'superadmin') return true;
+                        if (currentUser?.role === 'admin') return r !== 'superadmin';
+                        return r !== 'superadmin' && r !== 'admin';
+                      })
+                      .map(role => (
                       <label key={role} className="flex items-center gap-2 cursor-pointer py-0.5 hover:text-foreground">
                         <Checkbox
                           checked={colFilters.userRoles.includes(role)}
@@ -2018,6 +2071,11 @@ export function AdminUsersTable({
                                         </div>
 
                                         <div className="flex items-center gap-2">
+                                          {currentUser?.role === 'office_admin' && (
+                                            <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30">
+                                              {isRtl ? "فقط‌خواندنی (مدیر اداری)" : "Read-Only (Office Admin)"}
+                                            </Badge>
+                                          )}
                                           <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 fa-num">
                                             {activeSubItemsCount} / {totalSubItemsCount} {t("activeStatus")}
                                           </Badge>
@@ -2104,6 +2162,7 @@ export function AdminUsersTable({
                                                   <Switch
                                                     size="sm"
                                                     checked={isGroupFullyActive}
+                                                    disabled={currentUser?.role === 'office_admin'}
                                                     onCheckedChange={(checked) => handleToggleUserAccess(user.id, group.id, checked)}
                                                     className={cn(isGroupPartiallyActive && "opacity-85 ring-1 ring-emerald-500/40")}
                                                   />
@@ -2126,7 +2185,13 @@ export function AdminUsersTable({
                                                   return (
                                                     <div
                                                       key={item.href}
-                                                      onClick={() => handleToggleUserAccess(user.id, item.href, !hasItemAccess)}
+                                                      onClick={() => {
+                                                        if (currentUser?.role === 'office_admin') {
+                                                          toast.error(isRtl ? "مدیر اداری مجاز به تغییر دسترسی‌های ماژول‌ها نمی‌باشد." : "Office admin cannot change module permissions.");
+                                                          return;
+                                                        }
+                                                        handleToggleUserAccess(user.id, item.href, !hasItemAccess);
+                                                      }}
                                                       className={cn(
                                                         "flex items-center justify-between px-2.5 py-1.5 rounded-xl border transition-colors cursor-pointer select-none text-xs",
                                                         hasItemAccess
@@ -2158,6 +2223,7 @@ export function AdminUsersTable({
                                                         <Switch
                                                           size="sm"
                                                           checked={hasItemAccess}
+                                                          disabled={currentUser?.role === 'office_admin'}
                                                           onCheckedChange={(checked) => handleToggleUserAccess(user.id, item.href, checked)}
                                                         />
                                                       </div>
