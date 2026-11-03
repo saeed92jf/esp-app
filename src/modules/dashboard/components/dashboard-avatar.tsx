@@ -123,22 +123,20 @@ export function DashboardAvatar() {
       className={cn(
         HEADER_ICON_BUTTON_CLASS,
         "p-0 group outline-none cursor-pointer transition-all relative",
-        open && !isAdmin && !isSuperAdmin && "ring-2 ring-primary ring-offset-1 ring-offset-background",
         open && "hover:bg-transparent"
       )}
     >
-      {open && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute -inset-1 sm:-inset-[5px] rounded-full p-[2.5px] sm:p-[3px] pointer-events-none z-0 animate-in fade-in-0 zoom-in-95 duration-150",
-            getRoleGradient(user?.role),
-            getRoleGlowShadow(user?.role)
-          )}
-        >
-          <span className="block size-full rounded-full bg-background" />
-        </span>
-      )}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute -inset-1 sm:-inset-[4.5px] rounded-full p-[2.5px] sm:p-[3px] pointer-events-none z-0 transition-all",
+          getRoleGradient(user?.role),
+          getRoleGlowShadow(user?.role),
+          open ? "opacity-100 scale-105" : "opacity-85 group-hover:opacity-100"
+        )}
+      >
+        <span className="block size-full rounded-full bg-background" />
+      </span>
       <div className="relative z-10 size-[32px] sm:size-[36px] rounded-full flex items-center justify-center">
         <Avatar
           key={avatarUrl || user?.avatar || "avatar-btn"}
@@ -288,7 +286,7 @@ export function DashboardAvatar() {
             setIsScrolled(e.currentTarget.scrollTop > 8);
           }}
         >
-          <div className="flex flex-col w-full p-3 sm:p-4 pt-[50px] sm:pt-[54px]">
+          <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[52px] sm:pt-[56px] pb-4">
 
             <div className="segmented-list w-full">
               {/* Top Block (Avatar + Name) */}
@@ -310,9 +308,7 @@ export function DashboardAvatar() {
                      <div 
                        className={cn(
                          "absolute inset-0 rounded-full",
-                         isAdmin 
-                           ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] opacity-100" 
-                           : "bg-primary opacity-100"
+                         getRoleGradient(user?.role), getRoleGlowShadow(user?.role)
                        )} 
                      />
                      <div className="relative z-10 bg-white dark:bg-black rounded-full p-0.5">

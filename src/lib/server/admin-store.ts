@@ -20,11 +20,11 @@ declare global {
 }
 
 // Initialize clean empty store for real data
-if (!globalThis.__espServerAdminUsers || Array.isArray(globalThis.__espServerAdminUsers)) {
+if (!globalThis.__espServerAdminUsers) {
   globalThis.__espServerAdminUsers = [];
 }
 
-if (!globalThis.__espServerAdminRequests || Array.isArray(globalThis.__espServerAdminRequests)) {
+if (!globalThis.__espServerAdminRequests) {
   globalThis.__espServerAdminRequests = [];
 }
 
@@ -285,7 +285,13 @@ export function createServerAdminRequest(payload: Partial<PendingRequest>): Pend
 export function updateServerAdminRequest(id: string, updates: Partial<PendingRequest>): PendingRequest | null {
   const reqs = globalThis.__espServerAdminRequests || [];
   const index = reqs.findIndex((r) => r.id === id);
-  if (index === -1) return null;
+  if (index === -1) {
+    if (updates.email || updates.name || updates.userId) {
+      const newReq = createServerAdminRequest({ ...updates, id });
+      return newReq;
+    }
+    return null;
+  }
 
   const updated: PendingRequest = {
     ...reqs[index],
@@ -314,10 +320,18 @@ export function approveServerAdminRequestHr(id: string, notes?: string): Pending
 
 export function approveServerAdminRequestManager(
   id: string,
-  options?: { tempPassword?: string; role?: any; modulesAccess?: UserModuleAccess[] }
+  options?: { tempPassword?: string; role?: any; modulesAccess?: UserModuleAccess[]; requestData?: Partial<PendingRequest>; userId?: string; email?: string }
 ): { request: PendingRequest; tempPassword: string; user: User } | null {
   const reqs = globalThis.__espServerAdminRequests || [];
-  const req = reqs.find((r) => r.id === id);
+  let req = reqs.find((r) => r.id === id);
+  if (!req && (options?.requestData || options?.email || options?.userId)) {
+    req = createServerAdminRequest({
+      id,
+      userId: options?.userId || options?.requestData?.userId,
+      email: options?.email || options?.requestData?.email,
+      ...options?.requestData,
+    });
+  }
   if (!req) return null;
 
   const tempPassword = options?.tempPassword || `ESP@${Math.floor(100000 + Math.random() * 900000)}`;

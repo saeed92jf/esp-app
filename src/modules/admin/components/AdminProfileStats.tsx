@@ -156,10 +156,9 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
         {/* Avatar Ring */}
         <div 
           className={cn(
-            "p-[3px] rounded-full shrink-0 transition-transform duration-300",
+            "p-[5px] sm:p-[6px] rounded-full shrink-0 transition-transform duration-300",
             getRoleGradient(selectedUser.role),
-            getRoleGlowShadow(selectedUser.role),
-            isSuperAdmin && "animate-[spin_10s_linear_infinite]"
+            getRoleGlowShadow(selectedUser.role)
           )}
         >
           <div className="p-1 rounded-full bg-white dark:bg-card">

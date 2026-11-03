@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { getRoleRingClass } from "@/lib/role-avatar";
+import { getRoleRingClass, getRoleGradient, getRoleGlowShadow, getRoleBadgeClass } from "@/lib/role-avatar";
 import {
   UserCircle2,
   Mail,
@@ -1212,163 +1212,9 @@ export function AdminUserConfig({
                         {/* ========================================= */}
                         {seg.id === "identity" && (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {/* 0. Top Account & Login Credentials Box */}
-                            <div className="sm:col-span-2 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent border border-primary/20 flex flex-col gap-3.5 shadow-2xs">
-                              <div className="flex items-center justify-between flex-wrap gap-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                    <KeyRound className="size-4" />
-                                  </div>
-                                  <div>
-                                    <h4 className="text-xs font-bold text-foreground">
-                                      {t("accountCredentialsTitle")}
-                                    </h4>
-                                    <p className="text-[11px] text-muted-foreground">
-                                      {t("accountCredentialsDesc")}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                  <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 gap-1 font-semibold">
-                                    <Sparkles className="size-3" />
-                                    <span>{isRtl ? "رمز خودکار تولید شده" : "Auto-Generated"}</span>
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              {/* Corporate Company Selector (Euroslot, NPCeram, Holding) */}
-                              <div className="p-3 sm:p-3.5 rounded-2xl bg-background/80 border border-border/60 flex flex-col gap-3 shadow-2xs">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                                      <Building2 className="size-4" />
-                                    </div>
-                                    <div>
-                                      <span className="text-xs font-bold text-foreground flex items-center gap-2">
-                                        <span>{isRtl ? "انتخاب شرکت سازمانی کاربر:" : "Select Corporate Company:"}</span>
-                                        <span
-                                          className={cn(
-                                            "text-[10px] font-bold px-2 py-0.5 rounded-md border",
-                                            form.companyId === "holding"
-                                              ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30"
-                                              : form.companyId === "npceram"
-                                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                                              : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
-                                          )}
-                                        >
-                                          {isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}
-                                        </span>
-                                      </span>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        {isRtl
-                                          ? "دپارتمان‌ها، سمت‌ها و دامنه مجاز ایمیل بر اساس شرکت انتخابی تنظیم می‌شوند."
-                                          : "Departments, job titles, and allowed domains automatically adapt to the company."}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* 3-Button Company Selector Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                  {/* 1. Euroslot Pars */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectCompany("euroslot")}
-                                    className={cn(
-                                      "p-2.5 rounded-xl border text-start transition-all cursor-pointer flex items-center gap-2.5 group",
-                                      form.companyId === "euroslot"
-                                        ? "border-sky-500 bg-sky-500/10 ring-1 ring-sky-500/30 shadow-xs"
-                                        : "border-border/60 hover:border-border hover:bg-muted/40"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "size-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                      form.companyId === "euroslot"
-                                        ? "bg-sky-500 text-white"
-                                        : "bg-sky-500/10 text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20"
-                                    )}>
-                                      <Building2 className="size-4" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="text-xs font-bold text-foreground flex items-center justify-between">
-                                        <span>{isRtl ? "یورواسلات پارس" : "Euroslot Pars"}</span>
-                                        {form.companyId === "euroslot" && (
-                                          <span className="size-3.5 rounded-full bg-sky-500 text-white flex items-center justify-center text-[9px]">✓</span>
-                                        )}
-                                      </span>
-                                      <span dir="ltr" className="text-[10px] font-mono text-muted-foreground text-start">
-                                        @euroslotpars.com
-                                      </span>
-                                    </div>
-                                  </button>
-
-                                  {/* 2. NPCeram */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectCompany("npceram")}
-                                    className={cn(
-                                      "p-2.5 rounded-xl border text-start transition-all cursor-pointer flex items-center gap-2.5 group",
-                                      form.companyId === "npceram"
-                                        ? "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30 shadow-xs"
-                                        : "border-border/60 hover:border-border hover:bg-muted/40"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "size-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                      form.companyId === "npceram"
-                                        ? "bg-amber-600 text-white"
-                                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500/20"
-                                    )}>
-                                      <Sparkles className="size-4" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="text-xs font-bold text-foreground flex items-center justify-between">
-                                        <span>{isRtl ? "نانو پالایش" : "NPCeram"}</span>
-                                        {form.companyId === "npceram" && (
-                                          <span className="size-3.5 rounded-full bg-amber-600 text-white flex items-center justify-center text-[9px]">✓</span>
-                                        )}
-                                      </span>
-                                      <span dir="ltr" className="text-[10px] font-mono text-muted-foreground text-start">
-                                        @npceram.com
-                                      </span>
-                                    </div>
-                                  </button>
-
-                                  {/* 3. Holding & Group */}
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSelectCompany("holding")}
-                                    className={cn(
-                                      "p-2.5 rounded-xl border text-start transition-all cursor-pointer flex items-center gap-2.5 group",
-                                      form.companyId === "holding"
-                                        ? "border-purple-500 bg-purple-500/10 ring-1 ring-purple-500/30 shadow-xs"
-                                        : "border-border/60 hover:border-border hover:bg-muted/40"
-                                    )}
-                                  >
-                                    <div className={cn(
-                                      "size-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
-                                      form.companyId === "holding"
-                                        ? "bg-purple-600 text-white"
-                                        : "bg-purple-500/10 text-purple-600 dark:text-purple-400 group-hover:bg-purple-500/20"
-                                    )}>
-                                      <Briefcase className="size-4" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                      <span className="text-xs font-bold text-foreground flex items-center justify-between">
-                                        <span>{isRtl ? "هلدینگ و گروه" : "Holding & Group"}</span>
-                                        {form.companyId === "holding" && (
-                                          <span className="size-3.5 rounded-full bg-purple-600 text-white flex items-center justify-center text-[9px]">✓</span>
-                                        )}
-                                      </span>
-                                      <span className="text-[10px] text-muted-foreground truncate">
-                                        {isRtl ? "دسترسی مشترک به ۲ شرکت" : "Shared group access"}
-                                      </span>
-                                    </div>
-                                  </button>
-                                </div>
-                              </div>
-
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                            {/* 0. Account Credentials (Email & Password) */}
+                            <div className="sm:col-span-2 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-primary/5 via-primary/[0.02] to-transparent border border-primary/20 flex flex-col gap-3 shadow-2xs">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {/* Email */}
                                 <div className="flex flex-col gap-1.5">
                                   <div className="flex items-center justify-between min-h-6 h-6">
@@ -3116,39 +2962,24 @@ export function AdminUserConfig({
       {/* SIDE COLUMN: LIVE PERSONNEL PREVIEW & RECENT USERS */}
       {/* ======================================================== */}
       <div className="xl:col-span-4 flex flex-col gap-6">
-        {/* Live Personnel Card Preview */}
-        <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-6 flex flex-col gap-5 relative overflow-hidden shadow-xs">
-          {/* Header */}
-          <div className="flex items-center justify-between z-10">
-            <div className="flex items-center gap-3">
-              <div className="size-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
-                <Sparkles className="size-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-foreground">
-                  {t("livePreview")}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {t("livePreviewDesc")}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress Pill */}
-            <div className="flex items-center gap-1.5 bg-background/80 px-2.5 py-1 rounded-full border border-border/50 text-[11px] font-bold fa-num text-foreground shadow-2xs">
+        {/* Live Personnel Card Preview (Single Unified Card) */}
+        <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 flex flex-col gap-4 relative overflow-hidden shadow-xs">
+          
+          {/* Top Progress Bar */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-bold text-muted-foreground">
+              {isRtl ? "پیش‌نمایش زنده پرونده پرسنلی" : "Live Profile Preview"}
+            </span>
+            <div className="flex items-center gap-1.5 bg-background/80 dark:bg-slate-900/60 px-2.5 py-0.5 rounded-full border border-border/40 text-[11px] font-bold fa-num text-foreground shadow-2xs">
               <CheckCircle2
                 className={cn(
                   "size-3.5",
-                  progressPercent === 100
-                    ? "text-emerald-500"
-                    : "text-primary"
+                  progressPercent === 100 ? "text-emerald-500" : "text-primary"
                 )}
               />
               <span>{progressPercent}%</span>
             </div>
           </div>
-
-          {/* Progress Bar */}
           <div className="w-full h-1.5 bg-muted/60 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary transition-all duration-300 rounded-full"
@@ -3156,307 +2987,216 @@ export function AdminUserConfig({
             />
           </div>
 
-          {/* Real-time Personnel Badge Card */}
-          <div className="bg-background/80 dark:bg-background/60 border border-border/50 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative">
-            {/* 1. Personnel Header Profile */}
-            <div className="flex items-center gap-3.5">
-              <div className={cn("relative rounded-full flex items-center justify-center p-[2.5px] shrink-0", getRoleRingClass(form.role))}>
-                <Avatar className="size-13 rounded-full border border-background shadow-xs">
-                  <AvatarFallback className="text-white font-bold text-xl rounded-full" style={{ backgroundColor: "#0284c7" }}>
+          {/* Personnel Profile Header (Large Avatar + Thick Role Ring) */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-4 pt-2">
+            {/* Large Avatar with Thick Role Ring */}
+            <div className={cn(
+              "relative rounded-full flex items-center justify-center p-[5px] sm:p-[6px] shrink-0 transition-all",
+              getRoleGradient(form.role),
+              getRoleGlowShadow(form.role)
+            )}>
+              <div className="p-1 rounded-full bg-white dark:bg-slate-900">
+                <Avatar className="size-20 sm:size-24 rounded-full overflow-hidden shadow-inner">
+                  <AvatarFallback 
+                    className="text-white font-bold text-2xl sm:text-3xl rounded-full" 
+                    style={{ backgroundColor: (form as any).avatarColor || "#0284c7" }}
+                  >
                     {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
                   </AvatarFallback>
                 </Avatar>
               </div>
-
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="font-bold text-foreground text-base sm:text-lg break-words leading-tight">
-                  {previewDisplayName || t("newEmployeeBadge")}
-                </span>
-                {previewSecondaryName && (
-                  <span className="text-[11px] text-muted-foreground truncate" dir={isRtl ? "ltr" : "rtl"}>
-                    {previewSecondaryName}
-                  </span>
-                )}
-                <span className="text-xs text-muted-foreground truncate mt-0.5">
-                  {form.jobTitle.trim() || t("unspecified")}
-                </span>
-                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                  <span
-                    className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-md uppercase shadow-2xs",
-                      form.role === "admin"
-                        ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                        : "bg-primary/10 text-primary border border-primary/20"
-                    )}
-                  >
-                    {form.role === "admin" ? t("roleAdmin") : t("roleUser")}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border",
-                      detectedCompany.id === "npceram"
-                        ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
-                        : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20"
-                    )}
-                  >
-                    <span>{isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}</span>
-                  </span>
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/40">
-                    {t.has(`departments.${form.department}`) ? t(`departments.${form.department}`) : form.department}
-                  </span>
-                  <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                    {t(`workFormat${form.workMode ? form.workMode.charAt(0).toUpperCase() + form.workMode.slice(1) : "Office"}`)}
-                  </span>
-                </div>
-              </div>
             </div>
 
-            <div className="h-[1px] w-full bg-border/40" />
-
-            {/* 2. Bilingual Name Breakdown */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="flex flex-col bg-slate-100/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/30 min-w-0">
-                <span className="text-[10px] text-muted-foreground font-medium truncate">
-                  {t("persianName")}
+            <div className="flex flex-col min-w-0 flex-1 w-full justify-center">
+              <span className="font-bold text-foreground text-lg sm:text-xl break-words leading-tight">
+                {previewDisplayName || t("newEmployeeBadge")}
+              </span>
+              {previewSecondaryName && (
+                <span className="text-xs text-muted-foreground truncate mt-0.5" dir={isRtl ? "ltr" : "rtl"}>
+                  {previewSecondaryName}
                 </span>
-                <span className="text-xs font-bold text-foreground truncate mt-0.5" title={fullNameFa}>
-                  {fullNameFa || "---"}
+              )}
+              <span className="text-xs sm:text-sm font-medium text-foreground/80 truncate mt-1">
+                {form.jobTitle.trim() || t("unspecified")}
+              </span>
+              
+              <div className="flex items-center gap-1.5 mt-2.5 flex-wrap justify-center sm:justify-start">
+                <span
+                  className={cn(
+                    "text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase shadow-2xs border",
+                    getRoleBadgeClass(form.role)
+                  )}
+                >
+                  {form.role === "admin" ? t("roleAdmin") : form.role === "superadmin" ? t("roleSuperadmin") : t("roleUser")}
                 </span>
-              </div>
-              <div className="flex flex-col bg-slate-100/70 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/30 min-w-0">
-                <span className="text-[10px] text-muted-foreground font-medium truncate">
-                  {t("englishName")}
+                <span
+                  className={cn(
+                    "text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 border shadow-2xs",
+                    detectedCompany.id === "npceram"
+                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
+                      : detectedCompany.id === "holding"
+                      ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
+                      : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
+                  )}
+                >
+                  <span>{isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}</span>
                 </span>
-                <span className="text-xs font-bold text-foreground truncate mt-0.5" dir="ltr" title={fullNameEn}>
-                  {fullNameEn || "---"}
+                <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-background/80 dark:bg-slate-900/60 text-muted-foreground border border-border/40 shadow-2xs">
+                  {t.has(`departments.${form.department}`) ? t(`departments.${form.department}`) : form.department}
+                </span>
+                <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  {t(`workFormat${form.workMode ? form.workMode.charAt(0).toUpperCase() + form.workMode.slice(1) : "Office"}`)}
                 </span>
               </div>
             </div>
+          </div>
 
-            {/* 3. Contact & Identity Items */}
-            <div className="flex flex-col gap-1.5 text-xs">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
-                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
-                  <Mail className="size-3.5 shrink-0 text-primary" />
-                  <span className="text-[11px] font-medium">{t("email")}</span>
-                </div>
-                <span className="font-semibold text-foreground truncate max-w-[190px] text-start" dir="ltr">
-                  {form.email.trim() || "---"}
-                </span>
+          <div className="h-[1px] w-full bg-border/40 my-1" />
+
+          {/* Sequential, Clean Info Rows */}
+          <div className="flex flex-col gap-2 text-xs">
+            {/* Persian & English Names */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30 min-w-0">
+                <span className="text-[10px] text-muted-foreground font-medium">{t("persianName")}</span>
+                <span className="text-xs font-bold text-foreground truncate mt-0.5">{fullNameFa || "---"}</span>
               </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
-                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
-                  <Phone className="size-3.5 shrink-0 text-emerald-500" />
-                  <span className="text-[11px] font-medium">{t("phone")}</span>
-                </div>
-                <span className="font-semibold text-foreground fa-num" dir="ltr">
-                  {form.phone.trim() || "---"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-100/50 dark:bg-slate-800/30 border border-border/20">
-                <div className="flex items-center gap-2 text-muted-foreground shrink-0">
-                  <CreditCard className="size-3.5 shrink-0 text-amber-500" />
-                  <span className="text-[11px] font-medium">{t("nationalIdInputLabel")}</span>
-                </div>
-                <span className="font-semibold text-foreground fa-num font-mono text-xs" dir="ltr">
-                  {form.nationalId.trim() || "---"}
-                </span>
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30 min-w-0">
+                <span className="text-[10px] text-muted-foreground font-medium">{t("englishName")}</span>
+                <span className="text-xs font-bold text-foreground truncate mt-0.5" dir="ltr">{fullNameEn || "---"}</span>
               </div>
             </div>
 
-            {/* 4. Complete Detailed Metadata Grid */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30 text-xs">
-              {/* Base Monthly Salary */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+            {/* Email */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-background/80 dark:bg-slate-900/50 border border-border/30">
+              <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                <Mail className="size-3.5 text-primary" />
+                <span className="text-[11px] font-medium">{t("email")}</span>
+              </div>
+              <span className="font-semibold text-foreground truncate max-w-[200px]" dir="ltr">
+                {form.email.trim() || "---"}
+              </span>
+            </div>
+
+            {/* Phone */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-background/80 dark:bg-slate-900/50 border border-border/30">
+              <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                <Phone className="size-3.5 text-emerald-500" />
+                <span className="text-[11px] font-medium">{t("phone")}</span>
+              </div>
+              <span className="font-semibold text-foreground fa-num" dir="ltr">
+                {form.phone.trim() || "---"}
+              </span>
+            </div>
+
+            {/* National ID */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-background/80 dark:bg-slate-900/50 border border-border/30">
+              <div className="flex items-center gap-2 text-muted-foreground shrink-0">
+                <CreditCard className="size-3.5 text-amber-500" />
+                <span className="text-[11px] font-medium">{t("nationalIdInputLabel")}</span>
+              </div>
+              <span className="font-semibold text-foreground fa-num font-mono text-xs" dir="ltr">
+                {form.nationalId.trim() || "---"}
+              </span>
+            </div>
+
+            {/* Grid of Key Info: Salary, Overtime, Location, Degree, Manager, Password */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              {/* Salary */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Banknote className="size-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span className="text-[10px] truncate">{t("baseSalary")}</span>
+                  <span className="text-[10px]">{t("baseSalary")}</span>
                 </div>
                 <span className="text-xs font-bold text-foreground mt-0.5 fa-num">
                   {formatNumberWithCommas(form.salary || 0)} {t("currencyRials")}
                 </span>
-                <span className="text-[10px] text-muted-foreground mt-0.5 fa-num">
-                  ≈ {formatNumberWithCommas(Math.floor((form.salary || 0) / 10))} {t("currencyTomans")}
-                </span>
               </div>
 
-              {/* Overtime & Hours */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+              {/* Overtime */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Clock className="size-3 text-sky-500 shrink-0" />
-                  <span className="text-[10px] truncate">{t("hasOvertimeLabel")}</span>
+                  <span className="text-[10px]">{t("hasOvertimeLabel")}</span>
                 </div>
                 <span className="text-xs font-bold text-foreground mt-0.5 truncate fa-num">
                   {form.hasOvertime ? `${form.maxOvertimeHours} ${t("hoursPerMonth")}` : t("overtimeNotEligible")}
                 </span>
-                {form.hasOvertime && (
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
-                    {t("overtimeEligible")}
-                  </span>
-                )}
               </div>
 
-              {/* Work Format / Location */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+              {/* Work Location */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Building2 className="size-3 text-blue-500 shrink-0" />
-                  <span className="text-[10px] truncate">{t("workFormatLabel")}</span>
+                  <span className="text-[10px]">{t("workFormatLabel")}</span>
                 </div>
                 <span className="text-xs font-bold text-foreground mt-0.5 truncate">
                   {t(`workFormat${form.workMode ? form.workMode.charAt(0).toUpperCase() + form.workMode.slice(1) : "Office"}`)}
                 </span>
               </div>
 
-              {/* Employee ID */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
-                <span className="text-[10px] text-muted-foreground">
-                  {t("employeeIdLabel")}
-                </span>
-                <span className="text-xs font-bold text-foreground mt-0.5 truncate fa-num font-mono">
-                  {form.employeeId || "---"}
-                </span>
-              </div>
-
-              {/* Age */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
-                <span className="text-[10px] text-muted-foreground">
-                  {t("userAge")}
-                </span>
-                <span className="text-xs font-bold text-foreground mt-0.5 fa-num">
-                  {form.age} {t("yearsOldUnit")}
-                </span>
-              </div>
-
-              {/* Marital Status & Children */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
-                <span className="text-[10px] text-muted-foreground">
-                  {t("maritalStatusLabel")}
-                </span>
-                <span className="text-xs font-bold text-foreground mt-0.5 truncate fa-num">
-                  {t(`maritalStatusOptions.${form.maritalStatus}`)}
-                  {form.maritalStatus === "married" && ` (${form.childrenCount} ${t("childCountUnit")})`}
-                </span>
-              </div>
-
-              {/* Education Degree */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+              {/* Degree */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <GraduationCap className="size-3 text-indigo-500 shrink-0" />
-                  <span className="text-[10px] truncate">{t("educationDegreeLabel")}</span>
+                  <span className="text-[10px]">{t("educationDegreeLabel")}</span>
                 </div>
                 <span className="text-xs font-bold text-foreground mt-0.5 truncate">
                   {t(`degreesOptions.${form.educationDegree}`)}
                 </span>
               </div>
 
-              {/* Field of Study */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
-                <span className="text-[10px] text-muted-foreground truncate">
-                  {t("educationFieldLabel")}
-                </span>
-                <span className="text-xs font-bold text-foreground mt-0.5 truncate" title={form.educationField}>
-                  {form.educationField.trim() || t("unspecified")}
-                </span>
-              </div>
-
-              {/* Direct Manager (Superior) */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
+              {/* Manager */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <UserCircle2 className="size-3 text-sky-500 shrink-0" />
-                  <span className="text-[10px] truncate">{t("managerDirectLabel")}</span>
+                  <span className="text-[10px]">{t("managerDirectLabel")}</span>
                 </div>
-                <span className="text-xs font-bold text-foreground mt-0.5 truncate" title={form.manager}>
+                <span className="text-xs font-bold text-foreground mt-0.5 truncate">
                   {form.manager.trim() || t("unspecified")}
                 </span>
               </div>
 
-              {/* Direct Subordinates Count */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Users className="size-3 text-primary shrink-0" />
-                  <span className="text-[10px] truncate">{t("subordinatesPreviewCount")}</span>
+              {/* Password Status */}
+              <div className="flex flex-col bg-background/80 dark:bg-slate-900/50 p-2.5 rounded-xl border border-border/30">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Lock className="size-3 text-amber-500 shrink-0" />
+                  <span className="text-[10px]">{t("passwordLabel")}</span>
                 </div>
-                <span className="text-xs font-bold text-foreground mt-0.5 truncate fa-num">
-                  {form.subordinates && form.subordinates.length > 0
-                    ? `${form.subordinates.length} ${isRtl ? "نفر" : "reports"}`
-                    : (isRtl ? "فاقد زیردست" : "None")}
+                <span className={cn(
+                  "text-xs font-bold mt-0.5",
+                  form.password ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"
+                )}>
+                  {form.password ? (isRtl ? "تنظیم شده ✓" : "Set ✓") : (isRtl ? "تعیین نشده" : "None")}
                 </span>
-              </div>
-
-              {/* Password Status & Credentials (full width) */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Lock className="size-3 text-amber-500 shrink-0" />
-                    <span className="text-[10px]">{t("passwordLabel")}</span>
-                  </div>
-                  <span className={cn(
-                    "text-xs font-bold",
-                    form.password ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"
-                  )}>
-                    {form.password ? (isRtl ? "رمز تنظیم شد ✓" : "Password Set ✓") : (isRtl ? "رمز تعیین نشده" : "No Password")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Insurance Type (full width) */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-muted-foreground">
-                    {t("insuranceTypeLabel")}
-                  </span>
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {t(`insuranceOptions.${form.insuranceType}`)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Uploaded Documents (full width) */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <FileCheck className="size-3 text-purple-500 shrink-0" />
-                    <span className="text-[10px]">{t("reqSegmentDocuments")}</span>
-                  </div>
-                  <span className="text-xs font-bold text-foreground fa-num">
-                    {form.documents && form.documents.length > 0
-                      ? `${form.documents.length} ${isRtl ? "مدرک بارگذاری شده" : "docs uploaded"}`
-                      : (isRtl ? "فاقد مدرک" : "No documents")}
-                  </span>
-                </div>
-              </div>
-
-              {/* Modules Access Summary (full width) */}
-              <div className="flex flex-col bg-slate-100/80 dark:bg-slate-800/40 p-2.5 rounded-xl border border-border/25 col-span-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <KeyRound className="size-3 text-primary shrink-0" />
-                    <span className="text-[10px]">{t("segmentAccess")}</span>
-                  </div>
-                  <span className="text-xs font-bold text-primary fa-num">
-                    {t("grantedModulesPreview", {
-                      count: (form.modulesAccess || []).filter((m) => m.hasAccess).length,
-                    })}
-                  </span>
-                </div>
               </div>
             </div>
 
-            {/* Instant Create Button */}
-            <Button
-              type="button"
-              onClick={() => handleCreateUser()}
-              className="w-full h-10 rounded-xl mt-1 font-semibold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
-            >
-              <UserPlus className="size-4" />
-              <span>{t("submitAddUser")}</span>
-            </Button>
+            {/* Modules Access Badge Row */}
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-background/80 dark:bg-slate-900/50 border border-border/30">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <KeyRound className="size-3.5 text-primary shrink-0" />
+                <span className="text-[11px] font-medium">{t("segmentAccess")}</span>
+              </div>
+              <span className="text-xs font-bold text-primary fa-num">
+                {t("grantedModulesPreview", {
+                  count: (form.modulesAccess || []).filter((m) => m.hasAccess).length,
+                })}
+              </span>
+            </div>
           </div>
-        </div>
 
-        {/* ======================================================== */}
+          {/* Instant Create Button */}
+          <Button
+            type="button"
+            onClick={() => handleCreateUser()}
+            className="w-full h-11 rounded-xl mt-1 font-bold text-xs gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
+          >
+            <UserPlus className="size-4" />
+            <span>{t("submitAddUser")}</span>
+          </Button>
+        </div>
+        
         {/* RECENT USERS LIST CARD */}
         {/* ======================================================== */}
         <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-6 flex flex-col gap-4 shadow-xs">

@@ -54,6 +54,42 @@ interface NotificationsPopoverProps {
 
 type NotificationSegment = "all" | "unread";
 
+
+function getLocalizedNotification(notif: any, locale: string) {
+  let title = locale === "en" ? (notif.titleEn || notif.title) : (notif.titleFa || notif.title);
+  let description = locale === "en" ? (notif.descriptionEn || notif.description) : (notif.descriptionFa || notif.description);
+  let date = notif.date || "";
+
+  if (locale === "en") {
+    if (date === "هم‌اکنون") date = "Just now";
+    if (date === "امروز") date = "Today";
+    if (date === "دیروز") date = "Yesterday";
+
+    if (title === "حساب کاربری شما فعال شد") {
+      title = "Your Account Has Been Activated";
+      description = "Your account has been approved and activated by System Admin. Credentials and access permissions are configured.";
+    } else if (typeof title === "string" && title.startsWith("تأیید و فعال‌سازی حساب:")) {
+      const name = title.replace("تأیید و فعال‌سازی حساب:", "").trim();
+      title = `Account Approved & Activated: ${name}`;
+    } else if (typeof title === "string" && title.startsWith("درخواست ویرایش اطلاعات:")) {
+      const name = title.replace("درخواست ویرایش اطلاعات:", "").trim();
+      title = `Profile Edit Request: ${name}`;
+    } else if (typeof title === "string" && title.startsWith("حذف درخواست:")) {
+      const name = title.replace("حذف درخواست:", "").trim();
+      title = `Request Removed: ${name}`;
+    } else if (typeof title === "string" && title.startsWith("رد درخواست:")) {
+      const name = title.replace("رد درخواست:", "").trim();
+      title = `Request Rejected: ${name}`;
+    }
+  } else {
+    if (date === "Just now") date = "هم‌اکنون";
+    if (date === "Today") date = "امروز";
+    if (date === "Yesterday") date = "دیروز";
+  }
+
+  return { title, description, date };
+}
+
 export function NotificationsPopover({
   notifications,
   tasks = [],
@@ -329,7 +365,7 @@ export function NotificationsPopover({
               setIsScrolled(e.currentTarget.scrollTop > 8);
             }}
           >
-            <div className="flex flex-col w-full ps-3.5 sm:ps-4 pe-5.5 sm:pe-6.5 pt-[52px] sm:pt-[56px] pb-4">
+            <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[52px] sm:pt-[56px] pb-4">
               <div className="segmented-list flex flex-col gap-[2px] w-full">
                 {/* ── Main Accordion Trigger (آیکون بولد آبی شارپ بزرگ و بج قرمز) ── */}
                 <button
@@ -426,6 +462,7 @@ export function NotificationsPopover({
                           const isTask = notif.type === "manager_task";
                           const isEvent = notif.type === "event";
                           const isRoutine = notif.type === "routine";
+                          const { title: displayTitle, description: displayDesc, date: displayDate } = getLocalizedNotification(notif, locale);
 
                           return (
                             <div
@@ -463,16 +500,16 @@ export function NotificationsPopover({
                                           : "font-bold text-foreground"
                                       )}
                                     >
-                                      {notif.title}
+                                      {displayTitle}
                                     </h4>
                                   </div>
                                   <span className="text-[10px] text-muted-foreground shrink-0 fa-num">
-                                    {notif.date}
+                                    {displayDate}
                                   </span>
                                 </div>
 
                                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                  {notif.description}
+                                  {displayDesc}
                                 </p>
 
                                 {/* Action for Manager Task */}

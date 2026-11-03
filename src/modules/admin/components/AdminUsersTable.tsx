@@ -1421,11 +1421,8 @@ export function AdminUsersTable({
                       {/* Column 1: User (خط اول: نام بولد / خط دوم: مدرک تحصیلی) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex items-center gap-2.5">
-                          {/* Avatar with unclipped location tag & role ring */}
-                          <div className={cn(
-                            "relative size-9 shrink-0 rounded-full flex items-center justify-center",
-                            getRoleRingClass(user.role)
-                          )}>
+                          {/* Avatar with unclipped location tag (ring removed) */}
+                          <div className="relative size-9 shrink-0 rounded-full flex items-center justify-center">
                             <div 
                               className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"
                               style={{ backgroundColor: avatarBg }}

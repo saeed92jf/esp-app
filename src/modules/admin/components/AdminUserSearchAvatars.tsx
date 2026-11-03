@@ -219,8 +219,7 @@ export function AdminUserSearchAvatars({
                   "relative rounded-full transition-all shrink-0 cursor-pointer -my-2.5",
                   isSelected
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110 z-20"
-                    : "opacity-75 hover:opacity-100 hover:scale-105 z-10",
-                  getRoleRingClass(u.role)
+                    : "opacity-75 hover:opacity-100 hover:scale-105 z-10"
                 )}
                 title={displayName}
               >
