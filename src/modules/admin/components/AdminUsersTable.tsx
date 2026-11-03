@@ -630,16 +630,22 @@ export function AdminUsersTable({
   };
 
   // Save Changed Password
-  const handleSavePassword = (userId: string) => {
+  const handleSavePassword = async (userId: string) => {
     if (!newPassword.trim()) return;
     if (newPassword !== confirmPassword) {
       toast.error(t("passwordMismatch"));
       return;
     }
-    toast.success(t("passwordChangedSuccess"));
-    setActiveAccordion(null);
-    setNewPassword("");
-    setConfirmPassword("");
+    try {
+      await api.admin.updateUser(userId, { password: newPassword });
+      setUsers(users.map(u => (u.id === userId ? { ...u, password: newPassword } : u)));
+      toast.success(t("passwordChangedSuccess"));
+      setActiveAccordion(null);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch {
+      toast.error(isRtl ? "خطا در ذخیره رمز عبور روی سرور" : "Failed to update password on server");
+    }
   };
 
   // Save Quick Edited Info
