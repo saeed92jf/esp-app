@@ -533,6 +533,7 @@ export function AdminDashboard() {
                       tMenu={tMenu}
                       handleToggleModuleAccess={handleToggleModuleAccess}
                       handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+                      onRefresh={fetchData}
                     />
                   </div>
                 )}

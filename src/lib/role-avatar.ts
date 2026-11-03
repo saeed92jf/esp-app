@@ -165,3 +165,4 @@ export function getRoleBadgeClass(role?: string | null): string {
   const c = ROLE_RING_CONFIGS[key] || ROLE_RING_CONFIGS.user;
   return `${c.badgeBg} ${c.badgeText} ${c.badgeBorder}`;
 }
+

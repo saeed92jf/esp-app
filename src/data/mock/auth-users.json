@@ -2,7 +2,7 @@
   {
     "email": "saeed@demo.com",
     "mobile": "09120000000",
-    "password": "Esp@2026Admin!",
+    "password": "saeed",
     "user": {
       "id": "u-saeed",
       "fullName": "Saeed Jalili Fard",
@@ -10,13 +10,13 @@
       "email": "saeed@demo.com",
       "mobile": "09120000000",
       "avatarMode": "initials",
-      "role": "superadmin",
+      "role": "admin",
       "primaryColor": "blue",
       "accountStatus": "active",
       "isProfileCompleted": true,
       "hrApproved": true,
       "managerApproved": true,
-      "avatarColor": "#0284c7",
+      "avatarColor": "#1fad00",
       "avatar": null
     }
   },
@@ -26,8 +26,8 @@
     "password": "mShafiee@espAdmin!",
     "user": {
       "id": "u-shafiee",
-      "fullName": "M. Shafiee",
-      "fullNameFa": "مهندس شفیعی",
+      "fullName": "Morteza Shafiee",
+      "fullNameFa": "مرتضی شفیعی",
       "email": "Mshafiee@euroslotpars.com",
       "mobile": "09121110000",
       "avatarMode": "initials",

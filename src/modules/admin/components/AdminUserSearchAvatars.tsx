@@ -10,7 +10,7 @@ import {
   Search, X, Code, TrendingUp, FolderKanban, Briefcase, FlaskConical,
   ChevronsRight, ChevronRight, ChevronLeft
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { User } from "../types/admin.types";
 
 interface AdminUserSearchAvatarsProps {
@@ -27,6 +27,8 @@ export function AdminUserSearchAvatars({
   className,
 }: AdminUserSearchAvatarsProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
   const deptConfig: Record<string, { icon: any; iconBg: string }> = {
     engineering: { icon: Code, iconBg: "bg-blue-500 shadow-blue-500/30" },
@@ -47,19 +49,21 @@ export function AdminUserSearchAvatars({
   useEffect(() => {
     if (selectedUser?.department) {
       const idx = departments.indexOf(selectedUser.department);
-      if (idx !== -1 && idx !== depIndex) {
-        setDepIndex(idx);
+      if (idx !== -1) {
+        setDepIndex((prev) => (prev !== idx ? idx : prev));
       }
     }
-  }, [selectedUser?.department, departments, depIndex]);
+  }, [selectedUser?.id, selectedUser?.department, departments]);
 
-  // Sync selectedUser when department changes
+  // If no user is selected at all, pick the first user of the current department
   useEffect(() => {
-    const depUsers = users.filter((u) => (u.department || "engineering") === departments[depIndex]);
-    if (depUsers.length > 0 && !depUsers.find((u) => u.id === selectedUser?.id)) {
-      setSelectedUser(depUsers[0]);
+    if (!selectedUser && users.length > 0) {
+      const depUsers = users.filter((u) => (u.department || "engineering") === departments[depIndex]);
+      if (depUsers.length > 0) {
+        setSelectedUser(depUsers[0]);
+      }
     }
-  }, [depIndex, users, selectedUser, setSelectedUser, departments]);
+  }, [selectedUser, depIndex, departments, users, setSelectedUser]);
 
   const currentDepUsers = useMemo(() => {
     return users.filter((u) => (u.department || "engineering") === departments[depIndex]);
@@ -197,7 +201,16 @@ export function AdminUserSearchAvatars({
         <div className="flex items-center gap-1.5 overflow-visible px-1 py-1">
           {displayUsers.map((u) => {
             const isSelected = u.id === selectedUser?.id;
-            const initial = u.name?.trim().charAt(0).toUpperCase() || "U";
+            const enName = (u.firstName || u.lastName)
+              ? `${u.firstName || ''} ${u.lastName || ''}`.trim()
+              : (u.fullName || u.name || u.email?.split('@')[0] || "User");
+            const faName = (u.firstNameFa || u.lastNameFa)
+              ? `${u.firstNameFa || ''} ${u.lastNameFa || ''}`.trim()
+              : (u.fullNameFa || u.name || enName);
+            const displayName = isRtl ? faName : enName;
+            const initial = isRtl
+              ? (u.firstNameFa?.trim()?.charAt(0) || u.name?.trim()?.charAt(0) || "ک")
+              : (u.firstName?.trim()?.charAt(0)?.toUpperCase() || u.name?.trim()?.charAt(0)?.toUpperCase() || "U");
             return (
               <button
                 key={u.id}
@@ -209,7 +222,7 @@ export function AdminUserSearchAvatars({
                     : "opacity-75 hover:opacity-100 hover:scale-105 z-10",
                   getRoleRingClass(u.role)
                 )}
-                title={u.name}
+                title={displayName}
               >
                 <Avatar className="size-9 text-xs font-bold border-2 border-background dark:border-slate-800 shadow-md">
                   <AvatarFallback

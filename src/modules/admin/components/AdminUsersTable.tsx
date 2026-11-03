@@ -540,11 +540,17 @@ export function AdminUsersTable({
         if (u) {
           setEditFormData({
             name: u.name,
+            firstNameFa: u.firstNameFa || "",
+            lastNameFa: u.lastNameFa || "",
+            firstName: u.firstName || "",
+            lastName: u.lastName || "",
             email: u.email,
             phone: u.phone || "",
+            extensionNumber: u.extensionNumber || "",
             department: u.department || "engineering",
             role: u.role || "user",
-            jobTitle: u.jobTitle || ""
+            jobTitle: u.jobTitle || "",
+            salary: u.salary ?? 0,
           });
         }
       }
@@ -722,10 +728,30 @@ export function AdminUsersTable({
   // Save Quick Edited Info
   const handleSaveEdit = async (userId: string) => {
     try {
-      const updatedUser = await api.admin.updateUser(userId, editFormData);
+      const fn = (editFormData.firstName || "").trim();
+      const ln = (editFormData.lastName || "").trim();
+      const fnFa = (editFormData.firstNameFa || "").trim();
+      const lnFa = (editFormData.lastNameFa || "").trim();
+      const fullNameEn = (fn || ln) ? `${fn} ${ln}`.trim() : (editFormData.fullName || "");
+      const fullNameFa = (fnFa || lnFa) ? `${fnFa} ${lnFa}`.trim() : (editFormData.fullNameFa || "");
+      const finalName = isRtl ? (fullNameFa || editFormData.name || fullNameEn) : (fullNameEn || editFormData.name || fullNameFa);
+
+      const payload: Partial<User> = {
+        ...editFormData,
+        name: finalName || editFormData.name,
+        fullName: fullNameEn || editFormData.fullName,
+        fullNameFa: fullNameFa || editFormData.fullNameFa,
+        firstName: fn,
+        lastName: ln,
+        firstNameFa: fnFa,
+        lastNameFa: lnFa,
+        salary: Number(editFormData.salary) || 0,
+      };
+
+      const updatedUser = await api.admin.updateUser(userId, payload);
       const updatedUsers = users.map(u => {
         if (u.id === userId) {
-          const updated = { ...u, ...updatedUser, ...editFormData };
+          const updated = { ...u, ...updatedUser, ...payload };
           if (selectedUser?.id === userId) {
             setSelectedUser(updated);
           }
@@ -734,6 +760,7 @@ export function AdminUsersTable({
         return u;
       });
       setUsers(updatedUsers);
+      if (onRefresh) await onRefresh();
 
       // If the edited user is the currently logged in admin, update active session immediately
       if (currentUser && (currentUser.id === userId || (currentUser.email && editFormData.email && currentUser.email.toLowerCase() === editFormData.email.toLowerCase()))) {
@@ -812,87 +839,89 @@ export function AdminUsersTable({
           </button>
 
           {/* Excel Filter Funnel Button with Popover */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "size-5.5 rounded-md flex items-center justify-center transition-all cursor-pointer outline-none",
-                  isFiltered 
-                    ? "bg-primary text-primary-foreground shadow-2xs" 
-                    : "text-muted-foreground/50 hover:text-foreground hover:bg-background/80"
-                )}
-                title={t("filterTooltip")}
+          {children ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    "size-5.5 rounded-md flex items-center justify-center transition-all cursor-pointer outline-none",
+                    isFiltered 
+                      ? "bg-primary text-primary-foreground shadow-2xs" 
+                      : "text-muted-foreground/50 hover:text-foreground hover:bg-background/80"
+                  )}
+                  title={t("filterTooltip")}
+                >
+                  <Filter className="size-3" />
+                </button>
+              </PopoverTrigger>
+
+              <PopoverContent
+                align={align === 'start' ? 'start' : 'center'}
+                sideOffset={6}
+                dir="rtl"
+                className="w-64 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-right"
               >
-                <Filter className="size-3" />
-              </button>
-            </PopoverTrigger>
+                {/* Header Title & Sorting options */}
+                <div className="flex flex-col gap-1 pb-2 border-b border-border/40">
+                  <span className="font-bold text-foreground text-[11px] text-muted-foreground">
+                    {title}
+                  </span>
 
-            <PopoverContent
-              align={align === 'start' ? 'start' : 'center'}
-              sideOffset={6}
-              dir="rtl"
-              className="w-64 p-3 bg-popover border border-border/60 shadow-xl rounded-2xl text-xs flex flex-col gap-2.5 rtl:text-right"
-            >
-              {/* Header Title & Sorting options */}
-              <div className="flex flex-col gap-1 pb-2 border-b border-border/40">
-                <span className="font-bold text-foreground text-[11px] text-muted-foreground">
-                  {title}
-                </span>
+                  <div className="flex flex-col gap-0.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSort(field, 'asc')}
+                      className={cn(
+                        "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
+                        isSorted && sortDir === 'asc' && "text-primary font-bold bg-primary/10"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <ArrowUp className="size-3.5" />
+                        {t("sortAsc")}
+                      </span>
+                      {isSorted && sortDir === 'asc' && <Check className="size-3.5" />}
+                    </button>
 
-                <div className="flex flex-col gap-0.5 mt-1">
-                  <button
-                    type="button"
-                    onClick={() => handleSort(field, 'asc')}
-                    className={cn(
-                      "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
-                      isSorted && sortDir === 'asc' && "text-primary font-bold bg-primary/10"
-                    )}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <ArrowUp className="size-3.5" />
-                      {t("sortAsc")}
-                    </span>
-                    {isSorted && sortDir === 'asc' && <Check className="size-3.5" />}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleSort(field, 'desc')}
-                    className={cn(
-                      "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
-                      isSorted && sortDir === 'desc' && "text-primary font-bold bg-primary/10"
-                    )}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <ArrowDown className="size-3.5" />
-                      {t("sortDesc")}
-                    </span>
-                    {isSorted && sortDir === 'desc' && <Check className="size-3.5" />}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSort(field, 'desc')}
+                      className={cn(
+                        "flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium hover:bg-muted transition-colors cursor-pointer",
+                        isSorted && sortDir === 'desc' && "text-primary font-bold bg-primary/10"
+                      )}
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <ArrowDown className="size-3.5" />
+                        {t("sortDesc")}
+                      </span>
+                      {isSorted && sortDir === 'desc' && <Check className="size-3.5" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Custom Filter Body */}
-              <div className="flex flex-col gap-2 max-h-56 overflow-y-auto custom-scrollbar pe-1">
-                {children}
-              </div>
-
-              {/* Popover Footer: Clear column filter */}
-              {isFiltered && (
-                <div className="pt-2 border-t border-border/40 flex justify-end">
-                  <button
-                    type="button"
-                    onClick={onClear}
-                    className="text-[11px] font-semibold text-destructive hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <RotateCcw className="size-3" />
-                    <span>{t("clearColumnFilter")}</span>
-                  </button>
+                {/* Custom Filter Body */}
+                <div className="flex flex-col gap-2 max-h-56 overflow-y-auto custom-scrollbar pe-1">
+                  {children}
                 </div>
-              )}
-            </PopoverContent>
-          </Popover>
+
+                {/* Popover Footer: Clear column filter */}
+                {isFiltered && (
+                  <div className="pt-2 border-t border-border/40 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={onClear}
+                      className="text-[11px] font-semibold text-destructive hover:underline flex items-center gap-1 cursor-pointer"
+                    >
+                      <RotateCcw className="size-3" />
+                      <span>{t("clearColumnFilter")}</span>
+                    </button>
+                  </div>
+                )}
+              </PopoverContent>
+            </Popover>
+          ) : null}
         </div>
       </th>
     );
@@ -1031,7 +1060,17 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 2: Department & Title ── */}
+              {/* ── Column 2: EXT (ستون مستقل بعد از اسم) ── */}
+              {renderExcelHeader({
+                title: isRtl ? "داخلی" : "EXT.",
+                field: "extensionNumber" as any,
+                align: "center",
+                isFiltered: false,
+                onClear: () => {},
+                children: null,
+              })}
+
+              {/* ── Column 3: Department & Title ── */}
               {renderExcelHeader({
                 title: t("roleAndDeptCol"),
                 field: "department",
@@ -1248,7 +1287,7 @@ export function AdminUsersTable({
           {filteredUsers.length === 0 ? (
             <tbody className="divide-y divide-border/20">
               <tr>
-                <td colSpan={8} className="py-16 text-center text-muted-foreground text-xs">
+                <td colSpan={9} className="py-16 text-center text-muted-foreground text-xs">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <AlertCircle className="size-6 text-muted-foreground/60" />
                     <span>{t("noUsersFound")}</span>
@@ -1307,9 +1346,39 @@ export function AdminUsersTable({
                 return { colorClass: 'bg-[#22c55e]', label: t("office") };
               };
               const locationBadge = getLocationBadge();
-              const userDisplayName = isRtl
-                ? (user.firstNameFa && user.lastNameFa ? `${user.firstNameFa} ${user.lastNameFa}` : (user.fullNameFa || user.name))
-                : (user.fullName || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : (user.email?.split('@')[0] || user.name)));
+
+              const enName = (user.firstName || user.lastName)
+                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                : (user.fullName || user.name || user.email?.split('@')[0] || "-");
+
+              const faName = (user.firstNameFa || user.lastNameFa)
+                ? `${user.firstNameFa || ''} ${user.lastNameFa || ''}`.trim()
+                : (user.fullNameFa || user.name || enName);
+
+              const userDisplayName = isRtl ? faName : enName;
+
+              const getEducationLabel = () => {
+                const deg = user.educationDegree;
+                const degMapFa: Record<string, string> = {
+                  phd: "دکتری",
+                  master: "کارشناسی ارشد",
+                  bachelor: "کارشناسی",
+                  associate: "کاردانی",
+                  diploma: "دیپلم",
+                };
+                const degMapEn: Record<string, string> = {
+                  phd: "Ph.D.",
+                  master: "Master's",
+                  bachelor: "Bachelor's",
+                  associate: "Associate",
+                  diploma: "Diploma",
+                };
+                const degTitle = deg ? (isRtl ? (degMapFa[deg] || deg) : (degMapEn[deg] || deg)) : "";
+                const field = user.educationField?.trim();
+                if (degTitle && field) return `${degTitle} (${field})`;
+                return degTitle || field || (isRtl ? "مدرک ثبت نشده" : "Degree not set");
+              };
+              const educationText = getEducationLabel();
 
               // Initial letter tailored to current locale (Persian vs English)
               const getInitialLetter = () => {
@@ -1319,7 +1388,7 @@ export function AdminUsersTable({
                   return match ? match[0] : (user.name?.trim().charAt(0) || "ک");
                 } else {
                   if (user.firstName?.trim()) return user.firstName.trim().charAt(0).toUpperCase();
-                  const match = user.name?.match(/[a-zA-Z]/);
+                  const match = (user.fullName || user.name)?.match(/[a-zA-Z]/);
                   return match ? match[0].toUpperCase() : (user.name?.trim().charAt(0) || "U").toUpperCase();
                 }
               };
@@ -1349,7 +1418,7 @@ export function AdminUsersTable({
                           : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/30"
                       )}
                     >
-                      {/* Column 1: User (خط اول: نام بولد / خط دوم: ایمیل کمرنگ) */}
+                      {/* Column 1: User (خط اول: نام بولد / خط دوم: مدرک تحصیلی) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex items-center gap-2.5">
                           {/* Avatar with unclipped location tag & role ring */}
@@ -1375,23 +1444,34 @@ export function AdminUsersTable({
                             <span className="font-bold text-xs text-foreground truncate max-w-[170px] leading-snug">
                               {userDisplayName}
                             </span>
-                            {user.email ? (
-                              <a
-                                href={`mailto:${user.email}`}
-                                onClick={(e) => e.stopPropagation()}
-                                dir="ltr"
-                                className="text-[11px] text-muted-foreground hover:text-primary transition-colors truncate max-w-[170px] font-normal leading-tight mt-0.5"
-                              >
-                                {user.email}
-                              </a>
-                            ) : (
-                              <span className="text-[11px] text-muted-foreground font-normal mt-0.5">-</span>
-                            )}
+                            <span 
+                              className="text-[11px] text-muted-foreground truncate max-w-[170px] font-normal leading-tight mt-0.5"
+                              title={educationText}
+                            >
+                              {educationText}
+                            </span>
                           </div>
                         </div>
                       </td>
 
-                      {/* Column 2: Department & Title (خط اول: دپارتمان بولد / خط دوم: عنوان شغلی کمرنگ) */}
+                      {/* Column 2: EXT (ستون مستقل بعد از اسم - فقط یک تگ عددی شیک) */}
+                      <td className="py-3 px-3 text-center align-middle">
+                        {user.extensionNumber ? (
+                          <span 
+                            className={cn(
+                              "inline-flex items-center justify-center font-mono font-bold text-xs px-2.5 py-0.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shadow-2xs",
+                              isRtl && "fa-num"
+                            )}
+                            dir="ltr"
+                          >
+                            {user.extensionNumber}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/40 font-mono">-</span>
+                        )}
+                      </td>
+
+                      {/* Column 3: Department & Title (دپارتمان و سمت سازمانی) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-bold text-foreground truncate max-w-[150px] leading-snug">
@@ -1403,7 +1483,7 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 3: Contact (خط اول: شماره تلفن بولد بدون آیکون / خط دوم: داخلی به صورت تگ) */}
+                      {/* Column 4: Contact (خط اول: شماره تلفن / خط دوم زیر آن: ایمیل) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex flex-col min-w-0">
                           {user.phone ? (
@@ -1413,15 +1493,17 @@ export function AdminUsersTable({
                           ) : (
                             <span className="text-xs text-muted-foreground font-normal leading-snug">-</span>
                           )}
-                          {user.extensionNumber ? (
-                            <div className="flex items-center gap-1.5 mt-1" dir="ltr">
-                              <span className="text-[10px] text-muted-foreground font-medium">EXT.</span>
-                              <span className="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-muted text-foreground border border-border/60 shadow-2xs">
-                                {user.extensionNumber}
-                              </span>
-                            </div>
+                          {user.email ? (
+                            <a
+                              href={`mailto:${user.email}`}
+                              onClick={(e) => e.stopPropagation()}
+                              dir="ltr"
+                              className="text-[11px] text-muted-foreground hover:text-primary transition-colors truncate max-w-[170px] font-normal leading-tight mt-0.5"
+                            >
+                              {user.email}
+                            </a>
                           ) : (
-                            <span className="text-[10px] text-muted-foreground/50 font-normal mt-0.5">-</span>
+                            <span className="text-[11px] text-muted-foreground font-normal mt-0.5">-</span>
                           )}
                         </div>
                       </td>
@@ -1500,7 +1582,7 @@ export function AdminUsersTable({
 
                     {/* ── 2. Paper Pull-out & Folder Tab (سمت راست در فارسی، سمت چپ در انگلیسی) ── */}
                     <tr className="border-0 relative z-0">
-                      <td colSpan={8} className="p-0 border-0">
+                      <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
                             "grid transition-[grid-template-rows,opacity] duration-250 ease-out",
@@ -1919,14 +2001,53 @@ export function AdminUsersTable({
                                       </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                                       <div className="space-y-1.5">
                                         <Label className="text-xs font-medium text-foreground">
-                                          {t("name")}
+                                          {isRtl ? "نام انگلیسی (First Name)" : "First Name"}
                                         </Label>
                                         <Input
-                                          value={editFormData.name || ""}
-                                          onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
+                                          value={editFormData.firstName || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                                          dir="ltr"
+                                          placeholder="e.g. Morteza"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {isRtl ? "نام خانوادگی انگلیسی (Last Name)" : "Last Name"}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.lastName || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                                          dir="ltr"
+                                          placeholder="e.g. Shafiee"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {isRtl ? "نام فارسی" : "First Name (FA)"}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.firstNameFa || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, firstNameFa: e.target.value }))}
+                                          placeholder="مثلاً مرتضی"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {isRtl ? "نام خانوادگی فارسی" : "Last Name (FA)"}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.lastNameFa || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, lastNameFa: e.target.value }))}
+                                          placeholder="مثلاً شفیعی"
                                           className="h-8.5 text-xs bg-background rounded-xl border-border/50"
                                         />
                                       </div>
@@ -1957,6 +2078,32 @@ export function AdminUsersTable({
 
                                       <div className="space-y-1.5">
                                         <Label className="text-xs font-medium text-foreground">
+                                          {isRtl ? "شماره داخلی (EXT)" : "Extension (EXT)"}
+                                        </Label>
+                                        <Input
+                                          value={editFormData.extensionNumber || ""}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, extensionNumber: e.target.value }))}
+                                          dir="ltr"
+                                          placeholder="101"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
+                                          {isRtl ? "حقوق ماهیانه (ریال)" : "Monthly Salary (IRR)"}
+                                        </Label>
+                                        <Input
+                                          type="number"
+                                          value={editFormData.salary || 0}
+                                          onChange={(e) => setEditFormData(prev => ({ ...prev, salary: Number(e.target.value) }))}
+                                          dir="ltr"
+                                          className="h-8.5 text-xs bg-background rounded-xl border-border/50 text-left fa-num"
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5">
+                                        <Label className="text-xs font-medium text-foreground">
                                           {t("department")}
                                         </Label>
                                         <Combobox
@@ -1979,11 +2126,12 @@ export function AdminUsersTable({
                                           onChange={(val) => setEditFormData(prev => ({ ...prev, role: val as any }))}
                                           allowClear={false}
                                           size="sm"
+                                          disabled={currentUser?.role === 'office_admin'}
                                           triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
                                         />
                                       </div>
 
-                                      <div className="space-y-1.5">
+                                      <div className="space-y-1.5 sm:col-span-2">
                                         <Label className="text-xs font-medium text-foreground">
                                           {t("jobTitle")}
                                         </Label>

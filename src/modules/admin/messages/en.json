@@ -637,7 +637,6 @@
     "roleEngineer": "Technical Engineer",
     "roleStaff": "Corporate Staff",
     "roleCustomer": "Client / Customer",
-    "roleUser": "Standard User",
     "roleSuperadminDesc": "Full and unrestricted access to all modules, users, admins, and system configuration.",
     "roleDeptAdminDesc": "View and manage personnel and files within specific organizational department.",
     "roleOfficeAdminDesc": "Manage administrative records, add and edit user profiles (permissions granted by Admin).",
@@ -653,7 +652,10 @@
     "companyHoldingShort": "Holding / Group",
     "emailVerifiedBadge": "Verified Corporate Email",
     "emailNotVerifiedBadge": "Needs Official Corporate Domain",
-    "emailUnauthorizedBadge": "Unauthorized Domain"
+    "emailUnauthorizedBadge": "Unauthorized Domain",
+    "segmentAccess": "Access",
+    "segmentAccessDesc": "Define organizational role and system module permissions",
+    "extCol": "EXT."
   },
   "roleSuperadmin": "Super Administrator",
   "roleDeptAdmin": "Department Admin",
@@ -682,5 +684,8 @@
   "companyHoldingShort": "Holding / Group",
   "emailVerifiedBadge": "Verified Corporate Email",
   "emailNotVerifiedBadge": "Needs Official Corporate Domain",
-  "emailUnauthorizedBadge": "Unauthorized Domain"
+  "emailUnauthorizedBadge": "Unauthorized Domain",
+  "segmentAccess": "Access",
+  "segmentAccessDesc": "Define organizational role and system module permissions",
+  "extCol": "EXT."
 }

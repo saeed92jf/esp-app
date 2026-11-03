@@ -154,7 +154,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             setIsScrolled(e.currentTarget.scrollTop > 8);
           }}
         >
-          <div className="flex flex-col w-full p-3 sm:p-4 pt-[50px] sm:pt-[54px]">
+          <div className="flex flex-col w-full ps-3.5 sm:ps-4 pe-5.5 sm:pe-6.5 pt-[52px] sm:pt-[56px] pb-4">
 
             <div className="segmented-list flex flex-col gap-[2px] w-full">
               {/* Group Header */}

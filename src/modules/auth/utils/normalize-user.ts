@@ -15,17 +15,15 @@ export function normalizeUserFromApi(raw: any): User {
 
   const firstNameFa = (personal.firstNameFa || raw.firstNameFa || "").trim();
   const lastNameFa = (personal.lastNameFa || raw.lastNameFa || "").trim();
-  let fullNameFa = (personal.fullNameFa || raw.fullNameFa || "").trim();
-  if (!fullNameFa && (firstNameFa || lastNameFa)) {
-    fullNameFa = `${firstNameFa} ${lastNameFa}`.trim();
-  }
+  let fullNameFa = (firstNameFa || lastNameFa)
+    ? `${firstNameFa} ${lastNameFa}`.trim()
+    : (personal.fullNameFa || raw.fullNameFa || "").trim();
 
   const firstName = (personal.firstName || raw.firstName || "").trim();
   const lastName = (personal.lastName || raw.lastName || "").trim();
-  let fullName = (personal.fullName || raw.fullName || raw.name || "").trim();
-  if (!fullName && (firstName || lastName)) {
-    fullName = `${firstName} ${lastName}`.trim();
-  }
+  let fullName = (firstName || lastName)
+    ? `${firstName} ${lastName}`.trim()
+    : (personal.fullName || raw.fullName || raw.name || "").trim();
 
   const email = (personal.email || raw.email || raw.data?.email || "").trim();
   const mobile = (personal.phone || raw.phone || raw.mobile || "").trim();

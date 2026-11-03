@@ -329,7 +329,7 @@ export function NotificationsPopover({
               setIsScrolled(e.currentTarget.scrollTop > 8);
             }}
           >
-            <div className="flex flex-col w-full ps-3 sm:ps-4 pe-4.5 sm:pe-5.5 pt-[50px] sm:pt-[54px] pb-4">
+            <div className="flex flex-col w-full ps-3.5 sm:ps-4 pe-5.5 sm:pe-6.5 pt-[52px] sm:pt-[56px] pb-4">
               <div className="segmented-list flex flex-col gap-[2px] w-full">
                 {/* ── Main Accordion Trigger (آیکون بولد آبی شارپ بزرگ و بج قرمز) ── */}
                 <button

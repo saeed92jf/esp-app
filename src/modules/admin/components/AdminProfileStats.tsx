@@ -136,9 +136,15 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
   const currentIns = insuranceStyles[insStatus][insPlan];
   const InsIcon = currentIns.icon;
 
-  const displayName = isRtl
-    ? (selectedUser.firstNameFa && selectedUser.lastNameFa ? `${selectedUser.firstNameFa} ${selectedUser.lastNameFa}` : (selectedUser.fullNameFa || selectedUser.name))
-    : (selectedUser.firstName && selectedUser.lastName ? `${selectedUser.firstName} ${selectedUser.lastName}` : (selectedUser.fullName || selectedUser.name));
+  const enName = (selectedUser.firstName || selectedUser.lastName)
+    ? `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim()
+    : (selectedUser.fullName || selectedUser.name || selectedUser.email?.split('@')[0]);
+
+  const faName = (selectedUser.firstNameFa || selectedUser.lastNameFa)
+    ? `${selectedUser.firstNameFa || ''} ${selectedUser.lastNameFa || ''}`.trim()
+    : (selectedUser.fullNameFa || selectedUser.name || enName);
+
+  const displayName = isRtl ? faName : enName;
 
   const firstLetter = (displayName || selectedUser.name || "U").trim().charAt(0).toUpperCase();
 

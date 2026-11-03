@@ -853,11 +853,11 @@ h1, h2, h3, h4, h5, h6 {
   bottom: 20px !important;
   height: calc(100% - 74px) !important;
   margin: 0 !important;
-  padding: 1.5px !important;
-  width: 8px !important;
+  padding: 1px !important;
+  width: 6px !important;
   inset-inline-end: 4px !important;
   inset-inline-start: auto !important;
-  background-color: color-mix(in oklab, var(--muted) 45%, transparent) !important;
+  background-color: transparent !important;
   border-radius: 9999px !important;
   z-index: 50;
 }
@@ -881,7 +881,7 @@ h1, h2, h3, h4, h5, h6 {
   height: calc(100% - 44px) !important;
   margin: 0 !important;
   padding: 0 1px !important;
-  width: 8px !important;
+  width: 6px !important;
   inset-inline-end: 4px !important;
   inset-inline-start: auto !important;
   background: transparent !important;

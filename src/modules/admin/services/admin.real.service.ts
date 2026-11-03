@@ -26,15 +26,13 @@ export class RealAdminService implements IAdminService {
     const firstName = (personal.firstName || u.firstName || "").trim();
     const lastName = (personal.lastName || u.lastName || "").trim();
 
-    let fullNameFa = (personal.fullNameFa || u.fullNameFa || "").trim();
-    if (!fullNameFa && (firstNameFa || lastNameFa)) {
-      fullNameFa = `${firstNameFa} ${lastNameFa}`.trim();
-    }
+    let fullNameFa = (firstNameFa || lastNameFa)
+      ? `${firstNameFa} ${lastNameFa}`.trim()
+      : (personal.fullNameFa || u.fullNameFa || "").trim();
 
-    let fullName = (personal.fullName || u.fullName || u.name || "").trim();
-    if (!fullName && (firstName || lastName)) {
-      fullName = `${firstName} ${lastName}`.trim();
-    }
+    let fullName = (firstName || lastName)
+      ? `${firstName} ${lastName}`.trim()
+      : (personal.fullName || u.fullName || u.name || "").trim();
 
     const email = (personal.email || u.email || "").trim();
 
@@ -57,7 +55,10 @@ export class RealAdminService implements IAdminService {
     const status = u.status === "active" || u.status === "ACTIVE" || u.status === "online" ? "online" : "offline";
     const roleLower = (u.role || organizational.role || personal.role || "user").toLowerCase();
     let role: UserRole = "user";
-    if (roleLower === "admin" || roleLower === "administrator" || roleLower === "superuser" || Boolean(u.is_superuser)) role = "admin";
+    if (roleLower === "superadmin") role = "superadmin";
+    else if (roleLower === "dept_admin" || roleLower === "deptadmin") role = "dept_admin";
+    else if (roleLower === "office_admin" || roleLower === "officeadmin") role = "office_admin";
+    else if (roleLower === "admin" || roleLower === "administrator" || roleLower === "superuser" || Boolean(u.is_superuser)) role = "admin";
     else if (roleLower === "manager") role = "manager";
     else if (roleLower === "engineer") role = "engineer";
     else if (roleLower === "staff") role = "staff";

@@ -2336,7 +2336,10 @@
     "companyHoldingShort": "هلدینگ و گروه",
     "emailVerifiedBadge": "ایمیل سازمانی معتبر و تأییدشده",
     "emailNotVerifiedBadge": "نیاز به دامنه رسمی سازمانی",
-    "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است"
+    "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است",
+    "segmentAccess": "دسترسی‌ها",
+    "segmentAccessDesc": "تعیین نقش سازمانی و سطوح دسترسی ماژول‌های سامانه",
+    "extCol": "داخلی"
   },
   "Search": {
     "title": "نتایج جستجو",

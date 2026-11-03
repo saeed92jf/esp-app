@@ -29,3 +29,17 @@ export function isPanelBackgroundRoute(pathname: string | null | undefined): boo
   );
 }
 
+
+/**
+ * Global Header Popover Content Style
+ * Unified dimensions, max-height, backdrop, borders, fillets, and shadows for header dropdowns.
+ */
+export const HEADER_POPOVER_CONTENT_CLASS = 
+  "relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] h-[520px] sm:h-[560px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border border-border/40 z-[100] overflow-hidden";
+
+/**
+ * Global Header Popover Scroll Viewport Container
+ * Provides generous clearance (padding-end: 22px-26px) so the scrollbar track NEVER overlaps the cards or items.
+ */
+export const HEADER_POPOVER_BODY_CLASS = 
+  "flex flex-col w-full ps-3.5 sm:ps-4 pe-5.5 sm:pe-6.5 pt-[52px] sm:pt-[56px] pb-4";

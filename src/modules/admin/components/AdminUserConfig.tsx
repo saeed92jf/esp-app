@@ -84,15 +84,16 @@ import type { UserUploadedDocument, UserRole } from "@/types/auth";
 export interface AdminUserConfigProps {
   selectedUser?: User | null;
   users: User[];
-  setUsers: (u: User[]) => void;
+  setUsers: (u: User[] | ((prev: User[]) => User[])) => void;
   setSelectedUser?: (u: User) => void;
+  onRefresh?: () => Promise<void> | void;
   availableModules?: any[];
   tMenu?: any;
   handleToggleModuleAccess?: (moduleId: string, checked: boolean) => void;
   handleToggleAllModulesAccess?: (checked: boolean) => void;
 }
 
-type SegmentId = "identity" | "org" | "personal" | "education" | "skills" | "documents" | "modules" | "compensation";
+type SegmentId = "identity" | "org" | "personal" | "education" | "skills" | "documents" | "access" | "compensation";
 
 interface FormState {
   // 1. Identity & Credentials
@@ -254,6 +255,7 @@ export function AdminUserConfig({
   setSelectedUser,
   availableModules,
   tMenu,
+  onRefresh,
 }: AdminUserConfigProps) {
   const t = useTranslations("Admin");
   const locale = useLocale();
@@ -635,7 +637,7 @@ export function AdminUserConfig({
         return Boolean(form.skills && form.skills.length > 0);
       case "documents":
         return true;
-      case "modules":
+      case "access":
         return true;
       case "compensation":
         return Boolean(form.salary > 0);
@@ -656,7 +658,7 @@ export function AdminUserConfig({
     isSegmentTicked("education"),
     isSegmentTicked("skills"),
     isSegmentTicked("documents"),
-    isSegmentTicked("modules"),
+    isSegmentTicked("access"),
     isSegmentTicked("compensation"),
   ].filter(Boolean).length;
   const progressPercent = Math.round((completedCount / 8) * 100);
@@ -711,10 +713,10 @@ export function AdminUserConfig({
       stepNumber: 6,
     },
     {
-      id: "modules",
-      icon: KeyRound,
-      titleKey: "segmentModules",
-      descKey: "segmentModulesDesc",
+      id: "access",
+      icon: ShieldCheck,
+      titleKey: "segmentAccess",
+      descKey: "segmentAccessDesc",
       stepNumber: 7,
     },
     {
@@ -794,7 +796,7 @@ export function AdminUserConfig({
           .add("education")
           .add("skills")
           .add("documents")
-          .add("modules")
+          .add("access")
           .add("compensation")
       );
 
@@ -856,6 +858,7 @@ export function AdminUserConfig({
 
         setUsers(users.map(u => u.id === selectedUser.id ? mergedUser : u));
         if (setSelectedUser) setSelectedUser(mergedUser);
+        if (onRefresh) await onRefresh();
 
         if (currentUser && (currentUser.id === selectedUser.id || (currentUser.email && mergedUser.email && currentUser.email.toLowerCase() === mergedUser.email.toLowerCase()))) {
           updateUserStore({
@@ -1822,79 +1825,7 @@ export function AdminUserConfig({
                               />
                             </div>
 
-                            {/* Role Selection & Dynamic RBAC Scope Card */}
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <ShieldCheck className="size-3.5 text-primary" />
-                                  <span>{t("role")}</span>
-                                </Label>
-                                <Badge variant="outline" className={cn("text-[10px] px-2 py-0 border font-semibold", currentRoleMeta.color)}>
-                                  {currentRoleMeta.badge}
-                                </Badge>
-                              </div>
-                              <Combobox
-                                options={assignableRoleOptions}
-                                value={form.role}
-                                onChange={(val) =>
-                                  setForm({
-                                    ...form,
-                                    role: val as UserRole,
-                                  })
-                                }
-                                placeholder={t("selectRole")}
-                                emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
-                              />
 
-                              {/* Dynamic Role Scope & Permission Card */}
-                              <div className={cn(
-                                "p-3 rounded-xl border transition-all mt-0.5",
-                                form.role === "admin"
-                                  ? "bg-rose-500/[0.04] border-rose-500/25"
-                                  : form.role === "manager"
-                                  ? "bg-purple-500/[0.04] border-purple-500/25"
-                                  : form.role === "engineer"
-                                  ? "bg-sky-500/[0.04] border-sky-500/25"
-                                  : form.role === "staff"
-                                  ? "bg-emerald-500/[0.04] border-emerald-500/25"
-                                  : form.role === "customer"
-                                  ? "bg-amber-500/[0.04] border-amber-500/25"
-                                  : "bg-slate-500/[0.04] border-slate-500/20"
-                              )}>
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className={cn(
-                                      "size-5 rounded-md flex items-center justify-center shrink-0 text-white text-[10px]",
-                                      form.role === "admin"
-                                        ? "bg-rose-500"
-                                        : form.role === "manager"
-                                        ? "bg-purple-500"
-                                        : form.role === "engineer"
-                                        ? "bg-sky-500"
-                                        : form.role === "staff"
-                                        ? "bg-emerald-500"
-                                        : form.role === "customer"
-                                        ? "bg-amber-500"
-                                        : "bg-slate-500"
-                                    )}>
-                                      {form.role === "admin" ? <ShieldCheck className="size-3" /> :
-                                       form.role === "manager" ? <Users className="size-3" /> :
-                                       form.role === "engineer" ? <Briefcase className="size-3" /> :
-                                       form.role === "staff" ? <Building2 className="size-3" /> :
-                                       form.role === "customer" ? <UserCircle2 className="size-3" /> :
-                                       <KeyRound className="size-3" />}
-                                    </div>
-                                    <span className="text-xs font-bold text-foreground">
-                                      {currentRoleMeta.label}
-                                    </span>
-                                  </div>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                  {currentRoleMeta.desc}
-                                </p>
-                              </div>
-                            </div>
 
                             <div className="flex flex-col gap-2">
                               <Label
@@ -2516,28 +2447,107 @@ export function AdminUserConfig({
                         )}
 
                         {/* ========================================= */}
-                        {/* SEGMENT 7: MODULES ACCESS */}
+                        {/* SEGMENT 7: ACCESS (نقش سازمانی و دسترسی ماژول‌ها) */}
                         {/* ========================================= */}
-                        {seg.id === "modules" && (
-                          <div className="pt-1">
+                        {seg.id === "access" && (
+                          <div className="flex flex-col gap-5 pt-1">
                             {currentUser?.role === 'office_admin' && (
-                              <div className="flex items-center gap-2 p-3 mb-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                              <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium">
                                 <AlertCircle size={16} className="shrink-0" />
                                 <span>
                                   {isRtl
-                                    ? "مدیر اداری دسترسی تغییر سطوح دسترسی ماژول‌ها را ندارد. این بخش در حالت فقط‌خواندنی نمایش داده می‌شود."
-                                    : "Office admin cannot modify module permissions. This section is displayed in read-only mode."}
+                                    ? "مدیر اداری دسترسی تعیین نقش سازمانی یا تغییر سطوح دسترسی ماژول‌ها را ندارد. این بخش در حالت فقط‌خواندنی نمایش داده می‌شود."
+                                    : "Office admin cannot assign roles or modify module permissions. This section is displayed in read-only mode."}
                                 </span>
                               </div>
                             )}
-                            <AdminModuleAccessStep
-                              modulesAccess={form.modulesAccess}
-                              onChange={(updated) =>
-                                setForm((prev) => ({ ...prev, modulesAccess: updated }))
-                              }
-                              availableModules={availableModules}
-                              readOnly={currentUser?.role === 'office_admin'}
-                            />
+
+                            {/* Role Selection & Dynamic RBAC Scope Card */}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                                  <ShieldCheck className="size-3.5 text-primary" />
+                                  <span>{t("role")}</span>
+                                </Label>
+                                <Badge variant="outline" className={cn("text-[10px] px-2 py-0 border font-semibold", currentRoleMeta.color)}>
+                                  {currentRoleMeta.badge}
+                                </Badge>
+                              </div>
+                              <Combobox
+                                options={assignableRoleOptions}
+                                value={form.role}
+                                onChange={(val) =>
+                                  setForm({
+                                    ...form,
+                                    role: val as UserRole,
+                                  })
+                                }
+                                disabled={currentUser?.role === 'office_admin'}
+                                placeholder={t("selectRole")}
+                                emptyText={t("noResults")}
+                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
+                              />
+
+                              {/* Dynamic Role Scope & Permission Card */}
+                              <div className={cn(
+                                "p-3 rounded-xl border transition-all mt-0.5",
+                                form.role === "admin"
+                                  ? "bg-rose-500/[0.04] border-rose-500/25"
+                                  : form.role === "manager"
+                                  ? "bg-purple-500/[0.04] border-purple-500/25"
+                                  : form.role === "engineer"
+                                  ? "bg-sky-500/[0.04] border-sky-500/25"
+                                  : form.role === "staff"
+                                  ? "bg-emerald-500/[0.04] border-emerald-500/25"
+                                  : form.role === "customer"
+                                  ? "bg-amber-500/[0.04] border-amber-500/25"
+                                  : "bg-slate-500/[0.04] border-slate-500/20"
+                              )}>
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <div className="flex items-center gap-2">
+                                    <div className={cn(
+                                      "size-5 rounded-md flex items-center justify-center shrink-0 text-white text-[10px]",
+                                      form.role === "admin"
+                                        ? "bg-rose-500"
+                                        : form.role === "manager"
+                                        ? "bg-purple-500"
+                                        : form.role === "engineer"
+                                        ? "bg-sky-500"
+                                        : form.role === "staff"
+                                        ? "bg-emerald-500"
+                                        : form.role === "customer"
+                                        ? "bg-amber-500"
+                                        : "bg-slate-500"
+                                    )}>
+                                      {form.role === "admin" ? <ShieldCheck className="size-3" /> :
+                                       form.role === "manager" ? <Users className="size-3" /> :
+                                       form.role === "engineer" ? <Briefcase className="size-3" /> :
+                                       form.role === "staff" ? <Building2 className="size-3" /> :
+                                       form.role === "customer" ? <UserCircle2 className="size-3" /> :
+                                       <KeyRound className="size-3" />}
+                                    </div>
+                                    <span className="text-xs font-bold text-foreground">
+                                      {currentRoleMeta.label}
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                                  {currentRoleMeta.desc}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Module Permissions */}
+                            <div className="pt-2 border-t border-border/40">
+                              <AdminModuleAccessStep
+                                modulesAccess={form.modulesAccess}
+                                onChange={(updated) =>
+                                  setForm((prev) => ({ ...prev, modulesAccess: updated }))
+                                }
+                                availableModules={availableModules}
+                                readOnly={currentUser?.role === 'office_admin'}
+                              />
+                            </div>
                           </div>
                         )}
 
@@ -3423,7 +3433,7 @@ export function AdminUserConfig({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-muted-foreground">
                     <KeyRound className="size-3 text-primary shrink-0" />
-                    <span className="text-[10px]">{t("segmentModules")}</span>
+                    <span className="text-[10px]">{t("segmentAccess")}</span>
                   </div>
                   <span className="text-xs font-bold text-primary fa-num">
                     {t("grantedModulesPreview", {

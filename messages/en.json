@@ -2336,7 +2336,10 @@
     "companyHoldingShort": "Holding / Group",
     "emailVerifiedBadge": "Verified Corporate Email",
     "emailNotVerifiedBadge": "Needs Official Corporate Domain",
-    "emailUnauthorizedBadge": "Unauthorized Domain"
+    "emailUnauthorizedBadge": "Unauthorized Domain",
+    "segmentAccess": "Access",
+    "segmentAccessDesc": "Define organizational role and system module permissions",
+    "extCol": "EXT."
   },
   "Search": {
     "title": "Search Results",

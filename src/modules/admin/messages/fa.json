@@ -637,7 +637,6 @@
     "roleEngineer": "مهندس و کارشناس فنی",
     "roleStaff": "پرسنل سازمانی",
     "roleCustomer": "کارفرما و مشتری",
-    "roleUser": "کاربر استاندارد پایه",
     "roleSuperadminDesc": "دسترسی نامحدود به تمامی بخش‌ها، کاربران، مدیران و پیکربندی کل سامانه.",
     "roleDeptAdminDesc": "مشاهده و مدیریت کاربران و پرونده‌های واحد سازمانی مربوطه.",
     "roleOfficeAdminDesc": "انجام امور اداری، ساخت و ویرایش مشخصات پرسنل (تخصیص دسترسی ماژول‌ها توسط ادمین انجام می‌شود).",
@@ -653,7 +652,10 @@
     "companyHoldingShort": "هلدینگ و گروه",
     "emailVerifiedBadge": "ایمیل سازمانی معتبر و تأییدشده",
     "emailNotVerifiedBadge": "نیاز به دامنه رسمی سازمانی",
-    "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است"
+    "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است",
+    "segmentAccess": "دسترسی‌ها",
+    "segmentAccessDesc": "تعیین نقش سازمانی و سطوح دسترسی ماژول‌های سامانه",
+    "extCol": "داخلی"
   },
   "roleSuperadmin": "سوپر ادمین سیستم",
   "roleDeptAdmin": "ادمین دپارتمان",
@@ -682,5 +684,8 @@
   "companyHoldingShort": "هلدینگ و گروه",
   "emailVerifiedBadge": "ایمیل سازمانی معتبر و تأییدشده",
   "emailNotVerifiedBadge": "نیاز به دامنه رسمی سازمانی",
-  "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است"
+  "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است",
+  "segmentAccess": "دسترسی‌ها",
+  "segmentAccessDesc": "تعیین نقش سازمانی و سطوح دسترسی ماژول‌های سامانه",
+  "extCol": "داخلی"
 }

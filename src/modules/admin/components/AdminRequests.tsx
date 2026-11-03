@@ -145,14 +145,38 @@ export function AdminRequests({
   const isRtl = locale === "fa";
   const { confirm } = useConfirm();
   const { user: currentUser } = useAuth();
-  const operatorName = currentUser?.fullNameFa || currentUser?.name || currentUser?.fullName || "سعید جلیلی فرد";
-  const operatorRoleLabel = currentUser?.role === "superadmin"
-    ? (isRtl ? "سوپر ادمین" : "Super Admin")
+  const operatorNameFa = currentUser?.fullNameFa || currentUser?.name || "سعید جلیلی فرد";
+  const operatorNameEn = currentUser?.fullName || currentUser?.name || "Saeed Jalilifard";
+  const operatorName = isRtl ? operatorNameFa : operatorNameEn;
+
+  const operatorRoleLabelFa = currentUser?.role === "superadmin"
+    ? "سوپر ادمین"
     : currentUser?.role === "dept_admin"
-    ? (isRtl ? "ادمین دپارتمان" : "Dept Admin")
+    ? "ادمین دپارتمان"
     : currentUser?.role === "office_admin"
-    ? (isRtl ? "ادمین اداری" : "Office Admin")
-    : (isRtl ? "ادمین سیستم" : "Admin");
+    ? "ادمین اداری"
+    : "ادمین سیستم";
+
+  const operatorRoleLabelEn = currentUser?.role === "superadmin"
+    ? "Super Admin"
+    : currentUser?.role === "dept_admin"
+    ? "Dept Admin"
+    : currentUser?.role === "office_admin"
+    ? "Office Admin"
+    : "System Admin";
+
+  const operatorRoleLabel = isRtl ? operatorRoleLabelFa : operatorRoleLabelEn;
+
+  const getReqDisplayName = (r?: PendingRequest | null) => {
+    if (!r) return "";
+    const enName = (r.firstName || r.lastName)
+      ? `${r.firstName || ''} ${r.lastName || ''}`.trim()
+      : (r.fullName || r.name || r.email?.split('@')[0] || "");
+    const faName = (r.firstNameFa || r.lastNameFa)
+      ? `${r.firstNameFa || ''} ${r.lastNameFa || ''}`.trim()
+      : (r.fullNameFa || r.name || enName);
+    return isRtl ? (faName || enName) : (enName || faName);
+  };
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -568,11 +592,18 @@ export function AdminRequests({
       setRequests((prev) =>
         prev.map((r) => (r.id === reviewData.id ? updated : r))
       );
+      const reqNameFa = reviewData.firstNameFa || reviewData.lastNameFa ? `${reviewData.firstNameFa || ''} ${reviewData.lastNameFa || ''}`.trim() : (reviewData.fullNameFa || reviewData.name || reviewData.email.split('@')[0]);
+      const reqNameEn = reviewData.firstName || reviewData.lastName ? `${reviewData.firstName || ''} ${reviewData.lastName || ''}`.trim() : (reviewData.fullName || reviewData.name || reviewData.email.split('@')[0]);
+
       addUserNotification({
         title: isRtl ? "به‌روزرسانی پرونده متقاضی" : "Applicant Dossier Updated",
+        titleFa: "به‌روزرسانی پرونده متقاضی",
+        titleEn: "Applicant Dossier Updated",
         description: isRtl
-          ? `اطلاعات پرونده متقاضی (${reviewData.name}) در سامانه ذخیره شد.`
-          : `Dossier changes for ${reviewData.name} were saved in the system.`,
+          ? `اطلاعات پرونده متقاضی (${reqNameFa}) در سامانه ذخیره شد.`
+          : `Dossier changes for ${reqNameEn} were saved in the system.`,
+        descriptionFa: `اطلاعات پرونده متقاضی (${reqNameFa}) در سامانه ذخیره شد.`,
+        descriptionEn: `Dossier changes for ${reqNameEn} were saved in the system.`,
         type: "system",
       });
       toast.success(t("profileChangesSavedSuccess"));
@@ -646,11 +677,18 @@ export function AdminRequests({
           });
         }
 
+        const advReqNameFa = reviewData.firstNameFa || reviewData.lastNameFa ? `${reviewData.firstNameFa || ''} ${reviewData.lastNameFa || ''}`.trim() : (reviewData.fullNameFa || reviewData.name || reviewData.email.split('@')[0]);
+        const advReqNameEn = reviewData.firstName || reviewData.lastName ? `${reviewData.firstName || ''} ${reviewData.lastName || ''}`.trim() : (reviewData.fullName || reviewData.name || reviewData.email.split('@')[0]);
+
         addUserNotification({
           title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
+          titleFa: "تأیید و فعال‌سازی حساب توسط مدیر",
+          titleEn: "Account Approved & Activated by Admin",
           description: isRtl
-            ? `درخواست متقاضی (${reviewData.name}) توسط ${operatorName} (${operatorRoleLabel}) تأیید شد و از صف خارج گردید.`
-            : `Application for ${reviewData.name} was approved by ${operatorName} (${operatorRoleLabel}) and removed from queue.`,
+            ? `درخواست متقاضی (${advReqNameFa}) توسط ${operatorNameFa} (${operatorRoleLabelFa}) تأیید شد و از صف خارج گردید.`
+            : `Application for ${advReqNameEn} was approved by ${operatorNameEn} (${operatorRoleLabelEn}) and removed from queue.`,
+          descriptionFa: `درخواست متقاضی (${advReqNameFa}) توسط ${operatorNameFa} (${operatorRoleLabelFa}) تأیید شد و از صف خارج گردید.`,
+          descriptionEn: `Application for ${advReqNameEn} was approved by ${operatorNameEn} (${operatorRoleLabelEn}) and removed from queue.`,
           type: "system",
           operatorName,
           operatorRole: operatorRoleLabel,
@@ -754,11 +792,18 @@ export function AdminRequests({
         });
       }
 
+      const appReqNameFa = reviewData.firstNameFa || reviewData.lastNameFa ? `${reviewData.firstNameFa || ''} ${reviewData.lastNameFa || ''}`.trim() : (reviewData.fullNameFa || reviewData.name || reviewData.email.split('@')[0]);
+      const appReqNameEn = reviewData.firstName || reviewData.lastName ? `${reviewData.firstName || ''} ${reviewData.lastName || ''}`.trim() : (reviewData.fullName || reviewData.name || reviewData.email.split('@')[0]);
+
       addUserNotification({
         title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
+        titleFa: "تأیید و فعال‌سازی حساب توسط مدیر",
+        titleEn: "Account Approved & Activated by Admin",
         description: isRtl
-          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت توسط ${operatorName} (${operatorRoleLabel}) تأیید شد و از صف خارج گردید.`
-          : `Application for ${reviewData.name} was approved by ${operatorName} (${operatorRoleLabel}) and removed from active queue.`,
+          ? `حساب کاربری متقاضی (${appReqNameFa}) با موفقیت توسط ${operatorNameFa} (${operatorRoleLabelFa}) تأیید شد و از صف خارج گردید.`
+          : `Application for ${appReqNameEn} was approved by ${operatorNameEn} (${operatorRoleLabelEn}) and removed from active queue.`,
+        descriptionFa: `حساب کاربری متقاضی (${appReqNameFa}) با موفقیت توسط ${operatorNameFa} (${operatorRoleLabelFa}) تأیید شد و از صف خارج گردید.`,
+        descriptionEn: `Application for ${appReqNameEn} was approved by ${operatorNameEn} (${operatorRoleLabelEn}) and removed from active queue.`,
         type: "system",
         operatorName,
         operatorRole: operatorRoleLabel,
@@ -786,11 +831,18 @@ export function AdminRequests({
       setSelectedReqId(null);
       setReviewData(null);
 
+      const rejReqNameFa = reviewData.firstNameFa || reviewData.lastNameFa ? `${reviewData.firstNameFa || ''} ${reviewData.lastNameFa || ''}`.trim() : (reviewData.fullNameFa || reviewData.name || reviewData.email.split('@')[0]);
+      const rejReqNameEn = reviewData.firstName || reviewData.lastName ? `${reviewData.firstName || ''} ${reviewData.lastName || ''}`.trim() : (reviewData.fullName || reviewData.name || reviewData.email.split('@')[0]);
+
       addUserNotification({
         title: isRtl ? "عدم تایید درخواست متقاضی" : "Application Rejected",
+        titleFa: "عدم تایید درخواست متقاضی",
+        titleEn: "Application Rejected",
         description: isRtl
-          ? `درخواست متقاضی (${reviewData.name}) توسط ${operatorName} (${operatorRoleLabel}) رد و از صف خارج گردید. دلیل: ${rejectReason}`
-          : `Application for ${reviewData.name} was rejected by ${operatorName} (${operatorRoleLabel}). Reason: ${rejectReason}`,
+          ? `درخواست متقاضی (${rejReqNameFa}) توسط ${operatorNameFa} (${operatorRoleLabelFa}) رد و از صف خارج گردید. دلیل: ${rejectReason}`
+          : `Application for ${rejReqNameEn} was rejected by ${operatorNameEn} (${operatorRoleLabelEn}). Reason: ${rejectReason}`,
+        descriptionFa: `درخواست متقاضی (${rejReqNameFa}) توسط ${operatorNameFa} (${operatorRoleLabelFa}) رد و از صف خارج گردید. دلیل: ${rejectReason}`,
+        descriptionEn: `Application for ${rejReqNameEn} was rejected by ${operatorNameEn} (${operatorRoleLabelEn}). Reason: ${rejectReason}`,
         type: "system",
         operatorName,
         operatorRole: operatorRoleLabel,
@@ -940,7 +992,7 @@ export function AdminRequests({
                     <div className="flex flex-col min-w-0 flex-1">
                       {/* Name on its own line: full space, never cut off */}
                       <h3 className="font-extrabold text-base sm:text-xl text-foreground break-words leading-snug">
-                        {reviewData.name || reviewData.email.split("@")[0]}
+                        {getReqDisplayName(reviewData) || reviewData.email.split("@")[0]}
                       </h3>
 
                       {/* Tags brought DOWN below the name */}
@@ -3465,7 +3517,7 @@ export function AdminRequests({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <span className="font-bold text-xs sm:text-sm text-foreground break-words leading-tight">
-                            {req.name || req.email.split("@")[0]}
+                            {getReqDisplayName(req) || req.email.split("@")[0]}
                           </span>
                           <span
                             className="text-[11px] text-muted-foreground font-mono truncate mt-0.5"

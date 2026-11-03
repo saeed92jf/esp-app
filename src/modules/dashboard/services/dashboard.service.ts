@@ -130,7 +130,11 @@ export interface CustomLink {
 export interface DashboardNotificationItem {
   id: string;
   title: string;
+  titleFa?: string;
+  titleEn?: string;
   description: string;
+  descriptionFa?: string;
+  descriptionEn?: string;
   type: 'manager_task' | 'event' | 'routine' | 'system';
   date: string;
   read: boolean;
@@ -269,7 +273,11 @@ export class RealDashboardService implements IDashboardService {
 
 export function addUserNotification(item: {
   title: string;
+  titleFa?: string;
+  titleEn?: string;
   description: string;
+  descriptionFa?: string;
+  descriptionEn?: string;
   type?: 'manager_task' | 'event' | 'routine' | 'system' | 'approval_req';
   operatorName?: string;
   operatorRole?: string;
@@ -280,7 +288,11 @@ export function addUserNotification(item: {
   const newNotif: DashboardNotificationItem = {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     title: item.title,
+    titleFa: item.titleFa || (typeof window !== "undefined" && document.documentElement.lang !== "fa" ? item.titleEn : item.title),
+    titleEn: item.titleEn || item.title,
     description: item.description,
+    descriptionFa: item.descriptionFa || item.description,
+    descriptionEn: item.descriptionEn || item.description,
     type: (item.type as any) || 'system',
     date: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
     read: false,
