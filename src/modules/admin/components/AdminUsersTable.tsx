@@ -1014,9 +1014,9 @@ export function AdminUsersTable({
                 )
               })}
 
-              {/* ── Column 4: Company (شرکت) ── */}
+              {/* ── Column 4: Company & Role (شرکت و نقش) ── */}
               {renderExcelHeader({
-                title: t("companyCol"),
+                title: isRtl ? "شرکت و نقش" : "Company & Role",
                 field: "company",
                 align: "start",
                 isFiltered: colFilters.companies.length > 0,
@@ -1272,7 +1272,7 @@ export function AdminUsersTable({
                           : "bg-card hover:bg-slate-50/80 dark:hover:bg-slate-800/40 [&>td]:border-b [&>td]:border-border/30"
                       )}
                     >
-                      {/* Column 1: User (نام + ایمیل در زیر نام + نقش) */}
+                      {/* Column 1: User (خط اول: نام بولد / خط دوم: ایمیل کمرنگ) */}
                       <td className="py-3 px-3 text-start">
                         <div className="flex items-center gap-2.5">
                           {/* Avatar with unclipped location tag */}
@@ -1283,7 +1283,6 @@ export function AdminUsersTable({
                             >
                               <span className="leading-none">{userInitial}</span>
                             </div>
-                            {/* Unclipped colored location status tag */}
                             <span
                               className={cn(
                                 "absolute -bottom-0.5 -end-0.5 size-3 rounded-full border-2 border-background z-10 pointer-events-none shadow-2xs transition-colors",
@@ -1296,7 +1295,7 @@ export function AdminUsersTable({
                             <span className="font-bold text-xs text-foreground truncate max-w-[150px]">
                               {userDisplayName}
                             </span>
-                            {user.email && (
+                            {user.email ? (
                               <a
                                 href={`mailto:${user.email}`}
                                 onClick={(e) => e.stopPropagation()}
@@ -1305,110 +1304,123 @@ export function AdminUsersTable({
                               >
                                 {user.email}
                               </a>
+                            ) : (
+                              <span className="text-[11px] text-muted-foreground font-normal mt-0.5">-</span>
                             )}
-                            <span className="text-[10px] text-muted-foreground/75 truncate max-w-[150px] mt-0.5">
-                              {getRoleLabel(user.role)}
-                            </span>
                           </div>
                         </div>
                       </td>
 
-                      {/* Column 2: Department & Title */}
+                      {/* Column 2: Department & Title (خط اول: دپارتمان بولد / خط دوم: عنوان شغلی کمرنگ) */}
                       <td className="py-3 px-3 text-start">
                         <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-semibold text-foreground truncate max-w-[140px]">
+                          <span className="text-xs font-bold text-foreground truncate max-w-[140px]">
                             {departmentName}
                           </span>
-                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px]">
+                          <span className="text-[11px] text-muted-foreground truncate max-w-[140px] font-normal mt-0.5">
                             {user.jobTitle || t("userRole")}
                           </span>
                         </div>
                       </td>
 
-                      {/* Column 3: Contact (مستقیماً بعد از دپارتمان با فونت بزرگتر و بولدتر) */}
+                      {/* Column 3: Contact (خط اول: شماره تلفن بولد / خط دوم: داخلی به صورت تگ) */}
                       <td className="py-3 px-3 text-start">
-                        <div className="flex flex-col gap-1 min-w-0">
+                        <div className="flex flex-col min-w-0">
                           {user.phone ? (
-                            <span className="text-[13px] font-bold text-foreground flex items-center gap-1.5" dir="ltr">
-                              <Phone className="size-3.5 shrink-0 text-muted-foreground" />
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5 font-mono" dir="ltr">
+                              <Phone className="size-3 shrink-0 text-muted-foreground" />
                               <span>{user.phone}</span>
                             </span>
                           ) : (
-                            <span className="text-muted-foreground text-xs">-</span>
+                            <span className="text-xs text-muted-foreground font-normal">-</span>
                           )}
-                          {user.extensionNumber && (
-                            <span className="text-[13px] font-extrabold text-foreground flex items-center gap-1.5" dir="ltr">
-                              <span className="text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10 border border-primary/20">EXT.</span>
-                              <span>{user.extensionNumber}</span>
-                            </span>
+                          {user.extensionNumber ? (
+                            <div className="flex items-center gap-1 mt-1" dir="ltr">
+                              <span className="text-[10px] text-muted-foreground font-medium">EXT.</span>
+                              <span className="text-[11px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-muted text-foreground border border-border/60 shadow-2xs">
+                                {user.extensionNumber}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/50 font-normal mt-0.5">-</span>
                           )}
                         </div>
                       </td>
 
-                      {/* Column 4: Company (شرکت) */}
+                      {/* Column 4: Company & Role (خط اول: کمپانی بولد / خط دوم: نقش کمرنگ) */}
                       <td className="py-3 px-3 text-start">
                         {(() => {
                           const comp = getCompanyFromEmail(user.email);
                           return (
-                            <span
-                              className={cn(
-                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border shadow-2xs whitespace-nowrap",
-                                comp.id === "npceram"
-                                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
-                                  : comp.id === "holding"
-                                  ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
-                                  : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
-                              )}
-                            >
-                              <span className="whitespace-nowrap">{isRtl ? comp.nameFa : comp.nameEn}</span>
-                            </span>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-bold text-foreground truncate max-w-[130px]">
+                                {isRtl ? comp.nameFa : comp.nameEn}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground truncate max-w-[130px] font-normal mt-0.5">
+                                {getRoleLabel(user.role)}
+                              </span>
+                            </div>
                           );
                         })()}
                       </td>
 
-                      {/* Column 5: Projects & Experience (پروژه و تجربه در یک ستون، چپ‌چین) */}
+                      {/* Column 5: Projects & Experience (خط اول: پروژه‌ها بولد / خط دوم: امتیاز تجربه کمرنگ) */}
                       <td className="py-3 px-3 text-start">
-                        <div className="flex items-center gap-2">
-                          <span 
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs"
-                            title={isRtl ? `${user.doneProjects || 0} پروژه انجام‌شده` : `${user.doneProjects || 0} Done Projects`}
-                          >
-                            <FolderKanban className="size-3.5" />
-                            <span>{user.doneProjects || 0}</span>
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <FolderKanban className="size-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span className="text-xs font-bold text-foreground">
+                              {user.doneProjects || 0}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-normal">
+                              {t("projectsCol")}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <Award className="size-3 text-blue-600 dark:text-blue-400 shrink-0" />
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              {user.score || 350}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/75 font-normal">
+                              {t("score")}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Column 6: Tenure (خط اول: روزها بولد / خط دوم: واحد روز کمرنگ) */}
+                      <td className="py-3 px-3 text-start">
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-bold text-foreground">
+                            {user.daysInCompany || 0}
                           </span>
-                          <span 
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold text-xs"
-                            title={isRtl ? `امتیاز تجربه: ${user.score || 350}` : `Experience Score: ${user.score || 350}`}
-                          >
-                            <Award className="size-3.5" />
-                            <span>{user.score || 350}</span>
+                          <span className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                            {t("daysUnit")}
                           </span>
                         </div>
                       </td>
 
-                      {/* Column 6: Tenure (چپ‌چین) */}
+                      {/* Column 7: Salary (خط اول: حقوق بولد / خط دوم: واحد کمرنگ) */}
                       <td className="py-3 px-3 text-start">
-                        <span className="text-xs font-medium text-foreground">
-                          {user.daysInCompany || 0} <span className="text-[10px] text-muted-foreground">{t("daysUnit")}</span>
-                        </span>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-mono text-xs font-bold text-foreground">
+                            {showSalaries 
+                              ? `$${(user.salary || 10000).toLocaleString()}` 
+                              : "••••••••"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground font-normal mt-0.5">
+                            USD / {isRtl ? "ماه" : "mo"}
+                          </span>
+                        </div>
                       </td>
 
-                      {/* Column 7: Salary (چپ‌چین) */}
-                      <td className="py-3 px-3 text-start">
-                        <span className="font-mono text-xs font-bold text-foreground">
-                          {showSalaries 
-                            ? `$${(user.salary || 10000).toLocaleString()}` 
-                            : "••••••••"}
-                        </span>
-                      </td>
-
-                      {/* Column 8: Status (چپ‌چین) */}
+                      {/* Column 8: Status (به صورت تگ برجسته) */}
                       <td className="py-3 px-3 text-start">
                         <span className={cn(
-                          "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold",
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-2xs",
                           user.status === 'online'
-                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-                            : "bg-slate-500/15 text-slate-700 dark:text-slate-400"
+                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25"
+                            : "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/25"
                         )}>
                           <span className={cn(
                             "size-1.5 rounded-full",
