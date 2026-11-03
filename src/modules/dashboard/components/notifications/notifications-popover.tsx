@@ -73,12 +73,15 @@ export function NotificationsPopover({
       const saved = localStorage.getItem("esp_dashboard_notifications");
       if (saved) {
         try {
-          return JSON.parse(saved);
+          const parsed = JSON.parse(saved);
+          return (parsed || []).filter((n: any) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id));
         } catch {}
       }
     }
-    if (notifications && notifications.length > 0) return notifications;
-    return SAMPLE_NOTIFICATIONS;
+    if (notifications && notifications.length > 0) {
+      return notifications.filter((n) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id));
+    }
+    return [];
   });
   const [selectedTaskForEmail, setSelectedTaskForEmail] =
     useState<DashboardTask | null>(null);
@@ -99,7 +102,29 @@ export function NotificationsPopover({
 
   useEffect(() => {
     if (notifications && notifications.length > 0) {
-      setItems(notifications);
+      const filtered = notifications.filter((n) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id));
+      setItems(filtered);
+    } else {
+      api.notifications.getNotifications().then((res) => {
+        if (res?.notifications && Array.isArray(res.notifications)) {
+          const real = res.notifications
+            .filter((n) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id))
+            .map((n) => ({
+              id: n.id,
+              title: n.title,
+              description: n.description,
+              type: n.type as any,
+              date: n.date || "هم‌اکنون",
+              read: n.read,
+            }));
+          setItems(real);
+          if (typeof window !== "undefined") {
+            try {
+              localStorage.setItem("esp_dashboard_notifications", JSON.stringify(real));
+            } catch {}
+          }
+        }
+      }).catch(() => {});
     }
   }, [notifications]);
 

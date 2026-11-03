@@ -205,7 +205,9 @@ export function AdminUserSearchAvatars({
                   "relative rounded-full transition-all shrink-0 cursor-pointer -my-2.5",
                   isSelected
                     ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110 z-20"
-                    : "opacity-75 hover:opacity-100 hover:scale-105 z-10"
+                    : "opacity-75 hover:opacity-100 hover:scale-105 z-10",
+                  u.role === 'superadmin' && "p-[2px] bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-xs",
+                  u.role === 'admin' && "p-[2px] bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_8px_rgba(245,158,11,0.4)]"
                 )}
                 title={u.name}
               >

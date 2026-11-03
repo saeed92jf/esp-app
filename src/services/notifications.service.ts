@@ -116,33 +116,16 @@ export class FakeNotificationsService implements INotificationsService {
 
   private getItems(): AppNotification[] {
     if (typeof window === "undefined") {
-      return (SAMPLE_NOTIFICATIONS as unknown as AppNotification[]) || [];
+      return [];
     }
     const raw = localStorage.getItem(this.storageKey);
     if (raw) {
       try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return (parsed || []).filter((n: any) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id));
       } catch {}
     }
-    const initial: AppNotification[] = (SAMPLE_NOTIFICATIONS as unknown as AppNotification[]) || [];
-    if (!initial.some((n) => n.id === "notif-admin-req")) {
-      initial.unshift({
-        id: "notif-admin-req",
-        title: "درخواست عضویت جدید در پنل ادمین",
-        description: "متقاضی جدید با ایمیل سازمانی منتظر تأیید مدارک و تعیین سمت شغلی است.",
-        type: "approval_req",
-        priority: "high",
-        date: "امروز - ۱۰:۳۰",
-        createdAt: new Date().toISOString(),
-        read: false,
-        actionUrl: "/admin",
-        actionText: "بررسی درخواست",
-      });
-    }
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(initial));
-    } catch {}
-    return initial;
+    return [];
   }
 
   private saveItems(items: AppNotification[]): void {

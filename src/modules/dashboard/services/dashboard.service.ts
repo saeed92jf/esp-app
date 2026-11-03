@@ -197,7 +197,7 @@ export const SAMPLE_DETAILED_CHECKLIST: DetailedChecklistItem[] = dashboardSampl
 export const SAMPLE_ROUTINES: DailyRoutine[] = dashboardSamplesMock.routines as unknown as DailyRoutine[];
 export const SAMPLE_NOTES: DashboardNote[] = dashboardSamplesMock.notes as unknown as DashboardNote[];
 export const SAMPLE_CUSTOM_LINKS: CustomLink[] = dashboardSamplesMock.customLinks as unknown as CustomLink[];
-export const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = dashboardSamplesMock.notifications as unknown as DashboardNotificationItem[];
+export const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [];
 
 const FAKE_DATA: Record<UserRole, DashboardData> = dashboardDataMock as unknown as Record<UserRole, DashboardData>;
 
@@ -270,20 +270,30 @@ export class RealDashboardService implements IDashboardService {
 export function addUserNotification(item: {
   title: string;
   description: string;
-  type?: 'manager_task' | 'event' | 'routine' | 'system';
+  type?: 'manager_task' | 'event' | 'routine' | 'system' | 'approval_req';
+  operatorName?: string;
+  operatorRole?: string;
+  targetRole?: string;
+  metadata?: Record<string, unknown>;
 }) {
   if (typeof window === "undefined") return;
   const newNotif: DashboardNotificationItem = {
     id: `notif-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
     title: item.title,
     description: item.description,
-    type: item.type || 'system',
+    type: (item.type as any) || 'system',
     date: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
     read: false,
   };
   try {
     const raw = localStorage.getItem("esp_dashboard_notifications");
-    const list: DashboardNotificationItem[] = raw ? JSON.parse(raw) : [...SAMPLE_NOTIFICATIONS];
+    let list: DashboardNotificationItem[] = [];
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        list = (parsed || []).filter((n: any) => !["notif-1", "notif-2", "notif-3", "notif-sys-1", "notif-admin-1", "notif-admin-req"].includes(n.id));
+      } catch {}
+    }
     list.unshift(newNotif);
     localStorage.setItem("esp_dashboard_notifications", JSON.stringify(list));
     window.dispatchEvent(new CustomEvent("esp_notification_added", { detail: newNotif }));

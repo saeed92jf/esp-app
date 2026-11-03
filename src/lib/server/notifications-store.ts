@@ -10,32 +10,7 @@ declare global {
   var __espServerNotifications: AppNotification[] | undefined;
 }
 
-const INITIAL_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: "notif-sys-1",
-    title: "پلتفرم مدیریت سیستم آماده به کار است",
-    description: "ارتباط کامل با سرور بک‌اند برقرار شد و سرویس‌های احراز هویت و مدیریت کاربران فعال می‌باشند.",
-    type: "system",
-    priority: "medium",
-    date: "هم‌اکنون",
-    createdAt: new Date().toISOString(),
-    read: false,
-    actionUrl: "/dashboard",
-    actionText: "مشاهده داشبورد",
-  },
-  {
-    id: "notif-admin-1",
-    title: "حساب‌های فعال مدیران سیستم",
-    description: "حساب‌های کاربری مهندس سعید جلیلی فرد و مهندس شفیعی با دسترسی کامل ادمین در سامانه ثبت شده‌اند.",
-    type: "system",
-    priority: "high",
-    date: "امروز",
-    createdAt: new Date().toISOString(),
-    read: false,
-    actionUrl: "/admin",
-    actionText: "پنل مدیریت",
-  },
-];
+const INITIAL_NOTIFICATIONS: AppNotification[] = [];
 
 if (!globalThis.__espServerNotifications) {
   globalThis.__espServerNotifications = JSON.parse(JSON.stringify(INITIAL_NOTIFICATIONS));

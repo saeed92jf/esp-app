@@ -102,6 +102,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
     || PRIMARY_COLORS.find(c => c.id === colorId)?.hex
     || '#3a86ff';
 
+  const isSuperAdmin = selectedUser.role === 'superadmin';
   const isAdmin = selectedUser.role === 'admin';
 
   // Real or Fallback values
@@ -148,11 +149,13 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
         {/* Avatar Ring */}
         <div 
           className={`p-[2.5px] rounded-full shrink-0 transition-transform duration-300 ${
-            isAdmin 
-              ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-md" 
+            isSuperAdmin 
+              ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-md animate-[spin_10s_linear_infinite]" 
+              : isAdmin
+              ? "bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_12px_rgba(245,158,11,0.45)]"
               : "shadow-xs"
           }`}
-          style={!isAdmin ? { backgroundColor: `${avatarBgColor}35` } : undefined}
+          style={!isSuperAdmin && !isAdmin ? { backgroundColor: `${avatarBgColor}35` } : undefined}
         >
           <div className="p-1 rounded-full bg-white dark:bg-card">
             <div 

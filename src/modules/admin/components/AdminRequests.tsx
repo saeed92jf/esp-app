@@ -95,6 +95,7 @@ import {
 } from "@/modules/profile/data/education-options";
 import type { UserUploadedDocument } from "@/types/auth";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { formatRequestSubmissionDate, formatDateFieldForLocale, toAsciiDigits } from "../utils/date-formatter";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 import { PRESET_SUGGESTED_SKILLS } from "./AdminUserConfig";
@@ -142,6 +143,15 @@ export function AdminRequests({
   const locale = useLocale();
   const isRtl = locale === "fa";
   const { confirm } = useConfirm();
+  const { user: currentUser } = useAuth();
+  const operatorName = currentUser?.fullNameFa || currentUser?.name || currentUser?.fullName || "سعید جلیلی فرد";
+  const operatorRoleLabel = currentUser?.role === "superadmin"
+    ? (isRtl ? "سوپر ادمین" : "Super Admin")
+    : currentUser?.role === "dept_admin"
+    ? (isRtl ? "ادمین دپارتمان" : "Dept Admin")
+    : currentUser?.role === "office_admin"
+    ? (isRtl ? "ادمین اداری" : "Office Admin")
+    : (isRtl ? "ادمین سیستم" : "Admin");
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -638,9 +648,11 @@ export function AdminRequests({
         addUserNotification({
           title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
           description: isRtl
-            ? `درخواست متقاضی (${reviewData.name}) تأیید شد و از صف خارج گردید.`
-            : `Application for ${reviewData.name} was approved and removed from queue.`,
+            ? `درخواست متقاضی (${reviewData.name}) توسط ${operatorName} (${operatorRoleLabel}) تأیید شد و از صف خارج گردید.`
+            : `Application for ${reviewData.name} was approved by ${operatorName} (${operatorRoleLabel}) and removed from queue.`,
           type: "system",
+          operatorName,
+          operatorRole: operatorRoleLabel,
         });
         toast.success(t("adminApproveSuccess", { email: reviewData.email }));
       } else {
@@ -744,9 +756,11 @@ export function AdminRequests({
       addUserNotification({
         title: isRtl ? "تأیید و فعال‌سازی حساب توسط مدیر" : "Account Approved & Activated by Admin",
         description: isRtl
-          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت تأیید شد و از صف درخواست‌ها خارج گردید.`
-          : `Application for ${reviewData.name} was approved and removed from active queue.`,
+          ? `حساب کاربری متقاضی (${reviewData.name}) با موفقیت توسط ${operatorName} (${operatorRoleLabel}) تأیید شد و از صف خارج گردید.`
+          : `Application for ${reviewData.name} was approved by ${operatorName} (${operatorRoleLabel}) and removed from active queue.`,
         type: "system",
+        operatorName,
+        operatorRole: operatorRoleLabel,
       });
       toast.success(t("adminApproveSuccess", { email: reviewData.email }));
       if (onRefresh) await onRefresh();
@@ -774,9 +788,11 @@ export function AdminRequests({
       addUserNotification({
         title: isRtl ? "عدم تایید درخواست متقاضی" : "Application Rejected",
         description: isRtl
-          ? `درخواست متقاضی (${reviewData.name}) رد و از صف خارج گردید. دلیل: ${rejectReason}`
-          : `Application for ${reviewData.name} was rejected and removed from queue. Reason: ${rejectReason}`,
+          ? `درخواست متقاضی (${reviewData.name}) توسط ${operatorName} (${operatorRoleLabel}) رد و از صف خارج گردید. دلیل: ${rejectReason}`
+          : `Application for ${reviewData.name} was rejected by ${operatorName} (${operatorRoleLabel}). Reason: ${rejectReason}`,
         type: "system",
+        operatorName,
+        operatorRole: operatorRoleLabel,
       });
       toast.info(t("rejectSuccess", { email: reviewData.email }));
       setRejectModalOpen(false);
@@ -797,9 +813,11 @@ export function AdminRequests({
       addUserNotification({
         title: isRtl ? "ارسال مجدد مشخصات ورود" : "Credentials Resent",
         description: isRtl
-          ? `مشخصات ورود و رمز عبور موقت متقاضی (${reviewData.name}) مجدداً ارسال گردید.`
-          : `Temporary login credentials for ${reviewData.name} were resent.`,
+          ? `مشخصات ورود و رمز عبور موقت متقاضی (${reviewData.name}) توسط ${operatorName} (${operatorRoleLabel}) مجدداً ارسال گردید.`
+          : `Temporary login credentials for ${reviewData.name} were resent by ${operatorName} (${operatorRoleLabel}).`,
         type: "system",
+        operatorName,
+        operatorRole: operatorRoleLabel,
       });
       toast.success(
         t("resendSuccess", {

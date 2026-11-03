@@ -30,6 +30,7 @@ import { NAVIGATION } from "@/config/navigation";
 import { getCompanyFromEmail } from "../utils/company";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
+import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -189,6 +190,15 @@ export function AdminUsersTable({
   const locale = useLocale();
   const isRtl = locale === "fa";
 
+  const operatorName = currentUser?.fullNameFa || currentUser?.name || currentUser?.fullName || "سعید جلیلی فرد";
+  const operatorRoleLabel = currentUser?.role === "superadmin"
+    ? (isRtl ? "سوپر ادمین" : "Super Admin")
+    : currentUser?.role === "dept_admin"
+    ? (isRtl ? "ادمین دپارتمان" : "Dept Admin")
+    : currentUser?.role === "office_admin"
+    ? (isRtl ? "ادمین اداری" : "Office Admin")
+    : (isRtl ? "ادمین سیستم" : "Admin");
+
   // Global search input
   const [globalSearch, setGlobalSearch] = useState("");
 
@@ -216,7 +226,6 @@ export function AdminUsersTable({
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showRegisteredPassword, setShowRegisteredPassword] = useState<Record<string, boolean>>({});
   const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -687,8 +696,19 @@ export function AdminUsersTable({
       return;
     }
     try {
+      const targetUser = users.find(u => u.id === userId);
+      const targetName = targetUser?.name || userId;
       await api.admin.updateUser(userId, { password: newPassword });
       setUsers(users.map(u => (u.id === userId ? { ...u, password: newPassword } : u)));
+      addUserNotification({
+        title: isRtl ? "تغییر رمز عبور کاربر" : "Password Changed",
+        description: isRtl
+          ? `رمز عبور کاربر (${targetName}) توسط ${operatorName} (${operatorRoleLabel}) بازنشانی و تغییر یافت.`
+          : `Password for ${targetName} was changed by ${operatorName} (${operatorRoleLabel}).`,
+        type: "system",
+        operatorName,
+        operatorRole: operatorRoleLabel,
+      });
       toast.success(t("passwordChangedSuccess"));
       setActiveAccordion(null);
       setNewPassword("");
@@ -1331,8 +1351,12 @@ export function AdminUsersTable({
                       {/* Column 1: User (خط اول: نام بولد / خط دوم: ایمیل کمرنگ) */}
                       <td className="py-3 px-3.5 text-start align-middle">
                         <div className="flex items-center gap-2.5">
-                          {/* Avatar with unclipped location tag */}
-                          <div className="relative size-9 shrink-0">
+                          {/* Avatar with unclipped location tag & role ring */}
+                          <div className={cn(
+                            "relative size-9 shrink-0 rounded-full flex items-center justify-center",
+                            user.role === 'superadmin' && "p-[2px] bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-xs",
+                            user.role === 'admin' && "p-[2px] bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_8px_rgba(245,158,11,0.35)]"
+                          )}>
                             <div 
                               className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"
                               style={{ backgroundColor: avatarBg }}
@@ -1803,62 +1827,6 @@ export function AdminUsersTable({
                                       >
                                         <X size={15} />
                                       </button>
-                                    </div>
-
-                                    {/* Current registered password */}
-                                    <div className="space-y-2 p-3 bg-muted/30 rounded-xl border border-border/30">
-                                      <div className="flex items-center justify-between">
-                                        <p className="text-[10px] font-medium text-muted-foreground">
-                                          {isRtl ? "رمز عبور فعلی ثبت‌شده در سامانه" : "Current Registered Password"}
-                                        </p>
-                                        <span className="text-[9px] text-muted-foreground font-mono">
-                                          {isRtl ? "دریافت‌شده از سرور" : "Live from server"}
-                                        </span>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <div className="flex-1 flex items-center justify-between bg-background rounded-lg px-3 py-2 border border-border/40 font-mono text-xs sm:text-sm text-foreground overflow-hidden">
-                                          <span className="select-all tracking-wider truncate">
-                                            {user.password
-                                              ? (showRegisteredPassword[user.id] ? user.password : "••••••••••••")
-                                              : (isRtl ? "در حال دریافت..." : "Loading...")}
-                                          </span>
-                                          <div className="flex items-center gap-1 shrink-0 ms-2">
-                                            <button
-                                              type="button"
-                                              onClick={() => setShowRegisteredPassword(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
-                                              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
-                                              title={showRegisteredPassword[user.id] ? (isRtl ? "مخفی‌سازی" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
-                                            >
-                                              {showRegisteredPassword[user.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                                            </button>
-                                            {user.password && (
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  navigator.clipboard.writeText(user.password || "");
-                                                  toast.success(isRtl ? "رمز عبور در کلیپ‌بورد کپی شد" : "Password copied to clipboard");
-                                                }}
-                                                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
-                                                title={isRtl ? "کپی رمز" : "Copy"}
-                                              >
-                                                <Copy size={14} />
-                                              </button>
-                                            )}
-                                          </div>
-                                        </div>
-                                        <Button
-                                          type="button"
-                                          size="sm"
-                                          onClick={() => {
-                                            api.admin.sendPassword(user.id)
-                                              .then(() => toast.success(isRtl ? "رمز عبور برای کاربر ارسال شد" : "Password sent to user"))
-                                              .catch(() => toast.error(isRtl ? "خطا در ارسال رمز عبور" : "Failed to send password"));
-                                          }}
-                                          className="h-9 px-3.5 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-xs shrink-0"
-                                        >
-                                          {isRtl ? "ارسال برای کاربر" : "Send to User"}
-                                        </Button>
-                                      </div>
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl">
