@@ -19,9 +19,105 @@ declare global {
   var __espServerAdminRequests: PendingRequest[] | undefined;
 }
 
-// Initialize clean empty store for real data
-if (!globalThis.__espServerAdminUsers) {
-  globalThis.__espServerAdminUsers = [];
+const DEFAULT_SERVER_ADMIN_USERS: User[] = [
+  {
+    id: "u-saeed",
+    name: "سعید جلیلی فرد",
+    fullName: "Saeed Jalili Fard",
+    fullNameFa: "سعید جلیلی فرد",
+    firstName: "Saeed",
+    lastName: "Jalili Fard",
+    firstNameFa: "سعید",
+    lastNameFa: "جلیلی فرد",
+    email: "s.jalilifard@euroslotpars.com",
+    phone: "09123480872",
+    nationalId: "0012345678",
+    role: "superadmin",
+    status: "online",
+    accountStatus: "active",
+    company: "یورواسلات پارس",
+    companyId: "euroslot",
+    department: "Engineering",
+    jobTitle: "مدیر ارشد و سوپر ادمین سیستم",
+    avatarColor: "#0284c7",
+    primaryColor: "blue",
+    avatarMode: "photo",
+    joinedAt: "1401/01/15",
+    daysInCompany: 1100,
+    doneProjects: 28,
+    salary: 650000000,
+    hasOvertime: true,
+    maxOvertimeHours: 40,
+    workLocation: "office",
+    contractType: "full_time",
+    employeeId: "ESP-001",
+    extensionNumber: "101",
+    manager: "مدیرعامل",
+    workingFormat: { office: 60, factory: 20, mission: 10, leave: 10 },
+    modulesAccess: [],
+    isProfileCompleted: true,
+    adminApproved: true,
+    managerApproved: true,
+    hrApproved: true,
+    documents: [],
+    subordinates: [],
+    skills: [],
+    monthlyBonuses: [],
+  },
+  {
+    id: "u-shafiee",
+    name: "مرتضی شفیعی",
+    fullName: "Morteza Shafiee",
+    fullNameFa: "مرتضی شفیعی",
+    firstName: "Morteza",
+    lastName: "Shafiee",
+    firstNameFa: "مرتضی",
+    lastNameFa: "شفیعی",
+    email: "mshafiee@euroslotpars.com",
+    phone: "09123480872",
+    nationalId: "0000000000",
+    role: "admin",
+    status: "online",
+    accountStatus: "active",
+    company: "Euroslot Pars",
+    companyId: "euroslot",
+    department: "engineering",
+    jobTitle: "Engineering Manager",
+    avatarColor: "#8b5cf6",
+    primaryColor: "purple",
+    avatarMode: "photo",
+    joinedAt: "1403/01/01",
+    daysInCompany: 300,
+    doneProjects: 15,
+    salary: 620000000,
+    hasOvertime: false,
+    maxOvertimeHours: 0,
+    workLocation: "office",
+    contractType: "full_time",
+    employeeId: "ESP-002",
+    extensionNumber: "125",
+    workingFormat: { office: 70, factory: 20, mission: 5, leave: 5 },
+    modulesAccess: [],
+    isProfileCompleted: true,
+    adminApproved: true,
+    managerApproved: true,
+    hrApproved: true,
+    documents: [],
+    subordinates: [],
+    skills: [],
+    monthlyBonuses: [],
+  },
+];
+
+// Initialize store with persistent seed users
+if (!globalThis.__espServerAdminUsers || globalThis.__espServerAdminUsers.length === 0) {
+  globalThis.__espServerAdminUsers = [...DEFAULT_SERVER_ADMIN_USERS];
+} else {
+  for (const defU of DEFAULT_SERVER_ADMIN_USERS) {
+    if (!globalThis.__espServerAdminUsers.some(u => u.id === defU.id || u.email.toLowerCase() === defU.email.toLowerCase())) {
+      globalThis.__espServerAdminUsers.push(defU);
+    }
+  }
 }
 
 if (!globalThis.__espServerAdminRequests) {
@@ -355,10 +451,12 @@ export function approveServerAdminRequestManager(
 
   let user: User;
   if (existingIndex !== -1) {
+    const isSuperAdmin = users[existingIndex].role === "superadmin" || users[existingIndex].id === "u-saeed" || users[existingIndex].email.includes("jalili");
+    const safeRole = isSuperAdmin ? "superadmin" : (users[existingIndex].role === "admin" && targetRole === "user" ? "admin" : targetRole);
     users[existingIndex] = {
       ...users[existingIndex],
       accountStatus: "active",
-      role: targetRole,
+      role: safeRole,
       modulesAccess: options?.modulesAccess || req.modulesAccess || users[existingIndex].modulesAccess,
       adminApproved: true,
       managerApproved: true,

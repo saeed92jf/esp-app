@@ -73,20 +73,16 @@ export default function LoginPage() {
           // Admins and superadmins bypass profile onboarding and pending checks
           const isPrivileged = user.role === "admin" || user.role === "superadmin";
 
-          // If profile is not yet completed, redirect immediately to profile setup (except privileged)
-          if (!isPrivileged && (!user.isProfileCompleted || user.accountStatus === "pending_profile")) {
-            router.push("/dashboard/profile?onboarding=true");
-            router.refresh();
-            return;
-          }
-          // If not active / not yet final approved by manager, go directly to /account-pending
-          const isFullyApproved = Boolean(
-            isPrivileged || user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
-          );
-          if (!isFullyApproved) {
-            router.push("/account-pending");
-            router.refresh();
-            return;
+          // Non-privileged users who are not active go directly to /account-pending
+          if (!isPrivileged) {
+            const isFullyApproved = Boolean(
+              user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
+            );
+            if (!isFullyApproved) {
+              router.push("/account-pending");
+              router.refresh();
+              return;
+            }
           }
         }
         router.push("/");

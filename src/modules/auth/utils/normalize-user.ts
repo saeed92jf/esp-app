@@ -92,6 +92,12 @@ export function normalizeUserFromApi(raw: any): User {
   const storedPrimary = typeof window !== "undefined" ? localStorage.getItem("esp-global-primary-color") : null;
   const primaryColor = storedPrimary || personal.primaryColor || raw.primaryColor || "red";
 
+  const isProfileCompleted = typeof raw.isProfileCompleted === "boolean"
+    ? raw.isProfileCompleted
+    : typeof raw.is_profile_completed === "boolean"
+    ? raw.is_profile_completed
+    : accountStatus === "active";
+
   return {
     id: String(raw.id || raw.userId || personal.id || "u-real"),
     fullName,
@@ -106,9 +112,9 @@ export function normalizeUserFromApi(raw: any): User {
     avatarBgColor,
     primaryColor,
     accountStatus,
-    isProfileCompleted: true,
-    hrApproved: accountStatus === "active",
-    managerApproved: accountStatus === "active",
+    isProfileCompleted,
+    hrApproved: accountStatus === "active" || Boolean(raw.hrApproved),
+    managerApproved: accountStatus === "active" || Boolean(raw.managerApproved),
   };
 }
 

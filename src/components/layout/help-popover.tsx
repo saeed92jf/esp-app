@@ -94,7 +94,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
       <PopoverAnchor className={cn("fixed top-[calc(var(--header-height)+8px)] w-0 h-0 pointer-events-none", anchorEdge === "left" ? "left-3 sm:left-6" : "right-3 sm:right-6")} />
       
       <PopoverContent 
-        className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden" 
+        className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden" 
         align={anchorEdge === "left" ? (dir === "rtl" ? "end" : "start") : (dir === "rtl" ? "start" : "end")}
         side="bottom"
         sideOffset={0}
@@ -154,7 +154,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             setIsScrolled(e.currentTarget.scrollTop > 8);
           }}
         >
-          <div className="flex flex-col w-full ps-3.5 sm:ps-4 pe-5.5 sm:pe-6.5 pt-[52px] sm:pt-[56px] pb-4">
+          <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[60px] sm:pt-[66px] pb-3.5 sm:pb-4">
 
             <div className="segmented-list flex flex-col gap-[2px] w-full">
               {/* Group Header */}

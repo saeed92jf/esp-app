@@ -21,8 +21,10 @@ import {
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
   Building, Calendar, Users, ExternalLink,
   Building2, Briefcase, DollarSign, Clock, MapPin,
-  Heart, Shield, Layers
+  Heart, Shield, Layers, Trash2, Lock
 } from "lucide-react";
+import { useConfirm } from "@/hooks/use-confirm";
+import type { UserRole } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import { getRoleRingClass } from "@/lib/role-avatar";
 import { toast } from "sonner";
@@ -35,9 +37,9 @@ import { addUserNotification } from "@/modules/dashboard/services/dashboard.serv
 
 interface AdminUsersTableProps {
   users: User[];
-  setUsers: (u: User[]) => void;
+  setUsers: React.Dispatch<React.SetStateAction<User[]>>;
   selectedUser: User | null;
-  setSelectedUser: (u: User) => void;
+  setSelectedUser: React.Dispatch<React.SetStateAction<User | null>>;
   setUserToEdit?: (u: User | null) => void;
   setActiveTab: (tab: any) => void;
   onRefresh?: () => Promise<void> | void;
@@ -161,6 +163,98 @@ function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPane
   );
 }
 
+export const ORDERED_ROLES: {
+  value: UserRole;
+  labelEn: string;
+  labelFa: string;
+  descEn: string;
+  descFa: string;
+  badgeClass: string;
+  iconBg: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+}[] = [
+  {
+    value: "superadmin",
+    labelEn: "Super Admin",
+    labelFa: "Super Admin (مدیر ارشد)",
+    descEn: "Full root access to entire system and role configurations",
+    descFa: "دسترسی نامحدود و کامل به تمام بخش‌ها، تنظیمات رول‌ها و سیستم",
+    badgeClass: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/35 font-bold",
+    iconBg: "bg-rose-600",
+    icon: ShieldCheck,
+  },
+  {
+    value: "admin",
+    labelEn: "System Admin",
+    labelFa: "System Admin (مدیر سیستم)",
+    descEn: "Technical administrator, manages personnel, requests and module access",
+    descFa: "مدیریت فنی، نظارت بر پرسنل، درخواست‌ها و تخصیص ماژول‌ها",
+    badgeClass: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/35 font-bold",
+    iconBg: "bg-amber-600",
+    icon: Shield,
+  },
+  {
+    value: "office_admin",
+    labelEn: "Office Admin",
+    labelFa: "Office Admin (مدیر اداری)",
+    descEn: "Administrative management, personnel affairs, and employee records",
+    descFa: "مدیریت اداری، کارگزینی، ثبت قراردادها و امور پرسنلی",
+    badgeClass: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/25",
+    iconBg: "bg-teal-600",
+    icon: Building2,
+  },
+  {
+    value: "manager",
+    labelEn: "Department Manager",
+    labelFa: "Department Manager (مدیر دپارتمان)",
+    descEn: "Departmental oversight, request approvals, and team management",
+    descFa: "تأیید درخواست‌های دپارتمان و نظارت بر پرسنل زیرمجموعه",
+    badgeClass: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/25",
+    iconBg: "bg-purple-600",
+    icon: Users,
+  },
+  {
+    value: "engineer",
+    labelEn: "Engineer",
+    labelFa: "Engineer (مهندس)",
+    descEn: "Specialized engineering tools, assigned projects, and technical workflows",
+    descFa: "دسترسی تخصصی به ماژول‌های فنی، پروژه‌ها و کارتابل مهندسی",
+    badgeClass: "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/25",
+    iconBg: "bg-sky-600",
+    icon: Briefcase,
+  },
+  {
+    value: "staff",
+    labelEn: "Staff",
+    labelFa: "Staff (پرسنل / کارمند)",
+    descEn: "Operational staff access to assigned daily tasks and documents",
+    descFa: "دسترسی به وظایف اداری، کارتابل روزمره و مستندات",
+    badgeClass: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25",
+    iconBg: "bg-emerald-600",
+    icon: Building,
+  },
+  {
+    value: "customer",
+    labelEn: "Client",
+    labelFa: "Client (مشتری / کارفرما)",
+    descEn: "External client portal to view project milestones and communication",
+    descFa: "مشاهده وضعیت پروژه‌ها، تحویل سفارش‌ها و مکاتبات",
+    badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25",
+    iconBg: "bg-amber-500",
+    icon: UserCheck,
+  },
+  {
+    value: "user",
+    labelEn: "standard user",
+    labelFa: "standard user (کاربر استاندارد)",
+    descEn: "Default role with basic access and public modules (Knowledge & Media)",
+    descFa: "نقش پیش‌فرض سیستم با دسترسی پایه و باز بودن خودکار ماژول‌های دانش و رسانه",
+    badgeClass: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25",
+    iconBg: "bg-slate-600",
+    icon: KeyRound,
+  },
+];
+
 export function AdminUsersTable({
   users,
   setUsers,
@@ -215,10 +309,21 @@ export function AdminUsersTable({
   // Salary visibility toggle
   const [showSalaries, setShowSalaries] = useState(false);
 
+  const { confirm } = useConfirm();
+  const [selectedRoleForUser, setSelectedRoleForUser] = useState<UserRole>('user');
+  const [isSavingRole, setIsSavingRole] = useState(false);
+
+  const isSaeed = Boolean(
+    (currentUser?.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+    currentUser?.id === "u-saeed"
+  );
+  const isSuperAdmin = currentUser?.role === 'superadmin' || isSaeed;
+  const canEditModuleAccess = isSuperAdmin || currentUser?.role === 'admin';
+
   // Active accordion per user row
   const [activeAccordion, setActiveAccordion] = useState<{
     userId: string;
-    type: 'view' | 'password' | 'edit' | 'access' | 'documents';
+    type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents';
   } | null>(null);
 
   // Track hovered user row for smooth slide-out tab animation
@@ -305,21 +410,11 @@ export function AdminUsersTable({
   }, [uniqueDepartments, t]);
 
   const roleOptions: ComboboxOption[] = useMemo(() => {
-    const all = [
-      { value: "superadmin", label: t("roleSuperadmin") },
-      { value: "admin", label: t("roleAdmin") },
-      { value: "dept_admin", label: t("roleDeptAdmin") },
-      { value: "office_admin", label: t("roleOfficeAdmin") },
-      { value: "manager", label: t("roleManager") },
-      { value: "engineer", label: t("roleEngineer") },
-      { value: "staff", label: t("roleStaff") },
-      { value: "customer", label: t("roleCustomer") },
-      { value: "user", label: t("roleUser") },
-    ];
-    if (currentUser?.role === 'superadmin') return all;
-    if (currentUser?.role === 'admin') return all.filter(r => r.value !== 'superadmin');
-    return all.filter(r => r.value !== 'superadmin' && r.value !== 'admin');
-  }, [t, currentUser?.role]);
+    return ORDERED_ROLES.map((r) => ({
+      value: r.value,
+      label: isRtl ? r.labelFa : r.labelEn,
+    }));
+  }, [isRtl]);
 
   const toggleArrayItem = (arr: string[], item: string) => {
     return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
@@ -358,14 +453,8 @@ export function AdminUsersTable({
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       // 0. Role-based Visibility & Permission Scope
-      if (currentUser?.role === 'superadmin') {
-        // Superadmin has full unrestricted visibility across all users and admins
-      } else if (currentUser?.role === 'admin') {
-        // Admin sees themselves and all non-admin roles (cannot see other admins or superadmins)
-        const isSelf = user.id === currentUser.id || (Boolean(user.email) && Boolean(currentUser.email) && user.email.toLowerCase() === currentUser.email?.toLowerCase());
-        if (!isSelf && (user.role === 'admin' || user.role === 'superadmin')) {
-          return false;
-        }
+      if (currentUser?.role === 'superadmin' || currentUser?.role === 'admin') {
+        // Superadmin and Admin have full visibility across all corporate users and administrators
       } else if (currentUser?.role === 'dept_admin') {
         // Dept admin sees themselves and non-admin members of their department
         const isSelf = user.id === currentUser.id || (Boolean(user.email) && Boolean(currentUser.email) && user.email.toLowerCase() === currentUser.email?.toLowerCase());
@@ -515,7 +604,7 @@ export function AdminUsersTable({
   };
 
   // Accordion Toggle
-  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'edit' | 'access' | 'documents') => {
+  const toggleAccordion = (userId: string, type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents') => {
     const targetUser = users.find(x => x.id === userId);
     if (targetUser) {
       setSelectedUser(targetUser);
@@ -527,6 +616,9 @@ export function AdminUsersTable({
       setActiveAccordion({ userId, type });
       setNewPassword("");
       setConfirmPassword("");
+      if (type === 'role') {
+        setSelectedRoleForUser((targetUser?.role as UserRole) || 'user');
+      }
       if (type === 'password') {
         // Fetch fresh password directly from server
         api.admin.getUserById(userId).then((freshUser) => {
@@ -636,10 +728,79 @@ export function AdminUsersTable({
     }
   };
 
+  // Save role by Super Admin only
+  const handleSaveRole = async (userId: string, newRole: UserRole) => {
+    if (!isSuperAdmin) {
+      toast.error(isRtl ? "تعیین رول فقط توسط سوپر ادمین مجاز است." : "Role assignment is restricted to Super Admin only.");
+      return;
+    }
+    setIsSavingRole(true);
+    try {
+      await api.admin.updateUser(userId, { role: newRole });
+      setUsers((prev: User[]) => prev.map((u: User) => u.id === userId ? { ...u, role: newRole } : u));
+      if (selectedUser?.id === userId) {
+        setSelectedUser((prev: User | null) => prev ? { ...prev, role: newRole } : null);
+      }
+      if (currentUser?.id === userId || (currentUser?.email && currentUser.email.toLowerCase().includes('jalili'))) {
+        updateUserStore({ role: newRole });
+      }
+      const roleObj = ORDERED_ROLES.find(r => r.value === newRole);
+      const roleLabel = isRtl ? (roleObj?.labelFa || newRole) : (roleObj?.labelEn || newRole);
+      toast.success(
+        isRtl
+          ? `نقش کاربر با موفقیت به «${roleLabel}» تغییر یافت.`
+          : `User role successfully updated to "${roleLabel}".`
+      );
+      setActiveAccordion(null);
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی نقش" : "Failed to update role"));
+    } finally {
+      setIsSavingRole(false);
+    }
+  };
+
+  // Delete user with explicit warning dialog
+  const handleDeleteUser = (targetUser: User) => {
+    const isTargetSaeed = targetUser.id === 'u-saeed' || (targetUser.email && targetUser.email.toLowerCase().includes('jalili'));
+    if (targetUser.role === 'superadmin' || isTargetSaeed) {
+      toast.error(isRtl ? "امکان حذف حساب کاربری مدیر ارشد سیستم وجود ندارد." : "Cannot delete Super Admin account.");
+      return;
+    }
+
+    confirm({
+      title: isRtl ? `حذف کامل کاربر «${targetUser.name}»` : `Delete User "${targetUser.name}"`,
+      description: isRtl
+        ? `هشدار حذف اطلاعات: آیا از حذف کامل حساب کاربری «${targetUser.name}» و تمام اطلاعات پروفایل، مدارک، سوابق و دسترسی‌های وی اطمینان دارید؟ این عملیات دائمی بوده و اطلاعات قابل بازیابی نخواهند بود.`
+        : `Data Deletion Warning: Are you sure you want to completely delete "${targetUser.name}" along with all profile data, documents, and permissions? This action is permanent and cannot be undone.`,
+      confirmText: isRtl ? "حذف کامل و دائمی" : "Delete Permanently",
+      cancelText: isRtl ? "انصراف" : "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          await api.admin.deleteUser(targetUser.id);
+          setUsers((prev: User[]) => prev.filter((u: User) => u.id !== targetUser.id));
+          if (selectedUser?.id === targetUser.id) {
+            setSelectedUser(null);
+          }
+          if (activeAccordion?.userId === targetUser.id) {
+            setActiveAccordion(null);
+          }
+          toast.success(
+            isRtl
+              ? `حساب کاربری «${targetUser.name}» با موفقیت حذف گردید.`
+              : `User "${targetUser.name}" successfully deleted.`
+          );
+        } catch (err: any) {
+          toast.error(err?.message || (isRtl ? "خطا در حذف کاربر" : "Failed to delete user"));
+        }
+      },
+    });
+  };
+
   // Toggle user module access directly from table accordion
   const handleToggleUserAccess = (userId: string, moduleId: string, checked: boolean) => {
-    if (currentUser?.role === 'office_admin') {
-      toast.error(isRtl ? "مدیر اداری مجاز به تغییر دسترسی‌های ماژول‌ها نمی‌باشد." : "Office admin cannot change module permissions.");
+    if (!canEditModuleAccess) {
+      toast.error(isRtl ? "تغییر دسترسی ماژول‌ها منحصراً توسط مدیر ارشد سیستم و مدیر سیستم امکان‌پذیر است." : "Module access can only be modified by Super Admin and System Admin.");
       return;
     }
     const availableModules = NAVIGATION.filter(n => n.id !== "main" && n.id !== "dashboard");
@@ -764,13 +925,19 @@ export function AdminUsersTable({
 
       // If the edited user is the currently logged in admin, update active session immediately
       if (currentUser && (currentUser.id === userId || (currentUser.email && editFormData.email && currentUser.email.toLowerCase() === editFormData.email.toLowerCase()))) {
+        const isSaeed = Boolean(
+          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+          currentUser.id === "u-saeed" ||
+          userId === "u-saeed"
+        );
+        const resolvedRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (editFormData.role || currentUser.role);
         updateUserStore({
           name: editFormData.name,
           email: editFormData.email,
           mobile: editFormData.phone,
           department: editFormData.department,
           jobTitle: editFormData.jobTitle,
-          role: editFormData.role,
+          role: resolvedRole,
         });
         try {
           const raw = localStorage.getItem("esp_auth_user");
@@ -2123,7 +2290,7 @@ export function AdminUsersTable({
                                           onChange={(val) => setEditFormData(prev => ({ ...prev, role: val as any }))}
                                           allowClear={false}
                                           size="sm"
-                                          disabled={currentUser?.role === 'office_admin'}
+                                          disabled={!canEditModuleAccess}
                                           triggerClassName="w-full justify-between h-8.5 rounded-xl bg-background border-border/50 text-xs"
                                         />
                                       </div>
@@ -2159,6 +2326,138 @@ export function AdminUsersTable({
                                     </div>
                                   </div>
                                 )}
+
+                                {/* ── Mode R: Role Assignment (تعیین رول - منحصراً سوپر ادمین) ── */}
+                                {activeAccordion.type === 'role' && (() => {
+                                  const currentRoleObj = ORDERED_ROLES.find(r => r.value === (user.role || 'user')) || ORDERED_ROLES[7];
+                                  return (
+                                    <div className="flex flex-col gap-3.5">
+                                      <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
+                                        <div className="flex items-center gap-2.5">
+                                          <div className="size-8 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                                            <UserCog size={18} />
+                                          </div>
+                                          <div>
+                                            <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                                              <span>{isRtl ? "تعیین رول و سطح دسترسی سازمانی" : "Role Assignment & Organization Scope"}</span>
+                                              <span className="text-[11px] font-normal text-muted-foreground">({user.name})</span>
+                                            </h4>
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                              {isRtl
+                                                ? "تعیین رول فقط توسط مدیر ارشد سیستم (Super Admin) قابل تغییر است و برای بقیه قفل است."
+                                                : "Role assignment is strictly restricted to Super Admin and locked for other roles."}
+                                            </p>
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                          {!isSuperAdmin && (
+                                            <Badge variant="outline" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30 gap-1">
+                                              <Lock size={11} />
+                                              <span>{isRtl ? "قفل (فقط سوپر ادمین)" : "Locked (Super Admin Only)"}</span>
+                                            </Badge>
+                                          )}
+                                          <Badge variant="secondary" className={cn("text-[11px] font-semibold px-2.5 py-0.5 rounded-full", currentRoleObj.badgeClass)}>
+                                            {isRtl ? currentRoleObj.labelFa : currentRoleObj.labelEn}
+                                          </Badge>
+
+                                          <button
+                                            type="button"
+                                            onClick={() => setActiveAccordion(null)}
+                                            className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 cursor-pointer transition-colors"
+                                            title={t("cancel")}
+                                          >
+                                            <X size={14} />
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {!isSuperAdmin ? (
+                                        <div className="flex items-center gap-3 p-4 rounded-xl bg-muted/40 border border-border/60 text-muted-foreground text-xs">
+                                          <Lock size={18} className="text-rose-500 shrink-0" />
+                                          <div className="flex flex-col gap-0.5">
+                                            <span className="font-bold text-foreground">
+                                              {isRtl ? "عدم دسترسی به تعیین رول" : "Access Denied"}
+                                            </span>
+                                            <span>
+                                              {isRtl
+                                                ? "تعیین رول فقط توسط سوپر ادمین قابل تغییر است و برای سایر نقش‌ها قفل می‌باشد."
+                                                : "Role assignment is strictly restricted to Super Admin and locked for other roles."}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="flex flex-col gap-3">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                                            {ORDERED_ROLES.map((roleItem) => {
+                                              const isCurrent = (user.role || 'user') === roleItem.value;
+                                              const isSelected = selectedRoleForUser === roleItem.value;
+                                              const RoleIcon = roleItem.icon;
+                                              return (
+                                                <button
+                                                  key={roleItem.value}
+                                                  type="button"
+                                                  onClick={() => setSelectedRoleForUser(roleItem.value)}
+                                                  className={cn(
+                                                    "flex flex-col text-right p-3 rounded-xl border transition-all cursor-pointer relative",
+                                                    isSelected
+                                                      ? "bg-purple-500/10 border-purple-500 ring-1 ring-purple-500/30 shadow-xs"
+                                                      : "bg-background/80 hover:bg-muted/50 border-border/60"
+                                                  )}
+                                                >
+                                                  <div className="flex items-center justify-between w-full mb-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                      <div className={cn("size-6 rounded-lg flex items-center justify-center text-white text-[10px]", roleItem.iconBg)}>
+                                                        <RoleIcon size={13} />
+                                                      </div>
+                                                      <span className="text-xs font-bold text-foreground">
+                                                        {isRtl ? roleItem.labelFa : roleItem.labelEn}
+                                                      </span>
+                                                    </div>
+                                                    {isCurrent && (
+                                                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-muted text-muted-foreground">
+                                                        {isRtl ? "فعلی" : "Current"}
+                                                      </Badge>
+                                                    )}
+                                                  </div>
+                                                  <p className="text-[10px] text-muted-foreground line-clamp-2 leading-relaxed">
+                                                    {isRtl ? roleItem.descFa : roleItem.descEn}
+                                                  </p>
+                                                </button>
+                                              );
+                                            })}
+                                          </div>
+
+                                          <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => setActiveAccordion(null)}
+                                              className="h-8.5 px-3.5 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                            >
+                                              {t("cancel")}
+                                            </Button>
+                                            <Button
+                                              type="button"
+                                              size="sm"
+                                              disabled={isSavingRole || selectedRoleForUser === user.role}
+                                              onClick={() => handleSaveRole(user.id, selectedRoleForUser)}
+                                              className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white cursor-pointer shadow-xs transition-colors"
+                                            >
+                                              {isSavingRole ? (
+                                                <RotateCcw className="size-3.5 animate-spin" />
+                                              ) : (
+                                                <Check className="size-3.5" />
+                                              )}
+                                              <span>{isRtl ? "ذخیره نقش" : "Save Role"}</span>
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
 
                                 {/* ── Mode D: Module Access (دسترسی ماژول‌ها همراه با زیرگزینه‌ها) ── */}
                                 {activeAccordion.type === 'access' && (() => {
@@ -2281,7 +2580,7 @@ export function AdminUsersTable({
                                                   <Switch
                                                     size="sm"
                                                     checked={isGroupFullyActive}
-                                                    disabled={currentUser?.role === 'office_admin'}
+                                                    disabled={!canEditModuleAccess}
                                                     onCheckedChange={(checked) => handleToggleUserAccess(user.id, group.id, checked)}
                                                     className={cn(isGroupPartiallyActive && "opacity-85 ring-1 ring-emerald-500/40")}
                                                   />
@@ -2292,7 +2591,10 @@ export function AdminUsersTable({
                                               <div className="flex flex-col gap-1.5 pt-2.5">
                                                 {items.map((item) => {
                                                   const ItemIcon = item.icon;
-                                                  const hasItemAccess = user.modulesAccess?.some(m => m.moduleId === item.href && m.hasAccess) ?? false;
+                                                  const isAlwaysOpenItem = item.href === '/dictionary' || item.href === '/did-you-know' || item.href === '/aparat' || group.id === 'knowledge';
+                                                   const hasItemAccess = isAlwaysOpenItem
+                                                     ? (user.modulesAccess?.find(m => m.moduleId === item.href)?.hasAccess ?? true)
+                                                     : (user.modulesAccess?.some(m => m.moduleId === item.href && m.hasAccess) ?? false);
 
                                                   let itemLabel = item.labelKey;
                                                   try {
@@ -2342,7 +2644,7 @@ export function AdminUsersTable({
                                                         <Switch
                                                           size="sm"
                                                           checked={hasItemAccess}
-                                                          disabled={currentUser?.role === 'office_admin'}
+                                                          disabled={!canEditModuleAccess}
                                                           onCheckedChange={(checked) => handleToggleUserAccess(user.id, item.href, checked)}
                                                         />
                                                       </div>
@@ -2638,6 +2940,22 @@ export function AdminUsersTable({
                                 </button>
 
 
+                                {/* 3. Role Assignment (تعیین رول - فقط سوپر ادمین) */}
+                                <button
+                                  type="button"
+                                  onClick={() => toggleAccordion(user.id, 'role')}
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                    isAccordionOpen && activeAccordion?.type === 'role'
+                                      ? "bg-purple-600 text-white shadow-2xs font-semibold"
+                                      : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
+                                  )}
+                                  title={isRtl ? "تعیین رول" : "Role"}
+                                >
+                                  <UserCog size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{isRtl ? "تعیین رول" : "Role"}</span>
+                                </button>
+
                                 {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
                                 <button
                                   type="button"
@@ -2654,6 +2972,16 @@ export function AdminUsersTable({
                                   <span className="hidden sm:inline">{t("moduleAccess")}</span>
                                 </button>
 
+                                {/* 5. Delete User (حذف کامل کاربر با پیام هشدار حذف اطلاعات) */}
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteUser(user)}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                                  title={isRtl ? "حذف کاربر" : "Delete User"}
+                                >
+                                  <Trash2 size={13} className="shrink-0" />
+                                  <span className="hidden sm:inline">{isRtl ? "حذف کاربر" : "Delete User"}</span>
+                                </button>
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 

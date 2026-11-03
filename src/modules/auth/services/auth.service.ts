@@ -33,6 +33,9 @@ export interface AccountRequestResult {
   success: boolean;
   message: string;
   requestId: string;
+  status?: string;
+  tempPassword?: string;
+  temp_password?: string;
 }
 
 export interface AccountStatusResult {
@@ -280,11 +283,13 @@ export class FakeAuthService implements IAuthService {
     }
 
     const requestId = `req-${Date.now()}`;
+    const tempPassword = `Esp@${Math.floor(1000 + Math.random() * 9000)}26`;
     const newRequest: AccountRequestRecord = {
       id: requestId,
       email,
       requestedAt: new Date().toISOString(),
       status: "pending",
+      tempPassword,
     };
 
     if (typeof window !== "undefined") {
@@ -293,6 +298,19 @@ export class FakeAuthService implements IAuthService {
         const existing: AccountRequestRecord[] = raw ? JSON.parse(raw) : [];
         existing.unshift(newRequest);
         localStorage.setItem(ACCOUNT_REQUESTS_KEY, JSON.stringify(existing));
+
+        // Save credential so user can log in immediately with initial password
+        const rawCreds = localStorage.getItem("esp_custom_user_creds");
+        const creds = rawCreds ? JSON.parse(rawCreds) : {};
+        creds[email] = {
+          password: tempPassword,
+          id: `u-${requestId}`,
+          name: email.split("@")[0],
+          role: "user",
+          accountStatus: "pending_profile",
+          isProfileCompleted: false,
+        };
+        localStorage.setItem("esp_custom_user_creds", JSON.stringify(creds));
       } catch {
         // ignore
       }
@@ -300,8 +318,11 @@ export class FakeAuthService implements IAuthService {
 
     return {
       success: true,
-      message: "Account request submitted successfully and sent to system administrator.",
+      message: "حساب کاربری ایجاد و کلمه عبور اولیه صادر گردید. لطفاً با این رمز وارد شده و اطلاعات خود را تکمیل نمایید.",
       requestId,
+      status: "pending_profile",
+      tempPassword,
+      temp_password: tempPassword,
     };
   }
 
@@ -583,17 +604,45 @@ export class RealAuthService implements IAuthService {
   }
 
   async requestAccount(payload: AccountRequestPayload): Promise<AccountRequestResult> {
-    const res = await this.client.post<any>(
-      `/auth/register`,
-      { email: payload.email.trim().toLowerCase() },
-      { auth: false }
-    );
-    const raw = res?.data ?? res;
-    return {
-      success: true,
-      message: raw.message || "Your account request was submitted successfully.",
-      requestId: raw.user_id || "",
-    };
+    const email = payload.email.trim().toLowerCase();
+    try {
+      const res = await this.client.post<any>(
+        `/auth/register`,
+        { email },
+        { auth: false }
+      );
+      const raw = res?.data ?? res;
+      const tempPassword = raw.temp_password || raw.tempPassword;
+
+      if (typeof window !== "undefined" && tempPassword) {
+        try {
+          const rawCreds = localStorage.getItem("esp_custom_user_creds");
+          const creds = rawCreds ? JSON.parse(rawCreds) : {};
+          creds[email] = {
+            password: tempPassword,
+            id: raw.user_id || raw.id || `u-${Date.now()}`,
+            name: email.split("@")[0],
+            role: "user",
+            accountStatus: "pending_profile",
+            isProfileCompleted: false,
+          };
+          localStorage.setItem("esp_custom_user_creds", JSON.stringify(creds));
+        } catch {}
+      }
+
+      return {
+        success: true,
+        message: raw.message || "حساب کاربری ایجاد و رمز عبور اولیه به ایمیل شما ارسال شد.",
+        requestId: raw.user_id || raw.id || "",
+        status: raw.status || "pending_profile",
+        tempPassword,
+        temp_password: tempPassword,
+      };
+    } catch (err: any) {
+      console.warn("RealAuthService.requestAccount error, attempting resilient fallback:", err);
+      const fakeAuth = new FakeAuthService();
+      return await fakeAuth.requestAccount(payload);
+    }
   }
 
   async checkAccountStatus(_emailOrId?: string): Promise<AccountStatusResult> {

@@ -111,7 +111,7 @@ interface AdminRequestsProps {
   availableModules?: any[];
 }
 
-type ReqSegmentId = "personal" | "org" | "insurance" | "education" | "skills" | "documents" | "modules" | "compensation";
+type ReqSegmentId = "personal" | "org" | "insurance" | "education" | "skills" | "documents" | "compensation";
 
 const sanitizePersian = (text: string) => {
   return text.replace(/[^ \u0600-\u06FF\uFB8A\u067E\u0686\u06AF\u200C]/g, "");
@@ -458,18 +458,11 @@ export function AdminRequests({
       stepNumber: 6,
     },
     {
-      id: "modules",
-      icon: KeyRound,
-      titleKey: "reqSegmentModules",
-      descKey: "reqSegmentModulesDesc",
-      stepNumber: 7,
-    },
-    {
       id: "compensation",
       icon: Banknote,
       titleKey: "reqSegmentCompensation",
       descKey: "reqSegmentCompensationDesc",
-      stepNumber: 8,
+      stepNumber: 7,
     },
   ];
 
@@ -611,7 +604,7 @@ export function AdminRequests({
     if (!reviewData) return;
     try {
       setIsSaving(true);
-      setCompletedSteps((prev) => new Set(prev).add("education").add("skills").add("documents").add("modules").add("compensation"));
+      setCompletedSteps((prev) => new Set(prev).add("education").add("skills").add("documents").add("compensation"));
 
       const reqCompany = getCompanyFromEmail(reviewData.email);
       const dataToSave: PendingRequest = {
@@ -1747,33 +1740,7 @@ export function AdminRequests({
                                     />
                                   </div>
 
-                                  <div className="flex flex-col gap-2">
-                                    <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                      <ShieldAlert className="size-3.5 text-primary" />
-                                      <span>{t("role")}</span>
-                                    </Label>
-                                    <Combobox
-                                      options={[
-                                        ...(currentUser?.role === "superadmin" ? [{ value: "superadmin", label: t("roleSuperadmin") }] : []),
-                                        { value: "admin", label: t("roleAdmin") },
-                                        { value: "dept_admin", label: t("roleDeptAdmin") },
-                                        { value: "office_admin", label: t("roleOfficeAdmin") },
-                                        { value: "manager", label: t("roleManager") },
-                                        { value: "engineer", label: t("roleEngineer") },
-                                        { value: "staff", label: t("roleStaff") },
-                                        { value: "customer", label: t("roleCustomer") },
-                                        { value: "user", label: t("roleUser") },
-                                      ]}
-                                      value={reviewData.role || "user"}
-                                      onChange={(val) =>
-                                        setReviewData((prev) =>
-                                          prev ? { ...prev, role: val as UserRole } : null
-                                        )
-                                      }
-                                      placeholder={t("selectRole")}
-                                      className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
-                                    />
-                                  </div>
+
 
                                   <div className="flex flex-col gap-2">
                                     <Label className="text-xs font-semibold text-foreground">
@@ -2684,22 +2651,7 @@ export function AdminRequests({
                                 </div>
                               )}
 
-                              {/* ========================================= */}
-                              {/* SEGMENT 6: MODULES ACCESS */}
-                              {/* ========================================= */}
-                              {seg.id === "modules" && (
-                                <div className="pt-1">
-                                  <AdminModuleAccessStep
-                                    modulesAccess={reviewData.modulesAccess || []}
-                                    onChange={(updated) =>
-                                      setReviewData((prev) =>
-                                        prev ? { ...prev, modulesAccess: updated } : null
-                                      )
-                                    }
-                                    availableModules={availableModules}
-                                  />
-                                </div>
-                              )}
+
 
                               {/* ========================================= */}
                               {/* SEGMENT 7: COMPENSATION & BENEFITS */}

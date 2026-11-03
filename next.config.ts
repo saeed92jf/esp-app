@@ -63,6 +63,14 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
         destination: "/api/users/:path*",
       },
       {
+        source: "/api/real/auth/register",
+        destination: "/api/auth/register",
+      },
+      {
+        source: "/api/real/auth/request-account",
+        destination: "/api/auth/request-account",
+      },
+      {
         source: "/api/real/:path*",
         destination: `${BACKEND_INTERNAL_URL}/:path*`,
       },

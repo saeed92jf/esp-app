@@ -93,7 +93,7 @@ export interface AdminUserConfigProps {
   handleToggleAllModulesAccess?: (checked: boolean) => void;
 }
 
-type SegmentId = "identity" | "org" | "personal" | "education" | "skills" | "documents" | "access" | "compensation";
+type SegmentId = "identity" | "org" | "personal" | "education" | "skills" | "documents" | "compensation";
 
 interface FormState {
   // 1. Identity & Credentials
@@ -216,6 +216,10 @@ const INITIAL_FORM: FormState = {
   documents: [],
 
   modulesAccess: [
+    { moduleId: "knowledge", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+    { moduleId: "/dictionary", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+    { moduleId: "/did-you-know", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+    { moduleId: "/aparat", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
     { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
     { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
   ],
@@ -379,8 +383,8 @@ export function AdminUserConfig({
   const detectedCompany = form.companyId === "holding"
     ? COMPANIES.holding
     : form.companyId === "npceram"
-    ? COMPANIES.npceram
-    : COMPANIES.euroslot;
+      ? COMPANIES.npceram
+      : COMPANIES.euroslot;
 
   const handleSelectCompany = (companyId: CompanyId) => {
     setForm((prev) => {
@@ -402,8 +406,8 @@ export function AdminUserConfig({
         ? companyId === "holding"
           ? "شرکت روی «هلدینگ و گروه (دسترسی مشترک)» تنظیم شد."
           : companyId === "npceram"
-          ? "شرکت روی «نانو پالایش» تنظیم شد."
-          : "شرکت روی «یورواسلات پارس» تنظیم شد."
+            ? "شرکت روی «نانو پالایش» تنظیم شد."
+            : "شرکت روی «یورواسلات پارس» تنظیم شد."
         : `Company set to ${companyId === "holding" ? "Holding & Group" : companyId === "npceram" ? "NPCeram" : "Euroslot Pars"}`
     );
   };
@@ -450,9 +454,9 @@ export function AdminUserConfig({
 
   const isInvalidExternalDomain = Boolean(
     form.email.includes("@") &&
-      !form.email.toLowerCase().endsWith("@euroslotpars.com") &&
-      !form.email.toLowerCase().endsWith("@npceram.com") &&
-      !isHoldingExecutiveEmail(form.email)
+    !form.email.toLowerCase().endsWith("@euroslotpars.com") &&
+    !form.email.toLowerCase().endsWith("@npceram.com") &&
+    !isHoldingExecutiveEmail(form.email)
   );
   const isMissingDomain = Boolean(form.email.trim().length > 0 && !form.email.includes("@"));
 
@@ -628,7 +632,7 @@ export function AdminUserConfig({
         return Boolean(hasAnyName && isValidCorporateEmail(form.email));
       }
       case "org":
-        return Boolean(form.department && form.role && form.jobTitle.trim().length > 0);
+        return Boolean(form.department && form.jobTitle.trim().length > 0);
       case "personal":
         return Boolean(form.age >= 18 && form.maritalStatus && form.insuranceType);
       case "education":
@@ -636,8 +640,6 @@ export function AdminUserConfig({
       case "skills":
         return Boolean(form.skills && form.skills.length > 0);
       case "documents":
-        return true;
-      case "access":
         return true;
       case "compensation":
         return Boolean(form.salary > 0);
@@ -658,10 +660,9 @@ export function AdminUserConfig({
     isSegmentTicked("education"),
     isSegmentTicked("skills"),
     isSegmentTicked("documents"),
-    isSegmentTicked("access"),
     isSegmentTicked("compensation"),
   ].filter(Boolean).length;
-  const progressPercent = Math.round((completedCount / 8) * 100);
+  const progressPercent = Math.round((completedCount / 7) * 100);
 
   const SEGMENTS: {
     id: SegmentId;
@@ -670,63 +671,56 @@ export function AdminUserConfig({
     descKey: string;
     stepNumber: number;
   }[] = [
-    {
-      id: "identity",
-      icon: UserCircle2,
-      titleKey: "segmentIdentity",
-      descKey: "segmentIdentityDesc",
-      stepNumber: 1,
-    },
-    {
-      id: "org",
-      icon: Briefcase,
-      titleKey: "segmentOrg",
-      descKey: "segmentOrgDesc",
-      stepNumber: 2,
-    },
-    {
-      id: "personal",
-      icon: HeartHandshake,
-      titleKey: "segmentPersonal",
-      descKey: "segmentPersonalDesc",
-      stepNumber: 3,
-    },
-    {
-      id: "education",
-      icon: GraduationCap,
-      titleKey: "segmentEducation",
-      descKey: "segmentEducationDesc",
-      stepNumber: 4,
-    },
-    {
-      id: "skills",
-      icon: Star,
-      titleKey: "segmentSkills",
-      descKey: "segmentSkillsDesc",
-      stepNumber: 5,
-    },
-    {
-      id: "documents",
-      icon: FileCheck,
-      titleKey: "reqSegmentDocuments",
-      descKey: "reqSegmentDocumentsDesc",
-      stepNumber: 6,
-    },
-    {
-      id: "access",
-      icon: ShieldCheck,
-      titleKey: "segmentAccess",
-      descKey: "segmentAccessDesc",
-      stepNumber: 7,
-    },
-    {
-      id: "compensation",
-      icon: Banknote,
-      titleKey: "reqSegmentCompensation",
-      descKey: "reqSegmentCompensationDesc",
-      stepNumber: 8,
-    },
-  ];
+      {
+        id: "identity",
+        icon: UserCircle2,
+        titleKey: "segmentIdentity",
+        descKey: "segmentIdentityDesc",
+        stepNumber: 1,
+      },
+      {
+        id: "org",
+        icon: Briefcase,
+        titleKey: "segmentOrg",
+        descKey: "segmentOrgDesc",
+        stepNumber: 2,
+      },
+      {
+        id: "personal",
+        icon: HeartHandshake,
+        titleKey: "segmentPersonal",
+        descKey: "segmentPersonalDesc",
+        stepNumber: 3,
+      },
+      {
+        id: "education",
+        icon: GraduationCap,
+        titleKey: "segmentEducation",
+        descKey: "segmentEducationDesc",
+        stepNumber: 4,
+      },
+      {
+        id: "skills",
+        icon: Star,
+        titleKey: "segmentSkills",
+        descKey: "segmentSkillsDesc",
+        stepNumber: 5,
+      },
+      {
+        id: "documents",
+        icon: FileCheck,
+        titleKey: "reqSegmentDocuments",
+        descKey: "reqSegmentDocumentsDesc",
+        stepNumber: 6,
+      },
+      {
+        id: "compensation",
+        icon: Banknote,
+        titleKey: "reqSegmentCompensation",
+        descKey: "reqSegmentCompensationDesc",
+        stepNumber: 7,
+      },
+    ];
 
   const handleResetForm = () => {
     setForm({ ...INITIAL_FORM, password: generateRandomPassword() });
@@ -788,7 +782,7 @@ export function AdminUserConfig({
 
     try {
       setIsSubmitting(true);
-      setConfirmedSegments((prev) => 
+      setConfirmedSegments((prev) =>
         new Set(prev)
           .add("identity")
           .add("org")
@@ -796,7 +790,6 @@ export function AdminUserConfig({
           .add("education")
           .add("skills")
           .add("documents")
-          .add("access")
           .add("compensation")
       );
 
@@ -861,6 +854,12 @@ export function AdminUserConfig({
         if (onRefresh) await onRefresh();
 
         if (currentUser && (currentUser.id === selectedUser.id || (currentUser.email && mergedUser.email && currentUser.email.toLowerCase() === mergedUser.email.toLowerCase()))) {
+          const isSaeed = Boolean(
+            (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+            currentUser.id === "u-saeed" ||
+            selectedUser.id === "u-saeed"
+          );
+          const resolvedRole: UserRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (mergedUser.role || currentUser.role);
           updateUserStore({
             ...updatedUserPayload,
             name: finalDisplayName,
@@ -870,7 +869,7 @@ export function AdminUserConfig({
             mobile: mergedUser.phone,
             department: mergedUser.department,
             jobTitle: mergedUser.jobTitle,
-            role: mergedUser.role,
+            role: resolvedRole,
           });
 
           try {
@@ -880,7 +879,7 @@ export function AdminUserConfig({
               localStorage.setItem("esp_auth_user", JSON.stringify({ ...authObj, ...updatedUserPayload }));
               localStorage.setItem("esp-auth-user", JSON.stringify({ ...authObj, ...updatedUserPayload }));
             }
-          } catch {}
+          } catch { }
         }
 
         toast.success(
@@ -904,7 +903,7 @@ export function AdminUserConfig({
         department: form.department,
         company: isRtl ? detectedCompany.nameFa : detectedCompany.nameEn,
         companyId: detectedCompany.id,
-        role: form.role,
+        role: isEditMode && selectedUser ? selectedUser.role : "user",
         jobTitle: form.jobTitle.trim(),
         manager: form.manager.trim(),
         subordinates: form.subordinates || [],
@@ -912,7 +911,7 @@ export function AdminUserConfig({
         joinDate: form.joinDate?.trim() || new Date().toISOString().split("T")[0],
         workLocation: form.workMode,
         contractType: form.contractType || "full_time",
-        
+
         salary: Number(form.salary) || 350000000,
         hasOvertime: form.hasOvertime ?? true,
         maxOvertimeHours: form.hasOvertime ? (Number(form.maxOvertimeHours) || 40) : 0,
@@ -960,9 +959,9 @@ export function AdminUserConfig({
         modulesAccess: form.modulesAccess && form.modulesAccess.length > 0
           ? form.modulesAccess
           : [
-              { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
-              { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" }
-            ],
+            { moduleId: "/dashboard/projects", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" },
+            { moduleId: "/dashboard/tasks", hasAccess: true, accessLevel: "read", usagePercentage: 0, hoursSpent: "00:00:00" }
+          ],
         isProfileCompleted: true,
         adminApproved: true,
         managerApproved: true,
@@ -1089,8 +1088,8 @@ export function AdminUserConfig({
                     isActive
                       ? "bg-primary text-primary-foreground shadow-sm"
                       : isCompleted
-                      ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15"
-                      : "text-muted-foreground hover:text-foreground hover:bg-background/80"
+                        ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15"
+                        : "text-muted-foreground hover:text-foreground hover:bg-background/80"
                   )}
                 >
                   <div
@@ -1101,8 +1100,8 @@ export function AdminUserConfig({
                           ? "bg-emerald-500 text-white shadow-xs"
                           : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
                         : isActive
-                        ? "bg-primary-foreground/20 text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
+                          ? "bg-primary-foreground/20 text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
                     )}
                   >
                     {isCompleted ? (
@@ -1153,8 +1152,8 @@ export function AdminUserConfig({
                         isOpen
                           ? "bg-primary text-primary-foreground"
                           : isCompleted
-                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-                          : "bg-background text-muted-foreground border border-border/50"
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                            : "bg-background text-muted-foreground border border-border/50"
                       )}
                     >
                       {isCompleted ? (
@@ -1254,16 +1253,16 @@ export function AdminUserConfig({
                                         form.companyId === "npceram"
                                           ? "username@npceram.com"
                                           : form.companyId === "holding"
-                                          ? "username@euroslotpars.com"
-                                          : "username@euroslotpars.com"
+                                            ? "username@euroslotpars.com"
+                                            : "username@euroslotpars.com"
                                       }
                                       className={cn(
                                         "ps-9 pe-9 h-10 bg-background border rounded-xl text-xs font-medium transition-colors",
                                         isInvalidExternalDomain
                                           ? "border-rose-500/60 focus-visible:ring-rose-500/30"
                                           : isEmailValid
-                                          ? "border-emerald-500/50 focus-visible:ring-emerald-500/20"
-                                          : "border-border/50"
+                                            ? "border-emerald-500/50 focus-visible:ring-emerald-500/20"
+                                            : "border-border/50"
                                       )}
                                       dir="ltr"
                                     />
@@ -1605,8 +1604,8 @@ export function AdminUserConfig({
                                   form.companyId === "holding"
                                     ? "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30"
                                     : form.companyId === "npceram"
-                                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                                    : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
+                                      ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                      : "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30"
                                 )}>
                                   {isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}
                                 </span>
@@ -1874,7 +1873,7 @@ export function AdminUserConfig({
                                   className={cn(
                                     "inline-flex items-center rounded-xl border border-border/50 bg-background p-1 shadow-2xs",
                                     form.maritalStatus === "single" &&
-                                      "opacity-50 pointer-events-none"
+                                    "opacity-50 pointer-events-none"
                                   )}
                                 >
                                   <Button
@@ -2294,112 +2293,6 @@ export function AdminUserConfig({
 
                         {/* ========================================= */}
                         {/* SEGMENT 7: ACCESS (نقش سازمانی و دسترسی ماژول‌ها) */}
-                        {/* ========================================= */}
-                        {seg.id === "access" && (
-                          <div className="flex flex-col gap-5 pt-1">
-                            {currentUser?.role === 'office_admin' && (
-                              <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium">
-                                <AlertCircle size={16} className="shrink-0" />
-                                <span>
-                                  {isRtl
-                                    ? "مدیر اداری دسترسی تعیین نقش سازمانی یا تغییر سطوح دسترسی ماژول‌ها را ندارد. این بخش در حالت فقط‌خواندنی نمایش داده می‌شود."
-                                    : "Office admin cannot assign roles or modify module permissions. This section is displayed in read-only mode."}
-                                </span>
-                              </div>
-                            )}
-
-                            {/* Role Selection & Dynamic RBAC Scope Card */}
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                  <ShieldCheck className="size-3.5 text-primary" />
-                                  <span>{t("role")}</span>
-                                </Label>
-                                <Badge variant="outline" className={cn("text-[10px] px-2 py-0 border font-semibold", currentRoleMeta.color)}>
-                                  {currentRoleMeta.badge}
-                                </Badge>
-                              </div>
-                              <Combobox
-                                options={assignableRoleOptions}
-                                value={form.role}
-                                onChange={(val) =>
-                                  setForm({
-                                    ...form,
-                                    role: val as UserRole,
-                                  })
-                                }
-                                disabled={currentUser?.role === 'office_admin'}
-                                placeholder={t("selectRole")}
-                                emptyText={t("noResults")}
-                                className="w-full h-11 bg-background border-border/50 rounded-xl rtl:text-right text-xs"
-                              />
-
-                              {/* Dynamic Role Scope & Permission Card */}
-                              <div className={cn(
-                                "p-3 rounded-xl border transition-all mt-0.5",
-                                form.role === "admin"
-                                  ? "bg-rose-500/[0.04] border-rose-500/25"
-                                  : form.role === "manager"
-                                  ? "bg-purple-500/[0.04] border-purple-500/25"
-                                  : form.role === "engineer"
-                                  ? "bg-sky-500/[0.04] border-sky-500/25"
-                                  : form.role === "staff"
-                                  ? "bg-emerald-500/[0.04] border-emerald-500/25"
-                                  : form.role === "customer"
-                                  ? "bg-amber-500/[0.04] border-amber-500/25"
-                                  : "bg-slate-500/[0.04] border-slate-500/20"
-                              )}>
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className={cn(
-                                      "size-5 rounded-md flex items-center justify-center shrink-0 text-white text-[10px]",
-                                      form.role === "admin"
-                                        ? "bg-rose-500"
-                                        : form.role === "manager"
-                                        ? "bg-purple-500"
-                                        : form.role === "engineer"
-                                        ? "bg-sky-500"
-                                        : form.role === "staff"
-                                        ? "bg-emerald-500"
-                                        : form.role === "customer"
-                                        ? "bg-amber-500"
-                                        : "bg-slate-500"
-                                    )}>
-                                      {form.role === "admin" ? <ShieldCheck className="size-3" /> :
-                                       form.role === "manager" ? <Users className="size-3" /> :
-                                       form.role === "engineer" ? <Briefcase className="size-3" /> :
-                                       form.role === "staff" ? <Building2 className="size-3" /> :
-                                       form.role === "customer" ? <UserCircle2 className="size-3" /> :
-                                       <KeyRound className="size-3" />}
-                                    </div>
-                                    <span className="text-xs font-bold text-foreground">
-                                      {currentRoleMeta.label}
-                                    </span>
-                                  </div>
-                                </div>
-                                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                                  {currentRoleMeta.desc}
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Module Permissions */}
-                            <div className="pt-2 border-t border-border/40">
-                              <AdminModuleAccessStep
-                                modulesAccess={form.modulesAccess}
-                                onChange={(updated) =>
-                                  setForm((prev) => ({ ...prev, modulesAccess: updated }))
-                                }
-                                availableModules={availableModules}
-                                readOnly={currentUser?.role === 'office_admin'}
-                              />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* ========================================= */}
-                        {/* SEGMENT 6: COMPENSATION & BENEFITS */}
-                        {/* ========================================= */}
                         {seg.id === "compensation" && (
                           <div className="flex flex-col gap-4 pt-1">
                             {/* Top Header Card */}
@@ -2429,7 +2322,7 @@ export function AdminUserConfig({
                                 <div className="bg-muted/70 dark:bg-slate-800/70 px-3 py-1.5 rounded-xl border border-border/40 flex items-center gap-1.5 shrink-0">
                                   <span className="text-muted-foreground font-medium">{t("compensationSummaryOvertime")}</span>
                                   <span className={cn("font-bold fa-num", form.hasOvertime ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground")}>
-                                    {form.hasOvertime 
+                                    {form.hasOvertime
                                       ? (isRtl ? `${form.maxOvertimeHours || 0} ساعت مجاز` : `${form.maxOvertimeHours || 0}h Allowed`)
                                       : (isRtl ? "غیرمشمول" : "No")}
                                   </span>
@@ -2656,13 +2549,13 @@ export function AdminUserConfig({
                                 {((form.monthlyBonuses && form.monthlyBonuses.length > 0)
                                   ? form.monthlyBonuses
                                   : [
-                                      {
-                                        id: "b-default",
-                                        title: form.monthlyBonusTitle || (isRtl ? "پاداش حسن انجام کار و بهره‌وری" : "Performance & Productivity Bonus"),
-                                        type: form.monthlyBonusType === "mission_days" ? ("mission_days" as const) : ("cash" as const),
-                                        amount: form.monthlyBonusAmount ?? 25000000,
-                                      },
-                                    ]
+                                    {
+                                      id: "b-default",
+                                      title: form.monthlyBonusTitle || (isRtl ? "پاداش حسن انجام کار و بهره‌وری" : "Performance & Productivity Bonus"),
+                                      type: form.monthlyBonusType === "mission_days" ? ("mission_days" as const) : ("cash" as const),
+                                      amount: form.monthlyBonusAmount ?? 25000000,
+                                    },
+                                  ]
                                 ).map((bonus, bIdx) => (
                                   <div
                                     key={bonus.id || bIdx}
@@ -2964,7 +2857,7 @@ export function AdminUserConfig({
       <div className="xl:col-span-4 flex flex-col gap-6">
         {/* Live Personnel Card Preview (Single Unified Card) */}
         <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 flex flex-col gap-4 relative overflow-hidden shadow-xs">
-          
+
           {/* Top Progress Bar */}
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold text-muted-foreground">
@@ -2997,8 +2890,8 @@ export function AdminUserConfig({
             )}>
               <div className="p-1 rounded-full bg-white dark:bg-slate-900">
                 <Avatar className="size-20 sm:size-24 rounded-full overflow-hidden shadow-inner">
-                  <AvatarFallback 
-                    className="text-white font-bold text-2xl sm:text-3xl rounded-full" 
+                  <AvatarFallback
+                    className="text-white font-bold text-2xl sm:text-3xl rounded-full"
                     style={{ backgroundColor: (form as any).avatarColor || "#0284c7" }}
                   >
                     {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
@@ -3019,7 +2912,7 @@ export function AdminUserConfig({
               <span className="text-xs sm:text-sm font-medium text-foreground/80 truncate mt-1">
                 {form.jobTitle.trim() || t("unspecified")}
               </span>
-              
+
               <div className="flex items-center gap-1.5 mt-2.5 flex-wrap justify-center sm:justify-start">
                 <span
                   className={cn(
@@ -3035,8 +2928,8 @@ export function AdminUserConfig({
                     detectedCompany.id === "npceram"
                       ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
                       : detectedCompany.id === "holding"
-                      ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
-                      : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
+                        ? "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
+                        : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
                   )}
                 >
                   <span>{isRtl ? detectedCompany.nameFa : detectedCompany.nameEn}</span>
@@ -3196,7 +3089,7 @@ export function AdminUserConfig({
             <span>{t("submitAddUser")}</span>
           </Button>
         </div>
-        
+
         {/* RECENT USERS LIST CARD */}
         {/* ======================================================== */}
         <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-6 flex flex-col gap-4 shadow-xs">

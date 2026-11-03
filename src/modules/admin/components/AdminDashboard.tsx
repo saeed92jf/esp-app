@@ -187,6 +187,56 @@ export function AdminDashboard() {
         }
       }
 
+      // Ensure Morteza Shafiee is always present in userList as an active administrator
+      const shafieeIdx = userList.findIndex(
+        (item) => item.id === "u-shafiee" || item.email?.toLowerCase() === "mshafiee@euroslotpars.com"
+      );
+      if (shafieeIdx === -1) {
+        const shafieeAsUser: User = {
+          id: "u-shafiee",
+          name: "مرتضی شفیعی",
+          fullNameFa: "مرتضی شفیعی",
+          fullName: "Morteza Shafiee",
+          firstNameFa: "مرتضی",
+          lastNameFa: "شفیعی",
+          firstName: "Morteza",
+          lastName: "Shafiee",
+          email: "mshafiee@euroslotpars.com",
+          role: "admin",
+          status: "online",
+          accountStatus: "active",
+          avatarColor: "#8b5cf6",
+          primaryColor: "purple",
+          avatarMode: "photo",
+          phone: "09123480872",
+          nationalId: "0000000000",
+          department: "engineering",
+          jobTitle: isRtl ? "مدیر فنی و مهندسی" : "Engineering Manager",
+          company: isRtl ? "یورواسلات پارس" : "Euroslot Pars",
+          companyId: "euroslot",
+          joinedAt: "1403/01/01",
+          daysInCompany: 300,
+          doneProjects: 15,
+          salary: 620000000,
+          hasOvertime: false,
+          maxOvertimeHours: 0,
+          workLocation: "office",
+          contractType: "full_time",
+          employeeId: "ESP-002",
+          extensionNumber: "125",
+          workingFormat: { office: 70, factory: 20, mission: 5, leave: 5 },
+          modulesAccess: [],
+          recentActivities: [],
+          checklists: [],
+          isProfileCompleted: true,
+          adminApproved: true,
+          managerApproved: true,
+          documents: [],
+          subordinates: [],
+        };
+        userList = [...userList, shafieeAsUser];
+      }
+
       setUsers(userList);
       if (userList.length > 0) {
         // Default to the current logged-in admin if available, or first user
@@ -323,6 +373,13 @@ export function AdminDashboard() {
         const computedFullNameFa = mergedUser.fullNameFa || (mergedUser.firstNameFa && mergedUser.lastNameFa ? `${mergedUser.firstNameFa} ${mergedUser.lastNameFa}` : mergedUser.name);
         const computedFullNameEn = mergedUser.fullName || (mergedUser.firstName && mergedUser.lastName ? `${mergedUser.firstName} ${mergedUser.lastName}` : mergedUser.name);
 
+        const isSaeed = Boolean(
+          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+          currentUser.id === "u-saeed" ||
+          userId === "u-saeed"
+        );
+        const resolvedRole: UserRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (mergedUser.role || currentUser.role);
+
         updateUserStore({
           ...updates,
           fullNameFa: computedFullNameFa,
@@ -330,7 +387,7 @@ export function AdminDashboard() {
           name: isRtl ? (computedFullNameFa || computedFullNameEn) : (computedFullNameEn || computedFullNameFa),
           email: mergedUser.email,
           mobile: mergedUser.phone,
-          role: mergedUser.role,
+          role: resolvedRole,
           department: mergedUser.department,
           jobTitle: mergedUser.jobTitle,
           avatarColor: mergedUser.avatarColor,
@@ -373,9 +430,12 @@ export function AdminDashboard() {
       // Persist to esp_admin_users in localStorage
       try {
         const rawStored = localStorage.getItem("esp_admin_users");
-        const list: User[] = rawStored ? JSON.parse(rawStored) : [];
+        let list: User[] = rawStored ? JSON.parse(rawStored) : [];
+        if (!Array.isArray(list) || list.length === 0) {
+          list = [...users];
+        }
         const idx = list.findIndex(u => u.id === userId || (u.email && mergedUser.email && u.email.toLowerCase() === mergedUser.email.toLowerCase()));
-        if (idx !== -1) list[idx] = mergedUser;
+        if (idx !== -1) list[idx] = { ...list[idx], ...mergedUser };
         else list.push(mergedUser);
         localStorage.setItem("esp_admin_users", JSON.stringify(list));
       } catch {}

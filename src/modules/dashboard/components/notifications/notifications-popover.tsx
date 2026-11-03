@@ -60,31 +60,74 @@ function getLocalizedNotification(notif: any, locale: string) {
   let description = locale === "en" ? (notif.descriptionEn || notif.description) : (notif.descriptionFa || notif.description);
   let date = notif.date || "";
 
+  const isPersian = (str?: string) => /[\u0600-\u06FF]/.test(str || "");
+
   if (locale === "en") {
     if (date === "هم‌اکنون") date = "Just now";
     if (date === "امروز") date = "Today";
     if (date === "دیروز") date = "Yesterday";
 
-    if (title === "حساب کاربری شما فعال شد") {
-      title = "Your Account Has Been Activated";
-      description = "Your account has been approved and activated by System Admin. Credentials and access permissions are configured.";
-    } else if (typeof title === "string" && title.startsWith("تأیید و فعال‌سازی حساب:")) {
-      const name = title.replace("تأیید و فعال‌سازی حساب:", "").trim();
-      title = `Account Approved & Activated: ${name}`;
-    } else if (typeof title === "string" && title.startsWith("درخواست ویرایش اطلاعات:")) {
-      const name = title.replace("درخواست ویرایش اطلاعات:", "").trim();
-      title = `Profile Edit Request: ${name}`;
-    } else if (typeof title === "string" && title.startsWith("حذف درخواست:")) {
-      const name = title.replace("حذف درخواست:", "").trim();
-      title = `Request Removed: ${name}`;
-    } else if (typeof title === "string" && title.startsWith("رد درخواست:")) {
-      const name = title.replace("رد درخواست:", "").trim();
-      title = `Request Rejected: ${name}`;
+    if (isPersian(title)) {
+      if (title.includes("حساب کاربری شما فعال شد")) {
+        title = "Your Account Has Been Activated";
+        description = "Your account has been approved and activated by System Admin. Credentials and access permissions are configured.";
+      } else if (title.startsWith("تأیید و فعال‌سازی حساب:")) {
+        const name = title.replace("تأیید و فعال‌سازی حساب:", "").trim();
+        title = `Account Approved & Activated: ${name}`;
+      } else if (title.startsWith("درخواست ویرایش اطلاعات:")) {
+        const name = title.replace("درخواست ویرایش اطلاعات:", "").trim();
+        title = `Profile Edit Request: ${name}`;
+      } else if (title.startsWith("حذف درخواست:")) {
+        const name = title.replace("حذف درخواست:", "").trim();
+        title = `Request Removed: ${name}`;
+      } else if (title.startsWith("رد درخواست:")) {
+        const name = title.replace("رد درخواست:", "").trim();
+        title = `Request Rejected: ${name}`;
+      } else if (title.includes("تغییر رمز عبور کاربر")) {
+        title = "User Password Changed";
+      } else if (title.includes("ایجاد حساب کاربری")) {
+        title = "New User Account Created";
+      }
+    }
+
+    if (isPersian(description)) {
+      if (description.includes("در سامانه ثبت شد و منتظر بررسی است")) {
+        const emailMatch = description.match(/[\w.-]+@[\w.-]+\.\w+/);
+        const email = emailMatch ? emailMatch[0] : "user";
+        description = `Profile update request for ${email} has been registered and is awaiting review.`;
+      } else if (description.includes("تأیید و فعال گردید")) {
+        description = "Your account has been approved and activated by System Admin. Credentials and access permissions are configured.";
+      } else if (description.includes("در سیستم تأیید و فعال شد")) {
+        description = "User account has been reviewed, approved and successfully activated in the system.";
+      } else if (description.includes("توسط") && description.includes("بازنشانی و تغییر یافت")) {
+        description = "User password has been successfully reset and updated by System Admin.";
+      }
     }
   } else {
     if (date === "Just now") date = "هم‌اکنون";
     if (date === "Today") date = "امروز";
     if (date === "Yesterday") date = "دیروز";
+
+    if (!isPersian(title)) {
+      if (title.includes("Your Account Has Been Activated")) {
+        title = "حساب کاربری شما فعال شد";
+        description = "حساب کاربری شما توسط مدیر سیستم تأیید و فعال گردید. رمز عبور و دسترسی‌ها تنظیم شد.";
+      } else if (title.startsWith("Account Approved & Activated:")) {
+        const name = title.replace("Account Approved & Activated:", "").trim();
+        title = `تأیید و فعال‌سازی حساب: ${name}`;
+      } else if (title.startsWith("Profile Edit Request:")) {
+        const name = title.replace("Profile Edit Request:", "").trim();
+        title = `درخواست ویرایش اطلاعات: ${name}`;
+      } else if (title.startsWith("Request Removed:")) {
+        const name = title.replace("Request Removed:", "").trim();
+        title = `حذف درخواست: ${name}`;
+      } else if (title.startsWith("Request Rejected:")) {
+        const name = title.replace("Request Rejected:", "").trim();
+        title = `رد درخواست: ${name}`;
+      } else if (title.includes("User Password Changed") || title.includes("Password Changed")) {
+        title = "تغییر رمز عبور کاربر";
+      }
+    }
   }
 
   return { title, description, date };
@@ -288,7 +331,7 @@ export function NotificationsPopover({
         />
 
         <PopoverContent
-          className="relative w-[calc(100vw-24px)] max-w-[380px] sm:w-[380px] h-[520px] sm:h-[560px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
+          className="relative w-[calc(100vw-24px)] max-w-[calc(100vw-24px)] sm:w-[380px] sm:max-w-[380px] h-[500px] sm:h-[540px] max-h-[calc(100dvh-var(--header-height)-1.25rem)] flex flex-col p-0 bg-popover rounded-[22px] sm:rounded-[26px] shadow-[0_4px_24px_rgba(0,0,0,0.12),_0_16px_40px_rgba(0,0,0,0.2)] border-border/40 z-[100] overflow-hidden"
           align={
             anchorEdge === "left"
               ? dir === "rtl"
@@ -365,7 +408,7 @@ export function NotificationsPopover({
               setIsScrolled(e.currentTarget.scrollTop > 8);
             }}
           >
-            <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[52px] sm:pt-[56px] pb-4">
+            <div className="flex flex-col w-full px-3.5 sm:px-4 pt-[60px] sm:pt-[66px] pb-3.5 sm:pb-4">
               <div className="segmented-list flex flex-col gap-[2px] w-full">
                 {/* ── Main Accordion Trigger (آیکون بولد آبی شارپ بزرگ و بج قرمز) ── */}
                 <button
