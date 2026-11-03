@@ -106,7 +106,7 @@ export async function DELETE(
     const authHeader = req.headers.get("authorization");
 
     try {
-      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${id}`, {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/admin/requests/${encodeURIComponent(id)}`, {
         method: "DELETE",
         headers: {
           ...(authHeader ? { Authorization: authHeader } : {}),
@@ -116,6 +116,7 @@ export async function DELETE(
       });
 
       if (remoteRes.ok) {
+        deleteServerAdminRequest(id);
         const remoteData = await remoteRes.json();
         return NextResponse.json(remoteData);
       }
