@@ -178,10 +178,8 @@ export function AdminRequests({
     return isRtl ? (faName || enName) : (enName || faName);
   };
 
-  // Filter & Search states
-  const [searchQuery, setSearchQuery] = useState("");
+  // Filter states
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "active" | "rejected">("all");
-  const [domainFilter, setDomainFilter] = useState<"all" | "euroslotpars.com" | "npceram.com">("all");
   const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -237,34 +235,9 @@ export function AdminRequests({
       if (statusFilter !== "all" && req.status !== statusFilter) {
         return false;
       }
-      if (
-        domainFilter !== "all" &&
-        !req.email.toLowerCase().includes(domainFilter)
-      ) {
-        return false;
-      }
-      const q = searchQuery.trim().toLowerCase();
-      if (q) {
-        const nameMatch = req.name?.toLowerCase().includes(q);
-        const emailMatch = req.email.toLowerCase().includes(q);
-        const phoneMatch = req.phone?.includes(q);
-        const natIdMatch = req.nationalId?.includes(q);
-        const deptMatch = req.department?.toLowerCase().includes(q);
-        const jobMatch = req.jobTitle?.toLowerCase().includes(q);
-        const idMatch = req.id.toLowerCase().includes(q);
-        return (
-          nameMatch ||
-          emailMatch ||
-          phoneMatch ||
-          natIdMatch ||
-          deptMatch ||
-          jobMatch ||
-          idMatch
-        );
-      }
       return true;
     });
-  }, [requests, statusFilter, domainFilter, searchQuery]);
+  }, [requests, statusFilter]);
 
   // Automatically select first request if none selected or if selected was removed
   useEffect(() => {
@@ -3320,156 +3293,9 @@ export function AdminRequests({
         {/* SIDE COLUMN: TAGS, SEARCH & APPLICANTS QUEUE (RIGHT IN EN, LEFT IN FA) */}
         {/* ======================================================== */}
         <div className="xl:col-span-4 flex flex-col gap-4">
-          {/* Card 1: 4 Metric Overview Cards (Tags) */}
-          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="size-4 text-primary" />
-                <span className="font-bold text-xs sm:text-sm text-foreground">
-                  {t("statTotalRequests")}
-                </span>
-              </div>
-              <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20", isRtl && "fa-num")}>
-                {metrics.total}
-              </span>
-            </div>
-
-            <div className={cn("grid grid-cols-2 gap-2.5", isRtl && "fa-num")}>
-              <div
-                onClick={() => setStatusFilter("all")}
-                className={cn(
-                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
-                  statusFilter === "all"
-                    ? "bg-primary/10 border-primary/40 shadow-xs ring-1 ring-primary/20"
-                    : "bg-background/60 border-border/40 hover:bg-background"
-                )}
-              >
-                <div className="text-[10px] sm:text-[11px] text-muted-foreground font-medium truncate">
-                  {t("reqFilterAll")}
-                </div>
-                <div className="text-lg sm:text-xl font-extrabold text-foreground mt-0.5">
-                  {metrics.total}
-                </div>
-              </div>
-
-              <div
-                onClick={() => setStatusFilter("pending")}
-                className={cn(
-                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
-                  statusFilter === "pending"
-                    ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
-                    : "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10"
-                )}
-              >
-                <div className="text-[10px] sm:text-[11px] text-amber-600 dark:text-amber-400 font-medium truncate">
-                  {t("statPendingAdmin")}
-                </div>
-                <div className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">
-                  {metrics.pending}
-                </div>
-              </div>
-
-              <div
-                onClick={() => setStatusFilter("active")}
-                className={cn(
-                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
-                  statusFilter === "active"
-                    ? "bg-emerald-500/15 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
-                    : "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10"
-                )}
-              >
-                <div className="text-[10px] sm:text-[11px] text-emerald-600 dark:text-emerald-400 font-medium truncate">
-                  {t("statApproved")}
-                </div>
-                <div className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">
-                  {metrics.active}
-                </div>
-              </div>
-
-              <div
-                onClick={() => setStatusFilter("rejected")}
-                className={cn(
-                  "p-3 rounded-2xl border transition-colors cursor-pointer select-none",
-                  statusFilter === "rejected"
-                    ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20"
-                    : "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10"
-                )}
-              >
-                <div className="text-[10px] sm:text-[11px] text-rose-600 dark:text-rose-400 font-medium truncate">
-                  {t("statRejected")}
-                </div>
-                <div className="text-lg sm:text-xl font-extrabold text-rose-600 dark:text-rose-400 mt-0.5">
-                  {metrics.rejected}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Unified Search Bar & Company Tabs */}
-          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3">
-            {/* Fast Search Input */}
-            <div className="relative w-full">
-              <Search className="size-4 text-muted-foreground absolute top-1/2 -translate-y-1/2 start-3.5 pointer-events-none" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t("searchRequestsPlaceholder")}
-                className="h-10 ps-10 pe-9 bg-background/90 text-xs rounded-xl border-border/60 shadow-2xs"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery("")}
-                  className="absolute top-1/2 -translate-y-1/2 end-3 text-muted-foreground hover:text-foreground p-1 cursor-pointer"
-                >
-                  <X className="size-3.5" />
-                </button>
-              )}
-            </div>
-
-            {/* Company / Domain Filter Tabs */}
-            <div className="flex items-center gap-1 p-1 rounded-xl bg-background/80 border border-border/50 text-xs font-semibold w-full shadow-2xs">
-              <button
-                type="button"
-                onClick={() => setDomainFilter("all")}
-                className={cn(
-                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
-                  domainFilter === "all"
-                    ? "bg-primary text-primary-foreground font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("allCompanies")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDomainFilter("euroslotpars.com")}
-                className={cn(
-                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
-                  domainFilter === "euroslotpars.com"
-                    ? "bg-sky-600 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("companyEuroslot")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setDomainFilter("npceram.com")}
-                className={cn(
-                  "flex-1 px-2 py-1.5 rounded-lg transition-colors cursor-pointer text-center text-xs whitespace-nowrap",
-                  domainFilter === "npceram.com"
-                    ? "bg-amber-600 text-white font-bold shadow-xs"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {t("companyNpceram")}
-              </button>
-            </div>
-          </div>
-
-          {/* Card 3: Applicants Queue (لیست درخواست‌ها) */}
-          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-4">
+          {/* Applicants Queue Box with Integrated Status Row */}
+          <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-4 sm:p-5 shadow-xs space-y-3.5">
+            {/* Header: Title & Total Count */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <Users className="size-4 text-primary" />
@@ -3477,9 +3303,88 @@ export function AdminRequests({
                   {t("requestsQueue")}
                 </span>
               </div>
-              <span className={cn("bg-muted text-muted-foreground text-[11px] font-bold px-2 py-0.5 rounded-full", isRtl && "fa-num")}>
-                {filteredRequests.length}
+              <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20", isRtl && "fa-num")}>
+                {metrics.total}
               </span>
+            </div>
+
+            {/* Compact 4 Status Cards in a Single Row */}
+            <div className={cn("grid grid-cols-4 gap-1.5", isRtl && "fa-num")}>
+              {/* All */}
+              <div
+                onClick={() => setStatusFilter("all")}
+                className={cn(
+                  "py-2 px-1 rounded-xl border text-center transition-all cursor-pointer select-none flex flex-col items-center justify-center min-w-0",
+                  statusFilter === "all"
+                    ? "bg-primary/15 border-primary/40 shadow-xs ring-1 ring-primary/20"
+                    : "bg-background/60 border-border/40 hover:bg-background"
+                )}
+                title={t("reqFilterAll")}
+              >
+                <span className="text-[10px] text-muted-foreground font-medium truncate w-full px-0.5">
+                  {t("reqFilterAll")}
+                </span>
+                <span className="text-sm sm:text-base font-extrabold text-foreground leading-tight mt-0.5">
+                  {metrics.total}
+                </span>
+              </div>
+
+              {/* Pending */}
+              <div
+                onClick={() => setStatusFilter("pending")}
+                className={cn(
+                  "py-2 px-1 rounded-xl border text-center transition-all cursor-pointer select-none flex flex-col items-center justify-center min-w-0",
+                  statusFilter === "pending"
+                    ? "bg-amber-500/15 border-amber-500/40 shadow-xs ring-1 ring-amber-500/20"
+                    : "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10"
+                )}
+                title={t("statPendingAdmin")}
+              >
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium truncate w-full px-0.5">
+                  {t("statPendingAdmin")}
+                </span>
+                <span className="text-sm sm:text-base font-extrabold text-amber-600 dark:text-amber-400 leading-tight mt-0.5">
+                  {metrics.pending}
+                </span>
+              </div>
+
+              {/* Approved */}
+              <div
+                onClick={() => setStatusFilter("active")}
+                className={cn(
+                  "py-2 px-1 rounded-xl border text-center transition-all cursor-pointer select-none flex flex-col items-center justify-center min-w-0",
+                  statusFilter === "active"
+                    ? "bg-emerald-500/15 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
+                    : "bg-emerald-500/5 border-emerald-500/20 hover:bg-emerald-500/10"
+                )}
+                title={t("statApproved")}
+              >
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium truncate w-full px-0.5">
+                  {t("statApproved")}
+                </span>
+                <span className="text-sm sm:text-base font-extrabold text-emerald-600 dark:text-emerald-400 leading-tight mt-0.5">
+                  {metrics.active}
+                </span>
+              </div>
+
+              {/* Rejected */}
+              <div
+                onClick={() => setStatusFilter("rejected")}
+                className={cn(
+                  "py-2 px-1 rounded-xl border text-center transition-all cursor-pointer select-none flex flex-col items-center justify-center min-w-0",
+                  statusFilter === "rejected"
+                    ? "bg-rose-500/15 border-rose-500/40 shadow-xs ring-1 ring-rose-500/20"
+                    : "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10"
+                )}
+                title={t("statRejected")}
+              >
+                <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium truncate w-full px-0.5">
+                  {t("statRejected")}
+                </span>
+                <span className="text-sm sm:text-base font-extrabold text-rose-600 dark:text-rose-400 leading-tight mt-0.5">
+                  {metrics.rejected}
+                </span>
+              </div>
             </div>
 
             {/* Requests List Cards */}
