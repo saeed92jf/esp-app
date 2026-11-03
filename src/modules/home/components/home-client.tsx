@@ -61,7 +61,7 @@ export function HomeClient() {
 
   useEffect(() => {
     setIsAuthenticated(Boolean(user || (typeof window !== "undefined" && localStorage.getItem("esp-auth-user"))));
-    if (user && user.role !== "admin") {
+    if (user && user.role !== "admin" && user.role !== "superadmin") {
       if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
         router.push("/dashboard/profile?onboarding=true");
       } else if (user.accountStatus !== "active" || !(user.hrApproved && user.managerApproved)) {

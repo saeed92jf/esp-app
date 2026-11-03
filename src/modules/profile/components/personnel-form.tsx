@@ -111,7 +111,7 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
 
   const isFa = locale === "fa";
   const userRoleLower = (user?.role || '').toLowerCase();
-  const isAdmin = userRoleLower === 'admin' || userRoleLower === 'administrator' || userRoleLower === 'superuser' || Boolean((user as any)?.is_superuser);
+  const isAdmin = userRoleLower === 'admin' || userRoleLower === 'administrator' || userRoleLower === 'superadmin' || userRoleLower === 'superuser' || Boolean((user as any)?.is_superuser);
 
   const DEPARTMENTS: ComboboxOption[] = React.useMemo(() => {
     return getAllDepartmentOptions(isFa);

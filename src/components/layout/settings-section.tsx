@@ -29,7 +29,7 @@ export function SettingsSection() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
   const { user, updatePrimaryColor } = useAuth();
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);

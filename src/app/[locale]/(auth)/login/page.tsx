@@ -70,15 +70,18 @@ export default function LoginPage() {
       if (login) {
         const user = await login(data.identifier, data.password);
         if (user) {
-          // If profile is not yet completed, redirect immediately to profile setup
-          if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
+          // Admins and superadmins bypass profile onboarding and pending checks
+          const isPrivileged = user.role === "admin" || user.role === "superadmin";
+
+          // If profile is not yet completed, redirect immediately to profile setup (except privileged)
+          if (!isPrivileged && (!user.isProfileCompleted || user.accountStatus === "pending_profile")) {
             router.push("/dashboard/profile?onboarding=true");
             router.refresh();
             return;
           }
           // If not active / not yet final approved by manager, go directly to /account-pending
           const isFullyApproved = Boolean(
-            user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
+            isPrivileged || user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
           );
           if (!isFullyApproved) {
             router.push("/account-pending");
