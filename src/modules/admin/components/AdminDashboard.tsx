@@ -67,8 +67,16 @@ export function AdminDashboard() {
   const [isRetrying, setIsRetrying] = useState(false);
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'settings'>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'settings') => {
+    if (tab === 'add') {
+      setUserToEdit(null);
+    }
+    setActiveTab(tab);
+  };
 
   useEffect(() => {
     // Purge only legacy mock users from local storage
@@ -397,7 +405,7 @@ export function AdminDashboard() {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
         />
 
         {/* Main Content Area */}
@@ -489,7 +497,7 @@ export function AdminDashboard() {
                           tMenu={tMenu}
                           handleToggleModuleAccess={handleToggleModuleAccess}
                           handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-                          onNavigateToAccess={() => setActiveTab('add')}
+                          onNavigateToAccess={() => { setUserToEdit(selectedUser); setActiveTab('add'); }}
                           hideSearchAvatarsOnMobile={true}
                         />
                       </div>
@@ -504,6 +512,7 @@ export function AdminDashboard() {
                       setUsers={setUsers}
                       selectedUser={selectedUser}
                       setSelectedUser={setSelectedUser}
+                      setUserToEdit={setUserToEdit}
                       setActiveTab={setActiveTab}
                       onRefresh={fetchData}
                     />
@@ -513,7 +522,7 @@ export function AdminDashboard() {
                 {activeTab === 'add' && (
                   <div className="w-full h-full flex-1">
                     <AdminUserConfig 
-                      selectedUser={selectedUser}
+                      selectedUser={userToEdit}
                       users={users}
                       setUsers={setUsers}
                       setSelectedUser={setSelectedUser}

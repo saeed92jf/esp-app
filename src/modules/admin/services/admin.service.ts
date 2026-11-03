@@ -31,4 +31,5 @@ export interface IAdminService {
   approveRequest(requestId: string): Promise<{ email: string; tempPassword: string }>;
   updateRequest(requestId: string, updates: Partial<PendingRequest>): Promise<PendingRequest>;
   sendPassword(userId: string): Promise<{ success: boolean; password?: string }>;
+  deleteRequest(requestId: string): Promise<void>;
 }

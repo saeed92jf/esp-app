@@ -490,4 +490,8 @@ export class RealAdminService implements IAdminService {
     return res?.data ?? res;
   }
 
+  async deleteRequest(requestId: string): Promise<void> {
+    await this.http.delete(`/admin/requests/${requestId}`);
+  }
+
 }

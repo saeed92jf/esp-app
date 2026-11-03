@@ -54,6 +54,7 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
+import { useConfirm } from "@/hooks/use-confirm";
 import { PendingRequest, RequestStatus, User } from "../types/admin.types";
 import {
   getCompanyFromEmail,
@@ -138,6 +139,7 @@ export function AdminRequests({
   const t = useTranslations("Admin");
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const { confirm } = useConfirm();
 
   // Filter & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -643,6 +645,54 @@ export function AdminRequests({
     }
   };
 
+  const handleDeleteRequest = (requestId: string, reqName?: string) => {
+    confirm({
+      title: isRtl ? "حذف درخواست از صف" : "Delete Request from Queue",
+      description: isRtl
+        ? `آیا از حذف کامل درخواست «${reqName || requestId}» از صف و پایگاه داده اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`
+        : `Are you sure you want to permanently delete the request for "${reqName || requestId}" from the queue? This action cannot be undone.`,
+      confirmText: isRtl ? "حذف دائمی" : "Delete Permanently",
+      cancelText: isRtl ? "انصراف" : "Cancel",
+      variant: "destructive",
+      onConfirm: async () => {
+        try {
+          setActionLoadingId(requestId);
+          await api.admin.deleteRequest(requestId);
+          setRequests((prev) => prev.filter((r) => r.id !== requestId));
+          if (selectedReqId === requestId) {
+            setSelectedReqId(null);
+            setReviewData(null);
+          }
+          if (reviewData?.id === requestId) {
+            setReviewData(null);
+          }
+          addUserNotification({
+            title: isRtl ? "حذف درخواست از صف" : "Request Deleted from Queue",
+            description: isRtl
+              ? `درخواست متقاضی (${reqName || requestId}) به طور کامل توسط مدیر از صف حذف شد.`
+              : `Application for ${reqName || requestId} was deleted from the queue by Admin.`,
+            type: "system",
+          });
+          toast.success(
+            isRtl
+              ? `درخواست «${reqName || requestId}» با موفقیت از صف حذف شد.`
+              : `Request for "${reqName || requestId}" was successfully deleted from queue.`
+          );
+          if (onRefresh) await onRefresh();
+        } catch (err: any) {
+          console.error("Failed to delete request:", err);
+          toast.error(
+            isRtl
+              ? "خطا در حذف درخواست از سرور"
+              : (err?.message || "Failed to delete request")
+          );
+        } finally {
+          setActionLoadingId(null);
+        }
+      },
+    });
+  };
+
   const handleApproveAdmin = async () => {
     if (!reviewData) return;
     try {
@@ -946,6 +996,19 @@ export function AdminRequests({
                         <span>{t("rejectBtn")}</span>
                       </Button>
                     )}
+
+                    {/* Delete from Queue Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteRequest(reviewData.id, reviewData.name)}
+                      disabled={actionLoadingId === reviewData.id}
+                      className="h-9 px-3 rounded-xl text-xs font-medium text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 gap-1.5 cursor-pointer border border-rose-200/50 dark:border-rose-900/50"
+                      title={isRtl ? "حذف کامل درخواست از صف" : "Delete request from queue"}
+                    >
+                      <Trash2 className="size-3.5" />
+                      <span>{isRtl ? "حذف از صف" : "Delete from Queue"}</span>
+                    </Button>
 
                     {/* Resend Temp Password */}
                     {reviewData.status === "active" && (
@@ -3365,6 +3428,19 @@ export function AdminRequests({
                             {req.email}
                           </span>
                         </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteRequest(req.id, req.name);
+                          }}
+                          className="size-7 rounded-lg text-muted-foreground/60 hover:text-rose-600 hover:bg-rose-500/10 shrink-0 cursor-pointer transition-colors"
+                          title={isRtl ? "حذف کامل از صف" : "Delete from Queue"}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
                       </div>
 
                       {/* Middle Row: Tags brought DOWN below the name! */}

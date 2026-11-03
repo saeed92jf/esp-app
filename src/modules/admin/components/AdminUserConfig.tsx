@@ -268,7 +268,8 @@ export function AdminUserConfig({
   }));
 
   useEffect(() => {
-    if (selectedUser && isEditMode) {
+    if (selectedUser) {
+      setIsEditMode(true);
       setForm({
         firstNameFa: selectedUser.firstNameFa || selectedUser.fullNameFa?.split(" ")[0] || "",
         lastNameFa: selectedUser.lastNameFa || selectedUser.fullNameFa?.split(" ").slice(1).join(" ") || "",
@@ -313,8 +314,14 @@ export function AdminUserConfig({
         monthlyBonusTitle: selectedUser.monthlyBonusTitle || "",
         monthlyBonuses: selectedUser.monthlyBonuses || [],
       });
+    } else {
+      setIsEditMode(false);
+      setForm({
+        ...INITIAL_FORM,
+        password: generateRandomPassword(),
+      });
     }
-  }, [selectedUser, isEditMode]);
+  }, [selectedUser]);
   const [activeSegment, setActiveSegment] = useState<SegmentId>("identity");
   const [openSegment, setOpenSegment] = useState<SegmentId | null>("identity");
   const [confirmedSegments, setConfirmedSegments] = useState<Set<SegmentId>>(new Set());
@@ -996,7 +1003,16 @@ export function AdminUserConfig({
                   type="button"
                   variant={isEditMode ? "secondary" : "default"}
                   size="sm"
-                  onClick={() => setIsEditMode(!isEditMode)}
+                  onClick={() => {
+                    const nextMode = !isEditMode;
+                    setIsEditMode(nextMode);
+                    if (!nextMode) {
+                      setForm({
+                        ...INITIAL_FORM,
+                        password: generateRandomPassword(),
+                      });
+                    }
+                  }}
                   className="h-9 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer"
                 >
                   <UserCog className="size-3.5" />

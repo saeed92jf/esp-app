@@ -658,6 +658,12 @@ export class FakeAdminService implements IAdminService {
     return { success: true, password: user?.password || 'EspDev2026!' };
   }
 
+  async deleteRequest(requestId: string): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    this.requests = this.requests.filter(r => r.id !== requestId);
+    this.saveToStorage();
+  }
+
 }
 
 export const AdminFakeService = new FakeAdminService();

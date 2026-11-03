@@ -416,3 +416,10 @@ export function resendServerAdminRequestCredentials(id: string): { success: bool
   globalThis.__espServerAdminRequests = reqs;
   return { success: true, tempPassword };
 }
+
+export function deleteServerAdminRequest(id: string): boolean {
+  const reqs = globalThis.__espServerAdminRequests || [];
+  const initialLen = reqs.length;
+  globalThis.__espServerAdminRequests = reqs.filter((r) => r.id !== id);
+  return globalThis.__espServerAdminRequests.length < initialLen;
+}

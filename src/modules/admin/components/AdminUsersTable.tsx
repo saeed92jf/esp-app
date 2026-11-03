@@ -36,6 +36,7 @@ interface AdminUsersTableProps {
   setUsers: (u: User[]) => void;
   selectedUser: User | null;
   setSelectedUser: (u: User) => void;
+  setUserToEdit?: (u: User | null) => void;
   setActiveTab: (tab: any) => void;
   onRefresh?: () => Promise<void> | void;
 }
@@ -163,6 +164,7 @@ export function AdminUsersTable({
   setUsers,
   selectedUser,
   setSelectedUser,
+  setUserToEdit,
   setActiveTab,
   onRefresh,
 }: AdminUsersTableProps) {
@@ -455,6 +457,7 @@ export function AdminUsersTable({
 
   const handleSelectAndGoConfig = (user: User) => {
     setSelectedUser(user);
+    if (setUserToEdit) setUserToEdit(user);
     setActiveTab('add');
   };
 
