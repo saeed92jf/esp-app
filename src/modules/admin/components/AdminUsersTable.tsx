@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Search, X, Eye, EyeOff, LayoutDashboard,
+  Search, X, Eye, EyeOff, Copy, LayoutDashboard,
   FileCheck, CheckCheck, XCircle, ZoomIn, ZoomOut, RotateCw, FileText, CheckCircle2,
   TableProperties, Mail, Phone, 
   FolderKanban, Award, Filter,
@@ -211,6 +211,7 @@ export function AdminUsersTable({
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showRegisteredPassword, setShowRegisteredPassword] = useState<Record<string, boolean>>({});
   const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -470,6 +471,14 @@ export function AdminUsersTable({
       setActiveAccordion({ userId, type });
       setNewPassword("");
       setConfirmPassword("");
+      if (type === 'password') {
+        // Fetch fresh password directly from server
+        api.admin.getUserById(userId).then((freshUser) => {
+          if (freshUser?.password) {
+            setUsers(users.map((u: User) => u.id === userId ? { ...u, password: freshUser.password } : u));
+          }
+        }).catch(() => {});
+      }
       if (type === 'edit') {
         const u = targetUser || users.find(x => x.id === userId);
         if (u) {
@@ -1813,13 +1822,45 @@ export function AdminUsersTable({
 
                                     {/* Current registered password */}
                                     <div className="space-y-2 p-3 bg-muted/30 rounded-xl border border-border/30">
-                                      <p className="text-[10px] font-medium text-muted-foreground">
-                                        {isRtl ? "رمز عبور فعلی ثبت‌شده در سامانه" : "Current Registered Password"}
-                                      </p>
-                                      <div className="flex items-center gap-2">
-                                        <span className="flex-1 font-mono text-sm text-foreground bg-background rounded-lg px-3 py-2 border border-border/40 tracking-widest select-all">
-                                          {user.password || "—"}
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-[10px] font-medium text-muted-foreground">
+                                          {isRtl ? "رمز عبور فعلی ثبت‌شده در سامانه" : "Current Registered Password"}
+                                        </p>
+                                        <span className="text-[9px] text-muted-foreground font-mono">
+                                          {isRtl ? "دریافت‌شده از سرور" : "Live from server"}
                                         </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex-1 flex items-center justify-between bg-background rounded-lg px-3 py-2 border border-border/40 font-mono text-xs sm:text-sm text-foreground overflow-hidden">
+                                          <span className="select-all tracking-wider truncate">
+                                            {user.password
+                                              ? (showRegisteredPassword[user.id] ? user.password : "••••••••••••")
+                                              : (isRtl ? "در حال دریافت..." : "Loading...")}
+                                          </span>
+                                          <div className="flex items-center gap-1 shrink-0 ms-2">
+                                            <button
+                                              type="button"
+                                              onClick={() => setShowRegisteredPassword(prev => ({ ...prev, [user.id]: !prev[user.id] }))}
+                                              className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+                                              title={showRegisteredPassword[user.id] ? (isRtl ? "مخفی‌سازی" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
+                                            >
+                                              {showRegisteredPassword[user.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+                                            </button>
+                                            {user.password && (
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  navigator.clipboard.writeText(user.password || "");
+                                                  toast.success(isRtl ? "رمز عبور در کلیپ‌بورد کپی شد" : "Password copied to clipboard");
+                                                }}
+                                                className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
+                                                title={isRtl ? "کپی رمز" : "Copy"}
+                                              >
+                                                <Copy size={14} />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
                                         <Button
                                           type="button"
                                           size="sm"

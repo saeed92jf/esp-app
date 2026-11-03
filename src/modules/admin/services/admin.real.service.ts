@@ -135,6 +135,8 @@ export class RealAdminService implements IAdminService {
       graduationYear: u.graduationYear,
       birthDate: personal.birthDate || u.birthDate,
       address: personal.address || u.address,
+      password: u.password,
+      extensionNumber: u.extensionNumber || personal.extensionNumber || organizational.extensionNumber,
     };
   }
 
