@@ -84,6 +84,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { getRoleRingClass } from "@/lib/role-avatar";
 import { AdminModuleAccessStep } from "./AdminModuleAccessStep";
 import {
   getDegreeOptions,
@@ -925,14 +926,16 @@ export function AdminRequests({
               <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col gap-5 relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/40">
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <Avatar className="size-14 rounded-full border-2 border-border/60 shadow-xs shrink-0">
-                      <AvatarFallback 
-                        className="text-white text-xl font-bold rounded-full"
-                        style={{ backgroundColor: (reviewData as any).avatarColor || "#0284c7" }}
-                      >
-                        {reviewData.name ? reviewData.name.charAt(0) : "؟"}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className={cn("relative rounded-full flex items-center justify-center p-[2.5px] shrink-0", getRoleRingClass(reviewData.role))}>
+                      <Avatar className="size-13 rounded-full border border-background shadow-xs">
+                        <AvatarFallback 
+                          className="text-white text-xl font-bold rounded-full"
+                          style={{ backgroundColor: (reviewData as any).avatarColor || "#0284c7" }}
+                        >
+                          {reviewData.name ? reviewData.name.charAt(0) : "؟"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
 
                     <div className="flex flex-col min-w-0 flex-1">
                       {/* Name on its own line: full space, never cut off */}
@@ -3450,14 +3453,16 @@ export function AdminRequests({
                     >
                       {/* Top Row: Avatar + Full Name (No truncation or squishing!) */}
                       <div className="flex items-center gap-3 min-w-0">
-                        <Avatar className="size-10 rounded-full border border-border/50 shrink-0">
-                          <AvatarFallback 
-                            className="text-white text-xs font-bold rounded-full"
-                            style={{ backgroundColor: (req as any).avatarColor || "#0284c7" }}
-                          >
-                            {req.name ? req.name.charAt(0) : "؟"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className={cn("relative rounded-full flex items-center justify-center p-[2px] shrink-0", getRoleRingClass(req.role))}>
+                          <Avatar className="size-9 rounded-full border border-background">
+                            <AvatarFallback 
+                              className="text-white text-xs font-bold rounded-full"
+                              style={{ backgroundColor: (req as any).avatarColor || "#0284c7" }}
+                            >
+                              {req.name ? req.name.charAt(0) : "؟"}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <span className="font-bold text-xs sm:text-sm text-foreground break-words leading-tight">
                             {req.name || req.email.split("@")[0]}

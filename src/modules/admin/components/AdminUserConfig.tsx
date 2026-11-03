@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { getRoleRingClass } from "@/lib/role-avatar";
 import {
   UserCircle2,
   Mail,
@@ -3149,11 +3150,13 @@ export function AdminUserConfig({
           <div className="bg-background/80 dark:bg-background/60 border border-border/50 rounded-2xl p-5 shadow-xs flex flex-col gap-4 relative">
             {/* 1. Personnel Header Profile */}
             <div className="flex items-center gap-3.5">
-              <Avatar className="size-14 rounded-full border border-border/60 shadow-xs shrink-0">
-                <AvatarFallback className="text-white font-bold text-xl rounded-full" style={{ backgroundColor: "#0284c7" }}>
-                  {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
-                </AvatarFallback>
-              </Avatar>
+              <div className={cn("relative rounded-full flex items-center justify-center p-[2.5px] shrink-0", getRoleRingClass(form.role))}>
+                <Avatar className="size-13 rounded-full border border-background shadow-xs">
+                  <AvatarFallback className="text-white font-bold text-xl rounded-full" style={{ backgroundColor: "#0284c7" }}>
+                    {previewDisplayName ? previewDisplayName.charAt(0) : "؟"}
+                  </AvatarFallback>
+                </Avatar>
+              </div>
 
               <div className="flex flex-col min-w-0 flex-1">
                 <span className="font-bold text-foreground text-base sm:text-lg break-words leading-tight">

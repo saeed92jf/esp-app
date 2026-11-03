@@ -8,6 +8,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
 import { cn } from "@/lib/utils";
+import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import {
   Avatar,
   
@@ -73,7 +74,7 @@ export function UserMenu({
           )}
         >
           {isAuthenticated && (
-            <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] opacity-75 group-hover:opacity-100 transition-opacity" />
+            <div className={cn("absolute inset-0 rounded-full opacity-85 group-hover:opacity-100 transition-all", getRoleGradient(role), getRoleGlowShadow(role))} />
           )}
           <div className="relative z-10 bg-background rounded-full p-[2px]">
             <Avatar size={size}>

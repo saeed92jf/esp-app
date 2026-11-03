@@ -38,6 +38,7 @@ import {
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
+import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import { Badge } from "@/components/ui/badge";
 import { validateSheba, normalizeSheba, formatSheba } from "@/utils/shebaValidator";
 
@@ -398,11 +399,13 @@ export function PersonnelForm({ initialData, onSave, isSaving, isOnboarding }: P
         <div className="p-4 sm:p-5 rounded-2xl bg-muted/20 border border-border/50 flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
           {/* Avatar Preview */}
           <div className="flex flex-col items-center gap-1.5 shrink-0">
-            <div 
-              style={{ backgroundColor: currentAvatarBg }}
-              className="size-18 sm:size-20 rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-black shadow-md ring-4 ring-background transition-colors duration-200 select-none"
-            >
-              {initialLetter}
+            <div className={cn("p-[3px] rounded-full flex items-center justify-center", getRoleGradient(user?.role), getRoleGlowShadow(user?.role))}>
+              <div 
+                style={{ backgroundColor: currentAvatarBg }}
+                className="size-18 sm:size-20 rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-black shadow-md border-2 border-background transition-colors duration-200 select-none"
+              >
+                {initialLetter}
+              </div>
             </div>
             <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground">{t("personnelForm.avatarLabel")}</span>
           </div>

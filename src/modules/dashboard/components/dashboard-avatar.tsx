@@ -11,6 +11,7 @@ import { Upload, X, ChevronRight, ChevronLeft, Check, User, LogOut, Pencil, Chev
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useRouter } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
+import { getRoleGradient, getRoleGlowShadow } from '@/lib/role-avatar';
 import { toast } from 'sonner';
 import { HEADER_ICON_BUTTON_CLASS } from '@/lib/constants';
 import { usePrimaryColor } from '@/hooks/use-primary-color';
@@ -126,18 +127,14 @@ export function DashboardAvatar() {
         open && "hover:bg-transparent"
       )}
     >
-      {open && isSuperAdmin && (
+      {open && (
         <span
           aria-hidden="true"
-          className="absolute -inset-1 sm:-inset-[5px] rounded-full p-[2.5px] sm:p-[3px] bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] pointer-events-none z-0 animate-in fade-in-0 zoom-in-95 duration-150 shadow-[0_0_12px_rgba(239,68,68,0.4)]"
-        >
-          <span className="block size-full rounded-full bg-background" />
-        </span>
-      )}
-      {open && isAdmin && (
-        <span
-          aria-hidden="true"
-          className="absolute -inset-1 sm:-inset-[5px] rounded-full p-[2.5px] sm:p-[3px] bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] pointer-events-none z-0 animate-in fade-in-0 zoom-in-95 duration-150 shadow-[0_0_12px_rgba(245,158,11,0.4)]"
+          className={cn(
+            "absolute -inset-1 sm:-inset-[5px] rounded-full p-[2.5px] sm:p-[3px] pointer-events-none z-0 animate-in fade-in-0 zoom-in-95 duration-150",
+            getRoleGradient(user?.role),
+            getRoleGlowShadow(user?.role)
+          )}
         >
           <span className="block size-full rounded-full bg-background" />
         </span>
@@ -229,53 +226,32 @@ export function DashboardAvatar() {
                     : "opacity-0 scale-90 translate-y-2 pointer-events-none"
                 )}
               >
-                {isSuperAdmin || isAdmin ? (
-                  <div className="relative shrink-0 flex items-center justify-center p-[2px] rounded-full">
-                    <div className={cn(
-                      "absolute inset-0 rounded-full",
-                      isSuperAdmin 
-                        ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)]" 
-                        : "bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_8px_rgba(245,158,11,0.4)]"
-                    )} />
-                    <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
-                      <Avatar
-                        key={avatarUrl || user?.avatar || "admin-scrolled"}
-                        className="size-7 sm:size-7.5 rounded-full overflow-hidden"
-                        style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
-                      >
-                        {hasValidPhoto ? (
-                          <AvatarImage
-                            src={photoCandidate!}
-                            alt={nameToUse}
-                            className="size-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
-                            <span>{initial}</span>
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                    </div>
+                <div className="relative shrink-0 flex items-center justify-center p-[2px] rounded-full">
+                  <div className={cn(
+                    "absolute inset-0 rounded-full",
+                    getRoleGradient(user?.role),
+                    getRoleGlowShadow(user?.role)
+                  )} />
+                  <div className="relative z-10 bg-white dark:bg-popover rounded-full p-[1px]">
+                    <Avatar
+                      key={avatarUrl || user?.avatar || "avatar-scrolled"}
+                      className="size-7 sm:size-7.5 rounded-full overflow-hidden"
+                      style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
+                    >
+                      {hasValidPhoto ? (
+                        <AvatarImage
+                          src={photoCandidate!}
+                          alt={nameToUse}
+                          className="size-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
+                          <span>{initial}</span>
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
                   </div>
-                ) : (
-                  <Avatar
-                    key={avatarUrl || user?.avatar || "user-scrolled"}
-                    className="size-8 shrink-0 rounded-full overflow-hidden ring-2 ring-primary ring-offset-1 ring-offset-background border border-transparent"
-                    style={{ backgroundColor: (user as any)?.avatarBgColor || "transparent" }}
-                  >
-                    {hasValidPhoto ? (
-                      <AvatarImage
-                        src={photoCandidate!}
-                        alt={nameToUse}
-                        className="size-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <AvatarFallback style={{ backgroundColor: avatarBgColor }} className="text-xs font-bold text-white">
-                        <span>{initial}</span>
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                )}
+                </div>
               </div>
 
               {/* Email (Slightly bigger, single line, pure simple fade) */}

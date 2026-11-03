@@ -132,6 +132,7 @@ import { useTheme } from "next-themes";
 import { usePrimaryColor } from "@/hooks/use-primary-color";
 import { PRIMARY_COLORS, type PrimaryColorId } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { getRoleGradient, getRoleGlowHover } from "@/lib/role-avatar";
 import {
   Tooltip,
   TooltipContent,
@@ -884,20 +885,20 @@ export function ProfilePage() {
         initial="rest"
         animate="rest"
       >
-        {/* Colorful Glow Shadow */}
+        {/* Dynamic Role Glow Shadow */}
         <motion.div 
-          className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-orange-500 blur-xl z-0"
+          className={cn("absolute inset-0 rounded-full blur-xl z-0 bg-gradient-to-tr", getRoleGlowHover(user?.role))}
           variants={{
             rest: { opacity: 0 },
             hover: { opacity: 0.6, transition: { duration: 0.7 } }
           }}
         />
-        {/* The Ring */}
+        {/* The Role Ring */}
         <motion.div 
-          className="absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,theme(colors.red.500),theme(colors.orange.500),theme(colors.yellow.500),theme(colors.green.500),theme(colors.blue.500),theme(colors.indigo.500),theme(colors.purple.500),theme(colors.red.500))] z-0"
+          className={cn("absolute inset-0 rounded-full z-0", getRoleGradient(user?.role))}
           variants={{
-            rest: { opacity: 0.9, rotate: 0 },
-            hover: { opacity: 0.9, rotate: 0 }
+            rest: { opacity: 0.95, rotate: 0 },
+            hover: { opacity: 1, rotate: 0 }
           }}
         />
         {/* Avatar Core */}

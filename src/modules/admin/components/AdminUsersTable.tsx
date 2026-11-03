@@ -24,6 +24,7 @@ import {
   Heart, Shield, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getRoleRingClass } from "@/lib/role-avatar";
 import { toast } from "sonner";
 import { api } from "@/services";
 import { NAVIGATION } from "@/config/navigation";
@@ -1354,8 +1355,7 @@ export function AdminUsersTable({
                           {/* Avatar with unclipped location tag & role ring */}
                           <div className={cn(
                             "relative size-9 shrink-0 rounded-full flex items-center justify-center",
-                            user.role === 'superadmin' && "p-[2px] bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-xs",
-                            user.role === 'admin' && "p-[2px] bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_8px_rgba(245,158,11,0.35)]"
+                            getRoleRingClass(user.role)
                           )}>
                             <div 
                               className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"

@@ -15,6 +15,7 @@ import { PRIMARY_COLORS } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getCompanyFromEmail } from "../utils/company";
 import { cn } from "@/lib/utils";
+import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import { api } from "@/services";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -148,14 +149,12 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-2xs flex-1 min-h-[210px] overflow-hidden transition-all">
         {/* Avatar Ring */}
         <div 
-          className={`p-[2.5px] rounded-full shrink-0 transition-transform duration-300 ${
-            isSuperAdmin 
-              ? "bg-[conic-gradient(from_0deg,#ef4444,#f97316,#eab308,#22c55e,#06b6d4,#3b82f6,#a855f7,#ef4444)] shadow-md animate-[spin_10s_linear_infinite]" 
-              : isAdmin
-              ? "bg-[linear-gradient(135deg,#b45309,#f59e0b,#fef08a,#fbbf24,#d97706,#fbbf24)] shadow-[0_0_12px_rgba(245,158,11,0.45)]"
-              : "shadow-xs"
-          }`}
-          style={!isSuperAdmin && !isAdmin ? { backgroundColor: `${avatarBgColor}35` } : undefined}
+          className={cn(
+            "p-[3px] rounded-full shrink-0 transition-transform duration-300",
+            getRoleGradient(selectedUser.role),
+            getRoleGlowShadow(selectedUser.role),
+            isSuperAdmin && "animate-[spin_10s_linear_infinite]"
+          )}
         >
           <div className="p-1 rounded-full bg-white dark:bg-card">
             <div 
