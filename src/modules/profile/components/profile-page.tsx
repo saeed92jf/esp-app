@@ -352,6 +352,7 @@ export function ProfilePage() {
   const isProfileIncomplete = Boolean(
     user && (!user.isProfileCompleted || user.accountStatus === 'pending_profile' || isOnboarding)
   );
+  const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
   const [isPendingBannerMinimized, setIsPendingBannerMinimized] = useState(false);
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
   const [otpInput, setOtpInput] = useState("");
@@ -823,6 +824,146 @@ export function ProfilePage() {
           localStorage.setItem("esp_demo_users_override", JSON.stringify(demoUsers));
         } catch {}
       }
+    }
+  };
+
+  const validateProfileForSubmission = (data: UserProfile): { isValid: boolean; error: string; targetTab: string } => {
+    // 1. Personal Info
+    const p = data.personal || {};
+    const hasFirstName = Boolean(p.firstNameFa?.trim() || p.firstName?.trim());
+    const hasLastName = Boolean(p.lastNameFa?.trim() || p.lastName?.trim());
+    if (!hasFirstName) {
+      return { isValid: false, error: isRtl ? "وارد کردن نام الزامی است." : "First name is required.", targetTab: "personal" };
+    }
+    if (!hasLastName) {
+      return { isValid: false, error: isRtl ? "وارد کردن نام خانوادگی الزامی است." : "Last name is required.", targetTab: "personal" };
+    }
+    if (!p.phone?.trim() || !/^09\d{9}$/.test(p.phone.trim())) {
+      return { isValid: false, error: isRtl ? "شماره همراه الزامی است و باید با ۰۹ آغاز شده و ۱۱ رقم باشد." : "Mobile phone is required and must start with 09 (11 digits).", targetTab: "personal" };
+    }
+    if (!p.nationalId?.trim() || !/^\d{10}$/.test(p.nationalId.trim())) {
+      return { isValid: false, error: isRtl ? "کد ملی الزامی است و باید ۱۰ رقم باشد." : "National ID is required and must be 10 digits.", targetTab: "personal" };
+    }
+    if (!p.birthDate?.trim()) {
+      return { isValid: false, error: isRtl ? "وارد کردن تاریخ تولد الزامی است." : "Birth date is required.", targetTab: "personal" };
+    }
+    if (!p.maritalStatus?.trim()) {
+      return { isValid: false, error: isRtl ? "انتخاب وضعیت تأهل الزامی است." : "Marital status is required.", targetTab: "personal" };
+    }
+    if (!p.address?.trim()) {
+      return { isValid: false, error: isRtl ? "وارد کردن آدرس محل سکونت الزامی است." : "Address is required.", targetTab: "personal" };
+    }
+
+    // 2. Organizational Info
+    const org = data.organizational || {};
+    if (!org.department?.trim()) {
+      return { isValid: false, error: isRtl ? "انتخاب واحد سازمانی الزامی است." : "Department is required.", targetTab: "organizational" };
+    }
+    if (!org.role?.trim() && !(org as any).jobTitle?.trim()) {
+      return { isValid: false, error: isRtl ? "وارد کردن سمت یا عنوان شغلی الزامی است." : "Job title is required.", targetTab: "organizational" };
+    }
+
+    // 3. Education Info
+    const edu = data.education || {};
+    const hasEduRecords = Array.isArray(edu.records) && edu.records.length > 0;
+    const hasDegree = Boolean(edu.degree?.trim());
+    if (!hasEduRecords && !hasDegree) {
+      return { isValid: false, error: isRtl ? "ثبت حداقل یک مقطع یا مدرک تحصیلی الزامی است." : "At least one education record is required.", targetTab: "education" };
+    }
+
+    // 4. Documents
+    const docs = data.documents || [];
+    if (!Array.isArray(docs) || docs.length === 0) {
+      return { isValid: false, error: isRtl ? "بارگذاری حداقل یک مدرک شناسایی (کارت ملی، شناسنامه یا مدرک تحصیلی) الزامی است." : "At least one identification document must be uploaded.", targetTab: "documents" };
+    }
+
+    return { isValid: true, error: "", targetTab: "" };
+  };
+
+  const handleSubmitForApproval = async () => {
+    if (isSubmittingApproval) return;
+    if (!formData) return;
+
+    const validation = validateProfileForSubmission(formData);
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      setActiveTab(validation.targetTab);
+      return;
+    }
+
+    setIsSubmittingApproval(true);
+    try {
+      handleSave();
+
+      const p = formData.personal || {};
+      const org = formData.organizational || {};
+      const edu = formData.education || {};
+      const fullNameEnglish = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+      const fullNamePersian = (p.firstNameFa && p.lastNameFa)
+        ? `${p.firstNameFa} ${p.lastNameFa}`.trim()
+        : fullNameEnglish;
+
+      await api.admin.createRequest({
+        userId: user?.id,
+        email: user?.email || p.email,
+        name: isRtl ? (fullNamePersian || fullNameEnglish) : (fullNameEnglish || fullNamePersian),
+        fullName: fullNameEnglish || fullNamePersian,
+        fullNameFa: fullNamePersian || fullNameEnglish,
+        firstNameFa: p.firstNameFa,
+        lastNameFa: p.lastNameFa,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        phone: p.phone,
+        nationalId: p.nationalId,
+        birthDate: p.birthDate,
+        maritalStatus: p.maritalStatus as any,
+        childrenCount: p.childrenCount,
+        address: p.address,
+        department: org.department,
+        jobTitle: org.role || (org as any).jobTitle,
+        company: (user as any)?.company || (org as any)?.company || "یورو اسلات پارس",
+        companyId: (user as any)?.companyId || (org as any)?.companyId || "euroslot",
+        status: "pending",
+        requestType: "registration",
+        isProfileCompleted: true,
+        documents: formData.documents || [],
+        educationDegree: edu.degree,
+        educationField: edu.fieldOfStudy || (edu as any).field,
+        university: edu.university,
+        educationRecords: edu.records || [],
+        skills: formData.skills || [],
+        insuranceType: formData.insurance?.type as any,
+        supplementaryPlan: formData.insurance?.supplementaryPlan as any,
+        shebaNumber: formData.insurance?.shebaNumber,
+        dependents: formData.insurance?.dependents || [],
+      });
+
+      if (user) {
+        const updated = {
+          ...user,
+          isProfileCompleted: true,
+          accountStatus: "pending_manager" as const,
+        };
+        updateUser(updated);
+        localStorage.setItem("esp_auth_user", JSON.stringify(updated));
+        localStorage.setItem("esp-auth-user", JSON.stringify(updated));
+      }
+
+      toast.success(
+        isRtl
+          ? "اطلاعات با موفقیت ثبت شد. لطفاً منتظر تایید مدیر باشید."
+          : "Profile submitted successfully. Please wait for manager approval."
+      );
+      router.push("/account-pending");
+    } catch (err: any) {
+      console.error("Error submitting request to manager:", err);
+      toast.error(
+        isRtl
+          ? "خطا در ارسال درخواست برای مدیر. لطفاً مجدداً تلاش نمایید."
+          : "Failed to submit request for manager review."
+      );
+    } finally {
+      setIsSubmittingApproval(false);
     }
   };
 
@@ -4112,19 +4253,11 @@ export function ProfilePage() {
                 </CardDescription>
               </div>
               <Button
-                onClick={() => {
-                  handleSave();
-                  toast.success(
-                    isRtl
-                      ? "مدارک و اطلاعات ذخیره شد و برای بررسی مدیر ارسال گردید."
-                      : "Documents saved and sent for manager review."
-                  );
-                  router.push("/account-pending");
-                }}
-                disabled={isUpdating}
-                className="gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                onClick={handleSubmitForApproval}
+                disabled={isUpdating || isSubmittingApproval}
+                className="gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
               >
-                {isUpdating ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+                {(isUpdating || isSubmittingApproval) ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
                 <span>{isRtl ? "ذخیره و ارسال برای مدیر" : "Save & Submit for Manager"}</span>
               </Button>
             </div>
@@ -4324,15 +4457,11 @@ export function ProfilePage() {
 
               <Button
                 size="sm"
-                disabled={isUpdating}
-                onClick={() => {
-                  handleSave();
-                  toast.success(t("pendingBottomBar.savedToast"));
-                  router.push("/account-pending");
-                }}
+                disabled={isUpdating || isSubmittingApproval}
+                onClick={handleSubmitForApproval}
                 className="h-8.5 px-3.5 text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs gap-1.5 flex-1 sm:flex-none cursor-pointer"
               >
-                {isUpdating ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
+                {(isUpdating || isSubmittingApproval) ? <Loader2 className="size-3.5 animate-spin" /> : <CheckCircle2 className="size-3.5" />}
                 <span>{t("pendingBottomBar.saveAndSubmit")}</span>
               </Button>
             </div>

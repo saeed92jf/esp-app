@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
-import { Loader2, Mail, Send, CheckCircle2, Building2, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle, KeyRound, Copy, Check } from "lucide-react";
+import { Loader2, Mail, Send, CheckCircle2, Building2, ShieldCheck, ArrowRight, ArrowLeft, AlertCircle, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { Link } from "@/i18n/navigation";
@@ -42,8 +42,6 @@ export default function AccountRequestPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null);
   const [successInfoMsg, setSuccessInfoMsg] = useState<string | null>(null);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const form = useForm<AccountRequestInput>({
     resolver: zodResolver(getAccountRequestSchema(t)),
@@ -65,9 +63,6 @@ export default function AccountRequestPage() {
       ]);
       if (res?.message) {
         setSuccessInfoMsg(res.message);
-      }
-      if (res?.tempPassword || res?.temp_password) {
-        setTempPassword((res.tempPassword || res.temp_password) ?? null);
       }
       setSubmittedEmail(data.email.trim().toLowerCase());
     } catch (error: any) {
@@ -127,50 +122,33 @@ export default function AccountRequestPage() {
                   </span>
                 </div>
 
-                {tempPassword && (
-                  <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-2 text-start">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-primary flex items-center gap-1.5">
-                        <KeyRound className="size-4" />
-                        {isFa ? "کلمه عبور اولیه حساب شما:" : "Initial Temporary Password:"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (tempPassword) {
-                            navigator.clipboard.writeText(tempPassword);
-                            setCopied(true);
-                            toast.success(isFa ? "کلمه عبور کپی شد" : "Password copied");
-                            setTimeout(() => setCopied(false), 2000);
-                          }
-                        }}
-                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors inline-flex items-center gap-1 cursor-pointer"
-                      >
-                        {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-                        <span>{copied ? (isFa ? "کپی شد" : "Copied") : (isFa ? "کپی رمز" : "Copy")}</span>
-                      </button>
-                    </div>
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border/60">
-                      <span dir="ltr" className="font-mono text-base font-bold text-foreground tracking-wider select-all">
-                        {tempPassword}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-normal">
-                      {isFa 
-                        ? "این رمز به ایمیل شما نیز ارسال شده است. لطفاً با این کلمه عبور وارد شده تا در صفحه وضعیت حساب، مشخصات خود را تکمیل کنید."
-                        : "This password has also been emailed. Please login with these credentials to complete your onboarding profile."}
-                    </p>
+                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-2 text-start">
+                  <div className="flex items-center gap-2 text-primary font-semibold text-xs sm:text-sm">
+                    <MailCheck className="size-4.5 shrink-0" />
+                    <span>{isFa ? "کلمه عبور اولیه به ایمیل سازمانی شما ارسال شد" : "Temporary password sent to corporate email"}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {isFa
+                      ? "کلمه عبور اولیه از طریق ESP Technical به نشانی ایمیل شما ارسال گردید. لطفاً صندوق ورودی (Inbox) و پوشه هرزنامه (Spam / Junk) ایمیل خود را بررسی نمایید."
+                      : "Your initial temporary password has been emailed from ESP Technical. Please check your Inbox and Spam/Junk folder."}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 leading-relaxed pt-1 border-t border-primary/15">
+                    {isFa
+                      ? "پس از ورود به سامانه، به بخش تکمیل اطلاعات هدایت می‌شوید تا مشخصات و مدارک خود را تکمیل نمایید."
+                      : "After signing in, you will be directed to complete your required profile and documents."}
+                  </p>
+                </div>
+
+                {successInfoMsg && (
+                  <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 text-xs sm:text-sm text-muted-foreground leading-relaxed flex items-start gap-2.5">
+                    <ShieldCheck className="size-4.5 shrink-0 text-primary mt-0.5" />
+                    <span>{successInfoMsg}</span>
                   </div>
                 )}
 
-                <div className="p-3.5 rounded-xl bg-muted/40 border border-border/40 text-xs sm:text-sm text-muted-foreground leading-relaxed flex items-start gap-2.5">
-                  <ShieldCheck className="size-4.5 shrink-0 text-primary mt-0.5" />
-                  <span>{successInfoMsg || t("accountRequest.successDesc")}</span>
-                </div>
-
                 <Button asChild className="w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold shadow-md shadow-primary/20">
                   <Link href={`/login?email=${encodeURIComponent(submittedEmail || "")}`}>
-                    {isFa ? "ورود به سامانه با کلمه عبور اولیه" : t("accountRequest.backToLogin")}
+                    {isFa ? "ورود به سامانه" : t("accountRequest.backToLogin")}
                   </Link>
                 </Button>
 

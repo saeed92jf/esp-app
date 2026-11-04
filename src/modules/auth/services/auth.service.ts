@@ -284,22 +284,11 @@ export class FakeAuthService implements IAuthService {
 
     const requestId = `req-${Date.now()}`;
     const tempPassword = `Esp@${Math.floor(1000 + Math.random() * 9000)}26`;
-    const newRequest: AccountRequestRecord = {
-      id: requestId,
-      email,
-      requestedAt: new Date().toISOString(),
-      status: "pending",
-      tempPassword,
-    };
 
     if (typeof window !== "undefined") {
       try {
-        const raw = localStorage.getItem(ACCOUNT_REQUESTS_KEY);
-        const existing: AccountRequestRecord[] = raw ? JSON.parse(raw) : [];
-        existing.unshift(newRequest);
-        localStorage.setItem(ACCOUNT_REQUESTS_KEY, JSON.stringify(existing));
-
-        // Save credential so user can log in immediately with initial password
+        // In Step 1, the request does NOT go to admin queue.
+        // User credentials are created so they can log in and complete their profile.
         const rawCreds = localStorage.getItem("esp_custom_user_creds");
         const creds = rawCreds ? JSON.parse(rawCreds) : {};
         creds[email] = {
@@ -318,11 +307,9 @@ export class FakeAuthService implements IAuthService {
 
     return {
       success: true,
-      message: "حساب کاربری ایجاد و کلمه عبور اولیه صادر گردید. لطفاً با این رمز وارد شده و اطلاعات خود را تکمیل نمایید.",
+      message: "حساب کاربری ایجاد و کلمه عبور اولیه به ایمیل سازمانی ارسال گردید. لطفاً با رمز ارسال شده وارد سامانه شده و اطلاعات خود را تکمیل نمایید.",
       requestId,
       status: "pending_profile",
-      tempPassword,
-      temp_password: tempPassword,
     };
   }
 
@@ -632,11 +619,9 @@ export class RealAuthService implements IAuthService {
 
       return {
         success: true,
-        message: raw.message || "حساب کاربری ایجاد و رمز عبور اولیه به ایمیل شما ارسال شد.",
+        message: raw.message || "حساب کاربری ایجاد و رمز عبور اولیه به ایمیل سازمانی شما ارسال شد.",
         requestId: raw.user_id || raw.id || "",
         status: raw.status || "pending_profile",
-        tempPassword,
-        temp_password: tempPassword,
       };
     } catch (err: any) {
       console.warn("RealAuthService.requestAccount error, attempting resilient fallback:", err);

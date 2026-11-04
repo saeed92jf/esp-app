@@ -93,12 +93,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "حساب کاربری ایجاد و کلمه عبور اولیه صادر گردید. لطفاً با این رمز وارد شده و اطلاعات خود را تکمیل نمایید.",
+        message: "حساب کاربری ایجاد و کلمه عبور اولیه صادر گردید. لطفاً با رمز ارسال شده به ایمیل وارد شوید و اطلاعات خود را تکمیل نمایید.",
         user_id: userId,
         id: userId,
         email,
-        temp_password: tempPassword,
-        tempPassword,
         status: "pending_profile",
       },
       { status: 201 }
