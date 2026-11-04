@@ -2741,6 +2741,8 @@
       "procurement": "Procurement",
       "fabrication": "Fabrication",
       "qc_testing": "QC & Testing",
+      "in_progress": "In Progress",
+      "on_hold": "On Hold",
       "completed": "Completed"
     },
     "tabs": {

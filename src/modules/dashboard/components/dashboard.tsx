@@ -499,7 +499,7 @@ export function Dashboard() {
         <div className="flex flex-1 w-full relative bg-white dark:bg-background">
           {/* ── Utility Sidebar ── */}
           <aside
-            className="flex-shrink-0 flex sticky top-16 self-start z-20 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-transparent"
+            className="flex-shrink-0 flex sticky top-[var(--header-height)] self-start z-30 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-white dark:bg-background overflow-hidden"
             style={{
               top: 'var(--header-height, 4rem)',
               height: 'calc(100dvh - var(--header-height, 4rem))',
@@ -508,7 +508,7 @@ export function Dashboard() {
           >
             {/* ── Side Rail (Icons) with Independent Scrolling ── */}
             <TooltipProvider>
-              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20 overflow-y-auto no-scrollbar">
+              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20 overflow-hidden no-scrollbar">
                 {/* 1. Slide Rail Settings Button (FIRST ICON AT TOP) */}
                 <div className="shrink-0 pb-2.5 mb-1.5 border-b border-border/20 w-full flex items-center justify-center">
                   <Tooltip>
@@ -627,7 +627,7 @@ export function Dashboard() {
                 opacity: linksSidebarOpen ? 1 : 0,
               }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-              className="overflow-hidden h-full flex flex-col bg-card sm:bg-transparent max-w-[calc(100vw-54px)] z-20"
+              className="overflow-hidden h-full flex flex-col bg-white dark:bg-card border-s border-border/10 max-w-[calc(100vw-54px)] z-20"
             >
               <div className="w-[calc(100vw-56px)] max-w-[480px] sm:w-[480px] h-full overflow-y-auto custom-scrollbar p-2.5 sm:p-3 ps-1 sm:ps-1.5 pe-2.5 sm:pe-3 pb-6 flex flex-col">
                 {/* Clean Drawer Close Header (Title & Add-to-grid removed) */}

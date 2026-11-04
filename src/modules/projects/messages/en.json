@@ -48,6 +48,7 @@
       "fabrication": "Fabrication & Assembly",
       "qc_testing": "QC & NDT Testing",
       "commissioning": "Pre-commissioning",
+      "in_progress": "In Progress",
       "completed": "Completed & Final Delivery",
       "on_hold": "On Hold / Suspended"
     },

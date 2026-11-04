@@ -63,6 +63,8 @@ export function ProjectWidget() {
     switch (status) {
       case "completed":
         return "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30";
+      case "in_progress":
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30";
       case "fabrication":
       case "qc_testing":
       case "detailed_engineering":

@@ -2741,6 +2741,8 @@
       "procurement": "تأمین و خرید",
       "fabrication": "ساخت و تولید",
       "qc_testing": "تست و بازرسی QC",
+      "in_progress": "در حال اجرا",
+      "on_hold": "متوقف / معلق",
       "completed": "تکمیل شده"
     },
     "tabs": {

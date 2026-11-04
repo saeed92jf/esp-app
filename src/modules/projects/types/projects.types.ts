@@ -11,7 +11,8 @@ export type ProjectStatus =
   | 'qc_testing'
   | 'commissioning'
   | 'completed'
-  | 'on_hold';
+  | 'on_hold'
+  | 'in_progress';
 
 export type VdisDocumentStatus =
   | 'draft'
