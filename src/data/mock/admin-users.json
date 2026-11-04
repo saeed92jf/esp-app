@@ -1,1 +1,1508 @@
-[]
+[
+  {
+    "id": "u-saeed",
+    "name": "سعید جلیلی",
+    "fullName": "Saeed Jalili",
+    "fullNameFa": "سعید جلیلی",
+    "firstName": "Saeed",
+    "lastName": "Jalili",
+    "firstNameFa": "سعید",
+    "lastNameFa": "جلیلی",
+    "email": "s.jalilifard@euroslotpars.com",
+    "phone": "09179528781",
+    "nationalId": "2530095760",
+    "role": "superadmin",
+    "status": "online",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0284c7",
+    "primaryColor": "blue",
+    "avatarMode": "photo",
+    "joinedAt": "1402/03/25",
+    "daysInCompany": 1100,
+    "doneProjects": 28,
+    "salary": 650000000,
+    "hasOvertime": true,
+    "maxOvertimeHours": 40,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-205",
+    "extensionNumber": "187",
+    "manager": "مدیر مهندسی",
+    "workingFormat": {
+      "office": 60,
+      "factory": 20,
+      "mission": 10,
+      "leave": 10
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "120:00:00",
+        "usagePercentage": 95
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "85:00:00",
+        "usagePercentage": 90
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "150:00:00",
+        "usagePercentage": 95
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "90:00:00",
+        "usagePercentage": 85
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "65:00:00",
+        "usagePercentage": 75
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "80:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "45:00:00",
+        "usagePercentage": 60
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "35:00:00",
+        "usagePercentage": 50
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "70:00:00",
+        "usagePercentage": 85
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "password": "Esp@394526",
+    "reset_token": "R3FD1I0F6f6hKH1-WwvhI39n9E3n6HQo2gSBbBdKnGM",
+    "reset_token_created_at": "2026-11-04T13:42:16.407023"
+  },
+  {
+    "id": "u-shafiee",
+    "name": "مرتضی شفیعی",
+    "fullName": "Morteza Shafiee",
+    "fullNameFa": "مرتضی شفیعی",
+    "firstName": "Morteza",
+    "lastName": "Shafiee",
+    "firstNameFa": "مرتضی",
+    "lastNameFa": "شفیعی",
+    "email": "mshafiee@euroslotpars.com",
+    "password": "mShafiee@espAdmin!",
+    "phone": "09123480872",
+    "nationalId": "0059432748",
+    "role": "admin",
+    "status": "online",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "مدیر مهندسی",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "purple",
+    "avatarMode": "photo",
+    "joinedAt": "1386/12/01",
+    "daysInCompany": 300,
+    "doneProjects": 15,
+    "salary": 620000000,
+    "hasOvertime": false,
+    "maxOvertimeHours": 0,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-003",
+    "extensionNumber": "125",
+    "workingFormat": {
+      "office": 70,
+      "factory": 20,
+      "mission": 5,
+      "leave": 5
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "80:00:00",
+        "usagePercentage": 85
+      },
+      {
+        "moduleId": "admin",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "75:00:00",
+        "usagePercentage": 90
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "110:00:00",
+        "usagePercentage": 85
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "60:00:00",
+        "usagePercentage": 75
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "40:00:00",
+        "usagePercentage": 60
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "65:00:00",
+        "usagePercentage": 75
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "30:00:00",
+        "usagePercentage": 50
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "25:00:00",
+        "usagePercentage": 40
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "55:00:00",
+        "usagePercentage": 80
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/dashboard/projects",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/dashboard/tasks",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "usagePercentage": 0,
+        "hoursSpent": "00:00:00"
+      }
+    ],
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "requestType": "edit_profile",
+    "requestTag": "ویرایش اطلاعات کاربر",
+    "monthlyBonusType": "cash",
+    "monthlyBonusAmount": 0,
+    "monthlyBonusTitle": "پاداش حسن انجام کار و بهره‌وری",
+    "monthlyBonuses": [
+      {
+        "id": "b-req-1ade8f-1",
+        "title": "پاداش حسن انجام کار و بهره‌وری",
+        "type": "cash",
+        "amount": 0
+      }
+    ],
+    "maritalStatus": "married",
+    "childrenCount": 2,
+    "insuranceType": "complementary",
+    "educationDegree": "master",
+    "educationField": "mechanical_design",
+    "skills": [
+      {
+        "id": "sk-1793698913591",
+        "name": "Piping & Pipelines",
+        "level": 5
+      }
+    ],
+    "documents": [
+      {
+        "id": "doc-req-1ade8f-front",
+        "category": "national_card_front",
+        "title": "National ID Card (Front)",
+        "fileName": "national_id_front.jpg",
+        "fileSize": "1.4 MB",
+        "fileType": "image/jpeg",
+        "fileData": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%230284c7'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>M.%20Shafiee%20-%20%DA%A9%D8%A7%D8%B1%D8%AA%20%D9%85%D9%84%DB%8C</text></svg>",
+        "uploadedAt": "2026-11-03T08:03:21.823Z",
+        "verified": false
+      },
+      {
+        "id": "doc-req-1ade8f-back",
+        "category": "national_card_back",
+        "title": "National ID Card (Back)",
+        "fileName": "national_id_back.jpg",
+        "fileSize": "1.2 MB",
+        "fileType": "image/jpeg",
+        "fileData": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%23059669'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>M.%20Shafiee%20-%20%D9%BE%D8%B4%D8%AA%20%DA%A9%D8%A7%D8%B1%D8%AA%20%D9%85%D9%84%DB%8C</text></svg>",
+        "uploadedAt": "2026-11-03T08:03:21.823Z",
+        "verified": false
+      },
+      {
+        "id": "doc-req-1ade8f-degree",
+        "category": "university_degree",
+        "title": "Latest University Degree",
+        "fileName": "degree_certificate.jpg",
+        "fileSize": "2.1 MB",
+        "fileType": "image/jpeg",
+        "fileData": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='380' viewBox='0 0 600 380'><rect width='600' height='380' rx='20' fill='%237c3aed'/><text x='300' y='190' font-size='22' fill='white' text-anchor='middle' font-family='sans-serif'>M.%20Shafiee%20-%20%D8%AF%D8%A7%D9%86%D8%B4%D9%86%D8%A7%D9%85%D9%87</text></svg>",
+        "uploadedAt": "2026-11-03T08:03:21.823Z",
+        "verified": false
+      }
+    ],
+    "subordinates": [],
+    "notes": "Profile information update request for M. Shafiee (#u-shafiee)",
+    "birthDate": "",
+    "joinDate": "",
+    "insuranceProvider": "Social Security",
+    "insuranceValidUntil": "",
+    "supplementaryPlan": "silver",
+    "supplementaryProvider": "SOS",
+    "dependents": [],
+    "graduationYear": "",
+    "educationRecords": [],
+    "manager": "مدیر عامل"
+  },
+  {
+    "id": "u-mcharmchi",
+    "name": "میلاد چرمچی",
+    "fullName": "Milad Charmchi",
+    "fullNameFa": "میلاد چرمچی",
+    "firstName": "Milad",
+    "lastName": "Charmchi",
+    "firstNameFa": "میلاد",
+    "lastNameFa": "چرمچی",
+    "email": "m.charmchi@euroslotpars.com",
+    "phone": "09126654676",
+    "nationalId": "3920015789",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1397/03/01",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-096",
+    "extensionNumber": "119",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@545826!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-amasoumian",
+    "name": "علیرضا معصومیان",
+    "fullName": "Alireza Masoumian",
+    "fullNameFa": "علیرضا معصومیان",
+    "firstName": "Alireza",
+    "lastName": "Masoumian",
+    "firstNameFa": "علیرضا",
+    "lastNameFa": "معصومیان",
+    "email": "a.masoumian@euroslotpars.com",
+    "phone": "09369156690",
+    "nationalId": "0019171617",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1398/10/08",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-118",
+    "extensionNumber": "128",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@496226!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-rsharifi",
+    "name": "رضا شریفی",
+    "fullName": "Reza Sharifi",
+    "fullNameFa": "رضا شریفی",
+    "firstName": "Reza",
+    "lastName": "Sharifi",
+    "firstNameFa": "رضا",
+    "lastNameFa": "شریفی",
+    "email": "r.sharifi@euroslotpars.com",
+    "phone": "09351596151",
+    "nationalId": "0017438845",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1399/09/01",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-141",
+    "extensionNumber": "152",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@580626!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-mabbasi",
+    "name": "مهدی عباسی",
+    "fullName": "Mahdi Abbasi",
+    "fullNameFa": "مهدی عباسی",
+    "firstName": "Mahdi",
+    "lastName": "Abbasi",
+    "firstNameFa": "مهدی",
+    "lastNameFa": "عباسی",
+    "email": "m.abbasi@euroslotpars.com",
+    "phone": "09127381076",
+    "nationalId": "3920482891",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1399/03/27",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-122",
+    "extensionNumber": "140",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@167326!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-pnavidi",
+    "name": "پدرام نویدی",
+    "fullName": "Pedram Navidi",
+    "fullNameFa": "پدرام نویدی",
+    "firstName": "Pedram",
+    "lastName": "Navidi",
+    "firstNameFa": "پدرام",
+    "lastNameFa": "نویدی",
+    "email": "p.navidi@euroslotpars.com",
+    "phone": "09126126468",
+    "nationalId": "0014710196",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1400/08/01",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-166",
+    "extensionNumber": "198",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@770426!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-anavidian",
+    "name": "امین نویدیان‌فر",
+    "fullName": "Amin Navidianfar",
+    "fullNameFa": "امین نویدیان‌فر",
+    "firstName": "Amin",
+    "lastName": "Navidianfar",
+    "firstNameFa": "امین",
+    "lastNameFa": "نویدیان‌فر",
+    "email": "a.navidian@euroslotpars.com",
+    "phone": "09124022614",
+    "nationalId": "1520327501",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1400/01/22",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-152",
+    "extensionNumber": "182",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@476526!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-sjokar",
+    "name": "سجاد جوکار",
+    "fullName": "Sajad Jokar",
+    "fullNameFa": "سجاد جوکار",
+    "firstName": "Sajad",
+    "lastName": "Jokar",
+    "firstNameFa": "سجاد",
+    "lastNameFa": "جوکار",
+    "email": "s.jokar@euroslotpars.com",
+    "phone": "09120893754",
+    "nationalId": "0013163914",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1401/02/17",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-172",
+    "extensionNumber": "149",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@290526!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-zhassani",
+    "name": "زهرا حسنی",
+    "fullName": "Zahra Hassani",
+    "fullNameFa": "زهرا حسنی",
+    "firstName": "Zahra",
+    "lastName": "Hassani",
+    "firstNameFa": "زهرا",
+    "lastNameFa": "حسنی",
+    "email": "z.hassani@euroslotpars.com",
+    "phone": "09394964751",
+    "nationalId": "4271321419",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1401/06/15",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-181",
+    "extensionNumber": "183",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@646026!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-htayyar",
+    "name": "حسین طیار",
+    "fullName": "Hossein Tayyar",
+    "fullNameFa": "حسین طیار",
+    "firstName": "Hossein",
+    "lastName": "Tayyar",
+    "firstNameFa": "حسین",
+    "lastNameFa": "طیار",
+    "email": "h.tayyar@euroslotpars.com",
+    "phone": "09370625600",
+    "nationalId": "1520327501",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1400/01/22",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-150",
+    "extensionNumber": "--",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@775226!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  },
+  {
+    "id": "u-psharifi",
+    "name": "پیمان شریفی",
+    "fullName": "Peyman Sharifi",
+    "fullNameFa": "پیمان شریفی",
+    "firstName": "Peyman",
+    "lastName": "Sharifi",
+    "firstNameFa": "پیمان",
+    "lastNameFa": "شریفی",
+    "email": "p.sharifi@euroslotpars.com",
+    "phone": "09351616015",
+    "nationalId": "2530099146",
+    "role": "admin",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس",
+    "avatarColor": "#8b5cf6",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1400/02/19",
+    "daysInCompany": 365,
+    "workLocation": "office",
+    "contractType": "full_time",
+    "employeeId": "ESP-153",
+    "extensionNumber": "185",
+    "manager": "مدیر مهندسی",
+    "password": "Esp@950726!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-04",
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "admin",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ]
+  }
+]

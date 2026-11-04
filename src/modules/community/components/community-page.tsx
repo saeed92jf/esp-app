@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/layout/app-header";
@@ -31,8 +32,9 @@ import {
   Download,
   X,
   Loader2,
-  Calendar,
-  User,
+  AlertCircle,
+  LogIn,
+  Trash2,
   Sparkles,
 } from "lucide-react";
 
@@ -52,11 +54,103 @@ const CATEGORIES: CategoryItem[] = [
   { id: "general", labelKey: "general", labelEn: "General", labelFa: "عمومی و متفرقه", icon: Coffee },
 ];
 
+function getRoleBadge(role?: string, isRtl = false) {
+  const r = (role || "").toLowerCase();
+  if (r === "superadmin") {
+    return {
+      label: isRtl ? "مدیر ارشد" : "Super Admin",
+      className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
+    };
+  }
+  if (r === "admin") {
+    return {
+      label: isRtl ? "مدیر سیستم" : "Admin",
+      className: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
+    };
+  }
+  if (r === "engineer") {
+    return {
+      label: isRtl ? "کارشناس مهندسی" : "Engineer",
+      className: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
+    };
+  }
+  if (r === "manager") {
+    return {
+      label: isRtl ? "مدیر واحد" : "Manager",
+      className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
+    };
+  }
+  return {
+    label: isRtl ? "پرسنل" : "Staff",
+    className: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30",
+  };
+}
+
+function UserAvatar({
+  name,
+  nameFa,
+  nameEn,
+  avatar,
+  avatarColor,
+  avatarMode,
+  size = "md",
+  isRtl = false,
+}: {
+  name?: string;
+  nameFa?: string;
+  nameEn?: string;
+  avatar?: string | null;
+  avatarColor?: string;
+  avatarMode?: string;
+  size?: "sm" | "md" | "lg";
+  isRtl?: boolean;
+}) {
+  const chosenName = isRtl
+    ? (nameFa || name || nameEn || "کاربر")
+    : (nameEn || name || nameFa || "User");
+
+  const initial = (chosenName.trim().charAt(0) || (isRtl ? "ک" : "U")).toUpperCase();
+
+  const hasPhoto = Boolean(
+    avatarMode !== "initials" &&
+    avatar &&
+    typeof avatar === "string" &&
+    avatar.trim() !== "" &&
+    !avatar.includes("unsplash.com") &&
+    !avatar.includes("/team/")
+  );
+
+  const sizeClass = size === "sm" ? "size-6 text-[10px]" : size === "lg" ? "size-11 text-sm" : "size-9 text-xs";
+
+  return (
+    <Avatar className={cn(sizeClass, "border border-border/60 shrink-0 font-semibold select-none overflow-hidden")}>
+      {hasPhoto && (
+        <AvatarImage
+          src={avatar!}
+          alt={chosenName}
+          className="size-full object-cover"
+        />
+      )}
+      <AvatarFallback
+        style={{ backgroundColor: avatarColor || "#0284c7", color: "#ffffff" }}
+        className="size-full flex items-center justify-center font-bold text-white transition-colors"
+      >
+        <span className={cn(isRtl && "-translate-y-0.5")}>{initial}</span>
+      </AvatarFallback>
+    </Avatar>
+  );
+}
+
 export function CommunityPage() {
   const t = useTranslations("Community");
   const locale = useLocale();
   const isRtl = locale === "fa";
   const { user } = useAuth();
+  const isAuthenticated = Boolean(user && user.id);
+
+  const currentUserName = isRtl
+    ? (user?.fullNameFa || user?.name || user?.fullName || "کاربر")
+    : (user?.fullName || user?.name || user?.fullNameFa || "User");
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -87,15 +181,15 @@ export function CommunityPage() {
   const replyFileInputRef = useRef<HTMLInputElement>(null);
   const [activeReplyPostId, setActiveReplyPostId] = useState<string | null>(null);
 
-  // Load posts
+  // Load posts from Real API
   const fetchPosts = async () => {
     try {
       setLoading(true);
       const data = await communityService.getPosts(activeCategory, searchQuery);
       setPosts(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch community posts:", err);
-      toast.error(isRtl ? "خطا در دریافت گفتگوها" : "Failed to load discussions");
+      toast.error(err.message || (isRtl ? "خطا در دریافت گفتگوها" : "Failed to load discussions"));
     } finally {
       setLoading(false);
     }
@@ -110,8 +204,13 @@ export function CommunityPage() {
     fetchPosts();
   };
 
-  // Upload file for new post
+  // Upload file for new post (enforces authentication)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAuthenticated) {
+      toast.error(isRtl ? "برای پیوست فایل باید وارد حساب کاربری خود شوید." : "Please sign in to attach files.");
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -124,7 +223,7 @@ export function CommunityPage() {
       setIsUploading(true);
       const att = await communityService.uploadAttachment(file);
       setPostAttachments((prev) => [...prev, att]);
-      toast.success(isRtl ? "فایل پیوست شد" : "File attached successfully");
+      toast.success(isRtl ? "فایل با موفقیت پیوست شد" : "File attached successfully");
     } catch (err: any) {
       toast.error(err.message || (isRtl ? "خطا در آپلود فایل" : "Failed to upload file"));
     } finally {
@@ -135,6 +234,11 @@ export function CommunityPage() {
 
   // Upload file for a reply
   const handleReplyFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAuthenticated) {
+      toast.error(isRtl ? "برای پیوست فایل باید وارد حساب کاربری خود شوید." : "Please sign in to attach files.");
+      return;
+    }
+
     const file = e.target.files?.[0];
     if (!file || !activeReplyPostId) return;
 
@@ -160,9 +264,15 @@ export function CommunityPage() {
     }
   };
 
-  // Submit new post
+  // Submit new post (strictly by real authenticated user)
   const handleSubmitPost = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated || !user) {
+      toast.error(isRtl ? "برای ایجاد گفتگوی جدید، لطفاً ابتدا وارد حساب کاربری خود شوید." : "Please log in to start a discussion.");
+      return;
+    }
+
     if (!postTitle.trim() || !postContent.trim()) {
       toast.error(isRtl ? "لطفاً عنوان و متن پیام را وارد کنید" : "Please enter title and content");
       return;
@@ -174,9 +284,12 @@ export function CommunityPage() {
         title: postTitle.trim(),
         content: postContent.trim(),
         category: postCategory,
-        authorName: user?.fullName || user?.name || "Euroslot Member",
-        authorRole: user?.role || "staff",
-        authorAvatar: user?.avatar,
+        authorId: user.id,
+        authorEmail: user.email,
+        authorName: currentUserName,
+        authorNameFa: user.fullNameFa || user.name || user.fullName,
+        authorNameEn: user.fullName || user.name || user.fullNameFa,
+        authorAvatar: user.avatar,
         attachments: postAttachments,
       });
 
@@ -185,11 +298,28 @@ export function CommunityPage() {
       setPostContent("");
       setPostAttachments([]);
       setIsComposerOpen(false);
-      toast.success(isRtl ? "پیام شما با موفقیت منتشر شد" : "Post published successfully");
+      toast.success(isRtl ? "گفتگوی شما با موفقیت منتشر شد" : "Discussion published successfully");
     } catch (err: any) {
       toast.error(err.message || (isRtl ? "خطا در ثبت پیام" : "Failed to publish post"));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Delete post
+  const handleDeletePost = async (postId: string) => {
+    if (!isAuthenticated) return;
+    const confirmMsg = isRtl
+      ? "آیا از حذف این گفتگو اطمینان دارید؟ تمامی پاسخ‌های مربوط به آن نیز حذف خواهند شد."
+      : "Are you sure you want to delete this discussion and all its replies?";
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      await communityService.deletePost(postId);
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      toast.success(isRtl ? "گفتگو با موفقیت حذف شد" : "Discussion deleted successfully");
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در حذف گفتگو" : "Failed to delete discussion"));
     }
   };
 
@@ -207,16 +337,22 @@ export function CommunityPage() {
         setLoadingThreads((prev) => ({ ...prev, [postId]: true }));
         const postDetail = await communityService.getPostDetail(postId);
         setThreadReplies((prev) => ({ ...prev, [postId]: postDetail.replies || [] }));
-      } catch (err) {
+      } catch (err: any) {
         console.error("Failed to load thread:", err);
+        toast.error(err.message || (isRtl ? "خطا در دریافت پاسخ‌ها" : "Failed to load replies"));
       } finally {
         setLoadingThreads((prev) => ({ ...prev, [postId]: false }));
       }
     }
   };
 
-  // Submit reply
+  // Submit reply (strictly by real authenticated user)
   const handleSubmitReply = async (postId: string) => {
+    if (!isAuthenticated || !user) {
+      toast.error(isRtl ? "برای ارسال نظر یا پاسخ، ابتدا وارد حساب کاربری خود شوید." : "Please sign in to post a reply.");
+      return;
+    }
+
     const text = replyInputs[postId]?.trim();
     if (!text) return;
 
@@ -224,9 +360,12 @@ export function CommunityPage() {
       setReplySubmitting((prev) => ({ ...prev, [postId]: true }));
       const newReply = await communityService.addReply(postId, {
         content: text,
-        authorName: user?.fullName || user?.name || "Euroslot Member",
-        authorRole: user?.role || "staff",
-        authorAvatar: user?.avatar,
+        authorId: user.id,
+        authorEmail: user.email,
+        authorName: currentUserName,
+        authorNameFa: user.fullNameFa || user.name || user.fullName,
+        authorNameEn: user.fullName || user.name || user.fullNameFa,
+        authorAvatar: user.avatar,
         attachments: replyAttachments[postId] || [],
       });
 
@@ -239,7 +378,7 @@ export function CommunityPage() {
       setPosts((prev) =>
         prev.map((p) => (p.id === postId ? { ...p, repliesCount: (p.repliesCount || 0) + 1 } : p))
       );
-      toast.success(isRtl ? "پاسخ ارسال شد" : "Reply added");
+      toast.success(isRtl ? "پاسخ شما با موفقیت ثبت شد" : "Reply added successfully");
     } catch (err: any) {
       toast.error(err.message || (isRtl ? "خطا در ارسال پاسخ" : "Failed to post reply"));
     } finally {
@@ -247,27 +386,52 @@ export function CommunityPage() {
     }
   };
 
+  // Delete reply
+  const handleDeleteReply = async (postId: string, replyId: string) => {
+    if (!isAuthenticated) return;
+    const confirmMsg = isRtl ? "آیا از حذف این پاسخ اطمینان دارید؟" : "Are you sure you want to delete this reply?";
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      await communityService.deleteReply(postId, replyId);
+      setThreadReplies((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || []).filter((r) => r.id !== replyId),
+      }));
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, repliesCount: Math.max(0, (p.repliesCount || 1) - 1) } : p))
+      );
+      toast.success(isRtl ? "پاسخ با موفقیت حذف شد" : "Reply deleted successfully");
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در حذف پاسخ" : "Failed to delete reply"));
+    }
+  };
+
   // Like post
   const handleLikePost = async (postId: string) => {
+    if (!isAuthenticated || !user) {
+      toast.error(isRtl ? "برای ثبت پسندیدن باید وارد حساب کاربری شوید." : "Please log in to like discussions.");
+      return;
+    }
+
     try {
-      const res = await communityService.toggleLike(postId, user?.id);
+      const res = await communityService.toggleLike(postId, user.id);
       setPosts((prev) =>
         prev.map((p) => {
           if (p.id === postId) {
             const likedBy = p.likedBy || [];
-            const effectiveId = user?.id || "current_user";
-            const isLiked = likedBy.includes(effectiveId);
+            const isLiked = res.isLiked;
             return {
               ...p,
               likes: res.likes,
-              likedBy: isLiked ? likedBy.filter((id) => id !== effectiveId) : [...likedBy, effectiveId],
+              likedBy: isLiked ? [...likedBy, user.id] : likedBy.filter((id) => id !== user.id),
             };
           }
           return p;
         })
       );
-    } catch {
-      toast.error(isRtl ? "خطا در ثبت لایک" : "Failed to update like");
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در ثبت واکنش" : "Failed to update like"));
     }
   };
 
@@ -306,7 +470,7 @@ export function CommunityPage() {
           />
         )}
 
-        {/* ── Sticky Sidebar Navigation (Matching Profile page) ── */}
+        {/* ── Sticky Sidebar Navigation ── */}
         <aside
           className={cn(
             "flex flex-col shrink-0 sticky top-[var(--header-height)] self-start max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] bg-panel/95 backdrop-blur-xl md:bg-transparent md:backdrop-blur-none z-30 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto overflow-x-hidden border-none py-6",
@@ -399,13 +563,23 @@ export function CommunityPage() {
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {isRtl
-                  ? "اشتراک‌گذاری تجربیات فنی، مستندات مهندسی و تعامل مستقیم میان تیم‌های تخصصی"
+                  ? "اشتراک‌گذاری تجربیات فنی، مستندات مهندسی و تعامل مستقیم میان تیم‌های تخصصی یورواسلات پارس"
                   : "Collaborative engineering exchange, technical documentation, and inter-team discussions"}
               </p>
             </div>
 
             <Button
-              onClick={() => setIsComposerOpen(!isComposerOpen)}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  toast.warning(
+                    isRtl
+                      ? "برای ایجاد گفتگوی جدید، لطفاً با حساب کاربری خود وارد شوید."
+                      : "Please sign in to start a new discussion."
+                  );
+                  return;
+                }
+                setIsComposerOpen(!isComposerOpen);
+              }}
               className="rounded-full gap-2 shrink-0 cursor-pointer shadow-xs"
             >
               {isComposerOpen ? <X className="size-4" /> : <Plus className="size-4" />}
@@ -413,9 +587,59 @@ export function CommunityPage() {
             </Button>
           </div>
 
-          {/* ── New Post Composer Card ── */}
-          {isComposerOpen && (
+          {/* Guest Warning Banner if not logged in */}
+          {!isAuthenticated && (
+            <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+                  {isRtl
+                    ? "شما در حالت مشاهده مهمان هستید. برای ایجاد بحث، ثبت نظر و پیوست فایل‌های مهندسی، با حساب پرسنلی خود وارد شوید."
+                    : "You are currently browsing as a guest. Please log in with your verified credentials to create topics and post replies."}
+                </p>
+              </div>
+              <Button asChild size="sm" className="rounded-full gap-1.5 shrink-0 text-xs">
+                <Link href="/login">
+                  <LogIn className="size-3.5" />
+                  <span>{isRtl ? "ورود به سیستم" : "Sign In"}</span>
+                </Link>
+              </Button>
+            </div>
+          )}
+
+          {/* ── New Post Composer Card (Visible to Authenticated Users) ── */}
+          {isComposerOpen && isAuthenticated && user && (
             <div className="mb-6 bg-card border border-border/80 rounded-2xl p-4 sm:p-6 shadow-md transition-all duration-200">
+              {/* Authenticated Author Badge */}
+              <div className="flex items-center justify-between gap-3 pb-3 mb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <UserAvatar
+                    name={currentUserName}
+                    nameFa={user.fullNameFa || user.name}
+                    nameEn={user.fullName || user.name}
+                    avatar={user.avatar}
+                    avatarColor={user.avatarColor}
+                    avatarMode={user.avatarMode}
+                    size="sm"
+                    isRtl={isRtl}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-foreground">
+                      {currentUserName}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground ms-1.5">
+                      ({user.email})
+                    </span>
+                  </div>
+                </div>
+                <Badge
+                  variant="secondary"
+                  className={cn("text-[10px] px-2 py-0.5", getRoleBadge(user.role, isRtl).className)}
+                >
+                  {getRoleBadge(user.role, isRtl).label}
+                </Badge>
+              </div>
+
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
                 <Sparkles className="size-4 text-primary" />
                 <span>{isRtl ? "ایجاد مبحث جدید" : "Create New Discussion"}</span>
@@ -561,49 +785,76 @@ export function CommunityPage() {
                   ? "اولین نفری باشید که در این دسته مبحث جدیدی ایجاد می‌کند."
                   : "Be the first to start a conversation in this topic category."}
               </p>
-              <Button
-                onClick={() => setIsComposerOpen(true)}
-                size="sm"
-                className="mt-4 rounded-full gap-1.5 text-xs"
-              >
-                <Plus className="size-3.5" />
-                <span>{isRtl ? "ایجاد مبحث جدید" : "Start First Discussion"}</span>
-              </Button>
+              {isAuthenticated ? (
+                <Button
+                  onClick={() => setIsComposerOpen(true)}
+                  size="sm"
+                  className="mt-4 rounded-full gap-1.5 text-xs"
+                >
+                  <Plus className="size-3.5" />
+                  <span>{isRtl ? "ایجاد مبحث جدید" : "Start First Discussion"}</span>
+                </Button>
+              ) : (
+                <Button asChild size="sm" className="mt-4 rounded-full gap-1.5 text-xs">
+                  <Link href="/login">
+                    <LogIn className="size-3.5" />
+                    <span>{isRtl ? "ورود جهت ایجاد مبحث" : "Sign in to start"}</span>
+                  </Link>
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
               {posts.map((post) => {
                 const categoryDef = CATEGORIES.find((c) => c.id === post.category) || CATEGORIES[4];
-                const isLiked = (post.likedBy || []).includes(user?.id || "current_user");
+                const isLiked = (post.likedBy || []).includes(user?.id || "");
                 const isExpanded = !!expandedThreads[post.id];
                 const replies = threadReplies[post.id] || [];
                 const isLoadingReplies = !!loadingThreads[post.id];
                 const currentReplyAtts = replyAttachments[post.id] || [];
+
+                const canDeletePost =
+                  isAuthenticated &&
+                  user &&
+                  (user.id === post.authorId ||
+                    user.email?.toLowerCase() === post.authorEmail?.toLowerCase() ||
+                    user.role === "superadmin" ||
+                    user.role === "admin");
+
+                const roleBadge = getRoleBadge(post.authorRole, isRtl);
+
+                const postAuthorDisplayName = isRtl
+                  ? (post.authorNameFa || post.authorName || post.authorNameEn || "کاربر")
+                  : (post.authorNameEn || post.authorName || post.authorNameFa || "User");
 
                 return (
                   <article
                     key={post.id}
                     className="bg-card border border-border/60 hover:border-border/90 rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200"
                   >
-                    {/* Top Row: Author info, category, and pin */}
+                    {/* Top Row: Author info, category, pin & delete */}
                     <div className="flex items-center justify-between gap-3 mb-3">
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <Avatar className="size-9 border border-border/60">
-                          {post.authorAvatar && <AvatarImage src={post.authorAvatar} alt={post.authorName} />}
-                          <AvatarFallback className="text-xs font-semibold">
-                            {post.authorName?.slice(0, 2).toUpperCase() || "EU"}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar
+                          name={postAuthorDisplayName}
+                          nameFa={post.authorNameFa}
+                          nameEn={post.authorNameEn}
+                          avatar={post.authorAvatar}
+                          avatarColor={post.authorAvatarColor}
+                          avatarMode={post.authorAvatarMode}
+                          size="md"
+                          isRtl={isRtl}
+                        />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                              {post.authorName}
+                              {postAuthorDisplayName}
                             </span>
                             <Badge
                               variant="secondary"
-                              className="text-[10px] font-mono px-1.5 py-0 h-4 capitalize"
+                              className={cn("text-[10px] px-1.5 py-0 h-4 border", roleBadge.className)}
                             >
-                              {post.authorRole}
+                              {roleBadge.label}
                             </Badge>
                           </div>
                           <span className="text-[11px] text-muted-foreground block">
@@ -628,6 +879,16 @@ export function CommunityPage() {
                         <Badge variant="outline" className="text-[11px] text-muted-foreground border-border/60">
                           {isRtl ? categoryDef.labelFa : categoryDef.labelEn}
                         </Badge>
+                        {canDeletePost && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeletePost(post.id)}
+                            className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors cursor-pointer"
+                            title={isRtl ? "حذف گفتگو" : "Delete discussion"}
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -722,130 +983,194 @@ export function CommunityPage() {
                           </p>
                         ) : (
                           <div className="space-y-2.5">
-                            {replies.map((reply) => (
-                              <div
-                                key={reply.id}
-                                className="bg-muted/30 border border-border/40 rounded-xl p-3 text-xs"
-                              >
-                                <div className="flex items-center justify-between gap-2 mb-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <Avatar className="size-6 border border-border/50">
-                                      {reply.authorAvatar && (
-                                        <AvatarImage src={reply.authorAvatar} alt={reply.authorName} />
-                                      )}
-                                      <AvatarFallback className="text-[10px]">
-                                        {reply.authorName?.slice(0, 2).toUpperCase() || "U"}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-semibold text-foreground">{reply.authorName}</span>
-                                    <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 capitalize">
-                                      {reply.authorRole}
-                                    </Badge>
-                                  </div>
-                                  <span className="text-[10px] text-muted-foreground">
-                                    {new Date(reply.createdAt).toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </span>
-                                </div>
-                                <p className="text-foreground/85 whitespace-pre-wrap leading-relaxed ms-8">
-                                  {reply.content}
-                                </p>
-                                {reply.attachments && reply.attachments.length > 0 && (
-                                  <div className="flex flex-wrap gap-1.5 mt-2 ms-8">
-                                    {reply.attachments.map((att) => (
-                                      <a
-                                        key={att.id}
-                                        href={att.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        download
-                                        className="inline-flex items-center gap-1 bg-background text-[11px] px-2 py-0.5 rounded border border-border/50 text-foreground"
+                            {replies.map((reply) => {
+                              const replyRoleBadge = getRoleBadge(reply.authorRole, isRtl);
+                              const canDeleteReply =
+                                isAuthenticated &&
+                                user &&
+                                (user.id === reply.authorId ||
+                                  user.email?.toLowerCase() === reply.authorEmail?.toLowerCase() ||
+                                  user.role === "superadmin" ||
+                                  user.role === "admin");
+
+                              const replyAuthorDisplayName = isRtl
+                                ? (reply.authorNameFa || reply.authorName || reply.authorNameEn || "کاربر")
+                                : (reply.authorNameEn || reply.authorName || reply.authorNameFa || "User");
+
+                              return (
+                                <div
+                                  key={reply.id}
+                                  className="bg-muted/30 border border-border/40 rounded-xl p-3 text-xs"
+                                >
+                                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <UserAvatar
+                                        name={replyAuthorDisplayName}
+                                        nameFa={reply.authorNameFa}
+                                        nameEn={reply.authorNameEn}
+                                        avatar={reply.authorAvatar}
+                                        avatarColor={reply.authorAvatarColor}
+                                        avatarMode={reply.authorAvatarMode}
+                                        size="sm"
+                                        isRtl={isRtl}
+                                      />
+                                      <span className="font-semibold text-foreground">{replyAuthorDisplayName}</span>
+                                      <Badge
+                                        variant="outline"
+                                        className={cn("text-[9px] px-1 py-0 h-3.5", replyRoleBadge.className)}
                                       >
-                                        <FileText className="size-3 text-primary shrink-0" />
-                                        <span className="truncate max-w-[140px]">{att.name}</span>
-                                        <Download className="size-2.5 text-muted-foreground" />
-                                      </a>
-                                    ))}
+                                        {replyRoleBadge.label}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {new Date(reply.createdAt).toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
+                                      </span>
+                                      {canDeleteReply && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteReply(post.id, reply.id)}
+                                          className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer"
+                                          title={isRtl ? "حذف پاسخ" : "Delete reply"}
+                                        >
+                                          <Trash2 className="size-3" />
+                                        </button>
+                                      )}
+                                    </div>
                                   </div>
-                                )}
-                              </div>
-                            ))}
+                                  <p className="text-foreground/85 whitespace-pre-wrap leading-relaxed ms-8">
+                                    {reply.content}
+                                  </p>
+                                  {reply.attachments && reply.attachments.length > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-2 ms-8">
+                                      {reply.attachments.map((att) => (
+                                        <a
+                                          key={att.id}
+                                          href={att.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          download
+                                          className="inline-flex items-center gap-1 bg-background text-[11px] px-2 py-0.5 rounded border border-border/50 text-foreground"
+                                        >
+                                          <FileText className="size-3 text-primary shrink-0" />
+                                          <span className="truncate max-w-[140px]">{att.name}</span>
+                                          <Download className="size-2.5 text-muted-foreground" />
+                                        </a>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
 
-                        {/* Reply Composer */}
-                        <div className="bg-card/80 border border-border/60 rounded-xl p-3 space-y-2 mt-3">
-                          <Textarea
-                            placeholder={isRtl ? "پاسخ خود را بنویسید..." : "Write your reply..."}
-                            value={replyInputs[post.id] || ""}
-                            onChange={(e) =>
-                              setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
-                            }
-                            rows={2}
-                            className="text-xs"
-                          />
-
-                          {/* Reply attachments preview */}
-                          {currentReplyAtts.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 pt-1">
-                              {currentReplyAtts.map((att) => (
-                                <div
-                                  key={att.id}
-                                  className="flex items-center gap-1.5 bg-muted/70 text-[11px] px-2 py-0.5 rounded border border-border/60"
-                                >
-                                  <FileText className="size-3 text-primary" />
-                                  <span className="truncate max-w-[140px]">{att.name}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setReplyAttachments((prev) => ({
-                                        ...prev,
-                                        [post.id]: (prev[post.id] || []).filter((a) => a.id !== att.id),
-                                      }))
-                                    }
-                                    className="hover:text-destructive text-muted-foreground ms-1"
-                                  >
-                                    <X className="size-2.5" />
-                                  </button>
-                                </div>
-                              ))}
+                        {/* Reply Composer (Strictly for authenticated users) */}
+                        {isAuthenticated && user ? (
+                          <div className="bg-card/80 border border-border/60 rounded-xl p-3 space-y-2 mt-3">
+                            <div className="flex items-center gap-2 mb-1">
+                              <UserAvatar
+                                name={currentUserName}
+                                nameFa={user.fullNameFa || user.name}
+                                nameEn={user.fullName || user.name}
+                                avatar={user.avatar}
+                                avatarColor={user.avatarColor}
+                                avatarMode={user.avatarMode}
+                                size="sm"
+                                isRtl={isRtl}
+                              />
+                              <span className="text-[11px] font-semibold text-foreground">
+                                {currentUserName}
+                              </span>
                             </div>
-                          )}
 
-                          <div className="flex items-center justify-between pt-1">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              disabled={isUploading}
-                              onClick={() => {
-                                setActiveReplyPostId(post.id);
-                                replyFileInputRef.current?.click();
-                              }}
-                              className="rounded-full gap-1 text-xs h-7 px-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
-                            >
-                              <Paperclip className="size-3" />
-                              <span>{isRtl ? "پیوست" : "Attach"}</span>
-                            </Button>
+                            <Textarea
+                              placeholder={isRtl ? "پاسخ تخصصی یا نظر خود را بنویسید..." : "Write your verified reply..."}
+                              value={replyInputs[post.id] || ""}
+                              onChange={(e) =>
+                                setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
+                              }
+                              rows={2}
+                              className="text-xs"
+                            />
 
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={replySubmitting[post.id] || !(replyInputs[post.id] || "").trim()}
-                              onClick={() => handleSubmitReply(post.id)}
-                              className="rounded-full gap-1.5 text-xs h-7 px-3.5 cursor-pointer"
-                            >
-                              {replySubmitting[post.id] ? (
-                                <Loader2 className="size-3 animate-spin" />
-                              ) : (
-                                <Send className="size-3" />
-                              )}
-                              <span>{isRtl ? "ارسال پاسخ" : "Reply"}</span>
+                            {/* Reply attachments preview */}
+                            {currentReplyAtts.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 pt-1">
+                                {currentReplyAtts.map((att) => (
+                                  <div
+                                    key={att.id}
+                                    className="flex items-center gap-1.5 bg-muted/70 text-[11px] px-2 py-0.5 rounded border border-border/60"
+                                  >
+                                    <FileText className="size-3 text-primary" />
+                                    <span className="truncate max-w-[140px]">{att.name}</span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setReplyAttachments((prev) => ({
+                                          ...prev,
+                                          [post.id]: (prev[post.id] || []).filter((a) => a.id !== att.id),
+                                        }))
+                                      }
+                                      className="hover:text-destructive text-muted-foreground ms-1"
+                                    >
+                                      <X className="size-2.5" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between pt-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={isUploading}
+                                onClick={() => {
+                                  setActiveReplyPostId(post.id);
+                                  replyFileInputRef.current?.click();
+                                }}
+                                className="rounded-full gap-1 text-xs h-7 px-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
+                              >
+                                <Paperclip className="size-3" />
+                                <span>{isRtl ? "پیوست" : "Attach"}</span>
+                              </Button>
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                disabled={replySubmitting[post.id] || !(replyInputs[post.id] || "").trim()}
+                                onClick={() => handleSubmitReply(post.id)}
+                                className="rounded-full gap-1.5 text-xs h-7 px-3.5 cursor-pointer"
+                              >
+                                {replySubmitting[post.id] ? (
+                                  <Loader2 className="size-3 animate-spin" />
+                                ) : (
+                                  <Send className="size-3" />
+                                )}
+                                <span>{isRtl ? "ارسال پاسخ" : "Reply"}</span>
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-muted/30 border border-border/40 rounded-xl text-center">
+                            <p className="text-xs text-muted-foreground">
+                              {isRtl
+                                ? "جهت ثبت پاسخ در این گفتگو، لطفاً با حساب کاربری خود وارد شوید."
+                                : "Please sign in to reply to this discussion."}
+                            </p>
+                            <Button asChild size="sm" variant="outline" className="mt-2 rounded-full text-xs">
+                              <Link href="/login">
+                                <LogIn className="size-3.5 me-1" />
+                                <span>{isRtl ? "ورود به سیستم" : "Sign In"}</span>
+                              </Link>
                             </Button>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                   </article>

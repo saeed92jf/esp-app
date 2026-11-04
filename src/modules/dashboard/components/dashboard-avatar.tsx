@@ -58,6 +58,7 @@ export function DashboardAvatar() {
   const t = useTranslations('Dashboard');
   const { user, updateAvatar, logout } = useAuth();
   const router = useRouter();
+  const { colorId } = usePrimaryColor();
   const [avatarUrl, setAvatarUrl] = React.useState<string | null>(() => user?.avatar || null);
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
@@ -96,7 +97,6 @@ export function DashboardAvatar() {
 
   if (!user) return null;
 
-  const { colorId } = usePrimaryColor();
   const activeColorPreset = PRIMARY_COLORS.find(c => c.id === (user?.primaryColor || colorId));
   const avatarBgColor = liveBgColor || user?.avatarColor || activeColorPreset?.hex || "#3a86ff";
 
