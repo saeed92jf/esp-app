@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '@/services';
 import type { DashboardData } from '@/services';
 import type { UserRole } from '@/types/auth';
+import { FakeDashboardService } from '../services/dashboard.service';
 import { useDashboardSettings } from '../store/use-dashboard-settings';
 
 interface UseDashboardResult {
@@ -24,10 +25,7 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
   const { statCards, chartSource } = useDashboardSettings();
 
   useEffect(() => {
-    if (!role) {
-      setLoading(false);
-      return;
-    }
+    const effectiveRole: UserRole = role || 'customer';
 
     abortRef.current?.abort();
     const ac = new AbortController();
@@ -39,13 +37,26 @@ export function useDashboard(role: UserRole | undefined): UseDashboardResult {
     setError(null);
 
     api.dashboard
-      .getByRole(role, statCards, chartSource)
+      .getByRole(effectiveRole, statCards, chartSource)
       .then((result) => {
         if (!ac.signal.aborted) setData(result);
       })
       .catch((err: unknown) => {
         if (!ac.signal.aborted) {
-          setError(err instanceof ApiError ? err : new ApiError('UNKNOWN', 'خطا در بارگذاری داشبورد'));
+          console.warn('[useDashboard] API failed, loading fallback data:', err);
+          new FakeDashboardService()
+            .getByRole(effectiveRole, statCards, chartSource)
+            .then((fallback) => {
+              if (!ac.signal.aborted) {
+                setData(fallback);
+                setError(null);
+              }
+            })
+            .catch(() => {
+              if (!ac.signal.aborted) {
+                setError(err instanceof ApiError ? err : new ApiError('UNKNOWN', 'خطا در بارگذاری داشبورد'));
+              }
+            });
         }
       })
       .finally(() => {

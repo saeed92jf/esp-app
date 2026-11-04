@@ -2845,5 +2845,16 @@
     "feedbackThanks": "Thank you for your valuable feedback!",
     "previousArticle": "Previous Article",
     "nextArticle": "Next Article"
+  },
+  "Community": {
+    "title": "Euroslot Knowledge & Community",
+    "subtitle": "Collaborative engineering exchange, technical documentation, and inter-team discussions",
+    "newDiscussion": "New Discussion",
+    "all": "All Topics",
+    "announcements": "Announcements",
+    "engineering": "Engineering",
+    "quality": "Quality & QC",
+    "general": "General",
+    "search": "Search discussions..."
   }
 }

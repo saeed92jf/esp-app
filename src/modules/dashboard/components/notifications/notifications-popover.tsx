@@ -512,7 +512,7 @@ export function NotificationsPopover({
                               key={notif.id}
                               onClick={() => handleToggleRead(notif.id)}
                               className={cn(
-                                "segmented-item relative flex items-start gap-3 p-3.5 sm:p-4 outline-none group w-full cursor-pointer select-none",
+                                "segmented-item relative flex items-start gap-3 p-3.5 sm:p-4 outline-none group w-full cursor-pointer select-none overflow-hidden",
                                 "rounded-t-[6px]",
                                 isLast ? "rounded-b-[32px]" : "rounded-b-[6px]"
                               )}
@@ -527,9 +527,9 @@ export function NotificationsPopover({
                                 )}
                               </div>
 
-                              <div className="relative z-10 flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-1.5 mb-1">
-                                  <div className="flex items-center gap-1.5 min-w-0">
+                              <div className="relative z-10 flex-1 min-w-0 overflow-hidden">
+                                <div className="flex items-center justify-between gap-1.5 mb-1 w-full min-w-0 overflow-hidden">
+                                  <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
                                     {!notif.read ? (
                                       <span className="size-1.5 rounded-full bg-red-600 dark:bg-red-500 shrink-0" />
                                     ) : (
@@ -537,7 +537,7 @@ export function NotificationsPopover({
                                     )}
                                     <h4
                                       className={cn(
-                                        "text-xs sm:text-[13px] truncate",
+                                        "text-xs sm:text-[13px] truncate w-full min-w-0 block",
                                         notif.read
                                           ? "font-medium text-foreground/80"
                                           : "font-bold text-foreground"
@@ -546,12 +546,12 @@ export function NotificationsPopover({
                                       {displayTitle}
                                     </h4>
                                   </div>
-                                  <span className="text-[10px] text-muted-foreground shrink-0 fa-num">
+                                  <span className="text-[10px] text-muted-foreground shrink-0 fa-num whitespace-nowrap">
                                     {displayDate}
                                   </span>
                                 </div>
 
-                                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                                <p className="text-xs text-muted-foreground leading-relaxed truncate w-full block text-ellipsis overflow-hidden">
                                   {displayDesc}
                                 </p>
 
