@@ -7,17 +7,17 @@ import type { TaskItem } from "@/modules/tasks/types/tasks.types";
 // In-memory persistent server singleton across hot-reloads
 declare global {
   // eslint-disable-next-line no-var
-  var __espServerProjects: ProjectItem[] | undefined;
+  var __espServerProjects_v4: ProjectItem[] | undefined;
   // eslint-disable-next-line no-var
-  var __espServerTasks: TaskItem[] | undefined;
+  var __espServerTasks_v9: TaskItem[] | undefined;
 }
 
-if (!globalThis.__espServerProjects) {
-  globalThis.__espServerProjects = JSON.parse(JSON.stringify(INITIAL_PROJECTS));
+if (!globalThis.__espServerProjects_v4) {
+  globalThis.__espServerProjects_v4 = JSON.parse(JSON.stringify(INITIAL_PROJECTS));
 }
 
-if (!globalThis.__espServerTasks) {
-  globalThis.__espServerTasks = JSON.parse(JSON.stringify(INITIAL_MOCK_TASKS));
+if (!globalThis.__espServerTasks_v9) {
+  globalThis.__espServerTasks_v9 = JSON.parse(JSON.stringify(INITIAL_MOCK_TASKS));
 }
 
 export function getServerProjects(filters?: {
@@ -25,7 +25,7 @@ export function getServerProjects(filters?: {
   status?: string;
   search?: string;
 }): ProjectItem[] {
-  let list = globalThis.__espServerProjects || [];
+  let list = globalThis.__espServerProjects_v4 || [];
 
   if (filters?.organization && filters.organization !== "all") {
     list = list.filter((p) => p.organization === filters.organization);
@@ -48,7 +48,7 @@ export function getServerProjects(filters?: {
 }
 
 export function getServerProjectById(id: string): ProjectItem | null {
-  const list = globalThis.__espServerProjects || [];
+  const list = globalThis.__espServerProjects_v4 || [];
   return list.find((p) => p.id === id || p.code === id) || null;
 }
 
@@ -65,12 +65,12 @@ export function createServerProject(data: Omit<ProjectItem, "id">): ProjectItem 
     roadmapNodes: data.roadmapNodes || [],
   };
 
-  globalThis.__espServerProjects = [newProj, ...(globalThis.__espServerProjects || [])];
+  globalThis.__espServerProjects_v4 = [newProj, ...(globalThis.__espServerProjects_v4 || [])];
   return newProj;
 }
 
 export function updateServerProject(id: string, updates: Partial<ProjectItem>): ProjectItem | null {
-  const list = globalThis.__espServerProjects || [];
+  const list = globalThis.__espServerProjects_v4 || [];
   const idx = list.findIndex((p) => p.id === id);
   if (idx === -1) return null;
 
@@ -79,7 +79,7 @@ export function updateServerProject(id: string, updates: Partial<ProjectItem>): 
 }
 
 export function deleteServerProject(id: string): boolean {
-  const list = globalThis.__espServerProjects || [];
+  const list = globalThis.__espServerProjects_v4 || [];
   const idx = list.findIndex((p) => p.id === id);
   if (idx === -1) return false;
 
@@ -108,7 +108,7 @@ export function getServerTasks(filters?: {
   scope?: string;
   search?: string;
 }): TaskItem[] {
-  let list = globalThis.__espServerTasks || [];
+  let list = globalThis.__espServerTasks_v9 || [];
 
   if (filters?.projectId && filters.projectId !== "all") {
     list = list.filter((t) => t.relatedProjectId === filters.projectId);
@@ -137,7 +137,7 @@ export function getServerTasks(filters?: {
 }
 
 export function getServerTaskById(id: string): TaskItem | null {
-  const list = globalThis.__espServerTasks || [];
+  const list = globalThis.__espServerTasks_v9 || [];
   return list.find((t) => t.id === id) || null;
 }
 
@@ -168,7 +168,7 @@ export function createServerTask(
     ],
   };
 
-  globalThis.__espServerTasks = [newTask, ...(globalThis.__espServerTasks || [])];
+  globalThis.__espServerTasks_v9 = [newTask, ...(globalThis.__espServerTasks_v9 || [])];
 
   // If connected to a project, sync with project task list
   if (data.relatedProjectId && data.relatedProjectId !== "proj-custom") {
@@ -190,7 +190,7 @@ export function createServerTask(
 }
 
 export function updateServerTask(id: string, updates: Partial<TaskItem>): TaskItem | null {
-  const list = globalThis.__espServerTasks || [];
+  const list = globalThis.__espServerTasks_v9 || [];
   const idx = list.findIndex((t) => t.id === id);
   if (idx === -1) return null;
 
@@ -199,7 +199,7 @@ export function updateServerTask(id: string, updates: Partial<TaskItem>): TaskIt
 }
 
 export function deleteServerTask(id: string): boolean {
-  const list = globalThis.__espServerTasks || [];
+  const list = globalThis.__espServerTasks_v9 || [];
   const idx = list.findIndex((t) => t.id === id);
   if (idx === -1) return false;
 

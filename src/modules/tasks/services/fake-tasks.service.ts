@@ -9,7 +9,7 @@ import {
   TaskAssignee,
 } from "../types/tasks.types";
 
-const STORAGE_KEY = "esp_tasks_data_v8";
+const STORAGE_KEY = "esp_tasks_data_v9";
 
 export const INITIAL_MOCK_TASKS: TaskItem[] = tasksMock as unknown as TaskItem[];
 

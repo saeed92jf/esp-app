@@ -12,7 +12,7 @@ import {
   ProjectTaskItem,
 } from "../types/projects.types";
 
-const STORAGE_KEY = "esp_projects_data_v3";
+const STORAGE_KEY = "esp_projects_data_v4";
 
 export const DEFAULT_PROJECT_PHASES: ProjectPhase[] = projectPhasesMock as unknown as ProjectPhase[];
 
