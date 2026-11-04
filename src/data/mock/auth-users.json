@@ -11,12 +11,12 @@
       "mobile": "09120000000",
       "avatarMode": "initials",
       "role": "admin",
-      "primaryColor": "blue",
+      "primaryColor": "purple",
       "accountStatus": "active",
       "isProfileCompleted": true,
       "hrApproved": true,
       "managerApproved": true,
-      "avatarColor": "#1fad00",
+      "avatarColor": "#1ea6ec",
       "avatar": null
     }
   },

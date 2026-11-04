@@ -38,14 +38,15 @@ export async function POST(req: NextRequest) {
           Accept: "application/json",
         },
         body: JSON.stringify({ email, ...body }),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(20000),
       });
 
       if (remoteRes.ok) {
         const remoteData = await remoteRes.json();
         return NextResponse.json(remoteData, { status: 201 });
       }
-    } catch {
+    } catch (fetchErr) {
+      console.warn("FastAPI register call failed or timed out:", fetchErr);
       // Backend not running or timed out; continue to resilient server fallback
     }
 

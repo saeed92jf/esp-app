@@ -51,7 +51,49 @@ export class FakeProfileService implements ProfileService {
         const rawAuth = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
         if (rawAuth) {
           const authUser = JSON.parse(rawAuth);
-          if (authUser && this.profile?.personal) {
+          const isSaeed = authUser.id === "u-saeed" || authUser.email?.includes("jalili");
+          if (!isSaeed && (!stored || !JSON.parse(stored)?.personal?.nationalId)) {
+            const email = authUser.email || "";
+            const defaultName = authUser.name || authUser.fullName || email.split("@")[0];
+            this.profile = {
+              ...MOCK_PROFILE,
+              userId: authUser.id,
+              personal: {
+                ...MOCK_PROFILE.personal,
+                firstName: "",
+                lastName: "",
+                firstNameFa: "",
+                lastNameFa: "",
+                nationalId: "",
+                phone: authUser.mobile || "",
+                email: email,
+                address: "",
+                birthDate: "",
+                avatar: undefined,
+                avatarUrl: undefined,
+                avatarColor: authUser.avatarColor || "#0284c7",
+                maritalStatus: "single",
+                childrenCount: 0,
+              },
+              organizational: {
+                ...MOCK_PROFILE.organizational,
+                department: "",
+                role: "",
+                employeeId: "",
+                joinDate: "",
+                manager: "",
+              },
+              education: {
+                degree: "",
+                fieldOfStudy: "",
+                university: "",
+                graduationYear: "",
+                records: [],
+              },
+              documents: [],
+              skills: [],
+            };
+          } else if (authUser && this.profile?.personal) {
             if (authUser.avatarColor) {
               this.profile.personal.avatarColor = authUser.avatarColor;
             }

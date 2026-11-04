@@ -222,16 +222,20 @@ export function AdminRequests({
 
   // Metrics calculation (Active Account removed per user requirement)
   const metrics = useMemo(() => {
-    const total = requests.length;
-    const pending = requests.filter((r) => r.status === "pending" || r.status === "hr_approved").length;
-    const active = requests.filter((r) => r.status === "active").length;
-    const rejected = requests.filter((r) => r.status === "rejected").length;
+    const validRequests = requests.filter((r) => r.isProfileCompleted !== false && (r.status as any) !== "pending_profile");
+    const total = validRequests.length;
+    const pending = validRequests.filter((r) => r.status === "pending" || r.status === "hr_approved").length;
+    const active = validRequests.filter((r) => r.status === "active").length;
+    const rejected = validRequests.filter((r) => r.status === "rejected").length;
     return { total, pending, active, rejected };
   }, [requests]);
 
   // Fast live filtered requests
   const filteredRequests = useMemo(() => {
     return requests.filter((req) => {
+      if (req.isProfileCompleted === false || (req.status as any) === "pending_profile") {
+        return false;
+      }
       if (statusFilter !== "all" && req.status !== statusFilter) {
         return false;
       }
