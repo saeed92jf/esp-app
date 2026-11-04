@@ -499,16 +499,19 @@ export function Dashboard() {
         <div className="flex flex-1 w-full relative bg-white dark:bg-background">
           {/* ── Utility Sidebar ── */}
           <aside
-            className="flex-shrink-0 flex sticky top-[var(--header-height)] self-start z-30 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-white dark:bg-background overflow-hidden"
+            className={cn(
+              "flex-shrink-0 flex sticky top-[var(--header-height)] self-start z-30 border-r border-border/10 rtl:border-r-0 rtl:border-l bg-white dark:bg-background transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+              "max-h-[calc(100dvh-var(--header-height)-var(--footer-height))] h-[calc(100dvh-var(--header-height)-var(--footer-height))]"
+            )}
             style={{
               top: 'var(--header-height, 4rem)',
-              height: 'calc(100dvh - var(--header-height, 4rem))',
-              maxHeight: 'calc(100dvh - var(--header-height, 4rem))',
+              height: 'calc(100dvh - var(--header-height, 4rem) - var(--footer-height, 3.5rem))',
+              maxHeight: 'calc(100dvh - var(--header-height, 4rem) - var(--footer-height, 3.5rem))',
             }}
           >
             {/* ── Side Rail (Icons) with Independent Scrolling ── */}
             <TooltipProvider>
-              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20 overflow-hidden no-scrollbar">
+              <div className="w-[52px] sm:w-[64px] shrink-0 flex flex-col items-center py-3.5 h-full relative z-20 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {/* 1. Slide Rail Settings Button (FIRST ICON AT TOP) */}
                 <div className="shrink-0 pb-2.5 mb-1.5 border-b border-border/20 w-full flex items-center justify-center">
                   <Tooltip>
@@ -549,7 +552,7 @@ export function Dashboard() {
                 </div>
 
                 {/* 2. Scrollable Icon List */}
-                <div className="flex-1 w-full overflow-y-auto custom-scrollbar flex flex-col items-center gap-2.5 py-1 px-1 min-h-0">
+                <div className="w-full flex flex-col items-center gap-2.5 py-1 px-1">
                   {slideRailItems.map((itemId) => {
                     const itemDef = ALL_SLIDE_ITEMS.find((it) => it.id === itemId);
                     if (!itemDef) return null;
