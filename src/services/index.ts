@@ -107,10 +107,10 @@ const http = new HttpClient(API_BASE_URL);
 const SERVICE_MODES = {
   // ──────────────────────────────────── Backend سرویس‌های
   auth:          'real',     // 🟢 REAL  — متصل به بک‌اند واقعی (http://localhost:8080)
-  dashboard:     'inherit',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
-  navigation:    'inherit',  // 🔴 Fake  — منوی ناوبری هنوز static است
-  search:        'inherit',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
-  stats:         'inherit',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
+  dashboard:     'fake',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
+  navigation:    'fake',  // 🔴 Fake  — منوی ناوبری هنوز static است
+  search:        'fake',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
+  stats:         'fake',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
   user:          'real',     // 🟢 REAL  — پروفایل کاربری به backend واقعی متصل است
   preferences:   'real',     // 🟢 REAL  — تنظیمات کاربر در backend واقعی ذخیره می‌شوند
   admin:         'real',     // 🟢 REAL  — مدیریت کاربران و درخواست‌ها به backend واقعی متصل است
@@ -131,8 +131,8 @@ function pickService<T>(
   fake: T,
   real: T
 ): T {
-  const override = SERVICE_MODES[service];
-  const effectiveMode: ApiMode = override === 'inherit' ? GLOBAL_API_MODE : override;
+  const override: 'fake' | 'real' | 'inherit' = SERVICE_MODES[service];
+  const effectiveMode: ApiMode = (override as string) === 'inherit' ? GLOBAL_API_MODE : override;
   return effectiveMode === 'real' ? real : fake;
 }
 

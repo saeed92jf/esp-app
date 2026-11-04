@@ -261,13 +261,19 @@ export class FakeDashboardService implements IDashboardService {
 // ─── Real ─────────────────────────────────────────────────────────────────────
 
 export class RealDashboardService implements IDashboardService {
+  private fake = new FakeDashboardService();
+
   constructor(private http: HttpClient) {}
 
   async getByRole(role: UserRole, statCards?: string[], chartSource?: string): Promise<DashboardData> {
-    return this.http.get<DashboardData>(`/dashboard`, {
-      params: { role, statCards: statCards?.join(','), chartSource },
-      revalidate: 60, // ۱ دقیقه cache در Next.js
-    });
+    try {
+      return await this.http.get<DashboardData>('/dashboard', {
+        params: { role, statCards: statCards?.join(','), chartSource },
+        revalidate: 60,
+      });
+    } catch {
+      return this.fake.getByRole(role, statCards, chartSource);
+    }
   }
 }
 
