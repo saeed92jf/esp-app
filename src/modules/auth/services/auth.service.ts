@@ -652,7 +652,7 @@ export class RealAuthService implements IAuthService {
   }
 
   async forgotPassword(email: string): Promise<void> {
-    await this.client.post(`/auth/reset-password`, { email: email.trim().toLowerCase() }, { auth: false });
+    await this.client.post(`/auth/forgot-password`, { email: email.trim().toLowerCase() }, { auth: false });
   }
 
   async verifyEmail(_token: string): Promise<void> {
