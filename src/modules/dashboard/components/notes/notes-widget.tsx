@@ -65,6 +65,17 @@ const COLOR_CLASSES: Record<
 
 const STORAGE_KEY = "dashboard_user_notes_v1";
 
+const normalizeNote = (item: any): DashboardNote => ({
+  id: String(item?.id || `note-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`),
+  title: String(item?.title ?? ""),
+  content: String(item?.content ?? ""),
+  color: (item?.color && COLOR_CLASSES[item.color as DashboardNote["color"]] ? item.color : "blue") as DashboardNote["color"],
+  isPinned: Boolean(item?.isPinned),
+  tags: Array.isArray(item?.tags) ? item.tags.filter(Boolean).map(String) : [],
+  createdAt: String(item?.createdAt ?? ""),
+  updatedAt: item?.updatedAt ? String(item.updatedAt) : undefined,
+});
+
 export function NotesWidget({
   initialNotes = [],
   className,
@@ -77,10 +88,15 @@ export function NotesWidget({
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed.map(normalizeNote);
+          }
+        }
       } catch {}
     }
-    return initialNotes;
+    return Array.isArray(initialNotes) ? initialNotes.map(normalizeNote) : [];
   });
 
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -101,7 +117,11 @@ export function NotesWidget({
 
   const allTags = React.useMemo(() => {
     const tags = new Set<string>();
-    notes.forEach((n) => n.tags.forEach((tg) => tags.add(tg)));
+    notes.forEach((n) => {
+      (n.tags ?? []).forEach((tg) => {
+        if (tg) tags.add(tg);
+      });
+    });
     return Array.from(tags);
   }, [notes]);
 
@@ -115,7 +135,7 @@ export function NotesWidget({
       },
     ];
     allTags.forEach((tg) => {
-      const count = notes.filter((n) => n.tags.includes(tg)).length;
+      const count = notes.filter((n) => (n.tags ?? []).includes(tg)).length;
       opts.push({
         value: tg,
         label: `#${tg}`,
@@ -134,10 +154,10 @@ export function NotesWidget({
           !q ||
           note.title.toLowerCase().includes(q) ||
           note.content.toLowerCase().includes(q) ||
-          note.tags.some((tg) => tg.toLowerCase().includes(q));
+          (note.tags ?? []).some((tg) => tg.toLowerCase().includes(q));
 
         const matchesTag =
-          selectedTag === "all" || note.tags.includes(selectedTag);
+          selectedTag === "all" || (note.tags ?? []).includes(selectedTag);
 
         return matchesQuery && matchesTag;
       })
@@ -394,7 +414,7 @@ export function NotesWidget({
                   {/* Footer: Tags + Date */}
                   <div className="flex items-center justify-between gap-1.5 text-[10px] text-muted-foreground pt-1.5 border-t border-border/30">
                     <div className="flex items-center gap-1 flex-wrap line-clamp-1">
-                      {note.tags.map((tg) => (
+                      {(note.tags ?? []).map((tg) => (
                         <span
                           key={tg}
                           className={cn(
