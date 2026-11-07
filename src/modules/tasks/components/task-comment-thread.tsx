@@ -262,7 +262,7 @@ export function TaskCommentThread({
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="p-3.5 rounded-xl border border-border/60 bg-white/80 dark:bg-card/60 flex flex-col gap-2.5 shadow-2xs"
+              className="p-4 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 flex flex-col gap-2.5 shadow-xs"
             >
               {/* Comment Header */}
               <div className="flex items-center justify-between gap-2">
@@ -288,7 +288,7 @@ export function TaskCommentThread({
 
               {/* Comment Text Content */}
               {comment.content && (
-                <p className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed px-1">
+                <p className="text-[13px] text-slate-800 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed px-1 font-normal select-text">
                   {comment.content}
                 </p>
               )}
@@ -476,7 +476,7 @@ export function TaskCommentThread({
                   {comment.replies.map((reply) => (
                     <div
                       key={reply.id}
-                      className="p-2.5 rounded-lg border border-border/40 bg-muted/15 flex flex-col gap-1.5"
+                      className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/60 flex flex-col gap-1.5 shadow-2xs"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5">
@@ -500,7 +500,7 @@ export function TaskCommentThread({
                       </div>
 
                       {reply.content && (
-                        <p className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed px-1">
+                        <p className="text-[13px] text-slate-800 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed px-1 font-normal select-text">
                           {reply.content}
                         </p>
                       )}

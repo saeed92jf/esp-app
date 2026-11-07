@@ -641,7 +641,7 @@ export function TaskProgressView({
         </div>
 
         {/* Progress items / Chat stream */}
-        <div ref={messagesContainerRef} className="p-5 space-y-4 max-h-[420px] overflow-y-auto scroll-smooth">
+        <div ref={messagesContainerRef} className="p-4 sm:p-5 space-y-4 max-h-[460px] overflow-y-auto scroll-smooth bg-slate-50/70 dark:bg-zinc-950/40 border-y border-border/40">
           {(!currentTask.progress || currentTask.progress.length === 0) ? (
             <div className="text-center py-10 text-muted-foreground text-sm space-y-1">
               <p className="font-semibold">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
@@ -819,38 +819,57 @@ function ProgressItem({
     >
       <div
         className={cn(
-          "size-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
+          "size-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-xs",
           isAdminNote
-            ? "bg-primary text-white"
-            : "bg-muted text-muted-foreground"
+            ? "bg-gradient-to-tr from-amber-600 to-amber-500 text-white ring-2 ring-amber-500/20"
+            : isMe
+            ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white ring-2 ring-blue-500/20"
+            : "bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700"
         )}
       >
         {progress.author_name.charAt(0)}
       </div>
       <div className={cn("flex-1 max-w-[85%]", isMe ? "items-end" : "items-start", "flex flex-col")}>
-        <div className="flex items-center gap-2 mb-1">
-          {!isMe && (
-            <span className="text-xs font-semibold text-foreground">{progress.author_name}</span>
-          )}
+        <div className={cn("flex items-center gap-2 mb-1 px-1", isMe ? "justify-end" : "justify-start")}>
+          <span className="text-xs font-bold text-foreground">
+            {isMe ? (isRtl ? "شما" : "You") : progress.author_name}
+          </span>
           {isAdminNote && (
-            <span className="text-xs font-semibold text-primary flex items-center gap-0.5">
-              <ShieldCheck className="size-3" />
-              {isRtl ? "مدیر" : "Admin"}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+              <ShieldCheck className="size-3 text-amber-600 dark:text-amber-400" />
+              {isRtl ? "پیام مدیر" : "Admin Note"}
             </span>
           )}
-          <span className="text-xs text-muted-foreground">{date}</span>
+          <span className="text-[11px] text-muted-foreground/80 font-mono fa-num flex items-center gap-1">
+            <Clock className="size-2.5 opacity-60" />
+            {date}
+          </span>
         </div>
         <div
           className={cn(
-            "px-4 py-2.5 rounded-2xl text-sm leading-relaxed space-y-1.5",
+            "px-4.5 py-3 rounded-2xl text-[13px] sm:text-sm leading-relaxed space-y-2 select-text shadow-sm transition-all",
             isAdminNote
-              ? "bg-primary/10 text-primary-foreground dark:text-primary border border-primary/20"
+              ? "bg-amber-50/90 dark:bg-amber-950/40 border-2 border-amber-400/80 dark:border-amber-500/50 text-amber-950 dark:text-amber-50"
               : isMe
-              ? "bg-primary text-white"
-              : "bg-muted text-foreground"
+              ? "bg-blue-600 dark:bg-blue-600 text-white border border-blue-500/50"
+              : "bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-800",
+            isMe
+              ? (isRtl ? "rounded-tl-xs" : "rounded-tr-xs")
+              : (isRtl ? "rounded-tr-xs" : "rounded-tl-xs")
           )}
         >
-          <div>{progress.content}</div>
+          <div
+            className={cn(
+              "whitespace-pre-wrap break-words leading-relaxed select-text",
+              isAdminNote
+                ? "text-amber-950 dark:text-amber-100 font-medium"
+                : isMe
+                ? "text-white font-normal drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]"
+                : "text-slate-800 dark:text-zinc-100 font-normal"
+            )}
+          >
+            {progress.content}
+          </div>
           {progress.attachments && progress.attachments.length > 0 && (
             <TaskAttachmentList
               attachments={progress.attachments}

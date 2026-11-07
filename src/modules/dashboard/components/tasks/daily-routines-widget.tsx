@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { getJalaliDate } from "@/components/ui/date-picker";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { DailyRoutine } from "../../services/dashboard.service";
 
 interface DailyRoutinesWidgetProps {
@@ -92,33 +93,7 @@ const COLOR_CONFIG: Record<
   },
 };
 
-const DEFAULT_ROUTINES: DailyRoutine[] = [
-  {
-    id: "rtn-1",
-    title: "کتاب",
-    color: "purple",
-    completedDays: {},
-  },
-  {
-    id: "rtn-2",
-    title: "ورزش",
-    color: "emerald",
-    completedDays: {},
-  },
-  {
-    id: "rtn-3",
-    title: "آزمون نظام مهندسی",
-    color: "rose",
-    highlight: true,
-    completedDays: {},
-  },
-  {
-    id: "rtn-4",
-    title: "متمتیکا و محاسبات",
-    color: "orange",
-    completedDays: {},
-  },
-];
+const DEFAULT_ROUTINES: DailyRoutine[] = [];
 
 const JALALI_MONTHS_FA = [
   "فروردین",
@@ -218,27 +193,35 @@ export function DailyRoutinesWidget({
     } catch {}
   };
 
-  const [routines, setRoutines] = React.useState<DailyRoutine[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    const { user } = useAuth();
+  const userKey = user?.id || user?.email || "guest";
+  const userStorageKey = `esp_user_${userKey}_daily_routines_v1`;
+
+  // Purge legacy shared keys once
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("dashboard_user_daily_routines_v3");
+      localStorage.removeItem("dashboard_user_daily_routines_v2");
+    } catch {}
+  }, []);
+
+  const [routines, setRoutines] = React.useState<DailyRoutine[]>([]);
+
+  // Load user-specific routines
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(userStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setRoutines(parsed);
+          return;
         }
-      } catch {}
-    }
-    if (initialRoutines && initialRoutines.length > 0) {
-      return initialRoutines.map((r, i) => ({
-        ...r,
-        color:
-          (r.color as RoutineColor) ||
-          (["purple", "emerald", "rose", "orange"][i % 4] as RoutineColor),
-        completedDays: r.completedDays || {},
-      }));
-    }
-    return DEFAULT_ROUTINES;
-  });
+      }
+    } catch {}
+    setRoutines([]);
+  }, [userStorageKey]);
 
   // Week offset (can navigate to any week of the year: -52 to +52 or more)
   const [weekOffset, setWeekOffset] = React.useState<number>(0);
@@ -255,10 +238,11 @@ export function DailyRoutinesWidget({
   const [selectedWeekNumbers, setSelectedWeekNumbers] = React.useState<number[]>([]);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(routines));
+      localStorage.setItem(userStorageKey, JSON.stringify(routines));
     } catch {}
-  }, [routines]);
+  }, [routines, userStorageKey]);
 
   // Today's date string (local timezone safe)
   const todayIsoStr = React.useMemo(() => {

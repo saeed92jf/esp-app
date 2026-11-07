@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type {
   DetailedChecklistItem,
   ChecklistPeriod,
@@ -36,15 +37,34 @@ export function PeriodicChecklistWidget({
   const t = useTranslations("Dashboard.checklist");
   const locale = useLocale();
 
-  const [items, setItems] = React.useState<DetailedChecklistItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return initialItems;
-  });
+  const { user } = useAuth();
+  const userKey = user?.id || user?.email || "guest";
+  const userStorageKey = `esp_user_${userKey}_periodic_checklist_v1`;
+
+  // Purge legacy shared key once
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("dashboard_user_periodic_checklist_v1");
+    } catch {}
+  }, []);
+
+  const [items, setItems] = React.useState<DetailedChecklistItem[]>([]);
+
+  // Load user-specific items
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(userStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setItems(parsed);
+          return;
+        }
+      }
+    } catch {}
+    setItems([]);
+  }, [userStorageKey]);
 
   const [activePeriod, setActivePeriod] =
     React.useState<ChecklistPeriod | "all">("all");
@@ -56,10 +76,11 @@ export function PeriodicChecklistWidget({
   const [isAdding, setIsAdding] = React.useState(false);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(userStorageKey, JSON.stringify(items));
     } catch {}
-  }, [items]);
+  }, [items, userStorageKey]);
 
   const toggleItem = (id: string) => {
     setItems((prev) =>

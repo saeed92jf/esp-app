@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { CustomLink } from "../../services/dashboard.service";
 
 interface CustomLinksWidgetProps {
@@ -40,15 +41,34 @@ export function CustomLinksWidget({
   const t = useTranslations("Dashboard.links");
   const locale = useLocale();
 
-  const [links, setLinks] = React.useState<CustomLink[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return initialLinks;
-  });
+  const { user } = useAuth();
+  const userKey = user?.id || user?.email || "guest";
+  const userStorageKey = `esp_user_${userKey}_custom_links_v1`;
+
+  // Purge legacy shared key once
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("dashboard_user_custom_links_v1");
+    } catch {}
+  }, []);
+
+  const [links, setLinks] = React.useState<CustomLink[]>([]);
+
+  // Load user-specific links
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(userStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setLinks(parsed);
+          return;
+        }
+      }
+    } catch {}
+    setLinks([]);
+  }, [userStorageKey]);
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedCategory, setSelectedCategory] = React.useState<string>("all");
@@ -63,10 +83,11 @@ export function CustomLinksWidget({
   const [isInternal, setIsInternal] = React.useState(false);
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+      localStorage.setItem(userStorageKey, JSON.stringify(links));
     } catch {}
-  }, [links]);
+  }, [links, userStorageKey]);
 
   const categories = React.useMemo(() => {
     const cats = new Set<string>();

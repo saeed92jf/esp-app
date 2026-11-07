@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { DashboardNote } from "../../services/dashboard.service";
 
 interface NotesWidgetProps {
@@ -84,20 +85,34 @@ export function NotesWidget({
   const t = useTranslations("Dashboard.notes");
   const locale = useLocale();
 
-  const [notes, setNotes] = React.useState<DashboardNote[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            return parsed.map(normalizeNote);
-          }
+  const { user } = useAuth();
+  const userKey = user?.id || user?.email || "guest";
+  const userStorageKey = `esp_user_${userKey}_notes_v1`;
+
+  // Purge legacy shared key once
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("dashboard_user_notes_v1");
+    } catch {}
+  }, []);
+
+  const [notes, setNotes] = React.useState<DashboardNote[]>([]);
+
+  // Load user-specific notes
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(userStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setNotes(parsed.map(normalizeNote));
+          return;
         }
-      } catch {}
-    }
-    return Array.isArray(initialNotes) ? initialNotes.map(normalizeNote) : [];
-  });
+      }
+    } catch {}
+    setNotes([]);
+  }, [userStorageKey]);
 
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedTag, setSelectedTag] = React.useState<string>("all");
@@ -110,10 +125,11 @@ export function NotesWidget({
   const [newColor, setNewColor] = React.useState<DashboardNote["color"]>("blue");
 
   React.useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+      localStorage.setItem(userStorageKey, JSON.stringify(notes));
     } catch {}
-  }, [notes]);
+  }, [notes, userStorageKey]);
 
   const allTags = React.useMemo(() => {
     const tags = new Set<string>();

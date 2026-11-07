@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckSquare, Circle, CheckCircle2, ChevronDown, ChevronUp, X, Plus } from "lucide-react";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { ChecklistItem } from "../services/dashboard.service";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,41 @@ import { Button } from "@/components/ui/button";
 
 export function ChecklistWidget({ items }: { items: ChecklistItem[] }) {
   const t = useTranslations("Dashboard.checklist");
-  const [tasks, setTasks] = React.useState<ChecklistItem[]>(items || []);
+  const { user } = useAuth();
+  const userKey = user?.id || user?.email || "guest";
+  const userStorageKey = `esp_user_${userKey}_checklist_v1`;
+
+  // Purge legacy shared key once
+  React.useEffect(() => {
+    try {
+      localStorage.removeItem("dashboard_checklist_items");
+    } catch {}
+  }, []);
+
+  const [tasks, setTasks] = React.useState<ChecklistItem[]>([]);
+
+  // Load user-specific tasks
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const saved = localStorage.getItem(userStorageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setTasks(parsed);
+          return;
+        }
+      }
+    } catch {}
+    setTasks([]);
+  }, [userStorageKey]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      localStorage.setItem(userStorageKey, JSON.stringify(tasks));
+    } catch {}
+  }, [tasks, userStorageKey]);
   const [newTaskTitle, setNewTaskTitle] = React.useState("");
   const [newTaskCategory, setNewTaskCategory] = React.useState("");
   const [activeTab, setActiveTab] = React.useState("all");

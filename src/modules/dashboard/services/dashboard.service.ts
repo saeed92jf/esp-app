@@ -196,11 +196,11 @@ import dashboardSamplesMock from "@/data/mock/dashboard-samples.json";
 
 const REAL_EVENTS: CalendarEvent[] = calendarEventsMock as unknown as CalendarEvent[];
 
-export const SAMPLE_TASKS: DashboardTask[] = dashboardSamplesMock.tasks as unknown as DashboardTask[];
-export const SAMPLE_DETAILED_CHECKLIST: DetailedChecklistItem[] = dashboardSamplesMock.detailedChecklist as unknown as DetailedChecklistItem[];
-export const SAMPLE_ROUTINES: DailyRoutine[] = dashboardSamplesMock.routines as unknown as DailyRoutine[];
-export const SAMPLE_NOTES: DashboardNote[] = dashboardSamplesMock.notes as unknown as DashboardNote[];
-export const SAMPLE_CUSTOM_LINKS: CustomLink[] = dashboardSamplesMock.customLinks as unknown as CustomLink[];
+export const SAMPLE_TASKS: DashboardTask[] = [];
+export const SAMPLE_DETAILED_CHECKLIST: DetailedChecklistItem[] = [];
+export const SAMPLE_ROUTINES: DailyRoutine[] = [];
+export const SAMPLE_NOTES: DashboardNote[] = [];
+export const SAMPLE_CUSTOM_LINKS: CustomLink[] = [];
 export const SAMPLE_NOTIFICATIONS: DashboardNotificationItem[] = [];
 
 const FAKE_DATA: Record<UserRole, DashboardData> = dashboardDataMock as unknown as Record<UserRole, DashboardData>;
