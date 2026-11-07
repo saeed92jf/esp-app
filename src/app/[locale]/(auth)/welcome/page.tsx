@@ -122,7 +122,7 @@ export default function WelcomePage() {
             </Button>
 
             <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs sm:text-sm font-medium border-border/60 hover:bg-muted/50">
-              <Link href="/dashboard/profile" className="flex items-center justify-center gap-2">
+              <Link href="/profile" className="flex items-center justify-center gap-2">
                 <UserCheck className="size-4" />
                 <span>{isFa ? "مشاهده و ویرایش مشخصات پرسنلی" : "View Personnel Profile"}</span>
               </Link>

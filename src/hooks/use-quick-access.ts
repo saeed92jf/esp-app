@@ -16,8 +16,8 @@ export const ALL_SELECTABLE_ITEMS: NavItem[] = NAVIGATION.filter(
 
 const DEFAULT_HREFS: string[] = [
   "/ESP-Flow",
-  "/dashboard/tasks",
-  "/dashboard/projects",
+  "/tasks",
+  "/projects",
   "/dictionary",
   "/did-you-know",
 ];

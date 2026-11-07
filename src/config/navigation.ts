@@ -8,6 +8,7 @@ import {
   Cpu,
   TreeStructure,
   Lightbulb,
+  ChatCircleDots,
 } from "@phosphor-icons/react";
 
 /**
@@ -335,13 +336,13 @@ export const NAVIGATION: NavGroup[] = [
     items: [
       {
         labelKey: "projects",
-        href: "/dashboard/projects",
+        href: "/projects",
         icon: Kanban,
         color: "blue",
       },
       {
         labelKey: "tasks",
-        href: "/dashboard/tasks",
+        href: "/tasks",
         icon: ListChecks,
         color: "sky",
       },
@@ -374,6 +375,22 @@ export const NAVIGATION: NavGroup[] = [
         href: "/aparat",
         icon: VideoCamera,
         color: "rose",
+        public: true,
+        free: true,
+      },
+    ],
+  },
+  {
+    id: "community",
+    labelKey: "community",
+    icon: ChatCircleDots,
+    color: "indigo",
+    items: [
+      {
+        labelKey: "community",
+        href: "/community",
+        icon: ChatCircleDots,
+        color: "indigo",
         public: true,
         free: true,
       },

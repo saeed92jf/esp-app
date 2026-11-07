@@ -353,7 +353,7 @@ export default function AccountPendingPage() {
                     asChild
                     className="h-10 px-5 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm gap-2"
                   >
-                    <Link href="/dashboard/profile?tab=personal">
+                    <Link href="/profile?tab=personal">
                       <User className="size-4" />
                       <span>{isProfileCompleted ? t("viewProfileBtn") : t("enterProfileBtn")}</span>
                       {isRtl ? <ArrowLeft className="size-4" /> : <ArrowRight className="size-4" />}

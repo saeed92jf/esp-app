@@ -42,7 +42,15 @@ transpilePackages: ['three', '@react-three/drei', '@react-three/fiber', 'troika-
     ],
   },
 
-  allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.0.242", "192.168.0.171"],
+  allowedDevOrigins: [
+    "localhost",
+    "127.0.0.1",
+    "192.168.0.38",
+    "192.168.0.30",
+    "192.168.0.242",
+    "192.168.0.171",
+    "192.168.0.*",
+  ],
 
   experimental: {
     serverActions: { allowedOrigins: ["*"] },

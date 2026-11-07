@@ -57,7 +57,7 @@ const SYSTEM_STATIC_ROUTES: SitemapRouteItem[] = [
   },
   {
     id: "route-profile",
-    path: "/dashboard/profile",
+    path: "/profile",
     titleEn: "Profile & Identity",
     titleFa: "پروفایل و هویت کاربری",
     descEn: "User account management, security credentials, and organization data.",
@@ -190,14 +190,14 @@ const NAV_ITEM_METADATA: Record<
     descFa: "شبیه‌سازی فرایندی و محاسبات تحت فشار ASME در محیط نود-بیس.",
     renderType: "CSR",
   },
-  "/dashboard/projects": {
+  "/projects": {
     titleEn: "Project Management & VDIS",
     titleFa: "مدیریت پروژه‌ها و ترنسمیتال VDIS",
     descEn: "Multi-tier WBS, transmittal approvals, RACI team and engineering risks.",
     descFa: "مدیریت ساختار شکست کار WBS، تأیید ترنسمیتال‌ها و ماتریس ریسک.",
     renderType: "CSR",
   },
-  "/dashboard/tasks": {
+  "/tasks": {
     titleEn: "Task Tracker & Kanban",
     titleFa: "مدیریت وظایف و تسک‌ها",
     descEn: "Interactive agile sprint tracking, priority workflows and assignee boards.",

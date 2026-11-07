@@ -1,6 +1,5 @@
-import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import { TasksManagementPage } from '@/modules/tasks/components/tasks-management-page';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -9,9 +8,5 @@ type Props = {
 export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return (
-    <Suspense fallback={<div className="flex-1 min-h-full bg-panel dark:bg-background" />}>
-      <TasksManagementPage initialTab="create" />
-    </Suspense>
-  );
+  redirect(`/${locale}/tasks/new`);
 }

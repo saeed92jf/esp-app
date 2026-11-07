@@ -1,13 +1,18 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/layout/app-header";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { communityService } from "../services/community.service";
-import type { CommunityPost, CommunityReply, CommunityAttachment } from "../types/community";
+import type {
+  CommunityPost,
+  CommunityReply,
+  CommunityAttachment,
+  CommunitySortOption,
+} from "../types/community";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,8 +30,6 @@ import {
   Plus,
   Paperclip,
   Send,
-  Heart,
-  MessageCircle,
   Pin,
   FileText,
   Download,
@@ -36,6 +39,18 @@ import {
   LogIn,
   Trash2,
   Sparkles,
+  ChevronUp,
+  ChevronDown,
+  Check,
+  Tag,
+  Code,
+  Eye,
+  Clock,
+  Flame,
+  Radio,
+  HelpCircle,
+  Award,
+  Layers,
 } from "lucide-react";
 
 interface CategoryItem {
@@ -47,11 +62,24 @@ interface CategoryItem {
 }
 
 const CATEGORIES: CategoryItem[] = [
-  { id: "all", labelKey: "all", labelEn: "All Topics", labelFa: "همه گفتگوها", icon: MessageSquare },
-  { id: "announcements", labelKey: "announcements", labelEn: "Announcements", labelFa: "اطلاعیه‌ها", icon: Megaphone },
+  { id: "all", labelKey: "all", labelEn: "All Topics", labelFa: "همه موضوعات", icon: MessageSquare },
   { id: "engineering", labelKey: "engineering", labelEn: "Engineering", labelFa: "فنی و مهندسی", icon: Wrench },
   { id: "quality", labelKey: "quality", labelEn: "Quality & QC", labelFa: "کنترل کیفیت", icon: CheckCircle2 },
+  { id: "announcements", labelKey: "announcements", labelEn: "Announcements", labelFa: "اطلاعیه‌ها", icon: Megaphone },
   { id: "general", labelKey: "general", labelEn: "General", labelFa: "عمومی و متفرقه", icon: Coffee },
+];
+
+const POPULAR_TAGS = [
+  "پمپ_های_ESP",
+  "مکانیک",
+  "هیدرولیک",
+  "کنترل_کیفیت",
+  "متالورژی",
+  "کابل_و_تغذیه",
+  "سنسور",
+  "استاندارد",
+  "شبیه_سازی",
+  "تعمیرات",
 ];
 
 function getRoleBadge(role?: string, isRtl = false) {
@@ -120,7 +148,12 @@ function UserAvatar({
     !avatar.includes("/team/")
   );
 
-  const sizeClass = size === "sm" ? "size-6 text-[10px]" : size === "lg" ? "size-11 text-sm" : "size-9 text-xs";
+  const sizeClass =
+    size === "sm"
+      ? "size-6 text-[10px]"
+      : size === "lg"
+      ? "size-11 text-sm"
+      : "size-8 text-xs";
 
   return (
     <Avatar className={cn(sizeClass, "border border-border/60 shrink-0 font-semibold select-none overflow-hidden")}>
@@ -155,14 +188,23 @@ export function CommunityPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeSort, setActiveSort] = useState<CommunitySortOption>("newest");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Live Auto-Sync state
+  const [lastActivity, setLastActivity] = useState<string>("");
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+  const isSyncingRef = useRef(false);
 
   // New Post Form State
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
-  const [postCategory, setPostCategory] = useState("general");
+  const [postCategory, setPostCategory] = useState("engineering");
+  const [postTags, setPostTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [postAttachments, setPostAttachments] = useState<CommunityAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,26 +224,108 @@ export function CommunityPage() {
   const [activeReplyPostId, setActiveReplyPostId] = useState<string | null>(null);
 
   // Load posts from Real API
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const data = await communityService.getPosts(activeCategory, searchQuery);
-      setPosts(data);
-    } catch (err: any) {
-      console.error("Failed to fetch community posts:", err);
-      toast.error(err.message || (isRtl ? "خطا در دریافت گفتگوها" : "Failed to load discussions"));
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchPosts = useCallback(
+    async (silent = false) => {
+      try {
+        if (!silent) setLoading(true);
+        const data = await communityService.getPosts(
+          activeCategory,
+          searchQuery,
+          activeTag || undefined,
+          activeSort
+        );
+        setPosts(data);
+      } catch (err: any) {
+        if (!silent) {
+          console.error("Failed to fetch community posts:", err);
+          toast.error(err.message || (isRtl ? "خطا در دریافت گفتگوها" : "Failed to load discussions"));
+        }
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [activeCategory, searchQuery, activeTag, activeSort, isRtl]
+  );
 
   useEffect(() => {
     fetchPosts();
-  }, [activeCategory]);
+  }, [fetchPosts]);
+
+  // ── Background Real-Time Auto-Sync Engine (No manual refresh required) ──
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+
+    const performSync = async () => {
+      if (document.visibilityState === "hidden" || isSyncingRef.current) return;
+
+      try {
+        isSyncingRef.current = true;
+        setIsSyncing(true);
+
+        const status = await communityService.syncStatus();
+        if (status.latestActivity && status.latestActivity !== lastActivity) {
+          setLastActivity(status.latestActivity);
+          // Silently fetch updated posts without full screen loader
+          await fetchPosts(true);
+
+          // If any threads are currently expanded, refresh their replies silently
+          const expandedIds = Object.keys(expandedThreads).filter((id) => expandedThreads[id]);
+          if (expandedIds.length > 0) {
+            for (const postId of expandedIds) {
+              try {
+                const detail = await communityService.getPostDetail(postId);
+                setThreadReplies((prev) => ({
+                  ...prev,
+                  [postId]: detail.replies || [],
+                }));
+              } catch {
+                // Ignore individual thread refresh failures during background sync
+              }
+            }
+          }
+        }
+      } catch {
+        // Silent catch for background polling
+      } finally {
+        isSyncingRef.current = false;
+        setIsSyncing(false);
+      }
+    };
+
+    // Run polling every 3.5 seconds
+    timer = setInterval(performSync, 3500);
+
+    // Also trigger immediately on visibility change (when user returns to this tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        performSync();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      if (timer) clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [lastActivity, fetchPosts, expandedThreads]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchPosts();
+  };
+
+  // Tag helper
+  const handleAddTag = (tagToAdd: string) => {
+    const clean = tagToAdd.trim().replace(/^#+/, "");
+    if (!clean) return;
+    if (!postTags.includes(clean)) {
+      setPostTags([...postTags, clean]);
+    }
+    setTagInput("");
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setPostTags(postTags.filter((t) => t !== tagToRemove));
   };
 
   // Upload file for new post (enforces authentication)
@@ -274,7 +398,7 @@ export function CommunityPage() {
     }
 
     if (!postTitle.trim() || !postContent.trim()) {
-      toast.error(isRtl ? "لطفاً عنوان و متن پیام را وارد کنید" : "Please enter title and content");
+      toast.error(isRtl ? "لطفاً عنوان و متن پرسش را وارد کنید" : "Please enter title and content");
       return;
     }
 
@@ -284,6 +408,7 @@ export function CommunityPage() {
         title: postTitle.trim(),
         content: postContent.trim(),
         category: postCategory,
+        tags: postTags,
         authorId: user.id,
         authorEmail: user.email,
         authorName: currentUserName,
@@ -296,11 +421,12 @@ export function CommunityPage() {
       setPosts((prev) => [newPost, ...prev]);
       setPostTitle("");
       setPostContent("");
+      setPostTags([]);
       setPostAttachments([]);
       setIsComposerOpen(false);
-      toast.success(isRtl ? "گفتگوی شما با موفقیت منتشر شد" : "Discussion published successfully");
+      toast.success(isRtl ? "پرسش فنی شما با موفقیت ثبت شد" : "Question published successfully");
     } catch (err: any) {
-      toast.error(err.message || (isRtl ? "خطا در ثبت پیام" : "Failed to publish post"));
+      toast.error(err.message || (isRtl ? "خطا در ثبت پیام" : "Failed to publish question"));
     } finally {
       setIsSubmitting(false);
     }
@@ -337,6 +463,9 @@ export function CommunityPage() {
         setLoadingThreads((prev) => ({ ...prev, [postId]: true }));
         const postDetail = await communityService.getPostDetail(postId);
         setThreadReplies((prev) => ({ ...prev, [postId]: postDetail.replies || [] }));
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, views: (p.views || 0) + 1 } : p))
+        );
       } catch (err: any) {
         console.error("Failed to load thread:", err);
         toast.error(err.message || (isRtl ? "خطا در دریافت پاسخ‌ها" : "Failed to load replies"));
@@ -407,31 +536,160 @@ export function CommunityPage() {
     }
   };
 
-  // Like post
-  const handleLikePost = async (postId: string) => {
+  // StackOverflow Voting: Post Upvote / Downvote
+  const handleVotePost = async (postId: string, direction: "up" | "down") => {
     if (!isAuthenticated || !user) {
-      toast.error(isRtl ? "برای ثبت پسندیدن باید وارد حساب کاربری شوید." : "Please log in to like discussions.");
+      toast.error(isRtl ? "برای ثبت رأی باید وارد حساب کاربری شوید." : "Please log in to vote.");
       return;
     }
 
     try {
-      const res = await communityService.toggleLike(postId, user.id);
+      const res = await communityService.votePost(postId, direction);
       setPosts((prev) =>
         prev.map((p) => {
           if (p.id === postId) {
-            const likedBy = p.likedBy || [];
-            const isLiked = res.isLiked;
+            const upvotes = p.upvotes || [];
+            const downvotes = p.downvotes || [];
+            const uid = user.id;
+
+            let nextUp = [...upvotes];
+            let nextDown = [...downvotes];
+
+            if (direction === "up") {
+              if (nextUp.includes(uid)) {
+                nextUp = nextUp.filter((id) => id !== uid);
+              } else {
+                nextUp.push(uid);
+                nextDown = nextDown.filter((id) => id !== uid);
+              }
+            } else {
+              if (nextDown.includes(uid)) {
+                nextDown = nextDown.filter((id) => id !== uid);
+              } else {
+                nextDown.push(uid);
+                nextUp = nextUp.filter((id) => id !== uid);
+              }
+            }
+
             return {
               ...p,
-              likes: res.likes,
-              likedBy: isLiked ? [...likedBy, user.id] : likedBy.filter((id) => id !== user.id),
+              score: res.score,
+              likes: Math.max(0, res.score),
+              upvotes: nextUp,
+              downvotes: nextDown,
             };
           }
           return p;
         })
       );
     } catch (err: any) {
-      toast.error(err.message || (isRtl ? "خطا در ثبت واکنش" : "Failed to update like"));
+      toast.error(err.message || (isRtl ? "خطا در ثبت رأی" : "Failed to vote"));
+    }
+  };
+
+  // StackOverflow Voting: Reply Upvote / Downvote
+  const handleVoteReply = async (postId: string, replyId: string, direction: "up" | "down") => {
+    if (!isAuthenticated || !user) {
+      toast.error(isRtl ? "برای ثبت رأی باید وارد حساب کاربری شوید." : "Please log in to vote.");
+      return;
+    }
+
+    try {
+      const res = await communityService.voteReply(postId, replyId, direction);
+      setThreadReplies((prev) => {
+        const currentList = prev[postId] || [];
+        return {
+          ...prev,
+          [postId]: currentList.map((r) => {
+            if (r.id === replyId) {
+              const uid = user.id;
+              let nextUp = [...(r.upvotes || [])];
+              let nextDown = [...(r.downvotes || [])];
+
+              if (direction === "up") {
+                if (nextUp.includes(uid)) {
+                  nextUp = nextUp.filter((id) => id !== uid);
+                } else {
+                  nextUp.push(uid);
+                  nextDown = nextDown.filter((id) => id !== uid);
+                }
+              } else {
+                if (nextDown.includes(uid)) {
+                  nextDown = nextDown.filter((id) => id !== uid);
+                } else {
+                  nextDown.push(uid);
+                  nextUp = nextUp.filter((id) => id !== uid);
+                }
+              }
+
+              return {
+                ...r,
+                score: res.score,
+                upvotes: nextUp,
+                downvotes: nextDown,
+              };
+            }
+            return r;
+          }),
+        };
+      });
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در ثبت رأی پاسخ" : "Failed to vote reply"));
+    }
+  };
+
+  // StackOverflow Accepted Answer (Mark solution with green checkmark)
+  const handleAcceptReply = async (postId: string, replyId: string) => {
+    if (!isAuthenticated || !user) return;
+
+    try {
+      const res = await communityService.acceptReply(postId, replyId);
+      setPosts((prev) =>
+        prev.map((p) => (p.id === postId ? { ...p, acceptedReplyId: res.acceptedReplyId } : p))
+      );
+
+      setThreadReplies((prev) => {
+        const currentList = prev[postId] || [];
+        const updated = currentList.map((r) => ({
+          ...r,
+          isAccepted: r.id === res.acceptedReplyId,
+        }));
+        // Pinned accepted answer to the very top
+        updated.sort((a, b) => {
+          if (a.isAccepted) return -1;
+          if (b.isAccepted) return 1;
+          return (b.score || 0) - (a.score || 0);
+        });
+        return {
+          ...prev,
+          [postId]: updated,
+        };
+      });
+
+      toast.success(
+        res.isAccepted
+          ? isRtl
+            ? "پاسخ به عنوان راه‌حل تایید شد"
+            : "Marked as accepted answer"
+          : isRtl
+          ? "تایید پاسخ برداشته شد"
+          : "Unmarked accepted answer"
+      );
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در ثبت پاسخ تایید شده" : "Failed to accept reply"));
+    }
+  };
+
+  // Helper to insert code markdown
+  const insertCodeSnippet = (postId?: string) => {
+    const snippet = "\n```\n// " + (isRtl ? "کد یا مشخصات فنی" : "Technical code or spec") + "\n\n```\n";
+    if (postId) {
+      setReplyInputs((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || "") + snippet,
+      }));
+    } else {
+      setPostContent((prev) => prev + snippet);
     }
   };
 
@@ -450,7 +708,7 @@ export function CommunityPage() {
               <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 type="text"
-                placeholder={isRtl ? "جستجو در مباحث و گفتگوها..." : "Search discussions..."}
+                placeholder={isRtl ? "جستجو در پرسش‌ها، پاسخ‌ها و برچسب‌ها..." : "Search Q&A discussions..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full h-8.5 rounded-full bg-background/80 hover:bg-muted/70 border border-border/60 ps-8 pe-3 text-xs"
@@ -551,20 +809,36 @@ export function CommunityPage() {
         {/* ── Main Community Content Area ── */}
         <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-24 min-h-0 max-w-5xl mx-auto">
           {/* Header Action Banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-card/70 backdrop-blur-md border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 bg-card/70 backdrop-blur-md border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  {isRtl ? "تالار گفتگو و دانش سازمانی" : "Euroslot Knowledge & Community"}
+                  {isRtl ? "تالار گفتگو و پرسش و پاسخ (Q&A)" : "Community & Technical Q&A"}
                 </h1>
                 <Badge variant="outline" className="text-xs font-mono font-medium border-primary/30 text-primary">
-                  CORE v2.0
+                  StackOverflow Engine
                 </Badge>
+                {/* 🟢 Live Sync status indicator */}
+                <div
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium border transition-colors",
+                    isSyncing
+                      ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                      : "bg-muted/60 border-border/60 text-muted-foreground"
+                  )}
+                  title={isRtl ? "همگام‌سازی لحظه‌ای بدون نیاز به رفرش صفحه فعال است" : "Real-time auto-sync is active without page refresh"}
+                >
+                  <span className="relative flex size-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+                  </span>
+                  <span>{isRtl ? "همگام‌سازی زنده" : "Live Sync"}</span>
+                </div>
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {isRtl
-                  ? "اشتراک‌گذاری تجربیات فنی، مستندات مهندسی و تعامل مستقیم میان تیم‌های تخصصی یورواسلات پارس"
-                  : "Collaborative engineering exchange, technical documentation, and inter-team discussions"}
+                  ? "مرجع تبادل دانش فنی، پاسخ به پرسش‌های مهندسی پمپ‌های ESP و هم‌اندیشی تیم‌های یورواسلات پارس"
+                  : "Collaborative engineering exchange, ESP technical Q&A, and inter-team discussions"}
               </p>
             </div>
 
@@ -573,29 +847,29 @@ export function CommunityPage() {
                 if (!isAuthenticated) {
                   toast.warning(
                     isRtl
-                      ? "برای ایجاد گفتگوی جدید، لطفاً با حساب کاربری خود وارد شوید."
-                      : "Please sign in to start a new discussion."
+                      ? "برای طرح پرسش جدید، لطفاً با حساب کاربری خود وارد شوید."
+                      : "Please sign in to ask a technical question."
                   );
                   return;
                 }
                 setIsComposerOpen(!isComposerOpen);
               }}
-              className="rounded-full gap-2 shrink-0 cursor-pointer shadow-xs"
+              className="rounded-full gap-2 shrink-0 cursor-pointer shadow-xs font-medium"
             >
               {isComposerOpen ? <X className="size-4" /> : <Plus className="size-4" />}
-              <span>{isComposerOpen ? (isRtl ? "بستن فرم" : "Close") : (isRtl ? "مبحث جدید" : "New Discussion")}</span>
+              <span>{isComposerOpen ? (isRtl ? "بستن فرم" : "Close") : (isRtl ? "طرح پرسش جدید" : "Ask Question")}</span>
             </Button>
           </div>
 
           {/* Guest Warning Banner if not logged in */}
           {!isAuthenticated && (
-            <div className="mb-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="mb-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
               <div className="flex items-center gap-3">
                 <AlertCircle className="size-5 text-amber-600 dark:text-amber-400 shrink-0" />
                 <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                   {isRtl
-                    ? "شما در حالت مشاهده مهمان هستید. برای ایجاد بحث، ثبت نظر و پیوست فایل‌های مهندسی، با حساب پرسنلی خود وارد شوید."
-                    : "You are currently browsing as a guest. Please log in with your verified credentials to create topics and post replies."}
+                    ? "شما در حالت مشاهده مهمان هستید. برای ایجاد بحث، ثبت نظر، رأی دادن و پیوست فایل‌های مهندسی، با حساب پرسنلی خود وارد شوید."
+                    : "You are currently browsing as a guest. Please log in with your verified credentials to ask questions, vote, and post answers."}
                 </p>
               </div>
               <Button asChild size="sm" className="rounded-full gap-1.5 shrink-0 text-xs">
@@ -607,7 +881,104 @@ export function CommunityPage() {
             </div>
           )}
 
-          {/* ── New Post Composer Card (Visible to Authenticated Users) ── */}
+          {/* ── StackOverflow Sorting Tabs & Tag Filter Bar ── */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4 bg-card/40 border border-border/50 rounded-xl p-2.5">
+            {/* Sorting Tabs */}
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg text-xs font-medium w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => setActiveSort("newest")}
+                className={cn(
+                  "flex-1 sm:flex-none px-3 py-1 rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeSort === "newest"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Clock className="size-3.5" />
+                <span>{isRtl ? "جدیدترین" : "Newest"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSort("active")}
+                className={cn(
+                  "flex-1 sm:flex-none px-3 py-1 rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeSort === "active"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Flame className="size-3.5 text-amber-500" />
+                <span>{isRtl ? "فعال‌ترین" : "Active"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSort("votes")}
+                className={cn(
+                  "flex-1 sm:flex-none px-3 py-1 rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeSort === "votes"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <ChevronUp className="size-3.5 text-blue-500" />
+                <span>{isRtl ? "بیشترین رأی" : "Votes"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSort("unanswered")}
+                className={cn(
+                  "flex-1 sm:flex-none px-3 py-1 rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                  activeSort === "unanswered"
+                    ? "bg-background text-foreground shadow-xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <HelpCircle className="size-3.5 text-rose-500" />
+                <span>{isRtl ? "بدون پاسخ" : "Unanswered"}</span>
+              </button>
+            </div>
+
+            {/* Active Tag Pill */}
+            {activeTag && (
+              <div className="flex items-center gap-1.5 bg-primary/10 border border-primary/30 text-primary text-xs px-2.5 py-1 rounded-full">
+                <Tag className="size-3" />
+                <span className="font-semibold">#{activeTag}</span>
+                <button
+                  type="button"
+                  onClick={() => setActiveTag(null)}
+                  className="hover:text-destructive ms-1 cursor-pointer"
+                  title={isRtl ? "حذف فیلتر برچسب" : "Clear tag filter"}
+                >
+                  <X className="size-3" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Popular Tag Chips Bar */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
+            <span className="text-muted-foreground shrink-0 text-[11px] font-medium me-1">
+              {isRtl ? "برچسب‌های پرتکرار:" : "Popular Tags:"}
+            </span>
+            {POPULAR_TAGS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                className={cn(
+                  "px-2.5 py-0.5 rounded-full border transition-colors shrink-0 cursor-pointer font-mono text-[11px]",
+                  activeTag === tag
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/50 hover:text-foreground"
+                )}
+              >
+                #{tag}
+              </button>
+            ))}
+          </div>
+
+          {/* ── New Question Composer Card (StackOverflow Style) ── */}
           {isComposerOpen && isAuthenticated && user && (
             <div className="mb-6 bg-card border border-border/80 rounded-2xl p-4 sm:p-6 shadow-md transition-all duration-200">
               {/* Authenticated Author Badge */}
@@ -627,7 +998,7 @@ export function CommunityPage() {
                     <span className="text-xs font-bold text-foreground">
                       {currentUserName}
                     </span>
-                    <span className="text-[10px] text-muted-foreground ms-1.5">
+                    <span className="text-[10px] text-muted-foreground ms-1.5" dir="ltr">
                       ({user.email})
                     </span>
                   </div>
@@ -642,16 +1013,20 @@ export function CommunityPage() {
 
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
                 <Sparkles className="size-4 text-primary" />
-                <span>{isRtl ? "ایجاد مبحث جدید" : "Create New Discussion"}</span>
+                <span>{isRtl ? "طرح پرسش یا چالش فنی جدید" : "Ask a Technical Question"}</span>
               </h3>
 
               <form onSubmit={handleSubmitPost} className="space-y-3.5">
                 <div>
                   <Input
-                    placeholder={isRtl ? "عنوان بحث یا پرسش فنی..." : "Discussion title or topic..."}
+                    placeholder={
+                      isRtl
+                        ? "عنوان دقیق سوال (مثلاً: علت افزایش ارتعاشات پمپ ESP در فرکانس ۵۵ هرتز چیست؟)"
+                        : "Specific question title (e.g. ESP pump vibration threshold at 55Hz)..."
+                    }
                     value={postTitle}
                     onChange={(e) => setPostTitle(e.target.value)}
-                    className="font-medium"
+                    className="font-medium text-sm"
                     required
                   />
                 </div>
@@ -675,17 +1050,78 @@ export function CommunityPage() {
                   ))}
                 </div>
 
+                {/* Tags input bar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder={isRtl ? "افزودن برچسب (مثلاً: پمپ_ESP) و فشردن Enter..." : "Add tag and press Enter..."}
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === ",") {
+                          e.preventDefault();
+                          handleAddTag(tagInput);
+                        }
+                      }}
+                      className="text-xs h-8"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleAddTag(tagInput)}
+                      className="h-8 text-xs shrink-0 cursor-pointer"
+                    >
+                      <Tag className="size-3 me-1" />
+                      <span>{isRtl ? "افزودن برچسب" : "Add Tag"}</span>
+                    </Button>
+                  </div>
+                  {postTags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {postTags.map((t) => (
+                        <span
+                          key={t}
+                          className="inline-flex items-center gap-1 bg-muted px-2 py-0.5 rounded-full text-xs border border-border/60"
+                        >
+                          <span>#{t}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(t)}
+                            className="hover:text-destructive text-muted-foreground"
+                          >
+                            <X className="size-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[11px] text-muted-foreground">
+                      {isRtl ? "توضیحات، پارامترهای فنی و شرایط کارکرد:" : "Detailed description & operating conditions:"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => insertCodeSnippet()}
+                      className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline cursor-pointer"
+                    >
+                      <Code className="size-3" />
+                      <span>{isRtl ? "درج بلوک کد / فرمول" : "Insert Code Block"}</span>
+                    </button>
+                  </div>
                   <Textarea
                     placeholder={
                       isRtl
-                        ? "شرح پیام، توضیحات مهندسی یا سوال فنی خود را بنویسید..."
-                        : "Describe the issue, operational insight, or question in detail..."
+                        ? "شرح جزئیات فنی، شرایط تست، ارقام داده‌های عملیاتی و آنچه تاکنون بررسی کرده‌اید..."
+                        : "Describe the issue, operational insights, parameters and what has been tested..."
                     }
                     value={postContent}
                     onChange={(e) => setPostContent(e.target.value)}
-                    rows={4}
+                    rows={5}
                     required
+                    className="font-mono text-xs leading-relaxed"
                   />
                 </div>
 
@@ -748,10 +1184,10 @@ export function CommunityPage() {
                       type="submit"
                       size="sm"
                       disabled={isSubmitting || !postTitle.trim() || !postContent.trim()}
-                      className="rounded-full gap-1.5 text-xs cursor-pointer"
+                      className="rounded-full gap-1.5 text-xs cursor-pointer font-medium"
                     >
                       {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
-                      <span>{isRtl ? "انتشار گفتگو" : "Publish"}</span>
+                      <span>{isRtl ? "انتشار پرسش" : "Publish Question"}</span>
                     </Button>
                   </div>
                 </div>
@@ -768,37 +1204,37 @@ export function CommunityPage() {
             accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx,.zip"
           />
 
-          {/* ── Discussions List ── */}
+          {/* ── Discussions List (StackOverflow Style Layout) ── */}
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
               <Loader2 className="size-8 text-primary animate-spin" />
-              <p className="text-sm text-muted-foreground">{isRtl ? "در حال دریافت مباحث..." : "Loading discussions..."}</p>
+              <p className="text-sm text-muted-foreground">{isRtl ? "در حال دریافت پرسش‌ها..." : "Loading questions..."}</p>
             </div>
           ) : posts.length === 0 ? (
             <div className="text-center py-16 px-4 border border-dashed border-border/70 rounded-2xl bg-card/40">
               <MessageSquare className="size-10 mx-auto text-muted-foreground/60 mb-3" />
               <h3 className="text-base font-semibold text-foreground">
-                {isRtl ? "گفتگویی یافت نشد" : "No discussions yet"}
+                {isRtl ? "پرسشی در این بخش یافت نشد" : "No questions found"}
               </h3>
               <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
                 {isRtl
-                  ? "اولین نفری باشید که در این دسته مبحث جدیدی ایجاد می‌کند."
-                  : "Be the first to start a conversation in this topic category."}
+                  ? "اولین نفری باشید که در این زمینه یک پرسش فنی مطرح می‌کند."
+                  : "Be the first to ask a technical question in this category."}
               </p>
               {isAuthenticated ? (
                 <Button
                   onClick={() => setIsComposerOpen(true)}
                   size="sm"
-                  className="mt-4 rounded-full gap-1.5 text-xs"
+                  className="mt-4 rounded-full gap-1.5 text-xs font-medium cursor-pointer"
                 >
                   <Plus className="size-3.5" />
-                  <span>{isRtl ? "ایجاد مبحث جدید" : "Start First Discussion"}</span>
+                  <span>{isRtl ? "طرح پرسش جدید" : "Ask First Question"}</span>
                 </Button>
               ) : (
                 <Button asChild size="sm" className="mt-4 rounded-full gap-1.5 text-xs">
                   <Link href="/login">
                     <LogIn className="size-3.5" />
-                    <span>{isRtl ? "ورود جهت ایجاد مبحث" : "Sign in to start"}</span>
+                    <span>{isRtl ? "ورود جهت طرح پرسش" : "Sign in to ask"}</span>
                   </Link>
                 </Button>
               )}
@@ -806,14 +1242,25 @@ export function CommunityPage() {
           ) : (
             <div className="space-y-4">
               {posts.map((post) => {
-                const categoryDef = CATEGORIES.find((c) => c.id === post.category) || CATEGORIES[4];
-                const isLiked = (post.likedBy || []).includes(user?.id || "");
+                const categoryDef = CATEGORIES.find((c) => c.id === post.category) || CATEGORIES[1];
                 const isExpanded = !!expandedThreads[post.id];
                 const replies = threadReplies[post.id] || [];
                 const isLoadingReplies = !!loadingThreads[post.id];
                 const currentReplyAtts = replyAttachments[post.id] || [];
 
+                const userUpvoted = (post.upvotes || []).includes(user?.id || "");
+                const userDownvoted = (post.downvotes || []).includes(user?.id || "");
+                const hasAcceptedAnswer = Boolean(post.acceptedReplyId);
+
                 const canDeletePost =
+                  isAuthenticated &&
+                  user &&
+                  (user.id === post.authorId ||
+                    user.email?.toLowerCase() === post.authorEmail?.toLowerCase() ||
+                    user.role === "superadmin" ||
+                    user.role === "admin");
+
+                const isPostAuthorOrAdmin =
                   isAuthenticated &&
                   user &&
                   (user.id === post.authorId ||
@@ -830,161 +1277,257 @@ export function CommunityPage() {
                 return (
                   <article
                     key={post.id}
-                    className="bg-card border border-border/60 hover:border-border/90 rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200"
+                    className={cn(
+                      "bg-card border rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200",
+                      hasAcceptedAnswer
+                        ? "border-emerald-500/40 hover:border-emerald-500/70"
+                        : "border-border/60 hover:border-border/90"
+                    )}
                   >
-                    {/* Top Row: Author info, category, pin & delete */}
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <UserAvatar
-                          name={postAuthorDisplayName}
-                          nameFa={post.authorNameFa}
-                          nameEn={post.authorNameEn}
-                          avatar={post.authorAvatar}
-                          avatarColor={post.authorAvatarColor}
-                          avatarMode={post.authorAvatarMode}
-                          size="md"
-                          isRtl={isRtl}
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                              {postAuthorDisplayName}
-                            </span>
-                            <Badge
-                              variant="secondary"
-                              className={cn("text-[10px] px-1.5 py-0 h-4 border", roleBadge.className)}
-                            >
-                              {roleBadge.label}
-                            </Badge>
-                          </div>
-                          <span className="text-[11px] text-muted-foreground block">
-                            {new Date(post.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                    {/* Top Container: StackOverflow Metrics Column + Question Info */}
+                    <div className="flex flex-col sm:flex-row items-start gap-4">
+                      {/* ── Left Metrics Box (StackOverflow Metric Badges) ── */}
+                      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2.5 sm:gap-2 shrink-0 sm:w-24 text-center">
+                        {/* Votes Metric */}
+                        <div className="flex flex-col items-center justify-center min-w-[54px] sm:w-full py-1">
+                          <span className="text-sm sm:text-base font-bold text-foreground">
+                            {post.score ?? (post.likes || 0)}
                           </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {isRtl ? "رأی" : "votes"}
+                          </span>
+                        </div>
+
+                        {/* Answers Metric (Green badge if solved/accepted) */}
+                        <div
+                          className={cn(
+                            "flex flex-col items-center justify-center min-w-[58px] sm:w-full py-1 px-2 rounded-lg border text-xs font-semibold transition-colors",
+                            hasAcceptedAnswer
+                              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                              : (post.repliesCount || 0) > 0
+                              ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                              : "border-border/60 text-muted-foreground"
+                          )}
+                          title={
+                            hasAcceptedAnswer
+                              ? isRtl
+                                ? "این پرسش دارای پاسخ تایید شده است"
+                                : "This question has an accepted answer"
+                              : undefined
+                          }
+                        >
+                          <div className="flex items-center gap-1">
+                            {hasAcceptedAnswer && <Check className="size-3.5 stroke-[3]" />}
+                            <span className="text-sm font-bold">{post.repliesCount || 0}</span>
+                          </div>
+                          <span className="text-[10px] opacity-90">
+                            {isRtl ? "پاسخ" : "answers"}
+                          </span>
+                        </div>
+
+                        {/* Views Metric */}
+                        <div className="flex flex-col items-center justify-center min-w-[48px] sm:w-full py-0.5 text-muted-foreground">
+                          <span className="text-xs font-semibold">{post.views || 0}</span>
+                          <span className="text-[10px]">{isRtl ? "بازدید" : "views"}</span>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        {post.pinned && (
-                          <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-[11px]">
-                            <Pin className="size-3" />
-                            <span>{isRtl ? "سنجاق شده" : "Pinned"}</span>
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="text-[11px] text-muted-foreground border-border/60">
-                          {isRtl ? categoryDef.labelFa : categoryDef.labelEn}
-                        </Badge>
-                        {canDeletePost && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeletePost(post.id)}
-                            className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors cursor-pointer"
-                            title={isRtl ? "حذف گفتگو" : "Delete discussion"}
+                      {/* ── Main Question Details ── */}
+                      <div className="flex-1 min-w-0 w-full">
+                        {/* Title & Pinned/Category Header */}
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                          <h2
+                            onClick={() => handleToggleThread(post.id)}
+                            className="text-base sm:text-lg font-bold text-foreground hover:text-primary transition-colors cursor-pointer leading-snug line-clamp-2"
                           >
-                            <Trash2 className="size-3.5" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                            {isRtl && post.titleFa ? post.titleFa : post.title}
+                          </h2>
 
-                    {/* Post Content */}
-                    <h2 className="text-base sm:text-lg font-bold text-foreground mb-2 leading-snug">
-                      {isRtl && post.titleFa ? post.titleFa : post.title}
-                    </h2>
-                    <p className="text-xs sm:text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed mb-3.5">
-                      {post.content}
-                    </p>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {post.pinned && (
+                              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-[10px]">
+                                <Pin className="size-3" />
+                                <span>{isRtl ? "سنجاق" : "Pinned"}</span>
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">
+                              {isRtl ? categoryDef.labelFa : categoryDef.labelEn}
+                            </Badge>
+                            {canDeletePost && (
+                              <button
+                                type="button"
+                                onClick={() => handleDeletePost(post.id)}
+                                className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors cursor-pointer"
+                                title={isRtl ? "حذف پرسش" : "Delete question"}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
 
-                    {/* Attachments */}
-                    {post.attachments && post.attachments.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3.5">
-                        {post.attachments.map((att) => (
-                          <a
-                            key={att.id}
-                            href={att.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download
-                            className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted text-foreground text-xs px-2.5 py-1 rounded-lg border border-border/60 transition-colors"
-                          >
-                            <FileText className="size-3.5 text-primary shrink-0" />
-                            <span className="truncate max-w-[180px] font-medium">{att.name}</span>
-                            <span className="text-[10px] text-muted-foreground">({att.size})</span>
-                            <Download className="size-3 text-muted-foreground ms-1" />
-                          </a>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Bottom Actions Bar */}
-                    <div className="flex items-center justify-between pt-3 border-t border-border/40 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => handleLikePost(post.id)}
-                          className={cn(
-                            "flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors cursor-pointer",
-                            isLiked
-                              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
-                              : "hover:bg-muted/60 border-transparent hover:border-border/60"
-                          )}
-                        >
-                          <Heart className={cn("size-3.5", isLiked && "fill-rose-500 text-rose-500")} />
-                          <span className="font-semibold">{post.likes || 0}</span>
-                        </button>
-
-                        <button
-                          type="button"
+                        {/* Content Snippet */}
+                        <p
                           onClick={() => handleToggleThread(post.id)}
-                          className={cn(
-                            "flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-colors cursor-pointer",
-                            isExpanded
-                              ? "bg-primary/10 text-primary border-primary/30"
-                              : "hover:bg-muted/60 border-transparent hover:border-border/60"
-                          )}
+                          className="text-xs sm:text-sm text-foreground/80 line-clamp-3 leading-relaxed mb-3 cursor-pointer"
                         >
-                          <MessageCircle className="size-3.5" />
-                          <span>{post.repliesCount || 0}</span>
-                          <span className="hidden sm:inline">{isRtl ? "پاسخ" : "Replies"}</span>
-                        </button>
-                      </div>
+                          {post.content}
+                        </p>
 
-                      <button
-                        type="button"
-                        onClick={() => handleToggleThread(post.id)}
-                        className="text-xs text-primary hover:underline cursor-pointer"
-                      >
-                        {isExpanded
-                          ? isRtl
-                            ? "بستن پاسخ‌ها"
-                            : "Hide replies"
-                          : isRtl
-                          ? "مشاهده و ارسال پاسخ"
-                          : "View & reply"}
-                      </button>
+                        {/* Tags Row */}
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-3">
+                            {post.tags.map((tag) => (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveTag(tag);
+                                }}
+                                className="inline-flex items-center gap-0.5 bg-muted/70 hover:bg-primary/10 hover:text-primary text-muted-foreground text-[11px] font-mono px-2 py-0.5 rounded border border-border/60 transition-colors cursor-pointer"
+                              >
+                                <span>#{tag}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Attachments */}
+                        {post.attachments && post.attachments.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {post.attachments.map((att) => (
+                              <a
+                                key={att.id}
+                                href={att.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted text-foreground text-xs px-2.5 py-1 rounded-lg border border-border/60 transition-colors"
+                              >
+                                <FileText className="size-3.5 text-primary shrink-0" />
+                                <span className="truncate max-w-[180px] font-medium">{att.name}</span>
+                                <span className="text-[10px] text-muted-foreground">({att.size})</span>
+                                <Download className="size-3 text-muted-foreground ms-1" />
+                              </a>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Bottom Row: Voting Actions + Author Signature Card */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-border/40 text-xs">
+                          {/* Voting arrows & answer button */}
+                          <div className="flex items-center gap-2">
+                            {/* StackOverflow Question Voting */}
+                            <div className="inline-flex items-center rounded-full border border-border/60 bg-muted/30 p-0.5">
+                              <button
+                                type="button"
+                                onClick={() => handleVotePost(post.id, "up")}
+                                className={cn(
+                                  "p-1 rounded-full hover:bg-muted transition-colors cursor-pointer",
+                                  userUpvoted && "text-emerald-600 bg-emerald-500/15"
+                                )}
+                                title={isRtl ? "مفید بود (رأی مثبت)" : "Upvote"}
+                              >
+                                <ChevronUp className="size-4" />
+                              </button>
+                              <span className="font-bold px-1.5 text-xs text-foreground min-w-[20px] text-center">
+                                {post.score ?? (post.likes || 0)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleVotePost(post.id, "down")}
+                                className={cn(
+                                  "p-1 rounded-full hover:bg-muted transition-colors cursor-pointer",
+                                  userDownvoted && "text-rose-600 bg-rose-500/15"
+                                )}
+                                title={isRtl ? "مفید نبود (رأی منفی)" : "Downvote"}
+                              >
+                                <ChevronDown className="size-4" />
+                              </button>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleToggleThread(post.id)}
+                              className="text-xs text-primary hover:underline cursor-pointer ms-2 font-medium"
+                            >
+                              {isExpanded
+                                ? isRtl
+                                  ? "بستن پاسخ‌ها"
+                                  : "Hide answers"
+                                : isRtl
+                                ? `مشاهده و ثبت پاسخ (${post.repliesCount || 0})`
+                                : `Answers (${post.repliesCount || 0})`}
+                            </button>
+                          </div>
+
+                          {/* Author Signature Box */}
+                          <div className="flex items-center gap-2 bg-muted/40 px-3 py-1.5 rounded-xl border border-border/40 self-end sm:self-auto">
+                            <UserAvatar
+                              name={postAuthorDisplayName}
+                              nameFa={post.authorNameFa}
+                              nameEn={post.authorNameEn}
+                              avatar={post.authorAvatar}
+                              avatarColor={post.authorAvatarColor}
+                              avatarMode={post.authorAvatarMode}
+                              size="sm"
+                              isRtl={isRtl}
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-xs font-semibold text-foreground truncate">
+                                  {postAuthorDisplayName}
+                                </span>
+                                <Badge
+                                  variant="secondary"
+                                  className={cn("text-[9px] px-1 py-0 h-3.5 border", roleBadge.className)}
+                                >
+                                  {roleBadge.label}
+                                </Badge>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground block">
+                                {new Date(post.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* ── Threaded Replies Area ── */}
+                    {/* ── Threaded Answers (StackOverflow Answers Section) ── */}
                     {isExpanded && (
-                      <div className="mt-4 pt-4 border-t border-border/40 space-y-3">
+                      <div className="mt-5 pt-5 border-t border-border/60 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                            <span>{replies.length}</span>
+                            <span>{isRtl ? "پاسخ ثبت شده" : "Answers"}</span>
+                          </h3>
+                        </div>
+
                         {isLoadingReplies ? (
-                          <div className="flex items-center justify-center py-4 gap-2 text-xs text-muted-foreground">
+                          <div className="flex items-center justify-center py-6 gap-2 text-xs text-muted-foreground">
                             <Loader2 className="size-4 animate-spin text-primary" />
-                            <span>{isRtl ? "در حال دریافت پاسخ‌ها..." : "Loading replies..."}</span>
+                            <span>{isRtl ? "در حال دریافت پاسخ‌ها..." : "Loading answers..."}</span>
                           </div>
                         ) : replies.length === 0 ? (
-                          <p className="text-xs text-muted-foreground italic text-center py-2">
-                            {isRtl ? "هنوز پاسخی ثبت نشده است. اولین پاسخ را ارسال کنید." : "No replies yet. Be the first to answer."}
+                          <p className="text-xs text-muted-foreground italic text-center py-3 bg-muted/20 rounded-xl border border-dashed border-border/60">
+                            {isRtl ? "هنوز پاسخی برای این پرسش ثبت نشده است. اولین پاسخ تخصصی را ارسال کنید." : "No answers yet. Be the first to answer this question."}
                           </p>
                         ) : (
-                          <div className="space-y-2.5">
+                          <div className="space-y-3">
                             {replies.map((reply) => {
                               const replyRoleBadge = getRoleBadge(reply.authorRole, isRtl);
+                              const isAccepted = Boolean(reply.isAccepted || post.acceptedReplyId === reply.id);
+                              const replyUpvoted = (reply.upvotes || []).includes(user?.id || "");
+                              const replyDownvoted = (reply.downvotes || []).includes(user?.id || "");
+
                               const canDeleteReply =
                                 isAuthenticated &&
                                 user &&
@@ -1000,68 +1543,152 @@ export function CommunityPage() {
                               return (
                                 <div
                                   key={reply.id}
-                                  className="bg-muted/30 border border-border/40 rounded-xl p-3 text-xs"
+                                  className={cn(
+                                    "border rounded-xl p-3.5 text-xs transition-all",
+                                    isAccepted
+                                      ? "bg-emerald-500/10 border-emerald-500/60 shadow-xs"
+                                      : "bg-muted/30 border-border/50"
+                                  )}
                                 >
-                                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                                    <div className="flex items-center gap-2">
-                                      <UserAvatar
-                                        name={replyAuthorDisplayName}
-                                        nameFa={reply.authorNameFa}
-                                        nameEn={reply.authorNameEn}
-                                        avatar={reply.authorAvatar}
-                                        avatarColor={reply.authorAvatarColor}
-                                        avatarMode={reply.authorAvatarMode}
-                                        size="sm"
-                                        isRtl={isRtl}
-                                      />
-                                      <span className="font-semibold text-foreground">{replyAuthorDisplayName}</span>
-                                      <Badge
-                                        variant="outline"
-                                        className={cn("text-[9px] px-1 py-0 h-3.5", replyRoleBadge.className)}
-                                      >
-                                        {replyRoleBadge.label}
-                                      </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-[10px] text-muted-foreground">
-                                        {new Date(reply.createdAt).toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
+                                  {/* Accepted Answer Banner if marked */}
+                                  {isAccepted && (
+                                    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold mb-2.5 pb-2 border-b border-emerald-500/30">
+                                      <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                      <span>
+                                        {isRtl ? "پاسخ تایید شده توسط نویسنده پرسش" : "Accepted Answer by question author"}
                                       </span>
-                                      {canDeleteReply && (
+                                    </div>
+                                  )}
+
+                                  <div className="flex items-start gap-3">
+                                    {/* Left: StackOverflow Answer Voting Column */}
+                                    <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVoteReply(post.id, reply.id, "up")}
+                                        className={cn(
+                                          "p-1 rounded-full hover:bg-muted transition-colors cursor-pointer",
+                                          replyUpvoted && "text-emerald-600 bg-emerald-500/15"
+                                        )}
+                                        title={isRtl ? "مفید بود" : "Upvote"}
+                                      >
+                                        <ChevronUp className="size-4" />
+                                      </button>
+                                      <span className="font-bold text-xs text-foreground min-w-[18px] text-center">
+                                        {reply.score || 0}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleVoteReply(post.id, reply.id, "down")}
+                                        className={cn(
+                                          "p-1 rounded-full hover:bg-muted transition-colors cursor-pointer",
+                                          replyDownvoted && "text-rose-600 bg-rose-500/15"
+                                        )}
+                                        title={isRtl ? "مفید نبود" : "Downvote"}
+                                      >
+                                        <ChevronDown className="size-4" />
+                                      </button>
+
+                                      {/* Accept Answer Checkmark Button (Only for Question Author or Admin) */}
+                                      {isPostAuthorOrAdmin ? (
                                         <button
                                           type="button"
-                                          onClick={() => handleDeleteReply(post.id, reply.id)}
-                                          className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer"
-                                          title={isRtl ? "حذف پاسخ" : "Delete reply"}
+                                          onClick={() => handleAcceptReply(post.id, reply.id)}
+                                          className={cn(
+                                            "mt-1 p-1 rounded-full border transition-all cursor-pointer",
+                                            isAccepted
+                                              ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                                              : "text-muted-foreground border-border/60 hover:text-emerald-600 hover:border-emerald-500"
+                                          )}
+                                          title={
+                                            isAccepted
+                                              ? isRtl
+                                                ? "لغو تایید پاسخ"
+                                                : "Unmark accepted"
+                                              : isRtl
+                                              ? "تایید به عنوان پاسخ منتخب"
+                                              : "Mark as accepted answer"
+                                          }
                                         >
-                                          <Trash2 className="size-3" />
+                                          <Check className="size-3.5 stroke-[3]" />
                                         </button>
+                                      ) : isAccepted ? (
+                                        <div
+                                          className="mt-1 p-1 rounded-full bg-emerald-600 text-white border border-emerald-600"
+                                          title={isRtl ? "پاسخ تایید شده" : "Accepted answer"}
+                                        >
+                                          <Check className="size-3.5 stroke-[3]" />
+                                        </div>
+                                      ) : null}
+                                    </div>
+
+                                    {/* Right: Answer Content + Author info */}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center justify-between gap-2 mb-2">
+                                        <div className="flex items-center gap-2">
+                                          <UserAvatar
+                                            name={replyAuthorDisplayName}
+                                            nameFa={reply.authorNameFa}
+                                            nameEn={reply.authorNameEn}
+                                            avatar={reply.authorAvatar}
+                                            avatarColor={reply.authorAvatarColor}
+                                            avatarMode={reply.authorAvatarMode}
+                                            size="sm"
+                                            isRtl={isRtl}
+                                          />
+                                          <span className="font-semibold text-foreground">{replyAuthorDisplayName}</span>
+                                          <Badge
+                                            variant="outline"
+                                            className={cn("text-[9px] px-1 py-0 h-3.5", replyRoleBadge.className)}
+                                          >
+                                            {replyRoleBadge.label}
+                                          </Badge>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[10px] text-muted-foreground">
+                                            {new Date(reply.createdAt).toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })}
+                                          </span>
+                                          {canDeleteReply && (
+                                            <button
+                                              type="button"
+                                              onClick={() => handleDeleteReply(post.id, reply.id)}
+                                              className="text-muted-foreground hover:text-destructive p-0.5 rounded cursor-pointer"
+                                              title={isRtl ? "حذف پاسخ" : "Delete reply"}
+                                            >
+                                              <Trash2 className="size-3" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                                        {reply.content}
+                                      </p>
+
+                                      {reply.attachments && reply.attachments.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                                          {reply.attachments.map((att) => (
+                                            <a
+                                              key={att.id}
+                                              href={att.url}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              download
+                                              className="inline-flex items-center gap-1 bg-background text-[11px] px-2 py-0.5 rounded border border-border/50 text-foreground"
+                                            >
+                                              <FileText className="size-3 text-primary shrink-0" />
+                                              <span className="truncate max-w-[140px]">{att.name}</span>
+                                              <Download className="size-2.5 text-muted-foreground" />
+                                            </a>
+                                          ))}
+                                        </div>
                                       )}
                                     </div>
                                   </div>
-                                  <p className="text-foreground/85 whitespace-pre-wrap leading-relaxed ms-8">
-                                    {reply.content}
-                                  </p>
-                                  {reply.attachments && reply.attachments.length > 0 && (
-                                    <div className="flex flex-wrap gap-1.5 mt-2 ms-8">
-                                      {reply.attachments.map((att) => (
-                                        <a
-                                          key={att.id}
-                                          href={att.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          download
-                                          className="inline-flex items-center gap-1 bg-background text-[11px] px-2 py-0.5 rounded border border-border/50 text-foreground"
-                                        >
-                                          <FileText className="size-3 text-primary shrink-0" />
-                                          <span className="truncate max-w-[140px]">{att.name}</span>
-                                          <Download className="size-2.5 text-muted-foreground" />
-                                        </a>
-                                      ))}
-                                    </div>
-                                  )}
                                 </div>
                               );
                             })}
@@ -1070,31 +1697,46 @@ export function CommunityPage() {
 
                         {/* Reply Composer (Strictly for authenticated users) */}
                         {isAuthenticated && user ? (
-                          <div className="bg-card/80 border border-border/60 rounded-xl p-3 space-y-2 mt-3">
-                            <div className="flex items-center gap-2 mb-1">
-                              <UserAvatar
-                                name={currentUserName}
-                                nameFa={user.fullNameFa || user.name}
-                                nameEn={user.fullName || user.name}
-                                avatar={user.avatar}
-                                avatarColor={user.avatarColor}
-                                avatarMode={user.avatarMode}
-                                size="sm"
-                                isRtl={isRtl}
-                              />
-                              <span className="text-[11px] font-semibold text-foreground">
-                                {currentUserName}
-                              </span>
+                          <div className="bg-card/90 border border-border/70 rounded-xl p-3.5 space-y-2.5 mt-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <UserAvatar
+                                  name={currentUserName}
+                                  nameFa={user.fullNameFa || user.name}
+                                  nameEn={user.fullName || user.name}
+                                  avatar={user.avatar}
+                                  avatarColor={user.avatarColor}
+                                  avatarMode={user.avatarMode}
+                                  size="sm"
+                                  isRtl={isRtl}
+                                />
+                                <span className="text-xs font-semibold text-foreground">
+                                  {isRtl ? "پاسخ تخصصی شما:" : "Your Answer:"}
+                                </span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => insertCodeSnippet(post.id)}
+                                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline cursor-pointer"
+                              >
+                                <Code className="size-3" />
+                                <span>{isRtl ? "درج کد / فرمول" : "Code Snippet"}</span>
+                              </button>
                             </div>
 
                             <Textarea
-                              placeholder={isRtl ? "پاسخ تخصصی یا نظر خود را بنویسید..." : "Write your verified reply..."}
+                              placeholder={
+                                isRtl
+                                  ? "پاسخ خود را همراه با دلایل فنی، استانداردها یا ارجاعات مهندسی بنویسید..."
+                                  : "Write your verified technical answer with references and operating data..."
+                              }
                               value={replyInputs[post.id] || ""}
                               onChange={(e) =>
                                 setReplyInputs((prev) => ({ ...prev, [post.id]: e.target.value }))
                               }
-                              rows={2}
-                              className="text-xs"
+                              rows={3}
+                              className="text-xs font-mono leading-relaxed"
                             />
 
                             {/* Reply attachments preview */}
@@ -1137,7 +1779,7 @@ export function CommunityPage() {
                                 className="rounded-full gap-1 text-xs h-7 px-2.5 text-muted-foreground hover:text-foreground cursor-pointer"
                               >
                                 <Paperclip className="size-3" />
-                                <span>{isRtl ? "پیوست" : "Attach"}</span>
+                                <span>{isRtl ? "پیوست فایل" : "Attach"}</span>
                               </Button>
 
                               <Button
@@ -1145,19 +1787,19 @@ export function CommunityPage() {
                                 size="sm"
                                 disabled={replySubmitting[post.id] || !(replyInputs[post.id] || "").trim()}
                                 onClick={() => handleSubmitReply(post.id)}
-                                className="rounded-full gap-1.5 text-xs h-7 px-3.5 cursor-pointer"
+                                className="rounded-full gap-1.5 text-xs h-7 px-4 cursor-pointer font-medium"
                               >
                                 {replySubmitting[post.id] ? (
                                   <Loader2 className="size-3 animate-spin" />
                                 ) : (
                                   <Send className="size-3" />
                                 )}
-                                <span>{isRtl ? "ارسال پاسخ" : "Reply"}</span>
+                                <span>{isRtl ? "ارسال پاسخ" : "Post Answer"}</span>
                               </Button>
                             </div>
                           </div>
                         ) : (
-                          <div className="p-3 bg-muted/30 border border-border/40 rounded-xl text-center">
+                          <div className="p-3.5 bg-muted/30 border border-border/40 rounded-xl text-center">
                             <p className="text-xs text-muted-foreground">
                               {isRtl
                                 ? "جهت ثبت پاسخ در این گفتگو، لطفاً با حساب کاربری خود وارد شوید."

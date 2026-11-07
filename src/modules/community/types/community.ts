@@ -6,6 +6,8 @@ export interface CommunityAttachment {
   url: string;
 }
 
+export type CommunitySortOption = "newest" | "active" | "votes" | "unanswered";
+
 export interface CommunityReply {
   id: string;
   postId: string;
@@ -20,6 +22,10 @@ export interface CommunityReply {
   authorAvatarColor?: string;
   authorAvatarMode?: string;
   authorDepartment?: string;
+  upvotes?: string[];
+  downvotes?: string[];
+  score?: number;
+  isAccepted?: boolean;
   attachments?: CommunityAttachment[];
   createdAt: string;
 }
@@ -29,7 +35,8 @@ export interface CommunityPost {
   title: string;
   titleFa?: string;
   content: string;
-  category: 'all' | 'general' | 'engineering' | 'quality' | 'announcements' | string;
+  category: "all" | "general" | "engineering" | "quality" | "announcements" | string;
+  tags?: string[];
   authorId: string;
   authorName: string;
   authorNameFa?: string;
@@ -43,6 +50,12 @@ export interface CommunityPost {
   pinned?: boolean;
   likes: number;
   likedBy?: string[];
+  upvotes?: string[];
+  downvotes?: string[];
+  score?: number;
+  views?: number;
+  acceptedReplyId?: string | null;
+  latestActivity?: string;
   attachments?: CommunityAttachment[];
   repliesCount: number;
   replies?: CommunityReply[];
@@ -54,6 +67,7 @@ export interface CreatePostDto {
   title: string;
   content: string;
   category: string;
+  tags?: string[];
   authorId?: string;
   authorEmail?: string;
   authorName?: string;

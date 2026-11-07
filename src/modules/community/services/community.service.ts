@@ -1,4 +1,4 @@
-import type { CommunityPost, CommunityReply, CreatePostDto, CreateReplyDto, CommunityAttachment } from '../types/community';
+import type { CommunityPost, CommunityReply, CreatePostDto, CreateReplyDto, CommunityAttachment, CommunitySortOption } from '../types/community';
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '@/services/core/types';
 
 const API_BASE = '/api/real/community';
@@ -31,10 +31,17 @@ function getAuthHeaders(extra?: Record<string, string>): Record<string, string> 
 }
 
 export class CommunityService {
-  async getPosts(category?: string, search?: string): Promise<CommunityPost[]> {
+  async getPosts(
+    category?: string,
+    search?: string,
+    tag?: string,
+    sort?: CommunitySortOption
+  ): Promise<CommunityPost[]> {
     const params = new URLSearchParams();
     if (category && category !== 'all') params.set('category', category);
     if (search) params.set('search', search);
+    if (tag) params.set('tag', tag);
+    if (sort) params.set('sort', sort);
 
     const url = `${API_BASE}/posts${params.toString() ? `?${params.toString()}` : ''}`;
     const res = await fetch(url, {
@@ -116,8 +123,11 @@ export class CommunityService {
     }
   }
 
-  async toggleLike(postId: string, userId?: string): Promise<{ postId: string; likes: number; isLiked: boolean }> {
-    const url = `${API_BASE}/posts/${postId}/like${userId ? `?user_id=${userId}` : ''}`;
+  async votePost(
+    postId: string,
+    direction: 'up' | 'down'
+  ): Promise<{ postId: string; score: number; upvotes: number; downvotes: number; userVote: 'up' | 'down' | null }> {
+    const url = `${API_BASE}/posts/${postId}/vote?direction=${direction}`;
     const res = await fetch(url, {
       method: 'POST',
       headers: getAuthHeaders(),
@@ -125,9 +135,65 @@ export class CommunityService {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'خطا در ثبت واکنش');
+      throw new Error(err.detail || 'خطا در ثبت رأی');
     }
     return res.json();
+  }
+
+  async voteReply(
+    postId: string,
+    replyId: string,
+    direction: 'up' | 'down'
+  ): Promise<{ replyId: string; score: number; upvotes: number; downvotes: number; userVote: 'up' | 'down' | null }> {
+    const url = `${API_BASE}/posts/${postId}/replies/${replyId}/vote?direction=${direction}`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'خطا در ثبت رأی پاسخ');
+    }
+    return res.json();
+  }
+
+  async acceptReply(
+    postId: string,
+    replyId: string
+  ): Promise<{ postId: string; acceptedReplyId: string | null; isAccepted: boolean }> {
+    const url = `${API_BASE}/posts/${postId}/replies/${replyId}/accept`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'خطا در ثبت پاسخ تایید شده');
+    }
+    return res.json();
+  }
+
+  async syncStatus(): Promise<{ latestActivity: string; totalPosts: number; totalReplies: number }> {
+    const res = await fetch(`${API_BASE}/sync`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) {
+      throw new Error('Sync status failed');
+    }
+    return res.json();
+  }
+
+  async toggleLike(postId: string, userId?: string): Promise<{ postId: string; likes: number; isLiked: boolean }> {
+    return this.votePost(postId, 'up').then((r) => ({
+      postId: r.postId,
+      likes: r.score,
+      isLiked: r.userVote === 'up',
+    }));
   }
 
   async uploadAttachment(file: File): Promise<CommunityAttachment> {

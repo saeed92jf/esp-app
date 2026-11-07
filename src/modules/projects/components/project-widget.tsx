@@ -100,7 +100,7 @@ export function ProjectWidget() {
 
         {/* Link to Full Project Management Page */}
         <Link
-          href="/dashboard/projects"
+          href="/projects"
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors border border-primary/20 shrink-0"
         >
           <span>{t("widget.manageAll")}</span>
@@ -210,7 +210,7 @@ export function ProjectWidget() {
           size="sm"
           className="h-8.5 px-3 rounded-xl gap-1 text-xs font-medium cursor-pointer shadow-2xs shrink-0"
         >
-          <Link href="/dashboard/projects?new=true">
+          <Link href="/projects?new=true">
             <Plus className="size-3.5" />
             <span>{t("widget.newProject")}</span>
           </Link>
@@ -236,7 +236,7 @@ export function ProjectWidget() {
               return (
                 <div
                   key={project.id}
-                  onClick={() => router.push(`/dashboard/projects?id=${project.id}`)}
+                  onClick={() => router.push(`/projects?id=${project.id}`)}
                   className={cn(
                     "p-3 rounded-xl border flex flex-col justify-between gap-2.5 transition-colors cursor-pointer shadow-2xs group select-none",
                     isCompleted

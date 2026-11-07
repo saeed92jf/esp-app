@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, PendingRequest } from "../types/admin.types";
 import type { UserUploadedDocument } from "@/types/auth";
@@ -326,8 +326,52 @@ export function AdminUsersTable({
     type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents';
   } | null>(null);
 
-  // Track hovered user row for smooth slide-out tab animation
+  // Track hovered user row for smooth slide-out tab animation with hover-intent management
   const [hoveredUserId, setHoveredUserId] = useState<string | null>(null);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleRowMouseEnter = useCallback((userId: string) => {
+    // Cancel any pending leave timer
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+      leaveTimerRef.current = null;
+    }
+    // If this row is already hovered, do nothing
+    if (hoveredUserId === userId) return;
+
+    // Reset pending enter timer
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+    }
+    // Hover intent delay (140ms): Prevents jitter/peresh when cursor moves rapidly over rows
+    hoverTimerRef.current = setTimeout(() => {
+      setHoveredUserId(userId);
+    }, 140);
+  }, [hoveredUserId]);
+
+  const handleRowMouseLeave = useCallback((userId: string) => {
+    // Cancel enter if mouse quickly moves out before the intent threshold
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    // Leave grace delay (80ms): Prevents abrupt collapse when moving between cells and tab handle
+    if (leaveTimerRef.current) {
+      clearTimeout(leaveTimerRef.current);
+    }
+    leaveTimerRef.current = setTimeout(() => {
+      setHoveredUserId((prev) => (prev === userId ? null : prev));
+    }, 80);
+  }, []);
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
+    };
+  }, []);
 
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
@@ -1566,8 +1610,8 @@ export function AdminUsersTable({
                 <tbody
                   key={user.id}
                   className="group/row"
-                  onMouseEnter={() => setHoveredUserId(user.id)}
-                  onMouseLeave={() => setHoveredUserId((prev) => (prev === user.id ? null : prev))}
+                  onMouseEnter={() => handleRowMouseEnter(user.id)}
+                  onMouseLeave={() => handleRowMouseLeave(user.id)}
                 >
                     
                     {/* ── 1. Main User Data Row ── */}
@@ -1749,13 +1793,10 @@ export function AdminUsersTable({
                       <td colSpan={9} className="p-0 border-0">
                         <div 
                           className={cn(
-                            "grid transition-[grid-template-rows,opacity] duration-250 ease-out",
-                            isAccordionOpen 
+                            "grid transition-[grid-template-rows,opacity] duration-200 ease-out",
+                            isAccordionOpen || hoveredUserId === user.id
                               ? "grid-rows-[1fr] opacity-100" 
-                              : cn(
-                                  "grid-rows-[0fr] opacity-0 group-hover/row:grid-rows-[1fr] group-hover/row:opacity-100",
-                                  hoveredUserId === user.id && "grid-rows-[1fr] opacity-100"
-                                )
+                              : "grid-rows-[0fr] opacity-0 pointer-events-none"
                           )}
                         >
                           <div className="overflow-hidden min-h-0">

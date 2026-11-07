@@ -1104,7 +1104,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
               setSelectedTask(null);
               setActiveTab("kanban");
               if (initialTaskId) {
-                router.push("/dashboard/tasks");
+                router.push("/tasks");
               }
             }}
             className="rounded-full"
@@ -1123,7 +1123,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
           setSelectedTask(null);
           setActiveTab("kanban");
           if (initialTaskId) {
-            router.push("/dashboard/tasks");
+            router.push("/tasks");
           }
         }}
         onUpdateStatus={changeTaskStatus}
@@ -1139,7 +1139,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
           setSelectedTask(null);
           setActiveTab("kanban");
           if (initialTaskId) {
-            router.push("/dashboard/tasks");
+            router.push("/tasks");
           }
         }}
         onAssignCollaborator={assignCollaborator}

@@ -230,7 +230,7 @@ export function HelpPopover({ triggerClassName, iconClassName }: { triggerClassN
             
             {/* Footer */}
             <div className="flex items-center justify-center gap-3 text-[11px] text-muted-foreground mt-4 mb-2">
-               <Link href="/dashboard/help/community" onClick={() => setOpen(false)} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("community")}</Link>
+               <Link href="/community" onClick={() => setOpen(false)} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("community")}</Link>
                <span>•</span>
                <Link href="/dashboard/help/bug" onClick={() => setOpen(false)} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">{t("bugReport")}</Link>
             </div>

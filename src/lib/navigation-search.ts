@@ -115,25 +115,29 @@ const BILINGUAL_KEYWORDS: Record<
     descriptionEn: "ASME Section VIII Pressure Vessel Design & Interactive Flow",
     descriptionFa: "طراحی و محاسبات جامع مخازن تحت فشار استاندارد ASME",
   },
-  "/dashboard/projects": {
+  "/projects": {
     en: ["projects", "management", "project list", "deadlines", "engineering portfolio"],
     fa: ["پروژه‌ها", "مدیریت پروژه", "لیست پروژه‌ها", "پروژه‌های مهندسی", "کارتابل"],
     descriptionEn: "Engineering Projects Portfolio & Management",
     descriptionFa: "مدیریت و پیگیری پروژه‌های مهندسی و صنعتی",
   },
-  "/projects": {
-    en: ["projects", "management", "project list", "deadlines", "engineering"],
-    fa: ["پروژه‌ها", "مدیریت پروژه", "لیست پروژه‌ها", "پروژه‌های مهندسی"],
-  },
-  "/dashboard/tasks": {
+  "/tasks": {
     en: ["tasks", "todo", "activities", "checklist", "assignments", "kanban", "board"],
     fa: ["وظایف", "تسک‌ها", "کارها", "چک‌لیست", "اقدامات", "کانبان", "برد وظایف"],
     descriptionEn: "Task Tracking, Kanban Board & Workflow",
     descriptionFa: "مدیریت وظایف، بردهای کانبان و پیشرفت کارها",
   },
-  "/tasks": {
-    en: ["tasks", "todo", "activities", "checklist", "assignments"],
-    fa: ["وظایف", "تسک‌ها", "کارها", "چک‌لیست", "اقدامات"],
+  "/community": {
+    en: ["community", "q&a", "questions", "answers", "forum", "stackoverflow", "knowledge", "discussion"],
+    fa: ["تالار گفتگو", "پرسش و پاسخ", "انجمن", "سوالات فنی", "پاسخ‌ها", "کامیونیتی"],
+    descriptionEn: "Collaborative Engineering Community & Q&A Forum",
+    descriptionFa: "تالار گفتگو و پرسش و پاسخ تخصصی مهندسی",
+  },
+  "/profile": {
+    en: ["profile", "user", "account", "settings", "personnel", "avatar"],
+    fa: ["پروفایل", "حساب کاربری", "اطلاعات پرسنلی", "تنظیمات کاربر", "مشخصات"],
+    descriptionEn: "Personnel Profile & Account Management",
+    descriptionFa: "پروفایل پرسنلی و مدیریت حساب کاربری",
   },
   "/dictionary": {
     en: [

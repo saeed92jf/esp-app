@@ -136,7 +136,7 @@ export function ProjectWorkspacePage({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/dashboard/projects"))}
+          onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/projects"))}
         >
           بازگشت به لیست پروژه‌ها
         </Button>
@@ -203,7 +203,7 @@ export function ProjectWorkspacePage({
         {/* Navigation Bar */}
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
           <button
-            onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/dashboard/projects"))}
+            onClick={() => (onBackToProjects ? onBackToProjects() : router.push("/projects"))}
             className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors font-medium cursor-pointer"
           >
             <ArrowRight className="w-4 h-4 rtl:rotate-0 ltr:rotate-180" />

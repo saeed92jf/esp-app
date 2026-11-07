@@ -377,7 +377,7 @@ export function TasksWorkspace({
                   <div
                     key={task.id}
                     onClick={() => {
-                      router.push(`/dashboard/tasks/${encodeURIComponent(task.id)}`);
+                      router.push(`/tasks/${encodeURIComponent(task.id)}`);
                     }}
                     className={cn(
                       "group/task relative p-4 rounded-xl border transition-colors duration-150 bg-white dark:bg-card/80 hover:border-primary/50 shadow-xs cursor-pointer select-none space-y-3",

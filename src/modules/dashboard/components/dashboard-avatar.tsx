@@ -296,7 +296,7 @@ export function DashboardAvatar() {
               )}>
                  {/* Avatar Container (Clickable for Profile) */}
                  <Link 
-                   href="/dashboard/profile?tab=personal"
+                   href="/profile?tab=personal"
                    target="_blank"
                    onClick={() => setOpen(false)}
                    className="relative shrink-0 flex items-center justify-center p-4 outline-none group/avatar bg-transparent"
@@ -393,7 +393,7 @@ export function DashboardAvatar() {
                     {/* Manage Account Button */}
                     <div className="segmented-item flex flex-col overflow-hidden">
                       <Link 
-                         href="/dashboard/profile" 
+                         href="/profile" 
                          target="_blank"
                          onClick={() => setOpen(false)}
                          className="relative flex items-center justify-start gap-4 px-6 py-4 text-sm font-medium w-full text-foreground/80 outline-none"

@@ -16,6 +16,10 @@ export const PANEL_BACKGROUND_PREFIXES = [
   '/dashboard/tasks',
   '/dashboard/projects',
   '/dashboard/profile',
+  '/tasks',
+  '/projects',
+  '/profile',
+  '/community',
   '/did-you-know',
   '/dictionary',
 ];

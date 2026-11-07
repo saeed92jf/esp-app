@@ -37,7 +37,7 @@ export function ProjectsSlideWidget() {
           size="sm"
           variant="outline"
           className="h-7 text-xs gap-1"
-          onClick={() => router.push("/fa/dashboard/projects")}
+          onClick={() => router.push("/fa/projects")}
         >
           <span>مدیریت کامل</span>
           <ArrowLeft className="w-3 h-3" />
@@ -55,7 +55,7 @@ export function ProjectsSlideWidget() {
             <div
               key={project.id}
               onClick={() =>
-                router.push(`/fa/dashboard/projects?id=${project.id}`)
+                router.push(`/fa/projects?id=${project.id}`)
               }
               className="p-3 rounded-xl border border-border/60 bg-white dark:bg-card hover:bg-white dark:hover:bg-card shadow-2xs hover:border-primary/40 transition-colors cursor-pointer space-y-2.5"
             >
@@ -100,7 +100,7 @@ export function ProjectsSlideWidget() {
 
       <Button
         className="w-full text-xs h-8 gap-1.5 font-medium"
-        onClick={() => router.push("/fa/dashboard/projects")}
+        onClick={() => router.push("/fa/projects")}
       >
         <FolderKanban className="w-3.5 h-3.5" />
         <span>مشاهده همه پروژه‌ها و ترنسمیتال‌ها</span>

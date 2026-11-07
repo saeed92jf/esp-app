@@ -104,7 +104,7 @@ export function TaskWidget() {
 
         {/* Link to Full Task Management Page */}
         <Link
-          href="/dashboard/tasks"
+          href="/tasks"
           className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium text-primary hover:bg-primary/10 transition-colors border border-primary/20 shrink-0"
         >
           <span>{t("manageAll")}</span>
@@ -188,7 +188,7 @@ export function TaskWidget() {
                 <div
                   key={task.id}
                   onClick={() => {
-                    router.push(`/dashboard/tasks/${encodeURIComponent(task.id)}`);
+                    router.push(`/tasks/${encodeURIComponent(task.id)}`);
                   }}
                   className={cn(
                     "p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-colors cursor-pointer shadow-2xs group select-none",

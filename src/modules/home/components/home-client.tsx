@@ -63,7 +63,7 @@ export function HomeClient() {
     setIsAuthenticated(Boolean(user || (typeof window !== "undefined" && localStorage.getItem("esp-auth-user"))));
     if (user && user.role !== "admin" && user.role !== "superadmin") {
       if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
-        router.push("/dashboard/profile?onboarding=true");
+        router.push("/profile?onboarding=true");
       } else if (user.accountStatus !== "active" || !(user.hrApproved && user.managerApproved)) {
         router.push("/account-pending");
       }
@@ -194,7 +194,7 @@ export function HomeClient() {
                     >
                       {/* Manage Account Tag */}
                       <Link
-                        href="/dashboard/profile"
+                        href="/profile"
                         className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
                       >
                         <UserGear className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
@@ -212,7 +212,7 @@ export function HomeClient() {
 
                       {/* Projects Tag */}
                       <Link
-                        href="/dashboard/projects"
+                        href="/projects"
                         className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
                       >
                         <Kanban className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />
@@ -221,7 +221,7 @@ export function HomeClient() {
 
                       {/* Tasks Tag */}
                       <Link
-                        href="/dashboard/tasks"
+                        href="/tasks"
                         className="group inline-flex items-center gap-2 px-4 py-2 rounded-full text-[13px] sm:text-sm font-medium bg-background/80 hover:bg-muted/70 text-muted-foreground hover:text-foreground border border-border/60 hover:border-primary/40 shadow-xs hover:shadow-sm transition-colors duration-150 active:scale-95"
                       >
                         <ListChecks className="size-4 text-muted-foreground group-hover:text-primary transition-colors duration-150" weight="bold" />

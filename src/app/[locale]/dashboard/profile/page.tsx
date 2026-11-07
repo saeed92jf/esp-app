@@ -1,5 +1,5 @@
+import { redirect } from 'next/navigation';
 import { setRequestLocale } from 'next-intl/server';
-import { ProfilePage } from '@/modules/profile/components/profile-page';
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -8,5 +8,6 @@ type Props = {
 export default async function Page({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <ProfilePage />;
+  redirect(`/${locale}/profile`);
 }
+
