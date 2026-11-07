@@ -56,7 +56,7 @@ export class RealAdminService implements IAdminService {
     const isOnline = Boolean(
       u.isOnline === true ||
       u.status === "online" ||
-      (u.lastSeenAt && (Date.now() - new Date(u.lastSeenAt).getTime() < 75000))
+      (u.lastSeenAt && (Date.now() - new Date(u.lastSeenAt).getTime() < 130000))
     );
     const status: 'online' | 'offline' = isOnline ? "online" : "offline";
     const roleLower = (u.role || organizational.role || personal.role || "user").toLowerCase();

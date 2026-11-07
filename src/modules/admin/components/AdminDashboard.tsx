@@ -96,36 +96,68 @@ export function AdminDashboard() {
     fetchData();
   }, [currentUser]);
 
-  // Silent real-time presence poller (updates online/offline status live without reloading)
+  // Ultra-fast real-time presence poller (updates online/offline status live every 8s via dedicated presence API)
   useEffect(() => {
-    const timer = setInterval(() => {
-      api.admin.getUsers().then((freshUsers) => {
-        if (freshUsers && freshUsers.length > 0) {
-          setUsers((prevUsers) => {
-            return prevUsers.map((existing) => {
-              const fresh = freshUsers.find(
-                (f) => f.id === existing.id || (f.email && existing.email && f.email.toLowerCase() === existing.email.toLowerCase())
-              );
-              if (fresh) {
-                const isCurrent = currentUser && (
-                  existing.id === currentUser.id ||
-                  (existing.email && currentUser.email && existing.email.toLowerCase() === currentUser.email.toLowerCase())
-                );
-                return {
-                  ...existing,
-                  isOnline: isCurrent ? true : Boolean(fresh.isOnline || fresh.status === 'online'),
-                  status: isCurrent ? 'online' : fresh.status,
-                  lastSeenAt: fresh.lastSeenAt || existing.lastSeenAt,
-                };
-              }
-              return existing;
-            });
-          });
-        }
-      }).catch(() => {});
-    }, 20000);
+    const isSaeed = (u?: { id?: string; email?: string } | null) => {
+      if (!u) return false;
+      const uid = String(u.id || '').toLowerCase();
+      const uemail = String(u.email || '').toLowerCase();
+      return uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail.includes('saeed');
+    };
 
-    return () => clearInterval(timer);
+    const isCurrentMatch = (u?: { id?: string; email?: string } | null) => {
+      if (!u || !currentUser) return false;
+      if (u.id && currentUser.id && u.id === currentUser.id) return true;
+      if (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()) return true;
+      if (isSaeed(u) && isSaeed(currentUser)) return true;
+      return false;
+    };
+
+    const updatePresence = async () => {
+      try {
+        const res = await fetch('/api/real/users/presence');
+        if (!res.ok) return;
+        const data = await res.json();
+        const onlineSet = new Set((data.onlineUserIds || []).map((x: string) => String(x).toLowerCase()));
+        const presenceMap = data.presenceMap || {};
+
+        setUsers((prevUsers) => {
+          return prevUsers.map((existing) => {
+            const isCurrent = isCurrentMatch(existing);
+            const uidLower = String(existing.id || '').toLowerCase();
+            const emailLower = String(existing.email || '').toLowerCase();
+            const pInfo = presenceMap[existing.id] || presenceMap[uidLower] || presenceMap[emailLower] || (isSaeed(existing) ? (presenceMap['u-saeed'] || presenceMap['usr_9801']) : null);
+
+            const isOnline = isCurrent
+              ? true
+              : (
+                  onlineSet.has(uidLower) ||
+                  onlineSet.has(emailLower) ||
+                  (isSaeed(existing) && (onlineSet.has('u-saeed') || onlineSet.has('usr_9801'))) ||
+                  Boolean(pInfo?.isOnline || pInfo?.status === 'online')
+                );
+
+            return {
+              ...existing,
+              isOnline,
+              status: isOnline ? 'online' : 'offline',
+              lastSeenAt: pInfo?.lastSeenAt || existing.lastSeenAt,
+              onlineSince: pInfo?.onlineSince || existing.onlineSince,
+            };
+          });
+        });
+      } catch {
+        // ignore background errors
+      }
+    };
+
+    const timer = setInterval(updatePresence, 8000);
+    const initTimer = setTimeout(updatePresence, 1000);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(initTimer);
+    };
   }, [currentUser]);
 
   const fetchData = async () => {
