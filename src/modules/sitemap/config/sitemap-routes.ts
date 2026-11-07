@@ -204,6 +204,13 @@ const NAV_ITEM_METADATA: Record<
     descFa: "رهگیری چابک اسپرینت‌ها، اولویت‌بندی کارها و بردهای اسکرام.",
     renderType: "CSR",
   },
+  "/customers": {
+    titleEn: "Clients & Customers Information",
+    titleFa: "اطلاعات کارفرماها و مشتریان",
+    descEn: "Comprehensive enterprise directory of petrochemical, refinery, gas, and steel clients.",
+    descFa: "بانک جامع اطلاعات کارفرمایان صنایع نفت، گاز، پتروشیمی، پالایشگاهی و فولاد.",
+    renderType: "CSR",
+  },
   "/dictionary": {
     titleEn: "Engineering Dictionary",
     titleFa: "واژه‌نامه تخصصی مهندسی",

@@ -136,10 +136,11 @@ export function Header() {
   );
 
   const isSitemapPage = pathname === "/sitemap" || pathname.startsWith("/sitemap/");
+  const isCustomersPage = pathname === "/customers" || pathname.startsWith("/customers/");
 
   return (
     <AppHeader
-      tag={isSitemapPage ? "sitemap" : undefined}
+      tag={isSitemapPage ? "sitemap" : isCustomersPage ? "customers" : undefined}
       menuTrigger={<SideMenu />}
       logoHref="/"
       rightActions={rightActions}

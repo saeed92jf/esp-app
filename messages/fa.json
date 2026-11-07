@@ -125,7 +125,8 @@
       "strategic": "اهداف استراتژیک",
       "reports": "گزارشات",
       "sitemap": "نقشه سایت",
-      "community": "تالار گفتگو"
+      "community": "تالار گفتگو",
+      "customers": "اطلاعات کارفرماها"
     }
   },
   "Home": {
@@ -664,7 +665,8 @@
       "employees": "کارکنان",
       "multimedia": "چندرسانه‌ای",
       "settings": "تنظیمات",
-      "language": "زبان"
+      "language": "زبان",
+      "customers": "اطلاعات کارفرماها"
     },
     "items": {
       "dashboard": "داشبورد",
@@ -697,7 +699,7 @@
       "mediaLibrary": "کتابخانه رسانه",
       "standards": "استاندارد ها",
       "Claud-Flow": "جریان ابری",
-      "customers": "کارفرمایان و مشتریان"
+      "customers": "اطلاعات کارفرماها"
     },
     "descriptions": {
       "dashboard": "نمای کلی از وضعیت و شاخص‌های کلیدی کسب‌وکار شما.",

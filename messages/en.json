@@ -125,7 +125,8 @@
       "strategic": "Strategic OKRs",
       "reports": "Reports",
       "sitemap": "Sitemap",
-      "community": "Community"
+      "community": "Community",
+      "customers": "Customers"
     }
   },
   "Home": {
@@ -664,7 +665,8 @@
       "employees": "Employees",
       "multimedia": "Multimedia",
       "settings": "Settings",
-      "language": "Language"
+      "language": "Language",
+      "customers": "Clients & Customers"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -697,7 +699,7 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "Claud-Flow": "Claude Flow",
-      "customers": "Clients & Customers"
+      "customers": "Clients & Customers Information"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",

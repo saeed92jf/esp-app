@@ -20,6 +20,7 @@ const DEFAULT_HREFS: string[] = [
   "/ESP-Flow",
   "/tasks",
   "/projects",
+  "/customers",
   "/dictionary",
   "/did-you-know",
 ];

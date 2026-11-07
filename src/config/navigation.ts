@@ -347,6 +347,14 @@ export const NAVIGATION: NavGroup[] = [
         icon: ListChecks,
         color: "sky",
       },
+    ],
+  },
+  {
+    id: "customers",
+    labelKey: "customers",
+    icon: Buildings,
+    color: "teal",
+    items: [
       {
         labelKey: "customers",
         href: "/customers",

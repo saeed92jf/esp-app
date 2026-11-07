@@ -173,6 +173,27 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     ],
   },
   {
+    id: "mod-customers",
+    title: "بانک جامع اطلاعات کارفرماها و مشتریان صنعتی",
+    titleEn: "Clients & Industrial Customers Directory",
+    category: "modules",
+    href: "/customers",
+    snippet: "مرجع رسمی و بانک اطلاعات ۱,۷۹۲ کارفرمای صنایع نفت، گاز، پتروشیمی، پالایشگاهی، فولاد و نیروگاه با لوگو و مشخصات ثبتی.",
+    snippetEn: "Official enterprise directory of 1,792 industrial clients across petrochemical, refinery, gas, steel, and power plants with logos and profiles.",
+    breadcrumbs: ["سامانه پارس", "مدیریت", "اطلاعات کارفرماها"],
+    breadcrumbsEn: ["ESP Platform", "Management", "Clients & Customers"],
+    iconName: "Buildings",
+    badge: "ماژول کارفرمایان",
+    badgeEn: "Customers Module",
+    metadata: {
+      categoryName: "اطلاعات کارفرماها و مشتریان",
+    },
+    keywords: [
+      "customers", "clients", "companies", "petrochemical", "refinery", "steel", "directory",
+      "کارفرما", "کارفرمایان", "مشتریان", "شرکت ها", "اطلاعات کارفرماها", "پتروشیمی", "پالایشگاه", "فولاد", "لوگو"
+    ],
+  },
+  {
     id: "mod-sitemap",
     title: "سایت‌مپ و نقشه تعاملی سامانه",
     titleEn: "Interactive Platform Sitemap & Module Index",
