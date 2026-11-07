@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { TasksManagementPage } from "@/modules/tasks/components/tasks-management-page";
+import { TasksPage as TasksPageClient } from "@/modules/tasks/components/TasksPage";
 import { RefreshCw } from "lucide-react";
 
 type Props = {
@@ -31,8 +31,7 @@ export default async function TasksPage({ params }: Props) {
         </div>
       }
     >
-      <TasksManagementPage />
+      <TasksPageClient />
     </Suspense>
   );
 }
-

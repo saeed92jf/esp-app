@@ -1,0 +1,170 @@
+// src/modules/tasks/services/new-tasks.service.ts
+// New real tasks service that works with the new backend schema
+
+export interface NewTaskSubtask {
+  id: string;
+  title: string;
+  is_done: boolean;
+}
+
+export interface NewTaskProgress {
+  id: string;
+  author_id: string;
+  author_name: string;
+  author_role: string;
+  content: string;
+  attachments: { id: string; name: string; url?: string; type?: string }[];
+  created_at: string;
+  is_admin_note: boolean;
+}
+
+export interface NewTaskAssignee {
+  userId: string;
+  name: string;
+  email?: string;
+  role?: string;
+  avatar?: string;
+}
+
+export interface NewTask {
+  id: string;
+  title: string;
+  description: string;
+  subtasks: NewTaskSubtask[];
+  assignees: NewTaskAssignee[];
+  created_by: string;
+  created_by_name: string;
+  created_at: string;
+  deadline: string | null;
+  priority: "low" | "medium" | "high" | "critical";
+  company: string;
+  tags: string[];
+  status: "todo" | "in_progress" | "review" | "done" | "cancelled";
+  attachments: { id: string; name: string; url?: string; type?: string; uploaded_by?: string; uploaded_at?: string }[];
+  progress: NewTaskProgress[];
+  is_approved: boolean;
+  approved_at: string | null;
+  approved_by: string | null;
+}
+
+export interface NewTaskCreate {
+  title: string;
+  description?: string;
+  subtasks?: Omit<NewTaskSubtask, "id">[];
+  assignees?: NewTaskAssignee[];
+  created_by: string;
+  created_by_name: string;
+  deadline?: string | null;
+  priority?: "low" | "medium" | "high" | "critical";
+  company?: string;
+  tags?: string[];
+  attachments?: { name: string; url?: string; type?: string }[];
+}
+
+export interface NewTaskUpdate {
+  title?: string;
+  description?: string;
+  status?: "todo" | "in_progress" | "review" | "done" | "cancelled";
+  priority?: "low" | "medium" | "high" | "critical";
+  deadline?: string | null;
+  company?: string;
+  tags?: string[];
+  subtasks?: NewTaskSubtask[];
+  assignees?: NewTaskAssignee[];
+  attachments?: { id?: string; name: string; url?: string; type?: string }[];
+}
+
+export interface ProgressCreate {
+  author_id: string;
+  author_name: string;
+  author_role: string;
+  content: string;
+  attachments?: { name: string; url?: string; type?: string }[];
+  is_admin_note?: boolean;
+}
+
+class NewTasksService {
+  private baseUrl = "/api/tasks";
+
+  async getTasks(params?: { assigneeId?: string; status?: string }): Promise<NewTask[]> {
+    const url = new URL(this.baseUrl, typeof window !== "undefined" ? window.location.origin : "http://localhost:4000");
+    if (params?.assigneeId) url.searchParams.set("assignee_id", params.assigneeId);
+    if (params?.status) url.searchParams.set("status", params.status);
+
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error("Failed to fetch tasks");
+    const data = await res.json();
+    // Handle both array response and object with items
+    return Array.isArray(data) ? data : (data.items || data.tasks || []);
+  }
+
+  async getTaskById(id: string): Promise<NewTask | null> {
+    const res = await fetch(`${this.baseUrl}/${id}`);
+    if (res.status === 404) return null;
+    if (!res.ok) throw new Error(`Failed to fetch task ${id}`);
+    return res.json();
+  }
+
+  async createTask(task: NewTaskCreate): Promise<NewTask> {
+    const res = await fetch(this.baseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || "Failed to create task");
+    }
+    return res.json();
+  }
+
+  async updateTask(id: string, updates: NewTaskUpdate): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (!res.ok) throw new Error(`Failed to update task ${id}`);
+    return res.json();
+  }
+
+  async deleteTask(id: string): Promise<void> {
+    const res = await fetch(`${this.baseUrl}/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error(`Failed to delete task ${id}`);
+  }
+
+  async addProgress(taskId: string, progress: ProgressCreate): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/progress`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(progress),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || "Failed to add progress");
+    }
+    return res.json();
+  }
+
+  async approveTask(taskId: string, approvedBy: string, approvedByName: string): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/approve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ approved_by: approvedBy, approved_by_name: approvedByName }),
+    });
+    if (!res.ok) throw new Error("Failed to approve task");
+    return res.json();
+  }
+
+  async toggleSubtask(taskId: string, subtaskId: string, isDone: boolean): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ _subtask_toggle: { id: subtaskId, is_done: isDone } }),
+    });
+    if (!res.ok) throw new Error("Failed to toggle subtask");
+    return res.json();
+  }
+}
+
+export const newTasksService = new NewTasksService();
