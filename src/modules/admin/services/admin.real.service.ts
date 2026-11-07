@@ -148,6 +148,23 @@ export class RealAdminService implements IAdminService {
       address: personal.address || u.address,
       password: u.password,
       extensionNumber: u.extensionNumber || personal.extensionNumber || organizational.extensionNumber,
+      personnelCode: u.personnelCode || organizational.employeeId || u.employeeId,
+      mobile: personal.phone || u.phone || u.mobile,
+      subUnit: u.subUnit,
+      jobPosition: u.jobPosition,
+      jobPositionEn: u.jobPositionEn,
+      directManager: u.directManager || organizational.manager || u.manager,
+      floor: u.floor,
+      unit: u.unit,
+      employmentDate: u.employmentDate || u.joinedAt,
+      fieldOfStudy: u.fieldOfStudy || u.educationField,
+      graduationDate: u.graduationDate,
+      fatherName: u.fatherName,
+      birthPlace: u.birthPlace,
+      militaryDuty: u.militaryDuty,
+      insuranceNumber: u.insuranceNumber || u.insuranceCode,
+      bankAccount: u.bankAccount || u.accountNumber,
+      duties: u.duties || [],
     };
   }
 

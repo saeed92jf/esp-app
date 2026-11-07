@@ -278,6 +278,25 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
           )}
         </div>
 
+        {/* Personnel & National ID Badges */}
+        <div className="flex items-center justify-center gap-1.5 mt-2 w-full flex-wrap">
+          {selectedUser.personnelCode && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shadow-2xs">
+              {isRtl ? `کد پرسنلی: ${selectedUser.personnelCode}` : `ID: ${selectedUser.personnelCode}`}
+            </span>
+          )}
+          {selectedUser.nationalId && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs">
+              {isRtl ? `کد ملی: ${selectedUser.nationalId}` : `Nat: ${selectedUser.nationalId}`}
+            </span>
+          )}
+          {selectedUser.extensionNumber && (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground/80 border border-border/40 fa-num shadow-2xs">
+              {isRtl ? `داخلی: ${selectedUser.extensionNumber}` : `Ext: ${selectedUser.extensionNumber}`}
+            </span>
+          )}
+        </div>
+
       </div>
 
       {/* ── Boxes Under Avatar: Expanded down to the end of the page ── */}

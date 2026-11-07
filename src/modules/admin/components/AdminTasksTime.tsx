@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { 
   Search, X, Code, TrendingUp, FolderKanban, Briefcase, FlaskConical,
   ChevronsRight, ChevronRight, ChevronLeft,
-  Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2
+  Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2, GraduationCap, Building2, IdCard, CreditCard, Award
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
@@ -182,38 +182,7 @@ export function AdminTasksTime({
     return urgentOrOverdue.slice(0, 5);
   }, [allTasks, selectedUser, t]);
 
-  const rings = useMemo(() => {
-    const wf = selectedUser?.workingFormat;
-    const raw = [
-      { value: wf?.office || 0, color: "#22c55e" },
-      { value: wf?.factory || 0, color: "#3b82f6" },
-      { value: wf?.mission || 0, color: "#f59e0b" },
-      { value: wf?.leave || 0, color: "#94a3b8" },
-    ];
-    return raw.map(r => ({
-      color: r.color,
-      startAngle: -90,
-      value: animate ? Math.min(r.value, 100) : 0,
-    }));
-  }, [selectedUser?.workingFormat, animate]);
-
-  // Dynamic Skills list
-  const skillsToRender = useMemo(() => {
-    const defaultSkills = [
-      { name: "React / Next.js", rate: 85 },
-      { name: "TypeScript & Architecture", rate: 75 },
-      { name: "Node.js / API Engineering", rate: 65 },
-      { name: "Project Management & P&ID", rate: 80 }
-    ];
-    return (selectedUser?.skills?.length ? selectedUser.skills : defaultSkills).slice(0, 4);
-  }, [selectedUser]);
-
-  const getSkillDetails = (rate: number) => {
-    if (rate <= 25) return { label: t("skillLevels.beginner"), width: 25, gradient: "bg-gradient-to-r from-red-600 to-red-400" };
-    if (rate <= 50) return { label: t("skillLevels.intermediate"), width: 50, gradient: "bg-gradient-to-r from-yellow-500 to-yellow-300" };
-    if (rate <= 75) return { label: t("skillLevels.advanced"), width: 75, gradient: "bg-gradient-to-r from-green-600 to-green-400" };
-    return { label: t("skillLevels.expert"), width: 100, gradient: "bg-gradient-to-r from-blue-600 to-blue-400" };
-  };
+  // Clean personnel data display without mock rings or skill bars
 
   return (
     <div className="flex flex-col gap-3 w-full h-full">
@@ -227,114 +196,98 @@ export function AdminTasksTime({
         />
       </div>
 
-      {/* ── Virtual Grid Row 1: Working Format (col 1), Skills (col 2), Activities (col 3) ── */}
+      {/* ── Virtual Grid Row 1: Personnel Specs (col 1), Education & Insurance (col 2), Activities (col 3) ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[220px]">
         
-        {/* Module A: Working Format (فرمت کاری) */}
+        {/* Module A: Personnel & Administrative Profile (مشخصات پرسنلی و سازمانی) */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
-          <div className="flex items-center justify-between mb-1.5 xl:mb-2 px-0.5">
-            <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground">{t("workingFormat")}</h3>
-            <span className="text-[10px] xl:text-[11px] font-medium text-muted-foreground truncate max-w-[130px]">
-              {t("department")}: <span className="font-bold text-foreground">{t.has(`departments.${deptKey}`) ? t(`departments.${deptKey}`) : deptKey}</span>
-            </span>
-          </div>
-
-          {/* Donut Chart */}
-          <div className="w-full relative min-h-[110px] max-h-[145px] my-auto flex items-center justify-center">
-            <svg viewBox="0 0 200 200" className="w-full h-full max-w-[135px] max-h-[135px] xl:max-w-[150px] xl:max-h-[150px] drop-shadow-xs">
-              {rings.map((ring, index) => {
-                const radius = 55 + ((rings.length - 1 - index) * 13);
-                const circumference = 2 * Math.PI * radius;
-                const offset = circumference - (ring.value / 100) * circumference;
-                return (
-                  <g key={index} style={{ transform: `rotate(${ring.startAngle}deg)`, transformOrigin: '100px 100px' }}>
-                    <circle 
-                      cx="100" cy="100" r={radius} 
-                      fill="none" 
-                      stroke="currentColor" 
-                      className="text-foreground/[0.04]"
-                      strokeWidth="8" 
-                    />
-                    <circle 
-                      cx="100" cy="100" r={radius} 
-                      fill="none" 
-                      stroke={ring.color} 
-                      strokeWidth="8"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={offset}
-                      strokeLinecap="round"
-                      style={{ transition: animate ? 'stroke-dashoffset 1.2s cubic-bezier(0.22, 1, 0.36, 1)' : 'none' }}
-                    />
-                  </g>
-                );
-              })}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-lg xl:text-xl font-bold text-foreground fa-num">
-                <AnimatedNumber value={selectedUser?.daysInCompany || 0} />
-              </span>
-              <span className="text-[9.5px] xl:text-[10px] text-muted-foreground font-medium">{t("daysLabel")}</span>
+          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <Briefcase size={16} className="text-primary shrink-0" />
+              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
+                مشخصات پرسنلی و سازمانی
+              </h3>
             </div>
+            {selectedUser?.personnelCode && (
+              <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shrink-0">
+                کد {selectedUser.personnelCode}
+              </span>
+            )}
           </div>
 
-          {/* Legend Grid */}
-          <div className="grid grid-cols-2 gap-1.5 mt-1 px-0.5">
-            {([
-              { key: "office", color: "bg-[#22c55e]" },
-              { key: "factory", color: "bg-[#3b82f6]" },
-              { key: "mission", color: "bg-[#f59e0b]" },
-              { key: "leave", color: "bg-[#94a3b8]" },
-            ] as const).map(item => {
-              const pct = selectedUser?.workingFormat?.[item.key] || 0;
-              const days = Math.round((pct / 100) * (selectedUser?.daysInCompany || 0));
-              return (
-                <div key={item.key} className="flex flex-col items-center p-1 xl:p-1.5 rounded-xl bg-background/40 border border-border/30">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <div className={`size-1.5 rounded-full ${item.color}`}></div>
-                    <span className="text-[10.5px] font-bold text-foreground fa-num">
-                      <AnimatedNumber value={days} /> <span className="text-[0.8em] font-medium text-muted-foreground">{t("daysUnit")}</span>
-                    </span>
-                  </div>
-                  <span className="text-[9.5px] text-muted-foreground">{t(item.key)}</span>
-                </div>
-              );
-            })}
+          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden text-xs">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">کد ملی:</span>
+              <span className="font-bold text-foreground fa-num">{selectedUser?.nationalId || "-"}</span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">سمت / واحد:</span>
+              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
+                {selectedUser?.jobPosition || selectedUser?.jobTitle || selectedUser?.subUnit || "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">مدیر مستقیم:</span>
+              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
+                {selectedUser?.directManager || selectedUser?.manager || "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">داخلی / محل:</span>
+              <span className="font-bold text-foreground truncate max-w-[145px] text-end fa-num">
+                {selectedUser?.extensionNumber ? `داخلی ${selectedUser.extensionNumber}` : ""} {selectedUser?.workLocation ? `(${selectedUser.workLocation})` : ""}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Module B: Skills as a Standalone Module (مهارت‌ها) */}
+        {/* Module B: Education, Identity & Insurance (سوابق تحصیلی، هویتی و بیمه) */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
-          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
-            <div className="flex items-center gap-1.5">
-              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground">{t("skillsTitle")}</h3>
-              <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
-                {skillsToRender.length}
-              </span>
+          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <GraduationCap size={16} className="text-emerald-500 shrink-0" />
+              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
+                تحصیلات و مشخصات بیمه
+              </h3>
             </div>
-            <Sparkles size={14} className="text-muted-foreground opacity-60" />
+            {selectedUser?.education && (
+              <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                {selectedUser.education}
+              </span>
+            )}
           </div>
 
-          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden">
-            {skillsToRender.map((skill, idx) => {
-              const details = getSkillDetails(skill.rate);
-              return (
-                <div key={idx} className="flex flex-col gap-1 p-1.5 xl:p-2 rounded-xl bg-background/40 border border-border/30">
-                  <div className="flex justify-between items-center text-[11px] font-medium">
-                    <span className="text-foreground font-semibold truncate text-[10.5px] sm:text-[11px]">{skill.name}</span>
-                    <span className="text-[9.5px] font-bold text-muted-foreground shrink-0">{details.label}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-border/40 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full ${details.gradient}`} 
-                      style={{ 
-                        width: `${animate ? details.width : 0}%`,
-                        transition: animate ? 'width 1.2s cubic-bezier(0.22, 1, 0.36, 1)' : 'none'
-                      }} 
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden text-xs">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">رشته / دانشگاه:</span>
+              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
+                {selectedUser?.fieldOfStudy || selectedUser?.university ? `${selectedUser.fieldOfStudy || ''} (${selectedUser.university || ''})` : "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">تاریخ استخدام:</span>
+              <span className="font-bold text-foreground fa-num">
+                {selectedUser?.employmentDate || selectedUser?.joinedAt || "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">شماره بیمه:</span>
+              <span className="font-bold text-foreground truncate max-w-[145px] text-end fa-num">
+                {selectedUser?.insuranceNumber ? `${selectedUser.insuranceNumber} (${selectedUser.insuranceType || 'تکمیلی'})` : "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">شماره حساب بانکی:</span>
+              <span className="font-bold text-foreground font-mono text-[10.5px] truncate max-w-[145px] text-end fa-num">
+                {selectedUser?.bankAccount || "-"}
+              </span>
+            </div>
           </div>
         </div>
 
