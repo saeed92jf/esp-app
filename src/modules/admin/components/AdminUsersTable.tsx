@@ -98,6 +98,23 @@ function getUserAvatarColor(user: User): string {
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
 }
 
+function formatLastSeen(isoDate?: string, isRtl = false): string {
+  if (!isoDate) return isRtl ? "نامشخص" : "Unknown";
+  try {
+    const diffMs = Date.now() - new Date(isoDate).getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return isRtl ? "همین الان" : "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return isRtl ? `${diffMin} دقیقه پیش` : `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return isRtl ? `${diffHours} ساعت پیش` : `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return isRtl ? `${diffDays} روز پیش` : `${diffDays}d ago`;
+  } catch {
+    return isRtl ? "نامشخص" : "Unknown";
+  }
+}
+
 const useIsomorphicLayoutEffect = typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
 
 interface TableAccordionPanelProps {
@@ -604,13 +621,41 @@ export function AdminUsersTable({
         if (!colFilters.workingFormats.includes(primaryFocus)) return false;
       }
 
-      // 9. Column 9: Status
+      // 9. Column 9: Status (Accurate live presence evaluation)
       if (colFilters.statuses.length > 0) {
-        if (!colFilters.statuses.includes(user.status)) return false;
+        const isCurrent = Boolean(
+          currentUser && (
+            user.id === currentUser.id ||
+            (user.email && currentUser.email && user.email.toLowerCase() === currentUser.email.toLowerCase())
+          )
+        );
+        const effectiveStatus = (isCurrent || user.status === 'online' || Boolean(user.isOnline)) ? 'online' : 'offline';
+        if (!colFilters.statuses.includes(effectiveStatus)) return false;
       }
 
       return true;
     }).sort((a, b) => {
+      // 🟢 Rule: Online users are ALWAYS placed at the top of the table!
+      const isCurrentA = Boolean(
+        currentUser && (
+          a.id === currentUser.id ||
+          (a.email && currentUser.email && a.email.toLowerCase() === currentUser.email.toLowerCase())
+        )
+      );
+      const isOnlineA = isCurrentA || a.status === 'online' || Boolean(a.isOnline);
+
+      const isCurrentB = Boolean(
+        currentUser && (
+          b.id === currentUser.id ||
+          (b.email && currentUser.email && b.email.toLowerCase() === currentUser.email.toLowerCase())
+        )
+      );
+      const isOnlineB = isCurrentB || b.status === 'online' || Boolean(b.isOnline);
+
+      if (isOnlineA && !isOnlineB) return -1;
+      if (!isOnlineA && isOnlineB) return 1;
+
+      // Within same status group, apply column sort
       let valA: any = a[sortState.field as keyof User];
       let valB: any = b[sortState.field as keyof User];
 
@@ -1550,7 +1595,14 @@ export function AdminUsersTable({
                   if (dominant === 'office') return { colorClass: 'bg-[#22c55e]', label: t("office") };
                 }
 
-                if (user.status === 'offline') {
+                const isCurrentForLoc = Boolean(
+                  currentUser && (
+                    user.id === currentUser.id ||
+                    (user.email && currentUser.email && user.email.toLowerCase() === currentUser.email.toLowerCase())
+                  )
+                );
+                const isOnlineForLoc = isCurrentForLoc || user.status === 'online' || Boolean(user.isOnline);
+                if (!isOnlineForLoc) {
                   return { colorClass: 'bg-slate-400', label: t("offline") };
                 }
 
@@ -1771,20 +1823,47 @@ export function AdminUsersTable({
                         </div>
                       </td>
 
-                      {/* Column 8: Status (به صورت تگ برجسته) */}
+                      {/* Column 8: Status (تشخیص آنلاین بودن فوق‌حرفه‌ای و زنده) */}
                       <td className="py-3 px-3.5 text-start align-middle">
-                        <span className={cn(
-                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-2xs",
-                          user.status === 'online'
-                            ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25"
-                            : "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/25"
-                        )}>
-                          <span className={cn(
-                            "size-1.5 rounded-full",
-                            user.status === 'online' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
-                          )} />
-                          {user.status === 'online' ? t("online") : t("offline")}
-                        </span>
+                        {(() => {
+                          const isCurrent = Boolean(
+                            currentUser && (
+                              user.id === currentUser.id ||
+                              (user.email && currentUser.email && user.email.toLowerCase() === currentUser.email.toLowerCase())
+                            )
+                          );
+                          const isOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
+
+                          return (
+                            <div className="flex items-center">
+                              {isOnline ? (
+                                <span
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-2xs select-none"
+                                  title={isRtl ? "کاربر هم‌اکنون در سامانه آنلاین و فعال است" : "User is active and online in the system"}
+                                >
+                                  <span className="relative flex size-2 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                    <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+                                  </span>
+                                  <span>{t("online")}</span>
+                                </span>
+                              ) : (
+                                <span
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-muted/70 text-muted-foreground border border-border/60 select-none"
+                                  title={user.lastSeenAt ? (isRtl ? `آخرین فعالیت: ${formatLastSeen(user.lastSeenAt, isRtl)}` : `Last active: ${formatLastSeen(user.lastSeenAt, isRtl)}`) : undefined}
+                                >
+                                  <span className="size-2 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" />
+                                  <span>{t("offline")}</span>
+                                  {user.lastSeenAt && (
+                                    <span className="text-[10px] opacity-75 hidden 2xl:inline">
+                                      ({formatLastSeen(user.lastSeenAt, isRtl)})
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </td>
                     </tr>
 
@@ -1879,13 +1958,39 @@ export function AdminUsersTable({
                                               >
                                                 {getRoleLabel(user.role)}
                                               </Badge>
-                                              <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                                <span className={cn(
-                                                  "size-2 rounded-full shrink-0",
-                                                  user.status === 'online' ? "bg-emerald-500 animate-pulse" : "bg-slate-400"
-                                                )} />
-                                                {user.status === 'online' ? t("online") : t("offline")}
-                                              </span>
+                                              {(() => {
+                                                const isCurrent = Boolean(
+                                                  currentUser && (
+                                                    user.id === currentUser.id ||
+                                                    (user.email && currentUser.email && user.email.toLowerCase() === currentUser.email.toLowerCase())
+                                                  )
+                                                );
+                                                const isOnline = isCurrent || user.status === 'online' || Boolean(user.isOnline);
+
+                                                return (
+                                                  <span className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                                                    {isOnline ? (
+                                                      <>
+                                                        <span className="relative flex size-2 shrink-0">
+                                                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                                                          <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
+                                                        </span>
+                                                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">{t("online")}</span>
+                                                      </>
+                                                    ) : (
+                                                      <>
+                                                        <span className="size-2 rounded-full bg-slate-400 shrink-0" />
+                                                        <span>{t("offline")}</span>
+                                                        {user.lastSeenAt && (
+                                                          <span className="text-[9px] text-muted-foreground/80">
+                                                            ({formatLastSeen(user.lastSeenAt, isRtl)})
+                                                          </span>
+                                                        )}
+                                                      </>
+                                                    )}
+                                                  </span>
+                                                );
+                                              })()}
                                             </div>
                                             <p className="text-[11px] text-muted-foreground mt-0.5 truncate" dir="ltr">
                                               {user.email}

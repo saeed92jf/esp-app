@@ -95,6 +95,38 @@ export function AdminDashboard() {
     fetchData();
   }, [currentUser]);
 
+  // Silent real-time presence poller (updates online/offline status live without reloading)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      api.admin.getUsers().then((freshUsers) => {
+        if (freshUsers && freshUsers.length > 0) {
+          setUsers((prevUsers) => {
+            return prevUsers.map((existing) => {
+              const fresh = freshUsers.find(
+                (f) => f.id === existing.id || (f.email && existing.email && f.email.toLowerCase() === existing.email.toLowerCase())
+              );
+              if (fresh) {
+                const isCurrent = currentUser && (
+                  existing.id === currentUser.id ||
+                  (existing.email && currentUser.email && existing.email.toLowerCase() === currentUser.email.toLowerCase())
+                );
+                return {
+                  ...existing,
+                  isOnline: isCurrent ? true : Boolean(fresh.isOnline || fresh.status === 'online'),
+                  status: isCurrent ? 'online' : fresh.status,
+                  lastSeenAt: fresh.lastSeenAt || existing.lastSeenAt,
+                };
+              }
+              return existing;
+            });
+          });
+        }
+      }).catch(() => {});
+    }, 20000);
+
+    return () => clearInterval(timer);
+  }, [currentUser]);
+
   const fetchData = async () => {
     setLoading(true);
     setIsRetrying(true);
@@ -180,6 +212,8 @@ export function AdminDashboard() {
           userList[foundIdx] = {
             ...userList[foundIdx],
             name: adminName,
+            status: "online",
+            isOnline: true,
             avatar: currentUser.avatar || userList[foundIdx].avatar,
             avatarColor: currentUser.avatarColor || userList[foundIdx].avatarColor,
             primaryColor: currentUser.primaryColor || userList[foundIdx].primaryColor,
@@ -203,7 +237,8 @@ export function AdminDashboard() {
           lastName: "Shafiee",
           email: "mshafiee@euroslotpars.com",
           role: "admin",
-          status: "online",
+          status: "offline",
+          isOnline: false,
           accountStatus: "active",
           avatarColor: "#8b5cf6",
           primaryColor: "purple",

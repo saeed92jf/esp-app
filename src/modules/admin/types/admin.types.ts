@@ -22,6 +22,9 @@ export interface User {
   email: string;
   role: UserRole;
   status: 'online' | 'offline';
+  isOnline?: boolean;
+  lastSeenAt?: string;
+  lastActiveAt?: string;
   accountStatus?: AccountStatus;
   avatar?: string;
   avatarColor?: string;

@@ -77,7 +77,7 @@ const DEFAULT_SERVER_ADMIN_USERS: User[] = [
     phone: "09123480872",
     nationalId: "0000000000",
     role: "admin",
-    status: "online",
+    status: "offline",
     accountStatus: "active",
     company: "Euroslot Pars",
     companyId: "euroslot",

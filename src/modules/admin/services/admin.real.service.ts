@@ -52,7 +52,12 @@ export class RealAdminService implements IAdminService {
       }
     }
 
-    const status = u.status === "active" || u.status === "ACTIVE" || u.status === "online" ? "online" : "offline";
+    const isOnline = Boolean(
+      u.isOnline === true ||
+      u.status === "online" ||
+      (u.lastSeenAt && (Date.now() - new Date(u.lastSeenAt).getTime() < 75000))
+    );
+    const status: 'online' | 'offline' = isOnline ? "online" : "offline";
     const roleLower = (u.role || organizational.role || personal.role || "user").toLowerCase();
     let role: UserRole = "user";
     if (roleLower === "superadmin") role = "superadmin";
@@ -77,6 +82,8 @@ export class RealAdminService implements IAdminService {
       email,
       role,
       status,
+      isOnline,
+      lastSeenAt: u.lastSeenAt || u.lastActiveAt,
       accountStatus: (u.accountStatus || (u.status === "active" || u.status === "ACTIVE" ? "active" : "pending_approval")) as AccountStatus,
       avatar: personal.avatarUrl || personal.avatar || u.avatarUrl || u.avatar,
       avatarColor: personal.avatarColor || u.avatarColor,

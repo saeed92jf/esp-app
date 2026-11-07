@@ -72,17 +72,27 @@ export class CommunityService {
   }
 
   async getPostDetail(postId: string): Promise<CommunityPost> {
-    const res = await fetch(`${API_BASE}/posts/${postId}`, {
-      method: 'GET',
-      headers: getAuthHeaders(),
-      cache: 'no-store',
-    });
+    try {
+      const res = await fetch(`${API_BASE}/posts/${postId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        cache: 'no-store',
+      });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || `Failed to fetch post detail: ${res.statusText}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || `Failed to fetch post detail: ${res.statusText}`);
+      }
+      return await res.json();
+    } catch (err: any) {
+      console.warn(`[Community] getPostDetail(${postId}) remote warning:`, err?.message || err);
+      try {
+        const posts = await this.getPosts('all').catch(() => []);
+        const found = posts.find((p) => p.id === postId);
+        if (found) return found;
+      } catch {}
+      throw err;
     }
-    return res.json();
   }
 
   async createPost(dto: CreatePostDto): Promise<CommunityPost> {

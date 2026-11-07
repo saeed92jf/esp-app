@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { ConditionalHeader } from '@/components/layout/conditional-header';
 import { ConditionalFooter } from '@/components/layout/conditional-footer';
 import { GlobalConfirmModal } from '@/components/global-confirm-modal';
+import { PresenceTracker } from '@/modules/auth/hooks/use-presence';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -39,6 +40,7 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
       <GlobalConfirmModal />
+      <PresenceTracker />
       <ConditionalFooter />
     </div>
   );
