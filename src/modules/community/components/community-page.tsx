@@ -69,18 +69,6 @@ const CATEGORIES: CategoryItem[] = [
   { id: "general", labelKey: "general", labelEn: "General", labelFa: "عمومی و متفرقه", icon: Coffee },
 ];
 
-const POPULAR_TAGS = [
-  "پمپ_های_ESP",
-  "مکانیک",
-  "هیدرولیک",
-  "کنترل_کیفیت",
-  "متالورژی",
-  "کابل_و_تغذیه",
-  "سنسور",
-  "استاندارد",
-  "شبیه_سازی",
-  "تعمیرات",
-];
 
 function getRoleBadge(role?: string, isRtl = false) {
   const r = (role || "").toLowerCase();
@@ -218,6 +206,38 @@ export function CommunityPage() {
   const [replyInputs, setReplyInputs] = useState<Record<string, string>>({});
   const [replyAttachments, setReplyAttachments] = useState<Record<string, CommunityAttachment[]>>({});
   const [replySubmitting, setReplySubmitting] = useState<Record<string, boolean>>({});
+
+  // Dynamic Popular Tags State (Genuinely computed from real posts in database)
+  const [popularTags, setPopularTags] = useState<{ tag: string; count: number }[]>([]);
+
+  const fetchPopularTags = useCallback(async () => {
+    try {
+      const serverTags = await communityService.getPopularTags(20);
+      if (serverTags && serverTags.length > 0) {
+        setPopularTags(serverTags);
+        return;
+      }
+    } catch {}
+
+    // Fallback: derive dynamically from current real posts
+    const counts = new Map<string, number>();
+    for (const post of posts) {
+      if (Array.isArray(post.tags)) {
+        for (const t of post.tags) {
+          const clean = String(t).trim();
+          if (clean) counts.set(clean, (counts.get(clean) || 0) + 1);
+        }
+      }
+    }
+    const derived = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([tag, count]) => ({ tag, count }));
+    setPopularTags(derived);
+  }, [posts]);
+
+  useEffect(() => {
+    fetchPopularTags();
+  }, [posts, fetchPopularTags]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replyFileInputRef = useRef<HTMLInputElement>(null);
@@ -955,27 +975,31 @@ export function CommunityPage() {
             )}
           </div>
 
-          {/* Popular Tag Chips Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
-            <span className="text-muted-foreground shrink-0 text-[11px] font-medium me-1">
-              {isRtl ? "برچسب‌های پرتکرار:" : "Popular Tags:"}
-            </span>
-            {POPULAR_TAGS.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                className={cn(
-                  "px-2.5 py-0.5 rounded-full border transition-colors shrink-0 cursor-pointer font-mono text-[11px]",
-                  activeTag === tag
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/50 hover:text-foreground"
-                )}
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
+          {/* Dynamic Popular Tag Chips (Genuinely used tags on real posts only) */}
+          {popularTags.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-none text-xs">
+              <span className="text-muted-foreground shrink-0 text-[11px] font-medium me-1">
+                {isRtl ? "برچسب‌های پرکاربرد:" : "Popular Tags:"}
+              </span>
+              {popularTags.map(({ tag, count }) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border transition-colors shrink-0 cursor-pointer font-mono text-[11px]",
+                    activeTag === tag
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/50 hover:text-foreground"
+                  )}
+                  title={isRtl ? `${count} پرسش با این برچسب` : `${count} questions with this tag`}
+                >
+                  <span>#{tag}</span>
+                  <span className="text-[10px] opacity-75 font-sans">({count})</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ── New Question Composer Card (StackOverflow Style) ── */}
           {isComposerOpen && isAuthenticated && user && (

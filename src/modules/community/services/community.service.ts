@@ -57,6 +57,20 @@ export class CommunityService {
     return res.json();
   }
 
+  async getPopularTags(limit: number = 20): Promise<{ tag: string; count: number }[]> {
+    try {
+      const res = await fetch(`${API_BASE}/tags/popular?limit=${limit}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+    return [];
+  }
+
   async getPostDetail(postId: string): Promise<CommunityPost> {
     const res = await fetch(`${API_BASE}/posts/${postId}`, {
       method: 'GET',
