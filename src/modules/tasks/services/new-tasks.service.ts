@@ -1,6 +1,16 @@
 // src/modules/tasks/services/new-tasks.service.ts
 // New real tasks service that works with the new backend schema
 
+export interface TaskAttachmentItem {
+  id?: string;
+  name: string;
+  size?: string;
+  type?: string;
+  url?: string;
+  uploaded_by?: string;
+  uploaded_at?: string;
+}
+
 export interface NewTaskSubtask {
   id: string;
   title: string;
@@ -13,7 +23,7 @@ export interface NewTaskProgress {
   author_name: string;
   author_role: string;
   content: string;
-  attachments: { id: string; name: string; url?: string; type?: string }[];
+  attachments: TaskAttachmentItem[];
   created_at: string;
   is_admin_note: boolean;
 }
@@ -40,7 +50,7 @@ export interface NewTask {
   company: string;
   tags: string[];
   status: "todo" | "in_progress" | "review" | "done" | "cancelled";
-  attachments: { id: string; name: string; url?: string; type?: string; uploaded_by?: string; uploaded_at?: string }[];
+  attachments: TaskAttachmentItem[];
   progress: NewTaskProgress[];
   is_approved: boolean;
   approved_at: string | null;
@@ -58,7 +68,7 @@ export interface NewTaskCreate {
   priority?: "low" | "medium" | "high" | "critical";
   company?: string;
   tags?: string[];
-  attachments?: { name: string; url?: string; type?: string }[];
+  attachments?: TaskAttachmentItem[];
 }
 
 export interface NewTaskUpdate {
@@ -71,7 +81,7 @@ export interface NewTaskUpdate {
   tags?: string[];
   subtasks?: NewTaskSubtask[];
   assignees?: NewTaskAssignee[];
-  attachments?: { id?: string; name: string; url?: string; type?: string }[];
+  attachments?: TaskAttachmentItem[];
 }
 
 export interface ProgressCreate {
@@ -79,7 +89,7 @@ export interface ProgressCreate {
   author_name: string;
   author_role: string;
   content: string;
-  attachments?: { name: string; url?: string; type?: string }[];
+  attachments?: TaskAttachmentItem[];
   is_admin_note?: boolean;
 }
 

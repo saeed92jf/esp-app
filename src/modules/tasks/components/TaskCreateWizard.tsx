@@ -1,7 +1,7 @@
 // src/modules/tasks/components/TaskCreateWizard.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -18,6 +18,8 @@ import {
   Building2,
   UserCheck,
   AlertCircle,
+  UploadCloud,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +27,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
-import { newTasksService, NewTask, NewTaskCreate } from "../services/new-tasks.service";
+import { newTasksService, NewTask, NewTaskCreate, TaskAttachmentItem } from "../services/new-tasks.service";
+import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
 import { toast } from "sonner";
 import type { User } from "@/types/auth";
 
@@ -56,6 +59,7 @@ interface WizardState {
   title: string;
   description: string;
   subtasks: { title: string }[];
+  attachments: TaskAttachmentItem[];
   // Step 2
   assignees: { userId: string; name: string; email: string; role?: string; avatar?: string }[];
   // Step 3
@@ -101,6 +105,7 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
     title: "",
     description: "",
     subtasks: [],
+    attachments: [],
     assignees: [],
     deadline: "",
     priority: "medium",
@@ -111,6 +116,45 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
   const [newSubtask, setNewSubtask] = useState("");
   const [newTag, setNewTag] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  const handleFilesUpload = async (files: FileList | File[] | null) => {
+    if (!files || files.length === 0) return;
+    setIsUploadingFiles(true);
+    const newItems: TaskAttachmentItem[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const item = await readAttachmentFile(file);
+          newItems.push(item);
+        } catch (err: any) {
+          toast.error(err.message || `خطا در خواندن ${file.name}`);
+        }
+      }
+      if (newItems.length > 0) {
+        setState((s) => ({ ...s, attachments: [...s.attachments, ...newItems] }));
+        toast.success(
+          isRtl
+            ? `${newItems.length} فایل پیوست اضافه شد.`
+            : `${newItems.length} file(s) attached.`
+        );
+      }
+    } finally {
+      setIsUploadingFiles(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setState((s) => ({
+      ...s,
+      attachments: s.attachments.filter((_, idx) => idx !== index),
+    }));
+  };
 
   // Fetch real system personnel from /api/admin/users
   useEffect(() => {
@@ -274,6 +318,7 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
         priority: state.priority,
         company: state.company || undefined,
         tags: state.tags,
+        attachments: state.attachments,
       };
 
       const created = await newTasksService.createTask(payload);
@@ -422,6 +467,78 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                         </button>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* File Attachments Section */}
+              <div className="space-y-3 pt-3 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                    <Paperclip className="size-4 text-primary" />
+                    <span>{isRtl ? "فایل‌ها و مستندات پیوست (نقشه‌ها، گزارشات و فایل‌های فنی)" : "Attachments & Technical Files"}</span>
+                  </label>
+                  <span className="text-xs text-muted-foreground fa-num">
+                    {state.attachments.length} {isRtl ? "فایل" : "files"}
+                  </span>
+                </div>
+
+                {/* Dropzone */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleFilesUpload(e.target.files)}
+                />
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(true);
+                  }}
+                  onDragLeave={() => setIsDraggingOver(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingOver(false);
+                    handleFilesUpload(e.dataTransfer.files);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-2xl p-5 sm:p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all text-center select-none",
+                    isDraggingOver
+                      ? "border-primary bg-primary/10 shadow-xs"
+                      : "border-border/70 hover:border-primary/50 bg-muted/20 hover:bg-muted/40"
+                  )}
+                >
+                  <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                    {isUploadingFiles ? (
+                      <Loader2 className="size-5 animate-spin" />
+                    ) : (
+                      <UploadCloud className="size-5" />
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs sm:text-sm font-bold text-foreground">
+                      {isUploadingFiles
+                        ? (isRtl ? "در حال پردازش فایل‌ها..." : "Processing files...")
+                        : (isRtl ? "برای انتخاب فایل کلیک کنید یا فایل‌ها را اینجا بکشید و رها کنید" : "Click to browse or drag & drop files here")}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {isRtl
+                        ? "پشتیبانی از نقشه‌های مهندسی (DWG, DXF)، گزارشات (PDF)، اکسل، عکس و ZIP (حداکثر ۱۵ مگابایت)"
+                        : "Supports DWG, DXF, PDF, Excel, Images, and ZIP (Max 15MB)"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Attached files list */}
+                {state.attachments.length > 0 && (
+                  <div className="mt-3">
+                    <TaskAttachmentList
+                      attachments={state.attachments}
+                      onRemove={removeAttachment}
+                      isRtl={isRtl}
+                    />
                   </div>
                 )}
               </div>

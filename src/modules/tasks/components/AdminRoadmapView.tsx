@@ -4,7 +4,7 @@
 import React from "react";
 import { useLocale } from "next-intl";
 import { motion } from "motion/react";
-import { Clock, Users, CheckCircle2 } from "lucide-react";
+import { Clock, Users, CheckCircle2, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewTask } from "../services/new-tasks.service";
 
@@ -97,14 +97,20 @@ export function AdminRoadmapView({ tasks, onSelectTask }: AdminRoadmapViewProps)
                       <h4 className="text-sm font-semibold text-foreground line-clamp-2 mb-2">
                         {task.title}
                       </h4>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        {task.assignees?.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Users className="size-3" />
-                            <span className="line-clamp-1">
+                      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        {task.assignees?.length > 0 ? (
+                          <span className="flex items-center gap-1 min-w-0">
+                            <Users className="size-3 shrink-0" />
+                            <span className="truncate">
                               {task.assignees[0].name}
                               {task.assignees.length > 1 ? ` +${task.assignees.length - 1}` : ""}
                             </span>
+                          </span>
+                        ) : <span />}
+                        {task.attachments && task.attachments.length > 0 && (
+                          <span className="flex items-center gap-1 text-[11px] text-primary fa-num shrink-0" title={isRtl ? `${task.attachments.length} فایل پیوست` : `${task.attachments.length} attachments`}>
+                            <Paperclip className="size-3" />
+                            <span>{task.attachments.length}</span>
                           </span>
                         )}
                       </div>

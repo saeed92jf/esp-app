@@ -1,7 +1,7 @@
 // src/modules/tasks/components/TaskProgressView.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useLocale } from "next-intl";
 import { motion } from "motion/react";
 import {
@@ -19,12 +19,14 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { NewTask, NewTaskProgress, newTasksService } from "../services/new-tasks.service";
+import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
+import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
 import { toast } from "sonner";
 import type { User } from "@/types/auth";
 
@@ -73,22 +75,54 @@ export function TaskProgressView({
   const [isApprovingTask, setIsApprovingTask] = useState(false);
   const [isChangingStatus, setIsChangingStatus] = useState(false);
   const [showSubtasks, setShowSubtasks] = useState(true);
+  const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
+  const [isReadingFiles, setIsReadingFiles] = useState(false);
+  const progressFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleProgressFilesSelect = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setIsReadingFiles(true);
+    const newItems: TaskAttachmentItem[] = [];
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const item = await readAttachmentFile(file);
+          newItems.push(item);
+        } catch (err: any) {
+          toast.error(err.message || `خطا در خواندن ${file.name}`);
+        }
+      }
+      if (newItems.length > 0) {
+        setPendingAttachments((prev) => [...prev, ...newItems]);
+      }
+    } finally {
+      setIsReadingFiles(false);
+      if (progressFileInputRef.current) progressFileInputRef.current.value = "";
+    }
+  };
+
+  const removePendingAttachment = (index: number) => {
+    setPendingAttachments((prev) => prev.filter((_, idx) => idx !== index));
+  };
 
   const status = STATUS_CONFIG[task.status] || STATUS_CONFIG.todo;
   const priority = PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.medium;
 
   const handleSendProgress = async () => {
-    if (!progressContent.trim()) return;
+    if (!progressContent.trim() && pendingAttachments.length === 0) return;
     setIsSending(true);
     try {
       const updatedTask = await newTasksService.addProgress(task.id, {
         author_id: currentUser.id,
         author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
         author_role: currentUser.role || "کارشناس",
-        content: progressContent.trim(),
+        content: progressContent.trim() || (isRtl ? "ارسال فایل‌های پیوست" : "Attached files"),
+        attachments: pendingAttachments,
         is_admin_note: isAdmin,
       });
       setProgressContent("");
+      setPendingAttachments([]);
       onTaskUpdated(updatedTask);
       toast.success(isRtl ? "گزارش ثبت شد." : "Progress update added.");
     } catch (err: any) {
@@ -235,6 +269,25 @@ export function TaskProgressView({
           )}
         </div>
 
+        {/* Initial Task Attachments */}
+        {task.attachments && task.attachments.length > 0 && (
+          <div className="pt-3 border-t border-border/40 space-y-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
+              <span className="flex items-center gap-1.5 text-foreground">
+                <Paperclip className="size-3.5 text-primary" />
+                <span>{isRtl ? "مستندات و فایل‌های پیوست تسک" : "Task Attachments"}</span>
+              </span>
+              <span className="fa-num">
+                {task.attachments.length} {isRtl ? "فایل" : "files"}
+              </span>
+            </div>
+            <TaskAttachmentList
+              attachments={task.attachments}
+              isRtl={isRtl}
+            />
+          </div>
+        )}
+
         {/* Admin: Status change */}
         {isAdmin && (
           <div className="pt-2 border-t border-border/40">
@@ -339,6 +392,21 @@ export function TaskProgressView({
               {(currentUser.fullNameFa || currentUser.fullName || "U").charAt(0)}
             </div>
             <div className="flex-1 space-y-2">
+              {/* Pending Attachments in conversation input */}
+              {pendingAttachments.length > 0 && (
+                <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
+                    <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
+                    <span className="fa-num">({pendingAttachments.length})</span>
+                  </div>
+                  <TaskAttachmentList
+                    attachments={pendingAttachments}
+                    onRemove={removePendingAttachment}
+                    isRtl={isRtl}
+                  />
+                </div>
+              )}
+
               <Textarea
                 value={progressContent}
                 onChange={(e) => setProgressContent(e.target.value)}
@@ -349,26 +417,52 @@ export function TaskProgressView({
                 }
                 className="rounded-xl resize-none min-h-[80px] text-sm"
               />
-              <div className="flex items-center justify-between">
-                {isAdmin && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <ShieldCheck className="size-3 text-primary" />
-                    {isRtl ? "این نظر به عنوان یادداشت مدیریتی ثبت می‌شود." : "This will be marked as an admin note."}
-                  </span>
-                )}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={progressFileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => handleProgressFilesSelect(e.target.files)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => progressFileInputRef.current?.click()}
+                    disabled={isReadingFiles || isSending}
+                    className="rounded-xl gap-1.5 text-xs h-9"
+                  >
+                    {isReadingFiles ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <Paperclip className="size-3.5 text-primary" />
+                    )}
+                    <span>{isRtl ? "پیوست فایل" : "Attach File"}</span>
+                  </Button>
+
+                  {isAdmin && (
+                    <span className="text-[11px] text-muted-foreground hidden sm:flex items-center gap-1">
+                      <ShieldCheck className="size-3 text-primary" />
+                      {isRtl ? "یادداشت مدیریتی" : "Admin Note"}
+                    </span>
+                  )}
+                </div>
+
                 <div className="ms-auto">
                   <Button
                     onClick={handleSendProgress}
-                    disabled={!progressContent.trim() || isSending}
+                    disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
                     size="sm"
-                    className="rounded-xl gap-2"
+                    className="rounded-xl gap-2 font-bold px-4"
                   >
                     {isSending ? (
                       <Loader2 className="size-4 animate-spin" />
                     ) : (
                       <Send className="size-4" />
                     )}
-                    {isRtl ? "ارسال" : "Send"}
+                    {isRtl ? "ارسال گزارش" : "Send"}
                   </Button>
                 </div>
               </div>
@@ -472,7 +566,7 @@ function ProgressItem({
         </div>
         <div
           className={cn(
-            "px-4 py-2.5 rounded-2xl text-sm leading-relaxed",
+            "px-4 py-2.5 rounded-2xl text-sm leading-relaxed space-y-1.5",
             isAdminNote
               ? "bg-primary/10 text-primary-foreground dark:text-primary border border-primary/20"
               : isMe
@@ -480,7 +574,15 @@ function ProgressItem({
               : "bg-muted text-foreground"
           )}
         >
-          {progress.content}
+          <div>{progress.content}</div>
+          {progress.attachments && progress.attachments.length > 0 && (
+            <TaskAttachmentList
+              attachments={progress.attachments}
+              compact={true}
+              inPrimaryBubble={isMe && !isAdminNote}
+              isRtl={isRtl}
+            />
+          )}
         </div>
       </div>
     </motion.div>
