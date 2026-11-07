@@ -57,5 +57,6 @@ export interface User {
   hrApproved?: boolean;
   extensionNumber?: string;
   password?: string;
+  modulesAccess?: Array<{ moduleId: string; hasAccess: boolean; accessLevel?: string; hoursSpent?: string; usagePercentage?: number }>;
 }
 export type AppUser = User;

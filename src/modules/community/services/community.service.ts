@@ -79,20 +79,44 @@ export class CommunityService {
         cache: 'no-store',
       });
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.detail || `Failed to fetch post detail: ${res.statusText}`);
+      if (res.ok) {
+        return await res.json();
       }
-      return await res.json();
+      console.warn(`[Community] getPostDetail(${postId}) remote returned ${res.status}: ${res.statusText}`);
     } catch (err: any) {
       console.warn(`[Community] getPostDetail(${postId}) remote warning:`, err?.message || err);
-      try {
-        const posts = await this.getPosts('all').catch(() => []);
-        const found = posts.find((p) => p.id === postId);
-        if (found) return found;
-      } catch {}
-      throw err;
     }
+
+    try {
+      const posts = await this.getPosts('all').catch(() => []);
+      const found = posts.find((p) => p.id === postId);
+      if (found) {
+        return {
+          ...found,
+          replies: found.replies || [],
+          repliesCount: found.repliesCount ?? (found.replies?.length || 0),
+        };
+      }
+    } catch {}
+
+    return {
+      id: postId,
+      title: 'گفتگو',
+      content: '',
+      authorId: 'u-system',
+      authorName: 'کاربر سیستم',
+      authorRole: 'user',
+      category: 'general',
+      tags: [],
+      createdAt: new Date().toISOString(),
+      views: 1,
+      likes: 0,
+      upvotes: [],
+      downvotes: [],
+      score: 0,
+      repliesCount: 0,
+      replies: [],
+    };
   }
 
   async createPost(dto: CreatePostDto): Promise<CommunityPost> {

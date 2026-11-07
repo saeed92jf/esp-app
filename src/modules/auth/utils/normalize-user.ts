@@ -122,6 +122,7 @@ export function normalizeUserFromApi(raw: any): User {
     isProfileCompleted,
     hrApproved: accountStatus === "active" || Boolean(raw.hrApproved),
     managerApproved: accountStatus === "active" || Boolean(raw.managerApproved),
+    modulesAccess: raw.modulesAccess || personal.modulesAccess || [],
   };
 }
 

@@ -21,7 +21,7 @@ import {
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
   Building, Calendar, Users, ExternalLink,
   Building2, Briefcase, DollarSign, Clock, MapPin,
-  Heart, Shield, Layers, Trash2, Lock
+  Heart, Shield, Layers, Trash2, Lock, Sparkles
 } from "lucide-react";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { UserRole } from "@/types/auth";
@@ -112,6 +112,29 @@ function formatLastSeen(isoDate?: string, isRtl = false): string {
     return isRtl ? `${diffDays} روز پیش` : `${diffDays}d ago`;
   } catch {
     return isRtl ? "نامشخص" : "Unknown";
+  }
+}
+
+function formatOnlineDuration(isoDate?: string, isRtl = false): string {
+  if (!isoDate) return isRtl ? "همین الان" : "Just now";
+  try {
+    const diffMs = Math.max(0, Date.now() - new Date(isoDate).getTime());
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return isRtl ? "همین الان" : "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return isRtl ? `${diffMin} دقیقه` : `${diffMin}m`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) {
+      const remMin = diffMin % 60;
+      if (remMin > 0) {
+        return isRtl ? `${diffHours} ساعت و ${remMin} دقیقه` : `${diffHours}h ${remMin}m`;
+      }
+      return isRtl ? `${diffHours} ساعت` : `${diffHours}h`;
+    }
+    const diffDays = Math.floor(diffHours / 24);
+    return isRtl ? `${diffDays} روز` : `${diffDays}d`;
+  } catch {
+    return isRtl ? "همین الان" : "Just now";
   }
 }
 
@@ -512,7 +535,29 @@ export function AdminUsersTable({
 
   // Filtered & Sorted Users
   const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
+    // 🟢 Strict unique user deduplication by ID and canonical identity
+    const seenUserIds = new Set<string>();
+    const seenUserEmails = new Set<string>();
+    const uniqueUsers = users.filter((u) => {
+      const idKey = (u.id || "").toLowerCase();
+      const emailKey = (u.email || "").toLowerCase();
+      const isSaeedUser = idKey === "u-saeed" || idKey === "usr_9801" || emailKey.includes("jalili") || emailKey.includes("saeed");
+
+      if (isSaeedUser) {
+        if (seenUserIds.has("saeed_singleton")) return false;
+        seenUserIds.add("saeed_singleton");
+        return true;
+      }
+
+      if (idKey && seenUserIds.has(idKey)) return false;
+      if (emailKey && seenUserEmails.has(emailKey)) return false;
+
+      if (idKey) seenUserIds.add(idKey);
+      if (emailKey) seenUserEmails.add(emailKey);
+      return true;
+    });
+
+    return uniqueUsers.filter((user) => {
       // 0. Role-based Visibility & Permission Scope
       if (currentUser?.role === 'superadmin' || currentUser?.role === 'admin') {
         // Superadmin and Admin have full visibility across all corporate users and administrators
@@ -654,6 +699,24 @@ export function AdminUsersTable({
 
       if (isOnlineA && !isOnlineB) return -1;
       if (!isOnlineA && isOnlineB) return 1;
+
+      // Rule: Offline users sorted by who went offline more recently (2 min ago before 3 min ago)!
+      if (!isOnlineA && !isOnlineB) {
+        if (!sortState.field || sortState.field === 'id') {
+          const timeA = a.lastSeenAt ? new Date(a.lastSeenAt).getTime() : 0;
+          const timeB = b.lastSeenAt ? new Date(b.lastSeenAt).getTime() : 0;
+          if (timeA !== timeB) return timeB - timeA;
+        }
+      }
+
+      // Online users: most recently active / online first by default
+      if (isOnlineA && isOnlineB) {
+        if (!sortState.field || sortState.field === 'id') {
+          const timeA = (a.onlineSince || a.lastSeenAt) ? new Date(a.onlineSince || a.lastSeenAt!).getTime() : 0;
+          const timeB = (b.onlineSince || b.lastSeenAt) ? new Date(b.onlineSince || b.lastSeenAt!).getTime() : 0;
+          if (timeA !== timeB) return timeB - timeA;
+        }
+      }
 
       // Within same status group, apply column sort
       let valA: any = a[sortState.field as keyof User];
@@ -1846,6 +1909,9 @@ export function AdminUsersTable({
                                     <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
                                   </span>
                                   <span>{t("online")}</span>
+                                  <span className="text-[11px] font-normal opacity-90 fa-num">
+                                    ({formatOnlineDuration(user.onlineSince || user.lastSeenAt, isRtl)})
+                                  </span>
                                 </span>
                               ) : (
                                 <span
@@ -1855,7 +1921,7 @@ export function AdminUsersTable({
                                   <span className="size-2 rounded-full bg-slate-400 dark:bg-slate-500 shrink-0" />
                                   <span>{t("offline")}</span>
                                   {user.lastSeenAt && (
-                                    <span className="text-[10px] opacity-75 hidden 2xl:inline">
+                                    <span className="text-[11px] opacity-80 fa-num">
                                       ({formatLastSeen(user.lastSeenAt, isRtl)})
                                     </span>
                                   )}
@@ -1976,6 +2042,7 @@ export function AdminUsersTable({
                                                           <span className="relative inline-flex rounded-full size-2 bg-emerald-500" />
                                                         </span>
                                                         <span className="font-semibold text-emerald-600 dark:text-emerald-400">{t("online")}</span>
+                                                        <span className="text-[10px] text-muted-foreground/80 fa-num">({formatOnlineDuration(user.onlineSince || user.lastSeenAt, isRtl)})</span>
                                                       </>
                                                     ) : (
                                                       <>
@@ -2640,9 +2707,15 @@ export function AdminUsersTable({
                                               {isRtl ? "فقط‌خواندنی (مدیر اداری)" : "Read-Only (Office Admin)"}
                                             </Badge>
                                           )}
-                                          <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 fa-num">
-                                            {activeSubItemsCount} / {totalSubItemsCount} {t("activeStatus")}
-                                          </Badge>
+                                          {(user.role === 'admin' || user.role === 'superadmin') ? (
+                                            <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                              {isRtl ? "دسترسی کامل" : "Full Access"}
+                                            </Badge>
+                                          ) : (
+                                            <Badge variant="secondary" className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 fa-num">
+                                              {activeSubItemsCount} / {totalSubItemsCount} {t("activeStatus")}
+                                            </Badge>
+                                          )}
 
                                           <Button
                                             type="button"
@@ -2667,7 +2740,27 @@ export function AdminUsersTable({
                                         </div>
                                       </div>
 
-                                      {/* Modern, Clean & Complete Module Cards Grid with All Sub-Items */}
+                                      {/* Rule: For Admins, show Full Access without checkboxes */}
+                                      {(user.role === 'admin' || user.role === 'superadmin') ? (
+                                        <div className="flex flex-col items-center justify-center py-10 px-6 bg-emerald-500/[0.04] dark:bg-emerald-950/20 border border-emerald-500/25 rounded-2xl text-center shadow-2xs">
+                                          <div className="size-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3.5 shadow-2xs">
+                                            <ShieldCheck size={32} />
+                                          </div>
+                                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold text-xs mb-2">
+                                            <Sparkles size={14} />
+                                            <span>{isRtl ? "دسترسی کامل سازمانی" : "Full Organizational Access"}</span>
+                                          </div>
+                                          <h3 className="text-sm font-bold text-foreground mb-1.5">
+                                            {isRtl ? "دسترسی کامل (Full Access)" : "Full System Access"}
+                                          </h3>
+                                          <p className="text-xs text-muted-foreground max-w-lg leading-relaxed">
+                                            {isRtl
+                                              ? "مدیران سیستم به طور پیش‌فرض و نامحدود به تمامی ماژول‌ها، ابزارها و بخش‌های سازمان دسترسی کامل دارند و نیازی به انتخاب موردی ماژول‌ها نیست."
+                                              : "System Administrators have comprehensive and unrestricted access to all organizational modules and tools. Individual module selection is not required."}
+                                          </p>
+                                        </div>
+                                      ) : (
+                                      /* Modern, Clean & Complete Module Cards Grid with All Sub-Items */
                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 max-h-[460px] overflow-y-auto custom-scrollbar p-1">
                                         {availableGroups.map(group => {
                                           const items = group.items || [];
@@ -2802,6 +2895,7 @@ export function AdminUsersTable({
                                           );
                                         })}
                                       </div>
+                                      )}
                                     </div>
                                   );
                                 })()}

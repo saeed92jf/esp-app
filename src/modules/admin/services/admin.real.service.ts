@@ -5,7 +5,8 @@ import { IAdminService } from "./admin.service";
 import { 
   User, 
   PendingRequest, 
-  UserModuleAccess, 
+  UserModuleAccess,
+  ModuleAccessRequest,
   UserQueryParams, 
   RequestQueryParams,
   AccountStatus,
@@ -500,6 +501,32 @@ export class RealAdminService implements IAdminService {
 
   async deleteRequest(requestId: string): Promise<void> {
     await this.http.delete(`/admin/requests/${requestId}`);
+  }
+
+  async getModuleRequests(): Promise<ModuleAccessRequest[]> {
+    try {
+      const res = await this.http.get<any>('/admin/module-requests');
+      const list = Array.isArray(res) ? res : res?.data || [];
+      return list;
+    } catch (err) {
+      console.warn('RealAdminService.getModuleRequests error:', err);
+      return [];
+    }
+  }
+
+  async requestModuleAccess(payload: { userId: string; userName?: string; userEmail?: string; moduleId: string; moduleName?: string }): Promise<ModuleAccessRequest> {
+    const res = await this.http.post<any>('/admin/module-requests', payload);
+    return res?.data ?? res;
+  }
+
+  async approveModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }> {
+    const res = await this.http.post<any>(`/admin/module-requests/${requestId}/approve`, {});
+    return res?.data ?? res;
+  }
+
+  async rejectModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }> {
+    const res = await this.http.post<any>(`/admin/module-requests/${requestId}/reject`, {});
+    return res?.data ?? res;
   }
 
 }

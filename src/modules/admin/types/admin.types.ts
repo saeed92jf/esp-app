@@ -25,6 +25,7 @@ export interface User {
   isOnline?: boolean;
   lastSeenAt?: string;
   lastActiveAt?: string;
+  onlineSince?: string;
   accountStatus?: AccountStatus;
   avatar?: string;
   avatarColor?: string;
@@ -246,4 +247,18 @@ export interface RequestQueryParams {
   limit?: number;
   sortBy?: 'requestedAt' | 'name' | 'status';
   sortOrder?: 'asc' | 'desc';
+}
+
+
+export interface ModuleAccessRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  moduleId: string;
+  moduleName: string;
+  requestedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reviewedAt?: string | null;
+  reviewedBy?: string | null;
 }

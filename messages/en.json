@@ -1900,6 +1900,7 @@
     "usersTable": "Users Table",
     "userConfig": "User Config",
     "sidebarReq": "Requests",
+    "moduleRequests": "Access Requests",
     "sidebarSettings": "Settings",
     "fillRequiredFields": "Please fill out required fields",
     "userAddedSuccess": "New user successfully added",

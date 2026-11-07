@@ -2,7 +2,8 @@ import type { UserRole } from '@/types/auth';
 import { 
   User, 
   PendingRequest, 
-  UserModuleAccess, 
+  UserModuleAccess,
+  ModuleAccessRequest,
   UserQueryParams, 
   RequestQueryParams 
 } from "../types/admin.types";
@@ -32,4 +33,10 @@ export interface IAdminService {
   updateRequest(requestId: string, updates: Partial<PendingRequest>): Promise<PendingRequest>;
   sendPassword(userId: string): Promise<{ success: boolean; password?: string }>;
   deleteRequest(requestId: string): Promise<void>;
+
+  // Module Access Requests
+  getModuleRequests(): Promise<ModuleAccessRequest[]>;
+  requestModuleAccess(payload: { userId: string; userName?: string; userEmail?: string; moduleId: string; moduleName?: string }): Promise<ModuleAccessRequest>;
+  approveModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }>;
+  rejectModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }>;
 }

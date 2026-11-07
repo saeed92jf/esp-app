@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Briefcase, TableProperties, Users, ShieldAlert, Settings } from "lucide-react";
+import { Briefcase, TableProperties, Users, ShieldAlert, KeyRound, Settings } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -14,8 +14,8 @@ import {
 export interface AdminSidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  activeTab: 'home' | 'usersTable' | 'add' | 'requests' | 'settings';
-  setActiveTab: (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'settings') => void;
+  activeTab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings';
+  setActiveTab: (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings') => void;
 }
 
 const NAV_ITEMS = [
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { id: 'usersTable', icon: TableProperties, labelKey: "usersTable" },
   { id: 'add', icon: Users, labelKey: "userConfig" },
   { id: 'requests', icon: ShieldAlert, labelKey: "sidebarReq" },
+  { id: 'moduleRequests', icon: KeyRound, labelKey: "moduleRequests" },
   { id: 'settings', icon: Settings, labelKey: "sidebarSettings" },
 ] as const;
 

@@ -23,25 +23,37 @@ export function AdminHeatmapModules({
 }: AdminHeatmapModulesProps) {
   const t = useTranslations("Admin");
 
-  // Flatten the granted accesses
+  // Flatten the granted accesses (Admins inherently have full access)
+  const isAdmin = selectedUser?.role === 'superadmin' || selectedUser?.role === 'admin';
   const grantedItems: any[] = [];
-  availableModules.forEach(module => {
-    // If the module itself doesn't have items, check if it's granted directly
-    if (!module.items || module.items.length === 0) {
-      const access = selectedUser?.modulesAccess?.find(m => m.moduleId === module.id);
-      if (access?.hasAccess) {
+
+  if (isAdmin) {
+    availableModules.forEach(module => {
+      if (!module.items || module.items.length === 0) {
         grantedItems.push({ id: module.id, labelKey: module.labelKey, icon: module.icon, isGroup: true });
-      }
-    } else {
-      // Check its sub-items
-      module.items.forEach((item: any) => {
-        const itemAccess = selectedUser?.modulesAccess?.find(m => m.moduleId === item.href);
-        if (itemAccess?.hasAccess) {
+      } else {
+        module.items.forEach((item: any) => {
           grantedItems.push({ id: item.href, labelKey: item.labelKey, icon: item.icon, isGroup: false });
+        });
+      }
+    });
+  } else {
+    availableModules.forEach(module => {
+      if (!module.items || module.items.length === 0) {
+        const access = selectedUser?.modulesAccess?.find(m => m.moduleId === module.id);
+        if (access?.hasAccess) {
+          grantedItems.push({ id: module.id, labelKey: module.labelKey, icon: module.icon, isGroup: true });
         }
-      });
-    }
-  });
+      } else {
+        module.items.forEach((item: any) => {
+          const itemAccess = selectedUser?.modulesAccess?.find(m => m.moduleId === item.href);
+          if (itemAccess?.hasAccess) {
+            grantedItems.push({ id: item.href, labelKey: item.labelKey, icon: item.icon, isGroup: false });
+          }
+        });
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col flex-1 h-full min-h-0">
@@ -51,8 +63,8 @@ export function AdminHeatmapModules({
         <div className="flex items-center justify-between mb-2 xl:mb-2.5 relative z-10 gap-2 shrink-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">{t("accesses")}</h3>
-            <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0">
-              {grantedItems.length}
+            <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+              {isAdmin ? "دسترسی کامل" : grantedItems.length}
             </span>
           </div>
 

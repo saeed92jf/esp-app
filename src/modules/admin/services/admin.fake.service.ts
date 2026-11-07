@@ -4,7 +4,8 @@ import adminRequestsMock from "@/data/mock/admin-requests.json";
 import { 
   User, 
   PendingRequest, 
-  UserModuleAccess, 
+  UserModuleAccess,
+  ModuleAccessRequest, 
   UserQueryParams, 
   RequestQueryParams,
   RequestStatus 
@@ -662,6 +663,61 @@ export class FakeAdminService implements IAdminService {
     await new Promise(resolve => setTimeout(resolve, 300));
     this.requests = this.requests.filter(r => r.id !== requestId);
     this.saveToStorage();
+  }
+
+  async getModuleRequests(): Promise<ModuleAccessRequest[]> {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem('esp_module_requests');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  async requestModuleAccess(payload: { userId: string; userName?: string; userEmail?: string; moduleId: string; moduleName?: string }): Promise<ModuleAccessRequest> {
+    const list = await this.getModuleRequests();
+    const newReq: ModuleAccessRequest = {
+      id: 'mreq_' + Date.now(),
+      userId: payload.userId,
+      userName: payload.userName || 'کاربر',
+      userEmail: payload.userEmail || '',
+      moduleId: payload.moduleId,
+      moduleName: payload.moduleName || payload.moduleId,
+      requestedAt: new Date().toISOString(),
+      status: 'pending',
+    };
+    list.unshift(newReq);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('esp_module_requests', JSON.stringify(list));
+    }
+    return newReq;
+  }
+
+  async approveModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }> {
+    const list = await this.getModuleRequests();
+    const target = list.find(r => r.id === requestId);
+    if (target) {
+      target.status = 'approved';
+      target.reviewedAt = new Date().toISOString();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('esp_module_requests', JSON.stringify(list));
+      }
+    }
+    return { success: true, message: 'درخواست تایید شد.' };
+  }
+
+  async rejectModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }> {
+    const list = await this.getModuleRequests();
+    const target = list.find(r => r.id === requestId);
+    if (target) {
+      target.status = 'rejected';
+      target.reviewedAt = new Date().toISOString();
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('esp_module_requests', JSON.stringify(list));
+      }
+    }
+    return { success: true, message: 'درخواست رد شد.' };
   }
 
 }

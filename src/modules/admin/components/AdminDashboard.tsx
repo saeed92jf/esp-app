@@ -27,6 +27,7 @@ import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
 import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
+import { AdminModuleRequestsView } from "./AdminModuleRequestsView";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1";
 
@@ -68,10 +69,10 @@ export function AdminDashboard() {
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'settings'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings'>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'settings') => {
+  const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings') => {
     if (tab === 'add') {
       setUserToEdit(null);
     }
@@ -143,13 +144,20 @@ export function AdminDashboard() {
       // If currentUser is logged in, ensure the authenticated administrator is in userList and selectable
       if (currentUser) {
         const adminEmail = currentUser.email?.toLowerCase();
-        const foundIdx = userList.findIndex(
-          (item) => (adminEmail && item.email?.toLowerCase() === adminEmail) || item.id === currentUser.id
-        );
-
         const adminName = currentUser.fullNameFa || currentUser.name || currentUser.fullName || "سعید جلیلی فرد";
-        const isSaeed = adminEmail && (adminEmail.includes("jalili") || adminEmail.includes("saeed"));
+        const isSaeed = Boolean(
+          (adminEmail && (adminEmail.includes("jalili") || adminEmail.includes("saeed"))) ||
+          currentUser.id === "u-saeed" ||
+          currentUser.id === "usr_9801"
+        );
         const assignedRole: UserRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (currentUser.role || "admin");
+
+        const foundIdx = userList.findIndex((item) => {
+          if (adminEmail && item.email?.toLowerCase() === adminEmail) return true;
+          if (currentUser.id && (item.id === currentUser.id || (isSaeed && (item.id === "u-saeed" || item.id === "usr_9801")))) return true;
+          if (isSaeed && item.email && (item.email.includes("jalili") || item.email.includes("saeed"))) return true;
+          return false;
+        });
         
         if (foundIdx === -1) {
           const adminAsUser: User = {
@@ -271,6 +279,33 @@ export function AdminDashboard() {
         };
         userList = [...userList, shafieeAsUser];
       }
+
+      // 🟢 Enforce strict deduplication so there is never duplicate Saeed Jalili Fard
+      const seenIds = new Set<string>();
+      const seenEmails = new Set<string>();
+      userList = userList.filter((item) => {
+        const idKey = (item.id || "").toLowerCase();
+        const rawEmail = (item.email || "").toLowerCase();
+        const isItemSaeed = (
+          idKey === "u-saeed" ||
+          idKey === "usr_9801" ||
+          rawEmail.includes("jalili") ||
+          rawEmail.includes("saeed")
+        );
+
+        if (isItemSaeed) {
+          if (seenIds.has("saeed_canonical")) return false;
+          seenIds.add("saeed_canonical");
+          return true;
+        }
+
+        if (idKey && seenIds.has(idKey)) return false;
+        if (rawEmail && seenEmails.has(rawEmail)) return false;
+
+        if (idKey) seenIds.add(idKey);
+        if (rawEmail) seenEmails.add(rawEmail);
+        return true;
+      });
 
       setUsers(userList);
       if (userList.length > 0) {
@@ -642,6 +677,16 @@ export function AdminDashboard() {
                       setUsers={setUsers}
                       onRefresh={fetchData}
                       availableModules={availableModules}
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'moduleRequests' && (
+                  <div className="w-full h-full flex-1">
+                    <AdminModuleRequestsView
+                      users={users}
+                      setUsers={setUsers}
+                      currentUser={currentUser}
                     />
                   </div>
                 )}
