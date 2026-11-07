@@ -111,6 +111,19 @@ export class CommunityService {
     }
   }
 
+  async togglePinPost(postId: string): Promise<{ success: boolean; pinned: boolean; postId: string }> {
+    const res = await fetch(`${API_BASE}/posts/${postId}/pin`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'خطا در تغییر وضعیت پین پرسش');
+    }
+    return res.json();
+  }
+
   async addReply(postId: string, dto: CreateReplyDto): Promise<CommunityReply> {
     const res = await fetch(`${API_BASE}/posts/${postId}/replies`, {
       method: 'POST',

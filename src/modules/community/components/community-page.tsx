@@ -454,20 +454,51 @@ export function CommunityPage() {
     }
   };
 
-  // Delete post
+  // Delete post (Strictly Admin / Superadmin only)
   const handleDeletePost = async (postId: string) => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated || !user || (user.role !== "superadmin" && user.role !== "admin")) {
+      toast.error(isRtl ? "قابلیت حذف فقط برای مدیران و سوپرادمین‌ها فراهم است." : "Deleting is only available for admins and superadmins.");
+      return;
+    }
     const confirmMsg = isRtl
-      ? "آیا از حذف این گفتگو اطمینان دارید؟ تمامی پاسخ‌های مربوط به آن نیز حذف خواهند شد."
-      : "Are you sure you want to delete this discussion and all its replies?";
+      ? "آیا از حذف این پرسش اطمینان دارید؟ تمامی پاسخ‌های مربوط به آن نیز حذف خواهند شد."
+      : "Are you sure you want to delete this question and all its replies?";
     if (!window.confirm(confirmMsg)) return;
 
     try {
       await communityService.deletePost(postId);
       setPosts((prev) => prev.filter((p) => p.id !== postId));
-      toast.success(isRtl ? "گفتگو با موفقیت حذف شد" : "Discussion deleted successfully");
+      toast.success(isRtl ? "پرسش با موفقیت حذف شد" : "Question deleted successfully");
     } catch (err: any) {
-      toast.error(err.message || (isRtl ? "خطا در حذف گفتگو" : "Failed to delete discussion"));
+      toast.error(err.message || (isRtl ? "خطا در حذف پرسش" : "Failed to delete question"));
+    }
+  };
+
+  // Toggle Pin (Strictly Admin / Superadmin only)
+  const handleTogglePin = async (postId: string) => {
+    if (!isAuthenticated || !user || (user.role !== "superadmin" && user.role !== "admin")) {
+      toast.error(isRtl ? "قابلیت پین کردن فقط برای مدیران و سوپرادمین‌ها فراهم است." : "Pinning is only available for admins and superadmins.");
+      return;
+    }
+    try {
+      const res = await communityService.togglePinPost(postId);
+      setPosts((prev) => {
+        const updated = prev.map((p) =>
+          p.id === postId ? { ...p, pinned: res.pinned } : p
+        );
+        return [...updated].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      });
+      toast.success(
+        res.pinned
+          ? isRtl
+            ? "پرسش با موفقیت پین شد و در صدر قرار گرفت"
+            : "Question pinned to top"
+          : isRtl
+          ? "پین پرسش برداشته شد"
+          : "Question unpinned"
+      );
+    } catch (err: any) {
+      toast.error(err.message || (isRtl ? "خطا در تغییر وضعیت پین" : "Failed to toggle pin"));
     }
   };
 
@@ -1275,13 +1306,12 @@ export function CommunityPage() {
                 const userDownvoted = (post.downvotes || []).includes(user?.id || "");
                 const hasAcceptedAnswer = Boolean(post.acceptedReplyId);
 
-                const canDeletePost =
+                const isAdminOrSuperAdmin =
                   isAuthenticated &&
-                  user &&
-                  (user.id === post.authorId ||
-                    user.email?.toLowerCase() === post.authorEmail?.toLowerCase() ||
-                    user.role === "superadmin" ||
-                    user.role === "admin");
+                  Boolean(user && (user.role === "superadmin" || user.role === "admin"));
+
+                const canDeletePost = isAdminOrSuperAdmin;
+                const canPinPost = isAdminOrSuperAdmin;
 
                 const isPostAuthorOrAdmin =
                   isAuthenticated &&
@@ -1376,11 +1406,34 @@ export function CommunityPage() {
                             <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">
                               {isRtl ? categoryDef.labelFa : categoryDef.labelEn}
                             </Badge>
+                            {canPinPost && (
+                              <button
+                                type="button"
+                                onClick={() => handleTogglePin(post.id)}
+                                className={cn(
+                                  "p-1 rounded-md transition-colors cursor-pointer",
+                                  post.pinned
+                                    ? "text-amber-600 dark:text-amber-400 bg-amber-500/15 hover:bg-amber-500/25"
+                                    : "text-muted-foreground hover:text-amber-600 hover:bg-muted"
+                                )}
+                                title={
+                                  post.pinned
+                                    ? isRtl
+                                      ? "برداشتن سنجاق (پین)"
+                                      : "Unpin question"
+                                    : isRtl
+                                    ? "سنجاق (پین) کردن در بالای تالار"
+                                    : "Pin question to top"
+                                }
+                              >
+                                <Pin className={cn("size-3.5", post.pinned && "fill-current")} />
+                              </button>
+                            )}
                             {canDeletePost && (
                               <button
                                 type="button"
                                 onClick={() => handleDeletePost(post.id)}
-                                className="p-1 text-muted-foreground hover:text-destructive rounded-md transition-colors cursor-pointer"
+                                className="p-1 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors cursor-pointer"
                                 title={isRtl ? "حذف پرسش" : "Delete question"}
                               >
                                 <Trash2 className="size-3.5" />
