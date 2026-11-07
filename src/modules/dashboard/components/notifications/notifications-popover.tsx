@@ -199,6 +199,23 @@ export function NotificationsPopover({
   });
   const [selectedTaskForEmail, setSelectedTaskForEmail] =
     useState<DashboardTask | null>(null);
+  const [desktopPermission, setDesktopPermission] = useState<NotificationPermission>("default");
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setDesktopPermission(Notification.permission);
+    }
+  }, [open]);
+
+  const handleRequestDesktopPermission = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (typeof window !== "undefined" && "Notification" in window) {
+      try {
+        const res = await Notification.requestPermission();
+        setDesktopPermission(res);
+      } catch {}
+    }
+  };
 
   const t = useTranslations("Dashboard.notifications");
   const locale = useLocale();
@@ -563,6 +580,34 @@ export function NotificationsPopover({
                         </div>
                       )}
 
+                      {/* Windows Desktop Notification Status & Quick Activation */}
+                      <div className="segmented-item p-2 rounded-[6px] flex items-center justify-between gap-2 w-full max-w-full min-w-0 box-border bg-muted/40 text-xs">
+                        <div className="flex items-center gap-1.5 min-w-0 truncate">
+                          <span
+                            className={cn(
+                              "size-2 rounded-full shrink-0",
+                              desktopPermission === "granted"
+                                ? "bg-emerald-500 animate-pulse"
+                                : "bg-amber-500"
+                            )}
+                          />
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {desktopPermission === "granted"
+                              ? (locale === "fa" ? "اعلان‌های ویندوز فعال است" : "Windows Notifications: Active")
+                              : (locale === "fa" ? "دریافت اعلان‌ها در ویندوز" : "Windows Desktop Notifications")}
+                          </span>
+                        </div>
+                        {desktopPermission !== "granted" && (
+                          <button
+                            type="button"
+                            onClick={handleRequestDesktopPermission}
+                            className="text-[10px] font-semibold px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0 cursor-pointer"
+                          >
+                            {locale === "fa" ? "فعال‌سازی" : "Enable"}
+                          </button>
+                        )}
+                      </div>
+
                       {/* Items List */}
                       {displayedItems.length > 0 ? (
                         displayedItems.map((notif, idx) => {
@@ -665,6 +710,7 @@ export function NotificationsPopover({
                           </p>
                         </div>
                       )}
+
                     </motion.div>
                   )}
                 </AnimatePresence>

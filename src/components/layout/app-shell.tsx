@@ -8,6 +8,7 @@ import { ConditionalHeader } from '@/components/layout/conditional-header';
 import { ConditionalFooter } from '@/components/layout/conditional-footer';
 import { GlobalConfirmModal } from '@/components/global-confirm-modal';
 import { PresenceTracker } from '@/modules/auth/hooks/use-presence';
+import { DesktopNotificationManager } from '@/modules/notifications/components/desktop-notification-manager';
 import { ModuleAccessGuard } from '@/components/auth/module-access-guard';
 
 interface AppShellProps {
@@ -42,6 +43,7 @@ export function AppShell({ children }: AppShellProps) {
       </main>
       <GlobalConfirmModal />
       <PresenceTracker />
+      <DesktopNotificationManager />
       <ModuleAccessGuard />
       <ConditionalFooter />
     </div>
