@@ -35,6 +35,13 @@ interface AuthState {
 function getInitialUser(): User | null {
   if (typeof window === 'undefined') return null;
   try {
+    // Zero-Trust: A valid session MUST have an active authentication token.
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) {
+      localStorage.removeItem(AUTH_USER_KEY);
+      localStorage.removeItem('esp_auth_user');
+      return null;
+    }
     const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -179,19 +186,11 @@ export function useAuth() {
           }
         }
 
-        // If no token, check if we have a valid cached user session
+        // Zero-Trust Security: If no token exists, the user is unauthenticated.
+        // Wipe any orphaned cached user data immediately.
         if (typeof window !== "undefined") {
-          const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem("esp_auth_user");
-          if (raw) {
-            try {
-              const cached = JSON.parse(raw) as User;
-              if (cached && (cached.email || cached.fullName || cached.name)) {
-                store.setUser(cached);
-                if (cached.primaryColor) setColor(cached.primaryColor as any);
-                return;
-              }
-            } catch {}
-          }
+          localStorage.removeItem(AUTH_USER_KEY);
+          localStorage.removeItem("esp_auth_user");
         }
 
         store.setUser(null);

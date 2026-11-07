@@ -52,7 +52,8 @@ export function HomeClient() {
   const { user } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== "undefined") {
-      return Boolean(localStorage.getItem("esp-auth-user"));
+      const token = localStorage.getItem("esp-auth-token");
+      return Boolean(token && user);
     }
     return false;
   });
@@ -60,8 +61,11 @@ export function HomeClient() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsAuthenticated(Boolean(user || (typeof window !== "undefined" && localStorage.getItem("esp-auth-user"))));
-    if (user && user.role !== "admin" && user.role !== "superadmin") {
+    const token = typeof window !== "undefined" ? localStorage.getItem("esp-auth-token") : null;
+    const authed = Boolean(token && user);
+    setIsAuthenticated(authed);
+
+    if (authed && user && user.role !== "admin" && user.role !== "superadmin") {
       if (!user.isProfileCompleted || user.accountStatus === "pending_profile") {
         router.push("/profile?onboarding=true");
       } else if (user.accountStatus !== "active" || !(user.hrApproved && user.managerApproved)) {

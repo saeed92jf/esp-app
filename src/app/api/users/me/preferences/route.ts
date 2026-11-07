@@ -1,82 +1,94 @@
 // src/app/api/users/me/preferences/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getServerUserProfile,
-  updateServerUserPreferences,
-} from "@/lib/server/user-profile-store";
 import { BACKEND_API_URL } from "@/lib/server/backend-config";
+
+const NO_CACHE_HEADERS = {
+  "Cache-Control": "private, no-cache, no-store, max-age=0, must-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization");
-    if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
-      try {
-        const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
-          headers: {
-            Authorization: authHeader,
-            Accept: "application/json",
-          },
-          signal: AbortSignal.timeout(3000),
-        });
-
-        if (remoteRes.ok) {
-          const remoteData = await remoteRes.json();
-          return NextResponse.json(remoteData);
-        }
-      } catch {
-        // Fallback to server store
-      }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error_code: "UNAUTHORIZED", message: "Authentication required" },
+        { status: 401, headers: NO_CACHE_HEADERS }
+      );
     }
 
-    const profile = getServerUserProfile();
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
+        headers: {
+          Authorization: authHeader,
+          Accept: "application/json",
+        },
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const remoteData = await remoteRes.json();
+        return NextResponse.json(remoteData, { headers: NO_CACHE_HEADERS });
+      }
+    } catch {
+      // Backend temporarily unreachable
+    }
+
     return NextResponse.json({
-      primaryColor: profile.personal?.primaryColor || "blue",
+      primaryColor: "blue",
       theme: "system",
       quickAccessHrefs: [],
-    });
+    }, { headers: NO_CACHE_HEADERS });
   } catch (err: any) {
-    console.error("GET /api/users/me/preferences error:", err);
     return NextResponse.json(
       { error_code: "INTERNAL_ERROR", message: err?.message || "Failed to get preferences" },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
     const authHeader = req.headers.get("authorization");
-
-    if (authHeader && authHeader.startsWith("Bearer ") && !authHeader.includes("fake-token-")) {
-      try {
-        await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
-          method: "PATCH",
-          headers: {
-            Authorization: authHeader,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify(body),
-          signal: AbortSignal.timeout(3000),
-        });
-      } catch {
-        // Fallback to server store
-      }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { error_code: "UNAUTHORIZED", message: "Authentication required" },
+        { status: 401, headers: NO_CACHE_HEADERS }
+      );
     }
 
-    const updated = updateServerUserPreferences(body);
+    const body = await req.json();
+
+    try {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
+        method: "PATCH",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(4000),
+      });
+
+      if (remoteRes.ok) {
+        const data = await remoteRes.json();
+        return NextResponse.json(data, { headers: NO_CACHE_HEADERS });
+      }
+    } catch {
+      // Backend error
+    }
+
     return NextResponse.json({
-      primaryColor: updated.primaryColor || "blue",
-      theme: updated.theme || "system",
+      primaryColor: body.primaryColor || "blue",
+      theme: body.theme || "system",
       quickAccessHrefs: [],
-    });
+    }, { headers: NO_CACHE_HEADERS });
   } catch (err: any) {
-    console.error("PATCH /api/users/me/preferences error:", err);
     return NextResponse.json(
       { error_code: "INTERNAL_ERROR", message: err?.message || "Failed to update preferences" },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }
-

@@ -7,6 +7,12 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization");
     const body = await req.json().catch(() => ({}));
 
+    // If no authenticated user ID is provided, ignore heartbeat securely.
+    // Never fall back to 'u-saeed' or any admin account for anonymous users!
+    if (!body?.userId) {
+      return NextResponse.json({ status: "ignored", message: "No userId provided" });
+    }
+
     try {
       const remoteRes = await fetch(`${BACKEND_API_URL}/users/heartbeat`, {
         method: "POST",
@@ -29,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       status: "ok",
       presence: {
-        userId: body.userId || "u-saeed",
+        userId: body.userId,
         isOnline: true,
         status: "online",
         lastSeenAt: new Date().toISOString(),
