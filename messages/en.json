@@ -696,7 +696,8 @@
       "audio": "Audio",
       "mediaLibrary": "Media Library",
       "standards": "Standards",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "customers": "Clients & Customers"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",

@@ -45,6 +45,9 @@ import {
 } from "../../types/simplified-projects.types";
 import { simplifiedProjectsService } from "../../services/simplified-projects.service";
 import { ProjectCategoryBadge } from "./ProjectCategoryBadge";
+import { customersService } from "@/modules/customers/services/customers.service";
+import { AddCustomerModal } from "@/modules/customers/components/AddCustomerModal";
+import type { Customer } from "@/modules/customers/types/customers.types";
 import {
   getAttachmentIcon,
   readAttachmentFile,
@@ -96,6 +99,11 @@ export function ProjectCreateWizard({
   const isRtl = locale === "fa";
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Customer options loading & modal
+  const [customerOptions, setCustomerOptions] = useState<ComboboxOption[]>([]);
+  const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
 
   // Personnel loading
   const [personnelList, setPersonnelList] = useState<PersonnelItem[]>([]);
@@ -162,6 +170,49 @@ export function ProjectCreateWizard({
       isMounted = false;
     };
   }, []);
+
+  // Load Customers options
+  useEffect(() => {
+    let isMounted = true;
+    async function loadCustomers() {
+      try {
+        setIsLoadingCustomers(true);
+        const opts = await customersService.getCustomerOptions(undefined, 800);
+        if (isMounted && opts.length > 0) {
+          const mapped: ComboboxOption[] = opts.map((c) => ({
+            value: c.value,
+            label: c.label,
+            hint: c.industry ? `${c.industry}${c.city ? ` - ${c.city}` : ""}` : c.city || undefined,
+          }));
+          setCustomerOptions(mapped);
+        } else if (isMounted) {
+          setCustomerOptions(DEFAULT_CLIENT_OPTIONS);
+        }
+      } catch {
+        if (isMounted) setCustomerOptions(DEFAULT_CLIENT_OPTIONS);
+      } finally {
+        if (isMounted) setIsLoadingCustomers(false);
+      }
+    }
+    loadCustomers();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleNewCustomerAdded = (newCust: Customer) => {
+    const custName = (newCust.persian_title_fa || newCust.company_name_en).trim();
+    const newOpt: ComboboxOption = {
+      value: custName,
+      label: custName,
+      hint: newCust.industry ? `${newCust.industry}${newCust.city ? ` - ${newCust.city}` : ""}` : newCust.city || undefined,
+    };
+    setCustomerOptions((prev) => [newOpt, ...prev]);
+    setClient(custName);
+    toast.success(
+      isRtl ? `کارفرمای «${custName}» انتخاب شد.` : `Client "${custName}" selected.`
+    );
+  };
 
   // Compute Jalali start date on mount
   useEffect(() => {
@@ -425,15 +476,29 @@ export function ProjectCreateWizard({
               {/* Client & ESP Number */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
-                    <Building2 className="size-4 text-primary" />
-                    <span>{isRtl ? "کارفرما (مشتری) *" : "Client *"}</span>
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                      <Building2 className="size-4 text-primary" />
+                      <span>{isRtl ? "کارفرما (مشتری) *" : "Client *"}</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddCustomerModalOpen(true)}
+                      className="text-xs text-primary hover:underline font-medium flex items-center gap-1 transition-colors"
+                    >
+                      <Plus className="size-3" />
+                      <span>{isRtl ? "افزودن کارفرمای جدید" : "Add Client"}</span>
+                    </button>
+                  </div>
                   <Combobox
-                    options={DEFAULT_CLIENT_OPTIONS}
+                    options={customerOptions.length > 0 ? customerOptions : DEFAULT_CLIENT_OPTIONS}
                     value={client}
                     onChange={(val) => setClient(val || "")}
-                    placeholder={isRtl ? "انتخاب یا جستجوی کارفرما..." : "Select client..."}
+                    placeholder={
+                      isLoadingCustomers
+                        ? (isRtl ? "در حال دریافت کارفرمایان..." : "Loading clients...")
+                        : (isRtl ? "انتخاب یا جستجوی کارفرما..." : "Select client...")
+                    }
                     className="w-full h-11 rounded-xl text-sm"
                     allowClear={false}
                   />
@@ -900,6 +965,13 @@ export function ProjectCreateWizard({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Add Customer Modal */}
+      <AddCustomerModal
+        isOpen={isAddCustomerModalOpen}
+        onClose={() => setIsAddCustomerModalOpen(false)}
+        onCustomerAdded={handleNewCustomerAdded}
+      />
 
       {/* ── Wizard Navigation Footer ── */}
       <div className="flex items-center justify-between mt-6">

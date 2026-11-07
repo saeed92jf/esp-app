@@ -9,6 +9,7 @@ import {
   TreeStructure,
   Lightbulb,
   ChatCircleDots,
+  Buildings,
 } from "@phosphor-icons/react";
 
 /**
@@ -345,6 +346,14 @@ export const NAVIGATION: NavGroup[] = [
         href: "/tasks",
         icon: ListChecks,
         color: "sky",
+      },
+      {
+        labelKey: "customers",
+        href: "/customers",
+        icon: Buildings,
+        color: "teal",
+        public: true,
+        free: true,
       },
     ],
   },
