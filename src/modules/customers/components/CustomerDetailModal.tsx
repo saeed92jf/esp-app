@@ -9,11 +9,9 @@ import {
   Globe,
   Phone,
   MapPin,
-  FileText,
   ExternalLink,
-  Shield,
-  Hash,
   Briefcase,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,12 +21,16 @@ interface CustomerDetailModalProps {
   customer: Customer | null;
   isOpen: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
+  onEdit?: (customer: Customer) => void;
 }
 
 export function CustomerDetailModal({
   customer,
   isOpen,
   onClose,
+  isAdmin = false,
+  onEdit,
 }: CustomerDetailModalProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -225,7 +227,24 @@ export function CustomerDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border flex justify-end">
+        <div className="p-4 border-t border-border flex items-center justify-between gap-3 bg-muted/20">
+          <div>
+            {isAdmin && onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  onEdit(customer);
+                }}
+                className="rounded-xl text-xs h-9 px-3.5 gap-1.5 border-amber-500/40 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400"
+              >
+                <Pencil className="size-3.5" />
+                <span>{isRtl ? "ویرایش مشخصات (ادمین)" : "Edit Customer (Admin)"}</span>
+              </Button>
+            )}
+          </div>
+
           <Button
             variant="outline"
             onClick={onClose}
@@ -238,4 +257,3 @@ export function CustomerDetailModal({
     </div>
   );
 }
-

@@ -23,6 +23,7 @@ import {
   Loader2,
   RefreshCw,
   Info,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,10 +34,22 @@ import { customersService } from "../services/customers.service";
 import type { Customer, CustomersListResponse } from "../types/customers.types";
 import { AddCustomerModal } from "./AddCustomerModal";
 import { CustomerDetailModal } from "./CustomerDetailModal";
+import { EditCustomerModal } from "./EditCustomerModal";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 
 const PAGE_SIZE = 48;
 
-export function CustomersDirectoryView() {
+export interface CustomersDirectoryViewProps {
+  isAdmin?: boolean;
+  onNavigateToCreate?: () => void;
+  onCustomerUpdated?: (customer: Customer) => void;
+}
+
+export function CustomersDirectoryView({
+  isAdmin: propIsAdmin,
+  onNavigateToCreate,
+  onCustomerUpdated,
+}: CustomersDirectoryViewProps = {}) {
   const locale = useLocale();
   const isRtl = locale === "fa";
 
@@ -57,6 +70,18 @@ export function CustomersDirectoryView() {
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [detailCustomer, setDetailCustomer] = useState<Customer | null>(null);
+  const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+
+  const { user } = useAuth();
+  const isAdmin = propIsAdmin ?? Boolean(user && (user.role === "admin" || user.role === "superadmin"));
+
+  const handleCustomerUpdatedInternal = (updated: Customer) => {
+    setCustomers((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+    if (detailCustomer?.id === updated.id) {
+      setDetailCustomer(updated);
+    }
+    onCustomerUpdated?.(updated);
+  };
 
   // Pagination offset
   const [offset, setOffset] = useState(0);
@@ -131,10 +156,9 @@ export function CustomersDirectoryView() {
   };
 
   return (
-    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
-      {/* Top Banner / Hero */}
-      <section className="relative overflow-hidden border-b border-border bg-gradient-to-b from-primary/5 via-background to-background py-8 sm:py-12 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6 w-full" dir={isRtl ? "rtl" : "ltr"}>
+      {/* Top Banner / Hero Card */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-2">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold">
@@ -153,7 +177,13 @@ export function CustomersDirectoryView() {
 
             <div className="flex items-center gap-3">
               <Button
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  if (onNavigateToCreate) {
+                    onNavigateToCreate();
+                  } else {
+                    setIsAddModalOpen(true);
+                  }
+                }}
                 className="rounded-xl h-11 px-5 text-sm font-semibold gap-2 shadow-lg shadow-primary/20"
               >
                 <Plus className="size-4" />
@@ -164,7 +194,7 @@ export function CustomersDirectoryView() {
 
           {/* Quick Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-            <div className="p-3.5 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm shadow-xs space-y-1">
+            <div className="p-3.5 rounded-2xl border border-border/80 bg-background/80 shadow-2xs space-y-1">
               <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <Building2 className="size-3.5 text-primary" />
                 <span>{isRtl ? "کل کارفرمایان ثبت‌شده" : "Total Clients"}</span>
@@ -174,7 +204,7 @@ export function CustomersDirectoryView() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm shadow-xs space-y-1">
+            <div className="p-3.5 rounded-2xl border border-border/80 bg-background/80 shadow-2xs space-y-1">
               <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <Briefcase className="size-3.5 text-amber-500" />
                 <span>{isRtl ? "تعداد صنایع" : "Industries"}</span>
@@ -184,7 +214,7 @@ export function CustomersDirectoryView() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm shadow-xs space-y-1">
+            <div className="p-3.5 rounded-2xl border border-border/80 bg-background/80 shadow-2xs space-y-1">
               <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <MapPin className="size-3.5 text-emerald-500" />
                 <span>{isRtl ? "شهرهای تحت پوشش" : "Covered Cities"}</span>
@@ -194,7 +224,7 @@ export function CustomersDirectoryView() {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm shadow-xs space-y-1">
+            <div className="p-3.5 rounded-2xl border border-border/80 bg-background/80 shadow-2xs space-y-1">
               <div className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
                 <ImageIcon className="size-3.5 text-sky-500" />
                 <span>{isRtl ? "دارای نشان / لوگو" : "With Logo"}</span>
@@ -205,10 +235,6 @@ export function CustomersDirectoryView() {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 py-8 space-y-6">
         {/* Search & Filter Toolbar */}
         <div className="p-4 rounded-2xl border border-border bg-card shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -372,7 +398,13 @@ export function CustomersDirectoryView() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => setIsAddModalOpen(true)}
+                onClick={() => {
+                  if (onNavigateToCreate) {
+                    onNavigateToCreate();
+                  } else {
+                    setIsAddModalOpen(true);
+                  }
+                }}
                 className="rounded-xl text-xs h-9 gap-1.5"
               >
                 <Plus className="size-3.5" />
@@ -469,9 +501,24 @@ export function CustomersDirectoryView() {
                     )}
                   </div>
 
-                  <span className="text-[11px] font-medium text-primary group-hover:underline flex items-center gap-1">
-                    <span>{isRtl ? "مشاهده جزئیات" : "Details"}</span>
-                  </span>
+                  <div className="flex items-center gap-2.5">
+                    {isAdmin && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCustomer(c);
+                        }}
+                        className="text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        title={isRtl ? "ویرایش مشخصات کارفرما (ادمین)" : "Edit Client Details (Admin)"}
+                      >
+                        <Pencil className="size-3" />
+                        <span>{isRtl ? "ویرایش" : "Edit"}</span>
+                      </span>
+                    )}
+                    <span className="text-[11px] font-medium text-primary group-hover:underline flex items-center gap-1">
+                      <span>{isRtl ? "مشاهده جزئیات" : "Details"}</span>
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -553,17 +600,34 @@ export function CustomersDirectoryView() {
                         {c.tel_code1 || "—"}
                       </td>
                       <td className="py-2.5 px-4 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDetailCustomer(c);
-                          }}
-                          className="h-7 text-xs rounded-lg px-2 text-primary"
-                        >
-                          {isRtl ? "جزئیات" : "View"}
-                        </Button>
+                        <div className="flex items-center justify-center gap-1">
+                          {isAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCustomer(c);
+                              }}
+                              className="h-7 text-xs rounded-lg px-2 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 gap-1"
+                              title={isRtl ? "ویرایش کارفرما (ادمین)" : "Edit Customer (Admin)"}
+                            >
+                              <Pencil className="size-3" />
+                              <span>{isRtl ? "ویرایش" : "Edit"}</span>
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailCustomer(c);
+                            }}
+                            className="h-7 text-xs rounded-lg px-2 text-primary"
+                          >
+                            {isRtl ? "جزئیات" : "View"}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -600,7 +664,6 @@ export function CustomersDirectoryView() {
             </Button>
           </div>
         )}
-      </main>
 
       {/* Add Customer Modal */}
       <AddCustomerModal
@@ -614,6 +677,19 @@ export function CustomersDirectoryView() {
         customer={detailCustomer}
         isOpen={!!detailCustomer}
         onClose={() => setDetailCustomer(null)}
+        isAdmin={isAdmin}
+        onEdit={(c) => {
+          setDetailCustomer(null);
+          setEditingCustomer(c);
+        }}
+      />
+
+      {/* Edit Customer Modal (Admin Only) */}
+      <EditCustomerModal
+        customer={editingCustomer}
+        isOpen={!!editingCustomer}
+        onClose={() => setEditingCustomer(null)}
+        onCustomerUpdated={handleCustomerUpdatedInternal}
       />
     </div>
   );

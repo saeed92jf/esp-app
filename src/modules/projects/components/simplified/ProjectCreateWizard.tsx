@@ -179,11 +179,28 @@ export function ProjectCreateWizard({
         setIsLoadingCustomers(true);
         const opts = await customersService.getCustomerOptions(undefined, 800);
         if (isMounted && opts.length > 0) {
-          const mapped: ComboboxOption[] = opts.map((c) => ({
-            value: c.value,
-            label: c.label,
-            hint: c.industry ? `${c.industry}${c.city ? ` - ${c.city}` : ""}` : c.city || undefined,
-          }));
+          const seen = new Set<string>();
+          const mapped: ComboboxOption[] = [];
+          for (const c of opts) {
+            let val = (c.value || c.label || "").trim();
+            if (!val) continue;
+            if (seen.has(val)) {
+              const extra = (c.company_name_en && c.company_name_en !== val) ? c.company_name_en : c.city;
+              if (extra) {
+                val = `${val} (${extra})`;
+              } else {
+                val = `${val} - ${c.id}`;
+              }
+            }
+            if (!seen.has(val)) {
+              seen.add(val);
+              mapped.push({
+                value: val,
+                label: val,
+                hint: c.industry ? `${c.industry}${c.city ? ` - ${c.city}` : ""}` : c.city || undefined,
+              });
+            }
+          }
           setCustomerOptions(mapped);
         } else if (isMounted) {
           setCustomerOptions(DEFAULT_CLIENT_OPTIONS);

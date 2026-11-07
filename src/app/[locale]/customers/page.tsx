@@ -1,7 +1,8 @@
+// src/app/[locale]/customers/page.tsx
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { CustomersDirectoryView } from "@/modules/customers/components/CustomersDirectoryView";
+import { CustomersPageContainer } from "@/modules/customers/components/CustomersPageContainer";
 import { RefreshCw } from "lucide-react";
 
 type Props = {
@@ -28,13 +29,12 @@ export default async function CustomersPage({ params }: Props) {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 min-h-screen flex items-center justify-center bg-background">
+        <div className="flex-1 min-h-screen flex items-center justify-center bg-panel dark:bg-background">
           <RefreshCw className="size-8 animate-spin text-primary" />
         </div>
       }
     >
-      <CustomersDirectoryView />
+      <CustomersPageContainer />
     </Suspense>
   );
 }
-

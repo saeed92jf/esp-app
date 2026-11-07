@@ -241,9 +241,9 @@ export function Combobox({
               </CommandGroup>
             )}
             <CommandGroup>
-              {options.map((opt) => (
+              {options.map((opt, idx) => (
                 <CommandItem 
-                  key={opt.value} 
+                  key={`${opt.value}-${idx}`} 
                   value={opt.value} 
                   keywords={opt.searchTerms || [opt.label]} 
                   onSelect={(currentValue) => { 
