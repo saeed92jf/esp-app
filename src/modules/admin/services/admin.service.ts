@@ -5,7 +5,9 @@ import {
   UserModuleAccess,
   ModuleAccessRequest,
   UserQueryParams, 
-  RequestQueryParams 
+  RequestQueryParams,
+  SystemAuditLog,
+  AuditLogQueryParams
 } from "../types/admin.types";
 
 export interface IAdminService {
@@ -39,4 +41,8 @@ export interface IAdminService {
   requestModuleAccess(payload: { userId: string; userName?: string; userEmail?: string; moduleId: string; moduleName?: string }): Promise<ModuleAccessRequest>;
   approveModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }>;
   rejectModuleRequest(requestId: string): Promise<{ success: boolean; message?: string }>;
+
+  // Audit Logs (Super Admin Exclusive)
+  getAuditLogs(params?: AuditLogQueryParams): Promise<{ logs: SystemAuditLog[]; total: number; limit: number; offset: number }>;
+  clearAuditLogs(): Promise<{ success: boolean; deletedCount: number; message: string }>;
 }

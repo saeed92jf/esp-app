@@ -8,7 +8,9 @@ import {
   ModuleAccessRequest, 
   UserQueryParams, 
   RequestQueryParams,
-  RequestStatus 
+  RequestStatus,
+  SystemAuditLog,
+  AuditLogQueryParams
 } from "../types/admin.types";
 import { IAdminService } from "./admin.service";
 
@@ -720,8 +722,14 @@ export class FakeAdminService implements IAdminService {
     return { success: true, message: 'درخواست رد شد.' };
   }
 
+  async getAuditLogs(_params?: AuditLogQueryParams): Promise<{ logs: SystemAuditLog[]; total: number; limit: number; offset: number }> {
+    return { logs: [], total: 0, limit: 50, offset: 0 };
+  }
+
+  async clearAuditLogs(): Promise<{ success: boolean; deletedCount: number; message: string }> {
+    return { success: true, deletedCount: 0, message: "Cleared" };
+  }
 }
 
 export const AdminFakeService = new FakeAdminService();
 export { INITIAL_USERS, INITIAL_REQUESTS };
-export const fakeAdminService = AdminFakeService;

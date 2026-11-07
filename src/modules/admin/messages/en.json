@@ -655,7 +655,8 @@
     "emailUnauthorizedBadge": "Unauthorized Domain",
     "segmentAccess": "Access",
     "segmentAccessDesc": "Define organizational role and system module permissions",
-    "extCol": "EXT."
+    "extCol": "EXT.",
+    "auditLogs": "System Audit Logs"
   },
   "roleSuperadmin": "Super Administrator",
   "roleDeptAdmin": "Department Admin",

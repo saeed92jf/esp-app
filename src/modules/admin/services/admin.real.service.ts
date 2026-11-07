@@ -10,7 +10,9 @@ import {
   UserQueryParams, 
   RequestQueryParams,
   AccountStatus,
-  RequestStatus
+  RequestStatus,
+  SystemAuditLog,
+  AuditLogQueryParams
 } from "../types/admin.types";
 // Direct server communication only - no fake fallback
 
@@ -529,4 +531,29 @@ export class RealAdminService implements IAdminService {
     return res?.data ?? res;
   }
 
+
+  async getAuditLogs(params?: AuditLogQueryParams): Promise<{ logs: SystemAuditLog[]; total: number; limit: number; offset: number }> {
+    try {
+      const res = await this.http.get<any>('/admin/audit-logs', { params });
+      return {
+        logs: Array.isArray(res?.logs) ? res.logs : [],
+        total: typeof res?.total === 'number' ? res.total : (res?.logs?.length || 0),
+        limit: res?.limit || 50,
+        offset: res?.offset || 0,
+      };
+    } catch (err) {
+      console.error('RealAdminService.getAuditLogs error:', err);
+      return { logs: [], total: 0, limit: 50, offset: 0 };
+    }
+  }
+
+  async clearAuditLogs(): Promise<{ success: boolean; deletedCount: number; message: string }> {
+    try {
+      const res = await this.http.delete<any>('/admin/audit-logs');
+      return res;
+    } catch (err) {
+      console.error('RealAdminService.clearAuditLogs error:', err);
+      throw err;
+    }
+  }
 }

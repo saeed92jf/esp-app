@@ -28,6 +28,7 @@ import { AdminUserConfig } from "./AdminUserConfig";
 import { AdminUsersTable } from "./AdminUsersTable";
 import { AdminRequests } from "./AdminRequests";
 import { AdminModuleRequestsView } from "./AdminModuleRequestsView";
+import { AdminAuditLogsView } from "./AdminAuditLogsView";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080/api/v1";
 
@@ -69,10 +70,18 @@ export function AdminDashboard() {
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings'>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings') => {
+  const isSuperAdmin = currentUser?.role === 'superadmin'
+    || currentUser?.email?.toLowerCase().includes('jalili')
+    || currentUser?.id === 'u-saeed';
+
+  const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings') => {
+    if (tab === 'auditLogs' && !isSuperAdmin) {
+      toast.error(isRtl ? "دسترسی به بخش لاگ‌های سیستم مختص سوپر ادمین است." : "Audit logs are restricted to Super Admin.");
+      return;
+    }
     if (tab === 'add') {
       setUserToEdit(null);
     }
@@ -571,6 +580,7 @@ export function AdminDashboard() {
           setSidebarOpen={setSidebarOpen}
           activeTab={activeTab}
           setActiveTab={handleTabChange}
+          currentUser={currentUser}
         />
 
         {/* Main Content Area */}
@@ -720,6 +730,12 @@ export function AdminDashboard() {
                       setUsers={setUsers}
                       currentUser={currentUser}
                     />
+                  </div>
+                )}
+
+                {activeTab === 'auditLogs' && (
+                  <div className="w-full h-full flex-1">
+                    <AdminAuditLogsView currentUser={currentUser} />
                   </div>
                 )}
 

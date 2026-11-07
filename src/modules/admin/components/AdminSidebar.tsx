@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Briefcase, TableProperties, Users, ShieldAlert, KeyRound, Settings } from "lucide-react";
+import { Briefcase, TableProperties, Users, ShieldAlert, KeyRound, ScrollText, Settings } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -14,17 +14,19 @@ import {
 export interface AdminSidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  activeTab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings';
-  setActiveTab: (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'settings') => void;
+  activeTab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings';
+  setActiveTab: (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings') => void;
+  currentUser?: any;
 }
 
 const NAV_ITEMS = [
-  { id: 'home', icon: Briefcase, labelKey: "userInfo" },
-  { id: 'usersTable', icon: TableProperties, labelKey: "usersTable" },
-  { id: 'add', icon: Users, labelKey: "userConfig" },
-  { id: 'requests', icon: ShieldAlert, labelKey: "sidebarReq" },
-  { id: 'moduleRequests', icon: KeyRound, labelKey: "moduleRequests" },
-  { id: 'settings', icon: Settings, labelKey: "sidebarSettings" },
+  { id: 'home', icon: Briefcase, labelKey: "userInfo", superAdminOnly: false },
+  { id: 'usersTable', icon: TableProperties, labelKey: "usersTable", superAdminOnly: false },
+  { id: 'add', icon: Users, labelKey: "userConfig", superAdminOnly: false },
+  { id: 'requests', icon: ShieldAlert, labelKey: "sidebarReq", superAdminOnly: false },
+  { id: 'moduleRequests', icon: KeyRound, labelKey: "moduleRequests", superAdminOnly: false },
+  { id: 'auditLogs', icon: ScrollText, labelKey: "auditLogs", superAdminOnly: true },
+  { id: 'settings', icon: Settings, labelKey: "sidebarSettings", superAdminOnly: false },
 ] as const;
 
 export function AdminSidebar({
@@ -32,7 +34,11 @@ export function AdminSidebar({
   setSidebarOpen,
   activeTab,
   setActiveTab,
+  currentUser,
 }: AdminSidebarProps) {
+  const isSuperAdmin = currentUser?.role === 'superadmin'
+    || currentUser?.email?.toLowerCase().includes('jalili')
+    || currentUser?.id === 'u-saeed';
   const t = useTranslations("Admin");
   const locale = useLocale();
   const tooltipSide = locale === "fa" ? "left" : "right";
@@ -65,9 +71,14 @@ export function AdminSidebar({
             )}
           >
             {NAV_ITEMS.map((item) => {
+              if (item.superAdminOnly && !isSuperAdmin) {
+                return null;
+              }
               const Icon = item.icon;
               const isActive = activeTab === item.id;
-              const label = t(item.labelKey);
+              const label = item.id === 'auditLogs'
+                ? (locale === 'fa' ? 'لاگ‌های سیستم' : 'Audit Logs')
+                : t(item.labelKey);
 
               const buttonElement = (
                 <button

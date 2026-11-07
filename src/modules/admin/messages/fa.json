@@ -655,7 +655,8 @@
     "emailUnauthorizedBadge": "دامنه ایمیل غیرمجاز است",
     "segmentAccess": "دسترسی‌ها",
     "segmentAccessDesc": "تعیین نقش سازمانی و سطوح دسترسی ماژول‌های سامانه",
-    "extCol": "داخلی"
+    "extCol": "داخلی",
+    "auditLogs": "لاگ‌های سیستم و فعالیت‌ها"
   },
   "roleSuperadmin": "سوپر ادمین سیستم",
   "roleDeptAdmin": "ادمین دپارتمان",

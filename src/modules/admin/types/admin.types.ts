@@ -262,3 +262,36 @@ export interface ModuleAccessRequest {
   reviewedAt?: string | null;
   reviewedBy?: string | null;
 }
+
+export interface SystemAuditLog {
+  id: string;
+  action: string;
+  category: 'auth' | 'admin' | 'tasks' | 'projects' | 'requests' | 'system' | string;
+  severity: 'info' | 'success' | 'warning' | 'error';
+  title: string;
+  titleFa?: string;
+  titleEn?: string;
+  description: string;
+  descriptionFa?: string;
+  descriptionEn?: string;
+  actorId?: string;
+  actorName?: string;
+  actorRole?: string;
+  actorEmail?: string;
+  targetType?: string;
+  targetId?: string;
+  targetName?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  metadata?: Record<string, any>;
+  timestamp: string;
+}
+
+export interface AuditLogQueryParams {
+  [key: string]: string | number | boolean | undefined;
+  category?: string;
+  severity?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+}
