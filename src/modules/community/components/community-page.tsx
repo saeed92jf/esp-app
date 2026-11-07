@@ -817,9 +817,6 @@ export function CommunityPage() {
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                   {isRtl ? "تالار گفتگو و پرسش و پاسخ (Q&A)" : "Community & Technical Q&A"}
                 </h1>
-                <Badge variant="outline" className="text-xs font-mono font-medium border-primary/30 text-primary">
-                  StackOverflow Engine
-                </Badge>
                 {/* 🟢 Live Sync status indicator */}
                 <div
                   className={cn(
