@@ -13,6 +13,7 @@ class SimplifiedProjectsService {
     category?: string;
     client?: string;
     search?: string;
+    managerId?: string;
   }): Promise<SimplifiedProject[]> {
     const url = new URL(
       this.baseUrl,
@@ -22,6 +23,7 @@ class SimplifiedProjectsService {
     if (params?.category) url.searchParams.set("category", params.category);
     if (params?.client) url.searchParams.set("client", params.client);
     if (params?.search) url.searchParams.set("search", params.search);
+    if (params?.managerId) url.searchParams.set("manager_id", params.managerId);
 
     const res = await fetch(url.toString(), {
       headers: { Accept: "application/json" },

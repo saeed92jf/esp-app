@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Kanban,
@@ -37,20 +38,27 @@ function isAdminRole(role?: string): boolean {
   return role === "superadmin" || role === "admin";
 }
 
-export function ProjectsPageContainer() {
+export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?: string } = {}) {
   const { user } = useAuth();
   const locale = useLocale();
   const isRtl = locale === "fa";
   const isAdmin = isAdminRole(user?.role);
+  const searchParams = useSearchParams();
 
   const [projects, setProjects] = useState<SimplifiedProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<ProjectTab>("roadmap");
+  const [activeTab, setActiveTab] = useState<ProjectTab>(() => {
+    const tab = searchParams?.get("tab");
+    const isNew = searchParams?.get("new");
+    return isNew === "true" || tab === "create" ? "create" : "roadmap";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<SimplifiedProject | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const targetProjectId = initialProjectId || searchParams?.get("id");
 
   const fetchProjects = useCallback(async () => {
     setIsLoading(true);
@@ -58,12 +66,19 @@ export function ProjectsPageContainer() {
     try {
       const data = await simplifiedProjectsService.getProjects();
       setProjects(data);
+
+      if (targetProjectId) {
+        const found = data.find((p) => p.id === targetProjectId);
+        if (found) {
+          setSelectedProject(found);
+        }
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to load projects");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [targetProjectId]);
 
   useEffect(() => {
     fetchProjects();

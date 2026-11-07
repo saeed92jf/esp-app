@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
     const assigneeId = searchParams.get("assignee_id") || undefined;
     const status = searchParams.get("status") || undefined;
     const priority = searchParams.get("priority") || undefined;
+    const search = searchParams.get("search") || undefined;
+    const company = searchParams.get("company") || undefined;
     const authHeader = req.headers.get("authorization");
 
     // Try FastAPI backend first
@@ -21,6 +23,8 @@ export async function GET(req: NextRequest) {
       if (assigneeId) remoteUrl.searchParams.set("assignee_id", assigneeId);
       if (status) remoteUrl.searchParams.set("status", status);
       if (priority) remoteUrl.searchParams.set("priority", priority);
+      if (search) remoteUrl.searchParams.set("search", search);
+      if (company) remoteUrl.searchParams.set("company", company);
 
       const remoteRes = await fetch(remoteUrl.toString(), {
         headers: {

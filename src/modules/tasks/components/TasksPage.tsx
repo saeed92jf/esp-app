@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Kanban,
@@ -37,20 +38,27 @@ function isAdminRole(role?: string): boolean {
   return role === "superadmin" || role === "admin";
 }
 
-export function TasksPage() {
+export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
   const { user } = useAuth();
   const locale = useLocale();
   const isRtl = locale === "fa";
   const isAdmin = isAdminRole(user?.role);
+  const searchParams = useSearchParams();
 
   const [tasks, setTasks] = useState<NewTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<TaskTab>("kanban");
+  const [activeTab, setActiveTab] = useState<TaskTab>(() => {
+    const tab = searchParams?.get("tab");
+    const isNew = searchParams?.get("new");
+    return isNew === "true" || tab === "create" ? "create" : "kanban";
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<NewTask | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const targetTaskId = initialTaskId || searchParams?.get("id");
 
   const fetchTasks = useCallback(async () => {
     setIsLoading(true);
@@ -60,12 +68,19 @@ export function TasksPage() {
       const params = isAdmin ? undefined : { assigneeId: user?.id };
       const data = await newTasksService.getTasks(params);
       setTasks(data);
+
+      if (targetTaskId) {
+        const found = data.find((t) => t.id === targetTaskId);
+        if (found) {
+          setSelectedTask(found);
+        }
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to load tasks");
     } finally {
       setIsLoading(false);
     }
-  }, [isAdmin, user?.id]);
+  }, [isAdmin, user?.id, targetTaskId]);
 
   useEffect(() => {
     fetchTasks();
