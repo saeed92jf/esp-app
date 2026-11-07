@@ -20,6 +20,7 @@ import {
   AlertCircle,
   UploadCloud,
   Paperclip,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,11 @@ interface WizardState {
   description: string;
   subtasks: { title: string }[];
   attachments: TaskAttachmentItem[];
+  // Project linkage
+  is_independent: boolean;
+  project_id: string | null;
+  project_name: string | null;
+  project_esp_number: string | null;
   // Step 2
   assignees: { userId: string; name: string; email: string; role?: string; avatar?: string }[];
   // Step 3
@@ -106,6 +112,10 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
     description: "",
     subtasks: [],
     attachments: [],
+    is_independent: true,
+    project_id: null,
+    project_name: null,
+    project_esp_number: null,
     assignees: [],
     deadline: "",
     priority: "medium",
@@ -197,6 +207,45 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
       isMounted = false;
     };
   }, []);
+
+  // Fetch real projects from /api/projects for project linkage
+  const [projectsList, setProjectsList] = useState<{ id: string; name: string; espNumber: string; client?: string }[]>([]);
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchProjects() {
+      try {
+        const res = await fetch("/api/projects");
+        if (res.ok) {
+          const json = await res.json();
+          const items: any[] = Array.isArray(json) ? json : (json.data || json.projects || []);
+          if (isMounted) {
+            setProjectsList(
+              items.map((p) => ({
+                id: p.id,
+                name: p.name || p.title,
+                espNumber: p.espNumber || p.quotationNumber || "",
+                client: p.client || p.clientName || "",
+              }))
+            );
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to fetch projects for task wizard:", err);
+      }
+    }
+    fetchProjects();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const projectComboboxOptions: ComboboxOption[] = useMemo(() => {
+    return projectsList.map((p) => ({
+      value: p.id,
+      label: `${p.espNumber ? `${p.espNumber} | ` : ""}${p.name}`,
+      hint: p.client ? `کارفرما: ${p.client}` : undefined,
+    }));
+  }, [projectsList]);
 
   const steps = [
     { n: 1, labelFa: "محتوای تسک", labelEn: "Task Content", icon: ClipboardList },
@@ -319,6 +368,10 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
         company: state.company || undefined,
         tags: state.tags,
         attachments: state.attachments,
+        project_id: state.is_independent ? null : state.project_id,
+        project_name: state.is_independent ? null : state.project_name,
+        project_esp_number: state.is_independent ? null : state.project_esp_number,
+        is_independent: state.is_independent,
       };
 
       const created = await newTasksService.createTask(payload);
@@ -415,6 +468,102 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                   className="rounded-xl h-11 text-sm bg-background"
                   autoFocus
                 />
+              </div>
+
+              {/* Project Linkage: Project Task vs Independent Task */}
+              <div className="space-y-3 p-4 rounded-2xl bg-muted/20 border border-border/50">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
+                    <FolderKanban className="size-4 text-primary" />
+                    <span>{isRtl ? "ارتباط با پروژه (انتخاب پروژه یا تسک مستقل) *" : "Project Linkage (Project or Independent) *"}</span>
+                  </label>
+                  {state.is_independent ? (
+                    <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-muted font-bold text-muted-foreground">
+                      {isRtl ? "تسک مستقل" : "Independent Task"}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-primary/10 font-bold text-primary">
+                      {isRtl ? "متصل به پروژه" : "Linked to Project"}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setState((s) => ({
+                        ...s,
+                        is_independent: true,
+                        project_id: null,
+                        project_name: null,
+                        project_esp_number: null,
+                      }))
+                    }
+                    className={cn(
+                      "p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 cursor-pointer select-none text-xs font-bold",
+                      state.is_independent
+                        ? "border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30"
+                        : "border-border/60 bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>{isRtl ? "تسک مستقل (بدون پروژه)" : "Independent Task"}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setState((s) => ({
+                        ...s,
+                        is_independent: false,
+                        project_id: projectsList[0]?.id || null,
+                        project_name: projectsList[0]?.name || null,
+                        project_esp_number: projectsList[0]?.espNumber || null,
+                      }));
+                    }}
+                    className={cn(
+                      "p-3 rounded-xl border-2 transition-all flex items-center justify-center gap-2 cursor-pointer select-none text-xs font-bold",
+                      !state.is_independent
+                        ? "border-primary bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30"
+                        : "border-border/60 bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span>{isRtl ? "تسک مرتبط با پروژه" : "Project Task"}</span>
+                  </button>
+                </div>
+
+                {/* Combobox to select project when not independent */}
+                {!state.is_independent && (
+                  <div className="pt-2 space-y-1.5">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      {isRtl ? "انتخاب پروژه از سیستم:" : "Select Project:"}
+                    </label>
+                    {projectsList.length > 0 ? (
+                      <Combobox
+                        options={projectComboboxOptions}
+                        value={state.project_id || ""}
+                        onChange={(val) => {
+                          const p = projectsList.find((x) => x.id === val);
+                          setState((s) => ({
+                            ...s,
+                            project_id: val,
+                            project_name: p ? p.name : "",
+                            project_esp_number: p ? p.espNumber : "",
+                          }));
+                        }}
+                        placeholder={isRtl ? "انتخاب پروژه مربوطه..." : "Select project..."}
+                        className="w-full h-10 rounded-xl text-sm"
+                        allowClear={false}
+                      />
+                    ) : (
+                      <div className="p-3 rounded-xl border border-dashed border-amber-500/30 bg-amber-500/5 text-xs text-amber-700 dark:text-amber-300">
+                        {isRtl
+                          ? "در حال حاضر هیچ پروژه‌ای در سیستم ثبت نشده است. این تسک به عنوان تسک مستقل ثبت می‌شود یا می‌توانید از صفحه پروژه‌ها پروژه جدید بسازید."
+                          : "No projects registered yet. This will be an independent task."}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2">

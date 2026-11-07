@@ -183,22 +183,15 @@ export function ProjectCategoryBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 font-bold tracking-tight rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 select-none",
-        size === "sm" && "text-[10px] px-2 py-0.5",
-        size === "md" && "text-xs px-2.5 py-1",
-        size === "lg" && "text-sm px-3.5 py-1.5",
+        "inline-flex items-center font-bold tracking-tight rounded-xl border border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400 select-none",
+        size === "sm" && "text-[10px] px-2.5 py-0.5",
+        size === "md" && "text-xs px-3 py-1",
+        size === "lg" && "text-sm px-4 py-1.5",
         className
       )}
     >
-      <ProjectCategoryIcon
-        category={category}
-        className={cn(
-          size === "sm" && "size-3.5",
-          size === "md" && "size-4",
-          size === "lg" && "size-5"
-        )}
-      />
       <span>{category}</span>
     </span>
   );
 }
+

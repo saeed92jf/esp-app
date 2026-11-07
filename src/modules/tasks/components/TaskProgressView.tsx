@@ -20,6 +20,7 @@ import {
   ChevronDown,
   ChevronUp,
   Paperclip,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -227,6 +228,23 @@ export function TaskProgressView({
 
         {/* Meta info */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40">
+          {/* Project linkage */}
+          <div className="flex items-start gap-2">
+            <FolderKanban className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "پروژه مرتبط" : "Linked Project"}</p>
+              <p className="text-sm font-semibold text-foreground">
+                {task.project_name ? (
+                  <span className="text-primary font-bold">
+                    {task.project_esp_number ? `${task.project_esp_number} - ` : ""}
+                    {task.project_name}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">{isRtl ? "تسک مستقل (عمومی)" : "Independent Task"}</span>
+                )}
+              </p>
+            </div>
+          </div>
           {task.assignees?.length > 0 && (
             <div className="flex items-start gap-2">
               <Users className="size-4 text-muted-foreground shrink-0 mt-0.5" />

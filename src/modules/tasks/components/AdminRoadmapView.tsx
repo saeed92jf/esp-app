@@ -4,7 +4,7 @@
 import React from "react";
 import { useLocale } from "next-intl";
 import { motion } from "motion/react";
-import { Clock, Users, CheckCircle2, Paperclip } from "lucide-react";
+import { Clock, Users, CheckCircle2, Paperclip, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewTask } from "../services/new-tasks.service";
 
@@ -94,6 +94,23 @@ export function AdminRoadmapView({ tasks, onSelectTask }: AdminRoadmapViewProps)
                       onClick={() => onSelectTask(task)}
                       className="bg-card rounded-xl border border-border/50 p-3 cursor-pointer hover:shadow-sm transition-all"
                     >
+                      {/* Project Link or Independent Badge */}
+                      <div className="mb-1.5 flex items-center gap-1.5 flex-wrap">
+                        {task.project_name ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md truncate max-w-full">
+                            <FolderKanban className="size-2.5 shrink-0" />
+                            <span className="truncate">
+                              {task.project_esp_number ? `${task.project_esp_number} | ` : ""}
+                              {task.project_name}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center text-[10px] font-semibold text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+                            {isRtl ? "تسک مستقل" : "Independent"}
+                          </span>
+                        )}
+                      </div>
+
                       <h4 className="text-sm font-semibold text-foreground line-clamp-2 mb-2">
                         {task.title}
                       </h4>

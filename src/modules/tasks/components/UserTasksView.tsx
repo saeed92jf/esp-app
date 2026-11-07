@@ -12,6 +12,7 @@ import {
   X,
   FileText,
   AlertCircle,
+  FolderKanban,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -197,6 +198,16 @@ function TaskCard({ task, isRtl, onClick }: { task: NewTask; isRtl: boolean; onC
             </span>
             {task.company && (
               <span className="text-xs text-muted-foreground">{task.company}</span>
+            )}
+            {task.project_name ? (
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                <FolderKanban className="size-3" />
+                <span>{task.project_esp_number ? `${task.project_esp_number} | ` : ""}{task.project_name}</span>
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+                {isRtl ? "تسک مستقل" : "Independent"}
+              </span>
             )}
           </div>
           <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1 mb-1">

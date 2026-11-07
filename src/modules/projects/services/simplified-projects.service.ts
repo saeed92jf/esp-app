@@ -81,3 +81,4 @@ class SimplifiedProjectsService {
 }
 
 export const simplifiedProjectsService = new SimplifiedProjectsService();
+

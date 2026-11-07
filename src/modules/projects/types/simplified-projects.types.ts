@@ -137,3 +137,4 @@ export interface SimplifiedProjectCreate {
   description?: string;
   status?: ProjectStatus;
 }
+

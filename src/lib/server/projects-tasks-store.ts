@@ -13,7 +13,7 @@ declare global {
 }
 
 if (!globalThis.__espServerProjects_v4) {
-  globalThis.__espServerProjects_v4 = JSON.parse(JSON.stringify(INITIAL_PROJECTS));
+  globalThis.__espServerProjects_v4 = [];
 }
 
 if (!globalThis.__espServerTasks_v9) {

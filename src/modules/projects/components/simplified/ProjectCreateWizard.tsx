@@ -44,7 +44,7 @@ import {
   ProjectSchedulePhase,
 } from "../../types/simplified-projects.types";
 import { simplifiedProjectsService } from "../../services/simplified-projects.service";
-import { ProjectCategoryBadge, ProjectCategoryIcon } from "./ProjectCategoryBadge";
+import { ProjectCategoryBadge } from "./ProjectCategoryBadge";
 import {
   getAttachmentIcon,
   readAttachmentFile,
@@ -302,12 +302,15 @@ export function ProjectCreateWizard({
   };
 
   const categoryOptions: ComboboxOption[] = useMemo(
-    () =>
-      PROJECT_CATEGORIES.map((c) => ({
-        value: c.key,
-        label: `${c.labelEn} - ${c.labelFa}`,
-        hint: c.descriptionFa,
-      })),
+    () => [
+      { value: "COLUMN INT.", label: "COLUMN INT. (اینترنال‌های برج)", hint: "سینی‌های تقطیر، غربالی، پکینگ‌های ساختاریافته" },
+      { value: "SEPARATOR INT.", label: "SEPARATOR INT. (اینترنال‌های تفکیک‌گر)", hint: "سیستم‌های کوالسر، وین‌پک و جداسازها" },
+      { value: "FILTRATION", label: "FILTRATION (فیلتراسیون)", hint: "المنت‌های اسلات‌دار، سبدهای صافی، بسترهای شنی" },
+      { value: "REACTOR INT.", label: "REACTOR INT. (اینترنال‌های راکتور)", hint: "توزیع‌کننده‌ها و شبکه‌های نگهدارنده کاتالیست" },
+      { value: "SPECIAL ITEMS", label: "SPECIAL ITEMS (اقلام و تجهیزات خاص)", hint: "تجهیزات سفارشی مهندسی و آلیاژهای پیشرفته" },
+      { value: "MISCELLANEOUS", label: "MISCELLANEOUS (متفرقه)", hint: "اسپول‌های پایپینگ و تجهیزات جانبی" },
+      { value: "PROCESSING PKG.", label: "PROCESSING PKG. (پکیج‌های فرآیندی)", hint: "اسکیدها و پکیج‌های یکپارچه فرآیندی" },
+    ],
     []
   );
 
@@ -401,39 +404,22 @@ export function ProjectCreateWizard({
                 />
               </div>
 
-              {/* Category (Visual Grid / Combobox based on uploaded image) */}
-              <div className="space-y-2.5">
+              {/* Equipment Category * (Combobox without icons) */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
-                    <span>{isRtl ? "دسته‌بندی تجهیزات (طبق کاتالوگ یورواسلات پارس) *" : "Equipment Category *"}</span>
+                    <span>{isRtl ? "دسته‌بندی تجهیزات (Equipment Category) *" : "Equipment Category *"}</span>
                   </label>
                   <ProjectCategoryBadge category={category} size="sm" />
                 </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {PROJECT_CATEGORIES.map((cat) => {
-                    const isSelected = category === cat.key;
-                    return (
-                      <button
-                        key={cat.key}
-                        type="button"
-                        onClick={() => setCategory(cat.key)}
-                        className={cn(
-                          "p-3 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 text-center cursor-pointer select-none",
-                          isSelected
-                            ? "border-red-600 bg-red-500/10 text-red-600 dark:text-red-400 shadow-xs ring-1 ring-red-500/30"
-                            : "border-border/60 bg-muted/20 hover:bg-muted/50 text-foreground/80 hover:text-foreground"
-                        )}
-                      >
-                        <ProjectCategoryIcon
-                          category={cat.key}
-                          className={cn("size-8 transition-transform", isSelected && "scale-110")}
-                        />
-                        <span className="text-xs font-extrabold tracking-tight">{cat.labelEn}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <Combobox
+                  options={categoryOptions}
+                  value={category}
+                  onChange={(val) => setCategory((val || "COLUMN INT.") as ProjectCategory)}
+                  placeholder={isRtl ? "انتخاب دسته‌بندی تجهیزات..." : "Select equipment category..."}
+                  className="w-full h-11 rounded-xl text-sm"
+                  allowClear={false}
+                />
               </div>
 
               {/* Client & ESP Number */}
@@ -958,3 +944,4 @@ export function ProjectCreateWizard({
     </div>
   );
 }
+

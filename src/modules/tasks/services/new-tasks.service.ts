@@ -51,6 +51,10 @@ export interface NewTask {
   tags: string[];
   status: "todo" | "in_progress" | "review" | "done" | "cancelled";
   attachments: TaskAttachmentItem[];
+  project_id?: string | null;
+  project_name?: string | null;
+  project_esp_number?: string | null;
+  is_independent?: boolean;
   progress: NewTaskProgress[];
   is_approved: boolean;
   approved_at: string | null;
@@ -69,6 +73,10 @@ export interface NewTaskCreate {
   company?: string;
   tags?: string[];
   attachments?: TaskAttachmentItem[];
+  project_id?: string | null;
+  project_name?: string | null;
+  project_esp_number?: string | null;
+  is_independent?: boolean;
 }
 
 export interface NewTaskUpdate {
@@ -82,6 +90,10 @@ export interface NewTaskUpdate {
   subtasks?: NewTaskSubtask[];
   assignees?: NewTaskAssignee[];
   attachments?: TaskAttachmentItem[];
+  project_id?: string | null;
+  project_name?: string | null;
+  project_esp_number?: string | null;
+  is_independent?: boolean;
 }
 
 export interface ProgressCreate {
