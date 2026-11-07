@@ -1,150 +1,218 @@
-# ============================================================
-#  esp-app PowerShell helpers
-# ============================================================
+# ==============================================================================
+#  Euroslot Pars - Professional DevOps & Development PowerShell Toolkit
+# ==============================================================================
 
-# ── Global config: single source of truth for all functions below ──
-$global:EspRoot      = 'D:\esp-app'
-$global:EspJobName   = 'esp-dev'
-$global:EspDevScript = 'dev:network'      # npm script that runall executes
-$global:EspPort      = 4000               # port the dev server listens on
-$global:EspLanIp     = '192.168.0.71'     # LAN IP to open for other devices
+# ── Global Configuration ──
+$global:EspDevRoot        = 'C:\Users\s.jalili\Repositories'
+$global:EspRoot           = 'C:\Users\s.jalili\Repositories\esp-app'
+$global:EspBackendRoot    = 'C:\Users\s.jalili\Repositories\ESP-Web-Backend'
+$global:EspProdRoot       = 'C:\ESP_PRODUCTION'
+$global:EspDataRoot       = 'C:\ESP_DATA'
+$global:EspLanIp          = '192.168.0.242'
+$global:EspPort           = 4000
+$global:EspBackendPort    = 8080
 
+# ── Navigation & Editor Helpers ──
 function gp {
-    # Go to the project root
     Set-Location $global:EspRoot
 }
 
 function op {
-    # Open the project in VS Code
     gp
     code .
 }
 
+function gb {
+    Set-Location $global:EspBackendRoot
+}
+
+function ob {
+    gb
+    code .
+}
+
 function run {
-    # Run the dev server in the FOREGROUND so logs stream live in this terminal
     gp
     npm run dev
 }
 
-function Get-DevServerUrl {
-    # Build the dev server URL with the correct protocol by inspecting package.json.
-    # If the npm script contains --experimental-https, we serve over TLS (https),
-    # otherwise we fall back to plain http. This keeps the URL in sync with the
-    # script so we never hard-code the wrong scheme.
-    param(
-        # Hostname or IP to open (localhost, LAN IP, etc.)
-        [string]$DevHost    = 'localhost',
-        [int]   $Port       = $global:EspPort,
-        # The npm script that actually starts the server (defaults to the global one)
-        [string]$ScriptName = $global:EspDevScript
-    )
-
-    # Default to http unless we find evidence of HTTPS
-    $scheme  = 'http'
-    $pkgPath = Join-Path $global:EspRoot 'package.json'
-
-    if (Test-Path $pkgPath) {
-        $pkg         = Get-Content $pkgPath -Raw | ConvertFrom-Json
-        $scriptValue = $pkg.scripts.$ScriptName
-        if ($scriptValue -match '--experimental-https') {
-            $scheme = 'https'
-        }
-    }
-
-    return "${scheme}://${DevHost}:$Port"
-}
-
-function Test-EspPort {
-    # Fast TCP check: returns $true if something is already listening on the port
-    param([int]$Port = $global:EspPort)
-    try {
-        $client = New-Object System.Net.Sockets.TcpClient
-        $client.Connect('127.0.0.1', $Port)
-        $client.Close()
-        return $true
-    } catch {
-        return $false
+function runb {
+    gb
+    $pythonExe = Join-Path $global:EspBackendRoot ".venv\Scripts\python.exe"
+    if (Test-Path $pythonExe) {
+        & $pythonExe -m uvicorn app.main:app --host 0.0.0.0 --port $global:EspBackendPort --reload
+    } else {
+        & "$global:EspBackendRoot\.venv\Scripts\uvicorn.exe" app.main:app --host 0.0.0.0 --port $global:EspBackendPort --reload
     }
 }
 
-function stopall {
-    # Stop the background dev-server job AND free the port to avoid "address in use"
-    Write-Host 'Stopping background dev server...' -ForegroundColor Yellow
+# ── Core Service Runners (Production Client vs Development) ──
 
-    # 1) Remove our named background job if it exists
-    $job = Get-Job -Name $global:EspJobName -ErrorAction SilentlyContinue
-    if ($job) {
-        Stop-Job  -Job $job -ErrorAction SilentlyContinue
-        Remove-Job -Job $job -Force -ErrorAction SilentlyContinue
-    }
+function run-client {
+    <#
+    .SYNOPSIS
+        Starts the always-on Production Client Environment (Ports 4000 & 8080).
+        Runs as detached Windows background daemons (persistent even if PowerShell is closed).
+    #>
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host "  Starting Production Client Environment (Always-On)" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
 
-    # 2) Kill any process still holding the port (orphaned node.exe etc.)
-    $conns = Get-NetTCPConnection -LocalPort $global:EspPort -State Listen -ErrorAction SilentlyContinue
-    foreach ($c in $conns) {
-        Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue
-    }
+    powershell.exe -ExecutionPolicy Bypass -File "$global:EspProdRoot\start-production.ps1"
 
-    Write-Host "Stopped. Port $($global:EspPort) is free." -ForegroundColor Green
+    Write-Host "`n[Production Endpoints]" -ForegroundColor Green
+    Write-Host "  Frontend (Local): http://localhost:4000" -ForegroundColor Yellow
+    Write-Host "  Frontend (LAN):   http://$($global:EspLanIp):4000" -ForegroundColor Yellow
+    Write-Host "  Backend API:      http://$($global:EspLanIp):8080" -ForegroundColor Yellow
+    Write-Host "  Data Store:       C:\ESP_DATA\live\data (Safe & Isolated)" -ForegroundColor Gray
+    Write-Host "`n[INFO] Services are detached Windows daemons; closing this window will NOT stop them." -ForegroundColor Cyan
+}
+
+function run-develop {
+    <#
+    .SYNOPSIS
+        Starts the isolated Developer Environment (Ports 3000 & 8000).
+    #>
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host "  Starting Isolated Developer Environment" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+
+    powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\dev-start.ps1"
+
+    Write-Host "`n[Developer Endpoints]" -ForegroundColor Green
+    Write-Host "  Frontend Dev: http://localhost:3000" -ForegroundColor Yellow
+    Write-Host "  Backend Dev:  http://localhost:8000/docs" -ForegroundColor Yellow
+    Write-Host "  (Live users on 4000/8080 are completely unaffected)" -ForegroundColor Gray
 }
 
 function runall {
-    Set-Location $global:EspRoot
+    <#
+    .SYNOPSIS
+        Universal launcher: 'runall client' or 'runall develop'.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0)]
+        [ValidateSet("client", "develop", "prod", "dev", "status")]
+        [string]$Target = "client"
+    )
 
-    # --- Clean slate: never start a second server on top of an old one ---
-    stopall
+    if ($Target -in @("client", "prod")) {
+        run-client
+    } elseif ($Target -in @("develop", "dev")) {
+        run-develop
+    } elseif ($Target -eq "status") {
+        status-all
+    }
+}
 
-    Write-Host "Starting dev server ($global:EspDevScript)..." -ForegroundColor Green
+# ── Deployment & Operations Commands ──
 
-    # Start the server in a NAMED background job (no log file, output stays in job stream)
-    Start-Job -Name $global:EspJobName -ScriptBlock {
-        param($root, $script)
-        Set-Location $root
-        npm run $script *>&1
-    } -ArgumentList $global:EspRoot, $global:EspDevScript | Out-Null
+function deploy {
+    <#
+    .SYNOPSIS
+        Deploys latest changes to Production with automated testing, pre-deploy backup, and zero-downtime restart.
+    #>
+    [CmdletBinding()]
+    param(
+        [switch]$SkipBuild
+    )
 
-    # --- Wait until the port is actually accepting connections (max 60s) ---
-    Write-Host 'Waiting for server to become ready...' -ForegroundColor Yellow
-    $timeout = 60
-    $elapsed = 0
-    while (-not (Test-EspPort -Port $global:EspPort) -and $elapsed -lt $timeout) {
-        Start-Sleep -Seconds 1
-        $elapsed++
+    Write-Host "Executing Zero-Downtime Production Deployment..." -ForegroundColor Cyan
+    if ($SkipBuild) {
+        powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\deploy-production.ps1" -SkipBuild
+    } else {
+        powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\deploy-production.ps1"
+    }
+}
 
-        # If the job died early, surface the error and stop waiting
-        $job = Get-Job -Name $global:EspJobName -ErrorAction SilentlyContinue
-        if ($job -and $job.State -eq 'Failed') {
-            Write-Host 'Server job failed. Receive job output:' -ForegroundColor Red
-            Receive-Job -Job $job
-            return
-        }
+function rollback {
+    <#
+    .SYNOPSIS
+        Rolls back Production to the previous Git commit.
+    #>
+    Write-Host "Executing Emergency Production Rollback..." -ForegroundColor Yellow
+    powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\rollback-production.ps1"
+}
+
+function backup {
+    <#
+    .SYNOPSIS
+        Takes an instant snapshot backup of all live JSON databases and documents.
+    #>
+    [CmdletBinding()]
+    param(
+        [string]$Label = "manual"
+    )
+    powershell.exe -ExecutionPolicy Bypass -File "$global:EspDevRoot\backup-data.ps1" -Label $Label
+}
+
+function status-all {
+    <#
+    .SYNOPSIS
+        Displays the health and port status of Production (4000/8080) and Development (3000/8000).
+    #>
+    powershell.exe -ExecutionPolicy Bypass -File "$global:EspProdRoot\status-production.ps1"
+
+    $devPorts = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -in 3000, 8000 }
+    if ($devPorts) {
+        Write-Host "`nDeveloper Environment Ports (Active):" -ForegroundColor Magenta
+        $devPorts | Select-Object LocalAddress, LocalPort, OwningProcess | Format-Table -AutoSize
+    } else {
+        Write-Host "`nDeveloper Environment (3000/8000): Inactive" -ForegroundColor Gray
+    }
+}
+
+# ── Process Stopper ──
+
+function stopall {
+    <#
+    .SYNOPSIS
+        Stops services: 'stopall client', 'stopall develop', or 'stopall' (both).
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Position = 0)]
+        [ValidateSet("all", "client", "develop", "prod", "dev")]
+        [string]$Target = "all"
+    )
+
+    if ($Target -in @("all", "client", "prod")) {
+        Write-Host "Stopping Production Client Services (4000/8080)..." -ForegroundColor Yellow
+        powershell.exe -ExecutionPolicy Bypass -File "$global:EspProdRoot\stop-production.ps1"
     }
 
-    if (-not (Test-EspPort -Port $global:EspPort)) {
-        Write-Host "Server did not start within $timeout s. Check job output with: Receive-Job -Name $global:EspJobName" -ForegroundColor Red
-        return
+    if ($Target -in @("all", "develop", "dev")) {
+        Write-Host "Stopping Developer Services (3000/8000)..." -ForegroundColor Yellow
+        try {
+            $devConns = Get-NetTCPConnection -State Listen -ErrorAction SilentlyContinue | Where-Object { $_.LocalPort -in 3000, 8000 }
+            foreach ($c in $devConns) {
+                cmd.exe /c "taskkill /F /T /PID $($c.OwningProcess) >nul 2>&1"
+            }
+        } catch {}
+        Write-Host "[OK] Developer ports freed." -ForegroundColor Green
     }
+}
 
-    Write-Host "Server ready after ${elapsed}s." -ForegroundColor Green
+# ── Quick Aliases ──
+Set-Alias -Name status -Value status-all -ErrorAction SilentlyContinue
+Set-Alias -Name deploy-prod -Value deploy -ErrorAction SilentlyContinue
+Set-Alias -Name rollback-prod -Value rollback -ErrorAction SilentlyContinue
+Set-Alias -Name backup-data -Value backup -ErrorAction SilentlyContinue
 
-    # --- Open both URLs with the protocol auto-detected from package.json ---
-    $localUrl = Get-DevServerUrl -DevHost 'localhost'        -Port $global:EspPort
-    $lanUrl   = Get-DevServerUrl -DevHost $global:EspLanIp    -Port $global:EspPort
-
-    Start-Process $localUrl
-    Start-Sleep -Seconds 1
-    Start-Process $lanUrl
-    Write-Host "Opened: $localUrl  and  $lanUrl" -ForegroundColor Green
-
-    # --- Minimize the PowerShell window (guard Add-Type against duplicate type) ---
-    if (-not ([System.Management.Automation.PSTypeName]'Console.Window').Type) {
-        Add-Type -Name Window -Namespace Console -MemberDefinition '
-            [DllImport("user32.dll")]
-            public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        '
-    }
-    $psWindow = (Get-Process -Id $PID).MainWindowHandle
-    [Console.Window]::ShowWindow($psWindow, 2) | Out-Null  # 2 = Minimize
-
-    Write-Host 'PowerShell minimized. View job output with: Receive-Job -Name esp-dev' -ForegroundColor Cyan
-    Write-Host 'Stop the server with: stopall' -ForegroundColor Cyan
+# ── Help / Cheat Sheet ──
+function help-esp {
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host "  Euroslot Pars - CLI Commands Quick Reference" -ForegroundColor Cyan
+    Write-Host "============================================================" -ForegroundColor Cyan
+    Write-Host "  runall client    : Start/Restart Always-On Client/Production (4000/8080)" -ForegroundColor Green
+    Write-Host "  runall develop   : Start Developer Environment (3000/8000)" -ForegroundColor Green
+    Write-Host "  deploy           : Test & Deploy latest changes to Production" -ForegroundColor Yellow
+    Write-Host "  rollback         : Emergency Rollback to previous version" -ForegroundColor Red
+    Write-Host "  backup           : Create instant live data snapshot" -ForegroundColor Cyan
+    Write-Host "  status           : Health check for all services and ports" -ForegroundColor Magenta
+    Write-Host "  stopall          : Stop all services (or 'stopall client' / 'stopall develop')" -ForegroundColor DarkYellow
+    Write-Host "  gp / gb          : Navigate to frontend/backend repository root" -ForegroundColor Gray
+    Write-Host "  op / ob          : Open frontend/backend in VS Code" -ForegroundColor Gray
+    Write-Host "============================================================" -ForegroundColor Cyan
 }

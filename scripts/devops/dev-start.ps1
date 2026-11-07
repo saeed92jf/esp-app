@@ -13,10 +13,11 @@ Write-Host "============================================================" -Foreg
 $devRoot = "c:\Users\s.jalili\Repositories"
 
 # Start Backend Dev in separate window
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$devRoot\ESP-Web-Backend'; `$env:PYTHONIOENCODING='utf-8'; .\venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$devRoot\ESP-Web-Backend'; `$env:PYTHONIOENCODING='utf-8'; .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload"
 
 # Start Frontend Dev in separate window
 Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$devRoot\esp-app'; `$env:PORT='3000'; `$env:BACKEND_API_URL='http://localhost:8000/api/v1'; npx next dev -p 3000"
 
 Write-Host "`n[OK] Local Dev processes started in dedicated windows." -ForegroundColor Green
 Write-Host "You can develop, test, and save files freely without affecting live users!" -ForegroundColor Cyan
+
