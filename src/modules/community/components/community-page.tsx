@@ -51,6 +51,8 @@ import {
   HelpCircle,
   Award,
   Layers,
+  Home,
+  Settings,
 } from "lucide-react";
 
 interface CategoryItem {
@@ -176,6 +178,35 @@ export function CommunityPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Role check and Community Navigation state
+  const isAdmin = Boolean(user && (user.role === "superadmin" || user.role === "admin"));
+  const [activeNav, setActiveNav] = useState<"home" | "settings">("home");
+
+  useEffect(() => {
+    if (!isAdmin && activeNav === "settings") {
+      setActiveNav("home");
+    }
+  }, [isAdmin, activeNav]);
+
+  const communityNavItems = [
+    {
+      id: "home" as const,
+      labelFa: "صفحه اصلی",
+      labelEn: "Home",
+      icon: Home,
+    },
+    ...(isAdmin
+      ? [
+          {
+            id: "settings" as const,
+            labelFa: "تنظیمات",
+            labelEn: "Settings",
+            icon: Settings,
+          },
+        ]
+      : []),
+  ];
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const [activeSort, setActiveSort] = useState<CommunitySortOption>("newest");
   const [posts, setPosts] = useState<CommunityPost[]>([]);
@@ -798,17 +829,20 @@ export function CommunityPage() {
                 sidebarOpen ? "pe-3 sm:pe-4" : "pe-[5px] sm:pe-[11px]"
               )}
             >
-              {CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                const isActive = activeCategory === cat.id;
-                const label = isRtl ? cat.labelFa : cat.labelEn;
+              {communityNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeNav === item.id;
+                const label = isRtl ? item.labelFa : item.labelEn;
 
                 const buttonElement = (
                   <button
-                    key={cat.id}
+                    key={item.id}
                     type="button"
                     onClick={() => {
-                      setActiveCategory(cat.id);
+                      setActiveNav(item.id);
+                      if (item.id === "home") {
+                        setActiveCategory("all");
+                      }
                       if (window.innerWidth < 768) setSidebarOpen(false);
                     }}
                     className={cn(
@@ -844,7 +878,7 @@ export function CommunityPage() {
 
                 if (!sidebarOpen) {
                   return (
-                    <Tooltip key={cat.id}>
+                    <Tooltip key={item.id}>
                       <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
                       <TooltipContent side={isRtl ? "left" : "right"} className="text-xs font-medium">
                         {label}
@@ -861,8 +895,64 @@ export function CommunityPage() {
 
         {/* ── Main Community Content Area ── */}
         <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-24 min-h-0 max-w-5xl mx-auto">
-          {/* Header Action Banner */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 bg-card/70 backdrop-blur-md border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs">
+          {activeNav === "settings" ? (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* Settings Header Action Banner */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/70 backdrop-blur-md border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <Settings className="size-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                        {isRtl ? "تنظیمات تالار گفتگو" : "Community Settings"}
+                      </h1>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] px-2 py-0.5 bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
+                      >
+                        {isRtl ? "ویژه مدیران" : "Admin Only"}
+                      </Badge>
+                    </div>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                      {isRtl
+                        ? "مدیریت و پیکربندی اختصاصی بخش تالار گفتگوی تخصصی"
+                        : "Dedicated management and configuration for Community discussions"}
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveNav("home")}
+                  className="rounded-full gap-2 text-xs cursor-pointer"
+                >
+                  <Home className="size-3.5" />
+                  <span>{isRtl ? "بازگشت به صفحه اصلی" : "Back to Home"}</span>
+                </Button>
+              </div>
+
+              {/* Empty placeholder view as requested: و خالیه */}
+              <div className="bg-card/40 border border-dashed border-border/70 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[380px] shadow-xs">
+                <div className="size-14 rounded-2xl bg-muted/60 border border-border/60 flex items-center justify-center mb-3 text-muted-foreground">
+                  <Settings className="size-6 stroke-[1.5]" />
+                </div>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground mb-1">
+                  {isRtl ? "تنظیماتی برای نمایش وجود ندارد" : "No Settings Configured"}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground max-w-sm">
+                  {isRtl
+                    ? "این بخش در حال حاضر خالی است."
+                    : "This section is currently empty."}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Header Action Banner */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 bg-card/70 backdrop-blur-md border border-border/60 rounded-2xl p-4 sm:p-5 shadow-xs">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
@@ -1898,6 +1988,8 @@ export function CommunityPage() {
                 );
               })}
             </div>
+          )}
+            </>
           )}
         </div>
       </div>
