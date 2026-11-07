@@ -187,6 +187,26 @@ class NewTasksService {
     if (!res.ok) throw new Error("Failed to toggle subtask");
     return res.json();
   }
+
+  async submitForReview(taskId: string, userId: string, userName: string, note?: string): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/submit-review`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, user_name: userName, note: note || "" }),
+    });
+    if (!res.ok) throw new Error("Failed to submit task for review");
+    return res.json();
+  }
+
+  async requestChanges(taskId: string, adminId: string, adminName: string, feedback: string): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/request-changes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ admin_id: adminId, admin_name: adminName, feedback }),
+    });
+    if (!res.ok) throw new Error("Failed to request changes");
+    return res.json();
+  }
 }
 
 export const newTasksService = new NewTasksService();

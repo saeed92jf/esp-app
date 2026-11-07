@@ -1,7 +1,7 @@
 // src/modules/tasks/components/TaskProgressView.tsx
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useLocale } from "next-intl";
 import { motion } from "motion/react";
 import {
@@ -54,13 +54,12 @@ const PRIORITY_CONFIG: Record<string, { labelFa: string; labelEn: string; color:
   critical: { labelFa: "فوری", labelEn: "Critical", color: "text-red-500" },
 };
 
-const STATUS_CHANGE_OPTIONS = [
-  { value: "todo", labelFa: "برای انجام", labelEn: "To Do" },
-  { value: "in_progress", labelFa: "در حال انجام", labelEn: "In Progress" },
-  { value: "review", labelFa: "بازبینی", labelEn: "Review" },
-  { value: "done", labelFa: "انجام‌شده", labelEn: "Done" },
-  { value: "cancelled", labelFa: "لغو شده", labelEn: "Cancelled" },
-];
+const LIFECYCLE_STEPS = [
+  { key: "todo", labelFa: "۱. برای انجام", labelEn: "1. To Do", descFa: "تعریف تسک و ارجاع" },
+  { key: "in_progress", labelFa: "۲. در حال انجام", labelEn: "2. In Progress", descFa: "ثبت گزارشات و فعالیت" },
+  { key: "review", labelFa: "۳. بازبینی و بررسی", labelEn: "3. Under Review", descFa: "بررسی کیفیت و تایید مدیر" },
+  { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم" },
+] as const;
 
 export function TaskProgressView({
   task,
@@ -71,14 +70,63 @@ export function TaskProgressView({
 }: TaskProgressViewProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const [currentTask, setCurrentTask] = useState<NewTask>(task);
   const [progressContent, setProgressContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isApprovingTask, setIsApprovingTask] = useState(false);
-  const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [isRequestingChanges, setIsRequestingChanges] = useState(false);
+  const [showChangesBox, setShowChangesBox] = useState(false);
+  const [changesFeedback, setChangesFeedback] = useState("");
   const [showSubtasks, setShowSubtasks] = useState(true);
   const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
   const progressFileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+    }
+  }, []);
+
+  // Sync when prop task changes
+  useEffect(() => {
+    setCurrentTask(task);
+  }, [task]);
+
+  // Initial scroll to bottom on mount
+  useEffect(() => {
+    scrollToBottom(false);
+  }, [scrollToBottom]);
+
+  // High-frequency auto-refresh polling (every 2.5s) for instant live chat feel
+  useEffect(() => {
+    let isMounted = true;
+    const interval = setInterval(async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      try {
+        const fresh = await newTasksService.getTaskById(task.id);
+        if (fresh && isMounted) {
+          const oldLen = currentTask.progress?.length || 0;
+          const newLen = fresh.progress?.length || 0;
+          if (newLen !== oldLen || fresh.status !== currentTask.status) {
+            setCurrentTask(fresh);
+            onTaskUpdated(fresh);
+            setTimeout(() => scrollToBottom(true), 50);
+          }
+        }
+      } catch {
+        // ignore background poll errors
+      }
+    }, 2500);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [task.id, currentTask.progress?.length, currentTask.status, onTaskUpdated, scrollToBottom]);
 
   const handleProgressFilesSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -112,22 +160,49 @@ export function TaskProgressView({
 
   const handleSendProgress = async () => {
     if (!progressContent.trim() && pendingAttachments.length === 0) return;
+    if (isSending) return;
+
+    const textToSend = progressContent.trim() || (isRtl ? "ارسال فایل‌های پیوست" : "Attached files");
+    const attachmentsToSend = [...pendingAttachments];
+
+    // Optimistic entry for instant 0ms chat feel
+    const optimisticMsg: NewTaskProgress = {
+      id: `opt_${Date.now()}`,
+      author_id: currentUser.id,
+      author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
+      author_role: currentUser.role || "کارشناس",
+      content: textToSend,
+      attachments: attachmentsToSend,
+      created_at: new Date().toISOString(),
+      is_admin_note: isAdmin,
+    };
+
+    setProgressContent("");
+    setPendingAttachments([]);
+    setCurrentTask((prev) => ({
+      ...prev,
+      status: prev.status === "todo" ? "in_progress" : prev.status,
+      progress: [...(prev.progress || []), optimisticMsg],
+    }));
+    setTimeout(() => scrollToBottom(true), 25);
+
     setIsSending(true);
     try {
       const updatedTask = await newTasksService.addProgress(task.id, {
         author_id: currentUser.id,
         author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
         author_role: currentUser.role || "کارشناس",
-        content: progressContent.trim() || (isRtl ? "ارسال فایل‌های پیوست" : "Attached files"),
-        attachments: pendingAttachments,
+        content: textToSend,
+        attachments: attachmentsToSend,
         is_admin_note: isAdmin,
       });
-      setProgressContent("");
-      setPendingAttachments([]);
+      setCurrentTask(updatedTask);
       onTaskUpdated(updatedTask);
-      toast.success(isRtl ? "گزارش ثبت شد." : "Progress update added.");
+      setTimeout(() => scrollToBottom(true), 40);
     } catch (err: any) {
-      toast.error(err?.message || (isRtl ? "خطا در ثبت گزارش" : "Failed to add progress"));
+      toast.error(err?.message || (isRtl ? "خطا در ارسال پیام" : "Failed to send message"));
+      setProgressContent(textToSend);
+      setPendingAttachments(attachmentsToSend);
     } finally {
       setIsSending(false);
     }
@@ -151,16 +226,45 @@ export function TaskProgressView({
     }
   };
 
-  const handleStatusChange = async (newStatus: string) => {
-    setIsChangingStatus(true);
+  const handleSubmitForReview = async () => {
+    if (!confirm(isRtl ? "آیا از تکمیل فعالیت‌ها و ارسال تسک جهت بازبینی و تایید نهایی مدیر اطمینان دارید؟" : "Submit task for manager review?")) return;
+    setIsSubmittingReview(true);
     try {
-      const updatedTask = await newTasksService.updateTask(task.id, { status: newStatus as any });
+      const updatedTask = await newTasksService.submitForReview(
+        task.id,
+        currentUser.id,
+        currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کارشناس"
+      );
       onTaskUpdated(updatedTask);
-      toast.success(isRtl ? "وضعیت تسک تغییر کرد." : "Task status updated.");
+      toast.success(isRtl ? "تسک به مرحله بازبینی و تایید مدیر منتقل گردید." : "Task submitted for manager review.");
     } catch (err: any) {
-      toast.error(err?.message || (isRtl ? "خطا در تغییر وضعیت" : "Failed to change status"));
+      toast.error(err?.message || (isRtl ? "خطا در ارسال جهت بررسی" : "Failed to submit for review"));
     } finally {
-      setIsChangingStatus(false);
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!changesFeedback.trim()) {
+      toast.error(isRtl ? "لطفاً توضیحات و موارد نیازمند اصلاح را وارد کنید." : "Please enter revision feedback.");
+      return;
+    }
+    setIsRequestingChanges(true);
+    try {
+      const updatedTask = await newTasksService.requestChanges(
+        task.id,
+        currentUser.id,
+        currentUser.fullNameFa || currentUser.fullName || "مدیر",
+        changesFeedback.trim()
+      );
+      onTaskUpdated(updatedTask);
+      setShowChangesBox(false);
+      setChangesFeedback("");
+      toast.success(isRtl ? "درخواست اصلاحات ثبت و وضعیت تسک به «در حال انجام» بازگردانده شد." : "Changes requested.");
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در ثبت درخواست اصلاحات" : "Failed to request changes"));
+    } finally {
+      setIsRequestingChanges(false);
     }
   };
 
@@ -306,29 +410,165 @@ export function TaskProgressView({
           </div>
         )}
 
-        {/* Admin: Status change */}
-        {isAdmin && (
-          <div className="pt-2 border-t border-border/40">
-            <p className="text-xs font-semibold text-muted-foreground mb-2">{isRtl ? "تغییر وضعیت:" : "Change Status:"}</p>
-            <div className="flex flex-wrap gap-2">
-              {STATUS_CHANGE_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  onClick={() => handleStatusChange(opt.value)}
-                  disabled={task.status === opt.value || isChangingStatus}
+        {/* Automated Task Lifecycle Tracker */}
+        <div className="pt-3 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+              <Clock className="size-3.5 text-primary" />
+              <span>{isRtl ? "چرخه عمر و وضعیت خودکار تسک:" : "Automated Task Lifecycle:"}</span>
+            </span>
+            <span className={cn("text-[11px] font-bold px-3 py-1 rounded-full", status.color)}>
+              {isRtl ? status.labelFa : status.labelEn}
+            </span>
+          </div>
+
+          {/* 4-Step Lifecycle Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {LIFECYCLE_STEPS.map((step) => {
+              const isActive = task.status === step.key;
+              const isPast =
+                (step.key === "todo" && task.status !== "todo") ||
+                (step.key === "in_progress" && (task.status === "review" || task.status === "done")) ||
+                (step.key === "review" && task.status === "done");
+
+              return (
+                <div
+                  key={step.key}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border",
-                    task.status === opt.value
-                      ? "bg-primary text-white border-primary"
-                      : "bg-muted border-border hover:bg-muted/80 text-foreground disabled:opacity-50"
+                    "p-3 rounded-2xl border transition-all text-start flex flex-col justify-between min-h-[72px]",
+                    isActive
+                      ? "bg-primary/10 border-primary text-primary font-bold shadow-xs ring-2 ring-primary/20"
+                      : isPast
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold"
+                      : "bg-muted/20 border-border/40 text-muted-foreground"
                   )}
                 >
-                  {isRtl ? opt.labelFa : opt.labelEn}
-                </button>
-              ))}
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-xs font-bold leading-tight truncate">
+                      {isRtl ? step.labelFa : step.labelEn}
+                    </span>
+                    {isPast && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
+                    {isActive && <span className="size-2 rounded-full bg-primary animate-pulse shrink-0" />}
+                  </div>
+                  <span className="text-[10px] opacity-75 truncate">{step.descFa}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Workflow Action Bar */}
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+              <AlertCircle className="size-3.5 text-primary shrink-0" />
+              <span>
+                {isRtl
+                  ? "وضعیت تسک با ثبت گزارش، پیشرفت زیرفعالیت‌ها و تایید مدیریت به‌صورت خودکار به‌روزرسانی می‌شود."
+                  : "Task status transitions automatically through reports, subtasks, and managerial approval."}
+              </span>
+            </p>
+
+            <div className="flex items-center gap-2 shrink-0 justify-end">
+              {/* If in_progress or todo: Allow Submitting for Review */}
+              {(task.status === "in_progress" || task.status === "todo") && (
+                <Button
+                  onClick={handleSubmitForReview}
+                  disabled={isSubmittingReview}
+                  size="sm"
+                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs"
+                >
+                  {isSubmittingReview ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Send className="size-3.5" />
+                  )}
+                  <span>{isRtl ? "ارسال جهت بررسی و تایید مدیر" : "Submit for Review"}</span>
+                </Button>
+              )}
+
+              {/* If review: Admin actions */}
+              {task.status === "review" && isAdmin && (
+                <>
+                  <Button
+                    onClick={() => setShowChangesBox(!showChangesBox)}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-xl h-9 px-3.5 text-xs font-bold gap-1.5 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <AlertCircle className="size-3.5" />
+                    <span>{isRtl ? "درخواست اصلاحات" : "Request Changes"}</span>
+                  </Button>
+                  <Button
+                    onClick={handleApprove}
+                    disabled={isApprovingTask}
+                    size="sm"
+                    className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                  >
+                    {isApprovingTask ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="size-3.5" />
+                    )}
+                    <span>{isRtl ? "تایید نهایی و مختومه کردن" : "Approve & Complete"}</span>
+                  </Button>
+                </>
+              )}
+
+              {/* If review: Non-admin status message */}
+              {task.status === "review" && !isAdmin && (
+                <Badge variant="outline" className="text-xs bg-pink-500/10 text-pink-600 border-pink-500/30 px-3 py-1">
+                  {isRtl ? "تسک در حال بازبینی و بررسی مدیریت می‌باشد" : "Under Manager Review"}
+                </Badge>
+              )}
+
+              {/* If done: Verified completed badge */}
+              {task.status === "done" && (
+                <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30 px-3 py-1 gap-1">
+                  <CheckCircle2 className="size-3.5" />
+                  <span>{isRtl ? "تسک تایید و مختومه شده است" : "Task Completed & Approved"}</span>
+                </Badge>
+              )}
             </div>
           </div>
-        )}
+
+          {/* Admin Changes Feedback Box */}
+          {showChangesBox && isAdmin && (
+            <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-amber-500/5 space-y-2 mt-2">
+              <label className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
+                {isRtl ? "توضیحات و موارد نیازمند اصلاح و بازنگری:" : "Revision Feedback:"}
+              </label>
+              <Textarea
+                value={changesFeedback}
+                onChange={(e) => setChangesFeedback(e.target.value)}
+                placeholder={isRtl ? "موارد نقایص فنی، مستندات مورد نیاز یا تغییرات درخواستی را بنویسید..." : "Specify required changes..."}
+                rows={2}
+                className="text-xs rounded-xl bg-background resize-none"
+              />
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowChangesBox(false)}
+                  className="rounded-xl h-8 px-3 text-xs"
+                >
+                  {isRtl ? "انصراف" : "Cancel"}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleRequestChanges}
+                  disabled={isRequestingChanges || !changesFeedback.trim()}
+                  className="rounded-xl h-8 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
+                >
+                  {isRequestingChanges ? (
+                    <Loader2 className="size-3 animate-spin" />
+                  ) : (
+                    <Send className="size-3" />
+                  )}
+                  <span>{isRtl ? "ثبت بازخورد و بازگشت به کار" : "Submit Feedback"}</span>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Subtasks */}
@@ -381,26 +621,38 @@ export function TaskProgressView({
         </div>
       )}
 
-      {/* Progress Thread */}
+      {/* Live Progress Chat Thread */}
       <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-border/40">
-          <h3 className="font-semibold flex items-center gap-2">
+        <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <FileText className="size-4 text-primary" />
-            {isRtl ? "گفتگو و گزارش پیشرفت" : "Progress & Discussion"}
-          </h3>
+            <h3 className="font-bold text-sm">
+              {isRtl ? "گفتگوی زنده و گزارش پیشرفت تسک" : "Live Task Chat & Progress"}
+            </h3>
+            <span className="text-xs font-mono text-muted-foreground fa-num">
+              ({currentTask.progress?.length || 0})
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+            <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+            <span>{isRtl ? "به‌روزرسانی خودکار و آنی" : "Live Sync"}</span>
+          </div>
         </div>
 
-        {/* Progress items */}
-        <div className="p-5 space-y-4 max-h-[400px] overflow-y-auto">
-          {(!task.progress || task.progress.length === 0) ? (
-            <div className="text-center py-8 text-muted-foreground text-sm">
-              {isRtl ? "هنوز گزارشی ثبت نشده." : "No updates yet."}
+        {/* Progress items / Chat stream */}
+        <div ref={messagesContainerRef} className="p-5 space-y-4 max-h-[420px] overflow-y-auto scroll-smooth">
+          {(!currentTask.progress || currentTask.progress.length === 0) ? (
+            <div className="text-center py-10 text-muted-foreground text-sm space-y-1">
+              <p className="font-semibold">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
+              <p className="text-xs">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
             </div>
           ) : (
-            task.progress.map((p) => (
+            currentTask.progress.map((p) => (
               <ProgressItem key={p.id} progress={p} isRtl={isRtl} currentUserId={currentUser.id} isAdmin={isAdmin} />
             ))
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
@@ -428,12 +680,18 @@ export function TaskProgressView({
               <Textarea
                 value={progressContent}
                 onChange={(e) => setProgressContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendProgress();
+                  }
+                }}
                 placeholder={
                   isAdmin
-                    ? (isRtl ? "نظر مدیریتی یا راهنمایی بنویسید..." : "Write managerial feedback or guidance...")
-                    : (isRtl ? "گزارش پیشرفت، مشکلات یا سوالات خود را بنویسید..." : "Report progress, issues, or ask questions...")
+                    ? (isRtl ? "پیام مدیریتی یا راهنمایی بنویسید (Enter برای ارسال سریع، Shift+Enter خط جدید)..." : "Write guidance (Enter to send, Shift+Enter for new line)...")
+                    : (isRtl ? "پیام، گزارش پیشرفت یا سوال خود را بنویسید (Enter برای ارسال سریع، Shift+Enter خط جدید)..." : "Write message (Enter to send, Shift+Enter for new line)...")
                 }
-                className="rounded-xl resize-none min-h-[80px] text-sm"
+                className="rounded-xl resize-none min-h-[75px] text-sm"
               />
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2">

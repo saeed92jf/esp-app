@@ -109,15 +109,37 @@ export function ProjectDetailView({
       progress: nextProgress,
     };
 
+    // Principled automated calculation of overall project status
+    const totalPhases = phases.length;
+    const completedPhases = phases.filter((p) => p.status === "completed" || p.progress >= 100).length;
+    const totalProgress = phases.reduce((acc, p) => acc + (p.progress || 0), 0);
+    const avgProgress = totalPhases > 0 ? Math.round(totalProgress / totalPhases) : 0;
+
+    let computedStatus: ProjectStatus = "in_progress";
+    if (completedPhases === totalPhases || avgProgress >= 100) {
+      computedStatus = "done";
+    } else if (phases.every((p) => p.status === "pending" && p.progress === 0)) {
+      computedStatus = "todo";
+    } else {
+      const activePhases = phases.filter((p) => p.status === "in_progress");
+      const hasReview = activePhases.some((p) => {
+        const titleStr = ((p.title || "") + " " + (p.titleEn || "")).toLowerCase();
+        return titleStr.includes("approval") || titleStr.includes("review") || titleStr.includes("تایید") || titleStr.includes("بازبینی");
+      });
+      computedStatus = hasReview ? "review" : "in_progress";
+    }
+
     try {
       const updated = await simplifiedProjectsService.updateProject(project.id, {
+        status: computedStatus,
+        progressPercentage: avgProgress,
         schedule: {
           ...project.schedule,
           phases,
         },
       });
       onProjectUpdated(updated);
-      toast.success(isRtl ? "وضعیت فاز به‌روزرسانی شد." : "Phase updated.");
+      toast.success(isRtl ? "وضعیت فاز به‌روزرسانی و وضعیت کلی پروژه به صورت خودکار محاسبه شد." : "Phase updated and project status recalculated.");
     } catch (err: any) {
       toast.error(err?.message || "Failed to update phase");
     }
@@ -291,31 +313,65 @@ export function ProjectDetailView({
           </div>
         )}
 
-        {/* Status Transition Toolbar for Admin/PM */}
-        {isAdmin && (
-          <div className="pt-3 border-t border-border/40 space-y-2">
-            <span className="text-xs font-semibold text-muted-foreground block">
-              {isRtl ? "تغییر وضعیت کلی پروژه:" : "Change Overall Status:"}
+        {/* Automated Project Lifecycle Tracker */}
+        <div className="pt-3 border-t border-border/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+              <Clock className="size-3.5 text-primary" />
+              <span>{isRtl ? "چرخه عمر و وضعیت خودکار پروژه:" : "Automated Project Lifecycle:"}</span>
             </span>
-            <div className="flex flex-wrap gap-2">
-              {(["todo", "in_progress", "review", "done", "on_hold"] as ProjectStatus[]).map((st) => (
-                <button
-                  key={st}
-                  onClick={() => handleStatusChange(st)}
-                  disabled={project.status === st || isUpdatingStatus}
+            <span className="text-[11px] font-bold text-primary fa-num bg-primary/10 px-2.5 py-0.5 rounded-full">
+              {isRtl ? `پیشرفت کل: ${project.progressPercentage}%` : `Overall: ${project.progressPercentage}%`}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {([
+              { key: "todo", labelFa: "۱. برای شروع و برنامه‌ریزی", labelEn: "1. To Start", descFa: "آماده‌سازی مدارک اولیه" },
+              { key: "in_progress", labelFa: "۲. مهندسی و ساخت", labelEn: "2. In Progress", descFa: "طراحی، تامین و تولید" },
+              { key: "review", labelFa: "۳. بازبینی و تایید کارفرما", labelEn: "3. Under Review", descFa: "بررسی نقشه‌ها و بازرسی" },
+              { key: "done", labelFa: "۴. تکمیل و تحویل نهایی", labelEn: "4. Completed", descFa: "تحویل بسته به کارفرما" },
+            ] as const).map((step) => {
+              const isActive = project.status === step.key;
+              const isPast =
+                (step.key === "todo" && project.status !== "todo") ||
+                (step.key === "in_progress" && (project.status === "review" || project.status === "done")) ||
+                (step.key === "review" && project.status === "done");
+
+              return (
+                <div
+                  key={step.key}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer select-none",
-                    project.status === st
-                      ? "bg-primary text-white border-primary shadow-xs"
-                      : "bg-muted/50 border-border/60 hover:bg-muted text-foreground/80 disabled:opacity-50"
+                    "p-3 rounded-2xl border transition-all text-start flex flex-col justify-between min-h-[74px]",
+                    isActive
+                      ? "bg-primary/10 border-primary text-primary font-bold shadow-xs ring-2 ring-primary/20"
+                      : isPast
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold"
+                      : "bg-muted/20 border-border/40 text-muted-foreground"
                   )}
                 >
-                  {isRtl ? STATUS_CONFIG[st].labelFa : STATUS_CONFIG[st].labelEn}
-                </button>
-              ))}
-            </div>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-xs font-bold leading-tight truncate">
+                      {isRtl ? step.labelFa : step.labelEn}
+                    </span>
+                    {isPast && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
+                    {isActive && <span className="size-2 rounded-full bg-primary animate-pulse shrink-0" />}
+                  </div>
+                  <span className="text-[10px] opacity-75 truncate">{step.descFa}</span>
+                </div>
+              );
+            })}
           </div>
-        )}
+
+          <p className="text-[11px] text-muted-foreground flex items-center gap-1.5 pt-0.5">
+            <AlertCircle className="size-3.5 text-primary shrink-0" />
+            <span>
+              {isRtl
+                ? "وضعیت پروژه بر اساس پیشرفت واقعی فازهای ۵‌گانه در بخش اسکجول زیر به صورت خودکار محاسبه می‌شود و دستی تغییر نمی‌کند."
+                : "Project status is automatically updated based on the actual progress of the execution phases below."}
+            </span>
+          </p>
+        </div>
       </div>
 
       {/* ── 2. Schedule & Execution Phases ── */}
