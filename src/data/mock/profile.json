@@ -3,90 +3,102 @@
   "userId": "usr_9801",
   "personal": {
     "firstName": "Saeed",
-    "lastName": "Jalili Fard",
+    "lastName": "Jalili",
     "firstNameFa": "سعید",
-    "lastNameFa": "جلیلی فرد",
+    "lastNameFa": "جلیلی",
     "avatar": null,
     "avatarUrl": null,
-    "avatarColor": "#1ea6ec",
+    "avatarColor": "#0284c7",
     "avatarBgColor": "transparent",
     "avatarMode": "initials",
-    "primaryColor": "purple",
+    "primaryColor": "blue",
     "nationalId": "2530095760",
     "phone": "09179528781",
-    "email": "s.jalilifard@euroslotpars.com",
-    "address": "تهران، خیابان امام خمینی، خیابان کارون، بین خ هاشمی و خ دامپزشکی بعد از خ بوستان سعدی، کوچه هنجنی، پلاک 16، واحد 2",
+    "email": "s.jalili@euroslotpars.com",
+    "address": "تهران، دفتر مرکزی یورواسلات پارس",
     "birthDate": "1371/05/25",
     "phoneVerified": false,
     "emailVerified": true,
     "maritalStatus": "single",
     "childrenCount": 0,
-    "fullName": "Saeed Jalili Fard",
-    "fullNameFa": "سعید جلیلی فرد"
+    "fullName": "Saeed Jalili",
+    "fullNameFa": "سعید جلیلی",
+    "birthNo": "2530095760",
+    "birthLoc": "اقلید",
+    "birthIssue": "اقلید",
+    "dutyStatus": "معافیت پزشکی",
+    "gender": "male",
+    "fatherName": "محمدجواد"
   },
   "organizational": {
-    "department": "",
-    "role": "مدیر ارشد سیستم و سرپرست فنی",
-    "employeeId": "205",
-    "joinDate": "1403/03/13",
-    "manager": "علی احمدی",
+    "department": "Engineering",
+    "role": "کارشناس",
+    "employeeId": "ESP-205",
+    "joinDate": "1402/03/25",
+    "manager": "مدیر مهندسی",
     "managerId": "usr_1001",
     "extensionNumber": "187",
-    "workLocation": "office",
+    "workLocation": "دفتر تهران",
     "contractType": "full_time",
     "subordinates": [],
-    "subordinatesCount": 0
+    "subordinatesCount": 0,
+    "position": "Expert",
+    "positionFa": "کارشناس",
+    "floor": "Grourd Floor",
+    "unit": "No. 1",
+    "unitFa": "واحد 1",
+    "subUnitFa": "مهندسی",
+    "managerTitle": "مدیر مهندسی",
+    "activities": [
+      "ارائه و ثبت و بایگانی مدارک مهندسی شامل محاسبات، نقشه های ساخت،دستورالعملها و MTO مواد مصرفی",
+      "ارائه گزارشات پیشرفت کار به مافوق",
+      "حضور در جلسات کارخانه و یا سایت",
+      "تهیه نرم افزارهای محاسبات مکانیکی و محاسبه اوزان"
+    ]
   },
   "skills": [
     {
-      "id": "skill_1",
-      "name": "React",
-      "level": 5
+      "id": "sk-1",
+      "name": "ارائه و ثبت و بایگانی مدارک مهندسی شامل ...",
+      "rate": 90
     },
     {
-      "id": "skill_2",
-      "name": "TypeScript",
-      "level": 4
+      "id": "sk-2",
+      "name": "ارائه گزارشات پیشرفت کار به مافوق",
+      "rate": 95
     },
     {
-      "id": "skill_3",
-      "name": "Node.js",
-      "level": 4
+      "id": "sk-3",
+      "name": "حضور در جلسات کارخانه و یا سایت",
+      "rate": 85
+    },
+    {
+      "id": "sk-4",
+      "name": "تهیه نرم افزارهای محاسبات مکانیکی و محاس...",
+      "rate": 90
     }
   ],
   "insurance": {
-    "insuranceCode": "12345678",
-    "provider": "تامین اجتماعی",
+    "insuranceCode": "10810259",
+    "provider": "تأمین اجتماعی",
     "corporateProvider": "تامین اجتماعی",
     "validUntil": "1405/12/29",
-    "type": "بیمه اجباری",
-    "supplementaryPlan": "golden",
+    "type": "complementary",
+    "supplementaryPlan": "special",
     "supplementaryProvider": "SOS",
-    "shebaNumber": "IR120120000000001234567890",
+    "shebaNumber": "",
     "dependentsCount": 0,
-    "dependents": []
+    "dependents": [],
+    "supplementaryPlanFa": "طرح ویژه",
+    "accountNumber": "824-800-4272331-1"
   },
   "education": {
-    "degree": "کارشناسی ارشد",
-    "fieldOfStudy": "مهندسی متالورژی و سرامیک",
-    "university": "دانشگاه صنعتی شریف",
-    "graduationYear": "1395/04/15",
-    "records": [
-      {
-        "id": "edu_1",
-        "degree": "کارشناسی",
-        "fieldOfStudy": "مهندسی متالورژی و مواد",
-        "university": "دانشگاه تهران",
-        "graduationYear": "1392/04/10"
-      },
-      {
-        "id": "edu_2",
-        "degree": "کارشناسی ارشد",
-        "fieldOfStudy": "مهندسی متالورژی و سرامیک",
-        "university": "دانشگاه صنعتی شریف",
-        "graduationYear": "1395/04/15"
-      }
-    ]
+    "degree": "master",
+    "fieldOfStudy": "مهندسی مکانیک",
+    "university": "دانشگاه صنعتی مالک اشتر",
+    "graduationYear": "--",
+    "records": [],
+    "degreeFa": "فوق لیسانس"
   },
   "documents": [
     {

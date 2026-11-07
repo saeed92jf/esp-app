@@ -34,7 +34,10 @@ export interface CommunityPost {
   id: string;
   title: string;
   titleFa?: string;
+  titleEn?: string;
   content: string;
+  contentFa?: string;
+  contentEn?: string;
   category: "all" | "general" | "engineering" | "quality" | "announcements" | string;
   tags?: string[];
   authorId: string;

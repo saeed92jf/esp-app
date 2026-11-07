@@ -32,3 +32,4 @@ export default async function NewTaskPage({ params }: Props) {
     </Suspense>
   );
 }
+

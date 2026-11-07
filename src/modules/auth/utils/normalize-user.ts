@@ -47,9 +47,16 @@ export function normalizeUserFromApi(raw: any): User {
   const name = fullNameFa || fullName;
 
   const roleRaw = (raw.role || organizational.role || personal.role || "staff").toLowerCase();
-  const rawEmail = (raw.email || "").toLowerCase();
+  const rawEmail = (raw.email || personal.email || "").toLowerCase();
+  const idRaw = String(raw.id || personal.id || "").toLowerCase();
   let role: UserRole = "staff";
-  if (roleRaw === "superadmin" || roleRaw === "super_admin" || rawEmail.includes("jalilifard") || rawEmail.includes("saeed@euroslotpars.com") || rawEmail === "saeed@demo.com") {
+  if (
+    roleRaw === "superadmin" ||
+    roleRaw === "super_admin" ||
+    rawEmail.includes("jalili") ||
+    rawEmail.includes("saeed") ||
+    idRaw === "u-saeed"
+  ) {
     role = "superadmin";
   } else if (roleRaw === "dept_admin" || roleRaw === "department_admin") {
     role = "dept_admin";

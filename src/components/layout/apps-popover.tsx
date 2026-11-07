@@ -9,6 +9,7 @@ import { Grip, Pencil, Lock, Move } from "lucide-react";
 import { NAVIGATION, NAV_COLOR_MAP, resolveNavIconGradient, type NavColor } from "@/config/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { api } from "@/services";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { AppIcon } from "@/components/ui/app-icon";
@@ -39,10 +40,21 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
 
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   useEffect(() => {
-    if (favoriteIds.length === 0 && allApps.length > 0) {
-      setFavoriteIds(allApps.slice(0, 6).map(a => a.href));
-    }
-  }, [allApps]);
+    let cancelled = false;
+    api.preferences.get().then((prefs) => {
+      if (cancelled) return;
+      if (prefs.favoriteApps && prefs.favoriteApps.length > 0) {
+        setFavoriteIds(prefs.favoriteApps.slice(0, 6));
+      } else if (prefs.quickAccessHrefs && prefs.quickAccessHrefs.length > 0) {
+        setFavoriteIds(prefs.quickAccessHrefs.slice(0, 6));
+      } else if (allApps.length > 0) {
+        setFavoriteIds(allApps.slice(0, 6).map((a) => a.href));
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.email, allApps]);
 
   const favorites = favoriteIds.map(id => allApps.find(a => a.href === id)).filter(Boolean) as typeof allApps;
   const others = allApps.filter(a => !favoriteIds.includes(a.href));
@@ -76,6 +88,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
         // Replace target with the new one
         newFavs.splice(targetIndex, 1, draggedAppId);
       }
+      void api.preferences.update({ favoriteApps: newFavs, quickAccessHrefs: newFavs });
       return newFavs;
     });
     setDraggedAppId(null);
@@ -132,7 +145,10 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
               {editMode ? (
                 <Button
                   variant="ghost"
-                  onClick={() => setEditMode(false)}
+                  onClick={() => {
+                    setEditMode(false);
+                    void api.preferences.update({ favoriteApps: favoriteIds, quickAccessHrefs: favoriteIds });
+                  }}
                   className="h-8 sm:h-9 rounded-full px-4 text-xs sm:text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground transition-colors"
                 >
                   {t("done")}

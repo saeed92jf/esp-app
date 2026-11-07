@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useAuth } from "../../auth/hooks/use-auth";
 import {
   TabId,
   MODULES_REGISTRY,
@@ -36,6 +37,8 @@ const enforceLayoutConstraints = (layouts: Layouts): Layouts => {
 };
 
 export function useDashboardLayout(initialTab: TabId = "tasks") {
+  const { user } = useAuth();
+  const userId = user?.id || user?.email || "guest";
   const [currentTab, setCurrentTab] = useState<TabId>(initialTab);
 
   // Tab widgets (which widgets are present in each tab's center grid)
@@ -94,18 +97,52 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
     }
   });
 
-  // Persist to localStorage
+  // Persist to user-scoped localStorage
   useEffect(() => {
     try {
+      const userKey = `${STORAGE_KEY_TAB_WIDGETS}_${userId}`;
+      localStorage.setItem(userKey, JSON.stringify(tabWidgets));
       localStorage.setItem(STORAGE_KEY_TAB_WIDGETS, JSON.stringify(tabWidgets));
     } catch {}
-  }, [tabWidgets]);
+  }, [tabWidgets, userId]);
 
   useEffect(() => {
     try {
+      const userKey = `${STORAGE_KEY_TAB_LAYOUTS}_${userId}`;
+      localStorage.setItem(userKey, JSON.stringify(tabLayouts));
       localStorage.setItem(STORAGE_KEY_TAB_LAYOUTS, JSON.stringify(tabLayouts));
     } catch {}
-  }, [tabLayouts]);
+  }, [tabLayouts, userId]);
+
+  // Rehydrate personal layout on user login or switch
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const userWidgetsKey = `${STORAGE_KEY_TAB_WIDGETS}_${userId}`;
+      const savedW = localStorage.getItem(userWidgetsKey);
+      if (savedW) {
+        const parsedW = JSON.parse(savedW);
+        setTabWidgets({
+          tasks: parsedW.tasks || DEFAULT_TAB_WIDGETS.tasks,
+          custom: parsedW.custom || DEFAULT_TAB_WIDGETS.custom,
+          administrative: parsedW.administrative || DEFAULT_TAB_WIDGETS.administrative,
+          market: parsedW.market || DEFAULT_TAB_WIDGETS.market,
+        });
+      }
+
+      const userLayoutsKey = `${STORAGE_KEY_TAB_LAYOUTS}_${userId}`;
+      const savedL = localStorage.getItem(userLayoutsKey);
+      if (savedL) {
+        const parsedL = JSON.parse(savedL);
+        setTabLayouts({
+          tasks: enforceLayoutConstraints(parsedL.tasks || DEFAULT_TAB_LAYOUTS.tasks),
+          custom: enforceLayoutConstraints(parsedL.custom || DEFAULT_TAB_LAYOUTS.custom),
+          administrative: enforceLayoutConstraints(parsedL.administrative || DEFAULT_TAB_LAYOUTS.administrative),
+          market: enforceLayoutConstraints(parsedL.market || DEFAULT_TAB_LAYOUTS.market),
+        });
+      }
+    } catch {}
+  }, [userId]);
 
   // Layout change from react-grid-layout for current tab
   const onLayoutChange = useCallback(

@@ -234,7 +234,9 @@ export function CommunityPage() {
           activeTag || undefined,
           activeSort
         );
-        setPosts(data);
+        // Ensure pinned posts are strictly placed at the very top of all views
+        const sortedData = [...data].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+        setPosts(sortedData);
       } catch (err: any) {
         if (!silent) {
           console.error("Failed to fetch community posts:", err);
@@ -1279,9 +1281,9 @@ export function CommunityPage() {
                     key={post.id}
                     className={cn(
                       "bg-card border rounded-2xl p-4 sm:p-5 shadow-xs transition-all duration-200",
-                      hasAcceptedAnswer
-                        ? "border-emerald-500/40 hover:border-emerald-500/70"
-                        : "border-border/60 hover:border-border/90"
+                      post.pinned && "border-amber-500/50 bg-amber-500/[0.03] dark:bg-amber-500/[0.04] ring-1 ring-amber-500/25",
+                      !post.pinned && hasAcceptedAnswer && "border-emerald-500/40 hover:border-emerald-500/70",
+                      !post.pinned && !hasAcceptedAnswer && "border-border/60 hover:border-border/90"
                     )}
                   >
                     {/* Top Container: StackOverflow Metrics Column + Question Info */}
@@ -1340,14 +1342,14 @@ export function CommunityPage() {
                             onClick={() => handleToggleThread(post.id)}
                             className="text-base sm:text-lg font-bold text-foreground hover:text-primary transition-colors cursor-pointer leading-snug line-clamp-2"
                           >
-                            {isRtl && post.titleFa ? post.titleFa : post.title}
+                            {isRtl ? (post.titleFa || post.title) : (post.titleEn || post.title)}
                           </h2>
 
                           <div className="flex items-center gap-1.5 shrink-0">
                             {post.pinned && (
                               <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30 gap-1 text-[10px]">
                                 <Pin className="size-3" />
-                                <span>{isRtl ? "سنجاق" : "Pinned"}</span>
+                                <span>{isRtl ? "سنجاق شده" : "Pinned"}</span>
                               </Badge>
                             )}
                             <Badge variant="outline" className="text-[10px] text-muted-foreground border-border/60">
@@ -1369,9 +1371,12 @@ export function CommunityPage() {
                         {/* Content Snippet */}
                         <p
                           onClick={() => handleToggleThread(post.id)}
-                          className="text-xs sm:text-sm text-foreground/80 line-clamp-3 leading-relaxed mb-3 cursor-pointer"
+                          className={cn(
+                            "text-xs sm:text-sm text-foreground/80 leading-relaxed mb-3 cursor-pointer whitespace-pre-line",
+                            !isExpanded && (post.pinned ? "line-clamp-6" : "line-clamp-3")
+                          )}
                         >
-                          {post.content}
+                          {isRtl ? (post.contentFa || post.content) : (post.contentEn || post.content)}
                         </p>
 
                         {/* Tags Row */}

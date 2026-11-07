@@ -1,12 +1,14 @@
 // src/hooks/use-quick-access.ts
 // ─────────────────────────────────────────────────────────────────────────────
-// Hook for managing Google-style quick access shortcuts with preferences sync
+// Hook for managing Google-style quick access shortcuts with user-scoped preferences sync
+// ─────────────────────────────────────────────────────────────────────────────
 
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { api } from '@/services';
 import { NAVIGATION, type NavItem } from '@/config/navigation';
+import { useAuth } from '@/modules/auth/hooks/use-auth';
 
 export const QUICK_ACCESS_MAX = 7;
 
@@ -23,13 +25,15 @@ const DEFAULT_HREFS: string[] = [
 ];
 
 export function useQuickAccess() {
+  const { user } = useAuth();
   const [selectedHrefs, setSelectedHrefs] = useState<string[]>(DEFAULT_HREFS);
   const [hydrated, setHydrated] = useState(false);
   const skipNextSave = useRef(true);
 
-  // Initial load from preferences service
+  // Load / reload user-specific preferences on mount or when user changes
   useEffect(() => {
     let cancelled = false;
+    skipNextSave.current = true;
     api.preferences.get().then((prefs) => {
       if (cancelled) return;
       if (prefs.quickAccessHrefs && prefs.quickAccessHrefs.length > 0) {
@@ -42,7 +46,7 @@ export function useQuickAccess() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.id, user?.email]);
 
   // Save on change (except first load)
   useEffect(() => {
@@ -79,6 +83,10 @@ export function useQuickAccess() {
     });
   }, []);
 
+  const reorderShortcuts = useCallback((newHrefs: string[]) => {
+    setSelectedHrefs(newHrefs.slice(0, QUICK_ACCESS_MAX));
+  }, []);
+
   const reset = useCallback(() => setSelectedHrefs(DEFAULT_HREFS), []);
 
   const isFull = selectedHrefs.length >= QUICK_ACCESS_MAX;
@@ -90,6 +98,7 @@ export function useQuickAccess() {
     toggle,
     removeShortcut,
     addShortcut,
+    reorderShortcuts,
     reset,
     isFull,
     isSelected,

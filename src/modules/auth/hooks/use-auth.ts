@@ -13,6 +13,8 @@ import type { User } from '@/types/auth';
 import { usePrimaryColor } from '@/hooks/use-primary-color';
 import { DEFAULT_PRIMARY_COLOR } from '@/config/settings';
 
+import { normalizeUserFromApi } from '../utils/normalize-user';
+
 interface AuthState {
   user: User | null;
   loading: boolean;
@@ -37,15 +39,7 @@ function getInitialUser(): User | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed && typeof parsed === 'object') {
-      const fullName = parsed.fullName || parsed.name || (parsed.email ? parsed.email.split('@')[0] : '');
-      const fullNameFa = parsed.fullNameFa || parsed.name || fullName;
-      const name = fullNameFa || fullName || (parsed.email ? parsed.email.split('@')[0] : '');
-      return {
-        ...parsed,
-        name,
-        fullName: fullName || name,
-        fullNameFa: fullNameFa || name,
-      } as User;
+      return normalizeUserFromApi(parsed);
     }
   } catch {}
   return null;
