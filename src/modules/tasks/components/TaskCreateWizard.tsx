@@ -15,7 +15,6 @@ import {
   Users,
   Calendar,
   Search,
-  CheckCircle2,
   Building2,
   UserCheck,
   AlertCircle,
@@ -23,7 +22,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
+import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
 import { newTasksService, NewTask, NewTaskCreate } from "../services/new-tasks.service";
 import { toast } from "sonner";
@@ -72,7 +72,18 @@ const PRIORITY_OPTIONS: { value: Priority; labelFa: string; labelEn: string; col
   { value: "critical", labelFa: "فوری", labelEn: "Critical", color: "text-red-600 bg-red-100 dark:bg-red-900/30" },
 ];
 
-const COMPANIES = ["یورو اسلات پارس", "نانو پالایش سرام"];
+const COMPANY_COMBOBOX_OPTIONS: ComboboxOption[] = [
+  {
+    value: "یورو اسلات پارس",
+    label: "یورو اسلات پارس",
+    hint: "تجهیزات فیلتراسیون، صفحات غربال و اسلات‌دار",
+  },
+  {
+    value: "نانو پالایش سرام",
+    label: "نانو پالایش سرام",
+    hint: "غشاهای نانوسرامیکی دمای بالا و کاتالیست",
+  },
+];
 
 export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskCreateWizardProps) {
   const locale = useLocale();
@@ -93,10 +104,11 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
     assignees: [],
     deadline: "",
     priority: "medium",
-    company: "",
+    company: "یورو اسلات پارس",
     tags: [],
   });
 
+  const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
   const [newSubtask, setNewSubtask] = useState("");
   const [newTag, setNewTag] = useState("");
 
@@ -190,6 +202,22 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
     }));
   };
 
+  const handleDeadlineDateChange = (d?: Date) => {
+    setDeadlineDate(d);
+    if (d) {
+      if (isRtl) {
+        const j = getJalaliDate(d);
+        const jStr = `${j.year}/${String(j.month).padStart(2, "0")}/${String(j.day).padStart(2, "0")}`;
+        setState((s) => ({ ...s, deadline: jStr }));
+      } else {
+        const iso = d.toISOString().split("T")[0];
+        setState((s) => ({ ...s, deadline: iso }));
+      }
+    } else {
+      setState((s) => ({ ...s, deadline: "" }));
+    }
+  };
+
   const addTag = () => {
     if (!newTag.trim() || state.tags.includes(newTag.trim())) return;
     setState((s) => ({ ...s, tags: [...s.tags, newTag.trim()] }));
@@ -216,6 +244,12 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
       return true;
     });
   }, [personnelList, personnelSearch, personnelCompanyFilter]);
+
+  const personnelCompanyComboboxOptions: ComboboxOption[] = useMemo(() => [
+    { value: "all", label: isRtl ? "همه شرکت‌ها" : "All Companies" },
+    { value: "یورو اسلات پارس", label: "یورو اسلات پارس" },
+    { value: "نانو پالایش سرام", label: "نانو پالایش سرام" },
+  ], [isRtl]);
 
   const handleSubmit = async () => {
     if (!state.title.trim()) {
@@ -320,7 +354,7 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {isRtl
-                    ? "عنوان دقیق، شرح الزامات و در صورت لزوم مراحل و چک‌لیست زیرتسک‌ها را درج نمایید."
+                    ? "عنوان دقیق، شرح الزامات و در صورت لزوم چک‌لیست اقدامات زیرتسک‌ها را درج نمایید."
                     : "Enter a descriptive title, requirements, and optional checklist subtasks."}
                 </p>
               </div>
@@ -452,9 +486,9 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                 )}
               </div>
 
-              {/* Search & Company Filter Toolbar */}
-              <div className="flex flex-col sm:flex-row gap-2.5">
-                <div className="relative flex-1">
+              {/* Search & Company Filter Toolbar using Combobox */}
+              <div className="flex flex-col sm:flex-row gap-2.5 items-center">
+                <div className="relative flex-1 w-full">
                   <Search className="absolute start-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                   <Input
                     value={personnelSearch}
@@ -463,15 +497,16 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                     className="ps-9 rounded-xl h-10 text-xs sm:text-sm bg-background"
                   />
                 </div>
-                <select
-                  value={personnelCompanyFilter}
-                  onChange={(e) => setPersonnelCompanyFilter(e.target.value)}
-                  className="rounded-xl border border-input bg-background px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary h-10"
-                >
-                  <option value="all">{isRtl ? "همه شرکت‌ها" : "All Companies"}</option>
-                  <option value="یورو اسلات پارس">یورو اسلات پارس</option>
-                  <option value="نانو پالایش سرام">نانو پالایش سرام</option>
-                </select>
+                <div className="w-full sm:w-60">
+                  <Combobox
+                    options={personnelCompanyComboboxOptions}
+                    value={personnelCompanyFilter}
+                    onChange={(val) => setPersonnelCompanyFilter(val || "all")}
+                    placeholder={isRtl ? "فیلتر شرکت..." : "Filter company..."}
+                    className="w-full h-10 rounded-xl"
+                    allowClear={false}
+                  />
+                </div>
               </div>
 
               {/* Personnel Cards Grid */}
@@ -548,24 +583,30 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {isRtl
-                    ? "مهلت تحویل نهایی، اولویت کاری، شرکت تابعه و برچسب‌های تسک را تعیین نمایید."
-                    : "Specify final deadline, task priority, company ownership, and tags."}
+                    ? "مهلت تحویل نهایی را با تقویم شمسی و شرکت را از فهرست انتخاب نمایید."
+                    : "Specify final deadline with the date picker and select corporate ownership."}
                 </p>
               </div>
 
-              {/* Deadline & Company */}
+              {/* Deadline (Custom DatePicker) & Company (Custom Combobox) */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs sm:text-sm font-semibold flex items-center gap-1.5">
                     <Calendar className="size-4 text-primary" />
-                    <span>{isRtl ? "مهلت و تاریخ تحویل" : "Deadline"}</span>
+                    <span>{isRtl ? "مهلت و تاریخ تحویل (تقویم شمسی)" : "Deadline"}</span>
                   </label>
-                  <Input
-                    type="date"
-                    value={state.deadline}
-                    onChange={(e) => setState((s) => ({ ...s, deadline: e.target.value }))}
-                    className="rounded-xl h-11 text-sm bg-background"
+                  <DatePicker
+                    value={deadlineDate}
+                    onChange={handleDeadlineDateChange}
+                    placeholder={isRtl ? "انتخاب تاریخ سررسید..." : "Select deadline..."}
+                    isJalali={isRtl}
+                    className="w-full h-11 rounded-xl text-sm"
                   />
+                  {state.deadline && (
+                    <p className="text-[11px] text-muted-foreground fa-num">
+                      {isRtl ? "تاریخ ثبت‌شده:" : "Set date:"} {state.deadline}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -573,16 +614,14 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                     <Building2 className="size-4 text-primary" />
                     <span>{isRtl ? "شرکت مجری / کارفرما" : "Company"}</span>
                   </label>
-                  <select
+                  <Combobox
+                    options={COMPANY_COMBOBOX_OPTIONS}
                     value={state.company}
-                    onChange={(e) => setState((s) => ({ ...s, company: e.target.value }))}
-                    className="w-full rounded-xl border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary h-11"
-                  >
-                    <option value="">{isRtl ? "انتخاب شرکت..." : "Select company..."}</option>
-                    {COMPANIES.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setState((s) => ({ ...s, company: val }))}
+                    placeholder={isRtl ? "انتخاب شرکت مربوطه..." : "Select company..."}
+                    className="w-full h-11 rounded-xl text-sm"
+                    allowClear={false}
+                  />
                 </div>
               </div>
 

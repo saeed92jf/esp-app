@@ -2,20 +2,15 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ListChecks,
-  PlusCircle,
   Kanban,
+  PlusCircle,
   RefreshCw,
   AlertCircle,
   X,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  ShieldCheck,
-  Building2,
+  ListChecks,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,12 +20,11 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { newTasksService, NewTask } from "../services/new-tasks.service";
 import { TaskCreateWizard } from "./TaskCreateWizard";
-import { AdminAllTasksList } from "./AdminAllTasksList";
 import { AdminRoadmapView } from "./AdminRoadmapView";
 import { TaskProgressView } from "./TaskProgressView";
 import { UserTasksView } from "./UserTasksView";
 
-type TaskTab = "tasks" | "create" | "roadmap";
+type TaskTab = "kanban" | "create";
 
 interface NavItem {
   id: TaskTab;
@@ -53,7 +47,7 @@ export function TasksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<TaskTab>("tasks");
+  const [activeTab, setActiveTab] = useState<TaskTab>("kanban");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<NewTask | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -85,7 +79,7 @@ export function TasksPage() {
 
   const handleTaskCreated = (newTask: NewTask) => {
     setTasks((prev) => [newTask, ...prev]);
-    setActiveTab("tasks");
+    setActiveTab("kanban");
   };
 
   const handleTaskUpdated = (updatedTask: NewTask) => {
@@ -102,17 +96,16 @@ export function TasksPage() {
     }
   };
 
-  // Nav items based on role
+  // Nav items: Kanaban (Roadmap) + Create Task for Admin; My Tasks for regular user
   const navItems: NavItem[] = useMemo(() => {
     if (isAdmin) {
       return [
-        { id: "tasks", labelFa: "همه تسک‌ها", labelEn: "All Tasks", icon: ListChecks },
-        { id: "create", labelFa: "ایجاد تسک", labelEn: "New Task", icon: PlusCircle },
-        { id: "roadmap", labelFa: "نقشه راه", labelEn: "Roadmap", icon: Kanban },
+        { id: "kanban", labelFa: "تخته کانبان و نقشه راه", labelEn: "Kanban Roadmap", icon: Kanban },
+        { id: "create", labelFa: "ایجاد تسک جدید", labelEn: "New Task", icon: PlusCircle },
       ];
     }
     return [
-      { id: "tasks", labelFa: "تسک‌های من", labelEn: "My Tasks", icon: ListChecks },
+      { id: "kanban", labelFa: "تسک‌های من", labelEn: "My Tasks", icon: ListChecks },
     ];
   }, [isAdmin]);
 
@@ -137,9 +130,7 @@ export function TasksPage() {
             : isAdmin
             ? activeTab === "create"
               ? isRtl ? "ایجاد تسک جدید" : "Create New Task"
-              : activeTab === "roadmap"
-              ? isRtl ? "نقشه راه و وضعیت" : "Roadmap & Status"
-              : isRtl ? "فهرست تسک‌ها" : "Tasks Overview"
+              : isRtl ? "تخته کانبان و نقشه راه" : "Kanban Roadmap"
             : isRtl ? "تسک‌های محوله من" : "My Assigned Tasks"
         }
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
@@ -249,7 +240,7 @@ export function TasksPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center gap-2.5">
-                    <span>{isRtl ? "گردش کار و مدیریت تسک‌ها" : "Task Workflow & Management"}</span>
+                    <span>{isRtl ? "تخته کانبان و گردش کار تسک‌ها" : "Task Kanban & Workflow"}</span>
                     {isAdmin && (
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary font-semibold">
                         {isRtl ? "پنل مدیریت" : "Admin Panel"}
@@ -258,7 +249,7 @@ export function TasksPage() {
                   </h1>
                   <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {isAdmin
-                      ? (isRtl ? "تعریف، نظارت و تایید نهایی تسک‌های سازمانی با ذخیره‌سازی داده واقعی" : "Define, track and approve organizational tasks with real persistence")
+                      ? (isRtl ? "پایش، جابجایی و تایید مراحل اجرای تسک‌ها در تخته کانبان" : "Monitor, navigate, and approve tasks directly on the Kanban board")
                       : (isRtl ? "مشاهده تسک‌های محوله، ارسال گزارش پیشرفت و دریافت بازخورد مدیر" : "View assigned tasks, report progress, and receive manager feedback")}
                   </p>
                 </div>
@@ -333,7 +324,7 @@ export function TasksPage() {
                 className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-card px-3.5 py-2 rounded-xl border border-border/50 w-fit"
               >
                 <X className="size-4" />
-                <span>{isRtl ? "بازگشت به فهرست تسک‌ها" : "Back to task list"}</span>
+                <span>{isRtl ? "بازگشت به تخته کانبان" : "Back to Kanban"}</span>
               </button>
 
               <TaskProgressView
@@ -345,22 +336,19 @@ export function TasksPage() {
               />
             </div>
           ) : isAdmin ? (
-            /* Admin Views: All Tasks / Create Wizard / Roadmap */
+            /* Admin Views: Kanban Roadmap or Create Wizard */
             <AnimatePresence mode="wait">
-              {activeTab === "tasks" && (
+              {activeTab === "kanban" && (
                 <motion.div
-                  key="admin-tasks"
+                  key="admin-kanban"
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.18 }}
                 >
-                  <AdminAllTasksList
+                  <AdminRoadmapView
                     tasks={tasks}
-                    currentUser={user!}
                     onSelectTask={setSelectedTask}
-                    onTaskUpdated={handleTaskUpdated}
-                    onTaskDeleted={handleTaskDeleted}
                   />
                 </motion.div>
               )}
@@ -376,22 +364,7 @@ export function TasksPage() {
                   <TaskCreateWizard
                     currentUser={user!}
                     onTaskCreated={handleTaskCreated}
-                    onCancel={() => setActiveTab("tasks")}
-                  />
-                </motion.div>
-              )}
-
-              {activeTab === "roadmap" && (
-                <motion.div
-                  key="admin-roadmap"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.18 }}
-                >
-                  <AdminRoadmapView
-                    tasks={tasks}
-                    onSelectTask={setSelectedTask}
+                    onCancel={() => setActiveTab("kanban")}
                   />
                 </motion.div>
               )}
