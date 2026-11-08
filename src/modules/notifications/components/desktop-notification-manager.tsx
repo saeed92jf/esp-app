@@ -6,15 +6,28 @@ import { useRouter } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 
-const POLL_INTERVAL_MS = 10000; // 10 seconds
+const CHIME_THROTTLE_MS = 2800;
 const SEEN_NOTIFS_STORAGE_KEY = 'esp_seen_desktop_notifications';
+let lastChimeTime = 0;
 
 /**
  * Synthesizes a crisp, elegant dual-tone chime (A5 -> E6) using the Web Audio API.
- * 100% self-contained, zero external audio asset dependencies.
+ * Deduplicated with cross-tab throttling so no duplicate chime ever plays.
  */
 export function playNotificationChime() {
   if (typeof window === 'undefined') return;
+  const now = Date.now();
+
+  // 1. Cross-tab & intra-tab deduplication lock
+  try {
+    const stored = localStorage.getItem('esp_last_chime_time');
+    if (stored && now - Number(stored) < CHIME_THROTTLE_MS) return;
+    localStorage.setItem('esp_last_chime_time', String(now));
+  } catch {}
+
+  if (now - lastChimeTime < CHIME_THROTTLE_MS) return;
+  lastChimeTime = now;
+
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
@@ -29,27 +42,28 @@ export function playNotificationChime() {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    const now = ctx.currentTime;
+    const audioNow = ctx.currentTime;
     // Pleasant harmonized bell chime: 880Hz (A5) ascending to 1318.5Hz (E6)
-    osc.frequency.setValueAtTime(880, now);
-    osc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.1);
-    gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    osc.frequency.setValueAtTime(880, audioNow);
+    osc.frequency.exponentialRampToValueAtTime(1318.5, audioNow + 0.1);
+    gain.gain.setValueAtTime(0.18, audioNow);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioNow + 0.38);
 
-    osc.start(now);
-    osc.stop(now + 0.38);
+    osc.start(audioNow);
+    osc.stop(audioNow + 0.38);
   } catch {
     // Audio autoplay might be blocked before first user gesture
   }
 }
 
 /**
- * Spawns a native Windows Desktop Toast Notification via standard Web Notification API.
+ * Spawns a native Windows Desktop Toast Notification via ServiceWorker or Web Notification API.
+ * silent: true ensures Windows Action Center doesn't play its OS ding over our chime.
  */
-export function triggerDesktopNotification({
+export async function triggerDesktopNotification({
   title,
   body,
-  icon = '/favicon.ico',
+  icon = '/esp-core-fav-icon.svg',
   tag,
   actionUrl,
   onClick,
@@ -64,13 +78,32 @@ export function triggerDesktopNotification({
   if (typeof window === 'undefined' || !('Notification' in window)) return;
   if (Notification.permission !== 'granted') return;
 
+  // 1. Modern Service Worker registration path (persistent in Windows, unthrottled in background)
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.showNotification) {
+        await reg.showNotification(title, {
+          body,
+          icon,
+          badge: icon,
+          tag: tag || `esp-${Date.now()}`,
+          silent: true, // Prevents Windows default chime from doubling with Web Audio
+          data: { url: actionUrl || '/' },
+        });
+        return;
+      }
+    } catch {}
+  }
+
+  // 2. Classic Notification API fallback
   try {
     const notif = new Notification(title, {
       body,
       icon,
       badge: icon,
       tag: tag || `esp-${Date.now()}`,
-      silent: false, // Allows Windows Action Center / Toast audio
+      silent: true, // Prevents duplicate chime
     });
 
     notif.onclick = () => {
@@ -87,8 +120,9 @@ export function triggerDesktopNotification({
 
 /**
  * Global Desktop & Windows Notification Coordinator.
- * Runs silently in AppShell, listens for incoming notifications,
- * plays a clean chime, delivers native Windows toasts, and updates the header popover.
+ * Runs silently in AppShell, registers Service Worker,
+ * uses an unthrottled Web Worker timer for background delivery,
+ * deduplicates audio chimes, delivers native Windows toasts, and updates the header bell.
  */
 export function DesktopNotificationManager() {
   const { user } = useAuth();
@@ -99,6 +133,14 @@ export function DesktopNotificationManager() {
   const seenIdsRef = useRef<Set<string>>(new Set());
   const isInitializedRef = useRef<boolean>(false);
   const promptShownRef = useRef<boolean>(false);
+
+  // Register Service Worker for Windows background notifications
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch((err) => {
+      console.warn('[SW] Service Worker registration failed:', err);
+    });
+  }, []);
 
   // Initialize seen IDs from sessionStorage
   useEffect(() => {
@@ -122,21 +164,46 @@ export function DesktopNotificationManager() {
     } catch {}
   }, []);
 
-  // Request desktop notification permission on first user click if not determined yet
+  // Request desktop notification permission on user action
   const requestPermission = useCallback(async () => {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
-    if (Notification.permission === 'default') {
-      try {
-        const result = await Notification.requestPermission();
-        if (result === 'granted') {
-          toast.success(
-            isRtl
-              ? 'اعلان‌های ویندوز با موفقیت فعال شد'
-              : 'Windows Desktop Notifications Enabled',
-            { duration: 4000 }
-          );
-        }
-      } catch {}
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      toast.warning(
+        isRtl
+          ? 'مرورگر شما از سیستم اعلان ویندوز پشتیبانی نمی‌کند یا دسترسی محدود است.'
+          : 'Your browser does not support desktop notifications.'
+      );
+      return;
+    }
+
+    if (Notification.permission === 'denied') {
+      toast.error(
+        isRtl
+          ? 'اعلان ویندوز در مرورگر مسدود است. لطفاً از آیکون کنار آدرس سایت دسترسی Notifications را روی Allow قرار دهید.'
+          : 'Notifications are blocked. Please allow them in your browser site settings.'
+      );
+      return;
+    }
+
+    try {
+      const result = await Notification.requestPermission();
+      if (result === 'granted') {
+        playNotificationChime();
+        await triggerDesktopNotification({
+          title: isRtl ? 'اعلان‌های ویندوز یورواسلات پارس' : 'Euroslot Pars Desktop Notifications',
+          body: isRtl
+            ? 'سیستم اعلان با موفقیت فعال شد. پیام‌ها و تسک‌های جدید به صورت آنی به ویندوز ارسال می‌شوند.'
+            : 'Notifications enabled successfully.',
+          actionUrl: '/tasks',
+        });
+        toast.success(
+          isRtl
+            ? 'اعلان‌های ویندوز با موفقیت فعال و تایید شد'
+            : 'Windows Desktop Notifications Enabled & Verified',
+          { duration: 4000 }
+        );
+      }
+    } catch (err) {
+      console.warn('[DesktopNotification] Permission request failed:', err);
     }
   }, [isRtl]);
 
@@ -154,13 +221,13 @@ export function DesktopNotificationManager() {
             : 'Get Real-Time Windows Notifications',
           {
             description: isRtl
-              ? 'برای اطلاع آنی از تسک‌ها و پیام‌های جدید حتی هنگام کار با سایر نرم‌افزارها، اعلان ویندوز را فعال کنید.'
-              : 'Stay informed about new tasks and comments even when working in other apps.',
+              ? 'برای دریافت آنی پیام‌های گفتگوی تسک‌ها حتی هنگام کوچک بودن پنجره مرورگر، اعلان ویندوز را فعال کنید.'
+              : 'Stay informed about task discussions even when the browser is minimized.',
             action: {
               label: isRtl ? 'فعال‌سازی' : 'Enable',
               onClick: () => requestPermission(),
             },
-            duration: 8000,
+            duration: 9000,
           }
         );
       }, 3500);
@@ -169,7 +236,7 @@ export function DesktopNotificationManager() {
     }
   }, [user, isRtl, requestPermission]);
 
-  // Global click listener to trigger permission prompt seamlessly
+  // Global click listener to trigger permission prompt seamlessly on first gesture
   useEffect(() => {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     if (Notification.permission !== 'default') return;
@@ -185,14 +252,40 @@ export function DesktopNotificationManager() {
     };
   }, [requestPermission]);
 
-  // Real-Time Notification Poller
+  // Expose global test trigger on window for debugging & UI buttons
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__espTriggerTestNotification = async () => {
+        playNotificationChime();
+        await triggerDesktopNotification({
+          title: isRtl ? 'تست اعلان ویندوز - سامانه ESP' : 'Test Notification - ESP Platform',
+          body: isRtl ? 'این یک اعلان تستی از سیستم گفتگوی تسک‌ها است.' : 'This is a test notification from ESP.',
+          actionUrl: '/tasks',
+        });
+      };
+      (window as any).__espRequestNotificationPermission = requestPermission;
+    }
+  }, [isRtl, requestPermission]);
+
+  // Real-Time Notification Poller via unthrottled Web Worker (continues running in background tabs & minimized windows)
   useEffect(() => {
     if (!user || !user.id) return;
+
+    let worker: Worker | null = null;
+    let fallbackInterval: any = null;
 
     const fetchLatestNotifications = async () => {
       try {
         const token = typeof window !== 'undefined' ? localStorage.getItem('esp-auth-token') : null;
-        const res = await fetch('/api/real/notifications?unreadOnly=true&limit=20', {
+        const queryParams = new URLSearchParams({
+          unreadOnly: 'true',
+          limit: '20',
+          userId: String(user.id),
+          role: String(user.role || 'user'),
+        });
+
+        // Use the real API endpoint /api/notifications
+        const res = await fetch(`/api/notifications?${queryParams.toString()}`, {
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -204,7 +297,7 @@ export function DesktopNotificationManager() {
         const notifs = data.notifications || data.data || [];
         if (!Array.isArray(notifs)) return;
 
-        // On first run, seed all currently existing unread notifications so we don't spam the user
+        // On first run, seed existing notifications so we don't spam the user
         if (!isInitializedRef.current) {
           isInitializedRef.current = true;
           for (const n of notifs) {
@@ -221,7 +314,7 @@ export function DesktopNotificationManager() {
         for (const n of notifs) {
           if (!n || !n.id) continue;
           const idStr = String(n.id);
-          // Filter out legacy mock IDs
+          // Filter out mock IDs
           if (['notif-1', 'notif-2', 'notif-3', 'notif-sys-1', 'notif-admin-1', 'notif-admin-req'].includes(idStr)) {
             continue;
           }
@@ -234,7 +327,7 @@ export function DesktopNotificationManager() {
         if (incoming.length > 0) {
           saveSeenIds();
 
-          // 1. Play clean chime sound
+          // 1. Play deduplicated single chime sound
           playNotificationChime();
 
           // 2. Process each new notification
@@ -243,12 +336,13 @@ export function DesktopNotificationManager() {
             const body = isRtl ? (item.descriptionFa || item.description || '') : (item.descriptionEn || item.description || '');
             const actionUrl = item.actionUrl;
 
-            // Native Windows Notification Toast
+            // Native Windows Notification Toast (ServiceWorker / Notification API)
             triggerDesktopNotification({
               title,
               body,
-              icon: '/favicon.ico',
+              icon: '/esp-core-fav-icon.svg',
               tag: item.id,
+              actionUrl: actionUrl || '/tasks',
               onClick: () => {
                 if (actionUrl) router.push(actionUrl);
               },
@@ -279,16 +373,50 @@ export function DesktopNotificationManager() {
       }
     };
 
-    // Run first check immediately after 1.5s
-    const initTimer = setTimeout(fetchLatestNotifications, 1500);
-    const interval = setInterval(fetchLatestNotifications, POLL_INTERVAL_MS);
+    // Instantiate unthrottled Web Worker
+    try {
+      if (typeof window !== 'undefined' && window.Worker) {
+        worker = new Worker('/notification-worker.js');
+        worker.onmessage = (e) => {
+          if (e.data && e.data.type === 'tick') {
+            fetchLatestNotifications();
+          }
+        };
+        worker.postMessage({ action: 'start', interval: 5000 });
+      }
+    } catch {
+      // Fallback
+    }
+
+    if (!worker) {
+      fallbackInterval = setInterval(fetchLatestNotifications, 6000);
+    }
+
+    // Immediate sync on tab switch or window focus
+    const handleFocusOrVisible = () => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        fetchLatestNotifications();
+      }
+    };
+    document.addEventListener('visibilitychange', handleFocusOrVisible);
+    window.addEventListener('focus', handleFocusOrVisible);
+
+    // Initial check after 1.2s
+    const initTimer = setTimeout(fetchLatestNotifications, 1200);
 
     return () => {
       clearTimeout(initTimer);
-      clearInterval(interval);
+      if (worker) {
+        worker.postMessage({ action: 'stop' });
+        worker.terminate();
+      }
+      if (fallbackInterval) clearInterval(fallbackInterval);
+      document.removeEventListener('visibilitychange', handleFocusOrVisible);
+      window.removeEventListener('focus', handleFocusOrVisible);
     };
   }, [user, isRtl, router, saveSeenIds]);
 
   return null;
 }
+
 

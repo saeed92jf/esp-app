@@ -21,6 +21,7 @@ import {
   ChevronUp,
   Paperclip,
   FolderKanban,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +29,10 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
 import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
+import {
+  playNotificationChime,
+  triggerDesktopNotification,
+} from "@/modules/notifications/components/desktop-notification-manager";
 import { toast } from "sonner";
 import type { User } from "@/types/auth";
 
@@ -101,17 +106,42 @@ export function TaskProgressView({
     scrollToBottom(false);
   }, [scrollToBottom]);
 
-  // High-frequency auto-refresh polling (every 2.5s) for instant live chat feel
+  // High-frequency auto-refresh polling (every 3s) with background unthrottled sync
   useEffect(() => {
     let isMounted = true;
-    const interval = setInterval(async () => {
-      if (typeof document !== "undefined" && document.hidden) return;
+
+    const syncTaskData = async () => {
       try {
         const fresh = await newTasksService.getTaskById(task.id);
         if (fresh && isMounted) {
           const oldLen = currentTask.progress?.length || 0;
           const newLen = fresh.progress?.length || 0;
           if (newLen !== oldLen || fresh.status !== currentTask.status) {
+            // Check if new messages arrived from other participants
+            if (newLen > oldLen) {
+              const incoming = (fresh.progress || []).slice(oldLen);
+              const fromOtherUser = incoming.some(
+                (m) => m.author_id && m.author_id !== currentUser.id
+              );
+              if (fromOtherUser) {
+                // Play deduplicated single chime
+                playNotificationChime();
+
+                // If window or tab is hidden/minimized, trigger native Windows desktop toast
+                if (typeof document !== "undefined" && document.hidden) {
+                  const lastMsg = incoming[incoming.length - 1];
+                  triggerDesktopNotification({
+                    title: isRtl
+                      ? `پیام جدید در تسک: ${fresh.title}`
+                      : `New message in: ${fresh.title}`,
+                    body: `${lastMsg.author_name}: ${lastMsg.content}`,
+                    actionUrl: `/tasks`,
+                    tag: `task-${fresh.id}-${lastMsg.id}`,
+                  });
+                }
+              }
+            }
+
             setCurrentTask(fresh);
             onTaskUpdated(fresh);
             setTimeout(() => scrollToBottom(true), 50);
@@ -120,13 +150,25 @@ export function TaskProgressView({
       } catch {
         // ignore background poll errors
       }
-    }, 2500);
+    };
+
+    const interval = setInterval(syncTaskData, 3000);
+
+    const handleFocusOrVisible = () => {
+      if (typeof document !== "undefined" && !document.hidden) {
+        syncTaskData();
+      }
+    };
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+    window.addEventListener("focus", handleFocusOrVisible);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      window.removeEventListener("focus", handleFocusOrVisible);
     };
-  }, [task.id, currentTask.progress?.length, currentTask.status, onTaskUpdated, scrollToBottom]);
+  }, [task.id, currentTask.progress?.length, currentTask.status, currentUser.id, isRtl, onTaskUpdated, scrollToBottom]);
 
   const handleProgressFilesSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
@@ -623,7 +665,7 @@ export function TaskProgressView({
 
       {/* Live Progress Chat Thread */}
       <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between">
+        <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-primary" />
             <h3 className="font-bold text-sm">
@@ -634,9 +676,39 @@ export function TaskProgressView({
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
-            <span>{isRtl ? "به‌روزرسانی خودکار و آنی" : "Live Sync"}</span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                if (typeof window !== "undefined") {
+                  if ((window as any).__espTriggerTestNotification) {
+                    await (window as any).__espTriggerTestNotification();
+                  } else {
+                    playNotificationChime();
+                    await triggerDesktopNotification({
+                      title: isRtl ? "تست اعلان ویندوز - گفتگوی تسک" : "Test Notification - Task Chat",
+                      body: isRtl
+                        ? "سامانه اعلان‌های زنده ویندوز با موفقیت متصل و فعال است."
+                        : "Desktop notification is active.",
+                      actionUrl: "/tasks",
+                    });
+                  }
+                  toast.success(
+                    isRtl ? "اعلان تستی به ویندوز ارسال گردید." : "Test desktop toast sent."
+                  );
+                }
+              }}
+              title={isRtl ? "بررسی و ارسال اعلان تستی به ویندوز" : "Test Windows Notification"}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/70 bg-background hover:bg-muted text-[11px] font-medium text-foreground transition-colors cursor-pointer shadow-2xs"
+            >
+              <Bell className="size-3 text-primary" />
+              <span>{isRtl ? "تست اعلان ویندوز" : "Test Notification"}</span>
+            </button>
+
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
+              <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
+              <span>{isRtl ? "به‌روزرسانی آنی" : "Live Sync"}</span>
+            </div>
           </div>
         </div>
 

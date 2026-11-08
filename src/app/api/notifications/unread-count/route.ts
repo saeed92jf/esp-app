@@ -5,9 +5,14 @@ import { BACKEND_API_URL } from "@/lib/server/backend-config";
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
     const authHeader = req.headers.get("authorization");
     try {
-      const remoteRes = await fetch(`${BACKEND_API_URL}/notifications/unread-count`, {
+      const remoteUrl = new URL(`${BACKEND_API_URL}/notifications/unread-count`);
+      if (searchParams.get("role")) remoteUrl.searchParams.set("role", searchParams.get("role")!);
+      if (searchParams.get("userId")) remoteUrl.searchParams.set("userId", searchParams.get("userId")!);
+
+      const remoteRes = await fetch(remoteUrl.toString(), {
         headers: {
           ...(authHeader ? { Authorization: authHeader } : {}),
           Accept: "application/json",

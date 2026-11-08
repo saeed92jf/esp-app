@@ -86,6 +86,35 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
     fetchTasks();
   }, [fetchTasks]);
 
+  // Background poller to discover newly assigned tasks or status updates automatically
+  useEffect(() => {
+    const poller = setInterval(async () => {
+      try {
+        const params = isAdmin ? undefined : { assigneeId: user?.id };
+        const data = await newTasksService.getTasks(params);
+        setTasks((prev) => {
+          const freshSig = JSON.stringify(data.map((d) => ({ id: d.id, s: d.status, p: d.progress?.length })));
+          const prevSig = JSON.stringify(prev.map((d) => ({ id: d.id, s: d.status, p: d.progress?.length })));
+          return freshSig !== prevSig ? data : prev;
+        });
+      } catch {}
+    }, 7000);
+
+    const handleFocus = () => {
+      if (typeof document !== "undefined" && !document.hidden) {
+        fetchTasks();
+      }
+    };
+    document.addEventListener("visibilitychange", handleFocus);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      clearInterval(poller);
+      document.removeEventListener("visibilitychange", handleFocus);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [isAdmin, user?.id, fetchTasks]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await fetchTasks();
