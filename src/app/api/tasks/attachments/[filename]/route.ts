@@ -27,11 +27,18 @@ export async function GET(req: NextRequest, { params }: Context) {
     const contentDisposition = remoteRes.headers.get("content-disposition");
     const buffer = await remoteRes.arrayBuffer();
 
+    const isInline =
+      contentType.startsWith("image/") ||
+      contentType === "application/pdf" ||
+      contentType.startsWith("text/");
+
     const headers: Record<string, string> = {
       "Content-Type": contentType,
       "Cache-Control": "public, max-age=86400",
     };
-    if (contentDisposition) {
+    if (isInline) {
+      headers["Content-Disposition"] = "inline";
+    } else if (contentDisposition) {
       headers["Content-Disposition"] = contentDisposition;
     }
 
@@ -42,4 +49,8 @@ export async function GET(req: NextRequest, { params }: Context) {
       { status: 500 }
     );
   }
+}
+
+export async function HEAD(req: NextRequest, { params }: Context) {
+  return GET(req, { params });
 }

@@ -70,7 +70,7 @@ export function downloadAttachment(att: TaskAttachmentItem) {
 export function isImageAttachment(att: TaskAttachmentItem): boolean {
   const ext = (att.name?.split(".").pop() || att.type || "").toLowerCase();
   return (
-    ["png", "jpg", "jpeg", "webp", "gif"].includes(ext) ||
+    ["png", "jpg", "jpeg", "webp", "gif", "svg", "bmp", "avif", "heic"].includes(ext) ||
     Boolean(att.url?.startsWith("data:image"))
   );
 }
