@@ -31,6 +31,7 @@ export interface NewTaskProgress {
   attachments: TaskAttachmentItem[];
   created_at: string;
   is_admin_note: boolean;
+  is_system_event?: boolean;
   reply_to?: {
     id: string;
     author_name: string;

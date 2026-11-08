@@ -49,7 +49,20 @@ import {
   getSegmentedAccordionHeaderClass,
 } from "@/lib/animations/segmented-accordion";
 import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
-import { TaskAttachmentList, readAttachmentFile, downloadAttachment, isImageAttachment } from "./TaskAttachmentList";
+import {
+  TaskAttachmentList,
+  readAttachmentFile,
+  downloadAttachment,
+  isImageAttachment,
+  formatBytes,
+} from "./TaskAttachmentList";
+
+export interface StagedAttachment extends TaskAttachmentItem {
+  stagingId: string;
+  isUploading?: boolean;
+  previewUrl?: string;
+  file?: File;
+}
 import {
   playNotificationChime,
   triggerDesktopNotification,
@@ -251,7 +264,7 @@ export function TaskProgressView({
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
   const [isSavingDeadline, setIsSavingDeadline] = useState(false);
-  const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
+  const [pendingAttachments, setPendingAttachments] = useState<StagedAttachment[]>([]);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
@@ -276,7 +289,7 @@ export function TaskProgressView({
     e.stopPropagation();
     setIsDraggingOver(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      await handleProgressFilesSelect(e.dataTransfer.files);
+      await handleStageAttachments(e.dataTransfer.files);
     }
   };
 
@@ -440,112 +453,96 @@ export function TaskProgressView({
     };
   }, [task.id, currentTask.progress?.length, currentTask.status, currentUser.id, isRtl, onTaskUpdated, scrollToBottom]);
 
-  const handleDirectUploadAndSend = async (files: FileList | File[] | null) => {
+  const handleStageAttachments = async (files: FileList | File[] | null) => {
     if (!files) return;
     const fileList = Array.from(files);
     if (fileList.length === 0) return;
 
-    setIsReadingFiles(true);
-    const hasAnyImg = fileList.some(
-      (f) => f.type.startsWith("image/") || /\.(jpg|jpeg|png|webp|gif|svg|bmp|avif|heic)$/i.test(f.name)
-    );
-    const toastId = toast.loading(
-      isRtl
-        ? hasAnyImg
-          ? `در حال آپلود و ارسال تصویر...`
-          : `در حال آپلود و ارسال فایل...`
-        : `Uploading attachment...`
-    );
+    // Create immediate staged items with local blob URLs (0ms instant preview)
+    const newItems: StagedAttachment[] = fileList.map((file) => {
+      const isImg =
+        file.type.startsWith("image/") ||
+        /\.(jpg|jpeg|png|webp|gif|svg|bmp|avif|heic)$/i.test(file.name);
+      const stagingId = `staging_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      let previewUrl: string | undefined = undefined;
+      try {
+        if (isImg && typeof window !== "undefined" && window.URL) {
+          previewUrl = window.URL.createObjectURL(file);
+        }
+      } catch {}
 
-    try {
-      const uploadedItems: TaskAttachmentItem[] = [];
-      for (const file of fileList) {
+      return {
+        stagingId,
+        id: stagingId,
+        name: file.name,
+        size: formatBytes(file.size),
+        type: file.name.split(".").pop()?.toLowerCase() || (isImg ? "image" : "file"),
+        url: previewUrl,
+        previewUrl,
+        file,
+        isUploading: true,
+      };
+    });
+
+    setPendingAttachments((prev) => [...prev, ...newItems]);
+
+    // Concurrently upload to /api/tasks/upload in background
+    for (const item of newItems) {
+      if (!item.file) continue;
+      try {
+        const uploaded = await newTasksService.uploadAttachment(item.file);
+        setPendingAttachments((prev) =>
+          prev.map((p) =>
+            p.stagingId === item.stagingId
+              ? {
+                  ...p,
+                  ...uploaded,
+                  previewUrl: p.previewUrl || uploaded.url,
+                  isUploading: false,
+                }
+              : p
+          )
+        );
+      } catch (err: any) {
+        // Fallback: convert to base64 DataURL so user never loses file
         try {
-          const uploaded = await newTasksService.uploadAttachment(file);
-          uploadedItems.push(uploaded);
-        } catch (err: any) {
-          try {
-            const item = await readAttachmentFile(file);
-            uploadedItems.push(item);
-          } catch (inner: any) {
-            toast.error(err?.message || `خطا در آپلود ${file.name}`);
-          }
+          const fallback = await readAttachmentFile(item.file);
+          setPendingAttachments((prev) =>
+            prev.map((p) =>
+              p.stagingId === item.stagingId
+                ? {
+                    ...p,
+                    ...fallback,
+                    previewUrl: fallback.url,
+                    isUploading: false,
+                  }
+                : p
+            )
+          );
+        } catch (inner: any) {
+          toast.error(
+            err?.message || (isRtl ? `خطا در آپلود ${item.name}` : `Failed to upload ${item.name}`)
+          );
+          setPendingAttachments((prev) => prev.filter((p) => p.stagingId !== item.stagingId));
         }
       }
-
-      if (uploadedItems.length === 0) {
-        toast.dismiss(toastId);
-        return;
-      }
-
-      const caption = progressContent.trim();
-      const defaultText = hasAnyImg
-        ? (isRtl ? "تصویر پیوست" : "Attached photo")
-        : (isRtl ? "فایل پیوست" : "Attached file");
-      const finalText = caption || defaultText;
-
-      const currentReply = replyingTo
-        ? { id: replyingTo.id, author_name: replyingTo.author_name, content: replyingTo.content }
-        : null;
-
-      // 0ms Optimistic local message
-      const optimisticMsg: NewTaskProgress = {
-        id: `opt_${Date.now()}`,
-        author_id: currentUser.id,
-        author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
-        author_role: currentUser.role || "کارشناس",
-        content: finalText,
-        attachments: uploadedItems,
-        created_at: new Date().toISOString(),
-        is_admin_note: isAdmin,
-        reply_to: currentReply,
-      };
-
-      setProgressContent("");
-      setReplyingTo(null);
-      setPendingAttachments([]);
-
-      setCurrentTask((prev) => ({
-        ...prev,
-        status: prev.status === "todo" ? "in_progress" : prev.status,
-        progress: [...(prev.progress || []), optimisticMsg],
-      }));
-      setTimeout(() => scrollToBottom(true), 25);
-
-      const updatedTask = await newTasksService.addProgress(currentTask.id, {
-        author_id: currentUser.id,
-        author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
-        author_role: currentUser.role || "کارشناس",
-        content: finalText,
-        attachments: uploadedItems,
-        is_admin_note: isAdmin,
-        reply_to: currentReply,
-      });
-
-      setCurrentTask(updatedTask);
-      onTaskUpdated(updatedTask);
-      toast.success(
-        isRtl
-          ? hasAnyImg
-            ? "تصویر با موفقیت در گفتگو ارسال شد."
-            : "فایل با موفقیت در گفتگو ارسال شد."
-          : "Attachment sent to chat successfully.",
-        { id: toastId }
-      );
-      setTimeout(() => scrollToBottom(true), 40);
-    } catch (err: any) {
-      toast.error(err?.message || (isRtl ? "خطا در ارسال فایل" : "Failed to send"), { id: toastId });
-    } finally {
-      setIsReadingFiles(false);
     }
   };
 
-  const handleProgressFilesSelect = async (files: FileList | File[] | null) => {
-    return handleDirectUploadAndSend(files);
-  };
-
-  const removePendingAttachment = (index: number) => {
-    setPendingAttachments((prev) => prev.filter((_, idx) => idx !== index));
+  const removePendingAttachment = (stagingId: string) => {
+    setPendingAttachments((prev) => {
+      const target = prev.find((item) => item.stagingId === stagingId);
+      if (
+        target?.previewUrl &&
+        target.previewUrl.startsWith("blob:") &&
+        typeof window !== "undefined"
+      ) {
+        try {
+          window.URL.revokeObjectURL(target.previewUrl);
+        } catch {}
+      }
+      return prev.filter((item) => item.stagingId !== stagingId);
+    });
   };
 
   const status = STATUS_CONFIG[task.status] || STATUS_CONFIG.todo;
@@ -555,9 +552,28 @@ export function TaskProgressView({
     if (!progressContent.trim() && pendingAttachments.length === 0) return;
     if (isSending) return;
 
-    const textToSend = progressContent.trim() || (isRtl ? "ارسال فایل‌های پیوست" : "Attached files");
-    const attachmentsToSend = [...pendingAttachments];
-    const currentReply = replyingTo ? { id: replyingTo.id, author_name: replyingTo.author_name, content: replyingTo.content } : null;
+    if (pendingAttachments.some((a) => a.isUploading)) {
+      toast.info(
+        isRtl
+          ? "لطفاً تا اتمام بارگذاری فایل‌ها صبور باشید..."
+          : "Please wait for attachments to upload..."
+      );
+      return;
+    }
+
+    const textToSend = progressContent.trim();
+    const attachmentsToSend: TaskAttachmentItem[] = pendingAttachments.map((att) => ({
+      id: att.id,
+      name: att.name,
+      size: att.size,
+      type: att.type,
+      url: att.url || att.previewUrl,
+      uploaded_at: att.uploaded_at || new Date().toISOString(),
+    }));
+
+    const currentReply = replyingTo
+      ? { id: replyingTo.id, author_name: replyingTo.author_name, content: replyingTo.content }
+      : null;
 
     // Optimistic entry for instant 0ms chat feel
     const optimisticMsg: NewTaskProgress = {
@@ -599,7 +615,9 @@ export function TaskProgressView({
     } catch (err: any) {
       toast.error(err?.message || (isRtl ? "خطا در ارسال پیام" : "Failed to send message"));
       setProgressContent(textToSend);
-      setPendingAttachments(attachmentsToSend);
+      setPendingAttachments(
+        attachmentsToSend.map((a) => ({ ...a, stagingId: a.id || `staging_${Date.now()}` }))
+      );
       if (currentReply) setReplyingTo(currentReply);
     } finally {
       setIsSending(false);
@@ -1464,6 +1482,7 @@ export function TaskProgressView({
                           const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
                           const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
                           const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
+                          const isSysEvent = isSystemEventMessage(p);
 
                           return (
                             <React.Fragment key={p.id}>
@@ -1474,20 +1493,24 @@ export function TaskProgressView({
                                   </span>
                                 </div>
                               )}
-                              <ProgressItem
-                                progress={p}
-                                isRtl={isRtl}
-                                currentUserId={currentUser.id}
-                                isAdmin={isAdmin}
-                                onReply={(msg) => {
-                                  setReplyingTo({
-                                    id: msg.id,
-                                    author_name: msg.author_name,
-                                    content: msg.content.substring(0, 90),
-                                  });
-                                }}
-                                onPreviewImage={(att) => setPreviewImage(att)}
-                              />
+                              {isSysEvent ? (
+                                <SystemEventPill progress={p} isRtl={isRtl} />
+                              ) : (
+                                <ProgressItem
+                                  progress={p}
+                                  isRtl={isRtl}
+                                  currentUserId={currentUser.id}
+                                  isAdmin={isAdmin}
+                                  onReply={(msg) => {
+                                    setReplyingTo({
+                                      id: msg.id,
+                                      author_name: msg.author_name,
+                                      content: msg.content.substring(0, 90),
+                                    });
+                                  }}
+                                  onPreviewImage={(att) => setPreviewImage(att)}
+                                />
+                              )}
                             </React.Fragment>
                           );
                         })
@@ -1521,18 +1544,100 @@ export function TaskProgressView({
                       </div>
                     )}
 
-                    {/* Pending Attachments */}
+                    {/* Telegram-style Pending Attachments Staging Bar */}
                     {pendingAttachments.length > 0 && (
-                      <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+                      <div className="p-2.5 bg-muted/60 dark:bg-muted/30 border border-border/60 rounded-2xl space-y-2 animate-in fade-in-50 duration-150">
                         <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
-                          <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
-                          <span className="fa-num">({pendingAttachments.length})</span>
+                          <span className="flex items-center gap-1.5">
+                            <Paperclip className="size-3.5 text-primary" />
+                            <span>{isRtl ? "پیوست‌های این پیام (آماده ارسال با متن):" : "Staged attachments (will send with text):"}</span>
+                          </span>
+                          <span className="fa-num text-[11px] bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">
+                            {pendingAttachments.length} {isRtl ? "مورد" : "items"}
+                          </span>
                         </div>
-                        <TaskAttachmentList
-                          attachments={pendingAttachments}
-                          onRemove={removePendingAttachment}
-                          isRtl={isRtl}
-                        />
+
+                        <div className="flex items-center gap-2.5 overflow-x-auto py-1 px-0.5 select-none scrollbar-thin">
+                          {pendingAttachments.map((att) => {
+                            const isImg = isImageAttachment(att);
+                            const ext = (att.name?.split(".").pop() || att.type || "file").toLowerCase();
+
+                            if (isImg && (att.previewUrl || att.url)) {
+                              return (
+                                <div
+                                  key={att.stagingId}
+                                  className="relative size-18 sm:size-20 rounded-xl overflow-hidden shrink-0 border-2 border-primary/30 dark:border-primary/20 bg-black/10 group shadow-xs"
+                                >
+                                  <img
+                                    src={att.previewUrl || att.url}
+                                    alt={att.name}
+                                    onClick={() => setPreviewImage(att)}
+                                    className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+                                  />
+
+                                  {att.isUploading ? (
+                                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1 text-white">
+                                      <Loader2 className="size-4 animate-spin" />
+                                      <span className="text-[9px] font-medium">{isRtl ? "در حال آپلود..." : "Uploading..."}</span>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => removePendingAttachment(att.stagingId)}
+                                      className="absolute top-1 end-1 size-5 rounded-full bg-black/70 hover:bg-black/90 text-white flex items-center justify-center cursor-pointer transition-transform hover:scale-110 shadow-xs z-10"
+                                      title={isRtl ? "حذف این تصویر" : "Remove image"}
+                                    >
+                                      <X className="size-3.5" />
+                                    </button>
+                                  )}
+
+                                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-1 pointer-events-none">
+                                    <p className="text-[9px] text-white truncate font-medium">{att.name}</p>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div
+                                key={att.stagingId}
+                                className="relative flex items-center gap-2.5 p-2 pe-8 rounded-xl bg-background dark:bg-card border border-border/70 shrink-0 max-w-[210px] shadow-xs group"
+                                dir={isRtl ? "rtl" : "ltr"}
+                              >
+                                <div className="size-9 rounded-lg bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs">
+                                  <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-white/40 rounded-bl-[2px]" />
+                                  <span className="font-bold text-[9px] lowercase tracking-tight leading-none mt-0.5">
+                                    {ext.slice(0, 4)}
+                                  </span>
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-xs text-foreground truncate leading-tight">
+                                    {att.name}
+                                  </p>
+                                  <span className="text-[10px] text-muted-foreground font-mono fa-num">
+                                    {att.size}
+                                  </span>
+                                </div>
+
+                                {att.isUploading ? (
+                                  <div className="absolute top-2.5 end-2">
+                                    <Loader2 className="size-3.5 animate-spin text-primary" />
+                                  </div>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => removePendingAttachment(att.stagingId)}
+                                    className="absolute top-2 end-2 size-5 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                                    title={isRtl ? "حذف این فایل" : "Remove file"}
+                                  >
+                                    <X className="size-3.5" />
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     )}
 
@@ -1543,9 +1648,9 @@ export function TaskProgressView({
                         htmlFor="chat-image-upload-input"
                         className={cn(
                           "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                          (isReadingFiles || isSending) && "opacity-50 pointer-events-none cursor-not-allowed"
+                          isSending && "opacity-50 pointer-events-none cursor-not-allowed"
                         )}
-                        title={isRtl ? "ارسال مستقیم عکس یا تصویر" : "Send photo or image"}
+                        title={isRtl ? "افزودن عکس یا تصویر" : "Add photo or image"}
                       >
                         <input
                           id="chat-image-upload-input"
@@ -1553,9 +1658,9 @@ export function TaskProgressView({
                           accept="image/*"
                           multiple
                           className="sr-only"
-                          disabled={isReadingFiles || isSending}
+                          disabled={isSending}
                           onChange={(e) => {
-                            handleDirectUploadAndSend(e.target.files);
+                            handleStageAttachments(e.target.files);
                             e.target.value = "";
                           }}
                         />
@@ -1567,26 +1672,22 @@ export function TaskProgressView({
                         htmlFor="chat-file-upload-input"
                         className={cn(
                           "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                          (isReadingFiles || isSending) && "opacity-50 pointer-events-none cursor-not-allowed"
+                          isSending && "opacity-50 pointer-events-none cursor-not-allowed"
                         )}
-                        title={isRtl ? "پیوست و ارسال فایل" : "Attach and send file"}
+                        title={isRtl ? "پیوست فایل" : "Attach file"}
                       >
                         <input
                           id="chat-file-upload-input"
                           type="file"
                           multiple
                           className="sr-only"
-                          disabled={isReadingFiles || isSending}
+                          disabled={isSending}
                           onChange={(e) => {
-                            handleDirectUploadAndSend(e.target.files);
+                            handleStageAttachments(e.target.files);
                             e.target.value = "";
                           }}
                         />
-                        {isReadingFiles ? (
-                          <Loader2 className="size-5 animate-spin text-primary" />
-                        ) : (
-                          <Paperclip className="size-5" />
-                        )}
+                        <Paperclip className="size-5" />
                       </label>
 
                       <div className="flex-1 relative">
@@ -1614,12 +1715,14 @@ export function TaskProgressView({
                             }
                             if (imageFiles.length > 0) {
                               e.preventDefault();
-                              handleDirectUploadAndSend(imageFiles);
+                              handleStageAttachments(imageFiles);
                             }
                           }}
                           placeholder={
                             replyingTo
                               ? (isRtl ? "پاسخ خود را بنویسید (Enter برای ارسال)..." : "Write your reply (Enter to send)...")
+                              : pendingAttachments.length > 0
+                              ? (isRtl ? "توضیحات و متن کنار فایل را بنویسید (Enter برای ارسال)..." : "Write a caption or message (Enter to send)...")
                               : isAdmin
                               ? (isRtl ? "پیام، راهنمایی یا پیوست (Enter ارسال، Ctrl+V الصاق عکس)..." : "Write guidance (Enter to send, Ctrl+V to paste)...")
                               : (isRtl ? "پیام، گزارش پیشرفت یا پیوست فایل (Ctrl+V برای الصاق تصویر)..." : "Write a message (Ctrl+V to paste screenshot)...")
@@ -1685,28 +1788,77 @@ export function TaskProgressView({
   );
 }
 
-// Telegram Document Attachment Card (Blue badge with folded corner matching screenshot)
+// Determine whether a task progress entry is a system status event
+export function isSystemEventMessage(progress: NewTaskProgress): boolean {
+  if (progress.attachments && progress.attachments.length > 0) return false;
+  if (progress.is_system_event) return true;
+  const c = (progress.content || "").trim();
+  if (!c) return false;
+  return (
+    c.includes("آغاز به کار تسک") ||
+    c.includes("ارسال جهت بازبینی") ||
+    c.includes("تایید و مختومه") ||
+    c.includes("درخواست اصلاحات و بازنگری") ||
+    c.includes("وضعیت «در حال انجام» قرار گرفت") ||
+    c.includes("به مدیر سیستم ارجاع شد") ||
+    c.startsWith("🚀 آغاز به کار تسک") ||
+    c.startsWith("📋 ارسال جهت بازبینی")
+  );
+}
+
+// Telegram Service Message Pill (Centered capsule matching date badge)
+function SystemEventPill({
+  progress,
+  isRtl,
+}: {
+  progress: NewTaskProgress;
+  isRtl: boolean;
+}) {
+  const timeStr = formatMessageTime(progress.created_at, isRtl);
+
+  return (
+    <div className="flex justify-center my-2.5 px-3 select-none" dir={isRtl ? "rtl" : "ltr"}>
+      <span className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full text-[11.5px] leading-relaxed font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs text-center max-w-[92%] sm:max-w-[80%]">
+        <span>{progress.content}</span>
+        {timeStr && (
+          <span className="opacity-75 text-[10px] font-mono fa-num shrink-0 ms-1" dir="ltr">
+            {timeStr}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+// Telegram Document & Media Attachment Card (matches authentic Telegram UI)
 function TelegramDocumentCard({
   att,
   onPreviewImage,
   isRtl,
+  isSingleImageOnly,
+  timeStr,
+  isMe,
 }: {
   att: TaskAttachmentItem;
   onPreviewImage: (att: TaskAttachmentItem) => void;
   isRtl: boolean;
+  isSingleImageOnly?: boolean;
+  timeStr?: string;
+  isMe?: boolean;
 }) {
   const isImg = isImageAttachment(att);
 
   if (isImg && att.url) {
     return (
-      <div className="my-1 rounded-xl overflow-hidden max-w-xs border border-black/10 dark:border-white/10 group/img relative select-none">
+      <div className="relative my-0.5 rounded-2xl overflow-hidden max-w-sm sm:max-w-md border border-black/10 dark:border-white/10 group/img select-none shadow-xs">
         <img
           src={att.url}
           alt={att.name}
           onClick={() => onPreviewImage(att)}
-          className="max-h-64 w-auto object-cover rounded-xl cursor-pointer hover:scale-[1.01] transition-transform"
+          className="max-h-80 w-auto object-cover rounded-2xl cursor-pointer hover:scale-[1.01] transition-transform block"
         />
-        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+        {/* Floating Download Button on Hover */}
+        <div className="absolute top-2 end-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
           <Button
             type="button"
             size="sm"
@@ -1715,12 +1867,23 @@ function TelegramDocumentCard({
               e.stopPropagation();
               downloadAttachment(att);
             }}
-            className="h-8 px-2.5 rounded-lg text-xs gap-1 pointer-events-auto"
+            className="h-7 px-2 rounded-lg text-xs gap-1 bg-black/60 hover:bg-black/80 text-white border-0 shadow-sm cursor-pointer"
           >
-            <Download className="size-3.5" />
+            <Download className="size-3" />
             <span>{isRtl ? "دانلود" : "Download"}</span>
           </Button>
         </div>
+
+        {/* Telegram-style floating time pill on pure image message */}
+        {isSingleImageOnly && timeStr && (
+          <div
+            className="absolute bottom-2 end-2 bg-black/55 backdrop-blur-xs text-white text-[10px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1 fa-num shadow-xs pointer-events-none select-none"
+            dir="ltr"
+          >
+            <span>{timeStr}</span>
+            {isMe && <CheckCheck className="size-3.5 text-emerald-400" />}
+          </div>
+        )}
       </div>
     );
   }
@@ -1730,7 +1893,7 @@ function TelegramDocumentCard({
   return (
     <div
       onClick={() => downloadAttachment(att)}
-      className="flex items-center gap-3 py-1.5 my-0.5 cursor-pointer group/doc select-none max-w-sm transition-opacity hover:opacity-90"
+      className="flex items-center gap-3 py-2 px-1 my-0.5 cursor-pointer group/doc select-none max-w-sm transition-all hover:opacity-95"
       dir={isRtl ? "rtl" : "ltr"}
       title={isRtl ? `دانلود فایل ${att.name}` : `Download ${att.name}`}
     >
@@ -1777,6 +1940,23 @@ function ProgressItem({
   const timeStr = formatMessageTime(progress.created_at, isRtl);
   const avatarUrl = getTeamAvatar(progress.author_name);
   const senderColor = getSenderColor(progress.author_name);
+
+  const isGenericAttachmentLabel =
+    progress.content?.trim() === "تصویر پیوست" ||
+    progress.content?.trim() === "فایل پیوست" ||
+    progress.content?.trim() === "Attached photo" ||
+    progress.content?.trim() === "Attached file";
+
+  const hasCaption =
+    Boolean(progress.content?.trim()) &&
+    !(progress.attachments && progress.attachments.length > 0 && isGenericAttachmentLabel);
+
+  const isSingleImageOnly = Boolean(
+    progress.attachments &&
+      progress.attachments.length === 1 &&
+      isImageAttachment(progress.attachments[0]) &&
+      !hasCaption
+  );
 
   return (
     <motion.div
@@ -1854,41 +2034,46 @@ function ProgressItem({
           </div>
         )}
 
-        {/* Message Content */}
-        {progress.content && (
-          <div
-            className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto"
-            dir={isRtl ? "rtl" : "auto"}
-          >
-            {progress.content}
-          </div>
-        )}
-
-        {/* Attachments / Files (Telegram Document Cards) */}
+        {/* Attachments / Files (Telegram Document Cards & Images) - PLACED AT THE TOP */}
         {progress.attachments && progress.attachments.length > 0 && (
-          <div className="space-y-1 pt-1">
+          <div className="space-y-1.5 mb-1 pt-0.5">
             {progress.attachments.map((att, idx) => (
               <TelegramDocumentCard
                 key={att.id || idx}
                 att={att}
                 onPreviewImage={onPreviewImage}
                 isRtl={isRtl}
+                isSingleImageOnly={isSingleImageOnly}
+                timeStr={timeStr}
+                isMe={isMe}
               />
             ))}
           </div>
         )}
 
+        {/* Caption / Content below media */}
+        {hasCaption && (
+          <div
+            className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto mt-1"
+            dir={isRtl ? "rtl" : "auto"}
+          >
+            {progress.content}
+          </div>
+        )}
+
         {/* Message Footer: Time + Read Status (tucked seamlessly at bottom right) */}
-        <div
-          className={cn(
-            "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end ms-2 -mb-0.5",
-            isMe ? "text-[#55804e] dark:text-[#9bc2e6]" : "text-slate-400 dark:text-slate-400"
-          )}
-          dir="ltr"
-        >
-          <span className="fa-num">{timeStr}</span>
-          {isMe && <CheckCheck className="size-3.5 text-[#4fae60] dark:text-[#6ec97f]" />}
-        </div>
+        {!isSingleImageOnly && (
+          <div
+            className={cn(
+              "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end ms-2 -mb-0.5",
+              isMe ? "text-[#55804e] dark:text-[#9bc2e6]" : "text-slate-400 dark:text-slate-400"
+            )}
+            dir="ltr"
+          >
+            <span className="fa-num">{timeStr}</span>
+            {isMe && <CheckCheck className="size-3.5 text-[#4fae60] dark:text-[#6ec97f]" />}
+          </div>
+        )}
       </div>
 
       {/* Quick reply button for incoming messages */}
