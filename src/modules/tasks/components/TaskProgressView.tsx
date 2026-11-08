@@ -2489,7 +2489,7 @@ function ProgressItem({
         }
       }}
       className={cn(
-        "relative flex my-2 group items-end gap-2 px-2 py-1 rounded-2xl transition-all duration-150",
+        "relative flex my-2 group items-end gap-2.5 sm:gap-3 px-2 py-1 rounded-2xl transition-all duration-150",
         isMe ? "justify-end" : "justify-start",
         isSelectionMode && "cursor-pointer select-none",
         isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
@@ -2546,14 +2546,34 @@ function ProgressItem({
           isPureEmojiMessage
             ? "bg-transparent border-0 shadow-none px-1 py-0"
             : cn(
-                "px-3.5 py-2",
+                "px-3.5 py-2 border-0",
                 isMe
-                  ? "rounded-[16px] rounded-br-[3px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
-                  : "rounded-[16px] rounded-bl-[3px] bg-white text-slate-900 border border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+                  ? "rounded-[18px] rounded-br-[2px] bg-[#effdde] text-slate-900 shadow-[0_1px_2px_rgba(0,0,0,0.07)] dark:bg-[#2b5278] dark:text-slate-100 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+                  : "rounded-[18px] rounded-bl-[2px] bg-white text-slate-900 shadow-[0_1px_2px_rgba(0,0,0,0.07)] dark:bg-[#182533] dark:text-slate-100 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
               ),
           isAdminNote && !isPureEmojiMessage && "ring-1 ring-amber-500/30"
         )}
       >
+        {/* Elongated Telegram Speech Bubble Tail (دم کشیده تلگرام) */}
+        {!isPureEmojiMessage && (
+          isMe ? (
+            <svg
+              className="absolute -bottom-[0.5px] -right-[9px] w-[11px] h-[18px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
+              viewBox="0 0 11 18"
+              preserveAspectRatio="none"
+            >
+              <path d="M0 0 C0 7, 4 14, 11 18 L0 18 Z" />
+            </svg>
+          ) : (
+            <svg
+              className="absolute -bottom-[0.5px] -left-[9px] w-[11px] h-[18px] text-white dark:text-[#182533] fill-current pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
+              viewBox="0 0 11 18"
+              preserveAspectRatio="none"
+            >
+              <path d="M11 0 C11 7, 7 14, 0 18 L11 18 Z" />
+            </svg>
+          )
+        )}
         {/* Header for incoming messages: Name + Badge right beside each other like screenshot */}
         {!isMe && (
           <div className="flex items-center gap-2 mb-1" dir={isRtl ? "rtl" : "ltr"}>

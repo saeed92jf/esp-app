@@ -105,12 +105,12 @@ export const TelegramEmojiPicker = React.memo(function TelegramEmojiPicker({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-800 dark:text-slate-100 hover:text-[#2481cc] dark:hover:text-[#67b5ff] flex items-center justify-center shrink-0 cursor-pointer transition-colors group",
+          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 hover:text-[#2481cc] dark:hover:text-[#67b5ff] flex items-center justify-center shrink-0 cursor-pointer transition-colors group",
           isOpen && "text-[#2481cc] bg-black/5 dark:bg-white/10"
         )}
         title={isRtl ? "انتخاب شکلک (اموجی)" : "Pick Emoji"}
       >
-        <Smiley size={22} weight="bold" className="transition-transform group-hover:scale-110" />
+        <Smiley size={26} weight="regular" className="transition-transform group-hover:scale-105" />
       </button>
 
       {/* Floating Popover: Hardware-accelerated CSS transition */}
