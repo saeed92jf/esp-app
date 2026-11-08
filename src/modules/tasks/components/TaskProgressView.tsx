@@ -161,6 +161,12 @@ export function formatDateSeparator(dateStr: string, isRtl: boolean): string {
     if (isToday) return isRtl ? "امروز" : "Today";
     if (isYesterday) return isRtl ? "دیروز" : "Yesterday";
 
+    // Show day of the week if within the last 6 days (like Telegram: Monday, Thursday)
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays < 7) {
+      return d.toLocaleDateString(isRtl ? "fa-IR" : "en-US", { weekday: "long" });
+    }
+
     if (isRtl) {
       return d.toLocaleDateString("fa-IR", {
         weekday: "long",
@@ -181,7 +187,7 @@ export function formatDateSeparator(dateStr: string, isRtl: boolean): string {
 export function formatMessageTime(dateStr: string, isRtl: boolean): string {
   try {
     const d = new Date(dateStr);
-    return d.toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
+    return d.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
@@ -1197,15 +1203,11 @@ export function TaskProgressView({
           <div className="animate-in fade-in-50 duration-200">
             <div
               ref={messagesContainerRef}
-              className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth border-b border-border/40 select-text bg-[#8ea982] dark:bg-[#0e1621]"
-              style={{
-                backgroundImage: "url('/images/telegram-doodle.svg')",
-                backgroundRepeat: "repeat",
-                backgroundSize: "400px 400px",
-              }}
+              dir="ltr"
+              className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[520px] min-h-[380px] overflow-y-auto scroll-smooth border-b border-border/40 select-text bg-[#84a97e] bg-[url('/images/telegram-doodle.svg')] dark:bg-[#0e1621] dark:bg-[url('/images/telegram-doodle-dark.svg')] bg-repeat [background-size:420px_420px]"
             >
               {(!currentTask.progress || currentTask.progress.length === 0) ? (
-                <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none">
+                <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
                   <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
                     <FileText className="size-6 text-white" />
                   </div>
@@ -1221,8 +1223,8 @@ export function TaskProgressView({
                   return (
                     <React.Fragment key={p.id}>
                       {dateLabel && (
-                        <div className="flex justify-center my-3 select-none sticky top-2 z-10">
-                          <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/30 dark:bg-black/50 text-white backdrop-blur-xs shadow-xs fa-num">
+                        <div className="flex justify-center my-3 select-none sticky top-2 z-10" dir="ltr">
+                          <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs fa-num">
                             {dateLabel}
                           </span>
                         </div>
@@ -1425,7 +1427,7 @@ function TelegramDocumentCard({
           src={att.url}
           alt={att.name}
           onClick={() => onPreviewImage(att)}
-          className="max-h-64 w-auto object-cover rounded-xl cursor-pointer hover:scale-[1.02] transition-transform"
+          className="max-h-64 w-auto object-cover rounded-xl cursor-pointer hover:scale-[1.01] transition-transform"
         />
         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
           <Button
@@ -1451,24 +1453,25 @@ function TelegramDocumentCard({
   return (
     <div
       onClick={() => downloadAttachment(att)}
-      className="flex items-center gap-3 p-2 my-1 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all cursor-pointer group/doc select-none max-w-sm border border-black/5 dark:border-white/5"
+      className="flex items-center gap-3 py-1.5 my-0.5 cursor-pointer group/doc select-none max-w-sm transition-opacity hover:opacity-90"
+      dir={isRtl ? "rtl" : "ltr"}
       title={isRtl ? `دانلود فایل ${att.name}` : `Download ${att.name}`}
     >
       {/* Telegram Blue Document Badge with folded top-right corner */}
-      <div className="size-11 rounded-xl bg-[#3c8ddf] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
-        <div className="absolute top-0 right-0 w-3 h-3 bg-white/35 rounded-bl-[4px]" />
-        <span className="font-extrabold text-[10px] uppercase tracking-tighter leading-none mt-0.5">
+      <div className="size-11 rounded-xl bg-[#2481cc] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
+        <div className="absolute top-0 right-0 w-3.5 h-3.5 bg-white/35 rounded-bl-[4px]" />
+        <span className="font-bold text-[10px] lowercase tracking-tight leading-none mt-1">
           {ext.slice(0, 4)}
         </span>
         <Download className="size-3.5 opacity-0 group-hover/doc:opacity-100 transition-opacity absolute inset-0 m-auto text-white" />
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-xs sm:text-[13px] text-foreground group-hover/doc:text-[#2481cc] transition-colors truncate leading-tight">
+        <p className="font-semibold text-[13px] sm:text-sm text-slate-900 dark:text-slate-100 group-hover/doc:text-[#2481cc] transition-colors truncate leading-snug">
           {att.name}
         </p>
         {att.size && (
-          <span className="text-[10px] text-muted-foreground/80 font-mono fa-num leading-tight mt-0.5 block">
+          <span className="text-[11px] text-slate-400 dark:text-slate-400 font-mono fa-num leading-tight mt-0.5 block">
             {att.size}
           </span>
         )}
@@ -1540,14 +1543,14 @@ function ProgressItem({
         className={cn(
           "relative max-w-[85%] sm:max-w-[75%] px-3.5 py-2 select-text transition-all",
           isMe
-            ? "rounded-[18px] rounded-br-[4px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
-            : "rounded-[18px] rounded-bl-[4px] bg-white text-slate-900 border border-slate-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
+            ? "rounded-[16px] rounded-br-[3px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+            : "rounded-[16px] rounded-bl-[3px] bg-white text-slate-900 border border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
           isAdminNote && "ring-1 ring-amber-500/30"
         )}
       >
-        {/* Header for incoming messages */}
+        {/* Header for incoming messages: Name + Badge right beside each other like screenshot */}
         {!isMe && (
-          <div className="flex items-center justify-between gap-3 mb-1">
+          <div className="flex items-center gap-2 mb-1" dir={isRtl ? "rtl" : "ltr"}>
             <span
               style={{ color: senderColor }}
               className="font-bold text-xs truncate leading-tight select-none"
@@ -1555,7 +1558,7 @@ function ProgressItem({
               {progress.author_name}
             </span>
             {(isAdminNote || progress.author_role === "admin" || progress.author_role === "مدیر" || progress.author_role === "Owner") && (
-              <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-[#ede8f8] text-[#7053d2] dark:bg-purple-900/40 dark:text-purple-300 leading-tight select-none">
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#ede8f8] text-[#7053d2] dark:bg-purple-900/40 dark:text-purple-300 leading-tight select-none">
                 {isRtl ? "مدیر" : "Owner"}
               </span>
             )}
@@ -1564,7 +1567,7 @@ function ProgressItem({
 
         {/* Reply Quote Block (like Telegram screenshot) */}
         {progress.reply_to && (
-          <div className="border-s-[3px] border-[#2481cc] bg-black/5 dark:bg-white/10 rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none">
+          <div className="border-s-[3px] border-[#2481cc] bg-[#2481cc]/8 dark:bg-white/10 rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none">
             <span className="font-bold text-[#2481cc] dark:text-[#67b5ff] block text-[11px]">
               {progress.reply_to.author_name}
             </span>
@@ -1576,7 +1579,10 @@ function ProgressItem({
 
         {/* Message Content */}
         {progress.content && (
-          <div className="text-[13px] sm:text-sm leading-relaxed whitespace-pre-wrap break-words dir-auto">
+          <div
+            className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto"
+            dir={isRtl ? "rtl" : "auto"}
+          >
             {progress.content}
           </div>
         )}
@@ -1595,12 +1601,13 @@ function ProgressItem({
           </div>
         )}
 
-        {/* Message Footer: Time + Read Status */}
+        {/* Message Footer: Time + Read Status (tucked seamlessly at bottom right) */}
         <div
           className={cn(
-            "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end",
+            "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end ms-2 -mb-0.5",
             isMe ? "text-[#55804e] dark:text-[#9bc2e6]" : "text-slate-400 dark:text-slate-400"
           )}
+          dir="ltr"
         >
           <span className="fa-num">{timeStr}</span>
           {isMe && <CheckCheck className="size-3.5 text-[#4fae60] dark:text-[#6ec97f]" />}
