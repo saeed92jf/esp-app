@@ -1488,7 +1488,7 @@ export function TaskProgressView({
                   <div
                     ref={messagesContainerRef}
                     dir="ltr"
-                    className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth select-text"
+                    className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth select-text pb-24 -mb-16"
                     >
                       {(!currentTask.progress || currentTask.progress.length === 0) ? (
                         <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
@@ -1508,7 +1508,7 @@ export function TaskProgressView({
                           return (
                             <React.Fragment key={p.id}>
                               {dateLabel && (
-                                <div className="flex justify-center my-3 select-none sticky top-2 z-10" dir="ltr">
+                                <div className="flex justify-center my-3 select-none" dir="ltr">
                                   <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs fa-num">
                                     {dateLabel}
                                   </span>
@@ -1539,8 +1539,10 @@ export function TaskProgressView({
                       <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Chat Input Area directly inside the chat environment */}
-                    <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2">
+                    {/* Chat Input Area with translucent blur & top fade so messages passing underneath look dimmed but visible */}
+                    <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2 backdrop-blur-md bg-white/40 dark:bg-black/45 border-t border-black/5 dark:border-white/5">
+                      {/* Top Fade Gradient Boundary */}
+                      <div className="absolute -top-7 inset-x-0 h-7 pointer-events-none bg-gradient-to-t from-white/40 to-transparent dark:from-black/45" />
                       {/* Active Reply Banner */}
                       {replyingTo && (
                         <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-white/70 dark:bg-black/60 backdrop-blur-md border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
@@ -1705,8 +1707,8 @@ export function TaskProgressView({
                       />
 
                       {/* Text input row with Telegram Attachment Popover + Textarea + Emoji Popover + Send */}
-                      {/* Pill-shaped White Composer Bar */}
-                      <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/15 shadow-md hover:shadow-lg transition-all focus-within:ring-2 focus-within:ring-[#2481cc]/25">
+                      {/* Pill-shaped Composer Bar without shadow or focus */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/15 shadow-none transition-colors">
                         {/* Telegram Attachment Button with Popover Menu (Pill, Hover Trigger, Airy Top Spacing) */}
                         <div
                           className="relative shrink-0"
@@ -1822,16 +1824,8 @@ export function TaskProgressView({
                                 handleStageAttachments(imageFiles);
                               }
                             }}
-                            placeholder={
-                              replyingTo
-                                ? (isRtl ? "پاسخ خود را بنویسید (Enter برای ارسال)..." : "Write your reply (Enter to send)...")
-                                : pendingAttachments.length > 0
-                                ? (isRtl ? "توضیحات و متن کنار فایل را بنویسید (Enter برای ارسال)..." : "Write a caption or message (Enter to send)...")
-                                : isAdmin
-                                ? (isRtl ? "پیام، راهنمایی یا پیوست (Enter ارسال، Ctrl+V الصاق عکس)..." : "Write guidance (Enter to send, Ctrl+V to paste)...")
-                                : (isRtl ? "پیام، گزارش پیشرفت یا پیوست فایل (Ctrl+V برای الصاق تصویر)..." : "Write a message (Ctrl+V to paste screenshot)...")
-                            }
-                            className="flex-1 rounded-full resize-none min-h-[38px] max-h-[120px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/60 transition-colors"
+                            placeholder={isRtl ? "پیام" : "Message"}
+                            className="flex-1 rounded-full resize-none min-h-[38px] max-h-[120px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/60 transition-colors"
                             rows={1}
                           />
                         </div>
@@ -1842,21 +1836,43 @@ export function TaskProgressView({
                           isRtl={isRtl}
                         />
 
-                        {/* Send Button (Pill shaped) */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={handleSendProgress}
-                          disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
-                          className="size-9 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shrink-0 shadow-xs transition-transform active:scale-95 cursor-pointer disabled:opacity-35"
-                          title={isRtl ? "ارسال پیام" : "Send message"}
-                        >
-                          {isSending ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : (
-                            <Send className="size-4.5" />
-                          )}
-                        </Button>
+                        {/* Send Button: Circular Frame, Empty & No-Hover by default, Zoom-Bounces Rocket Icon on Type */}
+                        {(() => {
+                          const hasContent = Boolean(progressContent.trim() || pendingAttachments.length > 0);
+                          return (
+                            <button
+                              type="button"
+                              onClick={hasContent ? handleSendProgress : undefined}
+                              disabled={!hasContent || isSending}
+                              className={cn(
+                                "size-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 select-none",
+                                hasContent
+                                  ? "bg-[#2481cc] border border-[#2481cc] text-white shadow-xs cursor-pointer active:scale-95 hover:bg-[#1e70b3]"
+                                  : "bg-transparent border border-black/15 dark:border-white/15 text-transparent cursor-default pointer-events-none hover:bg-transparent"
+                              )}
+                              title={isRtl ? "ارسال پیام" : "Send message"}
+                            >
+                              <AnimatePresence mode="wait">
+                                {hasContent && (
+                                  <motion.div
+                                    key="send-rocket"
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: [0, 1.25, 0.95, 1], opacity: 1 }}
+                                    exit={{ scale: 0, opacity: 0 }}
+                                    transition={{ duration: 0.22, ease: "easeOut" }}
+                                    className="flex items-center justify-center"
+                                  >
+                                    {isSending ? (
+                                      <Loader2 className="size-4 animate-spin text-white" />
+                                    ) : (
+                                      <Send className="size-4 text-white" />
+                                    )}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>

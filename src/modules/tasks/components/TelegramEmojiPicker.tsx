@@ -159,3 +159,4 @@ export const TelegramEmojiPicker = React.memo(function TelegramEmojiPicker({
     </div>
   );
 });
+
