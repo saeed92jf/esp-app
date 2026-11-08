@@ -208,8 +208,9 @@ export function TaskProgressView({
             // Check if new messages arrived from other participants
             if (newLen > oldLen) {
               const incoming = (fresh.progress || []).slice(oldLen);
+              const myUid = currentUser?.id ? String(currentUser.id).trim().toLowerCase() : "";
               const fromOtherUser = incoming.some(
-                (m) => m.author_id && m.author_id !== currentUser.id
+                (m) => m.author_id && String(m.author_id).trim().toLowerCase() !== myUid
               );
               if (fromOtherUser) {
                 // Play deduplicated single chime

@@ -326,6 +326,20 @@ export function DesktopNotificationManager() {
           if (['notif-1', 'notif-2', 'notif-3', 'notif-sys-1', 'notif-admin-1', 'notif-admin-req'].includes(idStr)) {
             continue;
           }
+
+          const currentUid = user?.id ? String(user.id).trim().toLowerCase() : '';
+          const actorId = n.actorId || n.metadata?.author_id;
+          // Never notify the current user of their own message / action
+          if (actorId && currentUid && String(actorId).trim().toLowerCase() === currentUid) {
+            seenIdsRef.current.add(idStr);
+            continue;
+          }
+          // Never notify if targeted to a different specific user
+          if (n.targetUserId && currentUid && String(n.targetUserId).trim().toLowerCase() !== currentUid) {
+            seenIdsRef.current.add(idStr);
+            continue;
+          }
+
           if (!seenIdsRef.current.has(idStr) && !n.read) {
             seenIdsRef.current.add(idStr);
             incoming.push(n);
