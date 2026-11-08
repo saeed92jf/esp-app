@@ -26,14 +26,24 @@ import {
   Calendar,
   Edit2,
   X,
+  CheckCheck,
+  CornerUpLeft,
+  Download,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
-import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
+import { TaskAttachmentList, readAttachmentFile, downloadAttachment, isImageAttachment } from "./TaskAttachmentList";
 import {
   playNotificationChime,
   triggerDesktopNotification,
@@ -71,6 +81,116 @@ const LIFECYCLE_STEPS = [
   { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم" },
 ] as const;
 
+// Resolve user photos from public/team/ matching the Telegram screenshot
+export function getTeamAvatar(name?: string): string | null {
+  if (!name) return null;
+  const n = name.toLowerCase().trim();
+  if (n.includes("morteza") || n.includes("مرتضی") || n.includes("shafiee") || n.includes("شفیعی")) {
+    return "/team/morteza-shafiee.webp";
+  }
+  if (n.includes("peyman") || n.includes("پیمان") || n.includes("sharifi") || n.includes("شریفی")) {
+    return "/team/peyman-sharifi.webp";
+  }
+  if (n.includes("saeed") || n.includes("سعید") || n.includes("jalili") || n.includes("جلیلی")) {
+    return "/team/saeed-jalili-fard.webp";
+  }
+  if (n.includes("sina") || n.includes("سینا") || n.includes("jahanbakhsh") || n.includes("جهانبخش")) {
+    return "/team/sina-jahanbakhsh.webp";
+  }
+  if (n.includes("pooria") || n.includes("پوریا") || n.includes("yavari") || n.includes("یاوری")) {
+    return "/team/pooria-yavari.webp";
+  }
+  if (n.includes("saeedkhani") || n.includes("سعیدخانی")) {
+    return "/team/mohammad-saeedkhani.webp";
+  }
+  if (n.includes("hoseini") || n.includes("حسینی")) {
+    return "/team/mohammad-hoseini-fard.webp";
+  }
+  if (n.includes("behzad") || n.includes("بهزاد") || n.includes("saeedi") || n.includes("سعیدی")) {
+    return "/team/behzad-saeedi.webp";
+  }
+  return null;
+}
+
+// Telegram name colors
+const TELEGRAM_NAME_COLORS = [
+  "#2481cc", // Telegram Blue
+  "#2f9e44", // Telegram Green
+  "#e8590c", // Telegram Orange
+  "#845ef7", // Telegram Violet
+  "#d6336c", // Telegram Pink
+  "#0ca678", // Telegram Teal
+  "#d9480f", // Telegram Warm Brown
+];
+
+export function getSenderColor(name?: string): string {
+  if (!name) return "#2481cc";
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const idx = Math.abs(hash) % TELEGRAM_NAME_COLORS.length;
+  return TELEGRAM_NAME_COLORS[idx];
+}
+
+export function getMessageDateKey(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+export function formatDateSeparator(dateStr: string, isRtl: boolean): string {
+  try {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday =
+      d.getDate() === now.getDate() &&
+      d.getMonth() === now.getMonth() &&
+      d.getFullYear() === now.getFullYear();
+
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday =
+      d.getDate() === yesterday.getDate() &&
+      d.getMonth() === yesterday.getMonth() &&
+      d.getFullYear() === yesterday.getFullYear();
+
+    if (isToday) return isRtl ? "امروز" : "Today";
+    if (isYesterday) return isRtl ? "دیروز" : "Yesterday";
+
+    if (isRtl) {
+      return d.toLocaleDateString("fa-IR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+    }
+    return d.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+export function formatMessageTime(dateStr: string, isRtl: boolean): string {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString(isRtl ? "fa-IR" : "en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  } catch {
+    return "";
+  }
+}
+
 export function TaskProgressView({
   task,
   currentUser,
@@ -95,6 +215,8 @@ export function TaskProgressView({
   const [isSavingDeadline, setIsSavingDeadline] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
+  const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
   const progressFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -295,6 +417,7 @@ export function TaskProgressView({
 
     const textToSend = progressContent.trim() || (isRtl ? "ارسال فایل‌های پیوست" : "Attached files");
     const attachmentsToSend = [...pendingAttachments];
+    const currentReply = replyingTo ? { id: replyingTo.id, author_name: replyingTo.author_name, content: replyingTo.content } : null;
 
     // Optimistic entry for instant 0ms chat feel
     const optimisticMsg: NewTaskProgress = {
@@ -306,8 +429,10 @@ export function TaskProgressView({
       attachments: attachmentsToSend,
       created_at: new Date().toISOString(),
       is_admin_note: isAdmin,
+      reply_to: currentReply,
     };
 
+    setReplyingTo(null);
     setProgressContent("");
     setPendingAttachments([]);
     setCurrentTask((prev) => ({
@@ -326,6 +451,7 @@ export function TaskProgressView({
         content: textToSend,
         attachments: attachmentsToSend,
         is_admin_note: isAdmin,
+        reply_to: currentReply,
       });
       setCurrentTask(updatedTask);
       onTaskUpdated(updatedTask);
@@ -334,6 +460,7 @@ export function TaskProgressView({
       toast.error(err?.message || (isRtl ? "خطا در ارسال پیام" : "Failed to send message"));
       setProgressContent(textToSend);
       setPendingAttachments(attachmentsToSend);
+      if (currentReply) setReplyingTo(currentReply);
     } finally {
       setIsSending(false);
     }
@@ -873,43 +1000,126 @@ export function TaskProgressView({
           </div>
         </div>
 
-        {/* Progress items / Chat stream */}
-        <div ref={messagesContainerRef} className="p-4 sm:p-5 space-y-4 max-h-[460px] overflow-y-auto scroll-smooth bg-slate-50/70 dark:bg-zinc-950/40 border-y border-border/40">
+        {/* Telegram Styled Live Progress Chat Thread */}
+        <div
+          ref={messagesContainerRef}
+          className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth border-y border-border/40 select-text bg-[#8ea982] dark:bg-[#0e1621]"
+          style={{
+            backgroundImage: "url('/images/telegram-doodle.svg')",
+            backgroundRepeat: "repeat",
+            backgroundSize: "360px 360px",
+          }}
+        >
           {(!currentTask.progress || currentTask.progress.length === 0) ? (
-            <div className="text-center py-10 text-muted-foreground text-sm space-y-1">
-              <p className="font-semibold">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
-              <p className="text-xs">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
+            <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none">
+              <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
+                <FileText className="size-6 text-white" />
+              </div>
+              <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
+              <p className="text-xs text-white/80">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
             </div>
           ) : (
-            currentTask.progress.map((p) => (
-              <ProgressItem key={p.id} progress={p} isRtl={isRtl} currentUserId={currentUser.id} isAdmin={isAdmin} />
-            ))
+            currentTask.progress.map((p, idx) => {
+              const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
+              const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
+              const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
+
+              return (
+                <React.Fragment key={p.id}>
+                  {dateLabel && (
+                    <div className="flex justify-center my-3 select-none sticky top-2 z-10">
+                      <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/30 dark:bg-black/50 text-white backdrop-blur-xs shadow-xs fa-num">
+                        {dateLabel}
+                      </span>
+                    </div>
+                  )}
+                  <ProgressItem
+                    progress={p}
+                    isRtl={isRtl}
+                    currentUserId={currentUser.id}
+                    isAdmin={isAdmin}
+                    onReply={(msg) => {
+                      setReplyingTo({
+                        id: msg.id,
+                        author_name: msg.author_name,
+                        content: msg.content.substring(0, 90),
+                      });
+                    }}
+                    onPreviewImage={(att) => setPreviewImage(att)}
+                  />
+                </React.Fragment>
+              );
+            })
           )}
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="px-5 pb-5 border-t border-border/40 pt-4">
-          <div className="flex gap-3">
-            <div className="size-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-              {(currentUser.fullNameFa || currentUser.fullName || "U").charAt(0)}
-            </div>
-            <div className="flex-1 space-y-2">
-              {/* Pending Attachments in conversation input */}
-              {pendingAttachments.length > 0 && (
-                <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
-                    <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
-                    <span className="fa-num">({pendingAttachments.length})</span>
-                  </div>
-                  <TaskAttachmentList
-                    attachments={pendingAttachments}
-                    onRemove={removePendingAttachment}
-                    isRtl={isRtl}
-                  />
+        {/* Telegram Style Chat Input Area */}
+        <div className="p-3 sm:p-4 bg-card border-t border-border/40 space-y-2">
+          {/* Active Reply Banner */}
+          {replyingTo && (
+            <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-muted/60 dark:bg-muted/30 border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 font-bold text-[#2481cc]">
+                  <CornerUpLeft className="size-3" />
+                  <span>{isRtl ? `پاسخ به ${replyingTo.author_name}` : `Reply to ${replyingTo.author_name}`}</span>
                 </div>
-              )}
+                <p className="truncate text-muted-foreground text-[11px] mt-0.5 max-w-md">
+                  {replyingTo.content}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReplyingTo(null)}
+                className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                title={isRtl ? "لغو پاسخ" : "Cancel reply"}
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          )}
 
+          {/* Pending Attachments */}
+          {pendingAttachments.length > 0 && (
+            <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
+                <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
+                <span className="fa-num">({pendingAttachments.length})</span>
+              </div>
+              <TaskAttachmentList
+                attachments={pendingAttachments}
+                onRemove={removePendingAttachment}
+                isRtl={isRtl}
+              />
+            </div>
+          )}
+
+          {/* Text input row */}
+          <div className="flex items-end gap-2">
+            <input
+              ref={progressFileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => handleProgressFilesSelect(e.target.files)}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => progressFileInputRef.current?.click()}
+              disabled={isReadingFiles || isSending}
+              className="size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary shrink-0 cursor-pointer"
+              title={isRtl ? "پیوست فایل" : "Attach file"}
+            >
+              {isReadingFiles ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Paperclip className="size-5" />
+              )}
+            </Button>
+
+            <div className="flex-1 relative">
               <Textarea
                 value={progressContent}
                 onChange={(e) => setProgressContent(e.target.value)}
@@ -920,65 +1130,64 @@ export function TaskProgressView({
                   }
                 }}
                 placeholder={
-                  isAdmin
-                    ? (isRtl ? "پیام مدیریتی یا راهنمایی بنویسید (Enter برای ارسال سریع، Shift+Enter خط جدید)..." : "Write guidance (Enter to send, Shift+Enter for new line)...")
-                    : (isRtl ? "پیام، گزارش پیشرفت یا سوال خود را بنویسید (Enter برای ارسال سریع، Shift+Enter خط جدید)..." : "Write message (Enter to send, Shift+Enter for new line)...")
+                  replyingTo
+                    ? (isRtl ? "پاسخ خود را بنویسید (Enter برای ارسال)..." : "Write your reply (Enter to send)...")
+                    : isAdmin
+                    ? (isRtl ? "پیام یا راهنمایی بنویسید (Enter برای ارسال، Shift+Enter خط جدید)..." : "Write guidance (Enter to send)...")
+                    : (isRtl ? "پیام، گزارش پیشرفت یا سوال خود را بنویسید..." : "Write a message...")
                 }
-                className="rounded-xl resize-none min-h-[75px] text-sm"
+                className="rounded-2xl resize-none min-h-[44px] max-h-[140px] py-2.5 px-4 text-sm leading-relaxed bg-muted/30 focus:bg-background border-border/60 transition-colors"
+                rows={1}
               />
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <input
-                    ref={progressFileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleProgressFilesSelect(e.target.files)}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => progressFileInputRef.current?.click()}
-                    disabled={isReadingFiles || isSending}
-                    className="rounded-xl gap-1.5 text-xs h-9"
-                  >
-                    {isReadingFiles ? (
-                      <Loader2 className="size-3.5 animate-spin" />
-                    ) : (
-                      <Paperclip className="size-3.5 text-primary" />
-                    )}
-                    <span>{isRtl ? "پیوست فایل" : "Attach File"}</span>
-                  </Button>
-
-                  {isAdmin && (
-                    <span className="text-[11px] text-muted-foreground hidden sm:flex items-center gap-1">
-                      <ShieldCheck className="size-3 text-primary" />
-                      {isRtl ? "یادداشت مدیریتی" : "Admin Note"}
-                    </span>
-                  )}
-                </div>
-
-                <div className="ms-auto">
-                  <Button
-                    onClick={handleSendProgress}
-                    disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
-                    size="sm"
-                    className="rounded-xl gap-2 font-bold px-4"
-                  >
-                    {isSending ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Send className="size-4" />
-                    )}
-                    {isRtl ? "ارسال گزارش" : "Send"}
-                  </Button>
-                </div>
-              </div>
             </div>
+
+            <Button
+              type="button"
+              onClick={handleSendProgress}
+              disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
+              className="size-10 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-40"
+              title={isRtl ? "ارسال پیام" : "Send message"}
+            >
+              {isSending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4.5" />
+              )}
+            </Button>
           </div>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
+        <DialogContent className="max-w-3xl p-4 overflow-hidden rounded-3xl">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-sm font-semibold truncate flex items-center justify-between gap-4">
+              <span>{previewImage?.name}</span>
+              {previewImage && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-8 gap-1.5 rounded-xl text-xs"
+                  onClick={() => downloadAttachment(previewImage)}
+                >
+                  <Download className="size-3.5" />
+                  <span>{isRtl ? "دانلود" : "Download"}</span>
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {previewImage?.url && (
+            <div className="max-h-[75vh] flex items-center justify-center bg-muted/30 rounded-2xl overflow-hidden p-2">
+              <img
+                src={previewImage.url}
+                alt={previewImage.name}
+                className="max-h-[70vh] w-auto max-w-full object-contain rounded-xl shadow-md"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Admin Approve Button */}
       {isAdmin && !task.is_approved && task.status !== "cancelled" && (
@@ -1013,106 +1222,218 @@ export function TaskProgressView({
   );
 }
 
+// Telegram Document Attachment Card (Blue badge with folded corner matching screenshot)
+function TelegramDocumentCard({
+  att,
+  onPreviewImage,
+  isRtl,
+}: {
+  att: TaskAttachmentItem;
+  onPreviewImage: (att: TaskAttachmentItem) => void;
+  isRtl: boolean;
+}) {
+  const isImg = isImageAttachment(att);
+
+  if (isImg && att.url) {
+    return (
+      <div className="my-1 rounded-xl overflow-hidden max-w-xs border border-black/10 dark:border-white/10 group/img relative select-none">
+        <img
+          src={att.url}
+          alt={att.name}
+          onClick={() => onPreviewImage(att)}
+          className="max-h-64 w-auto object-cover rounded-xl cursor-pointer hover:scale-[1.02] transition-transform"
+        />
+        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadAttachment(att);
+            }}
+            className="h-8 px-2.5 rounded-lg text-xs gap-1 pointer-events-auto"
+          >
+            <Download className="size-3.5" />
+            <span>{isRtl ? "دانلود" : "Download"}</span>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const ext = (att.name?.split(".").pop() || att.type || "file").toLowerCase();
+
+  return (
+    <div
+      onClick={() => downloadAttachment(att)}
+      className="flex items-center gap-3 p-2 my-1 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-all cursor-pointer group/doc select-none max-w-sm border border-black/5 dark:border-white/5"
+      title={isRtl ? `دانلود فایل ${att.name}` : `Download ${att.name}`}
+    >
+      {/* Telegram Blue Document Badge with folded top-right corner */}
+      <div className="size-11 rounded-xl bg-[#3c8ddf] text-white flex flex-col items-center justify-center relative overflow-hidden shrink-0 shadow-2xs group-hover/doc:scale-105 transition-transform">
+        <div className="absolute top-0 right-0 w-3 h-3 bg-white/35 rounded-bl-[4px]" />
+        <span className="font-extrabold text-[10px] uppercase tracking-tighter leading-none mt-0.5">
+          {ext.slice(0, 4)}
+        </span>
+        <Download className="size-3.5 opacity-0 group-hover/doc:opacity-100 transition-opacity absolute inset-0 m-auto text-white" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-bold text-xs sm:text-[13px] text-foreground group-hover/doc:text-[#2481cc] transition-colors truncate leading-tight">
+          {att.name}
+        </p>
+        {att.size && (
+          <span className="text-[10px] text-muted-foreground/80 font-mono fa-num leading-tight mt-0.5 block">
+            {att.size}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProgressItem({
   progress,
   isRtl,
   currentUserId,
   isAdmin,
+  onReply,
+  onPreviewImage,
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
   currentUserId: string;
   isAdmin: boolean;
+  onReply: (progress: NewTaskProgress) => void;
+  onPreviewImage: (att: TaskAttachmentItem) => void;
 }) {
   const isMe = progress.author_id === currentUserId;
   const isAdminNote = progress.is_admin_note;
-
-  const date = (() => {
-    try {
-      return new Date(progress.created_at).toLocaleDateString(isRtl ? "fa-IR" : "en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } catch {
-      return progress.created_at;
-    }
-  })();
+  const timeStr = formatMessageTime(progress.created_at, isRtl);
+  const avatarUrl = getTeamAvatar(progress.author_name);
+  const senderColor = getSenderColor(progress.author_name);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 4 }}
+      initial={{ opacity: 0, y: 3 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        "flex gap-3",
-        isMe ? "flex-row-reverse" : "flex-row"
+        "flex my-2 group items-end gap-2",
+        isMe ? "justify-end" : "justify-start"
       )}
     >
-      <div
-        className={cn(
-          "size-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-xs",
-          isAdminNote
-            ? "bg-gradient-to-tr from-amber-600 to-amber-500 text-white ring-2 ring-amber-500/20"
-            : isMe
-            ? "bg-gradient-to-tr from-blue-600 to-indigo-600 text-white ring-2 ring-blue-500/20"
-            : "bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700"
-        )}
-      >
-        {progress.author_name.charAt(0)}
-      </div>
-      <div className={cn("flex-1 max-w-[85%]", isMe ? "items-end" : "items-start", "flex flex-col")}>
-        <div className={cn("flex items-center gap-2 mb-1 px-1", isMe ? "justify-end" : "justify-start")}>
-          <span className="text-xs font-bold text-foreground">
-            {isMe ? (isRtl ? "شما" : "You") : progress.author_name}
-          </span>
-          {isAdminNote && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-              <ShieldCheck className="size-3 text-amber-600 dark:text-amber-400" />
-              {isRtl ? "پیام مدیر" : "Admin Note"}
+      {/* Incoming Message Avatar (bottom-left) */}
+      {!isMe && (
+        <div
+          className="size-9 rounded-full overflow-hidden shrink-0 shadow-xs border border-white/60 dark:border-black/30 bg-slate-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-white"
+          title={progress.author_name}
+        >
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={progress.author_name} className="w-full h-full object-cover" />
+          ) : (
+            <span style={{ backgroundColor: senderColor }} className="w-full h-full flex items-center justify-center">
+              {progress.author_name.charAt(0)}
             </span>
           )}
-          <span className="text-[11px] text-muted-foreground/80 font-mono fa-num flex items-center gap-1">
-            <Clock className="size-2.5 opacity-60" />
-            {date}
-          </span>
         </div>
-        <div
-          className={cn(
-            "px-4.5 py-3 rounded-2xl text-[13px] sm:text-sm leading-relaxed space-y-2 select-text shadow-sm transition-all",
-            isAdminNote
-              ? "bg-amber-50/90 dark:bg-amber-950/40 border-2 border-amber-400/80 dark:border-amber-500/50 text-amber-950 dark:text-amber-50"
-              : isMe
-              ? "bg-blue-600 dark:bg-blue-600 text-white border border-blue-500/50"
-              : "bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 border border-slate-200/90 dark:border-zinc-800",
-            isMe
-              ? (isRtl ? "rounded-tl-xs" : "rounded-tr-xs")
-              : (isRtl ? "rounded-tr-xs" : "rounded-tl-xs")
-          )}
+      )}
+
+      {/* Quick reply button for outgoing messages */}
+      {isMe && (
+        <button
+          type="button"
+          onClick={() => onReply(progress)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-white/80 self-center cursor-pointer shrink-0"
+          title={isRtl ? "پاسخ" : "Reply"}
         >
-          <div
-            className={cn(
-              "whitespace-pre-wrap break-words leading-relaxed select-text",
-              isAdminNote
-                ? "text-amber-950 dark:text-amber-100 font-medium"
-                : isMe
-                ? "text-white font-normal drop-shadow-[0_1px_1px_rgba(0,0,0,0.12)]"
-                : "text-slate-800 dark:text-zinc-100 font-normal"
+          <CornerUpLeft className="size-3.5" />
+        </button>
+      )}
+
+      {/* Message Bubble */}
+      <div
+        className={cn(
+          "relative max-w-[85%] sm:max-w-[75%] px-3.5 py-2 select-text transition-all",
+          isMe
+            ? "rounded-[18px] rounded-br-[4px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+            : "rounded-[18px] rounded-bl-[4px] bg-white text-slate-900 border border-slate-200/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
+          isAdminNote && "ring-1 ring-amber-500/30"
+        )}
+      >
+        {/* Header for incoming messages */}
+        {!isMe && (
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <span
+              style={{ color: senderColor }}
+              className="font-bold text-xs truncate leading-tight select-none"
+            >
+              {progress.author_name}
+            </span>
+            {(isAdminNote || progress.author_role === "admin" || progress.author_role === "مدیر" || progress.author_role === "Owner") && (
+              <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-[#ede8f8] text-[#7053d2] dark:bg-purple-900/40 dark:text-purple-300 leading-tight select-none">
+                {isRtl ? "مدیر" : "Owner"}
+              </span>
             )}
-          >
+          </div>
+        )}
+
+        {/* Reply Quote Block (like Telegram screenshot) */}
+        {progress.reply_to && (
+          <div className="border-s-[3px] border-[#2481cc] bg-black/5 dark:bg-white/10 rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none">
+            <span className="font-bold text-[#2481cc] dark:text-[#67b5ff] block text-[11px]">
+              {progress.reply_to.author_name}
+            </span>
+            <span className="truncate block text-slate-600 dark:text-slate-300 text-[11px]">
+              {progress.reply_to.content}
+            </span>
+          </div>
+        )}
+
+        {/* Message Content */}
+        {progress.content && (
+          <div className="text-[13px] sm:text-sm leading-relaxed whitespace-pre-wrap break-words dir-auto">
             {progress.content}
           </div>
-          {progress.attachments && progress.attachments.length > 0 && (
-            <TaskAttachmentList
-              attachments={progress.attachments}
-              compact={true}
-              inPrimaryBubble={isMe && !isAdminNote}
-              isRtl={isRtl}
-            />
+        )}
+
+        {/* Attachments / Files (Telegram Document Cards) */}
+        {progress.attachments && progress.attachments.length > 0 && (
+          <div className="space-y-1 pt-1">
+            {progress.attachments.map((att, idx) => (
+              <TelegramDocumentCard
+                key={att.id || idx}
+                att={att}
+                onPreviewImage={onPreviewImage}
+                isRtl={isRtl}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Message Footer: Time + Read Status */}
+        <div
+          className={cn(
+            "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end",
+            isMe ? "text-[#55804e] dark:text-[#9bc2e6]" : "text-slate-400 dark:text-slate-400"
           )}
+        >
+          <span className="fa-num">{timeStr}</span>
+          {isMe && <CheckCheck className="size-3.5 text-[#4fae60] dark:text-[#6ec97f]" />}
         </div>
       </div>
+
+      {/* Quick reply button for incoming messages */}
+      {!isMe && (
+        <button
+          type="button"
+          onClick={() => onReply(progress)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-white/80 self-center cursor-pointer shrink-0"
+          title={isRtl ? "پاسخ" : "Reply"}
+        >
+          <CornerUpLeft className="size-3.5" />
+        </button>
+      )}
     </motion.div>
   );
 }

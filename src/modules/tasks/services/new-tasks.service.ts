@@ -26,6 +26,11 @@ export interface NewTaskProgress {
   attachments: TaskAttachmentItem[];
   created_at: string;
   is_admin_note: boolean;
+  reply_to?: {
+    id: string;
+    author_name: string;
+    content: string;
+  } | null;
 }
 
 export interface NewTaskAssignee {
@@ -103,6 +108,11 @@ export interface ProgressCreate {
   content: string;
   attachments?: TaskAttachmentItem[];
   is_admin_note?: boolean;
+  reply_to?: {
+    id: string;
+    author_name: string;
+    content: string;
+  } | null;
 }
 
 class NewTasksService {
