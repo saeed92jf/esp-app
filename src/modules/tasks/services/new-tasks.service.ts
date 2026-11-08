@@ -168,6 +168,19 @@ class NewTasksService {
     return res.json();
   }
 
+  async startTask(taskId: string, userId: string, userName: string, note?: string): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/start`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, user_name: userName, note }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || "Failed to start task");
+    }
+    return res.json();
+  }
+
   async approveTask(taskId: string, approvedBy: string, approvedByName: string): Promise<NewTask> {
     const res = await fetch(`${this.baseUrl}/${taskId}/approve`, {
       method: "POST",

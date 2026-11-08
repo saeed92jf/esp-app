@@ -22,10 +22,15 @@ import {
   Paperclip,
   FolderKanban,
   Bell,
+  Play,
+  Calendar,
+  Edit2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import { cn } from "@/lib/utils";
 import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
 import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
@@ -60,8 +65,8 @@ const PRIORITY_CONFIG: Record<string, { labelFa: string; labelEn: string; color:
 };
 
 const LIFECYCLE_STEPS = [
-  { key: "todo", labelFa: "۱. برای انجام", labelEn: "1. To Do", descFa: "تعریف تسک و ارجاع" },
-  { key: "in_progress", labelFa: "۲. در حال انجام", labelEn: "2. In Progress", descFa: "ثبت گزارشات و فعالیت" },
+  { key: "todo", labelFa: "۱. برای انجام", labelEn: "1. To Do", descFa: "تعریف تسک در انتظار شروع" },
+  { key: "in_progress", labelFa: "۲. در حال انجام", labelEn: "2. In Progress", descFa: "شروع کار یا ثبت اولین پیام/گزارش" },
   { key: "review", labelFa: "۳. بازبینی و بررسی", labelEn: "3. Under Review", descFa: "بررسی کیفیت و تایید مدیر" },
   { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم" },
 ] as const;
@@ -78,17 +83,100 @@ export function TaskProgressView({
   const [currentTask, setCurrentTask] = useState<NewTask>(task);
   const [progressContent, setProgressContent] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isStartingTask, setIsStartingTask] = useState(false);
   const [isApprovingTask, setIsApprovingTask] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [isRequestingChanges, setIsRequestingChanges] = useState(false);
   const [showChangesBox, setShowChangesBox] = useState(false);
   const [changesFeedback, setChangesFeedback] = useState("");
   const [showSubtasks, setShowSubtasks] = useState(true);
+  const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
+  const [isSavingDeadline, setIsSavingDeadline] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
   const progressFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const getDeadlineStatus = useCallback((deadline?: string | null) => {
+    if (!deadline) return null;
+    try {
+      const parts = deadline.split("/").map(Number);
+      if (parts.length === 3 && parts[0] > 1300 && parts[0] < 1500) {
+        const curJ = getJalaliDate(new Date());
+        const targetDays = parts[0] * 365 + parts[1] * 30 + parts[2];
+        const curDays = curJ.year * 365 + curJ.month * 30 + curJ.day;
+        const diff = targetDays - curDays;
+        if (diff < 0) return { label: isRtl ? "مهلت گذشته است" : "Overdue", color: "text-rose-600 bg-rose-500/10 border-rose-500/30" };
+        if (diff === 0) return { label: isRtl ? "سررسید امروز" : "Due Today", color: "text-amber-600 bg-amber-500/10 border-amber-500/30" };
+        if (diff <= 2) return { label: isRtl ? `${diff} روز مانده (فوری)` : `${diff} days left`, color: "text-amber-600 bg-amber-500/10 border-amber-500/30" };
+        return { label: isRtl ? `${diff} روز مانده` : `${diff} days left`, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/30" };
+      }
+      const d = new Date(deadline);
+      if (!isNaN(d.getTime())) {
+        const now = new Date();
+        const diffMs = d.getTime() - now.getTime();
+        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+        if (diffDays < 0) return { label: isRtl ? "مهلت گذشته است" : "Overdue", color: "text-rose-600 bg-rose-500/10 border-rose-500/30" };
+        if (diffDays === 0) return { label: isRtl ? "سررسید امروز" : "Due Today", color: "text-amber-600 bg-amber-500/10 border-amber-500/30" };
+        return { label: isRtl ? `${diffDays} روز مانده` : `${diffDays} days left`, color: "text-emerald-600 bg-emerald-500/10 border-emerald-500/30" };
+      }
+    } catch {}
+    return null;
+  }, [isRtl]);
+
+  const handleStartTask = async () => {
+    setIsStartingTask(true);
+    try {
+      const updated = await newTasksService.startTask(
+        task.id,
+        currentUser.id,
+        currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کارشناس"
+      );
+      setCurrentTask(updated);
+      onTaskUpdated(updated);
+      toast.success(
+        isRtl
+          ? "تسک با موفقیت وارد مرحله «در حال انجام» شد."
+          : "Task moved to In Progress."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در شروع تسک" : "Failed to start task"));
+    } finally {
+      setIsStartingTask(false);
+    }
+  };
+
+  const handleSaveDeadline = async (selectedDate?: Date) => {
+    setIsSavingDeadline(true);
+    try {
+      let deadlineStr = "";
+      if (selectedDate) {
+        if (isRtl) {
+          const j = getJalaliDate(selectedDate);
+          deadlineStr = `${j.year}/${String(j.month).padStart(2, "0")}/${String(j.day).padStart(2, "0")}`;
+        } else {
+          deadlineStr = selectedDate.toISOString().split("T")[0];
+        }
+      }
+      const updated = await newTasksService.updateTask(task.id, {
+        deadline: deadlineStr || undefined,
+      });
+      setCurrentTask(updated);
+      onTaskUpdated(updated);
+      setIsEditingDeadline(false);
+      toast.success(
+        isRtl
+          ? deadlineStr ? `مهلت تسک به ${deadlineStr} تنظیم شد.` : "مهلت زمانی تسک حذف گردید."
+          : "Deadline updated."
+      );
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی مهلت" : "Failed to update deadline"));
+    } finally {
+      setIsSavingDeadline(false);
+    }
+  };
 
   const scrollToBottom = useCallback((smooth = true) => {
     if (messagesEndRef.current) {
@@ -400,15 +488,66 @@ export function TaskProgressView({
               </div>
             </div>
           )}
-          {task.deadline && (
-            <div className="flex items-start gap-2">
-              <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "مهلت تحویل" : "Deadline"}</p>
-                <p className="text-sm font-semibold">{task.deadline}</p>
+          {/* Deadline Block with Countdown & Quick Edit */}
+          <div className="flex items-start gap-2 min-w-[200px]">
+            <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-1 mb-0.5">
+                <p className="text-xs text-muted-foreground">{isRtl ? "مهلت تحویل (Deadline)" : "Deadline"}</p>
+                {isAdmin && !isEditingDeadline && (
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingDeadline(true)}
+                    className="text-[10px] text-primary hover:underline flex items-center gap-0.5 font-medium cursor-pointer"
+                  >
+                    <Edit2 className="size-2.5" />
+                    <span>{task.deadline ? (isRtl ? "ویرایش" : "Edit") : (isRtl ? "+ تنظیم مهلت" : "+ Set")}</span>
+                  </button>
+                )}
               </div>
+
+              {isEditingDeadline ? (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <div className="w-[160px]">
+                    <DatePicker
+                      value={deadlineDate}
+                      onChange={(d) => {
+                        setDeadlineDate(d);
+                        handleSaveDeadline(d);
+                      }}
+                      placeholder={isRtl ? "انتخاب تاریخ..." : "Select date..."}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingDeadline(false)}
+                    className="h-8 px-2 text-xs"
+                  >
+                    <X className="size-3" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                  <span className="text-sm font-semibold fa-num">
+                    {task.deadline || (isRtl ? "تعیین نشده" : "Not set")}
+                  </span>
+                  {task.deadline && (
+                    <span
+                      className={cn(
+                        "text-[10px] font-bold px-2 py-0.5 rounded-full border fa-num",
+                        getDeadlineStatus(task.deadline)?.color || "text-slate-600 bg-muted border-border/40"
+                      )}
+                    >
+                      {getDeadlineStatus(task.deadline)?.label}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+          </div>
           {task.company && (
             <div className="flex items-start gap-2">
               <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
@@ -503,20 +642,41 @@ export function TaskProgressView({
             <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
               <AlertCircle className="size-3.5 text-primary shrink-0" />
               <span>
-                {isRtl
+                {task.status === "todo"
+                  ? (isRtl
+                      ? "تسک در انتظار شروع: با کلیک بر روی «شروع انجام تسک» یا ارسال پیام در بخش گفتگو، تسک به «در حال انجام» منتقل می‌شود."
+                      : "Task ready: Click 'Start Working on Task' or send a message to transition to In Progress.")
+                  : isRtl
                   ? "وضعیت تسک با ثبت گزارش، پیشرفت زیرفعالیت‌ها و تایید مدیریت به‌صورت خودکار به‌روزرسانی می‌شود."
                   : "Task status transitions automatically through reports, subtasks, and managerial approval."}
               </span>
             </p>
 
-            <div className="flex items-center gap-2 shrink-0 justify-end">
-              {/* If in_progress or todo: Allow Submitting for Review */}
-              {(task.status === "in_progress" || task.status === "todo") && (
+            <div className="flex items-center gap-2 shrink-0 justify-end flex-wrap">
+              {/* If todo: Allow Explicitly Starting Task (شروع انجام تسک) */}
+              {task.status === "todo" && (
+                <Button
+                  onClick={handleStartTask}
+                  disabled={isStartingTask}
+                  size="sm"
+                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                >
+                  {isStartingTask ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Play className="size-3.5 fill-current" />
+                  )}
+                  <span>{isRtl ? "شروع انجام تسک" : "Start Working on Task"}</span>
+                </Button>
+              )}
+
+              {/* If in_progress: Allow Submitting for Review */}
+              {task.status === "in_progress" && (
                 <Button
                   onClick={handleSubmitForReview}
                   disabled={isSubmittingReview}
                   size="sm"
-                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs"
+                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs cursor-pointer"
                 >
                   {isSubmittingReview ? (
                     <Loader2 className="size-3.5 animate-spin" />

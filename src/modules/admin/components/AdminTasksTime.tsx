@@ -7,13 +7,13 @@ import { cn } from "@/lib/utils";
 import { 
   Search, X, Code, TrendingUp, FolderKanban, Briefcase, FlaskConical,
   ChevronsRight, ChevronRight, ChevronLeft,
-  Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2, GraduationCap, Building2, IdCard, CreditCard, Award
+  Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2, GraduationCap, Building2, IdCard, CreditCard, Award,
+  CheckSquare, MessageSquare, PlusCircle
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { User } from "../types/admin.types";
-import { tasksService } from "@/modules/tasks/services";
-import { TaskItem } from "@/modules/tasks/types/tasks.types";
+import { newTasksService, NewTask } from "@/modules/tasks/services/new-tasks.service";
 import { AdminActivities } from "./AdminActivities";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
@@ -92,7 +92,7 @@ export function AdminTasksTime({
   const t = useTranslations("Admin");
   
   const [animate, setAnimate] = useState(false);
-  const [allTasks, setAllTasks] = useState<TaskItem[]>([]);
+  const [allTasks, setAllTasks] = useState<NewTask[]>([]);
   const [loadingTasks, setLoadingTasks] = useState(false);
 
   const deptConfig: Record<string, { icon: any, containerBg: string, iconBg: string, badgeBg: string, text: string }> = {
@@ -112,75 +112,61 @@ export function AdminTasksTime({
     return () => clearTimeout(timer);
   }, [selectedUser?.id]);
 
-  // Load Tasks from Tasks Service
+  // Load Real Tasks from Live Backend Tasks Service
   useEffect(() => {
     let isMounted = true;
     async function fetchTasks() {
       setLoadingTasks(true);
       try {
-        const res = await tasksService.getTasks();
+        const res = await newTasksService.getTasks();
         if (isMounted) setAllTasks(res || []);
       } catch (e) {
-        console.error("Failed to load tasks", e);
+        console.error("Failed to load real tasks in AdminTasksTime", e);
       } finally {
         if (isMounted) setLoadingTasks(false);
       }
     }
     fetchTasks();
     return () => { isMounted = false; };
-  }, []);
+  }, [selectedUser?.id]);
 
-  // Filter urgent & overdue tasks for selected user or overall
-  const displayTasks = useMemo(() => {
-    const urgentOrOverdue = allTasks.filter(task => {
-      if (task.status === 'completed') return false;
-      const isUrgent = task.priority === 'urgent';
-      const isOverdue = Boolean(task.dueDate);
-      return isUrgent || isOverdue;
+  // Filter real tasks for selected user (or all tasks if no user is selected)
+  const userTasks = useMemo(() => {
+    if (!selectedUser) return allTasks;
+    const uid = (selectedUser.id || "").toLowerCase();
+    const uname = (selectedUser.fullNameFa || selectedUser.fullName || selectedUser.name || "").toLowerCase();
+    const uemail = (selectedUser.email || "").toLowerCase();
+    const uemailPrefix = uemail ? uemail.split("@")[0] : "";
+
+    return allTasks.filter((task) => {
+      const isAssignee = task.assignees?.some((a) => {
+        const aid = (a.userId || "").toLowerCase();
+        const aname = (a.name || "").toLowerCase();
+        const aemail = (a.email || "").toLowerCase();
+        return (
+          (aid && (aid === uid || aid.includes(uid) || uid.includes(aid))) ||
+          (aname && (aname.includes(uname) || uname.includes(aname))) ||
+          (aemail && (aemail === uemail || aemail.startsWith(uemailPrefix)))
+        );
+      });
+      const isCreator =
+        task.created_by &&
+        (task.created_by.toLowerCase() === uid ||
+          (task.created_by_name && task.created_by_name.toLowerCase().includes(uname)));
+
+      return isAssignee || isCreator;
     });
+  }, [allTasks, selectedUser]);
 
-    if (urgentOrOverdue.length === 0) {
-      return [
-        {
-          id: "task-urgent-1",
-          title: t("mockTaskTitle1"),
-          priority: "urgent" as const,
-          status: "in_progress" as const,
-          dueDate: "1403/08/15",
-          timelineDate: t("mockTaskDate1"),
-          category: "P&ID FLOW"
-        },
-        {
-          id: "task-overdue-2",
-          title: t("mockTaskTitle2"),
-          priority: "high" as const,
-          status: "in_progress" as const,
-          dueDate: "1403/08/04",
-          timelineDate: t("mockTaskDate2"),
-          category: "NANOFILTRATION"
-        },
-        {
-          id: "task-urgent-3",
-          title: t("mockTaskTitle3"),
-          priority: "urgent" as const,
-          status: "pending" as const,
-          dueDate: "1403/08/20",
-          timelineDate: t("mockTaskDate3"),
-          category: "INSTRUMENTATION"
-        }
-      ];
-    }
-
-    if (selectedUser) {
-      const userMatched = urgentOrOverdue.filter(t => 
-        t.assignedToName === selectedUser.name ||
-        t.assignees?.some(a => a.name === selectedUser.name || a.id === selectedUser.id)
-      );
-      if (userMatched.length > 0) return userMatched;
-    }
-
-    return urgentOrOverdue.slice(0, 5);
-  }, [allTasks, selectedUser, t]);
+  const taskStats = useMemo(() => {
+    return {
+      total: userTasks.length,
+      todo: userTasks.filter((t) => t.status === "todo").length,
+      inProgress: userTasks.filter((t) => t.status === "in_progress").length,
+      review: userTasks.filter((t) => t.status === "review").length,
+      done: userTasks.filter((t) => t.status === "done").length,
+    };
+  }, [userTasks]);
 
   // Clean personnel data display without mock rings or skill bars
 
@@ -299,71 +285,148 @@ export function AdminTasksTime({
 
       {/* ── Virtual Grid Row 2: Urgent Tasks (col 1-2), Module Access (col 3) ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[190px]">
-        {/* Module D: Urgent & Overdue Tasks (تسک‌های فوری و معوق - اختصاص ۲ ستون) */}
+        {/* Module D: Assigned User Tasks (تسک‌های متصل به کاربر در پنل ادمین) */}
         <div className="col-span-1 md:col-span-2 lg:col-span-2 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
-          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
+          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 flex-wrap gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <AlertTriangle size={15} className="text-amber-500 shrink-0" />
+              <FolderKanban size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
-                {t("urgentAndOverdueTasks")}
+                {selectedUser
+                  ? `تسک‌های محوله به ${selectedUser.fullNameFa || selectedUser.name}`
+                  : "تسک‌های سازمانی"}
               </h3>
-              <span className="text-[10px] bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20 px-1.5 py-0.5 rounded-full font-bold shrink-0 fa-num">
-                {displayTasks.length}
+              <span className="text-[10px] bg-primary/15 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
+                {userTasks.length}
               </span>
             </div>
 
-            <Link
-              href="/dashboard/tasks"
-              className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-semibold px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0"
-            >
-              <span>{t("viewAllTasks")}</span>
-              <ExternalLink size={11} className="rtl:rotate-180 shrink-0" />
-            </Link>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {taskStats.inProgress > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 fa-num">
+                  {taskStats.inProgress} در حال انجام
+                </span>
+              )}
+              {taskStats.review > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20 fa-num">
+                  {taskStats.review} بازبینی
+                </span>
+              )}
+              {taskStats.done > 0 && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 fa-num">
+                  {taskStats.done} انجام‌شده
+                </span>
+              )}
+              <Link
+                href="/tasks"
+                className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-semibold px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0 ms-1"
+              >
+                <span>مشاهده سیستم تسک‌ها</span>
+                <ExternalLink size={11} className="rtl:rotate-180 shrink-0" />
+              </Link>
+            </div>
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 scrollbar-thin">
-            {displayTasks.length > 0 ? (
-              displayTasks.map(task => {
-                const isUrgent = task.priority === 'urgent';
+            {userTasks.length > 0 ? (
+              userTasks.map((task) => {
+                const isUrgent = task.priority === "critical" || task.priority === "high";
+                const doneSubs = task.subtasks?.filter((s) => s.is_done).length || 0;
+                const totalSubs = task.subtasks?.length || 0;
+
                 return (
                   <Link
                     key={task.id}
-                    href="/dashboard/tasks"
-                    className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/30 transition-all group block text-start cursor-pointer shadow-2xs"
+                    href={`/tasks/${task.id}`}
+                    className="flex items-center justify-between gap-2.5 p-3 bg-background/80 hover:bg-background rounded-xl border border-border/40 hover:border-primary/40 transition-all group block text-start cursor-pointer shadow-2xs"
                   >
                     <div className="flex flex-col flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {isUrgent ? (
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
-                            {t("urgentBadge")}
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
-                            {t("overdueBadge")}
+                        {/* Status Badge */}
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 text-[10px] font-bold rounded-full border",
+                            task.status === "in_progress"
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                              : task.status === "review"
+                              ? "bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20"
+                              : task.status === "done"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                              : "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20"
+                          )}
+                        >
+                          {task.status === "in_progress"
+                            ? "در حال انجام"
+                            : task.status === "review"
+                            ? "بازبینی"
+                            : task.status === "done"
+                            ? "انجام‌شده"
+                            : "برای انجام"}
+                        </span>
+
+                        {/* Priority Badge */}
+                        {isUrgent && (
+                          <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                            {task.priority === "critical" ? "فوری" : "مهم"}
                           </span>
                         )}
-                        {task.category && (
-                          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate">
-                            {task.category}
+
+                        {/* Linked Project */}
+                        {task.project_name && (
+                          <span className="text-[10px] text-primary font-medium truncate max-w-[180px]">
+                            {task.project_esp_number ? `${task.project_esp_number} - ` : ""}
+                            {task.project_name}
                           </span>
                         )}
                       </div>
-                      <p className="text-[12px] font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+
+                      <p className="text-[12px] font-bold text-foreground truncate group-hover:text-primary transition-colors">
                         {task.title}
                       </p>
+
+                      <div className="flex items-center gap-3 text-[10.5px] text-muted-foreground mt-0.5 flex-wrap">
+                        {totalSubs > 0 && (
+                          <span className="fa-num">
+                            ریزتسک‌ها: {doneSubs}/{totalSubs}
+                          </span>
+                        )}
+                        {(task.progress?.length || 0) > 0 && (
+                          <span className="fa-num flex items-center gap-1">
+                            <MessageSquare className="size-2.5 opacity-70" />
+                            {task.progress.length} پیام در گفتگو
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-[11px] text-muted-foreground font-medium shrink-0 fa-num">
-                      <Clock size={12} className="opacity-70" />
-                      <span>{task.timelineDate || task.dueDate || t("todayDate")}</span>
+                    {/* Deadline Badge */}
+                    <div className="flex items-center gap-1 text-[11px] font-medium shrink-0 fa-num">
+                      <Clock size={12} className="opacity-70 text-muted-foreground" />
+                      {task.deadline ? (
+                        <span className="font-semibold text-foreground/90">
+                          {task.deadline}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground text-[10px]">بدون مهلت</span>
+                      )}
                     </div>
                   </Link>
                 );
               })
             ) : (
-              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground opacity-60">
-                <CheckCircle2 size={32} className="text-emerald-500 mb-2" />
-                <p className="text-xs font-medium">{t("noUrgentOverdueTasks")}</p>
+              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground space-y-2">
+                <CheckCircle2 size={30} className="text-emerald-500 opacity-80" />
+                <p className="text-xs font-semibold">
+                  {selectedUser
+                    ? `هیچ تسکی به ${selectedUser.fullNameFa || selectedUser.name} اختصاص نیافته است.`
+                    : "هیچ تسکی در سیستم یافت نشد."}
+                </p>
+                <Link
+                  href="/tasks?tab=create"
+                  className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
+                >
+                  <PlusCircle size={12} />
+                  <span>تعریف تسک جدید برای این کاربر</span>
+                </Link>
               </div>
             )}
           </div>
