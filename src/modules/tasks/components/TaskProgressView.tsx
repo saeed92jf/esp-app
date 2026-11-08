@@ -13,6 +13,7 @@ import {
   CheckSquare,
   AlertCircle,
   FileText,
+  FileCode,
   Tag,
   Building2,
   ShieldCheck,
@@ -100,37 +101,6 @@ const LIFECYCLE_STEPS = [
   { key: "review", labelFa: "۳. بازبینی و بررسی", labelEn: "3. Under Review", descFa: "بررسی کیفیت و تایید مدیر" },
   { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم" },
 ] as const;
-
-// Resolve user photos from public/team/ matching the Telegram screenshot
-export function getTeamAvatar(name?: string): string | null {
-  if (!name) return null;
-  const n = name.toLowerCase().trim();
-  if (n.includes("morteza") || n.includes("مرتضی") || n.includes("shafiee") || n.includes("شفیعی")) {
-    return "/team/morteza-shafiee.webp";
-  }
-  if (n.includes("peyman") || n.includes("پیمان") || n.includes("sharifi") || n.includes("شریفی")) {
-    return "/team/peyman-sharifi.webp";
-  }
-  if (n.includes("saeed") || n.includes("سعید") || n.includes("jalili") || n.includes("جلیلی")) {
-    return "/team/saeed-jalili-fard.webp";
-  }
-  if (n.includes("sina") || n.includes("سینا") || n.includes("jahanbakhsh") || n.includes("جهانبخش")) {
-    return "/team/sina-jahanbakhsh.webp";
-  }
-  if (n.includes("pooria") || n.includes("پوریا") || n.includes("yavari") || n.includes("یاوری")) {
-    return "/team/pooria-yavari.webp";
-  }
-  if (n.includes("saeedkhani") || n.includes("سعیدخانی")) {
-    return "/team/mohammad-saeedkhani.webp";
-  }
-  if (n.includes("hoseini") || n.includes("حسینی")) {
-    return "/team/mohammad-hoseini-fard.webp";
-  }
-  if (n.includes("behzad") || n.includes("بهزاد") || n.includes("saeedi") || n.includes("سعیدی")) {
-    return "/team/behzad-saeedi.webp";
-  }
-  return null;
-}
 
 // Telegram name colors
 const TELEGRAM_NAME_COLORS = [
@@ -269,8 +239,25 @@ export function TaskProgressView({
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cadInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close attachment menu when clicking outside
+  useEffect(() => {
+    if (!showAttachMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
+        setShowAttachMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showAttachMenu]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -1641,54 +1628,153 @@ export function TaskProgressView({
                       </div>
                     )}
 
-                    {/* Text input row with Photo (ImageIcon) + Paperclip + Paste Screenshot (Ctrl+V) */}
-                    <div className="flex items-end gap-1.5 sm:gap-2">
-                      {/* Direct Photo / Image Upload Button */}
-                      <label
-                        htmlFor="chat-image-upload-input"
-                        className={cn(
-                          "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                          isSending && "opacity-50 pointer-events-none cursor-not-allowed"
-                        )}
-                        title={isRtl ? "افزودن عکس یا تصویر" : "Add photo or image"}
-                      >
-                        <input
-                          id="chat-image-upload-input"
-                          type="file"
-                          accept="image/*"
-                          multiple
-                          className="sr-only"
-                          disabled={isSending}
-                          onChange={(e) => {
-                            handleStageAttachments(e.target.files);
-                            e.target.value = "";
-                          }}
-                        />
-                        <ImageIcon className="size-5" />
-                      </label>
+                    {/* Hidden Native File Inputs (Reliable Programmatic Triggering) */}
+                    <input
+                      ref={photoInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = e.target.files ? Array.from(e.target.files) : [];
+                        e.target.value = "";
+                        if (files.length > 0) {
+                          handleStageAttachments(files);
+                        }
+                      }}
+                    />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = e.target.files ? Array.from(e.target.files) : [];
+                        e.target.value = "";
+                        if (files.length > 0) {
+                          handleStageAttachments(files);
+                        }
+                      }}
+                    />
+                    <input
+                      ref={cadInputRef}
+                      type="file"
+                      accept=".dwg,.dxf,.step,.stp,.iges,.igs,.stl,.pdf,.zip,.rar"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = e.target.files ? Array.from(e.target.files) : [];
+                        e.target.value = "";
+                        if (files.length > 0) {
+                          handleStageAttachments(files);
+                        }
+                      }}
+                    />
 
-                      {/* General file attachment button */}
-                      <label
-                        htmlFor="chat-file-upload-input"
-                        className={cn(
-                          "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                          isSending && "opacity-50 pointer-events-none cursor-not-allowed"
-                        )}
-                        title={isRtl ? "پیوست فایل" : "Attach file"}
-                      >
-                        <input
-                          id="chat-file-upload-input"
-                          type="file"
-                          multiple
-                          className="sr-only"
+                    {/* Text input row with Telegram Attachment Popover + Textarea + Send */}
+                    <div className="flex items-end gap-1.5 sm:gap-2">
+                      {/* Telegram Attachment Button with Popover Menu */}
+                      <div className="relative shrink-0" ref={attachMenuRef}>
+                        <button
+                          type="button"
+                          onClick={() => setShowAttachMenu((prev) => !prev)}
                           disabled={isSending}
-                          onChange={(e) => {
-                            handleStageAttachments(e.target.files);
-                            e.target.value = "";
-                          }}
-                        />
-                        <Paperclip className="size-5" />
-                      </label>
+                          className={cn(
+                            "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-all relative",
+                            showAttachMenu && "bg-primary/10 text-primary rotate-45",
+                            isSending && "opacity-50 pointer-events-none cursor-not-allowed"
+                          )}
+                          title={isRtl ? "پیوست فایل، عکس یا نقشه" : "Attach file, photo or drawing"}
+                        >
+                          <Paperclip className="size-5 transition-transform" />
+                        </button>
+
+                        {/* Floating Telegram Attachment Popup Menu */}
+                        <AnimatePresence>
+                          {showAttachMenu && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              transition={{ duration: 0.15 }}
+                              className={cn(
+                                "absolute bottom-12 z-50 w-72 sm:w-80 p-1.5 rounded-2xl bg-card/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/80 shadow-2xl space-y-1 select-none",
+                                isRtl ? "start-0" : "end-0"
+                              )}
+                              dir={isRtl ? "rtl" : "ltr"}
+                            >
+                              <div className="px-3 py-1.5 border-b border-border/40 mb-1">
+                                <span className="text-[11px] font-bold text-muted-foreground">
+                                  {isRtl ? "انتخاب نوع پیوست:" : "Select attachment type:"}
+                                </span>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAttachMenu(false);
+                                  photoInputRef.current?.click();
+                                }}
+                                className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/70 transition-colors text-start cursor-pointer group"
+                              >
+                                <div className="size-9 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                  <ImageIcon className="size-4.5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
+                                    {isRtl ? "عکس یا تصویر" : "Photo or Image"}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground truncate">
+                                    {isRtl ? "ارسال تصاویر با پیش‌نمایش تامبنیل" : "Images with thumbnail preview"}
+                                  </p>
+                                </div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAttachMenu(false);
+                                  fileInputRef.current?.click();
+                                }}
+                                className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/70 transition-colors text-start cursor-pointer group"
+                              >
+                                <div className="size-9 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                  <FileText className="size-4.5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
+                                    {isRtl ? "سند یا فایل" : "Document or File"}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground truncate">
+                                    {isRtl ? "PDF، اکسل، ورد، متنی و آرشیو ZIP" : "PDF, Excel, Word & ZIP"}
+                                  </p>
+                                </div>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAttachMenu(false);
+                                  cadInputRef.current?.click();
+                                }}
+                                className="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-muted/70 transition-colors text-start cursor-pointer group"
+                              >
+                                <div className="size-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                                  <FileCode className="size-4.5" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-bold text-xs text-foreground group-hover:text-primary transition-colors">
+                                    {isRtl ? "نقشه مهندسی و مدل سه بعدی" : "Engineering CAD & 3D"}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground truncate">
+                                    {isRtl ? "DWG, DXF, STEP, STL, IGES" : "DWG, DXF, STEP, STL, IGES"}
+                                  </p>
+                                </div>
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
                       <div className="flex-1 relative">
                         <Textarea
@@ -1938,7 +2024,6 @@ function ProgressItem({
   const isMe = progress.author_id === currentUserId;
   const isAdminNote = progress.is_admin_note;
   const timeStr = formatMessageTime(progress.created_at, isRtl);
-  const avatarUrl = getTeamAvatar(progress.author_name);
   const senderColor = getSenderColor(progress.author_name);
 
   const isGenericAttachmentLabel =
@@ -1970,16 +2055,11 @@ function ProgressItem({
       {/* Incoming Message Avatar (bottom-left) */}
       {!isMe && (
         <div
-          className="size-9 rounded-full overflow-hidden shrink-0 shadow-xs border border-white/60 dark:border-black/30 bg-slate-200 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs text-white"
+          style={{ backgroundColor: senderColor }}
+          className="size-9 rounded-full overflow-hidden shrink-0 shadow-xs border border-white/60 dark:border-black/30 flex items-center justify-center font-bold text-xs text-white select-none"
           title={progress.author_name}
         >
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={progress.author_name} className="w-full h-full object-cover" />
-          ) : (
-            <span style={{ backgroundColor: senderColor }} className="w-full h-full flex items-center justify-center">
-              {progress.author_name.charAt(0)}
-            </span>
-          )}
+          {progress.author_name.charAt(0).toUpperCase()}
         </div>
       )}
 
