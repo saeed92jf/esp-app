@@ -34,6 +34,7 @@ import {
   Download,
   Eye,
   Smile,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -243,6 +244,13 @@ export function TaskProgressView({
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    message: NewTaskProgress;
+  } | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState<NewTaskProgress | null>(null);
+  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -252,6 +260,71 @@ export function TaskProgressView({
   const cadInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close context menu on outside click or scroll
+  useEffect(() => {
+    if (!contextMenu) return;
+    const handleClose = () => setContextMenu(null);
+    window.addEventListener("click", handleClose);
+    window.addEventListener("scroll", handleClose, true);
+    return () => {
+      window.removeEventListener("click", handleClose);
+      window.removeEventListener("scroll", handleClose, true);
+    };
+  }, [contextMenu]);
+
+  const handleMessageContextMenu = (e: React.MouseEvent, msg: NewTaskProgress) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const menuWidth = 200;
+    const menuHeight = 150;
+    let posX = e.clientX;
+    let posY = e.clientY;
+
+    if (posX + menuWidth > window.innerWidth) {
+      posX = Math.max(10, window.innerWidth - menuWidth - 12);
+    }
+    if (posY + menuHeight > window.innerHeight) {
+      posY = Math.max(10, window.innerHeight - menuHeight - 12);
+    }
+
+    setContextMenu({
+      x: posX,
+      y: posY,
+      message: msg,
+    });
+  };
+
+  const handleConfirmDeleteMessage = async () => {
+    if (!deletingMessage) return;
+    const msgId = deletingMessage.id;
+    setIsDeletingMessage(true);
+
+    // Optimistically remove the message immediately
+    setCurrentTask((prev) => ({
+      ...prev,
+      progress: (prev.progress || []).filter((p) => p.id !== msgId),
+    }));
+
+    try {
+      const updated = await newTasksService.deleteProgress(task.id, msgId);
+      if (updated && updated.progress) {
+        setCurrentTask(updated);
+      }
+    } catch (err: any) {
+      console.error("Failed to delete progress message:", err);
+      try {
+        const fresh = await newTasksService.getTaskById(task.id);
+        if (fresh) {
+          setCurrentTask(fresh);
+        }
+      } catch {}
+    } finally {
+      setIsDeletingMessage(false);
+      setDeletingMessage(null);
+    }
+  };
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -1521,7 +1594,11 @@ export function TaskProgressView({
                                 </div>
                               )}
                               {isSysEvent ? (
-                                <SystemEventPill progress={p} isRtl={isRtl} />
+                                <SystemEventPill
+                                  progress={p}
+                                  isRtl={isRtl}
+                                  onContextMenu={handleMessageContextMenu}
+                                />
                               ) : (
                                 <ProgressItem
                                   progress={p}
@@ -1536,6 +1613,7 @@ export function TaskProgressView({
                                     });
                                   }}
                                   onPreviewImage={(att) => setPreviewImage(att)}
+                                  onContextMenu={handleMessageContextMenu}
                                 />
                               )}
                             </React.Fragment>
@@ -1915,6 +1993,120 @@ export function TaskProgressView({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Telegram-style Context Menu for Messages */}
+      {contextMenu && (
+        <div
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          className="fixed z-[100] w-52 p-1.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl space-y-0.5 animate-in fade-in-50 zoom-in-95 duration-100 select-none"
+          dir={isRtl ? "rtl" : "ltr"}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Reply */}
+          <button
+            type="button"
+            onClick={() => {
+              setReplyingTo({
+                id: contextMenu.message.id,
+                author_name: contextMenu.message.author_name,
+                content: contextMenu.message.content.substring(0, 90),
+              });
+              setContextMenu(null);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-xs font-medium cursor-pointer"
+          >
+            <CornerUpLeft className="size-4 text-muted-foreground" />
+            <span>{isRtl ? "پاسخ به پیام" : "Reply"}</span>
+          </button>
+
+          {/* Copy Text */}
+          {contextMenu.message.content && (
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(contextMenu.message.content);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-xs font-medium cursor-pointer"
+            >
+              <Copy className="size-4 text-muted-foreground" />
+              <span>{isRtl ? "کپی متن" : "Copy text"}</span>
+            </button>
+          )}
+
+          {/* Delete for everyone (DELET) */}
+          <button
+            type="button"
+            onClick={() => {
+              const msgToDelete = contextMenu.message;
+              setContextMenu(null);
+              setDeletingMessage(msgToDelete);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-colors text-xs font-semibold cursor-pointer"
+          >
+            <Trash2 className="size-4 text-red-500" />
+            <span>{isRtl ? "حذف برای همه (DELETE)" : "Delete for everyone (DELETE)"}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal for Everyone */}
+      <Dialog open={!!deletingMessage} onOpenChange={(open) => !open && !isDeletingMessage && setDeletingMessage(null)}>
+        <DialogContent className="max-w-md p-5 rounded-3xl" dir={isRtl ? "rtl" : "ltr"}>
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-red-600 dark:text-red-400">
+              <Trash2 className="size-5" />
+              <span>{isRtl ? "حذف پیام برای همه" : "Delete Message for Everyone"}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="py-2 text-sm text-foreground/80 leading-relaxed space-y-2">
+            <p>
+              {isRtl
+                ? "آیا از حذف این پیام مطمئن هستید؟ این پیام برای تمامی کاربران تسک حذف خواهد شد."
+                : "Are you sure you want to delete this message? It will be removed for everyone in this task."}
+            </p>
+
+            {deletingMessage && (
+              <div className="mt-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground block mb-0.5">{deletingMessage.author_name}:</span>
+                <p className="line-clamp-2">{deletingMessage.content || (isRtl ? "فایل پیوست" : "Attachment")}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-black/5 dark:border-white/5">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isDeletingMessage}
+              onClick={() => setDeletingMessage(null)}
+              className="rounded-xl px-4 cursor-pointer"
+            >
+              {isRtl ? "انصراف" : "Cancel"}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isDeletingMessage}
+              onClick={handleConfirmDeleteMessage}
+              className="rounded-xl px-5 gap-1.5 cursor-pointer bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeletingMessage ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>{isRtl ? "در حال حذف..." : "Deleting..."}</span>
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-4" />
+                  <span>{isRtl ? "حذف برای همه" : "Delete for Everyone"}</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -1974,14 +2166,20 @@ export function isSystemEventMessage(progress: NewTaskProgress): boolean {
 function SystemEventPill({
   progress,
   isRtl,
+  onContextMenu,
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
+  onContextMenu?: (e: React.MouseEvent, msg: NewTaskProgress) => void;
 }) {
   const timeStr = formatMessageTime(progress.created_at, isRtl);
 
   return (
-    <div className="flex justify-center my-2.5 px-3 select-none" dir={isRtl ? "rtl" : "ltr"}>
+    <div
+      onContextMenu={(e) => onContextMenu?.(e, progress)}
+      className="flex justify-center my-2.5 px-3 select-none cursor-context-menu"
+      dir={isRtl ? "rtl" : "ltr"}
+    >
       <span className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full text-[11.5px] leading-relaxed font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs text-center max-w-[92%] sm:max-w-[80%]">
         <span>{progress.content}</span>
         {timeStr && (
@@ -2091,6 +2289,7 @@ function ProgressItem({
   isAdmin,
   onReply,
   onPreviewImage,
+  onContextMenu,
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
@@ -2098,6 +2297,7 @@ function ProgressItem({
   isAdmin: boolean;
   onReply: (progress: NewTaskProgress) => void;
   onPreviewImage: (att: TaskAttachmentItem) => void;
+  onContextMenu?: (e: React.MouseEvent, msg: NewTaskProgress) => void;
 }) {
   const isMe = progress.author_id === currentUserId;
   const isAdminNote = progress.is_admin_note;
@@ -2130,6 +2330,7 @@ function ProgressItem({
     <motion.div
       initial={{ opacity: 0, y: 3 }}
       animate={{ opacity: 1, y: 0 }}
+      onContextMenu={(e) => onContextMenu?.(e, progress)}
       className={cn(
         "flex my-2 group items-end gap-2",
         isMe ? "justify-end" : "justify-start"

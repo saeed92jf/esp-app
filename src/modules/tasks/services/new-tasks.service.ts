@@ -184,6 +184,17 @@ class NewTasksService {
     return res.json();
   }
 
+  async deleteProgress(taskId: string, progressId: string): Promise<NewTask> {
+    const res = await fetch(`${this.baseUrl}/${taskId}/progress?progressId=${encodeURIComponent(progressId)}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || "Failed to delete progress");
+    }
+    return res.json();
+  }
+
   async startTask(taskId: string, userId: string, userName: string, note?: string): Promise<NewTask> {
     const res = await fetch(`${this.baseUrl}/${taskId}/start`, {
       method: "POST",
