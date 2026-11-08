@@ -59,6 +59,8 @@ import {
   formatBytes,
 } from "./TaskAttachmentList";
 import { TelegramEmojiPicker } from "./TelegramEmojiPicker";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 
 export interface StagedAttachment extends TaskAttachmentItem {
   stagingId: string;
@@ -1488,7 +1490,11 @@ export function TaskProgressView({
                   <div
                     ref={messagesContainerRef}
                     dir="ltr"
-                    className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth select-text pb-24 -mb-16"
+                    className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth select-text pb-4 -mb-16"
+                    style={{
+                      maskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
+                      WebkitMaskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
+                    }}
                     >
                       {(!currentTask.progress || currentTask.progress.length === 0) ? (
                         <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
@@ -1536,13 +1542,13 @@ export function TaskProgressView({
                           );
                         })
                       )}
+                      {/* Generous bottom spacer so the last message always rests cleanly with an offset above the input capsule */}
+                      <div className="h-20 sm:h-24 shrink-0 pointer-events-none" />
                       <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Chat Input Area with translucent blur & top fade so messages passing underneath look dimmed but visible */}
-                    <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2 backdrop-blur-md bg-white/40 dark:bg-black/45 border-t border-black/5 dark:border-white/5">
-                      {/* Top Fade Gradient Boundary */}
-                      <div className="absolute -top-7 inset-x-0 h-7 pointer-events-none bg-gradient-to-t from-white/40 to-transparent dark:from-black/45" />
+                    {/* Chat Input Area directly inside the chat environment: Transparent background so doodle wallpaper shows cleanly */}
+                    <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2 bg-transparent">
                       {/* Active Reply Banner */}
                       {replyingTo && (
                         <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-white/70 dark:bg-black/60 backdrop-blur-md border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
@@ -1836,43 +1842,40 @@ export function TaskProgressView({
                           isRtl={isRtl}
                         />
 
-                        {/* Send Button: Circular Frame, Empty & No-Hover by default, Zoom-Bounces Rocket Icon on Type */}
-                        {(() => {
-                          const hasContent = Boolean(progressContent.trim() || pendingAttachments.length > 0);
-                          return (
-                            <button
-                              type="button"
-                              onClick={hasContent ? handleSendProgress : undefined}
-                              disabled={!hasContent || isSending}
-                              className={cn(
-                                "size-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 select-none",
-                                hasContent
-                                  ? "bg-[#2481cc] border border-[#2481cc] text-white shadow-xs cursor-pointer active:scale-95 hover:bg-[#1e70b3]"
-                                  : "bg-transparent border border-black/15 dark:border-white/15 text-transparent cursor-default pointer-events-none hover:bg-transparent"
-                              )}
-                              title={isRtl ? "ارسال پیام" : "Send message"}
-                            >
-                              <AnimatePresence mode="wait">
-                                {hasContent && (
-                                  <motion.div
-                                    key="send-rocket"
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: [0, 1.25, 0.95, 1], opacity: 1 }}
-                                    exit={{ scale: 0, opacity: 0 }}
-                                    transition={{ duration: 0.22, ease: "easeOut" }}
-                                    className="flex items-center justify-center"
-                                  >
-                                    {isSending ? (
-                                      <Loader2 className="size-4 animate-spin text-white" />
-                                    ) : (
-                                      <Send className="size-4 text-white" />
-                                    )}
-                                  </motion.div>
+                        {/* Send Button: Zooms from small & bounces with solid high-quality icon */}
+                        <div className="size-9 flex items-center justify-center shrink-0">
+                          <AnimatePresence>
+                            {Boolean(progressContent.trim() || pendingAttachments.length > 0) && (
+                              <motion.button
+                                key="send-btn"
+                                type="button"
+                                onClick={handleSendProgress}
+                                disabled={isSending}
+                                initial={{ scale: 0, opacity: 0 }}
+                                animate={{
+                                  scale: [0, 1.35, 0.9, 1],
+                                  opacity: 1,
+                                }}
+                                exit={{ scale: 0, opacity: 0 }}
+                                transition={{
+                                  duration: 0.28,
+                                  ease: "easeOut",
+                                }}
+                                className="size-9 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shadow-xs active:scale-95 transition-colors cursor-pointer select-none"
+                                title={isRtl ? "ارسال پیام" : "Send message"}
+                              >
+                                {isSending ? (
+                                  <Loader2 className="size-4 animate-spin text-white" />
+                                ) : (
+                                  <FontAwesomeIcon
+                                    icon={faPaperPlane}
+                                    className="size-3.5 text-white -translate-x-[1px] translate-y-[0.5px]"
+                                  />
                                 )}
-                              </AnimatePresence>
-                            </button>
-                          );
-                        })()}
+                              </motion.button>
+                            )}
+                          </AnimatePresence>
+                        </div>
                       </div>
                     </div>
                   </div>
