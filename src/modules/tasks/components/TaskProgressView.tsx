@@ -2546,31 +2546,30 @@ function ProgressItem({
           isPureEmojiMessage
             ? "bg-transparent border-0 shadow-none px-1 py-0"
             : cn(
-                "px-3.5 py-2 border-0",
+                "px-3.5 py-2 border-0 outline-none ring-0",
                 isMe
-                  ? "rounded-[18px] rounded-br-[2px] bg-[#effdde] text-slate-900 shadow-[0_1px_2px_rgba(0,0,0,0.07)] dark:bg-[#2b5278] dark:text-slate-100 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
-                  : "rounded-[18px] rounded-bl-[2px] bg-white text-slate-900 shadow-[0_1px_2px_rgba(0,0,0,0.07)] dark:bg-[#182533] dark:text-slate-100 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
-              ),
-          isAdminNote && !isPureEmojiMessage && "ring-1 ring-amber-500/30"
+                  ? "rounded-[18px] rounded-br-none bg-[#effdde] text-slate-900 filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+                  : "rounded-[18px] rounded-bl-none bg-white text-slate-900 filter drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]"
+              )
         )}
       >
-        {/* Elongated Telegram Speech Bubble Tail (دم کشیده تلگرام) */}
+        {/* Seamless Unified Telegram Speech Bubble Tail (دم کاملاً یکپارچه و متصل به کادر بدون بوردر) */}
         {!isPureEmojiMessage && (
           isMe ? (
             <svg
-              className="absolute -bottom-[0.5px] -right-[9px] w-[11px] h-[18px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
-              viewBox="0 0 11 18"
+              className="absolute bottom-0 -right-[8px] w-[9px] h-[16px] text-[#effdde] dark:text-[#2b5278] fill-current pointer-events-none"
+              viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >
-              <path d="M0 0 C0 7, 4 14, 11 18 L0 18 Z" />
+              <path d="M-1 0 C-1 7, 3 13, 8 16 L-1 16 Z" />
             </svg>
           ) : (
             <svg
-              className="absolute -bottom-[0.5px] -left-[9px] w-[11px] h-[18px] text-white dark:text-[#182533] fill-current pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,0.06)]"
-              viewBox="0 0 11 18"
+              className="absolute bottom-0 -left-[8px] w-[9px] h-[16px] text-white dark:text-[#182533] fill-current pointer-events-none"
+              viewBox="0 0 9 16"
               preserveAspectRatio="none"
             >
-              <path d="M11 0 C11 7, 7 14, 0 18 L11 18 Z" />
+              <path d="M10 0 C10 7, 6 13, 1 16 L10 16 Z" />
             </svg>
           )
         )}
