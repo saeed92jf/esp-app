@@ -57,6 +57,7 @@
     "elkjs": "^0.11.1",
     "embla-carousel-react": "^8.6.0",
     "emoji-picker-react": "^5.1.4",
+    "frimousse": "^0.4.0",
     "html-to-image": "^1.11.13",
     "input-otp": "^1.4.2",
     "jalaliday": "^3.1.1",
