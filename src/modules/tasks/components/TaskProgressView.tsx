@@ -1201,53 +1201,61 @@ export function TaskProgressView({
         {/* Telegram Styled Live Progress Chat Thread (OPEN BY DEFAULT) */}
         {openSegments.chat && (
           <div className="animate-in fade-in-50 duration-200">
-            <div
-              ref={messagesContainerRef}
-              dir="ltr"
-              className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[520px] min-h-[380px] overflow-y-auto scroll-smooth border-b border-border/40 select-text bg-[#84a97e] bg-[url('/images/telegram-doodle.svg')] dark:bg-[#0e1621] dark:bg-[url('/images/telegram-doodle-dark.svg')] bg-repeat [background-size:420px_420px]"
-            >
-              {(!currentTask.progress || currentTask.progress.length === 0) ? (
-                <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
-                  <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
-                    <FileText className="size-6 text-white" />
-                  </div>
-                  <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
-                  <p className="text-xs text-white/80">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
-                </div>
-              ) : (
-                currentTask.progress.map((p, idx) => {
-                  const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
-                  const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
-                  const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
+            {/* Attractive Luminous Light Gradient & Rich Inverse Dark Gradient Background */}
+            <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c]">
+              {/* Dense Seamless Engineering Doodle Wallpaper (Stationary Background) */}
+              <div
+                className="absolute inset-0 pointer-events-none bg-[url('/images/telegram-doodle.svg')] dark:bg-[url('/images/telegram-doodle-dark.svg')] bg-repeat [background-size:520px_520px]"
+              />
 
-                  return (
-                    <React.Fragment key={p.id}>
-                      {dateLabel && (
-                        <div className="flex justify-center my-3 select-none sticky top-2 z-10" dir="ltr">
-                          <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs fa-num">
-                            {dateLabel}
-                          </span>
-                        </div>
-                      )}
-                      <ProgressItem
-                        progress={p}
-                        isRtl={isRtl}
-                        currentUserId={currentUser.id}
-                        isAdmin={isAdmin}
-                        onReply={(msg) => {
-                          setReplyingTo({
-                            id: msg.id,
-                            author_name: msg.author_name,
-                            content: msg.content.substring(0, 90),
-                          });
-                        }}
-                        onPreviewImage={(att) => setPreviewImage(att)}
-                      />
-                    </React.Fragment>
-                  );
-                })
-              )}
-              <div ref={messagesEndRef} />
+              <div
+                ref={messagesContainerRef}
+                dir="ltr"
+                className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[520px] min-h-[380px] overflow-y-auto scroll-smooth select-text"
+              >
+                {(!currentTask.progress || currentTask.progress.length === 0) ? (
+                  <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
+                    <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
+                      <FileText className="size-6 text-white" />
+                    </div>
+                    <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
+                    <p className="text-xs text-white/80">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
+                  </div>
+                ) : (
+                  currentTask.progress.map((p, idx) => {
+                    const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
+                    const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
+                    const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
+
+                    return (
+                      <React.Fragment key={p.id}>
+                        {dateLabel && (
+                          <div className="flex justify-center my-3 select-none sticky top-2 z-10" dir="ltr">
+                            <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs fa-num">
+                              {dateLabel}
+                            </span>
+                          </div>
+                        )}
+                        <ProgressItem
+                          progress={p}
+                          isRtl={isRtl}
+                          currentUserId={currentUser.id}
+                          isAdmin={isAdmin}
+                          onReply={(msg) => {
+                            setReplyingTo({
+                              id: msg.id,
+                              author_name: msg.author_name,
+                              content: msg.content.substring(0, 90),
+                            });
+                          }}
+                          onPreviewImage={(att) => setPreviewImage(att)}
+                        />
+                      </React.Fragment>
+                    );
+                  })
+                )}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
 
             {/* Telegram Style Chat Input Area */}

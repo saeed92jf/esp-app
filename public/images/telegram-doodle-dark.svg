@@ -1,289 +1,531 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" fill="none">
-  <!-- Dense, Scattered Engineering Doodles for Telegram Dark Mode Background -->
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" fill="none">
+  <!-- Densely Packed Engineering Doodles (Euroslot Pars - 68 Varied-Scale Zero-Collision Shapes) -->
   <g stroke="rgba(255, 255, 255, 0.09)" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
-
-    <!-- 1. Interlocking Gears (Top-Left) -->
-    <g transform="translate(35, 30) rotate(-12) scale(0.85)">
-      <circle cx="28" cy="28" r="16" />
-      <circle cx="28" cy="28" r="7" fill="rgba(255,255,255,0.03)" />
-      <!-- Gear 1 teeth -->
-      <path d="M25 8 L31 8 L32 12 L24 12 Z M25 44 L31 44 L30 48 L26 48 Z M8 25 L8 31 L12 32 L12 24 Z M44 25 L44 31 L48 30 L48 26 Z" />
-      <path d="M14 14 L18 10 L22 13 L17 17 Z M38 38 L42 34 L45 37 L41 41 Z M14 42 L10 38 L13 34 L17 38 Z M38 18 L34 14 L37 11 L41 15 Z" />
-      <!-- Meshed smaller gear -->
-      <g transform="translate(42, 34) scale(0.65)">
-        <circle cx="20" cy="20" r="14" />
-        <circle cx="20" cy="20" r="5" />
-        <path d="M18 4 L22 4 L22 8 L18 8 Z M18 32 L22 32 L22 36 L18 36 Z M4 18 L4 22 L8 22 L8 18 Z M32 18 L32 22 L36 22 L36 18 Z" />
+    <!-- gear_pair at (106.2, 484.1) r=36 -->
+    <g transform="translate(106.2, 484.1)">
+      <g transform="rotate(-15)">
+        <circle cx="-16" cy="-10" r="18" />
+        <circle cx="-16" cy="-10" r="7" fill="rgba(255, 255, 255, 0.03)" />
+        <!-- Gear 1 teeth -->
+        <path d="M-19 -31 L-13 -31 L-14 -27 L-18 -27 Z M-19 11 L-13 11 L-14 7 L-18 7 Z M-37 -13 L-37 -7 L-33 -6 L-33 -14 Z M5 -13 L5 -7 L1 -6 L1 -14 Z" />
+        <path d="M-30 -24 L-26 -28 L-23 -25 L-27 -21 Z M-9 -3 L-5 1 L-2 -2 L-6 -6 Z M-30 4 L-26 8 L-23 5 L-27 1 Z M-9 -17 L-5 -21 L-2 -18 L-6 -14 Z" />
+        <!-- Meshed smaller gear -->
+        <circle cx="16" cy="14" r="14" />
+        <circle cx="16" cy="14" r="5" fill="rgba(255, 255, 255, 0.03)" />
+        <path d="M14 -2 L18 -2 L18 2 L14 2 Z M14 26 L18 26 L18 30 L14 30 Z M0 12 L0 16 L4 16 L4 12 Z M28 12 L28 16 L32 16 L32 12 Z" />
+        <path d="M6 4 L10 0 L13 3 L9 7 Z M23 21 L27 25 L24 28 L20 24 Z M6 24 L10 28 L13 25 L9 21 Z M23 7 L27 3 L24 0 L20 4 Z" />
       </g>
     </g>
-
-    <!-- 2. Vernier Caliper / کولیس (Top-Center) -->
-    <g transform="translate(165, 25) rotate(18) scale(0.75)">
-      <!-- Main bar -->
-      <rect x="0" y="8" width="85" height="10" rx="1" />
-      <!-- Fixed jaw -->
-      <path d="M0 8 L0 -14 C-4 -14 -8 -10 -8 -4 L-8 8 Z" />
-      <path d="M0 18 L0 26 C-4 26 -6 24 -6 20 L-6 18 Z" />
-      <!-- Sliding jaw -->
-      <rect x="28" y="4" width="16" height="18" rx="2" fill="rgba(255,255,255,0.03)" />
-      <path d="M28 4 L28 -12 C25 -12 22 -8 22 -4 L22 4 Z" />
-      <path d="M28 22 L28 28 C26 28 24 26 24 22 Z" />
-      <!-- Scale markings -->
-      <line x1="12" y1="8" x2="12" y2="12" />
-      <line x1="18" y1="8" x2="18" y2="14" />
-      <line x1="24" y1="8" x2="24" y2="12" />
-      <line x1="48" y1="8" x2="48" y2="12" />
-      <line x1="54" y1="8" x2="54" y2="14" />
-      <line x1="60" y1="8" x2="60" y2="12" />
-      <line x1="66" y1="8" x2="66" y2="14" />
-    </g>
-
-    <!-- 3. Drafting Triangle / گونیا (Top-Right) -->
-    <g transform="translate(380, 20) rotate(-25) scale(0.8)">
-      <polygon points="5,50 65,50 5,5" />
-      <polygon points="15,44 48,44 15,18" fill="rgba(255,255,255,0.03)" />
-      <!-- Scale ticks on hypotenuse -->
-      <line x1="18" y1="47" x2="18" y2="50" />
-      <line x1="26" y1="47" x2="26" y2="50" />
-      <line x1="34" y1="47" x2="34" y2="50" />
-      <line x1="42" y1="47" x2="42" y2="50" />
-    </g>
-
-    <!-- 4. Industrial Flange with Bolt Holes / فلنج (Top-Left-ish) -->
-    <g transform="translate(100, 95) rotate(15) scale(0.75)">
-      <ellipse cx="28" cy="28" rx="26" ry="20" />
-      <ellipse cx="28" cy="28" rx="14" ry="10" />
-      <!-- Bolt holes -->
-      <circle cx="10" cy="28" r="2.2" />
-      <circle cx="46" cy="28" r="2.2" />
-      <circle cx="28" cy="12" r="2.2" />
-      <circle cx="28" cy="44" r="2.2" />
-      <circle cx="16" cy="17" r="1.8" />
-      <circle cx="40" cy="17" r="1.8" />
-      <circle cx="16" cy="39" r="1.8" />
-      <circle cx="40" cy="39" r="1.8" />
-    </g>
-
-    <!-- 5. Euroslot Wedge Wire Screen Profile (سیم گوه‌ای اسلات پارس) -->
-    <g transform="translate(260, 85) rotate(-8) scale(0.85)">
-      <!-- Wedge wires (V-shaped wires) -->
-      <polygon points="0,0 12,0 8,14 4,14" />
-      <polygon points="16,0 28,0 24,14 20,14" />
-      <polygon points="32,0 44,0 40,14 36,14" />
-      <polygon points="48,0 60,0 56,14 52,14" />
-      <!-- Support rod underneath -->
-      <rect x="-4" y="14" width="68" height="6" rx="2" fill="rgba(255,255,255,0.03)" />
-      <!-- Slot aperture indication -->
-      <line x1="12" y1="-3" x2="16" y2="-3" stroke-dasharray="1 1" />
-      <line x1="28" y1="-3" x2="32" y2="-3" stroke-dasharray="1 1" />
-    </g>
-
-    <!-- 6. Hex Nut and Threaded Bolt / پیچ و مهره (Middle-Right) -->
-    <g transform="translate(425, 110) rotate(32) scale(0.8)">
-      <!-- Hex nut -->
-      <polygon points="20,5 34,12 34,28 20,35 6,28 6,12" />
-      <circle cx="20" cy="20" r="7" />
-      <!-- Thread lines -->
-      <line x1="20" y1="35" x2="20" y2="58" />
-      <line x1="13" y1="40" x2="27" y2="44" />
-      <line x1="13" y1="46" x2="27" y2="50" />
-      <line x1="13" y1="52" x2="27" y2="56" />
-    </g>
-
-    <!-- 7. Compass / Divider / پرگار (Center-Left) -->
-    <g transform="translate(20, 160) rotate(-35) scale(0.8)">
-      <circle cx="20" cy="8" r="4" />
-      <line x1="20" y1="12" x2="6" y2="48" />
-      <line x1="20" y1="12" x2="34" y2="48" />
-      <!-- Curved gauge arc -->
-      <path d="M12 28 Q20 32 28 28" />
-      <circle cx="20" cy="30" r="1.5" />
-    </g>
-
-    <!-- 8. Pressure Gauge / گیج مانومتر (Center) -->
-    <g transform="translate(160, 155) rotate(6) scale(0.8)">
-      <circle cx="24" cy="24" r="20" />
-      <circle cx="24" cy="24" r="16" fill="rgba(255,255,255,0.03)" />
-      <circle cx="24" cy="24" r="2.5" />
-      <!-- Needle pointing to high pressure -->
-      <line x1="24" y1="24" x2="32" y2="14" stroke-width="1.8" />
-      <!-- Dial ticks -->
-      <path d="M14 30 A13 13 0 1 1 34 30" stroke-dasharray="2 2" />
-      <!-- Pipe threaded stem -->
-      <rect x="21" y="44" width="6" height="10" rx="1" />
-      <line x1="20" y1="48" x2="28" y2="48" />
-    </g>
-
-    <!-- 9. 3D Wireframe Isometric Cube / مکعب ایزومتریک (Center-Right) -->
-    <g transform="translate(315, 175) rotate(-15) scale(0.85)">
-      <!-- Front hex outline -->
-      <polygon points="25,5 45,16 45,39 25,50 5,39 5,16" />
-      <!-- Center Y lines -->
-      <line x1="25" y1="5" x2="25" y2="28" />
-      <line x1="5" y1="16" x2="25" y2="28" />
-      <line x1="45" y1="16" x2="25" y2="28" />
-      <line x1="25" y1="28" x2="25" y2="50" />
-      <!-- Hidden dash lines -->
-      <line x1="5" y1="39" x2="25" y2="28" stroke-dasharray="2 2" />
-    </g>
-
-    <!-- 10. Open-End Wrench / آچار تخت (Center-Bottom) -->
-    <g transform="translate(70, 245) rotate(42) scale(0.8)">
-      <rect x="10" y="24" width="8" height="34" rx="2" />
-      <!-- Open jaw -->
-      <path d="M4 24 C4 14 24 14 24 24 L19 24 C19 18 9 18 9 24 Z" />
-      <!-- Ring head at bottom -->
-      <circle cx="14" cy="62" r="7" />
-      <circle cx="14" cy="62" r="3.5" />
-    </g>
-
-    <!-- 11. Pipeline Gate Valve Symbol / شیر صنعتی (Center) -->
-    <g transform="translate(200, 230) rotate(-10) scale(0.85)">
-      <!-- Valve body (two touching triangles) -->
-      <polygon points="5,15 25,25 5,35" />
-      <polygon points="45,15 25,25 45,35" />
-      <!-- Stem and Handwheel -->
-      <line x1="25" y1="25" x2="25" y2="6" />
-      <ellipse cx="25" cy="5" rx="10" ry="3.5" />
-      <!-- Pipe flanges -->
-      <line x1="5" y1="12" x2="5" y2="38" stroke-width="1.8" />
-      <line x1="45" y1="12" x2="45" y2="38" stroke-width="1.8" />
-    </g>
-
-    <!-- 12. Microchip IC with Circuit Traces (Middle-Right) -->
-    <g transform="translate(365, 250) rotate(12) scale(0.8)">
-      <rect x="10" y="10" width="28" height="28" rx="3" fill="rgba(255,255,255,0.03)" />
-      <!-- Notch & Dot -->
-      <circle cx="16" cy="16" r="1.5" />
-      <!-- Pins -->
-      <line x1="5" y1="16" x2="10" y2="16" />
-      <line x1="5" y1="24" x2="10" y2="24" />
-      <line x1="5" y1="32" x2="10" y2="32" />
-      <line x1="38" y1="16" x2="43" y2="16" />
-      <line x1="38" y1="24" x2="43" y2="24" />
-      <line x1="38" y1="32" x2="43" y2="32" />
-      <line x1="16" y1="5" x2="16" y2="10" />
-      <line x1="24" y1="5" x2="24" y2="10" />
-      <line x1="32" y1="5" x2="32" y2="10" />
-      <line x1="16" y1="38" x2="16" y2="43" />
-      <line x1="24" y1="38" x2="24" y2="43" />
-      <line x1="32" y1="38" x2="32" y2="43" />
-    </g>
-
-    <!-- 13. Mathematical & Physics Formulas (Scattered) -->
-    <g transform="translate(130, 315) rotate(8) scale(0.85)">
-      <path d="M12 4 C8 4 6 8 6 14 L6 30 C6 36 4 40 0 40" stroke-width="1.6" />
-      <text x="14" y="26" font-family="monospace" font-size="10" font-style="italic" fill="rgba(255,255,255,0.15)" stroke="none">dx</text>
-    </g>
-    <g transform="translate(290, 325) rotate(-14) scale(0.85)">
-      <path d="M22 6 L6 6 L14 18 L6 30 L22 30" stroke-width="1.6" />
-    </g>
-    <g transform="translate(445, 205) scale(0.8)">
-      <polygon points="12,4 22,22 2,22" />
-    </g>
-    <g transform="translate(20, 95) scale(0.75)">
-      <path d="M2 18 L7 18 C7 11 17 11 17 18 L22 18" />
-    </g>
-
-    <!-- 14. Sine Wave / Oscilloscope Signal (Bottom-Left) -->
-    <g transform="translate(25, 360) rotate(-6) scale(0.85)">
-      <line x1="0" y1="20" x2="65" y2="20" stroke-dasharray="2 2" />
-      <line x1="5" y1="0" x2="5" y2="40" stroke-dasharray="2 2" />
-      <path d="M5 20 Q18 0 32 20 T58 20" stroke-width="1.5" />
-    </g>
-
-    <!-- 15. Micrometer / میکرومتر (Bottom-Center) -->
-    <g transform="translate(155, 375) rotate(16) scale(0.75)">
-      <path d="M18 10 C-4 10 -4 44 18 44 L32 44 C36 44 38 40 38 36 L38 20 C38 14 34 10 32 10 Z" />
-      <rect x="18" y="14" width="5" height="6" />
-      <rect x="29" y="14" width="5" height="6" />
-      <rect x="34" y="12" width="22" height="10" rx="1" />
-      <rect x="56" y="10" width="18" height="14" rx="2" fill="rgba(255,255,255,0.03)" />
-      <rect x="74" y="13" width="7" height="8" rx="1" />
-    </g>
-
-    <!-- 16. Technical Drafting Pencil & Ruler (Bottom-Right) -->
-    <g transform="translate(330, 370) rotate(-35) scale(0.8)">
-      <rect x="0" y="10" width="70" height="12" rx="1" />
-      <line x1="8" y1="10" x2="8" y2="15" />
-      <line x1="16" y1="10" x2="16" y2="18" />
-      <line x1="24" y1="10" x2="24" y2="15" />
-      <line x1="32" y1="10" x2="32" y2="18" />
-      <line x1="40" y1="10" x2="40" y2="15" />
-      <line x1="48" y1="10" x2="48" y2="18" />
-      <line x1="56" y1="10" x2="56" y2="15" />
-      <line x1="64" y1="10" x2="64" y2="18" />
-      <g transform="translate(10, -5) rotate(48) scale(0.9)">
-        <polygon points="0,0 4,-12 8,0" />
-        <rect x="0" y="0" width="8" height="45" rx="1" />
-        <line x1="0" y1="8" x2="8" y2="8" />
-        <line x1="0" y1="36" x2="8" y2="36" />
+    <!-- vernier_caliper at (439.8, 170.2) r=35 -->
+    <g transform="translate(439.8, 170.2)">
+      <g transform="rotate(18)">
+        <rect x="-38" y="-4" width="76" height="9" rx="1" />
+        <!-- Fixed jaw -->
+        <path d="M-38 -4 L-38 -20 C-42 -20 -45 -16 -45 -11 L-45 -4 Z" />
+        <path d="M-38 5 L-38 22 C-42 22 -44 19 -44 15 L-44 5 Z" />
+        <!-- Slider jaw -->
+        <rect x="-10" y="-8" width="18" height="17" rx="2" fill="rgba(255, 255, 255, 0.03)" />
+        <path d="M-10 -8 L-10 -18 C-13 -18 -16 -14 -16 -11 L-16 -8 Z" />
+        <path d="M-10 9 L-10 20 C-12 20 -14 18 -14 15 Z" />
+        <!-- Scale marks -->
+        <line x1="-28" y1="-4" x2="-28" y2="0" />
+        <line x1="-22" y1="-4" x2="-22" y2="2" />
+        <line x1="-16" y1="-4" x2="-16" y2="0" />
+        <line x1="8" y1="-4" x2="8" y2="0" />
+        <line x1="14" y1="-4" x2="14" y2="2" />
+        <line x1="20" y1="-4" x2="20" y2="0" />
+        <line x1="26" y1="-4" x2="26" y2="2" />
+        <line x1="32" y1="-4" x2="32" y2="0" />
       </g>
     </g>
-
-    <!-- 17. Allen Key / L-Wrench (Far Bottom-Right) -->
-    <g transform="translate(440, 360) rotate(22) scale(0.8)">
-      <path d="M6 0 L6 30 L26 30" stroke-width="2.5" />
+    <!-- drafting_triangle at (297.6, 273.2) r=32 -->
+    <g transform="translate(297.6, 273.2)">
+      <g transform="rotate(-22)">
+        <polygon points="-28,26 28,26 -28,-30" />
+        <polygon points="-20,20 12,20 -20,-12" fill="rgba(255, 255, 255, 0.03)" />
+        <!-- Scale ticks on hypotenuse -->
+        <line x1="-16" y1="23" x2="-16" y2="26" />
+        <line x1="-8" y1="23" x2="-8" y2="26" />
+        <line x1="0" y1="23" x2="0" y2="26" />
+        <line x1="8" y1="23" x2="8" y2="26" />
+        <line x1="16" y1="23" x2="16" y2="26" />
+        <line x1="24" y1="23" x2="24" y2="26" />
+      </g>
     </g>
-
-    <!-- 18. Filter Screen / Perforated Mesh Sheet (Far Bottom-Left) -->
-    <g transform="translate(45, 435) rotate(-12) scale(0.85)">
-      <rect x="0" y="0" width="46" height="26" rx="3" />
-      <circle cx="8" cy="8" r="2" fill="rgba(255,255,255,0.03)" />
-      <circle cx="20" cy="8" r="2" fill="rgba(255,255,255,0.03)" />
-      <circle cx="32" cy="8" r="2" fill="rgba(255,255,255,0.03)" />
-      <circle cx="14" cy="18" r="2" fill="rgba(255,255,255,0.03)" />
-      <circle cx="26" cy="18" r="2" fill="rgba(255,255,255,0.03)" />
-      <circle cx="38" cy="18" r="2" fill="rgba(255,255,255,0.03)" />
+    <!-- wedgewire_screen at (380.3, 453.0) r=32 -->
+    <g transform="translate(380.3, 453.0)">
+      <g transform="rotate(-8)">
+        <!-- 4 V-shaped wires -->
+        <polygon points="-30,-12 -20,-12 -23,2 -27,2" />
+        <polygon points="-14,-12 -4,-12 -7,2 -11,2" />
+        <polygon points="2,-12 12,-12 9,2 5,2" />
+        <polygon points="18,-12 28,-12 25,2 21,2" />
+        <!-- Cross support rod -->
+        <rect x="-34" y="2" width="68" height="7" rx="2" fill="rgba(255, 255, 255, 0.03)" />
+        <!-- Slot gap indicators -->
+        <line x1="-20" y1="-15" x2="-14" y2="-15" stroke-dasharray="1 1" />
+        <line x1="-4" y1="-15" x2="2" y2="-15" stroke-dasharray="1 1" />
+        <line x1="12" y1="-15" x2="18" y2="-15" stroke-dasharray="1 1" />
+      </g>
     </g>
-
-    <!-- 19. Flow Nozzle / Venturi Tube (Bottom-Center-Right) -->
-    <g transform="translate(230, 430) rotate(8) scale(0.8)">
-      <path d="M0 6 L16 12 L36 12 L52 6" />
-      <path d="M0 26 L16 20 L36 20 L52 26" />
-      <line x1="0" y1="6" x2="0" y2="26" />
-      <line x1="52" y1="6" x2="52" y2="26" />
-      <line x1="26" y1="12" x2="26" y2="4" />
-      <line x1="26" y1="20" x2="26" y2="28" />
+    <!-- pipe_flange at (84.7, 50.0) r=30 -->
+    <g transform="translate(84.7, 50.0)">
+      <g transform="rotate(12)">
+        <ellipse cx="0" cy="0" rx="28" ry="20" />
+        <ellipse cx="0" cy="0" rx="14" ry="10" />
+        <circle cx="-20" cy="0" r="2.2" />
+        <circle cx="20" cy="0" r="2.2" />
+        <circle cx="0" cy="-14" r="2.2" />
+        <circle cx="0" cy="14" r="2.2" />
+        <circle cx="-14" cy="-9" r="1.8" />
+        <circle cx="14" cy="-9" r="1.8" />
+        <circle cx="-14" cy="9" r="1.8" />
+        <circle cx="14" cy="9" r="1.8" />
+      </g>
     </g>
-
-    <!-- 20. Extra Irregular Small Details & Technical Markers -->
-    <g transform="translate(245, 30) scale(0.7)">
-      <circle cx="10" cy="10" r="7" stroke-dasharray="2 1" />
-      <line x1="2" y1="10" x2="18" y2="10" />
-      <line x1="10" y1="2" x2="10" y2="18" />
+    <!-- pressure_gauge at (478.0, 264.4) r=30 -->
+    <g transform="translate(478.0, 264.4)">
+      <g transform="rotate(8)">
+        <circle cx="0" cy="-5" r="21" />
+        <circle cx="0" cy="-5" r="17" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="0" cy="-5" r="2.5" />
+        <line x1="0" y1="-5" x2="9" y2="-16" stroke-width="1.8" />
+        <path d="M-11 2 A13 13 0 1 1 11 2" stroke-dasharray="2 2" />
+        <!-- Threaded stem -->
+        <rect x="-4" y="16" width="8" height="11" rx="1" />
+        <line x1="-5" y1="20" x2="5" y2="20" />
+        <line x1="-5" y1="24" x2="5" y2="24" />
+      </g>
     </g>
-    <g transform="translate(100, 205) scale(0.6)">
-      <circle cx="10" cy="10" r="7" stroke-dasharray="2 1" />
-      <line x1="2" y1="10" x2="18" y2="10" />
-      <line x1="10" y1="2" x2="10" y2="18" />
+    <!-- gate_valve at (439.0, 36.1) r=29 -->
+    <g transform="translate(439.0, 36.1)">
+      <g transform="rotate(-12)">
+        <polygon points="-24,-8 0,0 -24,8" />
+        <polygon points="24,-8 0,0 24,8" />
+        <!-- Stem & handwheel -->
+        <line x1="0" y1="0" x2="0" y2="-20" />
+        <ellipse cx="0" cy="-21" rx="11" ry="3.5" />
+        <!-- Flanges -->
+        <line x1="-24" y1="-12" x2="-24" y2="12" stroke-width="2" />
+        <line x1="24" y1="-12" x2="24" y2="12" stroke-width="2" />
+      </g>
     </g>
-    <g transform="translate(415, 320) scale(0.6)">
-      <circle cx="10" cy="10" r="7" stroke-dasharray="2 1" />
-      <line x1="2" y1="10" x2="18" y2="10" />
-      <line x1="10" y1="2" x2="10" y2="18" />
+    <!-- wireframe_cube at (271.1, 417.4) r=28 -->
+    <g transform="translate(271.1, 417.4)">
+      <g transform="rotate(15)">
+        <polygon points="0,-25 22,-12 22,12 0,25 -22,12 -22,-12" />
+        <line x1="0" y1="-25" x2="0" y2="0" />
+        <line x1="-22" y1="-12" x2="0" y2="0" />
+        <line x1="22" y1="-12" x2="0" y2="0" />
+        <line x1="0" y1="0" x2="0" y2="25" />
+        <line x1="-22" y1="12" x2="0" y2="0" stroke-dasharray="2 2" />
+      </g>
     </g>
-    <g transform="translate(450, 70) scale(0.8)">
-      <line x1="0" y1="25" x2="25" y2="25" />
-      <line x1="0" y1="25" x2="20" y2="5" />
-      <path d="M12 25 A12 12 0 0 0 16 13" />
-      <text x="18" y="20" font-family="sans-serif" font-size="7" fill="rgba(255,255,255,0.15)" stroke="none">α</text>
+    <!-- drafting_compass at (156.2, 536.0) r=30 -->
+    <g transform="translate(156.2, 536.0)">
+      <g transform="rotate(-30)">
+        <circle cx="0" cy="-22" r="4.5" />
+        <line x1="0" y1="-18" x2="-16" y2="22" />
+        <line x1="0" y1="-18" x2="16" y2="22" />
+        <!-- Arc adjuster -->
+        <path d="M-8 0 Q0 5 8 0" />
+        <circle cx="0" cy="2" r="1.8" />
+      </g>
     </g>
-    <g transform="translate(80, 335) scale(0.75)">
-      <line x1="0" y1="18" x2="22" y2="6" />
-      <line x1="22" y1="6" x2="36" y2="6" />
-      <polygon points="26,6 32,6 26,0" fill="rgba(255,255,255,0.05)" />
+    <!-- micrometer at (512.8, 51.2) r=32 -->
+    <g transform="translate(512.8, 51.2)">
+      <g transform="rotate(22)">
+        <path d="M-10,-10 C-32,-10 -32,24 -10,24 L4,24 C8,24 10,20 10,16 L10,0 C10,-6 6,-10 4,-10 Z" />
+        <rect x="-10" y="-6" width="5" height="6" />
+        <rect x="0" y="-6" width="5" height="6" />
+        <rect x="5" y="-8" width="20" height="10" rx="1" />
+        <rect x="25" y="-10" width="16" height="14" rx="2" fill="rgba(255, 255, 255, 0.03)" />
+        <rect x="41" y="-7" width="6" height="8" rx="1" />
+      </g>
     </g>
-    <circle cx="340" cy="120" r="3" />
-    <line x1="338" y1="120" x2="342" y2="120" />
-    <circle cx="125" cy="460" r="3" />
-    <line x1="123" y1="458" x2="127" y2="462" />
-    <line x1="123" y1="462" x2="127" y2="458" />
-    <circle cx="475" cy="445" r="3.5" />
-    <line x1="472.5" y1="445" x2="477.5" y2="445" />
-    <g transform="translate(345, 30) scale(0.7)">
-      <path d="M2 14 L6 14 L9 24 L14 4 L26 4" />
-      <text x="15" y="16" font-family="monospace" font-size="9" fill="rgba(255,255,255,0.15)" stroke="none">f(x)</text>
+    <!-- pump_impeller at (48.5, 321.9) r=28 -->
+    <g transform="translate(48.5, 321.9)">
+      <g transform="rotate(25)">
+        <circle cx="0" cy="0" r="23" />
+        <circle cx="0" cy="0" r="6" fill="rgba(255, 255, 255, 0.03)" />
+        <!-- 6 logarithmic curved blades -->
+        <path d="M0 -6 Q-10 -10 -19 -14" />
+        <path d="M5 -3 Q10 -12 14 -19" />
+        <path d="M5 3 Q14 2 21 7" />
+        <path d="M0 6 Q10 10 19 14" />
+        <path d="M-5 3 Q-10 12 -14 19" />
+        <path d="M-5 -3 Q-14 -2 -21 -7" />
+      </g>
+    </g>
+    <!-- venturi_tube at (149.8, 258.7) r=29 -->
+    <g transform="translate(149.8, 258.7)">
+      <g transform="rotate(-6)">
+        <path d="M-28 -8 L-10 -4 L10 -4 L28 -8" />
+        <path d="M-28 8 L-10 4 L10 4 L28 8" />
+        <line x1="-28" y1="-8" x2="-28" y2="8" stroke-width="1.8" />
+        <line x1="28" y1="-8" x2="28" y2="8" stroke-width="1.8" />
+        <!-- Impulse pressure lines -->
+        <line x1="-16" y1="-6" x2="-16" y2="-16" />
+        <line x1="0" y1="-4" x2="0" y2="-16" />
+        <path d="M-16 -16 L0 -16" />
+      </g>
+    </g>
+    <!-- hex_bolt at (41.0, 146.9) r=22 -->
+    <g transform="translate(41.0, 146.9)">
+      <g transform="rotate(35)">
+        <polygon points="-8,-16 8,-16 12,-10 8,-4 -8,-4 -12,-10" />
+        <rect x="-6" y="-4" width="12" height="26" rx="1" />
+        <line x1="-6" y1="2" x2="6" y2="5" />
+        <line x1="-6" y1="8" x2="6" y2="11" />
+        <line x1="-6" y1="14" x2="6" y2="17" />
+        <line x1="-6" y1="20" x2="6" y2="23" />
+      </g>
+    </g>
+    <!-- hex_nut at (153.2, 152.0) r=18 -->
+    <g transform="translate(153.2, 152.0)">
+      <g transform="rotate(-15)">
+        <polygon points="0,-16 14,-8 14,8 0,16 -14,8 -14,-8" />
+        <circle cx="0" cy="0" r="7.5" fill="rgba(255, 255, 255, 0.03)" />
+      </g>
+    </g>
+    <!-- wrench at (184.4, 36.8) r=24 -->
+    <g transform="translate(184.4, 36.8)">
+      <g transform="rotate(40)">
+        <rect x="-3" y="-15" width="6" height="30" rx="1.5" />
+        <!-- Open jaw -->
+        <path d="M-8 -15 C-8 -24 8 -24 8 -15 L4 -15 C4 -19 -4 -19 -4 -15 Z" />
+        <!-- Ring head -->
+        <circle cx="0" cy="18" r="6.5" />
+        <circle cx="0" cy="18" r="3.5" />
+      </g>
+    </g>
+    <!-- adjustable_wrench at (485.7, 331.0) r=22 -->
+    <g transform="translate(485.7, 331.0)">
+      <g transform="rotate(-48)">
+        <rect x="-3" y="-8" width="6" height="28" rx="1.5" />
+        <!-- Head -->
+        <path d="M-7 -8 C-7 -18 7 -18 7 -8" />
+        <rect x="-5" y="-16" width="10" height="7" rx="1" fill="rgba(255, 255, 255, 0.03)" />
+        <line x1="-2" y1="-16" x2="-2" y2="-9" />
+      </g>
+    </g>
+    <!-- ic_chip at (378.3, 127.2) r=22 -->
+    <g transform="translate(378.3, 127.2)">
+      <g transform="rotate(10)">
+        <rect x="-14" y="-14" width="28" height="28" rx="3" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="-8" cy="-8" r="1.5" />
+        <!-- Pins -->
+        <line x1="-19" y1="-8" x2="-14" y2="-8" />
+        <line x1="-19" y1="0" x2="-14" y2="0" />
+        <line x1="-19" y1="8" x2="-14" y2="8" />
+        <line x1="14" y1="-8" x2="19" y2="-8" />
+        <line x1="14" y1="0" x2="19" y2="0" />
+        <line x1="14" y1="8" x2="19" y2="8" />
+        <line x1="-8" y1="-19" x2="-8" y2="-14" />
+        <line x1="0" y1="-19" x2="0" y2="-14" />
+        <line x1="8" y1="-19" x2="8" y2="-14" />
+        <line x1="-8" y1="14" x2="-8" y2="19" />
+        <line x1="0" y1="14" x2="0" y2="19" />
+        <line x1="8" y1="14" x2="8" y2="19" />
+      </g>
+    </g>
+    <!-- sine_wave at (570.9, 498.0) r=22 -->
+    <g transform="translate(570.9, 498.0)">
+      <g transform="rotate(-4)">
+        <line x1="-24" y1="0" x2="24" y2="0" stroke-dasharray="2 2" />
+        <line x1="-20" y1="-15" x2="-20" y2="15" stroke-dasharray="2 2" />
+        <path d="M-20 0 Q-10 -18 0 0 T20 0" stroke-width="1.6" />
+      </g>
+    </g>
+    <!-- pencil at (91.5, 208.0) r=23 -->
+    <g transform="translate(91.5, 208.0)">
+      <g transform="rotate(-38)">
+        <polygon points="-3,-16 0,-24 3,-16" />
+        <rect x="-3" y="-16" width="6" height="34" rx="1" />
+        <line x1="-3" y1="-10" x2="3" y2="-10" />
+        <line x1="-3" y1="12" x2="3" y2="12" />
+        <rect x="-2" y="18" width="4" height="4" rx="1" fill="rgba(255, 255, 255, 0.03)" />
+      </g>
+    </g>
+    <!-- scale_ruler at (540.0, 257.2) r=22 -->
+    <g transform="translate(540.0, 257.2)">
+      <g transform="rotate(28)">
+        <rect x="-22" y="-6" width="44" height="12" rx="1" />
+        <line x1="-16" y1="-6" x2="-16" y2="-1" />
+        <line x1="-10" y1="-6" x2="-10" y2="1" />
+        <line x1="-4" y1="-6" x2="-4" y2="-1" />
+        <line x1="2" y1="-6" x2="2" y2="1" />
+        <line x1="8" y1="-6" x2="8" y2="-1" />
+        <line x1="14" y1="-6" x2="14" y2="1" />
+      </g>
+    </g>
+    <!-- spirit_level at (481.5, 393.7) r=22 -->
+    <g transform="translate(481.5, 393.7)">
+      <g transform="rotate(-18)">
+        <rect x="-22" y="-7" width="44" height="14" rx="2" />
+        <ellipse cx="0" cy="0" rx="10" ry="4" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="1" cy="0" r="2.2" />
+        <line x1="-4" y1="-4" x2="-4" y2="4" />
+        <line x1="4" y1="-4" x2="4" y2="4" />
+      </g>
+    </g>
+    <!-- allen_key at (191.9, 348.2) r=20 -->
+    <g transform="translate(191.9, 348.2)">
+      <g transform="rotate(15)">
+        <path d="M-10,-18 L-10,12 L16,12" stroke-width="3" />
+      </g>
+    </g>
+    <!-- spiral_spring at (510.4, 490.4) r=20 -->
+    <g transform="translate(510.4, 490.4)">
+      <g transform="rotate(-30)">
+        <path d="M-8,-16 Q0,-19 8,-16 Q0,-13 -8,-10 Q0,-7 8,-4 Q0,-1 -8,2 Q0,5 8,8 Q0,11 -8,14 Q0,17 8,14" />
+      </g>
+    </g>
+    <!-- ball_bearing at (302.9, 349.0) r=21 -->
+    <g transform="translate(302.9, 349.0)">
+      <g transform="rotate(20)">
+        <circle cx="0" cy="0" r="19" />
+        <circle cx="0" cy="0" r="9" />
+        <!-- 6 balls in pitch circle r=14 -->
+        <circle cx="0" cy="-14" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="12" cy="-7" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="12" cy="7" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="0" cy="14" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="-12" cy="7" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="-12" cy="-7" r="3.2" fill="rgba(255, 255, 255, 0.03)" />
+      </g>
+    </g>
+    <!-- pipe_elbow at (120.2, 326.8) r=20 -->
+    <g transform="translate(120.2, 326.8)">
+      <g transform="rotate(-15)">
+        <path d="M-14,-14 A20 20 0 0 1 14,14" stroke-width="1.8" />
+        <path d="M-6,-14 A12 12 0 0 1 14,6" stroke-width="1.8" />
+        <line x1="-16" y1="-14" x2="-4" y2="-14" stroke-width="2" />
+        <line x1="14" y1="4" x2="14" y2="16" stroke-width="2" />
+      </g>
+    </g>
+    <!-- ball_valve at (411.7, 396.0) r=19 -->
+    <g transform="translate(411.7, 396.0)">
+      <g transform="rotate(8)">
+        <polygon points="-16,-6 0,0 -16,6" />
+        <polygon points="16,-6 0,0 16,6" />
+        <circle cx="0" cy="0" r="4.5" fill="rgba(255, 255, 255, 0.03)" />
+        <line x1="0" y1="0" x2="0" y2="-12" />
+        <line x1="-6" y1="-12" x2="6" y2="-12" />
+      </g>
+    </g>
+    <!-- check_valve at (231.1, 266.4) r=19 -->
+    <g transform="translate(231.1, 266.4)">
+      <g transform="rotate(-10)">
+        <polygon points="-16,-7 16,-7 0,7" fill="rgba(255, 255, 255, 0.03)" />
+        <line x1="-16" y1="-7" x2="16" y2="-7" stroke-width="1.8" />
+        <!-- Flow arrow -->
+        <line x1="-8" y1="12" x2="8" y2="12" />
+        <path d="M4 9 L8 12 L4 15" />
+      </g>
+    </g>
+    <!-- weld_symbol at (294.3, 41.3) r=19 -->
+    <g transform="translate(294.3, 41.3)">
+      <g transform="rotate(5)">
+        <line x1="-16" y1="10" x2="4" y2="-2" />
+        <line x1="4" y1="-2" x2="20" y2="-2" />
+        <polygon points="8,-2 14,-2 8,-8" fill="rgba(255, 255, 255, 0.03)" />
+      </g>
+    </g>
+    <!-- filter_mesh at (48.9, 411.9) r=21 -->
+    <g transform="translate(48.9, 411.9)">
+      <g transform="rotate(-14)">
+        <rect x="-18" y="-12" width="36" height="24" rx="2" />
+        <circle cx="-10" cy="-5" r="2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="0" cy="-5" r="2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="10" cy="-5" r="2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="-5" cy="4" r="2" fill="rgba(255, 255, 255, 0.03)" />
+        <circle cx="5" cy="4" r="2" fill="rgba(255, 255, 255, 0.03)" />
+      </g>
+    </g>
+    <!-- u_tube at (565.8, 351.3) r=19 -->
+    <g transform="translate(565.8, 351.3)">
+      <g transform="rotate(12)">
+        <path d="M-8,-16 L-8,6 A8 8 0 0 0 8,6 L8,-16" />
+        <!-- Fluid meniscus -->
+        <line x1="-8" y1="-2" x2="-4" y2="-2" />
+        <line x1="4" y1="4" x2="8" y2="4" />
+      </g>
+    </g>
+    <!-- thermocouple at (241.5, 118.7) r=19 -->
+    <g transform="translate(241.5, 118.7)">
+      <g transform="rotate(-25)">
+        <rect x="-3" y="-6" width="6" height="22" rx="1.5" />
+        <circle cx="0" cy="-10" r="4.5" fill="rgba(255, 255, 255, 0.03)" />
+        <line x1="0" y1="-14" x2="0" y2="-19" />
+      </g>
+    </g>
+    <!-- pipe_coupling at (301.2, 565.1) r=19 -->
+    <g transform="translate(301.2, 565.1)">
+      <g transform="rotate(22)">
+        <rect x="-14" y="-8" width="28" height="16" rx="1" />
+        <line x1="-6" y1="-8" x2="-6" y2="8" />
+        <line x1="6" y1="-8" x2="6" y2="8" />
+        <line x1="-14" y1="-4" x2="-6" y2="-1" />
+        <line x1="-14" y1="1" x2="-6" y2="4" />
+        <line x1="6" y1="-4" x2="14" y2="-1" />
+        <line x1="6" y1="1" x2="14" y2="4" />
+      </g>
+    </g>
+    <!-- strain_gauge at (498.2, 152.7) r=19 -->
+    <g transform="translate(498.2, 152.7)">
+      <g transform="rotate(-8)">
+        <rect x="-14" y="-12" width="28" height="24" rx="2" stroke-dasharray="2 1" />
+        <path d="M-10,-8 L10,-8 L10,-4 L-10,-4 L-10,0 L10,0 L10,4 L-10,4 L-10,8 L10,8" />
+      </g>
+    </g>
+    <!-- screen_panel at (456.0, 476.3) r=21 -->
+    <g transform="translate(456.0, 476.3)">
+      <g transform="rotate(16)">
+        <rect x="-18" y="-10" width="36" height="20" rx="1" />
+        <line x1="-12" y1="-10" x2="-12" y2="10" />
+        <line x1="-6" y1="-10" x2="-6" y2="10" />
+        <line x1="0" y1="-10" x2="0" y2="10" />
+        <line x1="6" y1="-10" x2="6" y2="10" />
+        <line x1="12" y1="-10" x2="12" y2="10" />
+        <line x1="-18" y1="0" x2="36" y2="0" stroke-width="1.8" />
+      </g>
+    </g>
+    <!-- resistor at (520.1, 437.1) r=12 -->
+    <g transform="translate(520.1, 437.1)">
+      <path d="M-12 0 L-8 0 L-6 -4 L-2 4 L2 -4 L6 4 L8 0 L12 0" />
+    </g>
+    <!-- capacitor at (47.0, 510.9) r=11 -->
+    <g transform="translate(47.0, 510.9)">
+      <g><line x1="-10" y1="0" x2="-3" y2="0" /><line x1="-3" y1="-7" x2="-3" y2="7" /><line x1="3" y1="-7" x2="3" y2="7" /><line x1="3" y1="0" x2="10" y2="0" /></g>
+    </g>
+    <!-- ground at (339.9, 128.9) r=10 -->
+    <g transform="translate(339.9, 128.9)">
+      <g><line x1="0" y1="-8" x2="0" y2="0" /><line x1="-8" y1="0" x2="8" y2="0" /><line x1="-5" y1="3" x2="5" y2="3" /><line x1="-2" y1="6" x2="2" y2="6" /></g>
+    </g>
+    <!-- diode at (218.4, 212.3) r=11 -->
+    <g transform="translate(218.4, 212.3)">
+      <g><line x1="-10" y1="0" x2="10" y2="0" /><polygon points="-4,-6 4,0 -4,6" fill="rgba(255, 255, 255, 0.03)" /><line x1="4" y1="-6" x2="4" y2="6" /></g>
+    </g>
+    <!-- integral at (364.1, 276.1) r=13 -->
+    <g transform="translate(364.1, 276.1)">
+      <g><path d="M5 -10 C2 -10 0 -6 0 0 L0 5 C0 11 -2 15 -5 15" stroke-width="1.5" /><text x="5" y="6" font-family="monospace" font-size="8" font-style="italic" fill="rgba(255, 255, 255, 0.18)" stroke="none">dx</text></g>
+    </g>
+    <!-- summation at (398.7, 62.4) r=12 -->
+    <g transform="translate(398.7, 62.4)">
+      <path d="M8 -9 L-6 -9 L1 0 L-6 9 L8 9" stroke-width="1.6" />
+    </g>
+    <!-- delta at (24.5, 23.3) r=11 -->
+    <g transform="translate(24.5, 23.3)">
+      <polygon points="0,-9 9,7 -9,7" />
+    </g>
+    <!-- ohm at (77.4, 371.1) r=11 -->
+    <g transform="translate(77.4, 371.1)">
+      <path d="M-8 6 L-4 6 C-4 0 4 0 4 6 L8 6" />
+    </g>
+    <!-- diameter at (110.8, 170.6) r=11 -->
+    <g transform="translate(110.8, 170.6)">
+      <g><circle cx="0" cy="0" r="7" /><line x1="-8" y1="8" x2="8" y2="-8" /></g>
+    </g>
+    <!-- angle_dimension at (420.6, 274.2) r=12 -->
+    <g transform="translate(420.6, 274.2)">
+      <g><line x1="-9" y1="7" x2="7" y2="7" /><line x1="-9" y1="7" x2="3" y2="-7" /><path d="M0 7 A7 7 0 0 0 1 -2" /><text x="3" y="4" font-family="sans-serif" font-size="7" fill="rgba(255, 255, 255, 0.18)" stroke="none">α</text></g>
+    </g>
+    <!-- crosshair at (198.5, 285.0) r=11 -->
+    <g transform="translate(198.5, 285.0)">
+      <g><circle cx="0" cy="0" r="6" stroke-dasharray="2 1" /><line x1="-9" y1="0" x2="9" y2="0" /><line x1="0" y1="-9" x2="0" y2="9" /></g>
+    </g>
+    <!-- datum at (28.5, 235.3) r=11 -->
+    <g transform="translate(28.5, 235.3)">
+      <g><line x1="0" y1="7" x2="0" y2="0" /><polygon points="-6,0 6,0 0,-9" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- surface_finish at (305.8, 134.2) r=11 -->
+    <g transform="translate(305.8, 134.2)">
+      <path d="M-7 0 L-3 7 L7 -8 L11 -8" />
+    </g>
+    <!-- thread_m10 at (98.5, 424.7) r=12 -->
+    <g transform="translate(98.5, 424.7)">
+      <text x="-9" y="4" font-family="monospace" font-size="9" font-weight="bold" fill="rgba(255, 255, 255, 0.18)" stroke="none">M10</text>
+    </g>
+    <!-- screw_philips at (401.6, 325.5) r=9 -->
+    <g transform="translate(401.6, 325.5)">
+      <g><circle cx="0" cy="0" r="7.5" /><line x1="-4" y1="0" x2="4" y2="0" /><line x1="0" y1="-4" x2="0" y2="4" /></g>
+    </g>
+    <!-- screw_slotted at (142.2, 384.6) r=9 -->
+    <g transform="translate(142.2, 384.6)">
+      <g transform="rotate(35)"><circle cx="0" cy="0" r="7.5" /><line x1="-5" y1="0" x2="5" y2="0" /></g>
+    </g>
+    <!-- screw_torx at (240.1, 343.2) r=9 -->
+    <g transform="translate(240.1, 343.2)">
+      <g><circle cx="0" cy="0" r="7.5" /><polygon points="0,-4 1,-1 4,0 1,1 0,4 -1,1 -4,0 -1,-1" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- washer at (48.5, 185.2) r=9 -->
+    <g transform="translate(48.5, 185.2)">
+      <g><circle cx="0" cy="0" r="7.5" /><circle cx="0" cy="0" r="3.5" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- lock_washer at (189.6, 504.4) r=9 -->
+    <g transform="translate(189.6, 504.4)">
+      <g><circle cx="0" cy="0" r="7.5" /><circle cx="0" cy="0" r="3.5" /><line x1="3.5" y1="0" x2="7.5" y2="0" stroke-width="1.8" /></g>
+    </g>
+    <!-- small_nut at (482.1, 563.5) r=11 -->
+    <g transform="translate(482.1, 563.5)">
+      <g><polygon points="0,-8 7,-4 7,4 0,8 -7,4 -7,-4" /><circle cx="0" cy="0" r="3.5" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- small_gear at (208.3, 136.4) r=12 -->
+    <g transform="translate(208.3, 136.4)">
+      <g><circle cx="0" cy="0" r="7" /><circle cx="0" cy="0" r="3" fill="rgba(255, 255, 255, 0.03)" /><path d="M-1 -10 L1 -10 L1 -7 L-1 -7 Z M-1 7 L1 7 L1 10 L-1 10 Z M-10 -1 L-10 1 L-7 1 L-7 -1 Z M7 -1 L7 1 L10 1 L10 -1 Z" /></g>
+    </g>
+    <!-- flow_arrows at (546.3, 211.0) r=11 -->
+    <g transform="translate(546.3, 211.0)">
+      <g><path d="M-7 -3 L5 -3 M2 -6 L5 -3 L2 0" /><path d="M-7 3 L5 3 M2 0 L5 3 L2 6" /></g>
+    </g>
+    <!-- steel_ball at (518.0, 406.7) r=9 -->
+    <g transform="translate(518.0, 406.7)">
+      <g><circle cx="0" cy="0" r="7.5" /><path d="M-3 -4 A5 5 0 0 1 4 -3" /></g>
+    </g>
+    <!-- nozzle at (148.7, 428.5) r=11 -->
+    <g transform="translate(148.7, 428.5)">
+      <g transform="rotate(25)"><polygon points="-6,-6 6,-6 3,5 -3,5" /><line x1="-3" y1="5" x2="-6" y2="9" /><line x1="0" y1="5" x2="0" y2="10" /><line x1="3" y1="5" x2="6" y2="9" /></g>
+    </g>
+    <!-- weld_spot at (63.3, 111.7) r=9 -->
+    <g transform="translate(63.3, 111.7)">
+      <g><circle cx="0" cy="0" r="7" /><circle cx="0" cy="0" r="2.5" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- mini_dial at (534.3, 136.4) r=11 -->
+    <g transform="translate(534.3, 136.4)">
+      <g><circle cx="0" cy="0" r="8" fill="rgba(255, 255, 255, 0.03)" /><line x1="0" y1="0" x2="4" y2="-4" stroke-width="1.5" /><circle cx="0" cy="0" r="1.5" /></g>
+    </g>
+    <!-- socket_screw at (447.7, 357.1) r=11 -->
+    <g transform="translate(447.7, 357.1)">
+      <g><circle cx="0" cy="0" r="8" /><polygon points="0,-4 3.5,-2 3.5,2 0,4 -3.5,2 -3.5,-2" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- lambda at (209.0, 181.0) r=11 -->
+    <g transform="translate(209.0, 181.0)">
+      <path d="M-6 8 L2 -8 L7 8 M-2 0 L6 8" />
+    </g>
+    <!-- crosshair2 at (173.0, 463.6) r=11 -->
+    <g transform="translate(173.0, 463.6)">
+      <g><circle cx="0" cy="0" r="6" stroke-dasharray="2 1" /><line x1="-9" y1="0" x2="9" y2="0" /><line x1="0" y1="-9" x2="0" y2="9" /></g>
+    </g>
+    <!-- screw_philips2 at (578.3, 255.0) r=9 -->
+    <g transform="translate(578.3, 255.0)">
+      <g><circle cx="0" cy="0" r="7.5" /><line x1="-4" y1="0" x2="4" y2="0" /><line x1="0" y1="-4" x2="0" y2="4" /></g>
+    </g>
+    <!-- washer2 at (73.6, 534.1) r=9 -->
+    <g transform="translate(73.6, 534.1)">
+      <g><circle cx="0" cy="0" r="7.5" /><circle cx="0" cy="0" r="3.5" fill="rgba(255, 255, 255, 0.03)" /></g>
+    </g>
+    <!-- integral2 at (230.6, 568.1) r=13 -->
+    <g transform="translate(230.6, 568.1)">
+      <g><path d="M5 -10 C2 -10 0 -6 0 0 L0 5 C0 11 -2 15 -5 15" stroke-width="1.5" /><text x="5" y="6" font-family="monospace" font-size="8" font-style="italic" fill="rgba(255, 255, 255, 0.18)" stroke="none">dx</text></g>
+    </g>
+    <!-- delta2 at (533.3, 182.6) r=11 -->
+    <g transform="translate(533.3, 182.6)">
+      <polygon points="0,-9 9,7 -9,7" />
+    </g>
+    <!-- small_gear2 at (575.1, 183.5) r=12 -->
+    <g transform="translate(575.1, 183.5)">
+      <g><circle cx="0" cy="0" r="7" /><circle cx="0" cy="0" r="3" fill="rgba(255, 255, 255, 0.03)" /><path d="M-1 -10 L1 -10 L1 -7 L-1 -7 Z M-1 7 L1 7 L1 10 L-1 10 Z M-10 -1 L-10 1 L-7 1 L-7 -1 Z M7 -1 L7 1 L10 1 L10 -1 Z" /></g>
     </g>
   </g>
 </svg>
