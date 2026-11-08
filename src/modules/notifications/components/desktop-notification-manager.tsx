@@ -5,7 +5,6 @@ import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useRouter } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { InsecureOriginSetupBanner } from './InsecureOriginSetupBanner';
 
 const CHIME_THROTTLE_MS = 2800;
 const SEEN_NOTIFS_STORAGE_KEY = 'esp_seen_desktop_notifications';
@@ -18,6 +17,9 @@ let lastChimeTime = 0;
  */
 export function playNotificationChime() {
   if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem('esp_desktop_notifications_enabled') === 'false') return;
+  } catch {}
   const now = Date.now();
 
   // 1. Cross-tab & intra-tab deduplication lock
@@ -78,6 +80,9 @@ export async function triggerDesktopNotification({
   onClick?: () => void;
 }) {
   if (typeof window === 'undefined' || !('Notification' in window)) return;
+  try {
+    if (localStorage.getItem('esp_desktop_notifications_enabled') === 'false') return;
+  } catch {}
   if (Notification.permission !== 'granted') return;
 
   // 1. Modern Service Worker registration path (persistent in Windows, unthrottled in background)
@@ -136,18 +141,6 @@ export function DesktopNotificationManager() {
   const isInitializedRef = useRef<boolean>(false);
   const promptShownRef = useRef<boolean>(false);
 
-  // Show insecure-origin setup banner if running on HTTP and not dismissed
-  const [showInsecureBanner, setShowInsecureBanner] = useState(false);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const isInsecure = window.location.protocol !== 'https:';
-    const isDismissed = localStorage.getItem(LS_INSECURE_DISMISSED) === 'true';
-    if (isInsecure && !isDismissed) {
-      // Show after a small delay so the page settles
-      const t = setTimeout(() => setShowInsecureBanner(true), 4000);
-      return () => clearTimeout(t);
-    }
-  }, []);
 
   // Register Service Worker for Windows background notifications
   useEffect(() => {
@@ -431,16 +424,7 @@ export function DesktopNotificationManager() {
     };
   }, [user, isRtl, router, saveSeenIds]);
 
-  return (
-    <>
-      {showInsecureBanner && (
-        <InsecureOriginSetupBanner
-          forceShow={false}
-          onClose={() => setShowInsecureBanner(false)}
-        />
-      )}
-    </>
-  );
+  return null;
 }
 
 

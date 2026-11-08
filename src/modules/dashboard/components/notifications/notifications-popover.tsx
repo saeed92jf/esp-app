@@ -42,7 +42,9 @@ import {
   SAMPLE_TASKS,
 } from "../../services/dashboard.service";
 import { ManagerEmailModal } from "../tasks/manager-email-modal";
-import { InsecureOriginSettingsTrigger } from "@/modules/notifications/components/InsecureOriginSetupBanner";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { playNotificationChime, triggerDesktopNotification } from "@/modules/notifications/components/desktop-notification-manager";
 
 interface NotificationsPopoverProps {
   notifications?: DashboardNotificationItem[];
@@ -201,20 +203,116 @@ export function NotificationsPopover({
   const [selectedTaskForEmail, setSelectedTaskForEmail] =
     useState<DashboardTask | null>(null);
   const [desktopPermission, setDesktopPermission] = useState<NotificationPermission>("default");
+  const [isDesktopEnabled, setIsDesktopEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    const pref = localStorage.getItem("esp_desktop_notifications_enabled");
+    if (pref === "false") return false;
+    if (pref === "true") return true;
+    return "Notification" in window && Notification.permission === "granted";
+  });
+  const [isTogglingDesktop, setIsTogglingDesktop] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window) {
-      setDesktopPermission(Notification.permission);
+      const perm = Notification.permission;
+      setDesktopPermission(perm);
+      const pref = localStorage.getItem("esp_desktop_notifications_enabled");
+      if (pref === "false") {
+        setIsDesktopEnabled(false);
+      } else if (pref === "true" || perm === "granted") {
+        setIsDesktopEnabled(true);
+      }
     }
   }, [open]);
 
-  const handleRequestDesktopPermission = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (typeof window !== "undefined" && "Notification" in window) {
-      try {
-        const res = await Notification.requestPermission();
-        setDesktopPermission(res);
-      } catch {}
+  const handleToggleDesktopSwitch = async (checked: boolean) => {
+    setIsTogglingDesktop(true);
+    try {
+      if (checked) {
+        // 1. Automatically configure browser flags & preferences via backend
+        if (typeof window !== "undefined") {
+          try {
+            await fetch("/api/real/browser-policy/apply", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "enable",
+                origin: window.location.origin,
+              }),
+            });
+          } catch (e) {
+            console.warn("[BrowserPolicy] Auto-apply error:", e);
+          }
+        }
+
+        // 2. Request native browser notification permission
+        let granted = false;
+        if (typeof window !== "undefined" && "Notification" in window) {
+          try {
+            if (Notification.permission === "default") {
+              const res = await Notification.requestPermission();
+              setDesktopPermission(res);
+              granted = res === "granted";
+            } else if (Notification.permission === "granted") {
+              granted = true;
+            }
+          } catch (e) {
+            console.warn("[DesktopNotification] Permission request error:", e);
+          }
+        }
+
+        // 3. Mark enabled in localStorage
+        localStorage.setItem("esp_desktop_notifications_enabled", "true");
+        localStorage.setItem("esp_insecure_origin_dismissed", "true");
+        setIsDesktopEnabled(true);
+
+        // 4. Play audio chime and trigger test notification
+        playNotificationChime();
+        if (granted) {
+          await triggerDesktopNotification({
+            title: locale === "fa" ? "اعلان‌های ویندوز یورواسلات پارس" : "ESP Windows Notifications",
+            body: locale === "fa"
+              ? "اعلان‌های دسکتاپ با موفقیت فعال شدند!"
+              : "Desktop notifications have been successfully enabled!",
+            actionUrl: "/tasks",
+          });
+          toast.success(
+            locale === "fa"
+              ? "اعلان‌های دسکتاپ ویندوز با موفقیت فعال شد"
+              : "Windows desktop notifications enabled successfully"
+          );
+        } else {
+          toast.success(
+            locale === "fa"
+              ? "تنظیمات به صورت خودکار اعمال شد. در صورت نیاز، مرورگر را یک‌بار ببندید و باز کنید تا فعال‌سازی نهایی شود."
+              : "Settings applied automatically. Please restart browser once if needed to complete activation."
+          );
+        }
+      } else {
+        localStorage.setItem("esp_desktop_notifications_enabled", "false");
+        setIsDesktopEnabled(false);
+
+        if (typeof window !== "undefined") {
+          try {
+            await fetch("/api/real/browser-policy/apply", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "disable",
+                origin: window.location.origin,
+              }),
+            });
+          } catch {}
+        }
+
+        toast.info(
+          locale === "fa"
+            ? "اعلان‌های ویندوز غیرفعال شد"
+            : "Windows desktop notifications disabled"
+        );
+      }
+    } finally {
+      setIsTogglingDesktop(false);
     }
   };
 
@@ -581,36 +679,46 @@ export function NotificationsPopover({
                         </div>
                       )}
 
-                      {/* Windows Desktop Notification Status & Quick Activation */}
-                      <div className="segmented-item p-2 rounded-[6px] flex items-center justify-between gap-2 w-full max-w-full min-w-0 box-border bg-muted/40 text-xs">
-                        <div className="flex items-center gap-1.5 min-w-0 truncate">
-                          <span
+                      {/* Windows Desktop Notification Toggle Switch */}
+                      <div className="segmented-item p-2.5 rounded-[6px] flex items-center justify-between gap-2.5 w-full max-w-full min-w-0 box-border bg-muted/40 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <div
                             className={cn(
-                              "size-2 rounded-full shrink-0",
-                              desktopPermission === "granted"
-                                ? "bg-emerald-500 animate-pulse"
-                                : "bg-amber-500"
+                              "size-6 rounded-full flex items-center justify-center shrink-0 transition-colors",
+                              isDesktopEnabled
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                                : "bg-muted text-muted-foreground"
                             )}
-                          />
-                          <span className="text-[11px] text-muted-foreground truncate">
-                            {desktopPermission === "granted"
-                              ? (locale === "fa" ? "اعلان‌های ویندوز فعال است" : "Windows Notifications: Active")
-                              : (locale === "fa" ? "دریافت اعلان‌ها در ویندوز" : "Windows Desktop Notifications")}
-                          </span>
-                        </div>
-                        {desktopPermission !== "granted" && (
-                          <button
-                            type="button"
-                            onClick={handleRequestDesktopPermission}
-                            className="text-[10px] font-semibold px-2 py-0.5 rounded bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0 cursor-pointer"
                           >
-                            {locale === "fa" ? "فعال‌سازی" : "Enable"}
-                          </button>
-                        )}
-                      </div>
+                            <IoNotifications className="size-3.5" />
+                          </div>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="text-[12px] font-semibold text-foreground truncate">
+                                {locale === "fa" ? "اعلان‌های ویندوز" : "Windows Notifications"}
+                              </span>
+                              <span
+                                className={cn(
+                                  "size-1.5 rounded-full shrink-0",
+                                  isDesktopEnabled ? "bg-emerald-500 animate-pulse" : "bg-muted-foreground/40"
+                                )}
+                              />
+                            </div>
+                            <span className="text-[10px] text-muted-foreground truncate">
+                              {isDesktopEnabled
+                                ? (locale === "fa" ? "فعال • ارسال آنی به دسکتاپ" : "Enabled • Real-time desktop alerts")
+                                : (locale === "fa" ? "برای فعال‌سازی سوییچ را روشن کنید" : "Switch on to enable")}
+                            </span>
+                          </div>
+                        </div>
 
-                      {/* Insecure Origin Setup Trigger (HTTP sites only) */}
-                      <InsecureOriginSettingsTrigger />
+                        <Switch
+                          checked={isDesktopEnabled}
+                          disabled={isTogglingDesktop}
+                          onCheckedChange={handleToggleDesktopSwitch}
+                          aria-label={locale === "fa" ? "فعال‌سازی اعلان‌های ویندوز" : "Enable Windows Notifications"}
+                        />
+                      </div>
 
                       {/* Items List */}
                       {displayedItems.length > 0 ? (
