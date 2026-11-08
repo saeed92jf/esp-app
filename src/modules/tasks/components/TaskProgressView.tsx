@@ -770,9 +770,16 @@ export function TaskProgressView({
         {/* ======================================================== */}
         <div className="segmented-list flex flex-col gap-[2px] w-full">
           {/* Accordion Header as authentic segmented-item */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSegment("details")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleSegment("details");
+              }
+            }}
             className={cn(
               "segmented-item group relative flex items-center justify-between gap-3 p-4 sm:p-5 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
               getSegmentedAccordionHeaderClass(openSegments.details, { isTopRounded: true, fullCapsuleWhenClosed: true })
@@ -834,7 +841,7 @@ export function TaskProgressView({
                 <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.details && "rotate-180")} />
               </div>
             </div>
-          </button>
+          </div>
 
           {/* Accordion Body for Item 1 */}
           <AnimatePresence initial={false}>
@@ -1155,9 +1162,16 @@ export function TaskProgressView({
   {/* ======================================================== */}
   {currentTask.attachments && currentTask.attachments.length > 0 && (
     <div className="segmented-list flex flex-col gap-[2px] w-full">
-      <button
-        type="button"
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => toggleSegment("attachments")}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleSegment("attachments");
+          }
+        }}
         className={cn(
           "segmented-item group relative flex items-center justify-between gap-3 p-4 sm:p-5 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
           getSegmentedAccordionHeaderClass(openSegments.attachments, { isTopRounded: true, fullCapsuleWhenClosed: true })
@@ -1177,7 +1191,7 @@ export function TaskProgressView({
         <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
           <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.attachments && "rotate-180")} />
         </div>
-      </button>
+      </div>
       <AnimatePresence initial={false}>
         {openSegments.attachments && (
           <motion.div
@@ -1201,9 +1215,16 @@ export function TaskProgressView({
         {/* ======================================================== */}
         {totalSubtasks > 0 && (
           <div className="segmented-list flex flex-col gap-[2px] w-full">
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => toggleSegment("subtasks")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  toggleSegment("subtasks");
+                }
+              }}
               className={cn(
                 "segmented-item group relative flex items-center justify-between gap-3 p-4 sm:p-5 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
                 getSegmentedAccordionHeaderClass(openSegments.subtasks, { isTopRounded: true, fullCapsuleWhenClosed: true })
@@ -1231,7 +1252,7 @@ export function TaskProgressView({
               <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
                 <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.subtasks && "rotate-180")} />
               </div>
-            </button>
+            </div>
 
             <AnimatePresence initial={false}>
               {openSegments.subtasks && (
@@ -1326,9 +1347,16 @@ export function TaskProgressView({
         {/* ======================================================== */}
         <div className="segmented-list flex flex-col gap-[2px] w-full">
           {/* Accordion Header for Item 4 */}
-          <button
-            type="button"
+          <div
+            role="button"
+            tabIndex={0}
             onClick={() => toggleSegment("chat")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleSegment("chat");
+              }
+            }}
             className={cn(
               "segmented-item group relative flex items-center justify-between gap-3 px-5 py-4 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
               getSegmentedAccordionHeaderClass(openSegments.chat, { isTopRounded: true, fullCapsuleWhenClosed: true })
@@ -1383,7 +1411,7 @@ export function TaskProgressView({
                 <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.chat && "rotate-180")} />
               </div>
             </div>
-          </button>
+          </div>
 
           {/* Telegram Styled Live Progress Chat Thread (OPEN BY DEFAULT) */}
           <AnimatePresence initial={false}>
