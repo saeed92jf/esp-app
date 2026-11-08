@@ -116,61 +116,46 @@ const TELEGRAM_NAME_COLORS = [
 
 const EMOJI_CATEGORIES = [
   {
+    id: "top",
+    labelFa: "برترین‌ها",
+    labelEn: "Top Picks",
+    icon: "🔥",
+    emojis: [
+      "👍", "❤️", "🔥", "😂", "👏", "🎉", "🤩", "🙏", "👌", "🚀",
+      "😍", "🥳", "🤔", "💯", "🫡", "⚡", "✨", "😎", "😭", "🤯",
+      "🤝", "💡", "🛠️", "📋", "✅", "❌", "⚠️", "⏳", "🎯", "☕",
+    ],
+  },
+  {
     id: "smileys",
     labelFa: "صورتک‌ها",
     labelEn: "Smileys",
     icon: "😊",
     emojis: [
-      "😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇",
-      "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😋", "😛", "😜",
-      "🤪", "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒", "😞",
-      "😔", "😟", "😕", "🥺", "😢", "😭", "😤", "😠", "🤯", "😳",
-      "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤔", "🤫", "🤥",
-      "😶", "😐", "😑", "😬", "🙄", "😴", "😷", "🤒", "🤕", "🤐",
+      "😀", "😃", "😄", "😆", "😅", "😂", "🤣", "😊", "😇", "😉",
+      "😍", "🥰", "😘", "😋", "😜", "🤓", "😎", "🤩", "🥳", "😏",
+      "🥺", "😭", "😤", "😠", "🤯", "😱", "🤔", "🤫", "😐", "😴",
     ],
   },
   {
     id: "gestures",
-    labelFa: "دست و ژست",
-    labelEn: "Gestures",
+    labelFa: "دست و کار",
+    labelEn: "Work & Hands",
     icon: "👍",
     emojis: [
-      "👍", "👎", "👌", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉",
-      "👆", "👇", "☝️", "✋", "🤚", "🖐️", "🖖", "👋", "👏", "🙌",
-      "👐", "🤲", "🤝", "🙏", "✍️", "💪", "🦾", "🤳", "🧑‍💻", "👨‍💻",
-      "👩‍💻", "🙋‍♂️", "🙋‍♀️", "🙆‍♂️", "🙆‍♀️", "🤦‍♂️", "🤦‍♀️", "🤷‍♂️", "🤷‍♀️", "🫡",
-    ],
-  },
-  {
-    id: "work",
-    labelFa: "کار و مهندسی",
-    labelEn: "Work & Tech",
-    icon: "⚙️",
-    emojis: [
-      "📋", "📑", "📄", "📁", "📂", "📊", "📈", "📉", "📌", "📍",
-      "📎", "📏", "📐", "🛠️", "🔧", "🔨", "⚙️", "🗜️", "🧰", "🔬",
-      "💻", "🖥️", "🖨️", "📱", "📞", "💡", "🔌", "🔋", "🧱", "🏗️",
-    ],
-  },
-  {
-    id: "status",
-    labelFa: "علامت و وضعیت",
-    labelEn: "Symbols",
-    icon: "✅",
-    emojis: [
-      "✅", "✔️", "☑️", "❌", "⭕", "🛑", "⚠️", "⛔", "🚫", "💯",
-      "🚀", "⚡", "🔥", "💥", "✨", "⭐️", "🌟", "🔔", "📣", "📢",
-      "💬", "💭", "🕒", "⏳", "⌛", "📅", "📆", "🗓️", "🎯", "🏆",
+      "👍", "👎", "👌", "✌️", "🤞", "🤝", "👏", "🙌", "🙏", "✍️",
+      "💪", "🧑‍💻", "👨‍🔧", "📋", "📊", "📌", "📎", "🛠️", "🔧", "⚙️",
+      "💻", "📱", "💡", "🚀", "⚡", "💯", "✅", "⚠️", "🎯", "🏗️",
     ],
   },
   {
     id: "hearts",
-    labelFa: "قلب‌ها",
-    labelEn: "Hearts",
+    labelFa: "قلب و نشانه",
+    labelEn: "Hearts & Signs",
     icon: "❤️",
     emojis: [
-      "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔",
-      "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "🤝",
+      "❤️", "🧡", "💛", "💚", "💙", "💜", "🤍", "💔", "❣️", "💕",
+      "💖", "✨", "⭐️", "🌟", "🔔", "📣", "💬", "🕒", "⏳", "📅",
     ],
   },
 ];
@@ -303,10 +288,11 @@ export function TaskProgressView({
   const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeEmojiCat, setActiveEmojiCat] = useState("smileys");
+  const [activeEmojiCat, setActiveEmojiCat] = useState("top");
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const emojiMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -340,7 +326,21 @@ export function TaskProgressView({
   const handleAttachMouseLeave = () => {
     attachMenuTimeoutRef.current = setTimeout(() => {
       setShowAttachMenu(false);
-    }, 200);
+    }, 220);
+  };
+
+  const handleEmojiMouseEnter = () => {
+    if (emojiMenuTimeoutRef.current) {
+      clearTimeout(emojiMenuTimeoutRef.current);
+      emojiMenuTimeoutRef.current = null;
+    }
+    setShowEmojiPicker(true);
+  };
+
+  const handleEmojiMouseLeave = () => {
+    emojiMenuTimeoutRef.current = setTimeout(() => {
+      setShowEmojiPicker(false);
+    }, 220);
   };
 
   const handleInsertEmoji = (emoji: string) => {
@@ -1772,8 +1772,9 @@ export function TaskProgressView({
                       />
 
                       {/* Text input row with Telegram Attachment Popover + Textarea + Emoji Popover + Send */}
-                      <div className="flex items-end gap-1.5 sm:gap-2 px-2 py-1.5 rounded-2xl bg-white/50 dark:bg-black/35 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-xs">
-                        {/* Telegram Attachment Button with Popover Menu (No background, No rotate, Hover trigger) */}
+                      {/* Pill-shaped White Composer Bar */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/15 shadow-md hover:shadow-lg transition-all focus-within:ring-2 focus-within:ring-[#2481cc]/25">
+                        {/* Telegram Attachment Button with Popover Menu (Pill, Hover Trigger, Airy Top Spacing) */}
                         <div
                           className="relative shrink-0"
                           ref={attachMenuRef}
@@ -1785,7 +1786,7 @@ export function TaskProgressView({
                             onClick={() => setShowAttachMenu((prev) => !prev)}
                             disabled={isSending}
                             className={cn(
-                              "size-9 rounded-full bg-transparent hover:bg-black/10 dark:hover:bg-white/10 text-foreground/75 hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors relative",
+                              "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors relative",
                               showAttachMenu && "text-foreground",
                               isSending && "opacity-50 pointer-events-none cursor-not-allowed"
                             )}
@@ -1794,16 +1795,16 @@ export function TaskProgressView({
                             <Paperclip className="size-5" />
                           </button>
 
-                          {/* Floating Attachment Menu (Simple, No Shadow, Transparent & Blur, Text Color Icons) */}
+                          {/* Floating Attachment Menu (Simple, No Shadow, Transparent & Blur, Text Color Icons, Floating Above) */}
                           <AnimatePresence>
                             {showAttachMenu && (
                               <motion.div
-                                initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                                initial={{ opacity: 0, y: 8, scale: 0.96 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.96 }}
                                 transition={{ duration: 0.12 }}
                                 className={cn(
-                                  "absolute bottom-full mb-2 z-50 w-52 sm:w-56 p-1.5 rounded-2xl bg-card/85 dark:bg-zinc-900/85 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-none space-y-0.5 select-none",
+                                  "absolute bottom-full mb-3.5 sm:mb-4 z-50 w-56 sm:w-60 p-2 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-lg space-y-1 select-none",
                                   isRtl ? "right-0" : "left-0"
                                 )}
                                 style={{ transformOrigin: isRtl ? "bottom right" : "bottom left" }}
@@ -1858,7 +1859,7 @@ export function TaskProgressView({
                           </AnimatePresence>
                         </div>
 
-                        {/* Textarea (No background) */}
+                        {/* Textarea inside the white pill */}
                         <div className="flex-1 relative">
                           <Textarea
                             ref={textareaRef}
@@ -1897,18 +1898,23 @@ export function TaskProgressView({
                                 ? (isRtl ? "پیام، راهنمایی یا پیوست (Enter ارسال، Ctrl+V الصاق عکس)..." : "Write guidance (Enter to send, Ctrl+V to paste)...")
                                 : (isRtl ? "پیام، گزارش پیشرفت یا پیوست فایل (Ctrl+V برای الصاق تصویر)..." : "Write a message (Ctrl+V to paste screenshot)...")
                             }
-                            className="rounded-xl resize-none min-h-[40px] max-h-[140px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-foreground/50 transition-colors"
+                            className="flex-1 rounded-full resize-none min-h-[38px] max-h-[120px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/60 transition-colors"
                             rows={1}
                           />
                         </div>
 
-                        {/* Emoji Button & Popover (No background, next to Send) */}
-                        <div className="relative shrink-0" ref={emojiPickerRef}>
+                        {/* Emoji Button & Popover (Hover Trigger, Floating Above, Telegram Large Thumbnails) */}
+                        <div
+                          className="relative shrink-0"
+                          ref={emojiPickerRef}
+                          onMouseEnter={handleEmojiMouseEnter}
+                          onMouseLeave={handleEmojiMouseLeave}
+                        >
                           <button
                             type="button"
                             onClick={() => setShowEmojiPicker((prev) => !prev)}
                             className={cn(
-                              "size-9 rounded-full bg-transparent hover:bg-black/10 dark:hover:bg-white/10 text-foreground/75 hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors",
+                              "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors",
                               showEmojiPicker && "text-foreground"
                             )}
                             title={isRtl ? "انتخاب اموجی" : "Pick emoji"}
@@ -1919,12 +1925,12 @@ export function TaskProgressView({
                           <AnimatePresence>
                             {showEmojiPicker && (
                               <motion.div
-                                initial={{ opacity: 0, y: 6, scale: 0.96 }}
+                                initial={{ opacity: 0, y: 8, scale: 0.96 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                                exit={{ opacity: 0, y: 8, scale: 0.96 }}
                                 transition={{ duration: 0.12 }}
                                 className={cn(
-                                  "absolute bottom-full mb-2 z-50 w-72 sm:w-80 p-2.5 rounded-2xl bg-card/85 dark:bg-zinc-900/85 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-none select-none",
+                                  "absolute bottom-full mb-3.5 sm:mb-4 z-50 w-76 sm:w-84 p-2.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-lg select-none",
                                   isRtl ? "left-0" : "right-0"
                                 )}
                                 style={{ transformOrigin: isRtl ? "bottom left" : "bottom right" }}
@@ -1932,39 +1938,37 @@ export function TaskProgressView({
                               >
                                 {/* Category Tabs */}
                                 <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/10 dark:border-white/10 px-1">
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1.5">
                                     {EMOJI_CATEGORIES.map((cat) => (
                                       <button
                                         key={cat.id}
                                         type="button"
                                         onClick={() => setActiveEmojiCat(cat.id)}
                                         className={cn(
-                                          "size-7 rounded-lg text-sm flex items-center justify-center transition-all cursor-pointer",
+                                          "px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer",
                                           activeEmojiCat === cat.id
-                                            ? "bg-primary/15 text-primary scale-110 font-bold"
+                                            ? "bg-[#2481cc]/15 text-[#2481cc] font-bold shadow-2xs"
                                             : "hover:bg-black/5 dark:hover:bg-white/10 opacity-70 hover:opacity-100"
                                         )}
                                         title={isRtl ? cat.labelFa : cat.labelEn}
                                       >
-                                        {cat.icon}
+                                        <span className="text-sm">{cat.icon}</span>
+                                        <span className="hidden sm:inline text-[11px]">
+                                          {isRtl ? cat.labelFa : cat.labelEn}
+                                        </span>
                                       </button>
                                     ))}
                                   </div>
-                                  <span className="text-[10px] font-semibold text-muted-foreground truncate">
-                                    {isRtl
-                                      ? EMOJI_CATEGORIES.find((c) => c.id === activeEmojiCat)?.labelFa
-                                      : EMOJI_CATEGORIES.find((c) => c.id === activeEmojiCat)?.labelEn}
-                                  </span>
                                 </div>
 
-                                {/* Emoji Grid */}
-                                <div className="grid grid-cols-8 gap-1 p-0.5 max-h-44 overflow-y-auto scrollbar-thin">
+                                {/* Emoji Grid with Large Telegram-style Thumbnails */}
+                                <div className="grid grid-cols-6 gap-1 p-1 max-h-48 overflow-y-auto scrollbar-thin">
                                   {EMOJI_CATEGORIES.find((c) => c.id === activeEmojiCat)?.emojis.map((emoji, i) => (
                                     <button
                                       key={`${emoji}_${i}`}
                                       type="button"
                                       onClick={() => handleInsertEmoji(emoji)}
-                                      className="size-8 flex items-center justify-center text-lg rounded-lg hover:bg-black/10 dark:hover:bg-white/15 hover:scale-125 transition-transform cursor-pointer"
+                                      className="size-11 flex items-center justify-center text-2xl sm:text-[26px] rounded-xl hover:bg-black/5 dark:hover:bg-white/15 hover:scale-120 transition-transform cursor-pointer"
                                     >
                                       {emoji}
                                     </button>
@@ -1987,17 +1991,17 @@ export function TaskProgressView({
                           </AnimatePresence>
                         </div>
 
-                        {/* Send Button (No background) */}
+                        {/* Send Button (Pill shaped) */}
                         <Button
                           type="button"
                           variant="ghost"
                           onClick={handleSendProgress}
                           disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
-                          className="size-9 p-0 rounded-full bg-transparent hover:bg-[#2481cc]/15 text-[#2481cc] hover:text-[#1e70b3] dark:text-sky-400 dark:hover:text-sky-300 flex items-center justify-center shrink-0 shadow-none transition-transform active:scale-95 cursor-pointer disabled:opacity-30"
+                          className="size-9 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shrink-0 shadow-xs transition-transform active:scale-95 cursor-pointer disabled:opacity-35"
                           title={isRtl ? "ارسال پیام" : "Send message"}
                         >
                           {isSending ? (
-                            <Loader2 className="size-4.5 animate-spin" />
+                            <Loader2 className="size-4 animate-spin" />
                           ) : (
                             <Send className="size-4.5" />
                           )}
