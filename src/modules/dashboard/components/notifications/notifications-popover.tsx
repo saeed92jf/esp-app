@@ -42,6 +42,7 @@ import {
   SAMPLE_TASKS,
 } from "../../services/dashboard.service";
 import { ManagerEmailModal } from "../tasks/manager-email-modal";
+import { InsecureOriginSettingsTrigger } from "@/modules/notifications/components/InsecureOriginSetupBanner";
 
 interface NotificationsPopoverProps {
   notifications?: DashboardNotificationItem[];
@@ -607,6 +608,9 @@ export function NotificationsPopover({
                           </button>
                         )}
                       </div>
+
+                      {/* Insecure Origin Setup Trigger (HTTP sites only) */}
+                      <InsecureOriginSettingsTrigger />
 
                       {/* Items List */}
                       {displayedItems.length > 0 ? (

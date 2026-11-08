@@ -5,9 +5,11 @@ import { useAuth } from '@/modules/auth/hooks/use-auth';
 import { useRouter } from '@/i18n/navigation';
 import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
+import { InsecureOriginSetupBanner } from './InsecureOriginSetupBanner';
 
 const CHIME_THROTTLE_MS = 2800;
 const SEEN_NOTIFS_STORAGE_KEY = 'esp_seen_desktop_notifications';
+const LS_INSECURE_DISMISSED = 'esp_insecure_origin_dismissed';
 let lastChimeTime = 0;
 
 /**
@@ -133,6 +135,19 @@ export function DesktopNotificationManager() {
   const seenIdsRef = useRef<Set<string>>(new Set());
   const isInitializedRef = useRef<boolean>(false);
   const promptShownRef = useRef<boolean>(false);
+
+  // Show insecure-origin setup banner if running on HTTP and not dismissed
+  const [showInsecureBanner, setShowInsecureBanner] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isInsecure = window.location.protocol !== 'https:';
+    const isDismissed = localStorage.getItem(LS_INSECURE_DISMISSED) === 'true';
+    if (isInsecure && !isDismissed) {
+      // Show after a small delay so the page settles
+      const t = setTimeout(() => setShowInsecureBanner(true), 4000);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   // Register Service Worker for Windows background notifications
   useEffect(() => {
@@ -416,7 +431,16 @@ export function DesktopNotificationManager() {
     };
   }, [user, isRtl, router, saveSeenIds]);
 
-  return null;
+  return (
+    <>
+      {showInsecureBanner && (
+        <InsecureOriginSetupBanner
+          forceShow={false}
+          onClose={() => setShowInsecureBanner(false)}
+        />
+      )}
+    </>
+  );
 }
 
 
