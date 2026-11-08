@@ -60,8 +60,10 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
   const targetTaskId = initialTaskId || searchParams?.get("id");
 
-  const fetchTasks = useCallback(async () => {
-    setIsLoading(true);
+  const fetchTasks = useCallback(async (isSilent = false) => {
+    if (!isSilent) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       // Admin sees all tasks; regular users see only their assigned tasks
@@ -69,16 +71,24 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
       const data = await newTasksService.getTasks(params);
       setTasks(data);
 
-      if (targetTaskId) {
-        const found = data.find((t) => t.id === targetTaskId);
-        if (found) {
-          setSelectedTask(found);
+      setSelectedTask((prev) => {
+        if (targetTaskId) {
+          return data.find((t) => t.id === targetTaskId) || prev;
         }
-      }
+        if (prev) {
+          const fresh = data.find((t) => t.id === prev.id);
+          return fresh || prev;
+        }
+        return prev;
+      });
     } catch (err: any) {
-      setError(err?.message || "Failed to load tasks");
+      if (!isSilent) {
+        setError(err?.message || "Failed to load tasks");
+      }
     } finally {
-      setIsLoading(false);
+      if (!isSilent) {
+        setIsLoading(false);
+      }
     }
   }, [isAdmin, user?.id, targetTaskId]);
 
@@ -102,7 +112,7 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
     const handleFocus = () => {
       if (typeof document !== "undefined" && !document.hidden) {
-        fetchTasks();
+        fetchTasks(true);
       }
     };
     document.addEventListener("visibilitychange", handleFocus);
@@ -117,7 +127,7 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchTasks();
+    await fetchTasks(true);
     setIsRefreshing(false);
   };
 
@@ -344,22 +354,8 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
             </div>
           )}
 
-          {/* Loading / Error States */}
-          {isLoading ? (
-            <div className="py-24 text-center flex flex-col items-center justify-center gap-3 text-muted-foreground">
-              <RefreshCw className="size-8 animate-spin text-primary" />
-              <p className="text-sm font-medium">{isRtl ? "در حال بارگذاری اطلاعات..." : "Loading tasks data..."}</p>
-            </div>
-          ) : error ? (
-            <div className="py-16 text-center max-w-md mx-auto space-y-3">
-              <AlertCircle className="size-10 text-destructive mx-auto" />
-              <h3 className="font-bold text-lg text-foreground">{isRtl ? "خطا در بارگذاری تسک‌ها" : "Failed to load tasks"}</h3>
-              <p className="text-xs text-muted-foreground">{error}</p>
-              <Button onClick={fetchTasks} className="rounded-xl">
-                {isRtl ? "تلاش مجدد" : "Retry"}
-              </Button>
-            </div>
-          ) : selectedTask ? (
+          {/* Active View: Keep selectedTask mounted during background sync to prevent jump/flicker */}
+          {selectedTask ? (
             /* Selected Task Progress Thread View */
             <div className="animate-in fade-in duration-200">
               <TaskProgressView
@@ -370,6 +366,20 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
                 onTaskDeleted={() => handleTaskDeleted(selectedTask.id)}
                 onBack={() => setSelectedTask(null)}
               />
+            </div>
+          ) : isLoading ? (
+            <div className="py-24 text-center flex flex-col items-center justify-center gap-3 text-muted-foreground">
+              <RefreshCw className="size-8 animate-spin text-primary" />
+              <p className="text-sm font-medium">{isRtl ? "در حال بارگذاری اطلاعات..." : "Loading tasks data..."}</p>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center max-w-md mx-auto space-y-3">
+              <AlertCircle className="size-10 text-destructive mx-auto" />
+              <h3 className="font-bold text-lg text-foreground">{isRtl ? "خطا در بارگذاری تسک‌ها" : "Failed to load tasks"}</h3>
+              <p className="text-xs text-muted-foreground">{error}</p>
+              <Button onClick={() => fetchTasks(false)} className="rounded-xl">
+                {isRtl ? "تلاش مجدد" : "Retry"}
+              </Button>
             </div>
           ) : isAdmin ? (
             /* Admin Views: Kanban Roadmap or Create Wizard */

@@ -1426,9 +1426,9 @@ export function TaskProgressView({
                 initial={segmentedAccordionMotion.initial}
                 animate={segmentedAccordionMotion.animate}
                 exit={segmentedAccordionMotion.exit}
-                className="flex flex-col overflow-hidden gap-[2px]"
+                className="flex flex-col gap-[2px]"
               >
-                <div className="segmented-item no-hover-bg rounded-t-[6px] rounded-b-[32px] overflow-hidden w-full border border-border/60 shadow-xs flex flex-col">
+                <div className="segmented-item no-hover-bg rounded-t-[6px] rounded-b-[32px] w-full border border-border/60 shadow-xs flex flex-col relative">
                   {/* Attractive Luminous Light Gradient & Rich Inverse Dark Gradient Background */}
                   <div
                     onDragOver={handleDragOver}
@@ -1507,7 +1507,7 @@ export function TaskProgressView({
                   </div>
 
                   {/* Telegram Style Chat Input Area */}
-                  <div className="p-3 sm:p-4 bg-card space-y-2">
+                  <div className="p-3 sm:p-4 bg-card rounded-b-[32px] space-y-2">
                     {/* Active Reply Banner */}
                     {replyingTo && (
                       <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-muted/60 dark:bg-muted/30 border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
@@ -1693,14 +1693,15 @@ export function TaskProgressView({
                         <AnimatePresence>
                           {showAttachMenu && (
                             <motion.div
-                              initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                              initial={{ opacity: 0, y: 8, scale: 0.95 }}
                               animate={{ opacity: 1, y: 0, scale: 1 }}
-                              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                              exit={{ opacity: 0, y: 8, scale: 0.95 }}
                               transition={{ duration: 0.15 }}
                               className={cn(
-                                "absolute bottom-12 z-50 w-72 sm:w-80 p-1.5 rounded-2xl bg-card/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/80 shadow-2xl space-y-1 select-none",
-                                isRtl ? "start-0" : "end-0"
+                                "absolute bottom-full mb-2.5 z-50 w-72 sm:w-80 p-1.5 rounded-2xl bg-card/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/80 shadow-2xl space-y-1 select-none",
+                                isRtl ? "right-0" : "left-0"
                               )}
+                              style={{ transformOrigin: isRtl ? "bottom right" : "bottom left" }}
                               dir={isRtl ? "rtl" : "ltr"}
                             >
                               <div className="px-3 py-1.5 border-b border-border/40 mb-1">
@@ -1711,7 +1712,8 @@ export function TaskProgressView({
 
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setShowAttachMenu(false);
                                   photoInputRef.current?.click();
                                 }}
@@ -1732,7 +1734,8 @@ export function TaskProgressView({
 
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setShowAttachMenu(false);
                                   fileInputRef.current?.click();
                                 }}
@@ -1753,7 +1756,8 @@ export function TaskProgressView({
 
                               <button
                                 type="button"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setShowAttachMenu(false);
                                   cadInputRef.current?.click();
                                 }}

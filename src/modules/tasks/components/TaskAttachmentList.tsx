@@ -68,10 +68,16 @@ export function downloadAttachment(att: TaskAttachmentItem) {
 }
 
 export function isImageAttachment(att: TaskAttachmentItem): boolean {
-  const ext = (att.name?.split(".").pop() || att.type || "").toLowerCase();
+  if (!att) return false;
+  const ext = (att.name?.split(".").pop() || "").toLowerCase();
+  const type = (att.type || "").toLowerCase();
+  const url = (att.url || (att as any).previewUrl || "").toLowerCase();
+
   return (
     ["png", "jpg", "jpeg", "webp", "gif", "svg", "bmp", "avif", "heic"].includes(ext) ||
-    Boolean(att.url?.startsWith("data:image"))
+    type.startsWith("image") ||
+    type === "img" ||
+    url.startsWith("data:image")
   );
 }
 
