@@ -62,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: Context) {
           ...(authHeader ? { Authorization: authHeader } : {}),
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(15000),
       });
       if (remoteRes.ok) {
         const data = await remoteRes.json();
@@ -97,7 +97,7 @@ export async function PUT(req: NextRequest, { params }: Context) {
           ...(authHeader ? { Authorization: authHeader } : {}),
         },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(4000),
+        signal: AbortSignal.timeout(15000),
       });
       if (remoteRes.ok) {
         const data = await remoteRes.json();

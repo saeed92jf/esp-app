@@ -361,22 +361,14 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
             </div>
           ) : selectedTask ? (
             /* Selected Task Progress Thread View */
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <button
-                type="button"
-                onClick={() => setSelectedTask(null)}
-                className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-card px-3.5 py-2 rounded-xl border border-border/50 w-fit"
-              >
-                <X className="size-4" />
-                <span>{isRtl ? "بازگشت به تخته کانبان" : "Back to Kanban"}</span>
-              </button>
-
+            <div className="animate-in fade-in duration-200">
               <TaskProgressView
                 task={selectedTask}
                 currentUser={user!}
                 isAdmin={isAdmin}
                 onTaskUpdated={handleTaskUpdated}
                 onTaskDeleted={() => handleTaskDeleted(selectedTask.id)}
+                onBack={() => setSelectedTask(null)}
               />
             </div>
           ) : isAdmin ? (

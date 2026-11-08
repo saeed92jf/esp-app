@@ -189,12 +189,29 @@ export function createServerTask(
   return newTask;
 }
 
-export function updateServerTask(id: string, updates: Partial<TaskItem>): TaskItem | null {
+export function updateServerTask(id: string, updates: Partial<TaskItem> & { subtask_toggle?: any; _subtask_toggle?: any }): TaskItem | null {
   const list = globalThis.__espServerTasks_v9 || [];
   const idx = list.findIndex((t) => t.id === id);
   if (idx === -1) return null;
 
-  list[idx] = { ...list[idx], ...updates, id: list[idx].id };
+  const current = list[idx];
+  const toggle = updates.subtask_toggle || updates._subtask_toggle;
+  if (toggle && current.subtasks) {
+    current.subtasks = current.subtasks.map((st: any) => {
+      if (String(st.id) === String(toggle.id)) {
+        return {
+          ...st,
+          is_done: Boolean(toggle.is_done),
+          completed_by_id: toggle.completed_by_id,
+          completed_by_name: toggle.completed_by_name,
+          completed_at: toggle.is_done ? new Date().toISOString() : null,
+        };
+      }
+      return st;
+    });
+  }
+
+  list[idx] = { ...current, ...updates, id: current.id };
   return list[idx];
 }
 

@@ -100,6 +100,7 @@ export function AdminTasksView({ tasks, currentUser, onRefresh, onTasksChange }:
             isAdmin={true}
             onTaskUpdated={handleTaskUpdated}
             onTaskDeleted={() => handleTaskDeleted(selectedTask.id)}
+            onBack={() => setSelectedTask(null)}
           />
         </div>
       </div>

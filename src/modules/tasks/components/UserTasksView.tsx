@@ -83,6 +83,7 @@ export function UserTasksView({ tasks, currentUser, onRefresh, onTasksChange }: 
             currentUser={currentUser}
             isAdmin={false}
             onTaskUpdated={handleTaskUpdated}
+            onBack={() => setSelectedTask(null)}
           />
         </div>
       </div>

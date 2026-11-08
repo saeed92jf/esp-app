@@ -210,19 +210,26 @@ class NewTasksService {
     taskId: string,
     subtaskId: string,
     isDone: boolean,
-    completedBy?: { id: string; name: string }
+    completedBy?: { id: string; name: string },
+    updatedSubtasks?: NewTaskSubtask[]
   ): Promise<NewTask> {
+    const payload = {
+      id: subtaskId,
+      is_done: isDone,
+      completed_by_id: completedBy?.id,
+      completed_by_name: completedBy?.name,
+    };
+    const body: Record<string, any> = {
+      subtask_toggle: payload,
+      _subtask_toggle: payload,
+    };
+    if (updatedSubtasks) {
+      body.subtasks = updatedSubtasks;
+    }
     const res = await fetch(`${this.baseUrl}/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        _subtask_toggle: {
-          id: subtaskId,
-          is_done: isDone,
-          completed_by_id: completedBy?.id,
-          completed_by_name: completedBy?.name,
-        },
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error("Failed to toggle subtask");
     return res.json();

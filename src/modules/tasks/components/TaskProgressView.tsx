@@ -19,6 +19,7 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  ArrowLeft,
   Paperclip,
   FolderKanban,
   Bell,
@@ -57,6 +58,7 @@ interface TaskProgressViewProps {
   isAdmin: boolean;
   onTaskUpdated: (task: NewTask) => void;
   onTaskDeleted?: () => void;
+  onBack?: () => void;
 }
 
 const STATUS_CONFIG: Record<string, { labelFa: string; labelEn: string; color: string }> = {
@@ -203,6 +205,7 @@ export function TaskProgressView({
   isAdmin,
   onTaskUpdated,
   onTaskDeleted,
+  onBack,
 }: TaskProgressViewProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -225,16 +228,52 @@ export function TaskProgressView({
   const toggleSegment = (key: string) => {
     setOpenSegments((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    if (typeof window !== "undefined") {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "/tasks";
+      }
+    }
+  };
+
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
   const [isSavingDeadline, setIsSavingDeadline] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState<TaskAttachmentItem[]>([]);
   const [isReadingFiles, setIsReadingFiles] = useState(false);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
-  const progressFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await handleProgressFilesSelect(e.dataTransfer.files);
+    }
+  };
 
   const getDeadlineStatus = useCallback((deadline?: string | null) => {
     if (!deadline) return null;
@@ -402,6 +441,9 @@ export function TaskProgressView({
     if (fileList.length === 0) return;
 
     setIsReadingFiles(true);
+    const toastId = toast.loading(
+      isRtl ? `در حال بارگذاری ${fileList.length} فایل پیوست...` : `Uploading ${fileList.length} files...`
+    );
     const newItems: TaskAttachmentItem[] = [];
     try {
       for (const file of fileList) {
@@ -421,11 +463,17 @@ export function TaskProgressView({
       }
       if (newItems.length > 0) {
         setPendingAttachments((prev) => [...prev, ...newItems]);
-        toast.success(isRtl ? `${newItems.length} فایل پیوست شد.` : `${newItems.length} files attached.`);
+        toast.success(
+          isRtl ? `${newItems.length} فایل پیوست گردید.` : `${newItems.length} files attached.`,
+          { id: toastId }
+        );
+      } else {
+        toast.dismiss(toastId);
       }
+    } catch {
+      toast.dismiss(toastId);
     } finally {
       setIsReadingFiles(false);
-      if (progressFileInputRef.current) progressFileInputRef.current.value = "";
     }
   };
 
@@ -551,37 +599,51 @@ export function TaskProgressView({
     }
   };
 
-  const isAssignee = currentTask.assignees?.some(
-    (a) => String(a.userId).trim().toLowerCase() === String(currentUser.id).trim().toLowerCase()
-  );
-  const canToggleSubtask =
-    isAdmin ||
-    Boolean(isAssignee) ||
-    String(currentTask.created_by).trim().toLowerCase() === String(currentUser.id).trim().toLowerCase();
+  const canToggleSubtask = true;
 
   const handleToggleSubtask = async (subtaskId: string, isDone: boolean) => {
-    if (!canToggleSubtask) {
-      toast.error(
-        isRtl
-          ? "تنها مجریان این تسک یا مدیر سیستم مجاز به تیک‌زدن ریزتسک‌ها هستند."
-          : "Only task assignees or admins can check off subtasks."
-      );
-      return;
-    }
+    const prevTask = currentTask;
+    const authorName = currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر";
+
+    // 0ms instantaneous optimistic update
+    const updatedSubtasks = (currentTask.subtasks || []).map((s) => {
+      if (s.id === subtaskId) {
+        return {
+          ...s,
+          is_done: isDone,
+          completed_by_id: isDone ? currentUser.id : undefined,
+          completed_by_name: isDone ? authorName : undefined,
+          completed_at: isDone ? new Date().toISOString() : undefined,
+        };
+      }
+      return s;
+    });
+
+    const optimisticTask: NewTask = {
+      ...currentTask,
+      subtasks: updatedSubtasks,
+    };
+    setCurrentTask(optimisticTask);
+    onTaskUpdated(optimisticTask);
+
     try {
       const updatedTask = await newTasksService.toggleSubtask(
-        task.id,
+        currentTask.id,
         subtaskId,
         isDone,
         {
           id: currentUser.id,
-          name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
-        }
+          name: authorName,
+        },
+        updatedSubtasks
       );
       setCurrentTask(updatedTask);
       onTaskUpdated(updatedTask);
     } catch (err: any) {
-      toast.error(err?.message || "Failed to update subtask");
+      // Revert optimistic update on failure
+      setCurrentTask(prevTask);
+      onTaskUpdated(prevTask);
+      toast.error(err?.message || (isRtl ? "خطا در تغییر وضعیت ریزتسک" : "Failed to update subtask"));
     }
   };
 
@@ -596,44 +658,68 @@ export function TaskProgressView({
     }
   };
 
-  const doneSubtasks = task.subtasks?.filter((s) => s.is_done).length ?? 0;
-  const totalSubtasks = task.subtasks?.length ?? 0;
+  const doneSubtasks = currentTask.subtasks?.filter((s) => s.is_done).length ?? 0;
+  const totalSubtasks = currentTask.subtasks?.length ?? 0;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-4">
-      {/* ======================================================== */}
-      {/* SEGMENT 1: مشخصات و اطلاعات تسک (Task Details & Approve) */}
-      {/* ======================================================== */}
-      <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
-        {/* Accordion Header for Item 1 */}
-        <div
-          onClick={() => toggleSegment("details")}
-          className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+    <div className="max-w-3xl mx-auto pb-8">
+      {/* Top Header: Title with Back Button (Profile Manager Style) */}
+      <div className="flex items-center gap-3 sm:gap-4 mb-5">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={handleBack}
+          className="rounded-full hover:bg-muted/60 size-10 shrink-0 cursor-pointer"
+          title={isRtl ? "بازگشت" : "Back"}
         >
-          <div className="flex items-center gap-3 min-w-0 flex-1">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
-              <FolderKanban className="size-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full", status.color)}>
-                  {isRtl ? status.labelFa : status.labelEn}
-                </span>
-                <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-muted/60", priority.color)}>
-                  {isRtl ? priority.labelFa : priority.labelEn}
-                </span>
-                {currentTask.is_approved && (
-                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                    <ShieldCheck className="size-3" />
-                    {isRtl ? "تایید شده" : "Approved"}
-                  </span>
-                )}
-              </div>
-              <h1 className="text-base sm:text-lg font-bold text-foreground truncate leading-snug">
-                {currentTask.title}
-              </h1>
-            </div>
+          <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+        </Button>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap mb-1">
+            <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full", status.color)}>
+              {isRtl ? status.labelFa : status.labelEn}
+            </span>
+            <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-muted/60", priority.color)}>
+              {isRtl ? priority.labelFa : priority.labelEn}
+            </span>
+            {currentTask.is_approved && (
+              <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                <ShieldCheck className="size-3" />
+                {isRtl ? "تایید شده" : "Approved"}
+              </span>
+            )}
           </div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground truncate leading-tight">
+            {currentTask.title}
+          </h1>
+        </div>
+      </div>
+
+      {/* Unified Segmented List Card (سگمنت لیست) */}
+      <div className="bg-card rounded-3xl border border-border/60 shadow-sm overflow-hidden divide-y divide-border/40">
+        {/* ======================================================== */}
+        {/* SEGMENT 1: مشخصات و اطلاعات تسک (Task Details & Approve) */}
+        {/* ======================================================== */}
+        <div className="transition-colors">
+          {/* Accordion Header for Item 1 */}
+          <div
+            onClick={() => toggleSegment("details")}
+            className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+          >
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                <FolderKanban className="size-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="text-sm sm:text-base font-bold text-foreground truncate leading-snug">
+                  {isRtl ? "مشخصات و جزئیات تکمیلی تسک" : "Task Details & Information"}
+                </h3>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {currentTask.project_name ? `${currentTask.project_name} · ` : ""}{currentTask.assignees?.map((a) => a.name).join("، ") || (isRtl ? "بدون مجری" : "No assignees")}
+                </p>
+              </div>
+            </div>
 
           {/* Action on Item 1: APPROVE BUTTON & Controls */}
           <div className="flex items-center gap-2 shrink-0">
@@ -987,166 +1073,160 @@ export function TaskProgressView({
         )}
       </div>
 
-      {/* ======================================================== */}
-      {/* SEGMENT 2: مستندات و فایل‌های تسک (Initial Attachments) */}
-      {/* ======================================================== */}
-      {currentTask.attachments && currentTask.attachments.length > 0 && (
-        <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
-          <div
-            onClick={() => toggleSegment("attachments")}
-            className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
-                <Paperclip className="size-4" />
+        {/* ======================================================== */}
+        {/* SEGMENT 2: مستندات و فایل‌های تسک (Initial Attachments) */}
+        {/* ======================================================== */}
+        {currentTask.attachments && currentTask.attachments.length > 0 && (
+          <div className="transition-colors">
+            <div
+              onClick={() => toggleSegment("attachments")}
+              className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                  <Paperclip className="size-4" />
+                </div>
+                <h3 className="font-bold text-sm text-foreground">
+                  {isRtl ? "مستندات و فایل‌های پیوست تسک" : "Task Attachments"}
+                </h3>
+                <Badge variant="secondary" className="text-xs fa-num font-medium">
+                  {currentTask.attachments.length} {isRtl ? "فایل" : "files"}
+                </Badge>
               </div>
-              <h3 className="font-bold text-sm text-foreground">
-                {isRtl ? "مستندات و فایل‌های پیوست تسک" : "Task Attachments"}
-              </h3>
-              <Badge variant="secondary" className="text-xs fa-num font-medium">
-                {currentTask.attachments.length} {isRtl ? "فایل" : "files"}
-              </Badge>
+              <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+                {openSegments.attachments ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+              </div>
             </div>
-            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
-              {openSegments.attachments ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-            </div>
+            {openSegments.attachments && (
+              <div className="p-5 pt-0 border-t border-border/40 animate-in fade-in-50 duration-200">
+                <div className="pt-3">
+                  <TaskAttachmentList attachments={currentTask.attachments} isRtl={isRtl} />
+                </div>
+              </div>
+            )}
           </div>
-          {openSegments.attachments && (
-            <div className="p-5 pt-0 border-t border-border/40 animate-in fade-in-50 duration-200">
-              <div className="pt-3">
-                <TaskAttachmentList attachments={currentTask.attachments} isRtl={isRtl} />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        )}
 
-      {/* ======================================================== */}
-      {/* SEGMENT 3: ریزتسک‌ها و چک‌لیست فعالیت‌ها (Subtasks) */}
-      {/* ======================================================== */}
-      {totalSubtasks > 0 && (
-        <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
-          <div
-            onClick={() => toggleSegment("subtasks")}
-            className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
-          >
-            <div className="flex items-center gap-2.5 flex-1 min-w-0">
-              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
-                <CheckSquare className="size-4" />
-              </div>
-              <h3 className="font-bold text-sm text-foreground">
-                {isRtl ? "ریزتسک‌ها و چک‌لیست فعالیت‌ها" : "Subtasks Checklist"}
-              </h3>
-              <Badge variant="secondary" className="text-xs fa-num font-medium">
-                {doneSubtasks} از {totalSubtasks}
-              </Badge>
-              {/* Mini progress bar in header */}
-              <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden hidden sm:block ms-2">
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-300"
-                  style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
-              {openSegments.subtasks ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-            </div>
-          </div>
-
-          {openSegments.subtasks && (
-            <div className="p-5 pt-0 border-t border-border/40 space-y-3 animate-in fade-in-50 duration-200">
-              {/* Permission & Attribution Banner */}
-              <div className="mt-3 flex items-center justify-between text-xs p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 gap-2 flex-wrap">
-                <span className="flex items-center gap-1.5 font-bold">
-                  <ShieldCheck className="size-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-                  <span>{isRtl ? "افراد مجاز برای تیک‌زدن ریزتسک‌ها:" : "Authorized to check off subtasks:"}</span>
-                </span>
-                <span className="font-semibold text-[11px]">
-                  {currentTask.assignees?.length > 0
-                    ? currentTask.assignees.map((a) => a.name).join("، ") + (isRtl ? " و مدیر سیستم" : " & Admin")
-                    : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & Admin")}
-                </span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-1.5 rounded-full bg-muted mb-2">
-                <div
-                  className="h-full rounded-full bg-emerald-600 transition-all duration-300"
-                  style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
-                />
-              </div>
-
-              {/* Checklist */}
-              <div className="space-y-2">
-                {currentTask.subtasks.map((sub) => (
+        {/* ======================================================== */}
+        {/* SEGMENT 3: ریزتسک‌ها و چک‌لیست فعالیت‌ها (Subtasks) */}
+        {/* ======================================================== */}
+        {totalSubtasks > 0 && (
+          <div className="transition-colors">
+            <div
+              onClick={() => toggleSegment("subtasks")}
+              className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+            >
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                  <CheckSquare className="size-4" />
+                </div>
+                <h3 className="font-bold text-sm text-foreground">
+                  {isRtl ? "ریزتسک‌ها و چک‌لیست فعالیت‌ها" : "Subtasks Checklist"}
+                </h3>
+                <Badge variant="secondary" className="text-xs fa-num font-medium">
+                  {doneSubtasks} از {totalSubtasks}
+                </Badge>
+                {/* Mini progress bar in header */}
+                <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden hidden sm:block ms-2">
                   <div
-                    key={sub.id}
-                    className="flex items-center justify-between gap-3 p-2.5 rounded-2xl border border-border/40 hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <button
-                        type="button"
-                        disabled={!canToggleSubtask}
-                        onClick={() => handleToggleSubtask(sub.id, !sub.is_done)}
-                        className={cn(
-                          "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
-                          sub.is_done
-                            ? "bg-emerald-600 border-emerald-600 text-white"
-                            : "border-border hover:border-primary",
-                          !canToggleSubtask && "opacity-50 cursor-not-allowed hover:border-border"
-                        )}
-                        title={
-                          !canToggleSubtask
-                            ? (isRtl ? "تنها مجریان این تسک یا مدیر می‌توانند تیک بزنند" : "Only assignees or admin can check off")
-                            : (isRtl ? "تغییر وضعیت" : "Toggle")
-                        }
-                      >
-                        {sub.is_done && <CheckCircle2 className="size-3" />}
-                      </button>
-                      <span className={cn("text-sm", sub.is_done && "line-through text-muted-foreground")}>
-                        {sub.title}
-                      </span>
-                    </div>
+                    className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+                    style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
+                  />
+                </div>
+              </div>
 
-                    <div className="shrink-0">
-                      {sub.is_done ? (
-                        <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1 border border-emerald-500/20">
-                          <CheckCircle2 className="size-3 text-emerald-600" />
-                          <span>
-                            {sub.completed_by_name
-                              ? (isRtl ? `تکمیل‌شده توسط ${sub.completed_by_name}` : `Done by ${sub.completed_by_name}`)
-                              : (isRtl ? "تکمیل‌شده" : "Completed")}
-                          </span>
-                        </span>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <Users className="size-2.5" />
-                          <span>
-                            {currentTask.assignees?.length > 0
-                              ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => a.name).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => a.name).join(", ")}`)
-                              : (isRtl ? "در انتظار اقدام مجری" : "Pending")}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+                {openSegments.subtasks ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* ======================================================== */}
-      {/* SEGMENT 4: گفتگوی زنده و گزارش پیشرفت (Telegram Live Chat) */}
-      {/* ======================================================== */}
-      <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
-        {/* Accordion Header for Item 4 */}
-        <div
-          onClick={() => toggleSegment("chat")}
-          className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between flex-wrap gap-2 cursor-pointer select-none hover:bg-muted/20 transition-colors"
-        >
+            {openSegments.subtasks && (
+              <div className="p-5 pt-0 border-t border-border/40 space-y-3 animate-in fade-in-50 duration-200">
+                {/* Permission & Attribution Banner */}
+                <div className="mt-3 flex items-center justify-between text-xs p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 gap-2 flex-wrap">
+                  <span className="flex items-center gap-1.5 font-bold">
+                    <ShieldCheck className="size-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span>{isRtl ? "افراد مجاز برای تیک‌زدن ریزتسک‌ها:" : "Authorized to check off subtasks:"}</span>
+                  </span>
+                  <span className="font-semibold text-[11px]">
+                    {currentTask.assignees?.length > 0
+                      ? currentTask.assignees.map((a) => a.name).join("، ") + (isRtl ? " و مدیر سیستم" : " & Admin")
+                      : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & Admin")}
+                  </span>
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full h-2 rounded-full bg-muted overflow-hidden mb-2">
+                  <div
+                    className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+                    style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
+                  />
+                </div>
+
+                {/* Checklist */}
+                <div className="space-y-2">
+                  {currentTask.subtasks.map((sub) => (
+                    <div
+                      key={sub.id}
+                      className="flex items-center justify-between gap-3 p-2.5 rounded-2xl border border-border/40 hover:bg-muted/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSubtask(sub.id, !sub.is_done)}
+                          className={cn(
+                            "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
+                            sub.is_done
+                              ? "bg-emerald-600 border-emerald-600 text-white"
+                              : "border-border hover:border-primary"
+                          )}
+                          title={isRtl ? "تغییر وضعیت ریزتسک" : "Toggle subtask"}
+                        >
+                          {sub.is_done && <CheckCircle2 className="size-3" />}
+                        </button>
+                        <span className={cn("text-sm", sub.is_done && "line-through text-muted-foreground")}>
+                          {sub.title}
+                        </span>
+                      </div>
+
+                      <div className="shrink-0">
+                        {sub.is_done ? (
+                          <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1 border border-emerald-500/20">
+                            <CheckCircle2 className="size-3 text-emerald-600" />
+                            <span>
+                              {sub.completed_by_name
+                                ? (isRtl ? `تکمیل‌شده توسط ${sub.completed_by_name}` : `Done by ${sub.completed_by_name}`)
+                                : (isRtl ? "تکمیل‌شده" : "Completed")}
+                            </span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Users className="size-2.5" />
+                            <span>
+                              {currentTask.assignees?.length > 0
+                                ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => a.name).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => a.name).join(", ")}`)
+                                : (isRtl ? "در انتظار اقدام مجری" : "Pending")}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* SEGMENT 4: گفتگوی زنده و گزارش پیشرفت (Telegram Live Chat) */}
+        {/* ======================================================== */}
+        <div className="transition-colors">
+          {/* Accordion Header for Item 4 */}
+          <div
+            onClick={() => toggleSegment("chat")}
+            className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between flex-wrap gap-2 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+          >
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-primary" />
             <h3 className="font-bold text-sm">
@@ -1202,7 +1282,22 @@ export function TaskProgressView({
         {openSegments.chat && (
           <div className="animate-in fade-in-50 duration-200">
             {/* Attractive Luminous Light Gradient & Rich Inverse Dark Gradient Background */}
-            <div className="relative overflow-hidden border-b border-border/40 bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c]">
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className="relative overflow-hidden border-b border-border/40 bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c]"
+            >
+              {/* Drag & Drop Overlay */}
+              {isDraggingOver && (
+                <div className="absolute inset-0 z-50 bg-black/55 backdrop-blur-xs flex flex-col items-center justify-center text-white font-bold gap-2 select-none animate-in fade-in-50 duration-150">
+                  <Paperclip className="size-10 animate-bounce text-white" />
+                  <span className="text-sm bg-black/60 px-4 py-2 rounded-2xl border border-white/20">
+                    {isRtl ? "فایل‌ها یا تصاویر را رها کنید تا پیوست شوند" : "Drop files or images here to attach"}
+                  </span>
+                </div>
+              )}
+
               {/* Dense Seamless Engineering Doodle Wallpaper (Stationary Background) */}
               <div
                 className="absolute inset-0 pointer-events-none bg-[url('/images/telegram-doodle.svg')] dark:bg-[url('/images/telegram-doodle-dark.svg')] bg-repeat [background-size:520px_520px]"
@@ -1298,30 +1393,33 @@ export function TaskProgressView({
                 </div>
               )}
 
-              {/* Text input row with Paste Screenshot (Ctrl+V) & Attachment */}
+              {/* Text input row with Paste Screenshot (Ctrl+V) & Native File Upload Label */}
               <div className="flex items-end gap-2">
-                <input
-                  ref={progressFileInputRef}
-                  type="file"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleProgressFilesSelect(e.target.files)}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => progressFileInputRef.current?.click()}
-                  disabled={isReadingFiles || isSending}
-                  className="size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary shrink-0 cursor-pointer"
+                <label
+                  htmlFor="chat-file-upload-input"
+                  className={cn(
+                    "size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary flex items-center justify-center shrink-0 cursor-pointer transition-colors",
+                    (isReadingFiles || isSending) && "opacity-50 pointer-events-none cursor-not-allowed"
+                  )}
                   title={isRtl ? "پیوست فایل یا تصویر" : "Attach file or image"}
                 >
+                  <input
+                    id="chat-file-upload-input"
+                    type="file"
+                    multiple
+                    className="sr-only"
+                    disabled={isReadingFiles || isSending}
+                    onChange={(e) => {
+                      handleProgressFilesSelect(e.target.files);
+                      e.target.value = "";
+                    }}
+                  />
                   {isReadingFiles ? (
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-5 animate-spin text-primary" />
                   ) : (
                     <Paperclip className="size-5" />
                   )}
-                </Button>
+                </label>
 
                 <div className="flex-1 relative">
                   <Textarea
@@ -1381,6 +1479,7 @@ export function TaskProgressView({
           </div>
         )}
       </div>
+    </div>
 
       {/* Image Preview Modal */}
       <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>
