@@ -58,6 +58,7 @@ import {
   isImageAttachment,
   formatBytes,
 } from "./TaskAttachmentList";
+import { TelegramEmojiPicker } from "./TelegramEmojiPicker";
 
 export interface StagedAttachment extends TaskAttachmentItem {
   stagingId: string;
@@ -112,52 +113,6 @@ const TELEGRAM_NAME_COLORS = [
   "#d6336c", // Telegram Pink
   "#0ca678", // Telegram Teal
   "#d9480f", // Telegram Warm Brown
-];
-
-const EMOJI_CATEGORIES = [
-  {
-    id: "top",
-    labelFa: "برترین‌ها",
-    labelEn: "Top Picks",
-    icon: "🔥",
-    emojis: [
-      "👍", "❤️", "🔥", "😂", "👏", "🎉", "🤩", "🙏", "👌", "🚀",
-      "😍", "🥳", "🤔", "💯", "🫡", "⚡", "✨", "😎", "😭", "🤯",
-      "🤝", "💡", "🛠️", "📋", "✅", "❌", "⚠️", "⏳", "🎯", "☕",
-    ],
-  },
-  {
-    id: "smileys",
-    labelFa: "صورتک‌ها",
-    labelEn: "Smileys",
-    icon: "😊",
-    emojis: [
-      "😀", "😃", "😄", "😆", "😅", "😂", "🤣", "😊", "😇", "😉",
-      "😍", "🥰", "😘", "😋", "😜", "🤓", "😎", "🤩", "🥳", "😏",
-      "🥺", "😭", "😤", "😠", "🤯", "😱", "🤔", "🤫", "😐", "😴",
-    ],
-  },
-  {
-    id: "gestures",
-    labelFa: "دست و کار",
-    labelEn: "Work & Hands",
-    icon: "👍",
-    emojis: [
-      "👍", "👎", "👌", "✌️", "🤞", "🤝", "👏", "🙌", "🙏", "✍️",
-      "💪", "🧑‍💻", "👨‍🔧", "📋", "📊", "📌", "📎", "🛠️", "🔧", "⚙️",
-      "💻", "📱", "💡", "🚀", "⚡", "💯", "✅", "⚠️", "🎯", "🏗️",
-    ],
-  },
-  {
-    id: "hearts",
-    labelFa: "قلب و نشانه",
-    labelEn: "Hearts & Signs",
-    icon: "❤️",
-    emojis: [
-      "❤️", "🧡", "💛", "💚", "💙", "💜", "🤍", "💔", "❣️", "💕",
-      "💖", "✨", "⭐️", "🌟", "🔔", "📣", "💬", "🕒", "⏳", "📅",
-    ],
-  },
 ];
 
 export function getSenderColor(name?: string): string {
@@ -287,12 +242,8 @@ export function TaskProgressView({
   const [replyingTo, setReplyingTo] = useState<{ id: string; author_name: string; content: string } | null>(null);
   const [previewImage, setPreviewImage] = useState<TaskAttachmentItem | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [activeEmojiCat, setActiveEmojiCat] = useState("top");
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
-  const emojiMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -302,18 +253,15 @@ export function TaskProgressView({
 
   // Close menus when clicking outside
   useEffect(() => {
-    if (!showAttachMenu && !showEmojiPicker) return;
+    if (!showAttachMenu) return;
     const handleClickOutside = (e: MouseEvent) => {
       if (showAttachMenu && attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
         setShowAttachMenu(false);
       }
-      if (showEmojiPicker && emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
-        setShowEmojiPicker(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showAttachMenu, showEmojiPicker]);
+  }, [showAttachMenu]);
 
   const handleAttachMouseEnter = () => {
     if (attachMenuTimeoutRef.current) {
@@ -326,20 +274,6 @@ export function TaskProgressView({
   const handleAttachMouseLeave = () => {
     attachMenuTimeoutRef.current = setTimeout(() => {
       setShowAttachMenu(false);
-    }, 220);
-  };
-
-  const handleEmojiMouseEnter = () => {
-    if (emojiMenuTimeoutRef.current) {
-      clearTimeout(emojiMenuTimeoutRef.current);
-      emojiMenuTimeoutRef.current = null;
-    }
-    setShowEmojiPicker(true);
-  };
-
-  const handleEmojiMouseLeave = () => {
-    emojiMenuTimeoutRef.current = setTimeout(() => {
-      setShowEmojiPicker(false);
     }, 220);
   };
 
@@ -678,7 +612,6 @@ export function TaskProgressView({
 
     setReplyingTo(null);
     setShowAttachMenu(false);
-    setShowEmojiPicker(false);
     setProgressContent("");
     setPendingAttachments([]);
     setCurrentTask((prev) => ({
@@ -1903,93 +1836,11 @@ export function TaskProgressView({
                           />
                         </div>
 
-                        {/* Emoji Button & Popover (Hover Trigger, Floating Above, Telegram Large Thumbnails) */}
-                        <div
-                          className="relative shrink-0"
-                          ref={emojiPickerRef}
-                          onMouseEnter={handleEmojiMouseEnter}
-                          onMouseLeave={handleEmojiMouseLeave}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setShowEmojiPicker((prev) => !prev)}
-                            className={cn(
-                              "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-                              showEmojiPicker && "text-foreground"
-                            )}
-                            title={isRtl ? "انتخاب اموجی" : "Pick emoji"}
-                          >
-                            <Smile className="size-5" />
-                          </button>
-
-                          <AnimatePresence>
-                            {showEmojiPicker && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                                transition={{ duration: 0.12 }}
-                                className={cn(
-                                  "absolute bottom-full mb-3.5 sm:mb-4 z-50 w-76 sm:w-84 p-2.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-lg select-none",
-                                  isRtl ? "left-0" : "right-0"
-                                )}
-                                style={{ transformOrigin: isRtl ? "bottom left" : "bottom right" }}
-                                dir={isRtl ? "rtl" : "ltr"}
-                              >
-                                {/* Category Tabs */}
-                                <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/10 dark:border-white/10 px-1">
-                                  <div className="flex items-center gap-1.5">
-                                    {EMOJI_CATEGORIES.map((cat) => (
-                                      <button
-                                        key={cat.id}
-                                        type="button"
-                                        onClick={() => setActiveEmojiCat(cat.id)}
-                                        className={cn(
-                                          "px-2.5 py-1 rounded-xl text-xs flex items-center gap-1 transition-all cursor-pointer",
-                                          activeEmojiCat === cat.id
-                                            ? "bg-[#2481cc]/15 text-[#2481cc] font-bold shadow-2xs"
-                                            : "hover:bg-black/5 dark:hover:bg-white/10 opacity-70 hover:opacity-100"
-                                        )}
-                                        title={isRtl ? cat.labelFa : cat.labelEn}
-                                      >
-                                        <span className="text-sm">{cat.icon}</span>
-                                        <span className="hidden sm:inline text-[11px]">
-                                          {isRtl ? cat.labelFa : cat.labelEn}
-                                        </span>
-                                      </button>
-                                    ))}
-                                  </div>
-                                </div>
-
-                                {/* Emoji Grid with Large Telegram-style Thumbnails */}
-                                <div className="grid grid-cols-6 gap-1 p-1 max-h-48 overflow-y-auto scrollbar-thin">
-                                  {EMOJI_CATEGORIES.find((c) => c.id === activeEmojiCat)?.emojis.map((emoji, i) => (
-                                    <button
-                                      key={`${emoji}_${i}`}
-                                      type="button"
-                                      onClick={() => handleInsertEmoji(emoji)}
-                                      className="size-11 flex items-center justify-center text-2xl sm:text-[26px] rounded-xl hover:bg-black/5 dark:hover:bg-white/15 hover:scale-120 transition-transform cursor-pointer"
-                                    >
-                                      {emoji}
-                                    </button>
-                                  ))}
-                                </div>
-
-                                {/* Footer Hint */}
-                                <div className="pt-1.5 mt-1 border-t border-black/10 dark:border-white/10 px-1 flex items-center justify-between text-[10px] text-muted-foreground">
-                                  <span>{isRtl ? "برای درج روی اموجی کلیک کنید" : "Click to insert into message"}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowEmojiPicker(false)}
-                                    className="hover:text-foreground cursor-pointer px-1 rounded"
-                                  >
-                                    {isRtl ? "بستن" : "Close"}
-                                  </button>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                        {/* Telegram Fast Emoji Popover */}
+                        <TelegramEmojiPicker
+                          onSelectEmoji={handleInsertEmoji}
+                          isRtl={isRtl}
+                        />
 
                         {/* Send Button (Pill shaped) */}
                         <Button
@@ -2047,6 +1898,39 @@ export function TaskProgressView({
       </Dialog>
     </div>
   );
+}
+
+// Determine whether a task progress content is purely emojis (1-4 emojis)
+export function getEmojiMessageInfo(content?: string): { isPureEmoji: boolean; count: number } {
+  if (!content) return { isPureEmoji: false, count: 0 };
+  const trimmed = content.trim();
+  if (!trimmed) return { isPureEmoji: false, count: 0 };
+
+  try {
+    const segmenter = new Intl.Segmenter("en", { granularity: "grapheme" });
+    const segments = Array.from(segmenter.segment(trimmed))
+      .map((s) => s.segment)
+      .filter((s) => s.trim().length > 0);
+
+    const emojiRegex =
+      /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}|\p{Emoji_Modifier}|\u200d|\ufe0f|\ufe0e)+$/u;
+    const allEmojis = segments.length > 0 && segments.every((seg) => emojiRegex.test(seg));
+
+    if (allEmojis && segments.length <= 4) {
+      return { isPureEmoji: true, count: segments.length };
+    }
+  } catch {
+    const emojiRegex =
+      /^(\p{Extended_Pictographic}|\p{Emoji_Presentation}|\p{Emoji_Modifier_Base}|\p{Emoji_Modifier}|\u200d|\ufe0f|\ufe0e|\s)+$/u;
+    if (emojiRegex.test(trimmed)) {
+      const codePoints = Array.from(trimmed).filter((c) => c.trim().length > 0);
+      if (codePoints.length <= 6) {
+        return { isPureEmoji: true, count: codePoints.length };
+      }
+    }
+  }
+
+  return { isPureEmoji: false, count: 0 };
 }
 
 // Determine whether a task progress entry is a system status event
@@ -2218,6 +2102,11 @@ function ProgressItem({
       !hasCaption
   );
 
+  const emojiInfo = getEmojiMessageInfo(progress.content);
+  const isPureEmojiMessage =
+    emojiInfo.isPureEmoji &&
+    (!progress.attachments || progress.attachments.length === 0);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 3 }}
@@ -2250,14 +2139,19 @@ function ProgressItem({
         </button>
       )}
 
-      {/* Message Bubble */}
+      {/* Message Bubble / Jumboji */}
       <div
         className={cn(
-          "relative max-w-[85%] sm:max-w-[75%] px-3.5 py-2 select-text transition-all",
-          isMe
-            ? "rounded-[16px] rounded-br-[3px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
-            : "rounded-[16px] rounded-bl-[3px] bg-white text-slate-900 border border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]",
-          isAdminNote && "ring-1 ring-amber-500/30"
+          "relative max-w-[85%] sm:max-w-[75%] select-text transition-all",
+          isPureEmojiMessage
+            ? "bg-transparent border-0 shadow-none px-1 py-0"
+            : cn(
+                "px-3.5 py-2",
+                isMe
+                  ? "rounded-[16px] rounded-br-[3px] bg-[#effdde] text-slate-900 border border-[#d6f0c2]/70 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#2b5278] dark:text-slate-100 dark:border-[#386794]/60 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+                  : "rounded-[16px] rounded-bl-[3px] bg-white text-slate-900 border border-slate-200/60 shadow-[0_1px_2px_rgba(0,0,0,0.08)] dark:bg-[#182533] dark:text-slate-100 dark:border-slate-800/80 dark:shadow-[0_1px_2px_rgba(0,0,0,0.25)]"
+              ),
+          isAdminNote && !isPureEmojiMessage && "ring-1 ring-amber-500/30"
         )}
       >
         {/* Header for incoming messages: Name + Badge right beside each other like screenshot */}
@@ -2279,11 +2173,28 @@ function ProgressItem({
 
         {/* Reply Quote Block (like Telegram screenshot) */}
         {progress.reply_to && (
-          <div className="border-s-[3px] border-[#2481cc] bg-[#2481cc]/8 dark:bg-white/10 rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none">
-            <span className="font-bold text-[#2481cc] dark:text-[#67b5ff] block text-[11px]">
+          <div
+            className={cn(
+              "border-s-[3px] border-[#2481cc] rounded-e-lg px-2.5 py-1 text-xs mb-1.5 leading-snug select-none",
+              isPureEmojiMessage
+                ? "bg-black/35 text-white backdrop-blur-xs"
+                : "bg-[#2481cc]/8 dark:bg-white/10"
+            )}
+          >
+            <span
+              className={cn(
+                "font-bold block text-[11px]",
+                isPureEmojiMessage ? "text-[#67b5ff]" : "text-[#2481cc] dark:text-[#67b5ff]"
+              )}
+            >
               {progress.reply_to.author_name}
             </span>
-            <span className="truncate block text-slate-600 dark:text-slate-300 text-[11px]">
+            <span
+              className={cn(
+                "truncate block text-[11px]",
+                isPureEmojiMessage ? "text-slate-200" : "text-slate-600 dark:text-slate-300"
+              )}
+            >
               {progress.reply_to.content}
             </span>
           </div>
@@ -2306,18 +2217,44 @@ function ProgressItem({
           </div>
         )}
 
-        {/* Caption / Content below media */}
-        {hasCaption && (
-          <div
-            className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto mt-1"
-            dir={isRtl ? "rtl" : "auto"}
-          >
-            {progress.content}
+        {/* Caption / Content below media OR Jumboji */}
+        {isPureEmojiMessage ? (
+          <div className="flex items-end gap-2 my-1 select-text" dir="ltr">
+            <span
+              className={cn(
+                "inline-block font-sans select-text leading-none tracking-tight",
+                emojiInfo.count === 1
+                  ? "text-6xl sm:text-7xl py-1"
+                  : emojiInfo.count <= 3
+                  ? "text-4xl sm:text-5xl py-0.5"
+                  : "text-3xl sm:text-4xl py-0.5"
+              )}
+            >
+              {progress.content?.trim()}
+            </span>
+
+            {/* Telegram Floating Time & Status Pill for Jumboji */}
+            <div
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono bg-black/45 dark:bg-black/60 text-white backdrop-blur-xs shadow-xs select-none mb-1 shrink-0"
+              dir="ltr"
+            >
+              <span className="fa-num">{timeStr}</span>
+              {isMe && <CheckCheck className="size-3 text-emerald-400" />}
+            </div>
           </div>
+        ) : (
+          hasCaption && (
+            <div
+              className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto mt-1"
+              dir={isRtl ? "rtl" : "auto"}
+            >
+              {progress.content}
+            </div>
+          )
         )}
 
         {/* Message Footer: Time + Read Status (tucked seamlessly at bottom right) */}
-        {!isSingleImageOnly && (
+        {!isSingleImageOnly && !isPureEmojiMessage && (
           <div
             className={cn(
               "flex items-center justify-end gap-1 mt-1 text-[10px] font-mono select-none float-end ms-2 -mb-0.5",
