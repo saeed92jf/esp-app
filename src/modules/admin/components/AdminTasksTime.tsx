@@ -183,7 +183,7 @@ export function AdminTasksTime({
       </div>
 
       {/* ── Virtual Grid Row 1: Personnel Specs (col 1), Education & Insurance (col 2), Activities (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[220px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[295px] xl:min-h-[315px]">
         
         {/* Module A: Personnel & Administrative Profile (مشخصات پرسنلی و سازمانی) */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">

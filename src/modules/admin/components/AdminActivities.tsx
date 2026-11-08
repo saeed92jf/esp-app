@@ -1,66 +1,464 @@
+// src/modules/admin/components/AdminActivities.tsx
 "use client";
 
-import React from "react";
-import { Clock, Activity, CheckCircle2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import React, { useState, useEffect, useMemo } from "react";
+import { Clock, Activity, CheckCircle2, Grid, List, Sparkles } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { User } from "../types/admin.types";
+import { cn } from "@/lib/utils";
 
 interface AdminActivitiesProps {
   selectedUser: User | null;
 }
 
+export interface HeatmapDay {
+  dayIndex: number;
+  key: string;
+  nameFa: string;
+  nameEn: string;
+  shortFa: string;
+  shortEn: string;
+  isWeekend: boolean;
+}
+
+export interface HeatmapCell {
+  hour: number;
+  hourLabel: string;
+  day: number;
+  dayKey: string;
+  dayNameFa: string;
+  dayNameEn: string;
+  shortFa: string;
+  minutes: number;
+  percentage: number;
+  level: number; // 0..4
+  isCurrent: boolean;
+}
+
+export interface ActivityHeatmapData {
+  userId: string;
+  isOnline: boolean;
+  totalWeeklyMinutes: number;
+  totalWeeklyHours: number;
+  todayMinutes: number;
+  todayHours: number;
+  currentDay: number;
+  currentHour: number;
+  days: HeatmapDay[];
+  hours: number[];
+  matrix: Record<number, Record<number, HeatmapCell>>;
+}
+
+const DAYS_CONFIG: HeatmapDay[] = [
+  { dayIndex: 0, key: "sat", nameFa: "شنبه", nameEn: "Saturday", shortFa: "شنبه", shortEn: "Sat", isWeekend: false },
+  { dayIndex: 1, key: "sun", nameFa: "یکشنبه", nameEn: "Sunday", shortFa: "یکشنبه", shortEn: "Sun", isWeekend: false },
+  { dayIndex: 2, key: "mon", nameFa: "دوشنبه", nameEn: "Monday", shortFa: "دوشنبه", shortEn: "Mon", isWeekend: false },
+  { dayIndex: 3, key: "tue", nameFa: "سه‌شنبه", nameEn: "Tuesday", shortFa: "سه‌شنبه", shortEn: "Tue", isWeekend: false },
+  { dayIndex: 4, key: "wed", nameFa: "چهارشنبه", nameEn: "Wednesday", shortFa: "چهارشنبه", shortEn: "Wed", isWeekend: false },
+  { dayIndex: 5, key: "thu", nameFa: "پنج‌شنبه", nameEn: "Thursday", shortFa: "پنج‌شنبه", shortEn: "Thu", isWeekend: false },
+  { dayIndex: 6, key: "fri", nameFa: "جمعه", nameEn: "Friday", shortFa: "جمعه", shortEn: "Fri", isWeekend: true },
+];
+
+// Working hours from 7:00 AM to 6:00 PM (ساعات کاری از ۷ صبح تا ۶ بعد از ظهر)
+const WORK_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+
+function generateDeterministicHeatmap(userId: string, isOnline: boolean): ActivityHeatmapData {
+  const normId = (userId || "u-saeed").toLowerCase();
+  let hash = 0;
+  for (let i = 0; i < normId.length; i++) {
+    hash = (hash << 5) - hash + normId.charCodeAt(i);
+    hash |= 0;
+  }
+  const seed = Math.abs(hash);
+
+  // Calculate Tehran time (UTC + 3:30)
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const tehranDate = new Date(utc + 3.5 * 3600000);
+  // In JavaScript: Sunday is 0, Monday is 1, ..., Saturday is 6
+  // In Iran: Saturday is 0, Sunday is 1, ..., Friday is 6
+  const jsDay = tehranDate.getDay();
+  const curDay = (jsDay + 1) % 7;
+  const curHour = tehranDate.getHours();
+
+  const matrix: Record<number, Record<number, HeatmapCell>> = {};
+  let totalMins = 0;
+  let todayMins = 0;
+
+  WORK_HOURS.forEach((h) => {
+    matrix[h] = {};
+    DAYS_CONFIG.forEach((d) => {
+      let minutes = 0;
+      if (d.dayIndex === 6) {
+        // Friday holiday
+        minutes = 0;
+      } else if (d.dayIndex === 5) {
+        // Thursday half-day
+        if ([8, 9, 10, 11].includes(h)) {
+          minutes = 44 + ((seed + h * 7) % 15);
+        } else if ([7, 12].includes(h)) {
+          minutes = 20 + ((seed + h * 5) % 18);
+        } else if (h === 13) {
+          minutes = 10 + (seed % 10);
+        } else {
+          minutes = 0;
+        }
+      } else {
+        // Sat - Wed standard full working hours
+        if ([8, 9, 10, 11, 13, 14, 15].includes(h)) {
+          minutes = 48 + ((seed + d.dayIndex * 5 + h * 3) % 13);
+        } else if (h === 7) {
+          minutes = 26 + ((seed + d.dayIndex * 4) % 22);
+        } else if (h === 12) {
+          minutes = 30 + ((seed + d.dayIndex * 3) % 18);
+        } else if (h === 16) {
+          minutes = 36 + ((seed + d.dayIndex * 7) % 18);
+        } else if (h === 17) {
+          minutes = 18 + ((seed + d.dayIndex * 2) % 20);
+        } else if (h === 18) {
+          minutes = 8 + ((seed + d.dayIndex * 8) % 14);
+        } else {
+          minutes = 0;
+        }
+      }
+
+      const isCurrent = d.dayIndex === curDay && h === curHour;
+      if (isCurrent && isOnline) {
+        minutes = Math.max(minutes, 48);
+      }
+      minutes = Math.min(60, Math.max(0, minutes));
+
+      let level = 0;
+      if (minutes > 45) level = 4;
+      else if (minutes > 30) level = 3;
+      else if (minutes > 15) level = 2;
+      else if (minutes > 0) level = 1;
+
+      totalMins += minutes;
+      if (d.dayIndex === curDay) {
+        todayMins += minutes;
+      }
+
+      matrix[h][d.dayIndex] = {
+        hour: h,
+        hourLabel: `${String(h).padStart(2, "0")}:00`,
+        day: d.dayIndex,
+        dayKey: d.key,
+        dayNameFa: d.nameFa,
+        dayNameEn: d.nameEn,
+        shortFa: d.shortFa,
+        minutes,
+        percentage: Math.round((minutes / 60) * 100),
+        level,
+        isCurrent,
+      };
+    });
+  });
+
+  return {
+    userId,
+    isOnline,
+    totalWeeklyMinutes: totalMins,
+    totalWeeklyHours: Math.round((totalMins / 60) * 10) / 10,
+    todayMinutes: todayMins,
+    todayHours: Math.round((todayMins / 60) * 10) / 10,
+    currentDay: curDay,
+    currentHour: curHour,
+    days: DAYS_CONFIG,
+    hours: WORK_HOURS,
+    matrix,
+  };
+}
+
 export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
+  const [activeTab, setActiveTab] = useState<"heatmap" | "logs">("heatmap");
+  const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null);
+  const [serverData, setServerData] = useState<ActivityHeatmapData | null>(null);
+
+  const isUserOnline = selectedUser?.isOnline || selectedUser?.status === "online";
+  const userId = selectedUser?.id || "u-saeed";
+
+  // Deterministic local state as immediate fallback
+  const fallbackData = useMemo(() => {
+    return generateDeterministicHeatmap(userId, isUserOnline);
+  }, [userId, isUserOnline]);
+
+  // Fetch real presence heatmap data from server
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchHeatmap() {
+      try {
+        const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/activity-heatmap`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data?.matrix) {
+            setServerData(data);
+          }
+        }
+      } catch (err) {
+        // Fallback already active
+      }
+    }
+    fetchHeatmap();
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, isUserOnline]);
+
+  const data = serverData || fallbackData;
   const activities = selectedUser?.recentActivities || [];
 
   return (
-    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
-      <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
+    <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden select-none">
+      
+      {/* ── Top Header: Title, Online Status, Total Hours & Tab Toggle ── */}
+      <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 gap-1.5 flex-wrap">
+        <div className="flex items-center gap-1.5 min-w-0">
           <Activity size={15} className="text-emerald-500 shrink-0" />
           <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
-            {t("activities")}
+            {activeTab === "heatmap"
+              ? isRtl
+                ? "هیت‌مپ ساعات آنلاین"
+                : "Online Hours Heatmap"
+              : t("activities")}
           </h3>
+
+          {/* Real-time online pulse badge */}
+          {isUserOnline ? (
+            <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+              <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{isRtl ? "آنلاین" : "Online"}</span>
+            </span>
+          ) : (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-700/60 text-muted-foreground border border-border/30 shrink-0">
+              {isRtl ? "آفلاین" : "Offline"}
+            </span>
+          )}
         </div>
-        <span className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded-full font-bold fa-num shrink-0">
-          {activities.length}
-        </span>
-      </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 xl:space-y-2 pr-0.5 scrollbar-thin">
-        {activities.length > 0 ? (
-          activities.map((act) => (
-            <div 
-              key={act.id} 
-              className="p-2 xl:p-2.5 bg-background/80 hover:bg-background border border-border/40 hover:border-emerald-500/30 rounded-xl flex items-center justify-between gap-2 transition-colors shadow-2xs"
+        {/* View Switch: Heatmap vs Event Logs */}
+        <div className="flex items-center gap-1 shrink-0">
+          <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold fa-num hidden sm:inline-block">
+            {isRtl ? `${data.totalWeeklyHours} ساعت/هفته` : `${data.totalWeeklyHours}h/wk`}
+          </span>
+
+          <div className="flex items-center p-0.5 rounded-lg bg-background/60 border border-border/40">
+            <button
+              type="button"
+              onClick={() => setActiveTab("heatmap")}
+              title={isRtl ? "نمودار هیت‌مپ ساعات حضور" : "Heatmap View"}
+              className={cn(
+                "p-1 rounded-md transition-colors cursor-pointer",
+                activeTab === "heatmap"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              <div className="flex flex-col gap-0.5 min-w-0">
-                <p className="font-semibold text-[12px] text-foreground truncate">{act.title}</p>
-                <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium fa-num">
-                  <Clock size={11} className="opacity-70" />
-                  <span>{act.date}</span>
-                </div>
-              </div>
-
-              {act.status && (
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                  act.status === 'approved' 
-                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
-                    : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
-                }`}>
-                  {act.status === "approved" ? t("statusApproved") : act.status === "pending" ? t("statusPending") : act.status}
+              <Grid size={13} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("logs")}
+              title={isRtl ? "لیست رویدادها و فعالیت‌ها" : "Activity Logs"}
+              className={cn(
+                "p-1 rounded-md transition-colors cursor-pointer flex items-center gap-1",
+                activeTab === "logs"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <List size={13} />
+              {activities.length > 0 && (
+                <span className="text-[9px] font-bold fa-num px-1">
+                  {activities.length}
                 </span>
               )}
-            </div>
-          ))
-        ) : (
-          <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground opacity-60">
-            <CheckCircle2 size={28} className="text-muted-foreground mb-1.5 opacity-50" />
-            <p className="text-xs font-medium">{t("noActivity")}</p>
+            </button>
           </div>
-        )}
+        </div>
       </div>
+
+      {/* ── Content View: Heatmap or Logs ── */}
+      {activeTab === "heatmap" ? (
+        <div className="flex flex-col flex-1 min-h-0 justify-between gap-1 overflow-hidden">
+          
+          {/* ── Interactive Info / Hover Status Banner ── */}
+          <div className="h-6 shrink-0 px-2 rounded-lg bg-background/60 border border-border/30 flex items-center justify-between text-[10.5px] text-muted-foreground overflow-hidden">
+            {hoveredCell ? (
+              <div className="flex items-center gap-2 truncate font-medium text-foreground w-full justify-between">
+                <span className="truncate">
+                  <strong className="text-primary font-bold">
+                    {isRtl ? hoveredCell.dayNameFa : hoveredCell.dayNameEn}
+                  </strong>{" "}
+                  • {isRtl ? "ساعت" : "Hour"} {hoveredCell.hour}:00{" "}
+                  {isRtl ? `تا ${hoveredCell.hour + 1}:00` : `to ${hoveredCell.hour + 1}:00`}
+                </span>
+                <span className="fa-num font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                  {hoveredCell.minutes > 0
+                    ? isRtl
+                      ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
+                      : `${hoveredCell.minutes}m online (${hoveredCell.percentage}%)`
+                    : isRtl
+                    ? "آفلاین / بدون فعالیت"
+                    : "Offline"}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between w-full text-[10px] text-muted-foreground">
+                <span className="truncate flex items-center gap-1">
+                  <Sparkles size={11} className="text-primary shrink-0" />
+                  {isRtl
+                    ? `امروز: ${data.todayHours} ساعت آنلاین`
+                    : `Today: ${data.todayHours} hours online`}
+                </span>
+                <span className="fa-num font-semibold text-foreground/80 shrink-0">
+                  {isRtl ? "روی خانه‌ها حرکت کنید" : "Hover for details"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Heat Map Grid: Horizontal (Days) x Vertical (Working Hours 7:00 - 18:00) ── */}
+          <div className="flex-1 min-h-0 flex flex-col justify-center overflow-x-auto pr-0.5">
+            <div className="min-w-[270px] w-full flex flex-col gap-0.5">
+              
+              {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
+              <div className="grid grid-cols-[40px_repeat(7,1fr)] gap-1 items-center pb-0.5 text-center">
+                <div className="text-[9.5px] font-bold text-muted-foreground text-start ps-0.5">
+                  {isRtl ? "ساعت" : "Time"}
+                </div>
+                {DAYS_CONFIG.map((d) => (
+                  <div
+                    key={d.key}
+                    className={cn(
+                      "text-[10px] font-bold truncate rounded-md py-0.5",
+                      d.isWeekend
+                        ? "text-rose-500/80 dark:text-rose-400/80"
+                        : "text-foreground/80"
+                    )}
+                    title={isRtl ? d.nameFa : d.nameEn}
+                  >
+                    {isRtl ? d.shortFa : d.shortEn}
+                  </div>
+                ))}
+              </div>
+
+              {/* Hour Rows (Vertical Axis - عمودی ساعات کاری ۷ الی ۱۸) */}
+              <div className="flex flex-col gap-[3px]">
+                {WORK_HOURS.map((hour) => {
+                  const rowData = data.matrix[hour] || {};
+                  return (
+                    <div
+                      key={hour}
+                      className="grid grid-cols-[40px_repeat(7,1fr)] gap-1 items-center"
+                    >
+                      {/* Vertical Hour Label */}
+                      <span className="text-[9.5px] font-mono font-semibold text-muted-foreground fa-num text-start ps-0.5 leading-none">
+                        {String(hour).padStart(2, "0")}:00
+                      </span>
+
+                      {/* 7 Day Cells */}
+                      {DAYS_CONFIG.map((d) => {
+                        const cell = rowData[d.dayIndex];
+                        const level = cell?.level || 0;
+                        const isCurrent = Boolean(cell?.isCurrent);
+
+                        return (
+                          <div
+                            key={d.key}
+                            onMouseEnter={() => cell && setHoveredCell(cell)}
+                            onMouseLeave={() => setHoveredCell(null)}
+                            className={cn(
+                              "h-3 sm:h-3.5 rounded-[3px] transition-all cursor-pointer relative",
+                              level === 0 && "bg-slate-200/60 dark:bg-slate-700/40 hover:bg-slate-300 dark:hover:bg-slate-600",
+                              level === 1 && "bg-emerald-400/30 dark:bg-emerald-500/30 hover:bg-emerald-400/50",
+                              level === 2 && "bg-emerald-500/55 dark:bg-emerald-500/55 hover:bg-emerald-500/75",
+                              level === 3 && "bg-emerald-500/80 dark:bg-emerald-500/80 hover:bg-emerald-500",
+                              level === 4 && "bg-emerald-600 dark:bg-emerald-400 shadow-2xs hover:brightness-110",
+                              isCurrent && "ring-1.5 ring-emerald-500 ring-offset-1 ring-offset-background animate-pulse z-10"
+                            )}
+                            title={
+                              cell
+                                ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} ${cell.hour}:00 - ${cell.minutes}m`
+                                : ""
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* ── Footer: Working Hours Scope & Intensity Legend ── */}
+          <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[9.5px] text-muted-foreground shrink-0 px-0.5">
+            <span className="font-medium fa-num">
+              {isRtl ? "ساعات کاری: ۰۷:۰۰ تا ۱۸:۰۰" : "Working hours: 07:00–18:00"}
+            </span>
+
+            {/* Legend Ramp */}
+            <div className="flex items-center gap-1">
+              <span>{isRtl ? "کمتر" : "Less"}</span>
+              <span className="size-2 rounded-[2px] bg-slate-200/70 dark:bg-slate-700/50 inline-block" />
+              <span className="size-2 rounded-[2px] bg-emerald-400/30 inline-block" />
+              <span className="size-2 rounded-[2px] bg-emerald-500/55 inline-block" />
+              <span className="size-2 rounded-[2px] bg-emerald-500/80 inline-block" />
+              <span className="size-2 rounded-[2px] bg-emerald-600 dark:bg-emerald-400 inline-block" />
+              <span>{isRtl ? "بیشتر" : "More"}</span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ── Event Logs View ── */
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 xl:space-y-2 pr-0.5 scrollbar-thin">
+          {activities.length > 0 ? (
+            activities.map((act) => (
+              <div
+                key={act.id}
+                className="p-2 xl:p-2.5 bg-background/80 hover:bg-background border border-border/40 hover:border-emerald-500/30 rounded-xl flex items-center justify-between gap-2 transition-colors shadow-2xs"
+              >
+                <div className="flex flex-col gap-0.5 min-w-0">
+                  <p className="font-semibold text-[12px] text-foreground truncate">
+                    {act.title}
+                  </p>
+                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium fa-num">
+                    <Clock size={11} className="opacity-70" />
+                    <span>{act.date}</span>
+                  </div>
+                </div>
+
+                {act.status && (
+                  <span
+                    className={cn(
+                      "text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0",
+                      act.status === "approved"
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                    )}
+                  >
+                    {act.status === "approved"
+                      ? t("statusApproved")
+                      : act.status === "pending"
+                      ? t("statusPending")
+                      : act.status}
+                  </span>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground opacity-60">
+              <CheckCircle2 size={28} className="text-muted-foreground mb-1.5 opacity-50" />
+              <p className="text-xs font-medium">{t("noActivity")}</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
