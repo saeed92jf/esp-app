@@ -184,8 +184,9 @@ class NewTasksService {
     return res.json();
   }
 
-  async deleteProgress(taskId: string, progressId: string): Promise<NewTask> {
-    const res = await fetch(`${this.baseUrl}/${taskId}/progress?progressId=${encodeURIComponent(progressId)}`, {
+  async deleteProgress(taskId: string, progressId: string | string[]): Promise<NewTask> {
+    const idParam = Array.isArray(progressId) ? progressId.join(",") : progressId;
+    const res = await fetch(`${this.baseUrl}/${taskId}/progress?progressId=${encodeURIComponent(idParam)}`, {
       method: "DELETE",
     });
     if (!res.ok) {

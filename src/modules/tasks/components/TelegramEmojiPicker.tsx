@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { Smile } from "lucide-react";
+import { Smiley } from "@phosphor-icons/react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import type { EmojiClickData } from "emoji-picker-react";
@@ -105,12 +105,12 @@ export const TelegramEmojiPicker = React.memo(function TelegramEmojiPicker({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors",
-          isOpen && "text-foreground bg-black/5 dark:bg-white/10"
+          "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-slate-800 dark:text-slate-100 hover:text-[#2481cc] dark:hover:text-[#67b5ff] flex items-center justify-center shrink-0 cursor-pointer transition-colors group",
+          isOpen && "text-[#2481cc] bg-black/5 dark:bg-white/10"
         )}
         title={isRtl ? "انتخاب شکلک (اموجی)" : "Pick Emoji"}
       >
-        <Smile className="size-5" />
+        <Smiley size={22} weight="bold" className="transition-transform group-hover:scale-110" />
       </button>
 
       {/* Floating Popover: Hardware-accelerated CSS transition */}

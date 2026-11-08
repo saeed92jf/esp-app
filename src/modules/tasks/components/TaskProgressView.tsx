@@ -35,6 +35,7 @@ import {
   Eye,
   Smile,
   Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,8 +61,7 @@ import {
   formatBytes,
 } from "./TaskAttachmentList";
 import { TelegramEmojiPicker } from "./TelegramEmojiPicker";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import { PaperPlaneTilt } from "@phosphor-icons/react";
 
 export interface StagedAttachment extends TaskAttachmentItem {
   stagingId: string;
@@ -249,8 +249,37 @@ export function TaskProgressView({
     y: number;
     message: NewTaskProgress;
   } | null>(null);
-  const [deletingMessage, setDeletingMessage] = useState<NewTaskProgress | null>(null);
+  const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
+  const [deletingMessages, setDeletingMessages] = useState<NewTaskProgress[] | null>(null);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
+
+  const handleStartSelection = (msgId: string) => {
+    setSelectedMessageIds(new Set([msgId]));
+  };
+
+  const handleToggleSelect = (msgId: string) => {
+    setSelectedMessageIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(msgId)) {
+        next.delete(msgId);
+      } else {
+        next.add(msgId);
+      }
+      return next;
+    });
+  };
+
+  const handleCancelSelection = () => {
+    setSelectedMessageIds(new Set());
+  };
+
+  const handleTriggerBatchDelete = () => {
+    if (selectedMessageIds.size === 0) return;
+    const msgs = (currentTask.progress || []).filter((p) => selectedMessageIds.has(p.id));
+    if (msgs.length > 0) {
+      setDeletingMessages(msgs);
+    }
+  };
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -296,24 +325,32 @@ export function TaskProgressView({
     });
   };
 
-  const handleConfirmDeleteMessage = async () => {
-    if (!deletingMessage) return;
-    const msgId = deletingMessage.id;
+  const handleConfirmDeleteMessages = async () => {
+    if (!deletingMessages || deletingMessages.length === 0) return;
+    const idsToDelete = new Set(deletingMessages.map((m) => m.id));
+    const idsArray = Array.from(idsToDelete);
     setIsDeletingMessage(true);
 
-    // Optimistically remove the message immediately
+    // Optimistically remove the messages immediately
     setCurrentTask((prev) => ({
       ...prev,
-      progress: (prev.progress || []).filter((p) => p.id !== msgId),
+      progress: (prev.progress || []).filter((p) => !idsToDelete.has(p.id)),
     }));
 
     try {
-      const updated = await newTasksService.deleteProgress(task.id, msgId);
+      const updated = await newTasksService.deleteProgress(task.id, idsArray);
       if (updated && updated.progress) {
         setCurrentTask(updated);
       }
+      setSelectedMessageIds(new Set());
+      toast.success(
+        isRtl
+          ? (idsArray.length === 1 ? "پیام برای همه حذف شد." : `${idsArray.length} پیام برای همه حذف شدند.`)
+          : "Message(s) deleted for everyone."
+      );
     } catch (err: any) {
-      console.error("Failed to delete progress message:", err);
+      console.error("Failed to delete progress message(s):", err);
+      toast.error(err?.message || (isRtl ? "خطا در حذف پیام" : "Failed to delete message"));
       try {
         const fresh = await newTasksService.getTaskById(task.id);
         if (fresh) {
@@ -322,7 +359,7 @@ export function TaskProgressView({
       } catch {}
     } finally {
       setIsDeletingMessage(false);
-      setDeletingMessage(null);
+      setDeletingMessages(null);
     }
   };
 
@@ -1583,6 +1620,8 @@ export function TaskProgressView({
                           const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
                           const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
                           const isSysEvent = isSystemEventMessage(p);
+                          const isSelected = selectedMessageIds.has(p.id);
+                          const isSelectionMode = selectedMessageIds.size > 0;
 
                           return (
                             <React.Fragment key={p.id}>
@@ -1598,6 +1637,9 @@ export function TaskProgressView({
                                   progress={p}
                                   isRtl={isRtl}
                                   onContextMenu={handleMessageContextMenu}
+                                  isSelected={isSelected}
+                                  isSelectionMode={isSelectionMode}
+                                  onToggleSelect={() => handleToggleSelect(p.id)}
                                 />
                               ) : (
                                 <ProgressItem
@@ -1614,6 +1656,9 @@ export function TaskProgressView({
                                   }}
                                   onPreviewImage={(att) => setPreviewImage(att)}
                                   onContextMenu={handleMessageContextMenu}
+                                  isSelected={isSelected}
+                                  isSelectionMode={isSelectionMode}
+                                  onToggleSelect={() => handleToggleSelect(p.id)}
                                 />
                               )}
                             </React.Fragment>
@@ -1793,167 +1838,213 @@ export function TaskProgressView({
                       {/* Text input row with Telegram Attachment Popover + Textarea + Emoji Popover + Send */}
                       {/* Pill-shaped Composer Bar without shadow or focus */}
                       <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-zinc-900 border border-black/10 dark:border-white/15 shadow-none transition-colors">
-                        {/* Telegram Attachment Button with Popover Menu (Pill, Hover Trigger, Airy Top Spacing) */}
-                        <div
-                          className="relative shrink-0"
-                          ref={attachMenuRef}
-                          onMouseEnter={handleAttachMouseEnter}
-                          onMouseLeave={handleAttachMouseLeave}
-                        >
+                        {/* If messages are selected: show Delete button instead of attach button */}
+                        {selectedMessageIds.size > 0 ? (
                           <button
                             type="button"
-                            onClick={() => setShowAttachMenu((prev) => !prev)}
-                            disabled={isSending}
-                            className={cn(
-                              "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors relative",
-                              showAttachMenu && "text-foreground",
-                              isSending && "opacity-50 pointer-events-none cursor-not-allowed"
-                            )}
-                            title={isRtl ? "پیوست فایل، عکس یا نقشه" : "Attach file, photo or drawing"}
+                            onClick={handleTriggerBatchDelete}
+                            className="size-9 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0 cursor-pointer transition-colors"
+                            title={isRtl ? "حذف پیام‌های انتخاب‌شده" : "Delete selected messages"}
                           >
-                            <Paperclip className="size-5" />
+                            <Trash2 className="size-5" />
                           </button>
+                        ) : (
+                          /* Telegram Attachment Button with Popover Menu (Pill, Hover Trigger, Airy Top Spacing) */
+                          <div
+                            className="relative shrink-0"
+                            ref={attachMenuRef}
+                            onMouseEnter={handleAttachMouseEnter}
+                            onMouseLeave={handleAttachMouseLeave}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setShowAttachMenu((prev) => !prev)}
+                              disabled={isSending}
+                              className={cn(
+                                "size-9 rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center shrink-0 cursor-pointer transition-colors relative",
+                                showAttachMenu && "text-foreground",
+                                isSending && "opacity-50 pointer-events-none cursor-not-allowed"
+                              )}
+                              title={isRtl ? "پیوست فایل، عکس یا نقشه" : "Attach file, photo or drawing"}
+                            >
+                              <Paperclip className="size-5" />
+                            </button>
 
-                          {/* Floating Attachment Menu (Simple, No Shadow, Transparent & Blur, Text Color Icons, Floating Above) */}
-                          <AnimatePresence>
-                            {showAttachMenu && (
-                              <motion.div
-                                initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                                transition={{ duration: 0.12 }}
-                                className={cn(
-                                  "absolute bottom-full mb-3.5 sm:mb-4 z-50 w-56 sm:w-60 p-2 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-lg space-y-1 select-none",
-                                  isRtl ? "right-0" : "left-0"
-                                )}
-                                style={{ transformOrigin: isRtl ? "bottom right" : "bottom left" }}
-                                dir={isRtl ? "rtl" : "ltr"}
-                              >
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAttachMenu(false);
-                                    photoInputRef.current?.click();
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
+                            {/* Floating Attachment Menu (Simple, No Shadow, Transparent & Blur, Text Color Icons, Floating Above) */}
+                            <AnimatePresence>
+                              {showAttachMenu && (
+                                <motion.div
+                                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                                  transition={{ duration: 0.12 }}
+                                  className={cn(
+                                    "absolute bottom-full mb-3.5 sm:mb-4 z-50 w-56 sm:w-60 p-2 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-lg space-y-1 select-none",
+                                    isRtl ? "right-0" : "left-0"
+                                  )}
+                                  style={{ transformOrigin: isRtl ? "bottom right" : "bottom left" }}
+                                  dir={isRtl ? "rtl" : "ltr"}
                                 >
-                                  <ImageIcon className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
-                                  <span className="font-medium text-xs text-foreground flex-1">
-                                    {isRtl ? "عکس یا تصویر" : "Photo or Image"}
-                                  </span>
-                                </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAttachMenu(false);
+                                      photoInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
+                                  >
+                                    <ImageIcon className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
+                                    <span className="font-medium text-xs text-foreground flex-1">
+                                      {isRtl ? "عکس یا تصویر" : "Photo or Image"}
+                                    </span>
+                                  </button>
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAttachMenu(false);
-                                    fileInputRef.current?.click();
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
-                                >
-                                  <FileText className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
-                                  <span className="font-medium text-xs text-foreground flex-1">
-                                    {isRtl ? "سند یا فایل" : "Document or File"}
-                                  </span>
-                                </button>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAttachMenu(false);
+                                      fileInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
+                                  >
+                                    <FileText className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
+                                    <span className="font-medium text-xs text-foreground flex-1">
+                                      {isRtl ? "سند یا فایل" : "Document or File"}
+                                    </span>
+                                  </button>
 
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setShowAttachMenu(false);
-                                    cadInputRef.current?.click();
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
-                                >
-                                  <FileCode className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
-                                  <span className="font-medium text-xs text-foreground flex-1">
-                                    {isRtl ? "نقشه مهندسی و ۳ بعدی" : "Engineering CAD & 3D"}
-                                  </span>
-                                </button>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowAttachMenu(false);
+                                      cadInputRef.current?.click();
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-start cursor-pointer group"
+                                  >
+                                    <FileCode className="size-4.5 text-foreground shrink-0 transition-transform group-hover:scale-110" />
+                                    <span className="font-medium text-xs text-foreground flex-1">
+                                      {isRtl ? "نقشه مهندسی و ۳ بعدی" : "Engineering CAD & 3D"}
+                                    </span>
+                                  </button>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        )}
 
-                        {/* Textarea inside the white pill */}
-                        <div className="flex-1 relative">
-                          <Textarea
-                            ref={textareaRef}
-                            value={progressContent}
-                            onChange={(e) => setProgressContent(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSendProgress();
-                              }
-                            }}
-                            onPaste={(e) => {
-                              const items = e.clipboardData?.items;
-                              if (!items) return;
-                              const imageFiles: File[] = [];
-                              for (let i = 0; i < items.length; i++) {
-                                if (items[i].type.startsWith("image/")) {
-                                  const file = items[i].getAsFile();
-                                  if (file) {
-                                    const namedFile = new File([file], `screenshot_${Date.now()}.png`, { type: file.type });
-                                    imageFiles.push(namedFile);
+                        {/* Textarea OR Selected Messages Count Banner */}
+                        {selectedMessageIds.size > 0 ? (
+                          <div className="flex-1 flex items-center justify-between px-2 text-sm select-none min-h-[38px]">
+                            <span className="font-bold text-foreground fa-num text-xs sm:text-sm">
+                              {isRtl
+                                ? `${selectedMessageIds.size} پیام انتخاب شده`
+                                : `${selectedMessageIds.size} message${selectedMessageIds.size > 1 ? "s" : ""} selected`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleCancelSelection}
+                              className="px-2.5 py-1 rounded-full text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
+                            >
+                              <X className="size-3.5" />
+                              <span>{isRtl ? "انصراف" : "Cancel"}</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex-1 relative">
+                            <Textarea
+                              ref={textareaRef}
+                              value={progressContent}
+                              onChange={(e) => setProgressContent(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSendProgress();
+                                }
+                              }}
+                              onPaste={(e) => {
+                                const items = e.clipboardData?.items;
+                                if (!items) return;
+                                const imageFiles: File[] = [];
+                                for (let i = 0; i < items.length; i++) {
+                                  if (items[i].type.startsWith("image/")) {
+                                    const file = items[i].getAsFile();
+                                    if (file) {
+                                      const namedFile = new File([file], `screenshot_${Date.now()}.png`, { type: file.type });
+                                      imageFiles.push(namedFile);
+                                    }
                                   }
                                 }
-                              }
-                              if (imageFiles.length > 0) {
-                                e.preventDefault();
-                                handleStageAttachments(imageFiles);
-                              }
-                            }}
-                            placeholder={isRtl ? "پیام" : "Message"}
-                            className="flex-1 rounded-full resize-none min-h-[38px] max-h-[120px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/60 transition-colors"
-                            rows={1}
-                          />
-                        </div>
+                                if (imageFiles.length > 0) {
+                                  e.preventDefault();
+                                  handleStageAttachments(imageFiles);
+                                }
+                              }}
+                              placeholder={isRtl ? "پیام" : "Message"}
+                              className="flex-1 rounded-full resize-none min-h-[38px] max-h-[120px] py-2 px-2 text-sm leading-relaxed bg-transparent border-0 shadow-none focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:outline-none placeholder:text-muted-foreground/60 transition-colors"
+                              rows={1}
+                            />
+                          </div>
+                        )}
 
                         {/* Telegram Fast Emoji Popover */}
-                        <TelegramEmojiPicker
-                          onSelectEmoji={handleInsertEmoji}
-                          isRtl={isRtl}
-                        />
+                        {selectedMessageIds.size === 0 && (
+                          <TelegramEmojiPicker
+                            onSelectEmoji={handleInsertEmoji}
+                            isRtl={isRtl}
+                          />
+                        )}
 
-                        {/* Send Button: Zooms from small & bounces with solid high-quality icon */}
-                        <div className="size-9 flex items-center justify-center shrink-0">
-                          <AnimatePresence>
-                            {Boolean(progressContent.trim() || pendingAttachments.length > 0) && (
-                              <motion.button
-                                key="send-btn"
-                                type="button"
-                                onClick={handleSendProgress}
-                                disabled={isSending}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{
-                                  scale: [0, 1.35, 0.9, 1],
-                                  opacity: 1,
-                                }}
-                                exit={{ scale: 0, opacity: 0 }}
-                                transition={{
-                                  duration: 0.28,
-                                  ease: "easeOut",
-                                }}
-                                className="size-9 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shadow-xs active:scale-95 transition-colors cursor-pointer select-none"
-                                title={isRtl ? "ارسال پیام" : "Send message"}
-                              >
-                                {isSending ? (
-                                  <Loader2 className="size-4 animate-spin text-white" />
-                                ) : (
-                                  <FontAwesomeIcon
-                                    icon={faPaperPlane}
-                                    className="size-3.5 text-white -translate-x-[1px] translate-y-[0.5px]"
-                                  />
-                                )}
-                              </motion.button>
-                            )}
-                          </AnimatePresence>
-                        </div>
+                        {/* Send Button: Always visible with faint background, zooms and bounces when typing */}
+                        {selectedMessageIds.size === 0 && (
+                          <div className="size-9 flex items-center justify-center shrink-0">
+                            {(() => {
+                              const hasContent = Boolean(progressContent.trim() || pendingAttachments.length > 0);
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={handleSendProgress}
+                                  disabled={!hasContent || isSending}
+                                  className={cn(
+                                    "size-9 rounded-full flex items-center justify-center transition-all select-none",
+                                    hasContent
+                                      ? "bg-[#2481cc] hover:bg-[#1e70b3] text-white shadow-xs cursor-pointer active:scale-95"
+                                      : "bg-black/5 dark:bg-white/10 text-muted-foreground/35 cursor-default pointer-events-none"
+                                  )}
+                                  title={isRtl ? "ارسال پیام" : "Send message"}
+                                >
+                                  {isSending ? (
+                                    <Loader2 className="size-4 animate-spin text-white" />
+                                  ) : (
+                                    <motion.div
+                                      key={hasContent ? "active" : "empty"}
+                                      initial={hasContent ? { scale: 0.4 } : false}
+                                      animate={
+                                        hasContent
+                                          ? { scale: [0.4, 1.35, 0.9, 1] }
+                                          : { scale: 1 }
+                                      }
+                                      transition={{ duration: 0.35, ease: "easeOut" }}
+                                      className="flex items-center justify-center"
+                                    >
+                                      <PaperPlaneTilt
+                                        weight="fill"
+                                        className={cn(
+                                          "size-4.5 -translate-y-[0.5px]",
+                                          hasContent
+                                            ? "text-white"
+                                            : "text-muted-foreground/45"
+                                        )}
+                                      />
+                                    </motion.div>
+                                  )}
+                                </button>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1998,7 +2089,7 @@ export function TaskProgressView({
       {contextMenu && (
         <div
           style={{ top: contextMenu.y, left: contextMenu.x }}
-          className="fixed z-[100] w-52 p-1.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl space-y-0.5 animate-in fade-in-50 zoom-in-95 duration-100 select-none"
+          className="fixed z-[100] w-48 p-1.5 rounded-2xl bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-black/10 dark:border-white/10 shadow-2xl space-y-0.5 animate-in fade-in-50 zoom-in-95 duration-100 select-none"
           dir={isRtl ? "rtl" : "ltr"}
           onClick={(e) => e.stopPropagation()}
         >
@@ -2016,7 +2107,7 @@ export function TaskProgressView({
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-xs font-medium cursor-pointer"
           >
             <CornerUpLeft className="size-4 text-muted-foreground" />
-            <span>{isRtl ? "پاسخ به پیام" : "Reply"}</span>
+            <span className="whitespace-nowrap">{isRtl ? "پاسخ به پیام" : "Reply"}</span>
           </button>
 
           {/* Copy Text */}
@@ -2030,47 +2121,76 @@ export function TaskProgressView({
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-xs font-medium cursor-pointer"
             >
               <Copy className="size-4 text-muted-foreground" />
-              <span>{isRtl ? "کپی متن" : "Copy text"}</span>
+              <span className="whitespace-nowrap">{isRtl ? "کپی متن" : "Copy text"}</span>
             </button>
           )}
 
-          {/* Delete for everyone (DELET) */}
+          {/* SELECT option */}
+          <button
+            type="button"
+            onClick={() => {
+              const msgId = contextMenu.message.id;
+              setContextMenu(null);
+              handleStartSelection(msgId);
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-foreground transition-colors text-xs font-medium cursor-pointer"
+          >
+            <CheckSquare className="size-4 text-muted-foreground" />
+            <span className="whitespace-nowrap font-medium">SELECT</span>
+          </button>
+
+          {/* Delete for everyone (DELETE strictly single line) */}
           <button
             type="button"
             onClick={() => {
               const msgToDelete = contextMenu.message;
               setContextMenu(null);
-              setDeletingMessage(msgToDelete);
+              setDeletingMessages([msgToDelete]);
             }}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-red-500/10 text-red-600 dark:text-red-400 transition-colors text-xs font-semibold cursor-pointer"
           >
             <Trash2 className="size-4 text-red-500" />
-            <span>{isRtl ? "حذف برای همه (DELETE)" : "Delete for everyone (DELETE)"}</span>
+            <span className="whitespace-nowrap font-bold">DELETE</span>
           </button>
         </div>
       )}
 
       {/* Delete Confirmation Modal for Everyone */}
-      <Dialog open={!!deletingMessage} onOpenChange={(open) => !open && !isDeletingMessage && setDeletingMessage(null)}>
+      <Dialog
+        open={!!deletingMessages && deletingMessages.length > 0}
+        onOpenChange={(open) => !open && !isDeletingMessage && setDeletingMessages(null)}
+      >
         <DialogContent className="max-w-md p-5 rounded-3xl" dir={isRtl ? "rtl" : "ltr"}>
           <DialogHeader className="mb-2">
             <DialogTitle className="text-base font-bold flex items-center gap-2 text-red-600 dark:text-red-400">
               <Trash2 className="size-5" />
-              <span>{isRtl ? "حذف پیام برای همه" : "Delete Message for Everyone"}</span>
+              <span>
+                {isRtl
+                  ? (deletingMessages && deletingMessages.length > 1
+                      ? `حذف ${deletingMessages.length} پیام برای همه`
+                      : "حذف پیام برای همه")
+                  : (deletingMessages && deletingMessages.length > 1
+                      ? `Delete ${deletingMessages.length} Messages for Everyone`
+                      : "Delete Message for Everyone")}
+              </span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="py-2 text-sm text-foreground/80 leading-relaxed space-y-2">
             <p>
               {isRtl
-                ? "آیا از حذف این پیام مطمئن هستید؟ این پیام برای تمامی کاربران تسک حذف خواهد شد."
-                : "Are you sure you want to delete this message? It will be removed for everyone in this task."}
+                ? (deletingMessages && deletingMessages.length > 1
+                    ? `آیا از حذف این ${deletingMessages.length} پیام مطمئن هستید؟ این پیام‌ها برای تمامی کاربران تسک برای همیشه حذف خواهند شد.`
+                    : "آیا از حذف این پیام مطمئن هستید؟ این پیام برای تمامی کاربران تسک برای همیشه حذف خواهد شد.")
+                : (deletingMessages && deletingMessages.length > 1
+                    ? `Are you sure you want to delete these ${deletingMessages.length} messages? They will be permanently removed for everyone in this task.`
+                    : "Are you sure you want to delete this message? It will be removed for everyone in this task.")}
             </p>
 
-            {deletingMessage && (
+            {deletingMessages && deletingMessages.length === 1 && (
               <div className="mt-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground block mb-0.5">{deletingMessage.author_name}:</span>
-                <p className="line-clamp-2">{deletingMessage.content || (isRtl ? "فایل پیوست" : "Attachment")}</p>
+                <span className="font-semibold text-foreground block mb-0.5">{deletingMessages[0].author_name}:</span>
+                <p className="line-clamp-2">{deletingMessages[0].content || (isRtl ? "فایل پیوست" : "Attachment")}</p>
               </div>
             )}
           </div>
@@ -2080,7 +2200,7 @@ export function TaskProgressView({
               type="button"
               variant="ghost"
               disabled={isDeletingMessage}
-              onClick={() => setDeletingMessage(null)}
+              onClick={() => setDeletingMessages(null)}
               className="rounded-xl px-4 cursor-pointer"
             >
               {isRtl ? "انصراف" : "Cancel"}
@@ -2089,8 +2209,8 @@ export function TaskProgressView({
               type="button"
               variant="destructive"
               disabled={isDeletingMessage}
-              onClick={handleConfirmDeleteMessage}
-              className="rounded-xl px-5 gap-1.5 cursor-pointer bg-red-600 hover:bg-red-700 text-white"
+              onClick={handleConfirmDeleteMessages}
+              className="rounded-xl px-5 gap-1.5 cursor-pointer bg-red-600 hover:bg-red-700 text-white font-bold"
             >
               {isDeletingMessage ? (
                 <>
@@ -2100,7 +2220,7 @@ export function TaskProgressView({
               ) : (
                 <>
                   <Trash2 className="size-4" />
-                  <span>{isRtl ? "حذف برای همه" : "Delete for Everyone"}</span>
+                  <span>DELETE</span>
                 </>
               )}
             </Button>
@@ -2167,19 +2287,45 @@ function SystemEventPill({
   progress,
   isRtl,
   onContextMenu,
+  isSelected,
+  isSelectionMode,
+  onToggleSelect,
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
   onContextMenu?: (e: React.MouseEvent, msg: NewTaskProgress) => void;
+  isSelected?: boolean;
+  isSelectionMode?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const timeStr = formatMessageTime(progress.created_at, isRtl);
 
   return (
     <div
       onContextMenu={(e) => onContextMenu?.(e, progress)}
-      className="flex justify-center my-2.5 px-3 select-none cursor-context-menu"
+      onClick={() => {
+        if (isSelectionMode && onToggleSelect) {
+          onToggleSelect();
+        }
+      }}
+      className={cn(
+        "relative flex items-center justify-center my-2.5 px-3 py-1.5 rounded-2xl select-none transition-all duration-150 cursor-context-menu gap-2.5",
+        isSelectionMode && "cursor-pointer",
+        isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
+      )}
       dir={isRtl ? "rtl" : "ltr"}
     >
+      {isSelectionMode && (
+        <div className="shrink-0">
+          {isSelected ? (
+            <div className="size-5 rounded-full bg-[#2481cc] text-white flex items-center justify-center shadow-xs">
+              <Check className="size-3.5 stroke-[3]" />
+            </div>
+          ) : (
+            <div className="size-5 rounded-full border-2 border-slate-400/80 dark:border-white/50 bg-black/10" />
+          )}
+        </div>
+      )}
       <span className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full text-[11.5px] leading-relaxed font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs text-center max-w-[92%] sm:max-w-[80%]">
         <span>{progress.content}</span>
         {timeStr && (
@@ -2290,6 +2436,9 @@ function ProgressItem({
   onReply,
   onPreviewImage,
   onContextMenu,
+  isSelected,
+  isSelectionMode,
+  onToggleSelect,
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
@@ -2298,6 +2447,9 @@ function ProgressItem({
   onReply: (progress: NewTaskProgress) => void;
   onPreviewImage: (att: TaskAttachmentItem) => void;
   onContextMenu?: (e: React.MouseEvent, msg: NewTaskProgress) => void;
+  isSelected?: boolean;
+  isSelectionMode?: boolean;
+  onToggleSelect?: () => void;
 }) {
   const isMe = progress.author_id === currentUserId;
   const isAdminNote = progress.is_admin_note;
@@ -2331,11 +2483,39 @@ function ProgressItem({
       initial={{ opacity: 0, y: 3 }}
       animate={{ opacity: 1, y: 0 }}
       onContextMenu={(e) => onContextMenu?.(e, progress)}
+      onClick={() => {
+        if (isSelectionMode && onToggleSelect) {
+          onToggleSelect();
+        }
+      }}
       className={cn(
-        "flex my-2 group items-end gap-2",
-        isMe ? "justify-end" : "justify-start"
+        "relative flex my-2 group items-end gap-2 px-2 py-1 rounded-2xl transition-all duration-150",
+        isMe ? "justify-end" : "justify-start",
+        isSelectionMode && "cursor-pointer select-none",
+        isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
       )}
     >
+      {/* Telegram Selection Check Indicator */}
+      {isSelectionMode && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleSelect?.();
+          }}
+          className={cn(
+            "self-center shrink-0 cursor-pointer p-1 transition-transform hover:scale-110",
+            isMe ? "order-first" : "order-last"
+          )}
+        >
+          {isSelected ? (
+            <div className="size-5 rounded-full bg-[#2481cc] text-white flex items-center justify-center shadow-xs animate-in zoom-in-75 duration-100">
+              <Check className="size-3.5 stroke-[3]" />
+            </div>
+          ) : (
+            <div className="size-5 rounded-full border-2 border-slate-400/80 dark:border-white/50 bg-black/10 dark:bg-black/20 hover:border-[#2481cc] transition-colors" />
+          )}
+        </div>
+      )}
       {/* Incoming Message Avatar (bottom-left) */}
       {!isMe && (
         <div
