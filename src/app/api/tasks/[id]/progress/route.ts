@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: Context) {
         ...(authHeader ? { Authorization: authHeader } : {}),
       },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(4000),
+      signal: AbortSignal.timeout(60000),
     });
 
     if (remoteRes.ok) {

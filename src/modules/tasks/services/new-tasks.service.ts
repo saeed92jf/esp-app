@@ -15,6 +15,11 @@ export interface NewTaskSubtask {
   id: string;
   title: string;
   is_done: boolean;
+  assigned_to_id?: string;
+  assigned_to_name?: string;
+  completed_by_id?: string;
+  completed_by_name?: string;
+  completed_at?: string;
 }
 
 export interface NewTaskProgress {
@@ -201,13 +206,39 @@ class NewTasksService {
     return res.json();
   }
 
-  async toggleSubtask(taskId: string, subtaskId: string, isDone: boolean): Promise<NewTask> {
+  async toggleSubtask(
+    taskId: string,
+    subtaskId: string,
+    isDone: boolean,
+    completedBy?: { id: string; name: string }
+  ): Promise<NewTask> {
     const res = await fetch(`${this.baseUrl}/${taskId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ _subtask_toggle: { id: subtaskId, is_done: isDone } }),
+      body: JSON.stringify({
+        _subtask_toggle: {
+          id: subtaskId,
+          is_done: isDone,
+          completed_by_id: completedBy?.id,
+          completed_by_name: completedBy?.name,
+        },
+      }),
     });
     if (!res.ok) throw new Error("Failed to toggle subtask");
+    return res.json();
+  }
+
+  async uploadAttachment(file: File): Promise<TaskAttachmentItem> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`${this.baseUrl}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || err.detail || "Failed to upload file");
+    }
     return res.json();
   }
 

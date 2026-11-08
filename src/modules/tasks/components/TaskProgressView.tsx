@@ -209,7 +209,16 @@ export function TaskProgressView({
   const [isRequestingChanges, setIsRequestingChanges] = useState(false);
   const [showChangesBox, setShowChangesBox] = useState(false);
   const [changesFeedback, setChangesFeedback] = useState("");
-  const [showSubtasks, setShowSubtasks] = useState(true);
+  const [openSegments, setOpenSegments] = useState<Record<string, boolean>>({
+    details: false,
+    attachments: false,
+    subtasks: false,
+    chat: true,
+  });
+
+  const toggleSegment = (key: string) => {
+    setOpenSegments((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [deadlineDate, setDeadlineDate] = useState<Date | undefined>(undefined);
   const [isSavingDeadline, setIsSavingDeadline] = useState(false);
@@ -381,22 +390,32 @@ export function TaskProgressView({
     };
   }, [task.id, currentTask.progress?.length, currentTask.status, currentUser.id, isRtl, onTaskUpdated, scrollToBottom]);
 
-  const handleProgressFilesSelect = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
+  const handleProgressFilesSelect = async (files: FileList | File[] | null) => {
+    if (!files) return;
+    const fileList = Array.from(files);
+    if (fileList.length === 0) return;
+
     setIsReadingFiles(true);
     const newItems: TaskAttachmentItem[] = [];
     try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      for (const file of fileList) {
         try {
-          const item = await readAttachmentFile(file);
-          newItems.push(item);
+          // Attempt real upload to backend for permanent static storage
+          const uploaded = await newTasksService.uploadAttachment(file);
+          newItems.push(uploaded);
         } catch (err: any) {
-          toast.error(err.message || `خطا در خواندن ${file.name}`);
+          // Fallback to local dataURL if network upload had an issue
+          try {
+            const item = await readAttachmentFile(file);
+            newItems.push(item);
+          } catch (inner: any) {
+            toast.error(err?.message || `خطا در آپلود ${file.name}`);
+          }
         }
       }
       if (newItems.length > 0) {
         setPendingAttachments((prev) => [...prev, ...newItems]);
+        toast.success(isRtl ? `${newItems.length} فایل پیوست شد.` : `${newItems.length} files attached.`);
       }
     } finally {
       setIsReadingFiles(false);
@@ -526,9 +545,34 @@ export function TaskProgressView({
     }
   };
 
+  const isAssignee = currentTask.assignees?.some(
+    (a) => String(a.userId).trim().toLowerCase() === String(currentUser.id).trim().toLowerCase()
+  );
+  const canToggleSubtask =
+    isAdmin ||
+    Boolean(isAssignee) ||
+    String(currentTask.created_by).trim().toLowerCase() === String(currentUser.id).trim().toLowerCase();
+
   const handleToggleSubtask = async (subtaskId: string, isDone: boolean) => {
+    if (!canToggleSubtask) {
+      toast.error(
+        isRtl
+          ? "تنها مجریان این تسک یا مدیر سیستم مجاز به تیک‌زدن ریزتسک‌ها هستند."
+          : "Only task assignees or admins can check off subtasks."
+      );
+      return;
+    }
     try {
-      const updatedTask = await newTasksService.toggleSubtask(task.id, subtaskId, isDone);
+      const updatedTask = await newTasksService.toggleSubtask(
+        task.id,
+        subtaskId,
+        isDone,
+        {
+          id: currentUser.id,
+          name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
+        }
+      );
+      setCurrentTask(updatedTask);
       onTaskUpdated(updatedTask);
     } catch (err: any) {
       toast.error(err?.message || "Failed to update subtask");
@@ -550,410 +594,553 @@ export function TaskProgressView({
   const totalSubtasks = task.subtasks?.length ?? 0;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      {/* Task Header */}
-      <div className="bg-card rounded-3xl border border-border/50 p-6 shadow-sm space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-2">
-              <span className={cn("text-xs font-bold px-3 py-1 rounded-full", status.color)}>
-                {isRtl ? status.labelFa : status.labelEn}
-              </span>
-              <span className={cn("text-xs font-bold", priority.color)}>
-                {isRtl ? priority.labelFa : priority.labelEn}
-              </span>
-              {task.is_approved && (
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-3 py-1 rounded-full flex items-center gap-1">
-                  <ShieldCheck className="size-3" />
-                  {isRtl ? "تایید شده" : "Approved"}
+    <div className="max-w-3xl mx-auto space-y-4">
+      {/* ======================================================== */}
+      {/* SEGMENT 1: مشخصات و اطلاعات تسک (Task Details & Approve) */}
+      {/* ======================================================== */}
+      <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
+        {/* Accordion Header for Item 1 */}
+        <div
+          onClick={() => toggleSegment("details")}
+          className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+              <FolderKanban className="size-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <span className={cn("text-[11px] font-bold px-2.5 py-0.5 rounded-full", status.color)}>
+                  {isRtl ? status.labelFa : status.labelEn}
                 </span>
+                <span className={cn("text-[11px] font-bold px-2 py-0.5 rounded-full bg-muted/60", priority.color)}>
+                  {isRtl ? priority.labelFa : priority.labelEn}
+                </span>
+                {currentTask.is_approved && (
+                  <span className="text-[11px] font-bold text-emerald-600 bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                    <ShieldCheck className="size-3" />
+                    {isRtl ? "تایید شده" : "Approved"}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-base sm:text-lg font-bold text-foreground truncate leading-snug">
+                {currentTask.title}
+              </h1>
+            </div>
+          </div>
+
+          {/* Action on Item 1: APPROVE BUTTON & Controls */}
+          <div className="flex items-center gap-2 shrink-0">
+            {isAdmin && !currentTask.is_approved && currentTask.status !== "cancelled" && (
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleApprove();
+                }}
+                disabled={isApprovingTask}
+                size="sm"
+                className="rounded-xl h-8 px-3.5 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer shrink-0"
+                title={isRtl ? "تایید نهایی و مختومه کردن تسک" : "Approve & Complete Task"}
+              >
+                {isApprovingTask ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <ShieldCheck className="size-3.5" />
+                )}
+                <span>{isRtl ? "تایید نهایی تسک" : "Approve Task"}</span>
+              </Button>
+            )}
+
+            {isAdmin && onTaskDeleted && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 hover:bg-destructive/10 hover:text-destructive rounded-xl shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete();
+                }}
+                title={isRtl ? "حذف تسک" : "Delete task"}
+              >
+                <Trash2 className="size-4" />
+              </Button>
+            )}
+
+            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+              {openSegments.details ? (
+                <ChevronUp className="size-4" />
+              ) : (
+                <ChevronDown className="size-4" />
               )}
             </div>
-            <h1 className="text-xl font-bold text-foreground leading-snug">{task.title}</h1>
           </div>
-          {isAdmin && onTaskDeleted && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0 hover:bg-destructive/10 hover:text-destructive rounded-xl"
-              onClick={handleDelete}
-              title={isRtl ? "حذف تسک" : "Delete task"}
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          )}
         </div>
 
-        {task.description && (
-          <p className="text-sm text-muted-foreground leading-relaxed">{task.description}</p>
-        )}
-
-        {/* Meta info */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 border-t border-border/40">
-          {/* Project linkage */}
-          <div className="flex items-start gap-2">
-            <FolderKanban className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-            <div>
-              <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "پروژه مرتبط" : "Linked Project"}</p>
-              <p className="text-sm font-semibold text-foreground">
-                {task.project_name ? (
-                  <span className="text-primary font-bold">
-                    {task.project_esp_number ? `${task.project_esp_number} - ` : ""}
-                    {task.project_name}
-                  </span>
-                ) : (
-                  <span className="text-muted-foreground">{isRtl ? "تسک مستقل (عمومی)" : "Independent Task"}</span>
-                )}
+        {/* Accordion Body for Item 1 */}
+        {openSegments.details && (
+          <div className="p-5 pt-0 border-t border-border/40 space-y-4 animate-in fade-in-50 duration-200">
+            {currentTask.description && (
+              <p className="pt-4 text-sm text-muted-foreground leading-relaxed">
+                {currentTask.description}
               </p>
-            </div>
-          </div>
-          {task.assignees?.length > 0 && (
-            <div className="flex items-start gap-2">
-              <Users className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "مجریان" : "Assignees"}</p>
-                <p className="text-sm font-semibold">{task.assignees.map((a) => a.name).join("، ")}</p>
-              </div>
-            </div>
-          )}
-          {/* Deadline Block with Countdown & Quick Edit */}
-          <div className="flex items-start gap-2 min-w-[200px]">
-            <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <div className="flex items-center justify-between gap-1 mb-0.5">
-                <p className="text-xs text-muted-foreground">{isRtl ? "مهلت تحویل (Deadline)" : "Deadline"}</p>
-                {isAdmin && !isEditingDeadline && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingDeadline(true)}
-                    className="text-[10px] text-primary hover:underline flex items-center gap-0.5 font-medium cursor-pointer"
-                  >
-                    <Edit2 className="size-2.5" />
-                    <span>{task.deadline ? (isRtl ? "ویرایش" : "Edit") : (isRtl ? "+ تنظیم مهلت" : "+ Set")}</span>
-                  </button>
-                )}
+            )}
+
+            {/* Meta info */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3 border-t border-border/40">
+              {/* Project linkage */}
+              <div className="flex items-start gap-2">
+                <FolderKanban className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "پروژه مرتبط" : "Linked Project"}</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    {currentTask.project_name ? (
+                      <span className="text-primary font-bold">
+                        {currentTask.project_esp_number ? `${currentTask.project_esp_number} - ` : ""}
+                        {currentTask.project_name}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">{isRtl ? "تسک مستقل (عمومی)" : "Independent Task"}</span>
+                    )}
+                  </p>
+                </div>
               </div>
 
-              {isEditingDeadline ? (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className="w-[160px]">
-                    <DatePicker
-                      value={deadlineDate}
-                      onChange={(d) => {
-                        setDeadlineDate(d);
-                        handleSaveDeadline(d);
-                      }}
-                      placeholder={isRtl ? "انتخاب تاریخ..." : "Select date..."}
-                      className="h-8 text-xs"
-                    />
+              {currentTask.assignees?.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Users className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "مجریان" : "Assignees"}</p>
+                    <p className="text-sm font-semibold">{currentTask.assignees.map((a) => a.name).join("، ")}</p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingDeadline(false)}
-                    className="h-8 px-2 text-xs"
-                  >
-                    <X className="size-3" />
-                  </Button>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                  <span className="text-sm font-semibold fa-num">
-                    {task.deadline || (isRtl ? "تعیین نشده" : "Not set")}
-                  </span>
-                  {task.deadline && (
-                    <span
+              )}
+
+              {/* Deadline Block */}
+              <div className="flex items-start gap-2 min-w-[200px]">
+                <Clock className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-1 mb-0.5">
+                    <p className="text-xs text-muted-foreground">{isRtl ? "مهلت تحویل (Deadline)" : "Deadline"}</p>
+                    {isAdmin && !isEditingDeadline && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingDeadline(true)}
+                        className="text-[10px] text-primary hover:underline flex items-center gap-0.5 font-medium cursor-pointer"
+                      >
+                        <Edit2 className="size-2.5" />
+                        <span>{currentTask.deadline ? (isRtl ? "ویرایش" : "Edit") : (isRtl ? "+ تنظیم مهلت" : "+ Set")}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingDeadline ? (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div className="w-[160px]">
+                        <DatePicker
+                          value={deadlineDate}
+                          onChange={(d) => {
+                            setDeadlineDate(d);
+                            handleSaveDeadline(d);
+                          }}
+                          placeholder={isRtl ? "انتخاب تاریخ..." : "Select date..."}
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsEditingDeadline(false)}
+                        className="h-8 px-2 text-xs"
+                      >
+                        <X className="size-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                      <span className="text-sm font-semibold fa-num">
+                        {currentTask.deadline || (isRtl ? "تعیین نشده" : "Not set")}
+                      </span>
+                      {currentTask.deadline && (
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold px-2 py-0.5 rounded-full border fa-num",
+                            getDeadlineStatus(currentTask.deadline)?.color || "text-slate-600 bg-muted border-border/40"
+                          )}
+                        >
+                          {getDeadlineStatus(currentTask.deadline)?.label}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {currentTask.company && (
+                <div className="flex items-start gap-2">
+                  <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "شرکت" : "Company"}</p>
+                    <p className="text-sm font-semibold">{currentTask.company}</p>
+                  </div>
+                </div>
+              )}
+
+              {currentTask.tags?.length > 0 && (
+                <div className="flex items-start gap-2">
+                  <Tag className="size-4 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "تگ‌ها" : "Tags"}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {currentTask.tags.map((t) => (
+                        <span key={t} className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Automated Task Lifecycle Tracker */}
+            <div className="pt-3 border-t border-border/40 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
+                  <Clock className="size-3.5 text-primary" />
+                  <span>{isRtl ? "چرخه عمر و وضعیت خودکار تسک:" : "Automated Task Lifecycle:"}</span>
+                </span>
+                <span className={cn("text-[11px] font-bold px-3 py-1 rounded-full", status.color)}>
+                  {isRtl ? status.labelFa : status.labelEn}
+                </span>
+              </div>
+
+              {/* 4-Step Lifecycle Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {LIFECYCLE_STEPS.map((step) => {
+                  const isActive = currentTask.status === step.key;
+                  const isPast =
+                    (step.key === "todo" && currentTask.status !== "todo") ||
+                    (step.key === "in_progress" && (currentTask.status === "review" || currentTask.status === "done")) ||
+                    (step.key === "review" && currentTask.status === "done");
+
+                  return (
+                    <div
+                      key={step.key}
                       className={cn(
-                        "text-[10px] font-bold px-2 py-0.5 rounded-full border fa-num",
-                        getDeadlineStatus(task.deadline)?.color || "text-slate-600 bg-muted border-border/40"
+                        "p-3 rounded-2xl border transition-all text-start flex flex-col justify-between min-h-[72px]",
+                        isActive
+                          ? "bg-primary/10 border-primary text-primary font-bold shadow-xs ring-2 ring-primary/20"
+                          : isPast
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold"
+                          : "bg-muted/20 border-border/40 text-muted-foreground"
                       )}
                     >
-                      {getDeadlineStatus(task.deadline)?.label}
-                    </span>
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-xs font-bold leading-tight truncate">
+                          {isRtl ? step.labelFa : step.labelEn}
+                        </span>
+                        {isPast && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
+                        {isActive && <span className="size-2 rounded-full bg-primary animate-pulse shrink-0" />}
+                      </div>
+                      <span className="text-[10px] opacity-75 truncate">{step.descFa}</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Workflow Action Bar */}
+              <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+                <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                  <AlertCircle className="size-3.5 text-primary shrink-0" />
+                  <span>
+                    {currentTask.status === "todo"
+                      ? (isRtl
+                          ? "تسک در انتظار شروع: با کلیک بر روی «شروع انجام تسک» یا ارسال پیام در بخش گفتگو، تسک به «در حال انجام» منتقل می‌شود."
+                          : "Task ready: Click 'Start Working on Task' or send a message to transition to In Progress.")
+                      : isRtl
+                      ? "وضعیت تسک با ثبت گزارش، پیشرفت زیرفعالیت‌ها و تایید مدیریت به‌صورت خودکار به‌روزرسانی می‌شود."
+                      : "Task status transitions automatically through reports, subtasks, and managerial approval."}
+                  </span>
+                </p>
+
+                <div className="flex items-center gap-2 shrink-0 justify-end flex-wrap">
+                  {currentTask.status === "todo" && (
+                    <Button
+                      onClick={handleStartTask}
+                      disabled={isStartingTask}
+                      size="sm"
+                      className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                    >
+                      {isStartingTask ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Play className="size-3.5 fill-current" />
+                      )}
+                      <span>{isRtl ? "شروع انجام تسک" : "Start Working on Task"}</span>
+                    </Button>
                   )}
+
+                  {currentTask.status === "in_progress" && (
+                    <Button
+                      onClick={handleSubmitForReview}
+                      disabled={isSubmittingReview}
+                      size="sm"
+                      className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs cursor-pointer"
+                    >
+                      {isSubmittingReview ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Send className="size-3.5" />
+                      )}
+                      <span>{isRtl ? "ارسال جهت بررسی و تایید مدیر" : "Submit for Review"}</span>
+                    </Button>
+                  )}
+
+                  {currentTask.status === "review" && isAdmin && (
+                    <>
+                      <Button
+                        onClick={() => setShowChangesBox(!showChangesBox)}
+                        variant="outline"
+                        size="sm"
+                        className="rounded-xl h-9 px-3.5 text-xs font-bold gap-1.5 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                      >
+                        <AlertCircle className="size-3.5" />
+                        <span>{isRtl ? "درخواست اصلاحات" : "Request Changes"}</span>
+                      </Button>
+                      <Button
+                        onClick={handleApprove}
+                        disabled={isApprovingTask}
+                        size="sm"
+                        className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                      >
+                        {isApprovingTask ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <ShieldCheck className="size-3.5" />
+                        )}
+                        <span>{isRtl ? "تایید نهایی و مختومه کردن" : "Approve & Complete"}</span>
+                      </Button>
+                    </>
+                  )}
+
+                  {currentTask.status === "review" && !isAdmin && (
+                    <Badge variant="outline" className="text-xs bg-pink-500/10 text-pink-600 border-pink-500/30 px-3 py-1">
+                      {isRtl ? "تسک در حال بازبینی و بررسی مدیریت می‌باشد" : "Under Manager Review"}
+                    </Badge>
+                  )}
+
+                  {currentTask.status === "done" && (
+                    <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30 px-3 py-1 gap-1">
+                      <CheckCircle2 className="size-3.5" />
+                      <span>{isRtl ? "تسک تایید و مختومه شده است" : "Task Completed & Approved"}</span>
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Admin Changes Feedback Box */}
+              {showChangesBox && isAdmin && (
+                <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-amber-500/5 space-y-2 mt-2">
+                  <label className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
+                    {isRtl ? "توضیحات و موارد نیازمند اصلاح و بازنگری:" : "Revision Feedback:"}
+                  </label>
+                  <Textarea
+                    value={changesFeedback}
+                    onChange={(e) => setChangesFeedback(e.target.value)}
+                    placeholder={isRtl ? "موارد نقایص فنی، مستندات مورد نیاز یا تغییرات درخواستی را بنویسید..." : "Specify required changes..."}
+                    rows={2}
+                    className="text-xs rounded-xl bg-background resize-none"
+                  />
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowChangesBox(false)}
+                      className="rounded-xl h-8 px-3 text-xs"
+                    >
+                      {isRtl ? "انصراف" : "Cancel"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleRequestChanges}
+                      disabled={isRequestingChanges || !changesFeedback.trim()}
+                      className="rounded-xl h-8 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
+                    >
+                      {isRequestingChanges ? (
+                        <Loader2 className="size-3 animate-spin" />
+                      ) : (
+                        <Send className="size-3" />
+                      )}
+                      <span>{isRtl ? "ثبت بازخورد و بازگشت به کار" : "Submit Feedback"}</span>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
-          </div>
-          {task.company && (
-            <div className="flex items-start gap-2">
-              <Building2 className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "شرکت" : "Company"}</p>
-                <p className="text-sm font-semibold">{task.company}</p>
-              </div>
-            </div>
-          )}
-          {task.tags?.length > 0 && (
-            <div className="flex items-start gap-2">
-              <Tag className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "تگ‌ها" : "Tags"}</p>
-                <div className="flex flex-wrap gap-1">
-                  {task.tags.map((t) => (
-                    <span key={t} className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5">{t}</span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Initial Task Attachments */}
-        {task.attachments && task.attachments.length > 0 && (
-          <div className="pt-3 border-t border-border/40 space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-              <span className="flex items-center gap-1.5 text-foreground">
-                <Paperclip className="size-3.5 text-primary" />
-                <span>{isRtl ? "مستندات و فایل‌های پیوست تسک" : "Task Attachments"}</span>
-              </span>
-              <span className="fa-num">
-                {task.attachments.length} {isRtl ? "فایل" : "files"}
-              </span>
-            </div>
-            <TaskAttachmentList
-              attachments={task.attachments}
-              isRtl={isRtl}
-            />
           </div>
         )}
-
-        {/* Automated Task Lifecycle Tracker */}
-        <div className="pt-3 border-t border-border/40 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground flex items-center gap-1.5">
-              <Clock className="size-3.5 text-primary" />
-              <span>{isRtl ? "چرخه عمر و وضعیت خودکار تسک:" : "Automated Task Lifecycle:"}</span>
-            </span>
-            <span className={cn("text-[11px] font-bold px-3 py-1 rounded-full", status.color)}>
-              {isRtl ? status.labelFa : status.labelEn}
-            </span>
-          </div>
-
-          {/* 4-Step Lifecycle Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {LIFECYCLE_STEPS.map((step) => {
-              const isActive = task.status === step.key;
-              const isPast =
-                (step.key === "todo" && task.status !== "todo") ||
-                (step.key === "in_progress" && (task.status === "review" || task.status === "done")) ||
-                (step.key === "review" && task.status === "done");
-
-              return (
-                <div
-                  key={step.key}
-                  className={cn(
-                    "p-3 rounded-2xl border transition-all text-start flex flex-col justify-between min-h-[72px]",
-                    isActive
-                      ? "bg-primary/10 border-primary text-primary font-bold shadow-xs ring-2 ring-primary/20"
-                      : isPast
-                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-semibold"
-                      : "bg-muted/20 border-border/40 text-muted-foreground"
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-1 mb-1">
-                    <span className="text-xs font-bold leading-tight truncate">
-                      {isRtl ? step.labelFa : step.labelEn}
-                    </span>
-                    {isPast && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
-                    {isActive && <span className="size-2 rounded-full bg-primary animate-pulse shrink-0" />}
-                  </div>
-                  <span className="text-[10px] opacity-75 truncate">{step.descFa}</span>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Workflow Action Bar */}
-          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-            <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-              <AlertCircle className="size-3.5 text-primary shrink-0" />
-              <span>
-                {task.status === "todo"
-                  ? (isRtl
-                      ? "تسک در انتظار شروع: با کلیک بر روی «شروع انجام تسک» یا ارسال پیام در بخش گفتگو، تسک به «در حال انجام» منتقل می‌شود."
-                      : "Task ready: Click 'Start Working on Task' or send a message to transition to In Progress.")
-                  : isRtl
-                  ? "وضعیت تسک با ثبت گزارش، پیشرفت زیرفعالیت‌ها و تایید مدیریت به‌صورت خودکار به‌روزرسانی می‌شود."
-                  : "Task status transitions automatically through reports, subtasks, and managerial approval."}
-              </span>
-            </p>
-
-            <div className="flex items-center gap-2 shrink-0 justify-end flex-wrap">
-              {/* If todo: Allow Explicitly Starting Task (شروع انجام تسک) */}
-              {task.status === "todo" && (
-                <Button
-                  onClick={handleStartTask}
-                  disabled={isStartingTask}
-                  size="sm"
-                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
-                >
-                  {isStartingTask ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Play className="size-3.5 fill-current" />
-                  )}
-                  <span>{isRtl ? "شروع انجام تسک" : "Start Working on Task"}</span>
-                </Button>
-              )}
-
-              {/* If in_progress: Allow Submitting for Review */}
-              {task.status === "in_progress" && (
-                <Button
-                  onClick={handleSubmitForReview}
-                  disabled={isSubmittingReview}
-                  size="sm"
-                  className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs cursor-pointer"
-                >
-                  {isSubmittingReview ? (
-                    <Loader2 className="size-3.5 animate-spin" />
-                  ) : (
-                    <Send className="size-3.5" />
-                  )}
-                  <span>{isRtl ? "ارسال جهت بررسی و تایید مدیر" : "Submit for Review"}</span>
-                </Button>
-              )}
-
-              {/* If review: Admin actions */}
-              {task.status === "review" && isAdmin && (
-                <>
-                  <Button
-                    onClick={() => setShowChangesBox(!showChangesBox)}
-                    variant="outline"
-                    size="sm"
-                    className="rounded-xl h-9 px-3.5 text-xs font-bold gap-1.5 border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
-                  >
-                    <AlertCircle className="size-3.5" />
-                    <span>{isRtl ? "درخواست اصلاحات" : "Request Changes"}</span>
-                  </Button>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={isApprovingTask}
-                    size="sm"
-                    className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                  >
-                    {isApprovingTask ? (
-                      <Loader2 className="size-3.5 animate-spin" />
-                    ) : (
-                      <ShieldCheck className="size-3.5" />
-                    )}
-                    <span>{isRtl ? "تایید نهایی و مختومه کردن" : "Approve & Complete"}</span>
-                  </Button>
-                </>
-              )}
-
-              {/* If review: Non-admin status message */}
-              {task.status === "review" && !isAdmin && (
-                <Badge variant="outline" className="text-xs bg-pink-500/10 text-pink-600 border-pink-500/30 px-3 py-1">
-                  {isRtl ? "تسک در حال بازبینی و بررسی مدیریت می‌باشد" : "Under Manager Review"}
-                </Badge>
-              )}
-
-              {/* If done: Verified completed badge */}
-              {task.status === "done" && (
-                <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-600 border-emerald-500/30 px-3 py-1 gap-1">
-                  <CheckCircle2 className="size-3.5" />
-                  <span>{isRtl ? "تسک تایید و مختومه شده است" : "Task Completed & Approved"}</span>
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {/* Admin Changes Feedback Box */}
-          {showChangesBox && isAdmin && (
-            <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-amber-500/5 space-y-2 mt-2">
-              <label className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
-                {isRtl ? "توضیحات و موارد نیازمند اصلاح و بازنگری:" : "Revision Feedback:"}
-              </label>
-              <Textarea
-                value={changesFeedback}
-                onChange={(e) => setChangesFeedback(e.target.value)}
-                placeholder={isRtl ? "موارد نقایص فنی، مستندات مورد نیاز یا تغییرات درخواستی را بنویسید..." : "Specify required changes..."}
-                rows={2}
-                className="text-xs rounded-xl bg-background resize-none"
-              />
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowChangesBox(false)}
-                  className="rounded-xl h-8 px-3 text-xs"
-                >
-                  {isRtl ? "انصراف" : "Cancel"}
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleRequestChanges}
-                  disabled={isRequestingChanges || !changesFeedback.trim()}
-                  className="rounded-xl h-8 px-4 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white gap-1"
-                >
-                  {isRequestingChanges ? (
-                    <Loader2 className="size-3 animate-spin" />
-                  ) : (
-                    <Send className="size-3" />
-                  )}
-                  <span>{isRtl ? "ثبت بازخورد و بازگشت به کار" : "Submit Feedback"}</span>
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Subtasks */}
-      {totalSubtasks > 0 && (
-        <div className="bg-card rounded-3xl border border-border/50 p-5 shadow-sm">
-          <button
-            onClick={() => setShowSubtasks(!showSubtasks)}
-            className="w-full flex items-center justify-between mb-3"
+      {/* ======================================================== */}
+      {/* SEGMENT 2: مستندات و فایل‌های تسک (Initial Attachments) */}
+      {/* ======================================================== */}
+      {currentTask.attachments && currentTask.attachments.length > 0 && (
+        <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
+          <div
+            onClick={() => toggleSegment("attachments")}
+            className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <CheckSquare className="size-4 text-primary" />
-              <h3 className="font-semibold text-sm">
-                {isRtl ? "ریزتسک‌ها" : "Subtasks"}
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                <Paperclip className="size-4" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground">
+                {isRtl ? "مستندات و فایل‌های پیوست تسک" : "Task Attachments"}
               </h3>
-              <span className="text-xs text-muted-foreground fa-num">({doneSubtasks}/{totalSubtasks})</span>
+              <Badge variant="secondary" className="text-xs fa-num font-medium">
+                {currentTask.attachments.length} {isRtl ? "فایل" : "files"}
+              </Badge>
             </div>
-            {showSubtasks ? <ChevronUp className="size-4 text-muted-foreground" /> : <ChevronDown className="size-4 text-muted-foreground" />}
-          </button>
-
-          {/* Progress bar */}
-          <div className="w-full h-1.5 rounded-full bg-muted mb-3">
-            <div
-              className="h-full rounded-full bg-primary transition-all"
-              style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
-            />
+            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+              {openSegments.attachments ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            </div>
           </div>
-
-          {showSubtasks && (
-            <div className="space-y-2">
-              {task.subtasks.map((sub) => (
-                <div key={sub.id} className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleToggleSubtask(sub.id, !sub.is_done)}
-                    className={cn(
-                      "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0",
-                      sub.is_done
-                        ? "bg-primary border-primary text-white"
-                        : "border-border hover:border-primary"
-                    )}
-                  >
-                    {sub.is_done && <CheckCircle2 className="size-3" />}
-                  </button>
-                  <span className={cn("text-sm", sub.is_done && "line-through text-muted-foreground")}>
-                    {sub.title}
-                  </span>
-                </div>
-              ))}
+          {openSegments.attachments && (
+            <div className="p-5 pt-0 border-t border-border/40 animate-in fade-in-50 duration-200">
+              <div className="pt-3">
+                <TaskAttachmentList attachments={currentTask.attachments} isRtl={isRtl} />
+              </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Live Progress Chat Thread */}
-      <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between flex-wrap gap-2">
+      {/* ======================================================== */}
+      {/* SEGMENT 3: ریزتسک‌ها و چک‌لیست فعالیت‌ها (Subtasks) */}
+      {/* ======================================================== */}
+      {totalSubtasks > 0 && (
+        <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
+          <div
+            onClick={() => toggleSegment("subtasks")}
+            className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+          >
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
+                <CheckSquare className="size-4" />
+              </div>
+              <h3 className="font-bold text-sm text-foreground">
+                {isRtl ? "ریزتسک‌ها و چک‌لیست فعالیت‌ها" : "Subtasks Checklist"}
+              </h3>
+              <Badge variant="secondary" className="text-xs fa-num font-medium">
+                {doneSubtasks} از {totalSubtasks}
+              </Badge>
+              {/* Mini progress bar in header */}
+              <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden hidden sm:block ms-2">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-300"
+                  style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+              {openSegments.subtasks ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            </div>
+          </div>
+
+          {openSegments.subtasks && (
+            <div className="p-5 pt-0 border-t border-border/40 space-y-3 animate-in fade-in-50 duration-200">
+              {/* Permission & Attribution Banner */}
+              <div className="mt-3 flex items-center justify-between text-xs p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-blue-800 dark:text-blue-300 gap-2 flex-wrap">
+                <span className="flex items-center gap-1.5 font-bold">
+                  <ShieldCheck className="size-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                  <span>{isRtl ? "افراد مجاز برای تیک‌زدن ریزتسک‌ها:" : "Authorized to check off subtasks:"}</span>
+                </span>
+                <span className="font-semibold text-[11px]">
+                  {currentTask.assignees?.length > 0
+                    ? currentTask.assignees.map((a) => a.name).join("، ") + (isRtl ? " و مدیر سیستم" : " & Admin")
+                    : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & Admin")}
+                </span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-1.5 rounded-full bg-muted mb-2">
+                <div
+                  className="h-full rounded-full bg-emerald-600 transition-all duration-300"
+                  style={{ width: `${totalSubtasks > 0 ? (doneSubtasks / totalSubtasks) * 100 : 0}%` }}
+                />
+              </div>
+
+              {/* Checklist */}
+              <div className="space-y-2">
+                {currentTask.subtasks.map((sub) => (
+                  <div
+                    key={sub.id}
+                    className="flex items-center justify-between gap-3 p-2.5 rounded-2xl border border-border/40 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        type="button"
+                        disabled={!canToggleSubtask}
+                        onClick={() => handleToggleSubtask(sub.id, !sub.is_done)}
+                        className={cn(
+                          "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
+                          sub.is_done
+                            ? "bg-emerald-600 border-emerald-600 text-white"
+                            : "border-border hover:border-primary",
+                          !canToggleSubtask && "opacity-50 cursor-not-allowed hover:border-border"
+                        )}
+                        title={
+                          !canToggleSubtask
+                            ? (isRtl ? "تنها مجریان این تسک یا مدیر می‌توانند تیک بزنند" : "Only assignees or admin can check off")
+                            : (isRtl ? "تغییر وضعیت" : "Toggle")
+                        }
+                      >
+                        {sub.is_done && <CheckCircle2 className="size-3" />}
+                      </button>
+                      <span className={cn("text-sm", sub.is_done && "line-through text-muted-foreground")}>
+                        {sub.title}
+                      </span>
+                    </div>
+
+                    <div className="shrink-0">
+                      {sub.is_done ? (
+                        <span className="text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2.5 py-0.5 rounded-full font-medium flex items-center gap-1 border border-emerald-500/20">
+                          <CheckCircle2 className="size-3 text-emerald-600" />
+                          <span>
+                            {sub.completed_by_name
+                              ? (isRtl ? `تکمیل‌شده توسط ${sub.completed_by_name}` : `Done by ${sub.completed_by_name}`)
+                              : (isRtl ? "تکمیل‌شده" : "Completed")}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full flex items-center gap-1">
+                          <Users className="size-2.5" />
+                          <span>
+                            {currentTask.assignees?.length > 0
+                              ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => a.name).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => a.name).join(", ")}`)
+                              : (isRtl ? "در انتظار اقدام مجری" : "Pending")}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* SEGMENT 4: گفتگوی زنده و گزارش پیشرفت (Telegram Live Chat) */}
+      {/* ======================================================== */}
+      <div className="bg-card rounded-3xl border border-border/50 shadow-sm overflow-hidden transition-all">
+        {/* Accordion Header for Item 4 */}
+        <div
+          onClick={() => toggleSegment("chat")}
+          className="px-5 py-3.5 border-b border-border/40 flex items-center justify-between flex-wrap gap-2 cursor-pointer select-none hover:bg-muted/20 transition-colors"
+        >
           <div className="flex items-center gap-2">
             <FileText className="size-4 text-primary" />
             <h3 className="font-bold text-sm">
@@ -967,7 +1154,8 @@ export function TaskProgressView({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={async () => {
+              onClick={async (e) => {
+                e.stopPropagation();
                 if (typeof window !== "undefined") {
                   if ((window as any).__espTriggerTestNotification) {
                     await (window as any).__espTriggerTestNotification();
@@ -997,165 +1185,191 @@ export function TaskProgressView({
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
               <span>{isRtl ? "به‌روزرسانی آنی" : "Live Sync"}</span>
             </div>
+
+            <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors ms-1 shrink-0">
+              {openSegments.chat ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            </div>
           </div>
         </div>
 
-        {/* Telegram Styled Live Progress Chat Thread */}
-        <div
-          ref={messagesContainerRef}
-          className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth border-y border-border/40 select-text bg-[#8ea982] dark:bg-[#0e1621]"
-          style={{
-            backgroundImage: "url('/images/telegram-doodle.svg')",
-            backgroundRepeat: "repeat",
-            backgroundSize: "360px 360px",
-          }}
-        >
-          {(!currentTask.progress || currentTask.progress.length === 0) ? (
-            <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none">
-              <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
-                <FileText className="size-6 text-white" />
-              </div>
-              <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
-              <p className="text-xs text-white/80">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
-            </div>
-          ) : (
-            currentTask.progress.map((p, idx) => {
-              const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
-              const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
-              const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
-
-              return (
-                <React.Fragment key={p.id}>
-                  {dateLabel && (
-                    <div className="flex justify-center my-3 select-none sticky top-2 z-10">
-                      <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/30 dark:bg-black/50 text-white backdrop-blur-xs shadow-xs fa-num">
-                        {dateLabel}
-                      </span>
-                    </div>
-                  )}
-                  <ProgressItem
-                    progress={p}
-                    isRtl={isRtl}
-                    currentUserId={currentUser.id}
-                    isAdmin={isAdmin}
-                    onReply={(msg) => {
-                      setReplyingTo({
-                        id: msg.id,
-                        author_name: msg.author_name,
-                        content: msg.content.substring(0, 90),
-                      });
-                    }}
-                    onPreviewImage={(att) => setPreviewImage(att)}
-                  />
-                </React.Fragment>
-              );
-            })
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Telegram Style Chat Input Area */}
-        <div className="p-3 sm:p-4 bg-card border-t border-border/40 space-y-2">
-          {/* Active Reply Banner */}
-          {replyingTo && (
-            <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-muted/60 dark:bg-muted/30 border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 font-bold text-[#2481cc]">
-                  <CornerUpLeft className="size-3" />
-                  <span>{isRtl ? `پاسخ به ${replyingTo.author_name}` : `Reply to ${replyingTo.author_name}`}</span>
+        {/* Telegram Styled Live Progress Chat Thread (OPEN BY DEFAULT) */}
+        {openSegments.chat && (
+          <div className="animate-in fade-in-50 duration-200">
+            <div
+              ref={messagesContainerRef}
+              className="relative p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth border-b border-border/40 select-text bg-[#8ea982] dark:bg-[#0e1621]"
+              style={{
+                backgroundImage: "url('/images/telegram-doodle.svg')",
+                backgroundRepeat: "repeat",
+                backgroundSize: "400px 400px",
+              }}
+            >
+              {(!currentTask.progress || currentTask.progress.length === 0) ? (
+                <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none">
+                  <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
+                    <FileText className="size-6 text-white" />
+                  </div>
+                  <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
+                  <p className="text-xs text-white/80">{isRtl ? "می‌توانید اولین پیام یا گزارش کار را از کادر زیر ارسال نمایید." : "Send the first message below to start."}</p>
                 </div>
-                <p className="truncate text-muted-foreground text-[11px] mt-0.5 max-w-md">
-                  {replyingTo.content}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setReplyingTo(null)}
-                className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
-                title={isRtl ? "لغو پاسخ" : "Cancel reply"}
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* Pending Attachments */}
-          {pendingAttachments.length > 0 && (
-            <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
-                <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
-                <span className="fa-num">({pendingAttachments.length})</span>
-              </div>
-              <TaskAttachmentList
-                attachments={pendingAttachments}
-                onRemove={removePendingAttachment}
-                isRtl={isRtl}
-              />
-            </div>
-          )}
-
-          {/* Text input row */}
-          <div className="flex items-end gap-2">
-            <input
-              ref={progressFileInputRef}
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => handleProgressFilesSelect(e.target.files)}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => progressFileInputRef.current?.click()}
-              disabled={isReadingFiles || isSending}
-              className="size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary shrink-0 cursor-pointer"
-              title={isRtl ? "پیوست فایل" : "Attach file"}
-            >
-              {isReadingFiles ? (
-                <Loader2 className="size-4 animate-spin" />
               ) : (
-                <Paperclip className="size-5" />
-              )}
-            </Button>
+                currentTask.progress.map((p, idx) => {
+                  const prevMsg = idx > 0 ? currentTask.progress[idx - 1] : null;
+                  const isNewDate = !prevMsg || getMessageDateKey(prevMsg.created_at) !== getMessageDateKey(p.created_at);
+                  const dateLabel = isNewDate ? formatDateSeparator(p.created_at, isRtl) : null;
 
-            <div className="flex-1 relative">
-              <Textarea
-                value={progressContent}
-                onChange={(e) => setProgressContent(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendProgress();
-                  }
-                }}
-                placeholder={
-                  replyingTo
-                    ? (isRtl ? "پاسخ خود را بنویسید (Enter برای ارسال)..." : "Write your reply (Enter to send)...")
-                    : isAdmin
-                    ? (isRtl ? "پیام یا راهنمایی بنویسید (Enter برای ارسال، Shift+Enter خط جدید)..." : "Write guidance (Enter to send)...")
-                    : (isRtl ? "پیام، گزارش پیشرفت یا سوال خود را بنویسید..." : "Write a message...")
-                }
-                className="rounded-2xl resize-none min-h-[44px] max-h-[140px] py-2.5 px-4 text-sm leading-relaxed bg-muted/30 focus:bg-background border-border/60 transition-colors"
-                rows={1}
-              />
+                  return (
+                    <React.Fragment key={p.id}>
+                      {dateLabel && (
+                        <div className="flex justify-center my-3 select-none sticky top-2 z-10">
+                          <span className="px-3.5 py-0.5 rounded-full text-[11px] font-medium bg-black/30 dark:bg-black/50 text-white backdrop-blur-xs shadow-xs fa-num">
+                            {dateLabel}
+                          </span>
+                        </div>
+                      )}
+                      <ProgressItem
+                        progress={p}
+                        isRtl={isRtl}
+                        currentUserId={currentUser.id}
+                        isAdmin={isAdmin}
+                        onReply={(msg) => {
+                          setReplyingTo({
+                            id: msg.id,
+                            author_name: msg.author_name,
+                            content: msg.content.substring(0, 90),
+                          });
+                        }}
+                        onPreviewImage={(att) => setPreviewImage(att)}
+                      />
+                    </React.Fragment>
+                  );
+                })
+              )}
+              <div ref={messagesEndRef} />
             </div>
 
-            <Button
-              type="button"
-              onClick={handleSendProgress}
-              disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
-              className="size-10 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-40"
-              title={isRtl ? "ارسال پیام" : "Send message"}
-            >
-              {isSending ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Send className="size-4.5" />
+            {/* Telegram Style Chat Input Area */}
+            <div className="p-3 sm:p-4 bg-card space-y-2">
+              {/* Active Reply Banner */}
+              {replyingTo && (
+                <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-muted/60 dark:bg-muted/30 border-s-4 border-[#2481cc] rounded-e-xl text-xs animate-in fade-in-50 duration-150">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 font-bold text-[#2481cc]">
+                      <CornerUpLeft className="size-3" />
+                      <span>{isRtl ? `پاسخ به ${replyingTo.author_name}` : `Reply to ${replyingTo.author_name}`}</span>
+                    </div>
+                    <p className="truncate text-muted-foreground text-[11px] mt-0.5 max-w-md">
+                      {replyingTo.content}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setReplyingTo(null)}
+                    className="p-1 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
+                    title={isRtl ? "لغو پاسخ" : "Cancel reply"}
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </div>
               )}
-            </Button>
+
+              {/* Pending Attachments */}
+              {pendingAttachments.length > 0 && (
+                <div className="p-2.5 rounded-2xl bg-muted/40 border border-border/50 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground px-1">
+                    <span>{isRtl ? "فایل‌های پیوست به این پیام:" : "Files attached to this update:"}</span>
+                    <span className="fa-num">({pendingAttachments.length})</span>
+                  </div>
+                  <TaskAttachmentList
+                    attachments={pendingAttachments}
+                    onRemove={removePendingAttachment}
+                    isRtl={isRtl}
+                  />
+                </div>
+              )}
+
+              {/* Text input row with Paste Screenshot (Ctrl+V) & Attachment */}
+              <div className="flex items-end gap-2">
+                <input
+                  ref={progressFileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => handleProgressFilesSelect(e.target.files)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => progressFileInputRef.current?.click()}
+                  disabled={isReadingFiles || isSending}
+                  className="size-10 rounded-full hover:bg-muted text-muted-foreground hover:text-primary shrink-0 cursor-pointer"
+                  title={isRtl ? "پیوست فایل یا تصویر" : "Attach file or image"}
+                >
+                  {isReadingFiles ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Paperclip className="size-5" />
+                  )}
+                </Button>
+
+                <div className="flex-1 relative">
+                  <Textarea
+                    value={progressContent}
+                    onChange={(e) => setProgressContent(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendProgress();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      const items = e.clipboardData?.items;
+                      if (!items) return;
+                      const imageFiles: File[] = [];
+                      for (let i = 0; i < items.length; i++) {
+                        if (items[i].type.startsWith("image/")) {
+                          const file = items[i].getAsFile();
+                          if (file) {
+                            const namedFile = new File([file], `screenshot_${Date.now()}.png`, { type: file.type });
+                            imageFiles.push(namedFile);
+                          }
+                        }
+                      }
+                      if (imageFiles.length > 0) {
+                        e.preventDefault();
+                        handleProgressFilesSelect(imageFiles);
+                      }
+                    }}
+                    placeholder={
+                      replyingTo
+                        ? (isRtl ? "پاسخ خود را بنویسید (Enter برای ارسال)..." : "Write your reply (Enter to send)...")
+                        : isAdmin
+                        ? (isRtl ? "پیام، راهنمایی یا پیوست (Enter ارسال، Ctrl+V الصاق عکس)..." : "Write guidance (Enter to send, Ctrl+V to paste)...")
+                        : (isRtl ? "پیام، گزارش پیشرفت یا پیوست فایل (Ctrl+V برای الصاق تصویر)..." : "Write a message (Ctrl+V to paste screenshot)...")
+                    }
+                    className="rounded-2xl resize-none min-h-[44px] max-h-[140px] py-2.5 px-4 text-sm leading-relaxed bg-muted/30 focus:bg-background border-border/60 transition-colors"
+                    rows={1}
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleSendProgress}
+                  disabled={(!progressContent.trim() && pendingAttachments.length === 0) || isSending}
+                  className="size-10 rounded-full bg-[#2481cc] hover:bg-[#1e70b3] text-white flex items-center justify-center shrink-0 shadow-sm transition-transform active:scale-95 cursor-pointer disabled:opacity-40"
+                  title={isRtl ? "ارسال پیام" : "Send message"}
+                >
+                  {isSending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Send className="size-4.5" />
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Image Preview Modal */}
@@ -1188,36 +1402,6 @@ export function TaskProgressView({
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Admin Approve Button */}
-      {isAdmin && !task.is_approved && task.status !== "cancelled" && (
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-3xl border border-emerald-200 dark:border-emerald-800 p-5">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-emerald-700 dark:text-emerald-300">
-                {isRtl ? "تایید نهایی تسک" : "Final Task Approval"}
-              </h3>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                {isRtl
-                  ? "با تایید این تسک، وضعیت آن به «انجام‌شده» تغییر می‌کند و بسته می‌شود."
-                  : "Approving this task will mark it as done and close it."}
-              </p>
-            </div>
-            <Button
-              onClick={handleApprove}
-              disabled={isApprovingTask}
-              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shrink-0 gap-2"
-            >
-              {isApprovingTask ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="size-4" />
-              )}
-              {isRtl ? "تایید و بستن تسک" : "Approve & Close"}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
