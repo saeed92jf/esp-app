@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { Clock, Users, CheckCircle2, Paperclip, FolderKanban } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewTask } from "../services/new-tasks.service";
+import { formatPersonName } from "@/lib/person-names";
 
 interface AdminRoadmapViewProps {
   tasks: NewTask[];
@@ -119,7 +120,7 @@ export function AdminRoadmapView({ tasks, onSelectTask }: AdminRoadmapViewProps)
                           <span className="flex items-center gap-1 min-w-0">
                             <Users className="size-3 shrink-0" />
                             <span className="truncate">
-                              {task.assignees[0].name}
+                              {formatPersonName(task.assignees[0].name, locale)}
                               {task.assignees.length > 1 ? ` +${task.assignees.length - 1}` : ""}
                             </span>
                           </span>

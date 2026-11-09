@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { 
   Users, 
   Search, 
@@ -43,6 +44,7 @@ export function SubordinateSelector({
   disabled = false,
 }: SubordinateSelectorProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -218,9 +220,7 @@ export function SubordinateSelector({
               searchResults.map((user) => {
                 const isSelected = selectedIds.includes(user.id);
                 const faName = `${user.firstNameFa || ""} ${user.lastNameFa || ""}`.trim();
-                const displayName = isRtl
-                  ? faName || user.name
-                  : user.name || faName;
+                const displayName = formatPersonName(isRtl ? (faName || user.name) : (user.name || faName), locale);
                 const empId = user.employeeId || "---";
 
                 return (
@@ -322,9 +322,7 @@ export function SubordinateSelector({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             {selectedUsers.map((user) => {
               const faName = `${user.firstNameFa || ""} ${user.lastNameFa || ""}`.trim();
-              const displayName = isRtl
-                ? faName || user.name
-                : user.name || faName;
+              const displayName = formatPersonName(isRtl ? (faName || user.name) : (user.name || faName), locale);
               const empId = user.employeeId || "---";
 
               return (
@@ -354,7 +352,7 @@ export function SubordinateSelector({
                       </div>
                       <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5 truncate">
                         <span className="text-primary font-medium truncate">
-                          {user.jobTitle || (isRtl ? "کارشناس" : "Specialist")}
+                          {formatRoleName(user.jobTitle || (isRtl ? "کارشناس" : "Specialist"), locale)}
                         </span>
                         {user.department && (
                           <span className="truncate opacity-75">

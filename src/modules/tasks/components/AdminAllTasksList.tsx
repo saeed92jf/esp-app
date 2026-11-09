@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { NewTask, newTasksService } from "../services/new-tasks.service";
 import { toast } from "sonner";
 import type { User } from "@/types/auth";
+import { formatPersonName } from "@/lib/person-names";
 
 interface AdminAllTasksListProps {
   tasks: NewTask[];
@@ -194,7 +195,7 @@ export function AdminAllTasksList({
                     {task.assignees?.length > 0 && (
                       <span className="flex items-center gap-1">
                         <Users className="size-3" />
-                        <span>{task.assignees.map((a) => a.name).join("، ")}</span>
+                        <span>{task.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ")}</span>
                       </span>
                     )}
                     {task.deadline && (

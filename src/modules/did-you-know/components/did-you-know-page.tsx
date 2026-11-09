@@ -138,7 +138,10 @@ export function DidYouKnowPage() {
 
   const handleCopyCard = (card: DidYouKnowCardItem, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const text = `💡 آیا می‌دانید؟\n${card.title}\n\n${card.description}\n\nفرمول: ${card.formula}\nمرجع: ${card.ref}`;
+    const header = isRtl ? "💡 آیا می‌دانید؟" : "💡 Did You Know?";
+    const formulaLabel = isRtl ? "فرمول:" : "Formula:";
+    const refLabel = isRtl ? "مرجع:" : "Reference:";
+    const text = `${header}\n${card.title}\n\n${card.description}\n\n${formulaLabel} ${card.formula}\n${refLabel} ${card.ref}`;
     navigator.clipboard.writeText(text);
     setCopiedId(card.id);
     showToast(isRtl ? "متن کامل نکته علمی کپی شد" : "Fact copied to clipboard");

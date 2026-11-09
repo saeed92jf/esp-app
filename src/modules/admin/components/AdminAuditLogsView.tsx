@@ -36,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Dialog,
@@ -454,11 +455,13 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
 
                       {/* Actor & Target Meta on Mobile */}
                       <div className="flex items-center gap-2 mt-1 sm:hidden text-[11px] text-muted-foreground flex-wrap">
-                        <span className="font-semibold text-foreground">{log.actorName || log.actorId}</span>
+                        <span className="font-semibold text-foreground">
+                          {log.actorName ? formatPersonName(log.actorName, locale) : log.actorId}
+                        </span>
                         {log.targetName && (
                           <>
                             <span>•</span>
-                            <span className="truncate">هدف: {log.targetName}</span>
+                            <span className="truncate">{isRtl ? `هدف: ${formatPersonName(log.targetName, locale)}` : `Target: ${formatPersonName(log.targetName, locale)}`}</span>
                           </>
                         )}
                       </div>
@@ -470,10 +473,10 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
                     {/* Actor Details */}
                     <div className="hidden sm:flex flex-col items-end text-end min-w-[130px]">
                       <span className="text-xs font-bold text-foreground truncate max-w-[140px]">
-                        {log.actorName || log.actorId || "سیستم"}
+                        {log.actorName ? formatPersonName(log.actorName, locale) : (log.actorId || (isRtl ? "سیستم" : "System"))}
                       </span>
                       <span className="text-[10px] text-muted-foreground truncate max-w-[140px]">
-                        {log.actorRole || "system"}
+                        {log.actorRole ? formatRoleName(log.actorRole, locale) : "system"}
                       </span>
                     </div>
 
@@ -526,12 +529,16 @@ export function AdminAuditLogsView({ currentUser }: AdminAuditLogsViewProps) {
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2.5 rounded-lg bg-muted/20 border border-border/30">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "عامل (کاربر)" : "Actor"}</span>
-                  <span className="font-semibold text-foreground">{selectedLog.actorName || selectedLog.actorId}</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedLog.actorName ? formatPersonName(selectedLog.actorName, locale) : selectedLog.actorId}
+                  </span>
                   {selectedLog.actorEmail && <span className="block text-[10px] text-muted-foreground">{selectedLog.actorEmail}</span>}
                 </div>
                 <div className="p-2.5 rounded-lg bg-muted/20 border border-border/30">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "نقش عامل" : "Actor Role"}</span>
-                  <span className="font-semibold text-foreground">{selectedLog.actorRole || "system"}</span>
+                  <span className="font-semibold text-foreground">
+                    {selectedLog.actorRole ? formatRoleName(selectedLog.actorRole, locale) : "system"}
+                  </span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-muted/20 border border-border/30">
                   <span className="text-[10px] text-muted-foreground block">{isRtl ? "نوع عملیات" : "Action Key"}</span>

@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import {
   Mail,
   Send,
@@ -61,7 +62,7 @@ interface ProjectVdisTransmittalTabProps {
 export function ProjectVdisTransmittalTab({
   project,
   roleMode = "admin",
-  currentUserName = "سعید جلیلی",
+  currentUserName,
   isManager = true,
   onUploadVdisDocument,
   onCreateTransmittal,
@@ -69,6 +70,9 @@ export function ProjectVdisTransmittalTab({
   onManagerRejectTransmittal,
 }: ProjectVdisTransmittalTabProps) {
   const t = useTranslations("Projects.vdis");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const effectiveUserName = currentUserName || (isRtl ? "سعید جلیلی" : "Saeed Jalili");
 
   const [activeFolder, setActiveFolder] = useState<
     "inbox" | "ready" | "sent" | "allDocs"
@@ -83,13 +87,17 @@ export function ProjectVdisTransmittalTab({
     `TR-${project.code.replace("PRJ-", "")}-${Math.floor(Math.random() * 80) + 20}`
   );
   const [subject, setSubject] = useState(
-    `ارسال مدارک پکیج مهندسی - ${project.title.slice(0, 40)}`
+    isRtl
+      ? `ارسال مدارک پکیج مهندسی - ${project.title.slice(0, 40)}`
+      : `Engineering Package Documents - ${project.title.slice(0, 40)}`
   );
   const [recipientCompany, setRecipientCompany] = useState(project.clientName);
   const [recipientEmail, setRecipientEmail] = useState("pmt@client-corp.ir");
   const [ccEmails, setCcEmails] = useState("rezaei@petroespadana.com, dms@company.com");
   const [coverLetter, setCoverLetter] = useState(
-    `احتراماً پیرو قرارداد شماره ${project.contractNumber || "قرارداد منعقده"}، اسناد و نقشه‌های تفصیلی فهرست‌شده طبق شاخص VDIS جهت بررسی و صدور فرم نظرخواهی کارفرما به پیوست ارسال می‌گردد.`
+    isRtl
+      ? `احتراماً پیرو قرارداد شماره ${project.contractNumber || "قرارداد منعقده"}، اسناد و نقشه‌های تفصیلی فهرست‌شده طبق شاخص VDIS جهت بررسی و صدور فرم نظرخواهی کارفرما به پیوست ارسال می‌گردد.`
+      : `Respectfully, pursuant to contract no. ${project.contractNumber || "executed contract"}, detailed documents and drawings per VDIS are attached for review and client comment approval.`
   );
   const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,8 +137,8 @@ export function ProjectVdisTransmittalTab({
         recipientCompany,
         recipientEmail,
         ccEmails: ccEmails.split(",").map((s) => s.trim()).filter(Boolean),
-        senderName: "سعید جلیلی",
-        senderRole: "سرپرست مهندسی فرآیند",
+        senderName: formatPersonName("سعید جلیلی", locale),
+        senderRole: formatRoleName("سرپرست مهندسی فرآیند", locale),
         coverLetterText: coverLetter,
         status: "pending_manager",
         documents: attachedDocs,
@@ -157,8 +165,8 @@ export function ProjectVdisTransmittalTab({
       fileFormat: docFormat,
       fileSize: "4.5 MB",
       filePathUrl: `${project.dmsNetworkPath}${docNumber}.${docFormat.toLowerCase()}`,
-      preparedBy: "سعید جلیلی",
-      preparedDate: new Intl.DateTimeFormat("fa-IR").format(new Date()),
+      preparedBy: formatPersonName("سعید جلیلی", locale),
+      preparedDate: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
     });
 
     setDocTitle("");
@@ -230,7 +238,7 @@ export function ProjectVdisTransmittalTab({
         {/* ── Panel 1: Outlook Navigation Sidebar (3 Cols) ── */}
         <div className="lg:col-span-3 rounded-2xl border border-border/60 bg-white dark:bg-card p-3 shadow-xs flex flex-col gap-1.5">
           <span className="text-[11px] font-bold text-muted-foreground px-2 py-1 uppercase tracking-wider">
-            پوشه‌ها و کارتابل ترنسمیتال
+            {isRtl ? "پوشه‌ها و کارتابل ترنسمیتال" : "Transmittal Folders & Inbox"}
           </span>
 
           <button
@@ -314,7 +322,7 @@ export function ProjectVdisTransmittalTab({
           {/* DMS Path Quick Info */}
           <div className="mt-4 p-2.5 rounded-xl bg-muted/20 border border-border/50 flex flex-col gap-1">
             <span className="text-[10px] font-bold text-muted-foreground">
-              مسیر شبکه آرشیو DMS:
+              {isRtl ? "مسیر شبکه آرشیو DMS:" : "DMS Archive Network Path:"}
             </span>
             <span className="text-[10px] font-mono text-primary truncate" title={project.dmsNetworkPath}>
               {project.dmsNetworkPath}
@@ -329,10 +337,10 @@ export function ProjectVdisTransmittalTab({
             <div className="p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between pb-2 border-b border-border/50">
                 <span className="text-xs font-bold text-foreground">
-                  فهرست ماتریس مستندات وندور (VDIS / MDR)
+                  {isRtl ? "فهرست ماتریس مستندات وندور (VDIS / MDR)" : "Vendor Document Index & Schedule (VDIS / MDR)"}
                 </span>
                 <span className="text-[11px] text-muted-foreground">
-                  {vdisDocs.length} مدرک ثبت‌شده
+                  {vdisDocs.length} {isRtl ? "مدرک ثبت‌شده" : "registered documents"}
                 </span>
               </div>
 
@@ -345,7 +353,7 @@ export function ProjectVdisTransmittalTab({
                       <th className="p-2.5 text-start">{t("revision")}</th>
                       <th className="p-2.5 text-start">{t("category")}</th>
                       <th className="p-2.5 text-start">{t("status")}</th>
-                      <th className="p-2.5 text-end">عملیات</th>
+                      <th className="p-2.5 text-end">{isRtl ? "عملیات" : "Actions"}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/40">
@@ -376,7 +384,7 @@ export function ProjectVdisTransmittalTab({
                         <td className="p-2.5 text-end">
                           <button
                             type="button"
-                            onClick={() => alert(`دانلود سند: ${doc.docNumber}`)}
+                            onClick={() => alert(isRtl ? `دانلود سند: ${doc.docNumber}` : `Download document: ${doc.docNumber}`)}
                             className="size-7 rounded-lg border border-border/60 inline-flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
                           >
                             <Download className="size-3.5" />
@@ -395,7 +403,7 @@ export function ProjectVdisTransmittalTab({
               <div className="md:col-span-5 flex flex-col p-2.5 gap-2 overflow-y-auto max-h-[560px]">
                 {transmittals.length === 0 ? (
                   <div className="text-center py-12 text-xs text-muted-foreground">
-                    ترنسمیتالی در این بخش وجود ندارد.
+                    {isRtl ? "ترنسمیتالی در این بخش وجود ندارد." : "No transmittals found in this section."}
                   </div>
                 ) : (
                   transmittals.map((tr) => {
@@ -427,7 +435,7 @@ export function ProjectVdisTransmittalTab({
                         </h4>
 
                         <span className="text-[11px] text-muted-foreground line-clamp-1">
-                          گیرنده: {tr.recipientCompany}
+                          {isRtl ? "گیرنده: " : "Recipient: "} {tr.recipientCompany}
                         </span>
 
                         <div className="flex items-center justify-between pt-1 text-[10px]">
@@ -445,7 +453,7 @@ export function ProjectVdisTransmittalTab({
                           </span>
 
                           <span className="text-muted-foreground">
-                            {tr.documents?.length || 2} سند ضمیمه
+                            {tr.documents?.length || 2} {isRtl ? "سند ضمیمه" : "attached document(s)"}
                           </span>
                         </div>
                       </div>
@@ -467,7 +475,9 @@ export function ProjectVdisTransmittalTab({
                             {t("managerPendingNotice")}
                           </span>
                           <span className="text-[11px] opacity-80">
-                            این مدرک توسط مهندس پروژه آماده شده و برای ارسال به ایمیل کارفرما نیاز به امضا و تایید مدیر دارد.
+                            {isRtl
+                              ? "این مدرک توسط مهندس پروژه آماده شده و برای ارسال به ایمیل کارفرما نیاز به امضا و تایید مدیر دارد."
+                              : "This transmittal was prepared by the project engineer and requires manager signature and approval before dispatching."}
                           </span>
                         </div>
                       </div>
@@ -475,7 +485,7 @@ export function ProjectVdisTransmittalTab({
                       <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2.5 text-xs text-emerald-800 dark:text-emerald-300">
                         <ShieldCheck className="size-4 shrink-0 text-emerald-600" />
                         <span className="font-semibold">
-                          {t("managerApprovedNotice")} (تاییدکننده: {selectedTransmittal.approverManagerName || "مدیر ارشد"})
+                          {t("managerApprovedNotice")} ({isRtl ? "تاییدکننده:" : "Approved by:"} {formatPersonName(selectedTransmittal.approverManagerName || (isRtl ? "مدیر ارشد" : "Senior Manager"), locale)})
                         </span>
                       </div>
                     )}
@@ -485,34 +495,34 @@ export function ProjectVdisTransmittalTab({
                       <div className="flex items-center justify-between pb-1 border-b border-border/40">
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground font-semibold">
-                            کد ترنسمیتال:
+                            {isRtl ? "کد ترنسمیتال:" : "Transmittal Code:"}
                           </span>
                           <span className="font-mono font-bold text-primary text-sm">
                             {selectedTransmittal.transmittalNo}
                           </span>
                         </div>
                         <span className="text-muted-foreground text-[11px]">
-                          تاریخ تنظیم: {selectedTransmittal.sentDate || "امروز"}
+                          {isRtl ? `تاریخ تنظیم: ${selectedTransmittal.sentDate || "امروز"}` : `Issue Date: ${selectedTransmittal.sentDate || "Today"}`}
                         </span>
                       </div>
 
                       <div className="grid grid-cols-1 gap-1 text-[11px]">
                         <div>
-                          <span className="text-muted-foreground font-semibold">به (To): </span>
+                          <span className="text-muted-foreground font-semibold">{isRtl ? "به (To): " : "To: "}</span>
                           <span className="font-bold text-foreground">
                             {selectedTransmittal.recipientCompany} ({selectedTransmittal.recipientEmail})
                           </span>
                         </div>
                         <div>
-                          <span className="text-muted-foreground font-semibold">رونوشت (CC): </span>
+                          <span className="text-muted-foreground font-semibold">{isRtl ? "رونوشت (CC): " : "CC: "}</span>
                           <span className="text-muted-foreground">
-                            {selectedTransmittal.ccEmails?.join("، ") || "مدیر مهندسی"}
+                            {selectedTransmittal.ccEmails?.join("، ") || (isRtl ? "مدیر مهندسی" : "Engineering Manager")}
                           </span>
                         </div>
                         <div>
                           <span className="text-muted-foreground font-semibold">فرستنده: </span>
                           <span className="font-bold text-foreground">
-                            {selectedTransmittal.senderName} ({selectedTransmittal.senderRole})
+                            {formatPersonName(selectedTransmittal.senderName, locale)} ({formatRoleName(selectedTransmittal.senderRole, locale)})
                           </span>
                         </div>
                       </div>
@@ -521,7 +531,7 @@ export function ProjectVdisTransmittalTab({
                     {/* Subject */}
                     <div className="flex flex-col gap-1">
                       <span className="text-xs font-bold text-muted-foreground">
-                        موضوع (Subject):
+                        {isRtl ? "موضوع (Subject):" : "Subject:"}
                       </span>
                       <h3 className="text-sm sm:text-base font-bold text-foreground">
                         {selectedTransmittal.subject}
@@ -537,7 +547,7 @@ export function ProjectVdisTransmittalTab({
                     <div className="flex flex-col gap-2">
                       <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
                         <Paperclip className="size-3.5 text-primary" />
-                        <span>مدارک و نقشه‌های ضمیمه این ترنسمیتال:</span>
+                        <span>{isRtl ? "مدارک و نقشه‌های ضمیمه این ترنسمیتال:" : "Attached Documents & Drawings:"}</span>
                       </span>
 
                       <div className="flex flex-col gap-1.5">
@@ -568,7 +578,7 @@ export function ProjectVdisTransmittalTab({
 
                             <button
                               type="button"
-                              onClick={() => alert(`دانلود فایل: ${doc.docNumber}`)}
+                              onClick={() => alert(isRtl ? `دانلود فایل: ${doc.docNumber}` : `Download file: ${doc.docNumber}`)}
                               className="size-7 rounded-lg border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer"
                             >
                               <Download className="size-3.5" />
@@ -597,11 +607,11 @@ export function ProjectVdisTransmittalTab({
                               variant="destructive"
                               size="sm"
                               onClick={() => {
-                                const reason = prompt("علت عدم تایید ترنسمیتال را بنویسید:");
+                                const reason = prompt(isRtl ? "علت عدم تایید ترنسمیتال را بنویسید:" : "Please state rejection reason:");
                                 if (reason) {
                                   onManagerRejectTransmittal(
                                     selectedTransmittal.id,
-                                    currentUserName || "مدیر مهندسی",
+                                    formatPersonName(effectiveUserName, locale),
                                     reason
                                   );
                                 }
@@ -618,8 +628,10 @@ export function ProjectVdisTransmittalTab({
                               onClick={() =>
                                 onManagerApproveTransmittal(
                                   selectedTransmittal.id,
-                                  currentUserName || "مدیر مهندسی",
-                                  "مستندات کنترل و جهت ارسال رسمی به کارفرما تایید گردید."
+                                  formatPersonName(effectiveUserName, locale),
+                                  isRtl
+                                    ? "مستندات کنترل و جهت ارسال رسمی به کارفرما تایید گردید."
+                                    : "Documents reviewed and approved for official transmission to client."
                                 )
                               }
                               className="rounded-xl text-xs font-bold gap-1.5 cursor-pointer shadow-2xs flex-1 sm:flex-none"

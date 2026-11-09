@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import type {
   DashboardTask,
   TaskComment,
@@ -99,10 +100,11 @@ export function TaskDetailModal({
     e.preventDefault();
     if (!commentText.trim()) return;
 
+    const isFa = locale === "fa";
     const newComment: TaskComment = {
       id: `comm-${Date.now()}`,
-      authorName: "سعید جلیلی",
-      authorRole: "کارشناس ارشد مهندسی",
+      authorName: isFa ? "سعید جلیلی" : "Saeed Jalili",
+      authorRole: isFa ? "کارشناس ارشد مهندسی" : "Senior Engineering Specialist",
       content: commentText.trim(),
       createdAt:
         locale === "fa"
@@ -366,9 +368,9 @@ export function TaskDetailModal({
                       >
                         <div className="flex items-center justify-between text-muted-foreground">
                           <span className="font-semibold text-foreground/90">
-                            {comment.authorName}{" "}
+                            {formatPersonName(comment.authorName, locale)}{" "}
                             <span className="text-[10px] text-muted-foreground font-normal">
-                              ({comment.authorRole})
+                              ({formatRoleName(comment.authorRole, locale)})
                             </span>
                           </span>
                           <span className="text-[10px] opacity-70 fa-num">

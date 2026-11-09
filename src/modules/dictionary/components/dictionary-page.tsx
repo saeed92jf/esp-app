@@ -173,7 +173,10 @@ export function DictionaryPage() {
   // Quick Copy
   const handleCopy = (term: DictionaryItem, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const textToCopy = `${term.term} ${term.secondaryTerm ? `(${term.secondaryTerm})` : ""}\n\nتعریف: ${term.shortDesc}\n\nنکته کلیدی: ${term.keyTip}${term.standards ? `\n\nاستانداردها: ${term.standards.join(", ")}` : ""}`;
+    const defLabel = isRtl ? "تعریف:" : "Definition:";
+    const tipLabel = isRtl ? "نکته کلیدی:" : "Key Tip:";
+    const stdLabel = isRtl ? "استانداردها:" : "Standards:";
+    const textToCopy = `${term.term} ${term.secondaryTerm ? `(${term.secondaryTerm})` : ""}\n\n${defLabel} ${term.shortDesc}\n\n${tipLabel} ${term.keyTip}${term.standards ? `\n\n${stdLabel} ${term.standards.join(", ")}` : ""}`;
     navigator.clipboard.writeText(textToCopy);
     setCopiedId(term.id);
     showToast(isRtl ? `مشخصات واژه «${term.term}» کپی شد` : `Term "${term.term}" copied`);

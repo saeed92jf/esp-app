@@ -26,6 +26,7 @@ import {
 import { useConfirm } from "@/hooks/use-confirm";
 import type { UserRole } from "@/types/auth";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { getRoleRingClass } from "@/lib/role-avatar";
 import { toast } from "sonner";
 import { api } from "@/services";
@@ -96,6 +97,35 @@ function getUserAvatarColor(user: User): string {
   let hash = 0;
   for (let i = 0; i < user.id.length; i++) hash = user.id.charCodeAt(i) + ((hash << 5) - hash);
   return AVATAR_PALETTE[Math.abs(hash) % AVATAR_PALETTE.length];
+}
+
+function matchesUserSearch(user: User, rawQuery: string): boolean {
+  if (!rawQuery.trim()) return true;
+  const q = rawQuery.toLowerCase().trim();
+  const cleanQ = q.replace(/[\u200c\s]/g, "");
+
+  const candidates = [
+    user.name,
+    user.fullName,
+    user.fullNameFa,
+    user.firstName,
+    user.lastName,
+    user.firstNameFa,
+    user.lastNameFa,
+    user.id,
+    user.email,
+    user.phone,
+    user.employeeId,
+    user.personnelCode,
+    user.nationalId,
+  ].filter(Boolean) as string[];
+
+  return candidates.some((c) => {
+    const cl = c.toLowerCase();
+    if (cl.includes(q)) return true;
+    const cleanC = cl.replace(/[\u200c\s]/g, "");
+    return cleanC.includes(cleanQ);
+  });
 }
 
 function formatLastSeen(isoDate?: string, isRtl = false): string {
@@ -325,7 +355,7 @@ export function AdminUsersTable({
   const locale = useLocale();
   const isRtl = locale === "fa";
 
-  const operatorName = currentUser?.fullNameFa || currentUser?.name || currentUser?.fullName || "سعید جلیلی فرد";
+  const operatorName = formatPersonName(currentUser?.fullName || currentUser?.fullNameFa || currentUser?.name || "سعید جلیلی فرد", locale);
   const operatorRoleLabel = currentUser?.role === "superadmin"
     ? (isRtl ? "سوپر ادمین" : "Super Admin")
     : currentUser?.role === "dept_admin"
@@ -599,7 +629,7 @@ export function AdminUsersTable({
       // 0. Global Search
       if (globalSearch.trim()) {
         const q = globalSearch.toLowerCase().trim();
-        const matchName = user.name?.toLowerCase().includes(q);
+        const matchName = matchesUserSearch(user, q);
         const matchEmail = user.email?.toLowerCase().includes(q);
         const matchId = user.id?.toLowerCase().includes(q);
         const matchTitle = user.jobTitle?.toLowerCase().includes(q);
@@ -614,8 +644,7 @@ export function AdminUsersTable({
 
       // 1. Column 1: User Query & Roles
       if (colFilters.userNameQuery.trim()) {
-        const q = colFilters.userNameQuery.toLowerCase().trim();
-        if (!user.name?.toLowerCase().includes(q) && !user.id?.toLowerCase().includes(q)) {
+        if (!matchesUserSearch(user, colFilters.userNameQuery)) {
           return false;
         }
       }
@@ -856,15 +885,15 @@ export function AdminUsersTable({
         requestType: "edit_profile",
         requestTag: "ویرایش اطلاعات کاربر",
         notes: isRtl
-          ? `درخواست بازنگری و ویرایش اطلاعات پرونده پرسنلی برای «${targetUser.name}» (#${targetUser.id})`
-          : `Profile information update request for ${targetUser.name} (#${targetUser.id})`,
+          ? `درخواست بازنگری و ویرایش اطلاعات پرونده پرسنلی برای «${formatPersonName(targetUser.name, locale)}» (#${targetUser.id})`
+          : `Profile information update request for ${formatPersonName(targetUser.name, locale)} (#${targetUser.id})`,
       };
 
       await api.admin.createRequest(newReqPayload);
       toast.success(
         isRtl
-          ? `درخواست ویرایش برای «${targetUser.name}» ثبت گردید و به کارتابل درخواست‌ها منتقل شد.`
-          : `Edit request created for "${targetUser.name}" and sent to Requests.`
+          ? `درخواست ویرایش برای «${formatPersonName(targetUser.name, locale)}» ثبت گردید و به کارتابل درخواست‌ها منتقل شد.`
+          : `Edit request created for "${formatPersonName(targetUser.name, locale)}" and sent to Requests.`
       );
 
       if (onRefresh) {
@@ -921,10 +950,10 @@ export function AdminUsersTable({
     }
 
     confirm({
-      title: isRtl ? `حذف کامل کاربر «${targetUser.name}»` : `Delete User "${targetUser.name}"`,
+      title: isRtl ? `حذف کامل کاربر «${formatPersonName(targetUser.name, locale)}»` : `Delete User "${formatPersonName(targetUser.name, locale)}"`,
       description: isRtl
-        ? `هشدار حذف اطلاعات: آیا از حذف کامل حساب کاربری «${targetUser.name}» و تمام اطلاعات پروفایل، مدارک، سوابق و دسترسی‌های وی اطمینان دارید؟ این عملیات دائمی بوده و اطلاعات قابل بازیابی نخواهند بود.`
-        : `Data Deletion Warning: Are you sure you want to completely delete "${targetUser.name}" along with all profile data, documents, and permissions? This action is permanent and cannot be undone.`,
+        ? `هشدار حذف اطلاعات: آیا از حذف کامل حساب کاربری «${formatPersonName(targetUser.name, locale)}» و تمام اطلاعات پروفایل، مدارک، سوابق و دسترسی‌های وی اطمینان دارید؟ این عملیات دائمی بوده و اطلاعات قابل بازیابی نخواهند بود.`
+        : `Data Deletion Warning: Are you sure you want to completely delete "${formatPersonName(targetUser.name, locale)}" along with all profile data, documents, and permissions? This action is permanent and cannot be undone.`,
       confirmText: isRtl ? "حذف کامل و دائمی" : "Delete Permanently",
       cancelText: isRtl ? "انصراف" : "Cancel",
       variant: "destructive",
@@ -940,8 +969,8 @@ export function AdminUsersTable({
           }
           toast.success(
             isRtl
-              ? `حساب کاربری «${targetUser.name}» با موفقیت حذف گردید.`
-              : `User "${targetUser.name}" successfully deleted.`
+              ? `حساب کاربری «${formatPersonName(targetUser.name, locale)}» با موفقیت حذف گردید.`
+              : `User "${formatPersonName(targetUser.name, locale)}" successfully deleted.`
           );
         } catch (err: any) {
           toast.error(err?.message || (isRtl ? "خطا در حذف کاربر" : "Failed to delete user"));
@@ -1677,7 +1706,7 @@ export function AdminUsersTable({
                 ? `${user.firstNameFa || ''} ${user.lastNameFa || ''}`.trim()
                 : (user.fullNameFa || user.name || enName);
 
-              const userDisplayName = isRtl ? faName : enName;
+              const userDisplayName = formatPersonName(isRtl ? faName : enName, locale);
 
               const getEducationLabel = () => {
                 const deg = user.educationDegree;
@@ -1706,12 +1735,12 @@ export function AdminUsersTable({
               const getInitialLetter = () => {
                 if (isRtl) {
                   if (user.firstNameFa?.trim()) return user.firstNameFa.trim().charAt(0);
-                  const match = user.name?.match(/[\u0600-\u06FF]/);
-                  return match ? match[0] : (user.name?.trim().charAt(0) || "ک");
+                  const match = userDisplayName.match(/[\u0600-\u06FF]/);
+                  return match ? match[0] : (userDisplayName.trim().charAt(0) || "ک");
                 } else {
                   if (user.firstName?.trim()) return user.firstName.trim().charAt(0).toUpperCase();
-                  const match = (user.fullName || user.name)?.match(/[a-zA-Z]/);
-                  return match ? match[0].toUpperCase() : (user.name?.trim().charAt(0) || "U").toUpperCase();
+                  const match = userDisplayName.match(/[a-zA-Z]/);
+                  return match ? match[0].toUpperCase() : (userDisplayName.trim().charAt(0) || "U").toUpperCase();
                 }
               };
               const userInitial = getInitialLetter();
@@ -1797,7 +1826,7 @@ export function AdminUsersTable({
                             {departmentName}
                           </span>
                           <span className="text-[11px] text-muted-foreground truncate max-w-[150px] font-normal leading-tight mt-0.5">
-                            {user.jobTitle || t("userRole")}
+                            {formatRoleName(user.jobTitle || t("userRole"), locale)}
                           </span>
                         </div>
                       </td>

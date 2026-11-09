@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { newTasksService, NewTask, NewTaskCreate, TaskAttachmentItem } from "../services/new-tasks.service";
 import { TaskAttachmentList, readAttachmentFile } from "./TaskAttachmentList";
 import { toast } from "sonner";
@@ -340,8 +341,21 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
 
   const personnelCompanyComboboxOptions: ComboboxOption[] = useMemo(() => [
     { value: "all", label: isRtl ? "همه شرکت‌ها" : "All Companies" },
-    { value: "یورو اسلات پارس", label: "یورو اسلات پارس" },
-    { value: "نانو پالایش سرام", label: "نانو پالایش سرام" },
+    { value: "یورو اسلات پارس", label: isRtl ? "یورو اسلات پارس" : "Euroslot Pars" },
+    { value: "نانو پالایش سرام", label: isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram" },
+  ], [isRtl]);
+
+  const companyComboboxOptions: ComboboxOption[] = useMemo(() => [
+    {
+      value: "یورو اسلات پارس",
+      label: isRtl ? "یورو اسلات پارس" : "Euroslot Pars",
+      hint: isRtl ? "تجهیزات فیلتراسیون، صفحات غربال و اسلات‌دار" : "Filtration equipment, slotted & screen plates",
+    },
+    {
+      value: "نانو پالایش سرام",
+      label: isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram",
+      hint: isRtl ? "غشاهای نانوسرامیکی دمای بالا و کاتالیست" : "High-temp nanoceramic membranes & catalysts",
+    },
   ], [isRtl]);
 
   const handleSubmit = async () => {
@@ -362,7 +376,7 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
         subtasks: state.subtasks.map((s) => ({ title: s.title, is_done: false })),
         assignees: state.assignees,
         created_by: currentUser.id,
-        created_by_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "مدیر",
+        created_by_name: formatPersonName(currentUser.fullNameFa || currentUser.fullName || currentUser.name || "مدیر", locale),
         deadline: state.deadline || null,
         priority: state.priority,
         company: state.company || undefined,
@@ -737,8 +751,8 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                         className="inline-flex items-center gap-1.5 bg-card border border-primary/30 text-foreground px-3 py-1 rounded-full text-xs font-semibold shadow-2xs"
                       >
                         <span className="size-2 rounded-full bg-primary" />
-                        <span>{a.name}</span>
-                        {a.role && <span className="text-[10px] text-muted-foreground font-normal">({a.role})</span>}
+                        <span>{formatPersonName(a.name, locale)}</span>
+                        {a.role && <span className="text-[10px] text-muted-foreground font-normal">({formatRoleName(a.role, locale)})</span>}
                         <button
                           type="button"
                           onClick={() => removeAssigneeById(a.userId)}
@@ -805,14 +819,14 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                             className="size-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 text-white shadow-2xs"
                             style={{ backgroundColor: person.avatarColor || "#0284c7" }}
                           >
-                            {person.name.charAt(0)}
+                            {formatPersonName(person.name, locale).charAt(0)}
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs sm:text-sm font-bold text-foreground truncate">
-                              {person.name}
+                              {formatPersonName(person.name, locale)}
                             </p>
                             <p className="text-[11px] text-muted-foreground truncate">
-                              {person.jobTitle} {person.company ? `• ${person.company}` : ""}
+                              {formatRoleName(person.jobTitle, locale)} {person.company ? `• ${person.company === "یورو اسلات پارس" ? (isRtl ? "یورو اسلات پارس" : "Euroslot Pars") : (isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram")}` : ""}
                             </p>
                           </div>
                         </div>
@@ -881,7 +895,7 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                     <span>{isRtl ? "شرکت مجری / کارفرما" : "Company"}</span>
                   </label>
                   <Combobox
-                    options={COMPANY_COMBOBOX_OPTIONS}
+                    options={companyComboboxOptions}
                     value={state.company}
                     onChange={(val) => setState((s) => ({ ...s, company: val }))}
                     placeholder={isRtl ? "انتخاب شرکت مربوطه..." : "Select company..."}

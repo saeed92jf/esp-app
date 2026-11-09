@@ -2,11 +2,12 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskItem, TaskStatus, TaskPriority } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
 import { HighlightMatch } from "../utils/task-search";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
 interface TaskBoardProps {
   tasks: TaskItem[];
@@ -23,6 +24,8 @@ export function TaskBoard({
   onUpdateStatus,
 }: TaskBoardProps) {
   const t = useTranslations("Tasks");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<TaskStatus | null>(null);
   const isDraggingRef = useRef(false);
@@ -315,7 +318,7 @@ export function TaskBoard({
                         {/* Overlapping Collaborators Stack */}
                         <div
                           className="flex items-center -space-x-1.5 rtl:space-x-reverse"
-                          title={assignees.map((a) => `${a.name} (${a.role})`).join("، ")}
+                          title={assignees.map((a) => `${formatPersonName(a.name, locale)} (${formatRoleName(a.role, locale)})`).join(isRtl ? "، " : ", ")}
                         >
                           {visibleAssignees.map((assignee) => (
                             <Avatar
@@ -323,7 +326,7 @@ export function TaskBoard({
                               className="size-5.5 border-2 border-white dark:border-card shrink-0 shadow-2xs"
                             >
                               <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-bold">
-                                {assignee.name?.charAt(0) || "U"}
+                                {formatPersonName(assignee.name, locale)?.charAt(0) || "U"}
                               </AvatarFallback>
                             </Avatar>
                           ))}

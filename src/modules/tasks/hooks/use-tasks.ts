@@ -2,6 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useLocale } from "next-intl";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import {
   TaskItem,
   TaskFilterState,
@@ -79,10 +81,14 @@ export function useTasks(options?: {
   initialRole?: "admin" | "user";
   defaultUserName?: string;
 }) {
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
-  const userDisplayName =
-    user?.fullNameFa || user?.fullName || options?.defaultUserName || "کاربر";
+  const rawDisplayName = user?.fullNameFa || user?.fullName || options?.defaultUserName || "";
+  const userDisplayName = rawDisplayName
+    ? formatPersonName(rawDisplayName, locale)
+    : (isRtl ? "کاربر" : "User");
 
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [projects, setProjects] = useState<ProjectItem[]>([]);
@@ -541,9 +547,11 @@ export function useTasks(options?: {
         {
           id: `act-${Date.now()}`,
           type: "status_change",
-          authorName: "سعید جلیلی",
-          timestamp: new Intl.DateTimeFormat("fa-IR").format(new Date()),
-          details: `وضعیت به ${newStatus} تغییر کرد.`,
+          authorName: userDisplayName,
+          timestamp: isRtl
+            ? new Intl.DateTimeFormat("fa-IR").format(new Date())
+            : new Intl.DateTimeFormat("en-US").format(new Date()),
+          details: isRtl ? `وضعیت به ${newStatus} تغییر کرد.` : `Status changed to ${newStatus}.`,
         },
         ...(updated.activities || []),
       ];
@@ -610,20 +618,22 @@ export function useTasks(options?: {
       taskId: string,
       content: string,
       attachments?: TaskAttachment[],
-      authorName = "سعید جلیلی",
-      authorRole = "سرپرست مهندسی فرآیند"
+      authorName?: string,
+      authorRole?: string
     ) => {
       if (!content.trim() && (!attachments || attachments.length === 0)) return;
+      const effectiveName = authorName ? formatPersonName(authorName, locale) : userDisplayName;
+      const effectiveRole = authorRole ? formatRoleName(authorRole, locale) : (isRtl ? "سرپرست مهندسی فرآیند" : "Process Engineering Lead");
       await tasksService.addComment(taskId, {
-        authorName,
-        authorRole,
+        authorName: effectiveName,
+        authorRole: effectiveRole,
         content: content.trim(),
         likes: 0,
         attachments,
       });
       await fetchTasks();
     },
-    [fetchTasks]
+    [fetchTasks, userDisplayName, locale, isRtl]
   );
 
   const addReply = useCallback(
@@ -632,21 +642,23 @@ export function useTasks(options?: {
       commentId: string,
       content: string,
       attachments?: TaskAttachment[],
-      authorName = "سعید جلیلی",
-      authorRole = "سرپرست مهندسی فرآیند"
+      authorName?: string,
+      authorRole?: string
     ) => {
       if (!content.trim() && (!attachments || attachments.length === 0)) return;
+      const effectiveName = authorName ? formatPersonName(authorName, locale) : userDisplayName;
+      const effectiveRole = authorRole ? formatRoleName(authorRole, locale) : (isRtl ? "سرپرست مهندسی فرآیند" : "Process Engineering Lead");
       await tasksService.addReply(taskId, commentId, {
         commentId,
-        authorName,
-        authorRole,
+        authorName: effectiveName,
+        authorRole: effectiveRole,
         content: content.trim(),
         likes: 0,
         attachments,
       });
       await fetchTasks();
     },
-    [fetchTasks]
+    [fetchTasks, userDisplayName, locale, isRtl]
   );
 
   const uploadAttachment = useCallback(

@@ -32,6 +32,7 @@ import {
 } from "../types/tasks.types";
 import type { ProjectItem } from "@/modules/projects/types/projects.types";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
 interface TaskCreateDialogProps {
   open: boolean;
@@ -65,7 +66,7 @@ export function TaskCreateDialog({
   const t = useTranslations("Tasks");
   const locale = useLocale();
   const isRtl = locale === "fa";
-  const userLead = currentUserName || "سعید جلیلی";
+  const userLead = currentUserName || (isRtl ? "سعید جلیلی" : "Saeed Jalili");
 
   // Non-admins can strictly ONLY create personal tasks.
   // Admins can toggle between 'team' (organizational) and 'personal'.
@@ -88,19 +89,19 @@ export function TaskCreateDialog({
   const [company, setCompany] = useState(companies[0] || "یورو اسلات پارس");
   const [priority, setPriority] = useState<TaskPriority>("high");
   const [dueDate, setDueDate] = useState("1403/08/18");
-  const [timelineDate, setTimelineDate] = useState("18 اسفند");
+  const [timelineDate, setTimelineDate] = useState(isRtl ? "18 اسفند" : "8 March");
   const [estimatedHours, setEstimatedHours] = useState("16");
   const [initialProgress, setInitialProgress] = useState(0);
   const [isManagerDefined, setIsManagerDefined] = useState(isAdmin);
 
   // Assignees for team tasks (Admin only)
   const [assigneeName, setAssigneeName] = useState(userLead);
-  const [assigneeRole, setAssigneeRole] = useState(isAdmin ? "مدیر پروژه" : "کارشناس مهندسی");
+  const [assigneeRole, setAssigneeRole] = useState(isAdmin ? (isRtl ? "مدیر پروژه" : "Project Manager") : (isRtl ? "کارشناس مهندسی" : "Engineering Specialist"));
   const [collaborators, setCollaborators] = useState<TaskAssignee[]>([
     {
       id: "lead",
       name: userLead,
-      role: isAdmin ? "مدیر پروژه" : "کارشناس مهندسی",
+      role: isAdmin ? (isRtl ? "مدیر پروژه" : "Project Manager") : (isRtl ? "کارشناس مهندسی" : "Engineering Specialist"),
       isLead: true,
       companies: ["یورو اسلات پارس", "نانو پالایش سرام"],
     },
@@ -150,7 +151,7 @@ export function TaskCreateDialog({
       {
         id: `usr-${Date.now()}`,
         name: extraCollabName.trim(),
-        role: extraCollabRole.trim() || "همکار اجرایی",
+        role: extraCollabRole.trim() || (isRtl ? "همکار اجرایی" : "Executive Collaborator"),
       },
     ]);
     setExtraCollabName("");
@@ -200,7 +201,7 @@ export function TaskCreateDialog({
       await onCreateTask({
         title: title.trim(),
         description: description.trim() || undefined,
-        category: category.trim() || (isPersonalTask ? "یادداشت شخصی" : "عمومی"),
+        category: category.trim() || (isPersonalTask ? (isRtl ? "یادداشت شخصی" : "Personal Note") : (isRtl ? "عمومی" : "General")),
         company: (company as any) || "یورو اسلات پارس",
         priority,
         status: defaultStatus,
@@ -210,16 +211,16 @@ export function TaskCreateDialog({
         relatedProjectTitle: linkedProjTitle,
         createdBy: isPersonalTask ? "user" : (isManagerDefined && isAdmin ? "manager" : "user"),
         creatorName: isPersonalTask
-          ? userLead
-          : (isManagerDefined && isAdmin ? "مهندس علیرضا رضایی (مدیر مهندسی)" : userLead),
-        assignedToName: isPersonalTask ? userLead : (assigneeName.trim() || userLead),
-        assignedToRole: isPersonalTask ? "شخصی" : (assigneeRole.trim() || "کارشناس مهندسی"),
+          ? formatPersonName(userLead, locale)
+          : (isManagerDefined && isAdmin ? (isRtl ? "مهندس علیرضا رضایی (مدیر مهندسی)" : "Eng. Alireza Rezaei (Engineering Manager)") : formatPersonName(userLead, locale)),
+        assignedToName: isPersonalTask ? formatPersonName(userLead, locale) : formatPersonName(assigneeName.trim() || userLead, locale),
+        assignedToRole: isPersonalTask ? (isRtl ? "شخصی" : "Personal") : formatRoleName(assigneeRole.trim() || "کارشناس مهندسی", locale),
         assignees: isPersonalTask
           ? [
               {
                 id: "usr-self",
                 name: userLead,
-                role: "شخصی",
+                role: isRtl ? "شخصی" : "Personal",
                 isLead: true,
                 companies: ["یورو اسلات پارس", "نانو پالایش سرام"],
               },
@@ -230,7 +231,7 @@ export function TaskCreateDialog({
               {
                 id: "default",
                 name: assigneeName || userLead,
-                role: assigneeRole || "کارشناس مهندسی",
+                role: assigneeRole || (isRtl ? "کارشناس مهندسی" : "Engineering Specialist"),
                 isLead: true,
               },
             ],
@@ -287,7 +288,7 @@ export function TaskCreateDialog({
               <span className="text-[11px] text-muted-foreground">
                 {isPersonalActive
                   ? t("createModal.personalSubtitle")
-                  : "تسک سازمانی با تفکیک دو شرکت یورو اسلات پارس و نانو پالایش سرام"}
+                  : (isRtl ? "تسک سازمانی با تفکیک دو شرکت یورو اسلات پارس و نانو پالایش سرام" : "Team task with Euroslot Pars & Nano Palayesh Seram separation")}
               </span>
             </div>
           </div>
@@ -485,8 +486,8 @@ export function TaskCreateDialog({
               </label>
               <Combobox
                 options={[
-                  { value: "یورو اسلات پارس", label: "یورو اسلات پارس (Euroslot Pars)" },
-                  { value: "نانو پالایش سرام", label: "نانو پالایش سرام (Nano Palayesh Ceram)" },
+                  { value: "یورو اسلات پارس", label: isRtl ? "یورو اسلات پارس (Euroslot Pars)" : "Euroslot Pars" },
+                  { value: "نانو پالایش سرام", label: isRtl ? "نانو پالایش سرام (Nano Palayesh Ceram)" : "Nano Palayesh Seram" },
                 ]}
                 value={company}
                 onChange={setCompany}
@@ -502,7 +503,7 @@ export function TaskCreateDialog({
               <Input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="مثلاً P&ID, ASME, QC, یادداشت شخصی"
+                placeholder={isRtl ? "مثلاً P&ID, ASME, QC, یادداشت شخصی" : "e.g. P&ID, ASME, QC, Personal Note"}
                 className="text-xs rounded-xl"
               />
             </div>
@@ -576,8 +577,8 @@ export function TaskCreateDialog({
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-card border border-border/60 text-xs shadow-2xs"
                   >
                     <User className="size-3 text-primary" />
-                    <span className="font-semibold">{c.name}</span>
-                    <span className="text-[10px] text-muted-foreground">({c.role})</span>
+                    <span className="font-semibold">{formatPersonName(c.name, locale)}</span>
+                    <span className="text-[10px] text-muted-foreground">({formatRoleName(c.role, locale)})</span>
                     {collaborators.length > 1 && (
                       <button
                         type="button"

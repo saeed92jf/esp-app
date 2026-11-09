@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
+import { formatPersonName } from "@/lib/person-names";
 import {
   ShieldAlert,
   AlertTriangle,
@@ -42,7 +43,8 @@ export function ProjectRisksTab({
   onAddRisk,
   onUpdateRiskStatus,
 }: ProjectRisksTabProps) {
-  const t = useTranslations("Projects.risks");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>("all");
@@ -54,7 +56,7 @@ export function ProjectRisksTab({
   const [severity, setSeverity] = useState<RiskSeverity>("high");
   const [probability, setProbability] = useState<RiskProbability>("likely");
   const [mitigationPlan, setMitigationPlan] = useState("");
-  const [responsiblePerson, setResponsiblePerson] = useState("سارا محمدی");
+  const [responsiblePerson, setResponsiblePerson] = useState(isRtl ? "سارا محمدی" : "Sara Mohammadi");
 
   const risks = project.risks || [];
 
@@ -62,6 +64,23 @@ export function ProjectRisksTab({
     if (filterCategory !== "all" && r.category !== filterCategory) return false;
     return true;
   });
+
+  const getCategoryLabel = (cat: string) => {
+    switch (cat) {
+      case "material":
+        return isRtl ? "متریال و متالورژی" : "Material & Metallurgy";
+      case "thickness":
+        return isRtl ? "ضخامت بالا و PWHT" : "High Thickness & PWHT";
+      case "fabrication":
+        return isRtl ? "ساخت و تلرانس" : "Fabrication & Tolerances";
+      case "special_equipment":
+        return isRtl ? "تجهیزات خاص" : "Special Equipment";
+      case "procurement":
+        return isRtl ? "تدارکات و خرید خارجی" : "Procurement & Sourcing";
+      default:
+        return cat;
+    }
+  };
 
   const getSeverityBadge = (sev: RiskSeverity) => {
     switch (sev) {
@@ -108,8 +127,8 @@ export function ProjectRisksTab({
       severity,
       probability,
       riskScore: calculateScore(severity, probability),
-      mitigationPlan: mitigationPlan.trim() || "تعیین دستورالعمل کنترل کیفیت و هماهنگی جلسه اضطراری",
-      responsiblePerson: responsiblePerson.trim() || "مدیر پروژه",
+      mitigationPlan: mitigationPlan.trim() || (isRtl ? "تعیین دستورالعمل کنترل کیفیت و هماهنگی جلسه اضطراری" : "Establish QC guidelines and coordinate emergency meeting"),
+      responsiblePerson: responsiblePerson.trim() || (isRtl ? "مدیر پروژه" : "Project Manager"),
       status: "mitigating",
     });
 
@@ -129,10 +148,10 @@ export function ProjectRisksTab({
           </div>
           <div className="flex flex-col">
             <h3 className="text-sm sm:text-base font-bold text-foreground">
-              {t("title")}
+              {isRtl ? "ماتریس و تحلیل ریسک‌های پروژه" : "Project Risk Matrix & Analysis"}
             </h3>
             <span className="text-[11px] text-muted-foreground">
-              {t("subtitle")}
+              {isRtl ? "شناسایی، ارزیابی شدت و احتمال، و پایش اقدامات پیشگیرانه فنی" : "Identification, severity & probability assessment, and technical mitigation monitoring"}
             </span>
           </div>
         </div>
@@ -143,7 +162,7 @@ export function ProjectRisksTab({
           className="rounded-xl text-xs font-semibold gap-1.5 h-8.5 cursor-pointer shadow-2xs"
         >
           <Plus className="size-3.5" />
-          <span>{t("addRisk")}</span>
+          <span>{isRtl ? "ثبت ریسک جدید" : "Add New Risk"}</span>
         </Button>
       </div>
 
@@ -159,14 +178,14 @@ export function ProjectRisksTab({
               : "bg-white dark:bg-card text-muted-foreground border-border/60 hover:text-foreground"
           )}
         >
-          همه ریسک‌ها ({risks.length})
+          {isRtl ? "همه ریسک‌ها" : "All Risks"} ({risks.length})
         </button>
 
         {[
-          { id: "material", label: t("categories.material") },
-          { id: "thickness", label: t("categories.thickness") },
-          { id: "fabrication", label: t("categories.fabrication") },
-          { id: "special_equipment", label: t("categories.special_equipment") },
+          { id: "material", label: isRtl ? "متریال و متالورژی" : "Material & Metallurgy" },
+          { id: "thickness", label: isRtl ? "ضخامت بالا و PWHT" : "High Thickness & PWHT" },
+          { id: "fabrication", label: isRtl ? "ساخت و تلرانس" : "Fabrication & Tolerances" },
+          { id: "special_equipment", label: isRtl ? "تجهیزات خاص" : "Special Equipment" },
         ].map((cat) => {
           const count = risks.filter((r) => r.category === cat.id).length;
           return (
@@ -203,10 +222,10 @@ export function ProjectRisksTab({
               {/* Category & Score Header */}
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                  {t(`categories.${risk.category}`)}
+                  {getCategoryLabel(risk.category)}
                 </span>
                 <span className="text-xs font-bold font-mono text-rose-600 dark:text-rose-400">
-                  امتیاز ریسک: {risk.riskScore}
+                  {isRtl ? "امتیاز ریسک:" : "Risk Score:"} {risk.riskScore}
                 </span>
               </div>
 
@@ -224,7 +243,7 @@ export function ProjectRisksTab({
               <div className="p-2.5 rounded-xl bg-muted/20 border border-border/40 flex flex-col gap-1 text-[11px]">
                 <span className="font-bold text-foreground flex items-center gap-1">
                   <CheckCircle2 className="size-3 text-emerald-500" />
-                  <span>اقدام کنترلی و پیشگیرانه:</span>
+                  <span>{isRtl ? "اقدام کنترلی و پیشگیرانه:" : "Mitigation & Preventive Action:"}</span>
                 </span>
                 <span className="text-muted-foreground leading-relaxed">
                   {risk.mitigationPlan}
@@ -236,7 +255,7 @@ export function ProjectRisksTab({
             <div className="flex items-center justify-between pt-2 border-t border-border/40 text-[10px]">
               <div className="flex items-center gap-1.5 text-muted-foreground">
                 <User className="size-3 text-primary" />
-                <span>{risk.responsiblePerson}</span>
+                <span>{formatPersonName(risk.responsiblePerson, locale)}</span>
               </div>
 
               <select
@@ -249,10 +268,10 @@ export function ProjectRisksTab({
                   getStatusBadge(risk.status)
                 )}
               >
-                <option value="identified">شناسایی شده</option>
-                <option value="mitigating">در حال اقدام کنترلی</option>
-                <option value="controlled">کنترل شده</option>
-                <option value="closed">بسته شده</option>
+                <option value="identified">{isRtl ? "شناسایی شده" : "Identified"}</option>
+                <option value="mitigating">{isRtl ? "در حال اقدام کنترلی" : "Mitigating"}</option>
+                <option value="controlled">{isRtl ? "کنترل شده" : "Controlled"}</option>
+                <option value="closed">{isRtl ? "بسته شده" : "Closed"}</option>
               </select>
             </div>
           </div>
@@ -267,13 +286,14 @@ export function ProjectRisksTab({
         >
           <div
             className="w-full max-w-lg rounded-2xl bg-white dark:bg-card border border-border shadow-2xl p-4 sm:p-5 fa-num flex flex-col gap-3"
+            dir={isRtl ? "rtl" : "ltr"}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-2 border-b border-border/40">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="size-4 text-amber-500" />
                 <h3 className="text-sm font-bold text-foreground">
-                  شناسایی و ثبت ریسک مهندسی پروژه
+                  {isRtl ? "شناسایی و ثبت ریسک مهندسی پروژه" : "Identify & Register Project Engineering Risk"}
                 </h3>
               </div>
               <button
@@ -288,12 +308,12 @@ export function ProjectRisksTab({
             <form onSubmit={handleAddSubmit} className="flex flex-col gap-3 text-xs">
               <div className="flex flex-col gap-1">
                 <label className="font-semibold text-muted-foreground">
-                  عنوان ریسک:
+                  {isRtl ? "عنوان ریسک:" : "Risk Title:"}
                 </label>
                 <Input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="مثلا: ضخامت بالای ورق و الزام به کوره تنش‌زدایی PWHT"
+                  placeholder={isRtl ? "مثلا: ضخامت بالای ورق و الزام به کوره تنش‌زدایی PWHT" : "e.g., High plate thickness and PWHT requirements"}
                   className="text-xs rounded-xl"
                   required
                 />
@@ -301,14 +321,14 @@ export function ProjectRisksTab({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-muted-foreground">رده ریسک:</label>
+                  <label className="font-semibold text-muted-foreground">{isRtl ? "رده ریسک:" : "Risk Category:"}</label>
                   <Combobox
                     options={[
-                      { value: "material", label: "متریال خاص و آلیاژها" },
-                      { value: "fabrication", label: "ساخت پیچیده و تلرانس" },
-                      { value: "thickness", label: "ضخامت بالا و PWHT" },
-                      { value: "special_equipment", label: "تجهیزات خاص" },
-                      { value: "procurement", label: "تدارکات و خرید خارجی" },
+                      { value: "material", label: isRtl ? "متریال خاص و آلیاژها" : "Special Materials & Alloys" },
+                      { value: "fabrication", label: isRtl ? "ساخت پیچیده و تلرانس" : "Complex Fabrication & Tolerances" },
+                      { value: "thickness", label: isRtl ? "ضخامت بالا و PWHT" : "High Thickness & PWHT" },
+                      { value: "special_equipment", label: isRtl ? "تجهیزات خاص" : "Special Equipment" },
+                      { value: "procurement", label: isRtl ? "تدارکات و خرید خارجی" : "Procurement & Overseas Sourcing" },
                     ]}
                     value={category}
                     onChange={(v) => setCategory(v as any)}
@@ -317,13 +337,13 @@ export function ProjectRisksTab({
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-muted-foreground">شدت اثر:</label>
+                  <label className="font-semibold text-muted-foreground">{isRtl ? "شدت اثر:" : "Severity:"}</label>
                   <Combobox
                     options={[
-                      { value: "low", label: "کم" },
-                      { value: "medium", label: "متوسط" },
-                      { value: "high", label: "زیاد" },
-                      { value: "critical", label: "بسیار بحرانی" },
+                      { value: "low", label: isRtl ? "کم" : "Low" },
+                      { value: "medium", label: isRtl ? "متوسط" : "Medium" },
+                      { value: "high", label: isRtl ? "زیاد" : "High" },
+                      { value: "critical", label: isRtl ? "بسیار بحرانی" : "Critical" },
                     ]}
                     value={severity}
                     onChange={(v) => setSeverity(v as any)}
@@ -332,13 +352,13 @@ export function ProjectRisksTab({
                 </div>
 
                 <div className="flex flex-col gap-1">
-                  <label className="font-semibold text-muted-foreground">احتمال:</label>
+                  <label className="font-semibold text-muted-foreground">{isRtl ? "احتمال:" : "Probability:"}</label>
                   <Combobox
                     options={[
-                      { value: "unlikely", label: "کم" },
-                      { value: "possible", label: "محتمل" },
-                      { value: "likely", label: "زیاد" },
-                      { value: "almost_certain", label: "قطعی" },
+                      { value: "unlikely", label: isRtl ? "کم" : "Unlikely" },
+                      { value: "possible", label: isRtl ? "محتمل" : "Possible" },
+                      { value: "likely", label: isRtl ? "زیاد" : "Likely" },
+                      { value: "almost_certain", label: isRtl ? "قطعی" : "Almost Certain" },
                     ]}
                     value={probability}
                     onChange={(v) => setProbability(v as any)}
@@ -349,24 +369,24 @@ export function ProjectRisksTab({
 
               <div className="flex flex-col gap-1">
                 <label className="font-semibold text-muted-foreground">
-                  شرح دقیق چالش فنی:
+                  {isRtl ? "شرح دقیق چالش فنی:" : "Technical Challenge Details:"}
                 </label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="علت بروز ریسک و خطرات آن..."
+                  placeholder={isRtl ? "علت بروز ریسک و خطرات آن..." : "Root causes and potential consequences..."}
                   className="text-xs rounded-xl min-h-[60px] resize-none"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
                 <label className="font-semibold text-muted-foreground">
-                  اقدام کنترلی و پیشگیرانه (Mitigation Action):
+                  {isRtl ? "اقدام کنترلی و پیشگیرانه (Mitigation Action):" : "Mitigation & Preventive Action:"}
                 </label>
                 <Textarea
                   value={mitigationPlan}
                   onChange={(e) => setMitigationPlan(e.target.value)}
-                  placeholder="برنامه شرکت جهت مهار یا پیشگیری از این ریسک..."
+                  placeholder={isRtl ? "برنامه شرکت جهت مهار یا پیشگیری از این ریسک..." : "Mitigation and preventive measures..."}
                   className="text-xs rounded-xl min-h-[60px] resize-none"
                   required
                 />
@@ -374,7 +394,7 @@ export function ProjectRisksTab({
 
               <div className="flex flex-col gap-1">
                 <label className="font-semibold text-muted-foreground">
-                  مسئول پایش و پیگیری:
+                  {isRtl ? "مسئول پایش و پیگیری:" : "Responsible Person:"}
                 </label>
                 <Input
                   value={responsiblePerson}
@@ -391,10 +411,10 @@ export function ProjectRisksTab({
                   size="sm"
                   onClick={() => setIsAddOpen(false)}
                 >
-                  انصراف
+                  {isRtl ? "انصراف" : "Cancel"}
                 </Button>
                 <Button type="submit" size="sm" className="font-bold">
-                  ثبت ریسک در ماتریس
+                  {isRtl ? "ثبت ریسک در ماتریس" : "Register Risk in Matrix"}
                 </Button>
               </div>
             </form>

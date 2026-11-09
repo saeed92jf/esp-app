@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { ProjectItem } from "../../../types/projects.types";
 import {
   BarChart3,
@@ -25,7 +25,8 @@ interface ProjectReportsAnalyticsTabProps {
 export function ProjectReportsAnalyticsTab({
   project,
 }: ProjectReportsAnalyticsTabProps) {
-  const t = useTranslations("Projects");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
   const vdisDocs = project.vdisDocuments || [];
   const totalDocs = vdisDocs.length;
@@ -47,14 +48,14 @@ export function ProjectReportsAnalyticsTab({
 
   // S-Curve points calculation for SVG visual display
   const sCurvePoints = [
-    { month: "ماه ۱", planned: 5, actual: 4 },
-    { month: "ماه ۲", planned: 15, actual: 12 },
-    { month: "ماه ۳", planned: 28, actual: 25 },
-    { month: "ماه ۴", planned: 45, actual: 42 },
-    { month: "ماه ۵", planned: 65, actual: project.progressPercent },
-    { month: "ماه ۶ (برنامه)", planned: 82, actual: null },
-    { month: "ماه ۷ (برنامه)", planned: 95, actual: null },
-    { month: "ماه ۸ (تحویل)", planned: 100, actual: null },
+    { month: isRtl ? "ماه ۱" : "Mo 1", planned: 5, actual: 4 },
+    { month: isRtl ? "ماه ۲" : "Mo 2", planned: 15, actual: 12 },
+    { month: isRtl ? "ماه ۳" : "Mo 3", planned: 28, actual: 25 },
+    { month: isRtl ? "ماه ۴" : "Mo 4", planned: 45, actual: 42 },
+    { month: isRtl ? "ماه ۵" : "Mo 5", planned: 65, actual: project.progressPercent },
+    { month: isRtl ? "ماه ۶ (برنامه)" : "Mo 6 (Plan)", planned: 82, actual: null },
+    { month: isRtl ? "ماه ۷ (برنامه)" : "Mo 7 (Plan)", planned: 95, actual: null },
+    { month: isRtl ? "ماه ۸ (تحویل)" : "Mo 8 (Delivery)", planned: 100, actual: null },
   ];
 
   // Calculate SPI (Schedule Performance Index)
@@ -70,11 +71,13 @@ export function ProjectReportsAnalyticsTab({
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-primary" />
           <h2 className="font-semibold text-lg text-foreground">
-            {t("reports.title")}
+            {isRtl ? "گزارشات عملکردی و شاخص‌های تحلیلی پروژه" : "Project Performance Reports & Analytical KPIs"}
           </h2>
         </div>
         <p className="text-xs text-muted-foreground">
-          {t("reports.subtitle")}
+          {isRtl
+            ? "تحلیل ارزش کسب‌شده (EVM)، شاخص‌های SPI/CPI و پایش انحراف از برنامه زمان‌بندی"
+            : "Earned Value Management (EVM), SPI/CPI indices, and schedule variance tracking"}
         </p>
       </div>
 
@@ -85,7 +88,7 @@ export function ProjectReportsAnalyticsTab({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-blue-500" />
-              {t("reports.timeEfficiency")}
+              {isRtl ? "شاخص زمانی (SPI)" : "Schedule Index (SPI)"}
             </span>
             <Badge
               variant="outline"
@@ -95,14 +98,14 @@ export function ProjectReportsAnalyticsTab({
                   : "border-rose-500/30 text-rose-500"
               }`}
             >
-              {Number(spi) >= 0.95 ? "طبق برنامه" : "تاخیر جزئی"}
+              {Number(spi) >= 0.95 ? (isRtl ? "طبق برنامه" : "On Schedule") : (isRtl ? "تاخیر جزئی" : "Slight Delay")}
             </Badge>
           </div>
           <div className="font-bold text-2xl font-mono text-foreground fa-num">
             {spi}
           </div>
           <p className="text-[11px] text-muted-foreground">
-            نسبت ارزش کسب شده به برنامه‌ای (EV/PV)
+            {isRtl ? "نسبت ارزش کسب شده به برنامه‌ای (EV/PV)" : "Earned to Planned Value ratio (EV/PV)"}
           </p>
         </div>
 
@@ -111,20 +114,20 @@ export function ProjectReportsAnalyticsTab({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-              {t("reports.costEfficiency")}
+              {isRtl ? "شاخص هزینه‌ای (CPI)" : "Cost Index (CPI)"}
             </span>
             <Badge
               variant="outline"
               className="text-[10px] border-emerald-500/30 text-emerald-500"
             >
-              کنترل بهینه
+              {isRtl ? "کنترل بهینه" : "Optimally Controlled"}
             </Badge>
           </div>
           <div className="font-bold text-2xl font-mono text-emerald-500 fa-num">
             1.04
           </div>
           <p className="text-[11px] text-muted-foreground">
-            عملکرد مدیریت هزینه در محدوده بودجه مصوب
+            {isRtl ? "عملکرد مدیریت هزینه در محدوده بودجه مصوب" : "Cost performance within approved budget"}
           </p>
         </div>
 
@@ -133,10 +136,10 @@ export function ProjectReportsAnalyticsTab({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <FileCheck2 className="w-3.5 h-3.5 text-purple-500" />
-              {t("reports.vdisApprovalRate")}
+              {isRtl ? "نرخ تایید مدارک VDIS" : "VDIS Approval Rate"}
             </span>
             <span className="text-[10px] font-mono fa-num text-muted-foreground">
-              {approvedDocs} از {totalDocs} سند
+              {approvedDocs} {isRtl ? "از" : "of"} {totalDocs} {isRtl ? "سند" : "docs"}
             </span>
           </div>
           <div className="font-bold text-2xl font-mono text-purple-500 fa-num">
@@ -150,10 +153,10 @@ export function ProjectReportsAnalyticsTab({
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-amber-500" />
-              پیشرفت فیزیکی کل
+              {isRtl ? "پیشرفت فیزیکی کل" : "Total Physical Progress"}
             </span>
             <span className="text-[10px] font-mono text-muted-foreground fa-num">
-              هدف: %{project.plannedProgressPercent}
+              {isRtl ? "هدف:" : "Target:"} %{project.plannedProgressPercent}
             </span>
           </div>
           <div className="font-bold text-2xl font-mono text-foreground fa-num">
@@ -169,20 +172,22 @@ export function ProjectReportsAnalyticsTab({
           <div className="space-y-1">
             <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-primary" />
-              {t("reports.sCurveTitle")}
+              {isRtl ? "منحنی پیشرفت پروژه (S-Curve)" : "Project Progress Curve (S-Curve)"}
             </h3>
             <p className="text-xs text-muted-foreground">
-              منحنی S تجمیعی پیشرفت برنامه‌ای (Planned S-Curve) در مقابل پیشرفت واقعی (Actual Progress)
+              {isRtl
+                ? "منحنی S تجمیعی پیشرفت برنامه‌ای (Planned S-Curve) در مقابل پیشرفت واقعی (Actual Progress)"
+                : "Cumulative Planned S-Curve vs. Actual Progress"}
             </p>
           </div>
           <div className="flex items-center gap-4 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-1 bg-blue-500 rounded-full inline-block" />
-              <span>پیشرفت برنامه‌ای (Planned)</span>
+              <span>{isRtl ? "پیشرفت برنامه‌ای (Planned)" : "Planned Progress"}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-1 bg-emerald-500 rounded-full inline-block" />
-              <span>پیشرفت واقعی (Actual)</span>
+              <span>{isRtl ? "پیشرفت واقعی (Actual)" : "Actual Progress"}</span>
             </div>
           </div>
         </div>
@@ -237,13 +242,17 @@ export function ProjectReportsAnalyticsTab({
         <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
           <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
             <FileCheck2 className="w-4 h-4 text-purple-500" />
-            وضعیت اسناد و ترنسمیتال‌های VDIS
+            {isRtl ? "وضعیت اسناد و ترنسمیتال‌های VDIS" : "VDIS Documents & Transmittal Status"}
           </h3>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">تایید شده توسط کارفرما (Code 1 / Code 2)</span>
-              <span className="font-semibold text-emerald-500 fa-num">{approvedDocs} سند</span>
+              <span className="text-muted-foreground">
+                {isRtl ? "تایید شده توسط کارفرما (Code 1 / Code 2)" : "Approved by Client (Code 1 / Code 2)"}
+              </span>
+              <span className="font-semibold text-emerald-500 fa-num">
+                {approvedDocs} {isRtl ? "سند" : "docs"}
+              </span>
             </div>
             <Progress
               value={totalDocs ? (approvedDocs / totalDocs) * 100 : 0}
@@ -251,8 +260,12 @@ export function ProjectReportsAnalyticsTab({
             />
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">ارسال شده و منتظر پاسخ کارفرما</span>
-              <span className="font-semibold text-blue-500 fa-num">{transmittedDocs} سند</span>
+              <span className="text-muted-foreground">
+                {isRtl ? "ارسال شده و منتظر پاسخ کارفرما" : "Transmitted & Awaiting Client Feedback"}
+              </span>
+              <span className="font-semibold text-blue-500 fa-num">
+                {transmittedDocs} {isRtl ? "سند" : "docs"}
+              </span>
             </div>
             <Progress
               value={totalDocs ? (transmittedDocs / totalDocs) * 100 : 0}
@@ -260,8 +273,12 @@ export function ProjectReportsAnalyticsTab({
             />
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">در حال بررسی مدیران بالادستی / پیش‌نویس</span>
-              <span className="font-semibold text-amber-500 fa-num">{pendingDocs} سند</span>
+              <span className="text-muted-foreground">
+                {isRtl ? "در حال بررسی مدیران بالادستی / پیش‌نویس" : "Under Manager Review / Draft"}
+              </span>
+              <span className="font-semibold text-amber-500 fa-num">
+                {pendingDocs} {isRtl ? "سند" : "docs"}
+              </span>
             </div>
             <Progress
               value={totalDocs ? (pendingDocs / totalDocs) * 100 : 0}
@@ -269,8 +286,12 @@ export function ProjectReportsAnalyticsTab({
             />
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">رد شده یا عودت جهت اصلاح</span>
-              <span className="font-semibold text-rose-500 fa-num">{rejectedDocs} سند</span>
+              <span className="text-muted-foreground">
+                {isRtl ? "رد شده یا عودت جهت اصلاح" : "Rejected or Returned for Revision"}
+              </span>
+              <span className="font-semibold text-rose-500 fa-num">
+                {rejectedDocs} {isRtl ? "سند" : "docs"}
+              </span>
             </div>
             <Progress
               value={totalDocs ? (rejectedDocs / totalDocs) * 100 : 0}
@@ -283,7 +304,7 @@ export function ProjectReportsAnalyticsTab({
         <div className="rounded-2xl border border-border/60 bg-white dark:bg-card p-5 shadow-xs space-y-4">
           <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
             <Layers className="w-4 h-4 text-primary" />
-            پیشرفت تفکیکی فازهای پروژه
+            {isRtl ? "پیشرفت تفکیکی فازهای پروژه" : "Phase-by-Phase Progress Breakdown"}
           </h3>
 
           <div className="space-y-3">

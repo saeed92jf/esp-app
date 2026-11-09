@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ProjectItem,
@@ -84,7 +85,7 @@ type SegmentKey =
 export function ProjectOverviewTab({
   project,
   roleMode = "admin",
-  currentUserName = "سعید جلیلی",
+  currentUserName,
   isManager = true,
   onAddTeamMember,
   onAddSubPackage,
@@ -100,6 +101,9 @@ export function ProjectOverviewTab({
   onUpdateRiskStatus,
 }: ProjectOverviewTabProps) {
   const t = useTranslations("Projects");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const effectiveUserName = currentUserName || (isRtl ? "سعید جلیلی" : "Saeed Jalili");
   const [copiedDms, setCopiedDms] = useState(false);
   const defaultAsync = async () => {};
 
@@ -403,7 +407,7 @@ export function ProjectOverviewTab({
                       </p>
                     </div>
                     <Badge variant="secondary" className="fa-num text-xs">
-                      {project.subPackages?.length || 0} پکیج تجهیزاتی
+                      {project.subPackages?.length || 0} {isRtl ? "پکیج تجهیزاتی" : "equipment packages"}
                     </Badge>
                   </div>
 
@@ -431,13 +435,13 @@ export function ProjectOverviewTab({
                           <div>
                             <span>{t("accordion.leadResponsible")}:</span>
                             <div className="font-medium text-foreground truncate mt-0.5">
-                              {pkg.leadName}
+                              {formatPersonName(pkg.leadName, locale)}
                             </div>
                           </div>
                           <div>
                             <span>{t("accordion.estWeight")}:</span>
                             <div className="font-medium text-foreground truncate mt-0.5 fa-num">
-                              {pkg.weightTon ? `${pkg.weightTon} تن` : "-"}
+                              {pkg.weightTon ? (isRtl ? `${pkg.weightTon} تن` : `${pkg.weightTon} tons`) : "-"}
                             </div>
                           </div>
                         </div>
@@ -473,7 +477,7 @@ export function ProjectOverviewTab({
                       </p>
                     </div>
                     <Badge variant="secondary" className="fa-num text-xs">
-                      {project.team?.length || 0} نفر متخصص
+                      {project.team?.length || 0} {isRtl ? "نفر متخصص" : "specialists"}
                     </Badge>
                   </div>
 
@@ -497,11 +501,11 @@ export function ProjectOverviewTab({
                             <td className="p-3">
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                                  {member.name.slice(0, 2)}
+                                  {formatPersonName(member.name, locale).slice(0, 2)}
                                 </div>
                                 <div>
                                   <div className="font-medium text-foreground">
-                                    {member.name}
+                                    {formatPersonName(member.name, locale)}
                                   </div>
                                   {member.isManager && (
                                     <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block">
@@ -512,7 +516,7 @@ export function ProjectOverviewTab({
                               </div>
                             </td>
                             <td className="p-3 text-foreground/90 font-medium">
-                              {member.role}
+                              {formatRoleName(member.role, locale)}
                             </td>
                             <td className="p-3 text-muted-foreground">
                               {member.department}
@@ -530,12 +534,12 @@ export function ProjectOverviewTab({
                                 }`}
                               >
                                 {member.raci === "Responsible"
-                                  ? "R (مسئول)"
+                                  ? (isRtl ? "R (مسئول)" : "R (Responsible)")
                                   : member.raci === "Accountable"
-                                  ? "A (پاسخگو)"
+                                  ? (isRtl ? "A (پاسخگو)" : "A (Accountable)")
                                   : member.raci === "Consulted"
-                                  ? "C (مشاور)"
-                                  : "I (مطلع)"}
+                                  ? (isRtl ? "C (مشاور)" : "C (Consulted)")
+                                  : (isRtl ? "I (مطلع)" : "I (Informed)")}
                               </span>
                             </td>
                             <td className="p-3">
@@ -581,7 +585,7 @@ export function ProjectOverviewTab({
                   {t("accordion.phasesTitle")}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 fa-num">
-                  {project.phases?.length || 0} فاز
+                  {project.phases?.length || 0} {isRtl ? "فاز" : "phases"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">
@@ -642,7 +646,7 @@ export function ProjectOverviewTab({
                   {t("accordion.boardsTitle")}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 fa-num">
-                  {project.tasks?.length || 0} وظیفه
+                  {project.tasks?.length || 0} {isRtl ? "وظیفه" : "tasks"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">
@@ -706,7 +710,7 @@ export function ProjectOverviewTab({
                   {t("accordion.vdisTitle")}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 fa-num">
-                  {(project.vdisDocuments || []).length} سند مهندسی
+                  {(project.vdisDocuments || []).length} {isRtl ? "سند مهندسی" : "engineering docs"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">
@@ -772,7 +776,7 @@ export function ProjectOverviewTab({
                   {t("accordion.risksTitle")}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 fa-num">
-                  {project.risks?.length || 0} ریسک ثبت‌شده
+                  {project.risks?.length || 0} {isRtl ? "ریسک ثبت‌شده" : "registered risks"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">
@@ -833,7 +837,7 @@ export function ProjectOverviewTab({
                   {t("accordion.strategicTitle")}
                 </h3>
                 <Badge variant="secondary" className="text-[10px] px-2 py-0.5 fa-num">
-                  {project.strategicGoals?.length || 0} هدف راهبردی
+                  {project.strategicGoals?.length || 0} {isRtl ? "هدف راهبردی" : "strategic goals"}
                 </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-sm sm:max-w-xl">

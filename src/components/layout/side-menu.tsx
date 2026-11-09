@@ -81,7 +81,7 @@ export function SideMenu() {
         type="button"
         onClick={homeSidebar.toggle}
         className={cn(HEADER_ICON_BUTTON_CLASS, homeSidebar.isOpen && "bg-foreground/[0.08] text-foreground")}
-        aria-label={homeSidebar.isOpen ? (tMenu("close") || "بستن") : tMenu("open")}
+        aria-label={homeSidebar.isOpen ? (tMenu("close") || (locale === "fa" ? "بستن" : "Close")) : tMenu("open")}
       >
         <AnimatedHamburger isOpen={homeSidebar.isOpen} />
       </button>
@@ -95,7 +95,7 @@ export function SideMenu() {
         type="button"
         onClick={() => setOpen(!open)}
         className={cn(HEADER_ICON_BUTTON_CLASS, open && "bg-foreground/[0.08] text-foreground")}
-        aria-label={open ? (tMenu("close") || "بستن") : tMenu("open")}
+        aria-label={open ? (tMenu("close") || (locale === "fa" ? "بستن" : "Close")) : tMenu("open")}
       >
         <AnimatedHamburger isOpen={open} />
       </button>

@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatPersonName } from "@/lib/person-names";
 import type {
   DashboardTask,
   DetailedChecklistItem,
@@ -132,8 +133,8 @@ export function TasksWorkspace({
       status: "pending",
       priority: newPriority,
       createdBy: "user",
-      creatorName: "سعید جلیلی",
-      assignedToName: "سعید جلیلی",
+      creatorName: locale === "fa" ? "سعید جلیلی" : "Saeed Jalili",
+      assignedToName: locale === "fa" ? "سعید جلیلی" : "Saeed Jalili",
       dueDate: newDueDate.trim() || undefined,
       isManagerDefined: false,
       comments: [],
@@ -497,7 +498,7 @@ export function TasksWorkspace({
                       <div className="flex items-center gap-3">
                         <span className="flex items-center gap-1">
                           <User className="size-3.5 opacity-60" />
-                          <span>{task.creatorName}</span>
+                          <span>{formatPersonName(task.creatorName, locale)}</span>
                         </span>
 
                         {task.dueDate && (

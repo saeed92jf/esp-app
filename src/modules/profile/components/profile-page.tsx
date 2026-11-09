@@ -11,6 +11,7 @@ import { api } from "@/services";
 import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { toPersianDigits } from "@/utils/textDirection";
+import { formatPersonName } from "@/lib/person-names";
 import {
   getDegreeOptions,
   getStudyFieldOptions,
@@ -259,16 +260,16 @@ const ProjectIcon = () => (
 
 
 const AVATAR_COLOR_PRESETS = [
-  { hex: "#0284c7", label: "آبی آسمانی" },
-  { hex: "#4f46e5", label: "نیلی" },
-  { hex: "#7c3aed", label: "بنفش" },
-  { hex: "#059669", label: "زمردی" },
-  { hex: "#0d9488", label: "سبز کله‌غازی" },
-  { hex: "#d97706", label: "کهربایی" },
-  { hex: "#e11d48", label: "زرشکی" },
-  { hex: "#ea580c", label: "نارنجی" },
-  { hex: "#475569", label: "سربی" },
-  { hex: "#1e293b", label: "زغالی" },
+  { hex: "#0284c7", labelFa: "آبی آسمانی", labelEn: "Sky Blue" },
+  { hex: "#4f46e5", labelFa: "نیلی", labelEn: "Indigo" },
+  { hex: "#7c3aed", labelFa: "بنفش", labelEn: "Purple" },
+  { hex: "#059669", labelFa: "زمردی", labelEn: "Emerald" },
+  { hex: "#0d9488", labelFa: "سبز کله‌غازی", labelEn: "Teal" },
+  { hex: "#d97706", labelFa: "کهربایی", labelEn: "Amber" },
+  { hex: "#e11d48", labelFa: "زرشکی", labelEn: "Crimson" },
+  { hex: "#ea580c", labelFa: "نارنجی", labelEn: "Orange" },
+  { hex: "#475569", labelFa: "سربی", labelEn: "Slate" },
+  { hex: "#1e293b", labelFa: "زغالی", labelEn: "Charcoal" },
 ];
 
 const NAV_ITEMS = [
@@ -655,9 +656,10 @@ export function ProfilePage() {
     );
   }
 
-  const nameToUse = locale === 'fa' 
-    ? (user?.fullNameFa || user?.fullName || "کاربر بدون نام") 
-    : (user?.fullName || user?.fullNameFa || "Unknown User");
+  const rawName = user?.fullNameFa || user?.fullName || "";
+  const nameToUse = rawName 
+    ? formatPersonName(rawName, locale) 
+    : (locale === 'fa' ? "کاربر بدون نام" : "Unknown User");
     
   const emailToUse = formData?.personal?.email || formData?.personal?.phone || user?.email || user?.mobile || "";
   const initial = (nameToUse || 'U').charAt(0).toUpperCase();
@@ -921,7 +923,7 @@ export function ProfilePage() {
         address: p.address,
         department: org.department,
         jobTitle: org.role || (org as any).jobTitle,
-        company: (user as any)?.company || (org as any)?.company || "یورو اسلات پارس",
+        company: (user as any)?.company || (org as any)?.company || (isRtl ? "یورو اسلات پارس" : "Euroslot Pars"),
         companyId: (user as any)?.companyId || (org as any)?.companyId || "euroslot",
         status: "pending",
         requestType: "registration",
@@ -1429,7 +1431,7 @@ export function ProfilePage() {
 
             <ColorPicker
               value={liveAvatarColor || formData?.personal?.avatarColor || user?.avatarColor || "#0284c7"}
-              presets={AVATAR_COLOR_PRESETS}
+              presets={AVATAR_COLOR_PRESETS.map((p) => ({ hex: p.hex, label: isRtl ? p.labelFa : p.labelEn }))}
               showSaveButton={true}
               onDraftChange={(newHex: string) => {
                 setLiveAvatarColor(newHex);
@@ -2693,7 +2695,7 @@ export function ProfilePage() {
                   </Badge>
                   {formData.organizational.subordinates && formData.organizational.subordinates.length > 0 && (
                     <span className="text-xs text-muted-foreground truncate hidden sm:inline">
-                      ({formData.organizational.subordinates.slice(0, 2).map((s: any) => typeof s === "string" ? s : (s?.name || "")).join("، ")}{formData.organizational.subordinates.length > 2 ? ` +${formData.organizational.subordinates.length - 2}` : ""})
+                      ({formData.organizational.subordinates.slice(0, 2).map((s: any) => formatPersonName(typeof s === "string" ? s : (s?.name || ""), locale)).join(isRtl ? "، " : ", ")}{formData.organizational.subordinates.length > 2 ? ` +${formData.organizational.subordinates.length - 2}` : ""})
                     </span>
                   )}
                 </div>

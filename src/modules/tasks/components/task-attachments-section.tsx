@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName } from "@/lib/person-names";
 import {
   FileText,
   FileSpreadsheet,
@@ -35,6 +36,7 @@ export function TaskAttachmentsSection({
   onDeleteAttachment,
 }: TaskAttachmentsSectionProps) {
   const t = useTranslations("Tasks.attachments");
+  const locale = useLocale();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -164,7 +166,7 @@ export function TaskAttachmentsSection({
                     {att.uploaderName && (
                       <>
                         <span>•</span>
-                        <span>{att.uploaderName}</span>
+                        <span>{formatPersonName(att.uploaderName, locale)}</span>
                       </>
                     )}
                   </div>

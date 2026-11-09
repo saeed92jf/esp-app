@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName } from "@/lib/person-names";
 import { ProjectItem, ProjectPhase } from "../../../types/projects.types";
 import {
   Layers,
@@ -43,6 +44,8 @@ export function ProjectPhasesWbsTab({
   onUpdatePhase,
 }: ProjectPhasesWbsTabProps) {
   const t = useTranslations("Projects");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [newPhaseName, setNewPhaseName] = useState("");
   const [newPhaseDesc, setNewPhaseDesc] = useState("");
@@ -90,27 +93,27 @@ export function ProjectPhasesWbsTab({
         return (
           <Badge className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs">
             <CheckCircle2 className="w-3 h-3 ml-1" />
-            تکمیل شده
+            {isRtl ? "تکمیل شده" : "Completed"}
           </Badge>
         );
       case "in_progress":
         return (
           <Badge className="bg-blue-500/10 text-blue-500 border border-blue-500/20 text-xs">
             <Clock className="w-3 h-3 ml-1 animate-pulse" />
-            در حال اجرا
+            {isRtl ? "در حال اجرا" : "In Progress"}
           </Badge>
         );
       case "delayed":
         return (
           <Badge className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-xs">
             <AlertCircle className="w-3 h-3 ml-1" />
-            دارای تاخیر
+            {isRtl ? "دارای تاخیر" : "Delayed"}
           </Badge>
         );
       default:
         return (
           <Badge variant="outline" className="text-muted-foreground text-xs">
-            در انتظار شروع
+            {isRtl ? "در انتظار شروع" : "Pending"}
           </Badge>
         );
     }
@@ -186,7 +189,7 @@ export function ProjectPhasesWbsTab({
             <div className="space-y-2 pt-2 border-t border-border/40">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">
-                  پیشرفت فیزیکی این فاز:
+                  {isRtl ? "پیشرفت فیزیکی این فاز:" : "Physical Progress:"}
                 </span>
                 <span className="font-semibold text-foreground fa-num">
                   %{phase.progressPercent}
@@ -199,18 +202,18 @@ export function ProjectPhasesWbsTab({
               {phase.leadName && (
                 <div className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-primary" />
-                  <span>مسئول فاز:</span>
+                  <span>{isRtl ? "مسئول فاز:" : "Phase Lead:"}</span>
                   <span className="font-medium text-foreground">
-                    {phase.leadName}
+                    {formatPersonName(phase.leadName, locale)}
                   </span>
                 </div>
               )}
               {phase.startDate && phase.endDate && (
                 <div className="flex items-center gap-1.5 fa-num">
                   <Calendar className="w-3.5 h-3.5 text-blue-500" />
-                  <span>بازه زمانی:</span>
+                  <span>{isRtl ? "بازه زمانی:" : "Timeline:"}</span>
                   <span className="font-medium text-foreground">
-                    {phase.startDate} تا {phase.endDate}
+                    {phase.startDate} {isRtl ? "تا" : "to"} {phase.endDate}
                   </span>
                 </div>
               )}
@@ -221,39 +224,39 @@ export function ProjectPhasesWbsTab({
 
       {/* Add Custom Phase Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="max-w-md" dir="rtl">
-          <DialogHeader className="text-right">
+        <DialogContent className="max-w-md" dir={isRtl ? "rtl" : "ltr"}>
+          <DialogHeader className={isRtl ? "text-right" : "text-left"}>
             <DialogTitle>{t("phases.addPhase")}</DialogTitle>
             <DialogDescription>
-              تعریف مرحله اختصاصی برای ساختار شکست کار (WBS) این پروژه
+              {isRtl ? "تعریف مرحله اختصاصی برای ساختار شکست کار (WBS) این پروژه" : "Create custom stage for project Work Breakdown Structure (WBS)"}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreatePhase} className="space-y-4 pt-2">
-            <div className="space-y-1.5 text-right">
+            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
               <Label htmlFor="phase-name">{t("phases.phaseName")} *</Label>
               <Input
                 id="phase-name"
                 value={newPhaseName}
                 onChange={(e) => setNewPhaseName(e.target.value)}
-                placeholder="مثلاً: عملیات حرارتی PWHT، عایق‌کاری، آزمون هیدرواستاتیک..."
+                placeholder={isRtl ? "مثلاً: عملیات حرارتی PWHT، عایق‌کاری، آزمون هیدرواستاتیک..." : "e.g. PWHT heat treatment, insulation, hydrotest..."}
                 required
               />
             </div>
 
-            <div className="space-y-1.5 text-right">
+            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
               <Label htmlFor="phase-lead">{t("phases.phaseLead")}</Label>
               <Input
                 id="phase-lead"
                 value={newPhaseLead}
                 onChange={(e) => setNewPhaseLead(e.target.value)}
-                placeholder="نام مهندس یا سرپرست کارگاهی..."
+                placeholder={isRtl ? "نام مهندس یا سرپرست کارگاهی..." : "Engineer or workshop supervisor name..."}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5 text-right">
-                <Label htmlFor="phase-start">تاریخ شروع</Label>
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+                <Label htmlFor="phase-start">{isRtl ? "تاریخ شروع" : "Start Date"}</Label>
                 <Input
                   id="phase-start"
                   value={newPhaseStart}
@@ -261,8 +264,8 @@ export function ProjectPhasesWbsTab({
                   placeholder="1403/08/01"
                 />
               </div>
-              <div className="space-y-1.5 text-right">
-                <Label htmlFor="phase-end">تاریخ پایان</Label>
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+                <Label htmlFor="phase-end">{isRtl ? "تاریخ پایان" : "End Date"}</Label>
                 <Input
                   id="phase-end"
                   value={newPhaseEnd}
@@ -272,13 +275,13 @@ export function ProjectPhasesWbsTab({
               </div>
             </div>
 
-            <div className="space-y-1.5 text-right">
-              <Label htmlFor="phase-desc">توضیحات تکمیلی</Label>
+            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
+              <Label htmlFor="phase-desc">{isRtl ? "توضیحات تکمیلی" : "Additional Notes"}</Label>
               <Input
                 id="phase-desc"
                 value={newPhaseDesc}
                 onChange={(e) => setNewPhaseDesc(e.target.value)}
-                placeholder="الزامات بازرسی، کد استاندارد مربوطه یا تحویل‌شدنی‌ها..."
+                placeholder={isRtl ? "الزامات بازرسی، کد استاندارد مربوطه یا تحویل‌شدنی‌ها..." : "Inspection requirements, standard code, deliverables..."}
               />
             </div>
 
@@ -288,10 +291,10 @@ export function ProjectPhasesWbsTab({
                 variant="outline"
                 onClick={() => setIsAddOpen(false)}
               >
-                انصراف
+                {isRtl ? "انصراف" : "Cancel"}
               </Button>
               <Button type="submit" disabled={isSubmitting || !newPhaseName.trim()}>
-                {isSubmitting ? "در حال ثبت..." : "افزودن مرحله"}
+                {isSubmitting ? (isRtl ? "در حال ثبت..." : "Submitting...") : (isRtl ? "افزودن مرحله" : "Add Stage")}
               </Button>
             </DialogFooter>
           </form>

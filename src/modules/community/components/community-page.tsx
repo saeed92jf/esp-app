@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import { AppHeader } from "@/components/layout/app-header";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { formatPersonName } from "@/lib/person-names";
 import { communityService } from "../services/community.service";
 import type {
   CommunityPost,
@@ -123,9 +124,10 @@ function UserAvatar({
   size?: "sm" | "md" | "lg";
   isRtl?: boolean;
 }) {
-  const chosenName = isRtl
-    ? (nameFa || name || nameEn || "کاربر")
-    : (nameEn || name || nameFa || "User");
+  const rawCandidate = nameFa || name || nameEn || "";
+  const chosenName = rawCandidate
+    ? formatPersonName(rawCandidate, isRtl ? "fa" : "en")
+    : (isRtl ? "کاربر" : "User");
 
   const initial = (chosenName.trim().charAt(0) || (isRtl ? "ک" : "U")).toUpperCase();
 
@@ -171,9 +173,10 @@ export function CommunityPage() {
   const { user } = useAuth();
   const isAuthenticated = Boolean(user && user.id);
 
-  const currentUserName = isRtl
-    ? (user?.fullNameFa || user?.name || user?.fullName || "کاربر")
-    : (user?.fullName || user?.name || user?.fullNameFa || "User");
+  const rawCurrent = user?.fullNameFa || user?.name || user?.fullName || "";
+  const currentUserName = rawCurrent
+    ? formatPersonName(rawCurrent, locale)
+    : (isRtl ? "کاربر" : "User");
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("all");
@@ -1413,9 +1416,10 @@ export function CommunityPage() {
 
                 const roleBadge = getRoleBadge(post.authorRole, isRtl);
 
-                const postAuthorDisplayName = isRtl
-                  ? (post.authorNameFa || post.authorName || post.authorNameEn || "کاربر")
-                  : (post.authorNameEn || post.authorName || post.authorNameFa || "User");
+                const rawAuthor = post.authorNameFa || post.authorName || post.authorNameEn || "";
+                const postAuthorDisplayName = rawAuthor
+                  ? formatPersonName(rawAuthor, locale)
+                  : (isRtl ? "کاربر" : "User");
 
                 return (
                   <article
@@ -1705,9 +1709,10 @@ export function CommunityPage() {
                                   user.role === "superadmin" ||
                                   user.role === "admin");
 
-                              const replyAuthorDisplayName = isRtl
-                                ? (reply.authorNameFa || reply.authorName || reply.authorNameEn || "کاربر")
-                                : (reply.authorNameEn || reply.authorName || reply.authorNameFa || "User");
+                              const rawReplyAuthor = reply.authorNameFa || reply.authorName || reply.authorNameEn || "";
+                              const replyAuthorDisplayName = rawReplyAuthor
+                                ? formatPersonName(rawReplyAuthor, locale)
+                                : (isRtl ? "کاربر" : "User");
 
                               return (
                                 <div

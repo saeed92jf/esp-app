@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { toast } from "sonner";
 import type {
   SimplifiedProject,
@@ -163,7 +164,7 @@ export function ProjectDetailView({
           fileType: item.type,
           url: item.url,
           uploadedAt: new Date().toISOString(),
-          uploadedBy: "مدیر سیستم",
+          uploadedBy: isRtl ? "مدیر سیستم" : "System Admin",
         });
       }
 
@@ -281,7 +282,7 @@ export function ProjectDetailView({
             <UserCheck className="size-4 text-primary shrink-0 mt-0.5" />
             <div>
               <span className="text-muted-foreground block">{isRtl ? "مدیر پروژه:" : "PM:"}</span>
-              <span className="font-bold text-foreground text-sm">{project.managerName}</span>
+              <span className="font-bold text-foreground text-sm">{formatPersonName(project.managerName, locale)}</span>
             </div>
           </div>
 

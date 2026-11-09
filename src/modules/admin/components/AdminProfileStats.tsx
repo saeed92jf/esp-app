@@ -15,6 +15,7 @@ import { PRIMARY_COLORS } from "@/config/settings";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getCompanyFromEmail } from "../utils/company";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { getRoleGradient, getRoleGlowShadow } from "@/lib/role-avatar";
 import { api } from "@/services";
 import { toast } from "sonner";
@@ -66,8 +67,8 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
         await api.admin.updateUser(selectedUser.id, { role: selectedRoleForChange });
         toast.success(
           isRtl
-            ? `نقش کاربر «${selectedUser.name}» با موفقیت تغییر کرد.`
-            : `User role successfully updated.`
+            ? `نقش کاربر «${formatPersonName(selectedUser.name, locale)}» با موفقیت تغییر کرد.`
+            : `User role for "${formatPersonName(selectedUser.name, locale)}" successfully updated.`
         );
       }
       setIsRoleDialogOpen(false);
@@ -112,23 +113,41 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
   const childrenCount = selectedUser.childrenCount ?? 2;
   const experienceCount = 350;
   
-  const insType = selectedUser.insuranceType || 'complementary';
+  const resolveInsuranceType = (type?: string): 'none' | 'socialSecurity' | 'complementary' => {
+    if (!type) return 'complementary';
+    const lower = String(type).trim().toLowerCase();
+    if (lower === 'none' || lower === 'تقاضا ندارم' || lower === 'فاقد بیمه') return 'none';
+    if (lower.includes('social') || lower.includes('تأمین') || lower.includes('تامین') || lower === 'basic') return 'socialSecurity';
+    return 'complementary';
+  };
+
+  const resolveInsurancePlan = (user: User): 'golden' | 'silver' | 'special' | 'regular' => {
+    const raw = String(user.supplementaryPlan || user.insuranceType || '').toLowerCase();
+    if (raw.includes('special') || raw.includes('ویژه')) return 'special';
+    if (raw.includes('gold') || raw.includes('طلایی')) return 'golden';
+    if (raw.includes('silver') || raw.includes('نقره')) return 'silver';
+    return 'regular';
+  };
+
+  const insType = resolveInsuranceType(selectedUser.insuranceType);
   const insStatus = insType === 'none' ? 'inactive' : 'active';
-  const insPlan = insType === 'complementary' ? 'golden' : 'regular';
+  const insPlan = resolveInsurancePlan(selectedUser);
   const insDependents = childrenCount + (isMarried ? 1 : 0);
 
   const educationField = selectedUser.educationField || t("defaultEducationField");
   const educationDegree = selectedUser.educationDegree ? t(`degreesOptions.${selectedUser.educationDegree}` as any) : t("degreesOptions.master");
 
-  const insuranceStyles = {
+  const insuranceStyles: Record<'active' | 'inactive', Record<'golden' | 'silver' | 'special' | 'regular', { text: string; icon: any }>> = {
     active: {
       golden: { text: "text-amber-500", icon: ShieldCheck },
       silver: { text: "text-slate-400 dark:text-slate-300", icon: ShieldCheck },
+      special: { text: "text-purple-500", icon: ShieldCheck },
       regular: { text: "text-sky-500", icon: ShieldCheck }
     },
     inactive: {
       golden: { text: "text-rose-500", icon: ShieldAlert },
       silver: { text: "text-rose-500", icon: ShieldAlert },
+      special: { text: "text-rose-500", icon: ShieldAlert },
       regular: { text: "text-rose-500", icon: ShieldAlert }
     }
   };
@@ -144,7 +163,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
     ? `${selectedUser.firstNameFa || ''} ${selectedUser.lastNameFa || ''}`.trim()
     : (selectedUser.fullNameFa || selectedUser.name || enName);
 
-  const displayName = isRtl ? faName : enName;
+  const displayName = formatPersonName(isRtl ? faName : enName, locale);
 
   const firstLetter = (displayName || selectedUser.name || "U").trim().charAt(0).toUpperCase();
 
@@ -466,8 +485,8 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">
               {isRtl
-                ? `نقش و سطح دسترسی کاربر «${selectedUser.name}» را در سیستم تعیین نمایید.`
-                : `Select the system role and permission level for ${selectedUser.name}.`}
+                ? `نقش و سطح دسترسی کاربر «${formatPersonName(selectedUser.name, locale)}» را در سیستم تعیین نمایید.`
+                : `Select the system role and permission level for ${formatPersonName(selectedUser.name, locale)}.`}
             </DialogDescription>
           </DialogHeader>
 

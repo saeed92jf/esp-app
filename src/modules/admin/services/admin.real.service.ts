@@ -16,6 +16,32 @@ import {
 } from "../types/admin.types";
 // Direct server communication only - no fake fallback
 
+function normalizeInsurance(rawType?: string, rawPlan?: string): { 
+  insuranceType: 'none' | 'socialSecurity' | 'complementary'; 
+  supplementaryPlan?: 'golden' | 'silver' | 'special' | 'none';
+} {
+  const typeStr = String(rawType || "").trim().toLowerCase();
+  let insuranceType: 'none' | 'socialSecurity' | 'complementary' = "complementary";
+  let supplementaryPlan: 'golden' | 'silver' | 'special' | 'none' | undefined = 
+    (rawPlan === 'golden' || rawPlan === 'silver' || rawPlan === 'special' || rawPlan === 'none') ? rawPlan : undefined;
+
+  if (typeStr) {
+    if (typeStr === "none" || typeStr === "تقاضا ندارم" || typeStr === "فاقد بیمه") {
+      insuranceType = "none";
+      supplementaryPlan = supplementaryPlan || "none";
+    } else if (typeStr.includes("social") || typeStr.includes("تأمین") || typeStr.includes("تامین") || typeStr === "basic") {
+      insuranceType = "socialSecurity";
+    } else {
+      insuranceType = "complementary";
+      if (typeStr.includes("ویژه") || typeStr.includes("special")) supplementaryPlan = supplementaryPlan || "special";
+      else if (typeStr.includes("طلایی") || typeStr.includes("gold")) supplementaryPlan = supplementaryPlan || "golden";
+      else if (typeStr.includes("نقره") || typeStr.includes("silver")) supplementaryPlan = supplementaryPlan || "silver";
+    }
+  }
+
+  return { insuranceType, supplementaryPlan };
+}
+
 export class RealAdminService implements IAdminService {
   constructor(private readonly http: HttpClient) {}
 
@@ -24,10 +50,10 @@ export class RealAdminService implements IAdminService {
     const personal = u.personal || u.data?.personal || u;
     const organizational = u.organizational || u.data?.organizational || {};
 
-    const firstNameFa = (personal.firstNameFa || u.firstNameFa || "").trim();
-    const lastNameFa = (personal.lastNameFa || u.lastNameFa || "").trim();
-    const firstName = (personal.firstName || u.firstName || "").trim();
-    const lastName = (personal.lastName || u.lastName || "").trim();
+    let firstNameFa = (personal.firstNameFa || u.firstNameFa || "").trim();
+    let lastNameFa = (personal.lastNameFa || u.lastNameFa || "").trim();
+    let firstName = (personal.firstName || u.firstName || "").trim();
+    let lastName = (personal.lastName || u.lastName || "").trim();
 
     let fullNameFa = (firstNameFa || lastNameFa)
       ? `${firstNameFa} ${lastNameFa}`.trim()
@@ -36,6 +62,18 @@ export class RealAdminService implements IAdminService {
     let fullName = (firstName || lastName)
       ? `${firstName} ${lastName}`.trim()
       : (personal.fullName || u.fullName || u.name || "").trim();
+
+    if (!firstNameFa && !lastNameFa && fullNameFa) {
+      const parts = fullNameFa.split(" ");
+      firstNameFa = parts[0];
+      lastNameFa = parts.slice(1).join(" ");
+    }
+
+    if (!firstName && !lastName && fullName) {
+      const parts = fullName.split(" ");
+      firstName = parts[0];
+      lastName = parts.slice(1).join(" ");
+    }
 
     const email = (personal.email || u.email || "").trim();
 
@@ -72,6 +110,8 @@ export class RealAdminService implements IAdminService {
     else if (roleLower === "staff") role = "staff";
     else if (roleLower === "customer") role = "customer";
     else role = "user";
+
+    const insNormalized = normalizeInsurance(u.insuranceType, u.supplementaryPlan);
 
     return {
       id: u.id || u.userId || personal.id || "u-real",
@@ -113,7 +153,7 @@ export class RealAdminService implements IAdminService {
       age: u.age ?? 30,
       maritalStatus: personal.maritalStatus || u.maritalStatus || "single",
       childrenCount: personal.childrenCount ?? u.childrenCount ?? 0,
-      insuranceType: u.insuranceType ?? "complementary",
+      insuranceType: insNormalized.insuranceType,
       educationDegree: u.educationDegree ?? "master",
       educationField: u.educationField ?? "مهندسی مکانیک",
       skills: u.skills?.length ? u.skills : [
@@ -139,7 +179,7 @@ export class RealAdminService implements IAdminService {
       insuranceCode: u.insuranceCode,
       insuranceProvider: u.insuranceProvider,
       insuranceValidUntil: u.insuranceValidUntil,
-      supplementaryPlan: u.supplementaryPlan,
+      supplementaryPlan: insNormalized.supplementaryPlan,
       supplementaryProvider: u.supplementaryProvider,
       shebaNumber: u.shebaNumber,
       university: u.university,
@@ -247,8 +287,8 @@ export class RealAdminService implements IAdminService {
       insuranceCode: r.insuranceCode,
       insuranceProvider: r.insuranceProvider,
       insuranceValidUntil: r.insuranceValidUntil,
-      insuranceType: r.insuranceType,
-      supplementaryPlan: r.supplementaryPlan,
+      insuranceType: normalizeInsurance(r.insuranceType, r.supplementaryPlan).insuranceType,
+      supplementaryPlan: normalizeInsurance(r.insuranceType, r.supplementaryPlan).supplementaryPlan,
       supplementaryProvider: r.supplementaryProvider,
       shebaNumber: r.shebaNumber,
       dependents: r.dependents || [],

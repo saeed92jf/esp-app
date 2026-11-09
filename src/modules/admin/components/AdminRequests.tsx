@@ -54,6 +54,7 @@ import {
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/services";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { useConfirm } from "@/hooks/use-confirm";
 import { PendingRequest, RequestStatus, User } from "../types/admin.types";
 import {
@@ -145,8 +146,8 @@ export function AdminRequests({
   const isRtl = locale === "fa";
   const { confirm } = useConfirm();
   const { user: currentUser } = useAuth();
-  const operatorNameFa = currentUser?.fullNameFa || currentUser?.name || "سعید جلیلی فرد";
-  const operatorNameEn = currentUser?.fullName || currentUser?.name || "Saeed Jalilifard";
+  const operatorNameFa = formatPersonName(currentUser?.fullNameFa || currentUser?.fullName || currentUser?.name || "سعید جلیلی فرد", "fa");
+  const operatorNameEn = formatPersonName(currentUser?.fullName || currentUser?.fullNameFa || currentUser?.name || "Saeed Jalilifard", "en");
   const operatorName = isRtl ? operatorNameFa : operatorNameEn;
 
   const operatorRoleLabelFa = currentUser?.role === "superadmin"
@@ -175,7 +176,7 @@ export function AdminRequests({
     const faName = (r.firstNameFa || r.lastNameFa)
       ? `${r.firstNameFa || ''} ${r.lastNameFa || ''}`.trim()
       : (r.fullNameFa || r.name || enName);
-    return isRtl ? (faName || enName) : (enName || faName);
+    return formatPersonName(isRtl ? (faName || enName) : (enName || faName), locale);
   };
 
   // Filter states

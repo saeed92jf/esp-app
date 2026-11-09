@@ -62,6 +62,7 @@ import {
 } from "./TaskAttachmentList";
 import { TelegramEmojiPicker } from "./TelegramEmojiPicker";
 import { PaperPlaneTilt } from "@phosphor-icons/react";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
 export interface StagedAttachment extends TaskAttachmentItem {
   stagingId: string;
@@ -101,10 +102,10 @@ const PRIORITY_CONFIG: Record<string, { labelFa: string; labelEn: string; color:
 };
 
 const LIFECYCLE_STEPS = [
-  { key: "todo", labelFa: "۱. برای انجام", labelEn: "1. To Do", descFa: "تعریف تسک در انتظار شروع" },
-  { key: "in_progress", labelFa: "۲. در حال انجام", labelEn: "2. In Progress", descFa: "شروع کار یا ثبت اولین پیام/گزارش" },
-  { key: "review", labelFa: "۳. بازبینی و بررسی", labelEn: "3. Under Review", descFa: "بررسی کیفیت و تایید مدیر" },
-  { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم" },
+  { key: "todo", labelFa: "۱. برای انجام", labelEn: "1. To Do", descFa: "تعریف تسک در انتظار شروع", descEn: "Task created and ready to start" },
+  { key: "in_progress", labelFa: "۲. در حال انجام", labelEn: "2. In Progress", descFa: "شروع کار یا ثبت اولین پیام/گزارش", descEn: "Work started or first message/report" },
+  { key: "review", labelFa: "۳. بازبینی و بررسی", labelEn: "3. Under Review", descFa: "بررسی کیفیت و تایید مدیر", descEn: "Quality check and manager review" },
+  { key: "done", labelFa: "۴. تکمیل و مختومه", labelEn: "4. Completed", descFa: "تایید نهایی مدیر سیستم", descEn: "Final system admin approval" },
 ] as const;
 
 // Telegram name colors
@@ -190,6 +191,97 @@ export function formatMessageTime(dateStr: string, isRtl: boolean): string {
   } catch {
     return "";
   }
+}
+
+// Bilingual formatter for system messages in task chat
+export function formatSystemEventContent(
+  rawContent: string | undefined,
+  isRtl: boolean,
+  authorName?: string
+): string {
+  if (!rawContent) return "";
+  const c = rawContent.trim();
+  const locale = isRtl ? "fa" : "en";
+
+  // Generic attachment labels
+  if (c === "تصویر پیوست" || c === "Attached photo") return isRtl ? "تصویر پیوست" : "Attached photo";
+  if (c === "فایل پیوست" || c === "Attached file") return isRtl ? "فایل پیوست" : "Attached file";
+
+  // 1. Submit for Review ("ارسال جهت بازبینی و تایید" or "Submitted for review and approval")
+  if (
+    c.includes("ارسال جهت بازبینی") ||
+    c.includes("ارسال جهت باز بینی") ||
+    c.includes("Submitted for review") ||
+    c.includes("submitted for review")
+  ) {
+    const defaultFaNote = "این تسک توسط کارشناس تکمیل و جهت بازبینی و تایید نهایی به مدیر سیستم ارجاع شد.";
+    const defaultEnNote = "This task was completed by the specialist and referred to the manager for final review and approval.";
+
+    const colonIdx = c.indexOf(":");
+    let note = colonIdx !== -1 ? c.substring(colonIdx + 1).trim() : "";
+    const isDefault = !note || note === defaultFaNote || note === defaultEnNote;
+
+    if (isRtl) {
+      return isDefault
+        ? `📋 ارسال جهت بازبینی و تایید: ${defaultFaNote}`
+        : `📋 ارسال جهت بازبینی و تایید: ${note}`;
+    } else {
+      return isDefault
+        ? `📋 Submitted for review and approval: ${defaultEnNote}`
+        : `📋 Submitted for review and approval: ${note}`;
+    }
+  }
+
+  // 2. Task Started ("آغاز به کار تسک" or "Task Started")
+  if (
+    c.includes("آغاز به کار تسک") ||
+    c.includes("Task Started") ||
+    c.includes("وضعیت «در حال انجام» قرار گرفت")
+  ) {
+    const nameMatch = c.match(/توسط\s+([^«\n]+?)\s+در وضعیت/i) || c.match(/by\s+([^"\n]+?)\s+(?:in|to)/i);
+    const rawName = nameMatch ? nameMatch[1].trim() : (authorName || "");
+    const formattedName = rawName ? formatPersonName(rawName, locale) : (isRtl ? "کارشناس" : "Specialist");
+
+    if (isRtl) {
+      return `🚀 آغاز به کار تسک: این تسک توسط ${formattedName} در وضعیت «در حال انجام» قرار گرفت.`;
+    } else {
+      return `🚀 Task Started: This task was moved to "In Progress" by ${formattedName}.`;
+    }
+  }
+
+  // 3. Task Approved ("تایید و مختومه" or "Task Approved")
+  if (
+    c.includes("تایید و مختومه") ||
+    c.includes("Task Approved") ||
+    c.includes("approved and closed")
+  ) {
+    const nameMatch = c.match(/توسط\s+([^«\n]+?)\s+تایید/i) || c.match(/by\s+([^"\n.]+?)(?:\s+was|\.)/i);
+    const rawName = nameMatch ? nameMatch[1].trim() : (authorName || "");
+    const formattedName = rawName ? formatPersonName(rawName, locale) : (isRtl ? "مدیر" : "Manager");
+
+    if (isRtl) {
+      return `✅ این تسک توسط ${formattedName} تایید و مختومه اعلام شد.`;
+    } else {
+      return `✅ Task Approved: This task was approved and closed by ${formattedName}.`;
+    }
+  }
+
+  // 4. Revision / Changes Requested ("درخواست اصلاحات و بازنگری" or "Revision Requested")
+  if (
+    c.includes("درخواست اصلاحات") ||
+    c.includes("Revision Requested") ||
+    c.includes("Changes Requested")
+  ) {
+    const colonIdx = c.indexOf(":");
+    const feedback = colonIdx !== -1 ? c.substring(colonIdx + 1).trim() : "";
+    if (isRtl) {
+      return feedback ? `⚠️ درخواست اصلاحات و بازنگری: ${feedback}` : "⚠️ درخواست اصلاحات و بازنگری";
+    } else {
+      return feedback ? `⚠️ Revision Requested: ${feedback}` : "⚠️ Revision Requested";
+    }
+  }
+
+  return c;
 }
 
 export function TaskProgressView({
@@ -460,7 +552,7 @@ export function TaskProgressView({
       const updated = await newTasksService.startTask(
         task.id,
         currentUser.id,
-        currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کارشناس"
+        formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کارشناس" : "Engineer")
       );
       setCurrentTask(updated);
       onTaskUpdated(updated);
@@ -551,7 +643,7 @@ export function TaskProgressView({
                     title: isRtl
                       ? `پیام جدید در تسک: ${fresh.title}`
                       : `New message in: ${fresh.title}`,
-                    body: `${lastMsg.author_name}: ${lastMsg.content}`,
+                    body: `${formatPersonName(lastMsg.author_name, locale)}: ${formatSystemEventContent(lastMsg.content, isRtl, lastMsg.author_name)}`,
                     actionUrl: `/tasks`,
                     tag: `task-${fresh.id}-${lastMsg.id}`,
                   });
@@ -713,8 +805,8 @@ export function TaskProgressView({
     const optimisticMsg: NewTaskProgress = {
       id: `opt_${Date.now()}`,
       author_id: currentUser.id,
-      author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
-      author_role: currentUser.role || "کارشناس",
+      author_name: formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کاربر" : "User"),
+      author_role: formatRoleName(currentUser.role, locale) || (isRtl ? "کارشناس" : "Engineer"),
       content: textToSend,
       attachments: attachmentsToSend,
       created_at: new Date().toISOString(),
@@ -737,8 +829,8 @@ export function TaskProgressView({
     try {
       const updatedTask = await newTasksService.addProgress(task.id, {
         author_id: currentUser.id,
-        author_name: currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر",
-        author_role: currentUser.role || "کارشناس",
+        author_name: formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کاربر" : "User"),
+        author_role: formatRoleName(currentUser.role, locale) || (isRtl ? "کارشناس" : "Engineer"),
         content: textToSend,
         attachments: attachmentsToSend,
         is_admin_note: isAdmin,
@@ -766,7 +858,7 @@ export function TaskProgressView({
       const updatedTask = await newTasksService.approveTask(
         task.id,
         currentUser.id,
-        currentUser.fullNameFa || currentUser.fullName || "مدیر"
+        formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "مدیر" : "Manager")
       );
       onTaskUpdated(updatedTask);
       toast.success(isRtl ? "تسک تایید و بسته شد." : "Task approved and closed.");
@@ -784,7 +876,7 @@ export function TaskProgressView({
       const updatedTask = await newTasksService.submitForReview(
         task.id,
         currentUser.id,
-        currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کارشناس"
+        formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کارشناس" : "Engineer")
       );
       onTaskUpdated(updatedTask);
       toast.success(isRtl ? "تسک به مرحله بازبینی و تایید مدیر منتقل گردید." : "Task submitted for manager review.");
@@ -805,7 +897,7 @@ export function TaskProgressView({
       const updatedTask = await newTasksService.requestChanges(
         task.id,
         currentUser.id,
-        currentUser.fullNameFa || currentUser.fullName || "مدیر",
+        formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "مدیر" : "Manager"),
         changesFeedback.trim()
       );
       onTaskUpdated(updatedTask);
@@ -823,7 +915,7 @@ export function TaskProgressView({
 
   const handleToggleSubtask = async (subtaskId: string, isDone: boolean) => {
     const prevTask = currentTask;
-    const authorName = currentUser.fullNameFa || currentUser.fullName || currentUser.name || "کاربر";
+    const authorName = formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کاربر" : "User");
 
     // 0ms instantaneous optimistic update
     const updatedSubtasks = (currentTask.subtasks || []).map((s) => {
@@ -947,7 +1039,7 @@ export function TaskProgressView({
                   {isRtl ? "مشخصات و جزئیات تکمیلی تسک" : "Task Details & Information"}
                 </h3>
                 <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {currentTask.project_name ? `${currentTask.project_name} · ` : ""}{currentTask.assignees?.map((a) => a.name).join("، ") || (isRtl ? "بدون مجری" : "No assignees")}
+                  {currentTask.project_name ? `${currentTask.project_name} · ` : ""}{currentTask.assignees?.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ") || (isRtl ? "بدون مجری" : "No assignees")}
                 </p>
               </div>
             </div>
@@ -1038,7 +1130,7 @@ export function TaskProgressView({
                   <Users className="size-4 text-muted-foreground shrink-0 mt-0.5" />
                   <div>
                     <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "مجریان" : "Assignees"}</p>
-                    <p className="text-sm font-semibold">{currentTask.assignees.map((a) => a.name).join("، ")}</p>
+                    <p className="text-sm font-semibold">{currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ")}</p>
                   </div>
                 </div>
               )}
@@ -1169,7 +1261,7 @@ export function TaskProgressView({
                         {isPast && <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />}
                         {isActive && <span className="size-2 rounded-full bg-primary animate-pulse shrink-0" />}
                       </div>
-                      <span className="text-[10px] opacity-75 truncate">{step.descFa}</span>
+                      <span className="text-[10px] opacity-75 truncate">{isRtl ? step.descFa : step.descEn}</span>
                     </div>
                   );
                 })}
@@ -1391,7 +1483,7 @@ export function TaskProgressView({
                   {isRtl ? "ریزتسک‌ها و چک‌لیست فعالیت‌ها" : "Subtasks Checklist"}
                 </h3>
                 <Badge variant="secondary" className="text-xs fa-num font-medium">
-                  {doneSubtasks} از {totalSubtasks}
+                  {doneSubtasks} {isRtl ? "از" : "of"} {totalSubtasks}
                 </Badge>
                 {/* Mini progress bar in header */}
                 <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden hidden sm:block ms-2">
@@ -1425,8 +1517,8 @@ export function TaskProgressView({
                       </span>
                       <span className="font-semibold text-[11px]">
                         {currentTask.assignees?.length > 0
-                          ? currentTask.assignees.map((a) => a.name).join("، ") + (isRtl ? " و مدیر سیستم" : " & Admin")
-                          : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & Admin")}
+                          ? currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ") + (isRtl ? " و مدیر سیستم" : " & System Admin")
+                          : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & System Admin")}
                       </span>
                     </div>
 
@@ -1470,7 +1562,7 @@ export function TaskProgressView({
                                 <CheckCircle2 className="size-3 text-emerald-600" />
                                 <span>
                                   {sub.completed_by_name
-                                    ? (isRtl ? `تکمیل‌شده توسط ${sub.completed_by_name}` : `Done by ${sub.completed_by_name}`)
+                                    ? (isRtl ? `تکمیل‌شده توسط ${formatPersonName(sub.completed_by_name, locale)}` : `Completed by ${formatPersonName(sub.completed_by_name, locale)}`)
                                     : (isRtl ? "تکمیل‌شده" : "Completed")}
                                 </span>
                               </span>
@@ -1479,7 +1571,7 @@ export function TaskProgressView({
                                 <Users className="size-2.5" />
                                 <span>
                                   {currentTask.assignees?.length > 0
-                                    ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => a.name).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => a.name).join(", ")}`)
+                                    ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(", ")}`)
                                     : (isRtl ? "در انتظار اقدام مجری" : "Pending")}
                                 </span>
                               </span>
@@ -1678,10 +1770,10 @@ export function TaskProgressView({
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5 font-bold text-[#2481cc]">
                               <CornerUpLeft className="size-3" />
-                              <span>{isRtl ? `پاسخ به ${replyingTo.author_name}` : `Reply to ${replyingTo.author_name}`}</span>
+                              <span>{isRtl ? `پاسخ به ${formatPersonName(replyingTo.author_name, locale)}` : `Reply to ${formatPersonName(replyingTo.author_name, locale)}`}</span>
                             </div>
                             <p className="truncate text-foreground/80 text-[11px] mt-0.5 max-w-md">
-                              {replyingTo.content}
+                              {formatSystemEventContent(replyingTo.content, isRtl, replyingTo.author_name)}
                             </p>
                           </div>
                           <button
@@ -2189,8 +2281,12 @@ export function TaskProgressView({
 
             {deletingMessages && deletingMessages.length === 1 && (
               <div className="mt-3 p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground block mb-0.5">{deletingMessages[0].author_name}:</span>
-                <p className="line-clamp-2">{deletingMessages[0].content || (isRtl ? "فایل پیوست" : "Attachment")}</p>
+                <span className="font-semibold text-foreground block mb-0.5">
+                  {formatPersonName(deletingMessages[0].author_name, locale)}:
+                </span>
+                <p className="line-clamp-2">
+                  {formatSystemEventContent(deletingMessages[0].content, isRtl, deletingMessages[0].author_name) || (isRtl ? "فایل پیوست" : "Attachment")}
+                </p>
               </div>
             )}
           </div>
@@ -2273,12 +2369,23 @@ export function isSystemEventMessage(progress: NewTaskProgress): boolean {
   return (
     c.includes("آغاز به کار تسک") ||
     c.includes("ارسال جهت بازبینی") ||
+    c.includes("ارسال جهت باز بینی") ||
+    c.includes("Submitted for review") ||
+    c.includes("submitted for review") ||
+    c.includes("Task Started") ||
     c.includes("تایید و مختومه") ||
-    c.includes("درخواست اصلاحات و بازنگری") ||
+    c.includes("Task Approved") ||
+    c.includes("approved and closed") ||
+    c.includes("درخواست اصلاحات") ||
+    c.includes("Revision Requested") ||
+    c.includes("Changes Requested") ||
     c.includes("وضعیت «در حال انجام» قرار گرفت") ||
     c.includes("به مدیر سیستم ارجاع شد") ||
     c.startsWith("🚀 آغاز به کار تسک") ||
-    c.startsWith("📋 ارسال جهت بازبینی")
+    c.startsWith("🚀 Task Started") ||
+    c.startsWith("📋 ارسال جهت بازبینی") ||
+    c.startsWith("📋 ارسال جهت باز بینی") ||
+    c.startsWith("📋 Submitted for review")
   );
 }
 
@@ -2327,7 +2434,7 @@ function SystemEventPill({
         </div>
       )}
       <span className="inline-flex items-center justify-center gap-2 px-4 py-1 rounded-full text-[11.5px] leading-relaxed font-medium bg-black/35 dark:bg-black/55 text-white backdrop-blur-xs shadow-xs text-center max-w-[92%] sm:max-w-[80%]">
-        <span>{progress.content}</span>
+        <span>{formatSystemEventContent(progress.content, isRtl, progress.author_name)}</span>
         {timeStr && (
           <span className="opacity-75 text-[10px] font-mono fa-num shrink-0 ms-1" dir="ltr">
             {timeStr}
@@ -2451,6 +2558,7 @@ function ProgressItem({
   isSelectionMode?: boolean;
   onToggleSelect?: () => void;
 }) {
+  const locale = useLocale();
   const isMe = progress.author_id === currentUserId;
   const isAdminNote = progress.is_admin_note;
   const timeStr = formatMessageTime(progress.created_at, isRtl);
@@ -2521,9 +2629,9 @@ function ProgressItem({
         <div
           style={{ backgroundColor: senderColor }}
           className="size-9 rounded-full overflow-hidden shrink-0 shadow-xs border border-white/60 dark:border-black/30 flex items-center justify-center font-bold text-xs text-white select-none"
-          title={progress.author_name}
+          title={formatPersonName(progress.author_name, locale)}
         >
-          {progress.author_name.charAt(0).toUpperCase()}
+          {formatPersonName(progress.author_name, locale).charAt(0).toUpperCase()}
         </div>
       )}
 
@@ -2580,11 +2688,11 @@ function ProgressItem({
               style={{ color: senderColor }}
               className="font-bold text-xs truncate leading-tight select-none"
             >
-              {progress.author_name}
+              {formatPersonName(progress.author_name, locale)}
             </span>
             {(isAdminNote || progress.author_role === "admin" || progress.author_role === "مدیر" || progress.author_role === "Owner") && (
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#ede8f8] text-[#7053d2] dark:bg-purple-900/40 dark:text-purple-300 leading-tight select-none">
-                {isRtl ? "مدیر" : "Owner"}
+                {formatRoleName(progress.author_role || (isAdminNote ? "admin" : "engineer"), locale)}
               </span>
             )}
           </div>
@@ -2606,7 +2714,7 @@ function ProgressItem({
                 isPureEmojiMessage ? "text-[#67b5ff]" : "text-[#2481cc] dark:text-[#67b5ff]"
               )}
             >
-              {progress.reply_to.author_name}
+              {formatPersonName(progress.reply_to.author_name, locale)}
             </span>
             <span
               className={cn(
@@ -2614,7 +2722,7 @@ function ProgressItem({
                 isPureEmojiMessage ? "text-slate-200" : "text-slate-600 dark:text-slate-300"
               )}
             >
-              {progress.reply_to.content}
+              {formatSystemEventContent(progress.reply_to.content, isRtl, progress.reply_to.author_name)}
             </span>
           </div>
         )}
@@ -2667,7 +2775,9 @@ function ProgressItem({
               className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words dir-auto mt-1"
               dir={isRtl ? "rtl" : "auto"}
             >
-              {progress.content}
+              {isSystemEventMessage(progress)
+                ? formatSystemEventContent(progress.content, isRtl, progress.author_name)
+                : progress.content}
             </div>
           )
         )}

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { formatPersonName } from "@/lib/person-names";
 import type {
   SimplifiedProject,
   ProjectCategory,
@@ -183,11 +184,11 @@ export function ProjectRoadmapView({
 
         {/* Phase Header Labels */}
         <div className="hidden lg:grid grid-cols-5 gap-2 px-4 py-2 bg-muted/30 rounded-xl text-center text-[11px] font-bold text-muted-foreground">
-          <span>۱. مهندسی (Engineering)</span>
-          <span>۲. نقشه‌های ارسالی (DFA)</span>
-          <span>۳. تاییدیه کارفرما (Approval)</span>
-          <span>۴. تامین و ساخت (Fabrication)</span>
-          <span>۵. بسته‌بندی و بارگیری (Loading)</span>
+          <span>{isRtl ? "۱. مهندسی (Engineering)" : "1. Engineering"}</span>
+          <span>{isRtl ? "۲. نقشه‌های ارسالی (DFA)" : "2. Drawing for Approval (DFA)"}</span>
+          <span>{isRtl ? "۳. تاییدیه کارفرما (Approval)" : "3. Customer Approval"}</span>
+          <span>{isRtl ? "۴. تامین و ساخت (Fabrication)" : "4. Procurement & Fabrication"}</span>
+          <span>{isRtl ? "۵. بسته‌بندی و بارگیری (Loading)" : "5. Packaging & Loading"}</span>
         </div>
 
         {/* Project Roadmap Rows */}
@@ -334,7 +335,7 @@ export function ProjectRoadmapView({
                         <div className="pt-2 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground">
                           <span className="flex items-center gap-1 truncate max-w-[120px]">
                             <UserCheck className="size-3 text-muted-foreground shrink-0" />
-                            <span className="truncate">{p.managerName}</span>
+                            <span className="truncate">{formatPersonName(p.managerName, locale)}</span>
                           </span>
 
                           {p.documents && p.documents.length > 0 && (

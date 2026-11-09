@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { getRoleRingClass, getRoleGradient, getRoleGlowShadow, getRoleBadgeClass } from "@/lib/role-avatar";
 import {
   UserCircle2,
@@ -1016,7 +1017,7 @@ export function AdminUserConfig({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-                  <span>{isEditMode && selectedUser ? (isRtl ? `ویرایش مشخصات: ${selectedUser.name}` : `Edit Profile: ${selectedUser.name}`) : t("addNewUserTitle")}</span>
+                  <span>{isEditMode && selectedUser ? (isRtl ? `ویرایش مشخصات: ${formatPersonName(selectedUser.name, locale)}` : `Edit Profile: ${formatPersonName(selectedUser.name, locale)}`) : t("addNewUserTitle")}</span>
                   {isEditMode && selectedUser && (
                     <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/20">
                       {isRtl ? "حالت ویرایش" : "Edit Mode"}

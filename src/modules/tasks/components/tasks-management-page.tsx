@@ -61,6 +61,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
 type TaskTab = "kanban" | "table" | "timeline" | "create" | "detail" | "companies" | "analytics" | "settings";
 
@@ -859,11 +860,11 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
                     <div key={member.name} className="flex items-center justify-between p-3 rounded-2xl bg-muted/40 border border-border/40">
                       <div className="flex items-center gap-2.5">
                         <div className="size-8 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">
-                          {member.name.charAt(0)}
+                          {formatPersonName(member.name, locale)?.charAt(0)}
                         </div>
                         <div>
-                          <span className="font-semibold text-xs text-foreground block">{member.name}</span>
-                          <span className="text-[10px] text-muted-foreground">{member.role}</span>
+                          <span className="font-semibold text-xs text-foreground block">{formatPersonName(member.name, locale)}</span>
+                          <span className="text-[10px] text-muted-foreground">{formatRoleName(member.role, locale)}</span>
                         </div>
                       </div>
 
@@ -1033,7 +1034,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
               >
                 {allAssignees.map((a) => (
                   <option key={a.name} value={a.name}>
-                    {a.name} — {a.role}
+                    {formatPersonName(a.name, locale)} — {formatRoleName(a.role, locale)}
                   </option>
                 ))}
               </select>

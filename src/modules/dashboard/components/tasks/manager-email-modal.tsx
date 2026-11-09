@@ -13,6 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { formatPersonName } from "@/lib/person-names";
 import type { DashboardTask } from "../../services/dashboard.service";
 
 interface ManagerEmailModalProps {
@@ -68,13 +69,20 @@ export function ManagerEmailModal({
 
   if (!mounted || typeof document === "undefined") return null;
 
+  const isFa = locale === "fa";
+  const defaultCreator = isFa ? "مهندس شریفی (مدیر فنی)" : "Eng. Sharifi (Technical Manager)";
+  const defaultAssignee = isFa ? "سعید جلیلی" : "Saeed Jalili";
+
+  const creatorDisplay = formatPersonName(activeTask?.creatorName, locale) || defaultCreator;
+  const assigneeDisplay = formatPersonName(activeTask?.assignedToName, locale) || defaultAssignee;
+
   const senderEmail = "sharifi@euroslotpars.com";
   const recipientEmail = "saeed.jalili@euroslotpars.com";
   const dateStr = activeTask?.dueDate || "1405/02/10";
 
   const handleCopy = () => {
     if (!activeTask) return;
-    const text = `From: ${activeTask.creatorName || "مهندس شریفی (مدیر فنی)"} <${senderEmail}>\nTo: ${activeTask.assignedToName || "سعید جلیلی"} <${recipientEmail}>\nSubject: [Euroslot Pars] ${t("subjectPrefix")} ${activeTask.title}\n\n${activeTask.description || ""}`;
+    const text = `From: ${creatorDisplay} <${senderEmail}>\nTo: ${assigneeDisplay} <${recipientEmail}>\nSubject: [Euroslot Pars] ${t("subjectPrefix")} ${activeTask.title}\n\n${activeTask.description || ""}`;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -139,14 +147,14 @@ export function ManagerEmailModal({
                 <div className="flex items-center justify-between border-b border-border/30 pb-1.5 gap-2">
                   <span className="text-muted-foreground shrink-0">{t("from")}:</span>
                   <span className="font-medium text-foreground/90 font-sans truncate text-end" dir="ltr">
-                    {activeTask.creatorName || "مهندس شریفی (مدیر فنی)"} &lt;{senderEmail}&gt;
+                    {creatorDisplay} &lt;{senderEmail}&gt;
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between border-b border-border/30 pb-1.5 gap-2">
                   <span className="text-muted-foreground shrink-0">{t("to")}:</span>
                   <span className="font-medium text-foreground/90 font-sans truncate text-end" dir="ltr">
-                    {activeTask.assignedToName || "سعید جلیلی"} &lt;{recipientEmail}&gt;
+                    {assigneeDisplay} &lt;{recipientEmail}&gt;
                   </span>
                 </div>
 
@@ -166,11 +174,11 @@ export function ManagerEmailModal({
                 </div>
 
                 <p className="text-foreground/90 leading-relaxed">
-                  {t("salutation", { name: activeTask.assignedToName || "سعید جلیلی" })}
+                  {t("salutation", { name: assigneeDisplay })}
                 </p>
 
                 <p className="text-foreground/80 leading-relaxed">
-                  {t("bodyNotice", { manager: activeTask.creatorName || "مهندس شریفی (مدیر فنی)" })}
+                  {t("bodyNotice", { manager: creatorDisplay })}
                 </p>
 
                 {/* Task Info Box */}

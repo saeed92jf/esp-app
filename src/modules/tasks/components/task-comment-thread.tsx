@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   MessageSquare,
   CornerDownLeft,
@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskComment, TaskCommentReply, TaskAttachment } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
 interface TaskCommentThreadProps {
   taskId: string;
@@ -42,6 +43,8 @@ export function TaskCommentThread({
   onAddReply,
 }: TaskCommentThreadProps) {
   const t = useTranslations("Tasks.comments");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   const [newCommentText, setNewCommentText] = useState("");
   const [stagedAttachments, setStagedAttachments] = useState<TaskAttachment[]>([]);
   const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
@@ -67,8 +70,8 @@ export function TaskCommentThread({
         size: sizeStr,
         type: ext || "file",
         isDrawing,
-        uploadedAt: new Intl.DateTimeFormat("fa-IR").format(new Date()),
-        uploaderName: "سعید جلیلی",
+        uploadedAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
+        uploaderName: formatPersonName("سعید جلیلی", locale),
       };
     });
 
@@ -88,8 +91,8 @@ export function TaskCommentThread({
       size: "3.8 MB",
       type: "dwg",
       isDrawing: true,
-      uploadedAt: new Intl.DateTimeFormat("fa-IR").format(new Date()),
-      uploaderName: "سعید جلیلی",
+      uploadedAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
+      uploaderName: formatPersonName("سعید جلیلی", locale),
     };
 
     if (isReply) {
@@ -269,15 +272,15 @@ export function TaskCommentThread({
                 <div className="flex items-center gap-2">
                   <Avatar className="size-7.5 border border-primary/20">
                     <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
-                      {comment.authorName.charAt(0)}
+                      {formatPersonName(comment.authorName, locale).charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-foreground">
-                      {comment.authorName}
+                      {formatPersonName(comment.authorName, locale)}
                     </span>
                     <span className="text-[10px] text-muted-foreground">
-                      {comment.authorRole}
+                      {formatRoleName(comment.authorRole, locale)}
                     </span>
                   </div>
                 </div>
@@ -333,11 +336,11 @@ export function TaskCommentThread({
                           onClick={(e) => {
                             if (!att.url) {
                               e.preventDefault();
-                              alert(`دانلود فایل نقشه: ${att.name}`);
+                              alert(isRtl ? `دانلود فایل نقشه: ${att.name}` : `Download drawing: ${att.name}`);
                             }
                           }}
                           className="size-7 rounded-lg border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors cursor-pointer shrink-0"
-                          title="دانلود نقشه / سند"
+                          title={isRtl ? "دانلود نقشه / سند" : "Download Drawing / Document"}
                         >
                           <Download className="size-3.5" />
                         </a>
@@ -367,7 +370,7 @@ export function TaskCommentThread({
               {replyingToCommentId === comment.id && (
                 <div className="mt-2 p-2.5 rounded-xl border border-primary/20 bg-muted/20 flex flex-col gap-2">
                   <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{t("replyTo", { author: comment.authorName })}</span>
+                    <span>{t("replyTo", { author: formatPersonName(comment.authorName, locale) })}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -435,7 +438,7 @@ export function TaskCommentThread({
                         className="h-7 text-[10px] gap-1 text-amber-600 dark:text-amber-400"
                       >
                         <FileCode className="size-3" />
-                        <span>+ نقشه</span>
+                        <span>{isRtl ? "+ نقشه" : "+ Drawing"}</span>
                       </Button>
                     </div>
 
@@ -482,15 +485,15 @@ export function TaskCommentThread({
                         <div className="flex items-center gap-1.5">
                           <Avatar className="size-6 border border-primary/20">
                             <AvatarFallback className="bg-primary/10 text-primary text-[9px] font-bold">
-                              {reply.authorName.charAt(0)}
+                              {formatPersonName(reply.authorName, locale).charAt(0)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col">
                             <span className="text-[11px] font-semibold text-foreground">
-                              {reply.authorName}
+                              {formatPersonName(reply.authorName, locale)}
                             </span>
                             <span className="text-[9px] text-muted-foreground">
-                              {reply.authorRole}
+                              {formatRoleName(reply.authorRole, locale)}
                             </span>
                           </div>
                         </div>

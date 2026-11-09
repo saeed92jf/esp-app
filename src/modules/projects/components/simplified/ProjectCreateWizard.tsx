@@ -32,6 +32,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { DatePicker, getJalaliDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import { toast } from "sonner";
 import type { User } from "@/types/auth";
 import {
@@ -117,7 +118,7 @@ export function ProjectCreateWizard({
   const [service, setService] = useState("");
   const [managerId, setManagerId] = useState(currentUser.id);
   const [managerName, setManagerName] = useState(
-    currentUser.fullNameFa || currentUser.fullName || currentUser.name || "سعید جلیلی"
+    currentUser.fullNameFa || currentUser.fullName || currentUser.name || (isRtl ? "سعید جلیلی" : "Saeed Jalili")
   );
   const [projectTypes, setProjectTypes] = useState<string[]>(["مهندسی", "ساخت"]);
   const [company, setCompany] = useState("یورو اسلات پارس");
@@ -565,11 +566,11 @@ export function ProjectCreateWizard({
                     {personnelList.length > 0 ? (
                       personnelList.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {p.name} {p.jobTitle ? `(${p.jobTitle})` : ""}
+                          {formatPersonName(p.name, locale)} {p.jobTitle ? `(${formatRoleName(p.jobTitle, locale)})` : ""}
                         </option>
                       ))
                     ) : (
-                      <option value={currentUser.id}>{managerName}</option>
+                      <option value={currentUser.id}>{formatPersonName(managerName, locale)}</option>
                     )}
                   </select>
                 </div>
@@ -924,7 +925,7 @@ export function ProjectCreateWizard({
                   </div>
                   <div>
                     <span className="text-muted-foreground block mb-0.5">{isRtl ? "مدیر پروژه:" : "PM:"}</span>
-                    <span className="font-bold text-foreground">{managerName}</span>
+                    <span className="font-bold text-foreground">{formatPersonName(managerName, locale)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground block mb-0.5">{isRtl ? "سرویس فرآیندی:" : "Service:"}</span>

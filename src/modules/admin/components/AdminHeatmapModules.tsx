@@ -1,6 +1,6 @@
 import React from "react";
 import { ShieldAlert, KeyRound, ExternalLink, Plus } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { User } from "../types/admin.types";
 
@@ -22,6 +22,8 @@ export function AdminHeatmapModules({
   onNavigateToAccess 
 }: AdminHeatmapModulesProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
 
   // Flatten the granted accesses (Admins inherently have full access)
   const isAdmin = selectedUser?.role === 'superadmin' || selectedUser?.role === 'admin';
@@ -64,7 +66,7 @@ export function AdminHeatmapModules({
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">{t("accesses")}</h3>
             <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
-              {isAdmin ? "دسترسی کامل" : grantedItems.length}
+              {isAdmin ? (isRtl ? "دسترسی کامل" : "Full Access") : grantedItems.length}
             </span>
           </div>
 

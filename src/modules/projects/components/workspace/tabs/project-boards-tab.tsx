@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import {
   ProjectItem,
   ProjectTaskItem,
@@ -49,12 +50,15 @@ interface ProjectBoardsTabProps {
 export function ProjectBoardsTab({
   project,
   roleMode = "admin",
-  currentUserName = "سعید جلیلی",
+  currentUserName,
   isManager = true,
   onAddTask,
   onUpdateTaskStatus,
 }: ProjectBoardsTabProps) {
   const t = useTranslations("Projects");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
+  const effectiveUserName = currentUserName || (isRtl ? "سعید جلیلی" : "Saeed Jalili");
   const [activeView, setActiveView] = useState<"kanban" | "scrum">("kanban");
   const [taskFilter, setTaskFilter] = useState<"all" | "mine">(
     roleMode === "user" ? "mine" : "all"
@@ -62,7 +66,7 @@ export function ProjectBoardsTab({
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
   const [taskAssignee, setTaskAssignee] = useState(
-    roleMode === "user" ? currentUserName : (project.team?.[0]?.name || currentUserName)
+    roleMode === "user" ? effectiveUserName : (project.team?.[0]?.name || effectiveUserName)
   );
   const [taskPriority, setTaskPriority] = useState<ProjectTaskItem["priority"]>("medium");
   const [taskPoints, setTaskPoints] = useState<number>(3);
@@ -121,7 +125,7 @@ export function ProjectBoardsTab({
           storyPoints: Number(taskPoints) || 3,
           status: "todo",
           priority: taskPriority,
-          assignedToName: taskAssignee || "کارشناس فنی",
+          assignedToName: formatPersonName(taskAssignee || (isRtl ? "کارشناس فنی" : "Technical Specialist"), locale),
           dueDate: taskDueDate,
           progressPercent: 0,
           commentsCount: 0,
@@ -140,25 +144,25 @@ export function ProjectBoardsTab({
       case "urgent":
         return (
           <Badge className="bg-rose-500/15 text-rose-500 border border-rose-500/30 text-[10px] px-1.5 py-0">
-            فوری
+            {isRtl ? "فوری" : "Urgent"}
           </Badge>
         );
       case "high":
         return (
           <Badge className="bg-orange-500/15 text-orange-500 border border-orange-500/30 text-[10px] px-1.5 py-0">
-            بالا
+            {isRtl ? "بالا" : "High"}
           </Badge>
         );
       case "medium":
         return (
           <Badge className="bg-blue-500/15 text-blue-500 border border-blue-500/30 text-[10px] px-1.5 py-0">
-            متوسط
+            {isRtl ? "متوسط" : "Medium"}
           </Badge>
         );
       default:
         return (
           <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground">
-            عادی
+            {isRtl ? "عادی" : "Normal"}
           </Badge>
         );
     }
@@ -248,7 +252,7 @@ export function ProjectBoardsTab({
             const tasksInCol = (project.tasks || []).filter((t) => {
               if (t.status !== col.id) return false;
               if (taskFilter === "mine") {
-                return t.assignedToName?.toLowerCase().includes(currentUserName.toLowerCase());
+                return t.assignedToName?.toLowerCase().includes(effectiveUserName.toLowerCase());
               }
               return true;
             });
@@ -273,11 +277,11 @@ export function ProjectBoardsTab({
                 <div className="space-y-3 flex-1 overflow-y-auto">
                   {tasksInCol.length === 0 ? (
                     <div className="py-8 text-center text-xs text-muted-foreground border border-dashed border-border/40 rounded-lg">
-                      تسک فعالی وجود ندارد
+                      {isRtl ? "تسک فعالی وجود ندارد" : "No active tasks"}
                     </div>
                   ) : (
                     tasksInCol.map((task) => {
-                      const isMyTask = task.assignedToName?.toLowerCase().includes(currentUserName.toLowerCase());
+                      const isMyTask = task.assignedToName?.toLowerCase().includes(effectiveUserName.toLowerCase());
                       return (
                       <div
                         key={task.id}
@@ -305,7 +309,7 @@ export function ProjectBoardsTab({
                           <div className="flex items-center gap-1">
                             <User className="w-3 h-3 text-primary" />
                             <span className="truncate max-w-[100px]">
-                              {task.assignedToName}
+                              {formatPersonName(task.assignedToName, locale)}
                             </span>
                           </div>
                           {task.storyPoints && (
@@ -334,7 +338,7 @@ export function ProjectBoardsTab({
                               variant="ghost"
                               size="icon"
                               className="w-6 h-6 rounded-md hover:bg-primary/10 hover:text-primary"
-                              title="انتقال به ستون بعدی"
+                              title={isRtl ? "انتقال به ستون بعدی" : "Move to next column"}
                               onClick={() => {
                                 const nextCol: Record<string, ProjectTaskItem["status"]> = {
                                   backlog: "todo",
@@ -371,10 +375,12 @@ export function ProjectBoardsTab({
               <Flame className="w-5 h-5 text-amber-500" />
               <div>
                 <h3 className="font-semibold text-base text-foreground">
-                  اسپرینت فعال (Sprint 1)
+                  {isRtl ? "اسپرینت فعال (Sprint 1)" : "Active Sprint (Sprint 1)"}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  بازه اسپرینت: ۱۴ روز کاری • هدف اسپرینت: نهایی‌سازی مدارک پایه و تایید کارفرما
+                  {isRtl
+                    ? "بازه اسپرینت: ۱۴ روز کاری • هدف اسپرینت: نهایی‌سازی مدارک پایه و تایید کارفرما"
+                    : "Sprint window: 14 working days • Goal: Finalize base engineering documents & client approval"}
                 </p>
               </div>
             </div>
@@ -384,23 +390,23 @@ export function ProjectBoardsTab({
           </div>
 
           <div className="overflow-x-auto rounded-lg border border-border/60">
-            <table className="w-full text-xs text-right">
+            <table className="w-full text-xs text-start">
               <thead className="bg-muted/50 text-muted-foreground border-b border-border/60 font-medium">
                 <tr>
-                  <th className="p-3 text-right">عنوان تسک / فعالیت</th>
-                  <th className="p-3 text-right">اسپرینت</th>
-                  <th className="p-3 text-center">امتیاز (SP)</th>
-                  <th className="p-3 text-center">اولویت</th>
-                  <th className="p-3 text-right">مسئول انجام</th>
-                  <th className="p-3 text-center">وضعیت</th>
-                  <th className="p-3 text-center">تعاملات</th>
+                  <th className="p-3 text-start">{isRtl ? "عنوان تسک / فعالیت" : "Task / Activity Title"}</th>
+                  <th className="p-3 text-start">{isRtl ? "اسپرینت" : "Sprint"}</th>
+                  <th className="p-3 text-center">{isRtl ? "امتیاز (SP)" : "Story Points (SP)"}</th>
+                  <th className="p-3 text-center">{isRtl ? "اولویت" : "Priority"}</th>
+                  <th className="p-3 text-start">{isRtl ? "مسئول انجام" : "Assignee"}</th>
+                  <th className="p-3 text-center">{isRtl ? "وضعیت" : "Status"}</th>
+                  <th className="p-3 text-center">{isRtl ? "تعاملات" : "Interactions"}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
                 {(project.tasks || [])
                   .filter((t) => {
                     if (taskFilter === "mine") {
-                      return t.assignedToName?.toLowerCase().includes(currentUserName.toLowerCase());
+                      return t.assignedToName?.toLowerCase().includes(effectiveUserName.toLowerCase());
                     }
                     return true;
                   })
@@ -421,7 +427,7 @@ export function ProjectBoardsTab({
                       {getPriorityBadge(task.priority)}
                     </td>
                     <td className="p-3 text-foreground/90">
-                      {task.assignedToName}
+                      {formatPersonName(task.assignedToName, locale)}
                     </td>
                     <td className="p-3 text-center">
                       <Badge variant="outline" className="text-[10px]">
@@ -450,37 +456,37 @@ export function ProjectBoardsTab({
 
       {/* Add Task Modal */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="max-w-md" dir="rtl">
-          <DialogHeader className="text-right">
+        <DialogContent className="max-w-md" dir={isRtl ? "rtl" : "ltr"}>
+          <DialogHeader className={isRtl ? "text-right" : "text-left"}>
             <DialogTitle>{t("boards.addTask")}</DialogTitle>
             <DialogDescription>
-              تعریف تسک جدید در فضای کار اشتراکی پروژه
+              {isRtl ? "تعریف تسک جدید در فضای کار اشتراکی پروژه" : "Create new task in project shared workspace"}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreateTask} className="space-y-4 pt-2">
-            <div className="space-y-1.5 text-right">
+            <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
               <Label htmlFor="task-title">{t("boards.taskTitle")} *</Label>
               <Input
                 id="task-title"
                 value={taskTitle}
                 onChange={(e) => setTaskTitle(e.target.value)}
-                placeholder="مثلاً: مدلسازی سه‌بعدی نازل‌های بدنه طبق ASME Sec VIII"
+                placeholder={isRtl ? "مثلاً: مدلسازی سه‌بعدی نازل‌های بدنه طبق ASME Sec VIII" : "e.g. 3D modeling of shell nozzles per ASME Sec VIII"}
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5 text-right">
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
                 <Label htmlFor="task-assignee">{t("boards.assignee")}</Label>
                 <Input
                   id="task-assignee"
                   value={taskAssignee}
                   onChange={(e) => setTaskAssignee(e.target.value)}
-                  placeholder="نام مسئول..."
+                  placeholder={isRtl ? "نام مسئول..." : "Assignee name..."}
                 />
               </div>
-              <div className="space-y-1.5 text-right">
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
                 <Label htmlFor="task-points">{t("boards.storyPoints")}</Label>
                 <Input
                   id="task-points"
@@ -494,7 +500,7 @@ export function ProjectBoardsTab({
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5 text-right">
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
                 <Label htmlFor="task-priority">{t("boards.priority")}</Label>
                 <select
                   id="task-priority"
@@ -502,13 +508,13 @@ export function ProjectBoardsTab({
                   value={taskPriority}
                   onChange={(e) => setTaskPriority(e.target.value as any)}
                 >
-                  <option value="low">کم / عادی</option>
-                  <option value="medium">متوسط</option>
-                  <option value="high">بالا</option>
-                  <option value="urgent">فوری و بحرانی</option>
+                  <option value="low">{isRtl ? "کم / عادی" : "Low / Normal"}</option>
+                  <option value="medium">{isRtl ? "متوسط" : "Medium"}</option>
+                  <option value="high">{isRtl ? "بالا" : "High"}</option>
+                  <option value="urgent">{isRtl ? "فوری و بحرانی" : "Urgent / Critical"}</option>
                 </select>
               </div>
-              <div className="space-y-1.5 text-right">
+              <div className={`space-y-1.5 ${isRtl ? "text-right" : "text-left"}`}>
                 <Label htmlFor="task-sprint">{t("boards.sprint")}</Label>
                 <Input
                   id="task-sprint"
@@ -525,10 +531,10 @@ export function ProjectBoardsTab({
                 variant="outline"
                 onClick={() => setIsAddOpen(false)}
               >
-                انصراف
+                {isRtl ? "انصراف" : "Cancel"}
               </Button>
               <Button type="submit" disabled={isSubmitting || !taskTitle.trim()}>
-                {isSubmitting ? "در حال ثبت..." : "افزودن تسک"}
+                {isSubmitting ? (isRtl ? "در حال ثبت..." : "Submitting...") : (isRtl ? "افزودن تسک" : "Add Task")}
               </Button>
             </DialogFooter>
           </form>

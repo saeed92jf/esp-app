@@ -10,13 +10,14 @@ import {
   Clock, AlertTriangle, ExternalLink, Sparkles, CheckCircle2, GraduationCap, Building2, IdCard, CreditCard, Award,
   CheckSquare, MessageSquare, PlusCircle
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { User } from "../types/admin.types";
 import { newTasksService, NewTask } from "@/modules/tasks/services/new-tasks.service";
 import { AdminActivities } from "./AdminActivities";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
 import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
+import { formatPersonName } from "@/lib/person-names";
 
 interface AdminTasksTimeProps {
   selectedUser: User | null;
@@ -90,6 +91,8 @@ export function AdminTasksTime({
   hideSearchAvatarsOnMobile = true,
 }: AdminTasksTimeProps) {
   const t = useTranslations("Admin");
+  const locale = useLocale();
+  const isRtl = locale === "fa";
   
   const [animate, setAnimate] = useState(false);
   const [allTasks, setAllTasks] = useState<NewTask[]>([]);
@@ -182,97 +185,98 @@ export function AdminTasksTime({
         />
       </div>
 
-      {/* ── Virtual Grid Row 1: Personnel Specs (col 1), Education & Insurance (col 2), Activities (col 3) ── */}
+      {/* ── Virtual Grid Row 1: Unified Personnel, Education & Insurance (col 1-2), Activities (col 3) ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[295px] xl:min-h-[315px]">
         
-        {/* Module A: Personnel & Administrative Profile (مشخصات پرسنلی و سازمانی) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
-          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0">
+        {/* Unified Module: Personnel, Education & Insurance Profile (مشخصات پرسنلی، تحصیلات و بیمه) */}
+        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 md:col-span-2 lg:col-span-2 overflow-hidden">
+          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0 flex-wrap gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
               <Briefcase size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
-                مشخصات پرسنلی و سازمانی
+                {isRtl ? "مشخصات پرسنلی، تحصیلات و بیمه" : "Personnel, Education & Insurance Profile"}
               </h3>
             </div>
-            {selectedUser?.personnelCode && (
-              <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shrink-0">
-                کد {selectedUser.personnelCode}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden text-xs">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">کد ملی:</span>
-              <span className="font-bold text-foreground fa-num">{selectedUser?.nationalId || "-"}</span>
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">سمت / واحد:</span>
-              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
-                {selectedUser?.jobPosition || selectedUser?.jobTitle || selectedUser?.subUnit || "-"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">مدیر مستقیم:</span>
-              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
-                {selectedUser?.directManager || selectedUser?.manager || "-"}
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">داخلی / محل:</span>
-              <span className="font-bold text-foreground truncate max-w-[145px] text-end fa-num">
-                {selectedUser?.extensionNumber ? `داخلی ${selectedUser.extensionNumber}` : ""} {selectedUser?.workLocation ? `(${selectedUser.workLocation})` : ""}
-              </span>
+            <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+              {selectedUser?.personnelCode && (
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 fa-num shrink-0">
+                  {isRtl ? `کد ${selectedUser.personnelCode}` : `ID: ${selectedUser.personnelCode}`}
+                </span>
+              )}
+              {selectedUser?.education && (
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                  {selectedUser.education}
+                </span>
+              )}
+              {selectedUser?.insuranceType && selectedUser.insuranceType !== "none" && (
+                <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 shrink-0">
+                  {isRtl ? `بیمه ${selectedUser.insuranceType}` : `Insurance: ${selectedUser.insuranceType}`}
+                </span>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Module B: Education, Identity & Insurance (سوابق تحصیلی، هویتی و بیمه) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 overflow-hidden">
-          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <GraduationCap size={16} className="text-emerald-500 shrink-0" />
-              <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
-                تحصیلات و مشخصات بیمه
-              </h3>
-            </div>
-            {selectedUser?.education && (
-              <span className="text-[10px] xl:text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
-                {selectedUser.education}
-              </span>
-            )}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 justify-center py-0.5 overflow-hidden text-xs">
+            {/* Column 1: Personnel & Administrative Specs */}
+            <div className="flex flex-col gap-1.5 xl:gap-2">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "کد ملی:" : "National ID:"}</span>
+                <span className="font-bold text-foreground fa-num">{selectedUser?.nationalId || "-"}</span>
+              </div>
 
-          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-center py-0.5 overflow-hidden text-xs">
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">رشته / دانشگاه:</span>
-              <span className="font-bold text-foreground truncate max-w-[145px] text-end">
-                {selectedUser?.fieldOfStudy || selectedUser?.university ? `${selectedUser.fieldOfStudy || ''} (${selectedUser.university || ''})` : "-"}
-              </span>
-            </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "سمت / واحد:" : "Position / Unit:"}</span>
+                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
+                  {selectedUser?.jobPosition || selectedUser?.jobTitle || selectedUser?.subUnit || (selectedUser?.department ? (t.has(`departments.${selectedUser.department}`) ? t(`departments.${selectedUser.department}`) : selectedUser.department) : "-")}
+                </span>
+              </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">تاریخ استخدام:</span>
-              <span className="font-bold text-foreground fa-num">
-                {selectedUser?.employmentDate || selectedUser?.joinedAt || "-"}
-              </span>
-            </div>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "مدیر مستقیم:" : "Direct Manager:"}</span>
+                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
+                  {selectedUser?.directManager || selectedUser?.manager
+                    ? formatPersonName(selectedUser.directManager || selectedUser.manager, locale)
+                    : "-"}
+                </span>
+              </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">شماره بیمه:</span>
-              <span className="font-bold text-foreground truncate max-w-[145px] text-end fa-num">
-                {selectedUser?.insuranceNumber ? `${selectedUser.insuranceNumber} (${selectedUser.insuranceType || 'تکمیلی'})` : "-"}
-              </span>
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "داخلی / محل:" : "Ext / Location:"}</span>
+                <span className="font-bold text-foreground truncate max-w-[155px] text-end fa-num">
+                  {selectedUser?.extensionNumber ? (isRtl ? `داخلی ${selectedUser.extensionNumber}` : `Ext ${selectedUser.extensionNumber}`) : ""} {selectedUser?.workLocation ? `(${isRtl ? (selectedUser.workLocation === 'office' ? 'دفتر مرکزی' : selectedUser.workLocation === 'factory' ? 'کارخانه' : selectedUser.workLocation) : selectedUser.workLocation})` : ""}
+                </span>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-              <span className="text-muted-foreground text-[11px]">شماره حساب بانکی:</span>
-              <span className="font-bold text-foreground font-mono text-[10.5px] truncate max-w-[145px] text-end fa-num">
-                {selectedUser?.bankAccount || "-"}
-              </span>
+            {/* Column 2: Education & Insurance Specs */}
+            <div className="flex flex-col gap-1.5 xl:gap-2">
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "رشته / دانشگاه:" : "Major / University:"}</span>
+                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
+                  {selectedUser?.fieldOfStudy || selectedUser?.university ? `${selectedUser.fieldOfStudy || ''} (${selectedUser.university || ''})` : (selectedUser?.education || "-")}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "تاریخ استخدام:" : "Hire Date:"}</span>
+                <span className="font-bold text-foreground fa-num">
+                  {selectedUser?.employmentDate || selectedUser?.joinedAt || "-"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره بیمه:" : "Insurance No:"}</span>
+                <span className="font-bold text-foreground truncate max-w-[155px] text-end fa-num">
+                  {selectedUser?.insuranceNumber ? `${selectedUser.insuranceNumber} (${selectedUser.insuranceType || (isRtl ? 'تکمیلی' : 'Complementary')})` : "-"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+                <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره حساب بانکی:" : "Bank Account:"}</span>
+                <span className="font-bold text-foreground font-mono text-[10.5px] truncate max-w-[155px] text-end fa-num">
+                  {selectedUser?.shebaNumber || selectedUser?.bankAccount || "-"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -292,8 +296,10 @@ export function AdminTasksTime({
               <FolderKanban size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
                 {selectedUser
-                  ? `تسک‌های محوله به ${selectedUser.fullNameFa || selectedUser.name}`
-                  : "تسک‌های سازمانی"}
+                  ? (isRtl
+                      ? `تسک‌های محوله به ${formatPersonName(selectedUser.fullNameFa || selectedUser.fullName || selectedUser.name, locale)}`
+                      : `Tasks assigned to ${formatPersonName(selectedUser.fullName || selectedUser.name, locale)}`)
+                  : (isRtl ? "تسک‌های سازمانی" : "Organizational Tasks")}
               </h3>
               <span className="text-[10px] bg-primary/15 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold shrink-0 fa-num">
                 {userTasks.length}
@@ -303,24 +309,24 @@ export function AdminTasksTime({
             <div className="flex items-center gap-1.5 flex-wrap">
               {taskStats.inProgress > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 fa-num">
-                  {taskStats.inProgress} در حال انجام
+                  {taskStats.inProgress} {isRtl ? "در حال انجام" : "In Progress"}
                 </span>
               )}
               {taskStats.review > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20 fa-num">
-                  {taskStats.review} بازبینی
+                  {taskStats.review} {isRtl ? "بازبینی" : "Under Review"}
                 </span>
               )}
               {taskStats.done > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 fa-num">
-                  {taskStats.done} انجام‌شده
+                  {taskStats.done} {isRtl ? "انجام‌شده" : "Completed"}
                 </span>
               )}
               <Link
                 href="/tasks"
                 className="inline-flex items-center gap-1 text-[11px] text-primary hover:text-primary/80 font-semibold px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors cursor-pointer shrink-0 ms-1"
               >
-                <span>مشاهده سیستم تسک‌ها</span>
+                <span>{isRtl ? "مشاهده سیستم تسک‌ها" : "View Tasks System"}</span>
                 <ExternalLink size={11} className="rtl:rotate-180 shrink-0" />
               </Link>
             </div>
@@ -355,18 +361,18 @@ export function AdminTasksTime({
                           )}
                         >
                           {task.status === "in_progress"
-                            ? "در حال انجام"
+                            ? (isRtl ? "در حال انجام" : "In Progress")
                             : task.status === "review"
-                            ? "بازبینی"
+                            ? (isRtl ? "بازبینی" : "Review")
                             : task.status === "done"
-                            ? "انجام‌شده"
-                            : "برای انجام"}
+                            ? (isRtl ? "انجام‌شده" : "Completed")
+                            : (isRtl ? "برای انجام" : "To Do")}
                         </span>
 
                         {/* Priority Badge */}
                         {isUrgent && (
                           <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                            {task.priority === "critical" ? "فوری" : "مهم"}
+                            {task.priority === "critical" ? (isRtl ? "فوری" : "Critical") : (isRtl ? "مهم" : "High")}
                           </span>
                         )}
 
@@ -386,13 +392,13 @@ export function AdminTasksTime({
                       <div className="flex items-center gap-3 text-[10.5px] text-muted-foreground mt-0.5 flex-wrap">
                         {totalSubs > 0 && (
                           <span className="fa-num">
-                            ریزتسک‌ها: {doneSubs}/{totalSubs}
+                            {isRtl ? `ریزتسک‌ها: ${doneSubs}/${totalSubs}` : `Subtasks: ${doneSubs}/${totalSubs}`}
                           </span>
                         )}
                         {(task.progress?.length || 0) > 0 && (
                           <span className="fa-num flex items-center gap-1">
                             <MessageSquare className="size-2.5 opacity-70" />
-                            {task.progress.length} پیام در گفتگو
+                            {task.progress.length} {isRtl ? "پیام در گفتگو" : "messages"}
                           </span>
                         )}
                       </div>
@@ -406,7 +412,7 @@ export function AdminTasksTime({
                           {task.deadline}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground text-[10px]">بدون مهلت</span>
+                        <span className="text-muted-foreground text-[10px]">{isRtl ? "بدون مهلت" : "No deadline"}</span>
                       )}
                     </div>
                   </Link>
@@ -417,15 +423,17 @@ export function AdminTasksTime({
                 <CheckCircle2 size={30} className="text-emerald-500 opacity-80" />
                 <p className="text-xs font-semibold">
                   {selectedUser
-                    ? `هیچ تسکی به ${selectedUser.fullNameFa || selectedUser.name} اختصاص نیافته است.`
-                    : "هیچ تسکی در سیستم یافت نشد."}
+                    ? (isRtl
+                        ? `هیچ تسکی به ${formatPersonName(selectedUser.fullNameFa || selectedUser.fullName || selectedUser.name, locale)} اختصاص نیافته است.`
+                        : `No tasks assigned to ${formatPersonName(selectedUser.fullName || selectedUser.name, locale)}.`)
+                    : (isRtl ? "هیچ تسکی در سیستم یافت نشد." : "No tasks found in the system.")}
                 </p>
                 <Link
                   href="/tasks?tab=create"
                   className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
                 >
                   <PlusCircle size={12} />
-                  <span>تعریف تسک جدید برای این کاربر</span>
+                  <span>{isRtl ? "تعریف تسک جدید برای این کاربر" : "Create new task for this user"}</span>
                 </Link>
               </div>
             )}

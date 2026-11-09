@@ -55,6 +55,7 @@ import {
 import { TaskCommentThread } from "./task-comment-thread";
 import { TaskAttachmentsSection } from "./task-attachments-section";
 import { cn } from "@/lib/utils";
+import { formatPersonName, formatRoleName } from "@/lib/person-names";
 import {
   segmentedAccordionMotion,
   getSegmentedAccordionHeaderClass,
@@ -171,7 +172,7 @@ export function TaskDetailView({
       : [
           {
             id: "default",
-            name: task.assignedToName || "سعید جلیلی",
+            name: task.assignedToName || (isRtl ? "سعید جلیلی" : "Saeed Jalili"),
             role: task.assignedToRole || (isRtl ? "کارشناس مهندسی" : "Engineering Specialist"),
             isLead: true,
           },
@@ -218,7 +219,12 @@ export function TaskDetailView({
         "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
         "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
       ];
-      setTimelineDate(`${day} ${monthNamesFa[month - 1] || ""}`);
+      const monthNamesEn = [
+        "Farvardin", "Ordibehesht", "Khordad", "Tir", "Mordad", "Shahrivar",
+        "Mehr", "Aban", "Azar", "Dey", "Bahman", "Esfand"
+      ];
+      const monthNames = isRtl ? monthNamesFa : monthNamesEn;
+      setTimelineDate(`${day} ${monthNames[month - 1] || ""}`);
       setShowDatePicker(false);
       persistChanges({ dueDate: formatted });
     }
@@ -255,9 +261,11 @@ export function TaskDetailView({
             {
               id: `act-${Date.now()}`,
               type: "status_change",
-              authorName: "سعید جلیلی",
+              authorName: formatPersonName("سعید جلیلی", locale),
               timestamp: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
-              details: updates.status ? `وضعیت به ${updates.status} تغییر کرد.` : "مشخصات تسک به‌روزرسانی شد.",
+              details: updates.status
+                ? (isRtl ? `وضعیت به ${updates.status} تغییر کرد.` : `Status changed to ${updates.status}.`)
+                : (isRtl ? "مشخصات تسک به‌روزرسانی شد." : "Task details updated."),
             },
             ...(task.activities || []),
           ],
@@ -557,7 +565,11 @@ export function TaskDetailView({
                   <Building2 className={cn("size-5", company === comp ? "text-primary" : "text-muted-foreground")} />
                   {company === comp && <Check className="size-4 text-primary" />}
                 </div>
-                <div className="font-bold text-sm text-foreground">{comp}</div>
+                <div className="font-bold text-sm text-foreground">
+                  {comp === "یورو اسلات پارس"
+                    ? (isRtl ? "یورو اسلات پارس" : "Euroslot Pars")
+                    : (isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram")}
+                </div>
               </div>
             ))}
           </div>
@@ -1113,12 +1125,16 @@ export function TaskDetailView({
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Avatar className="size-6 border border-border/50">
                         <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">
-                          {(assignees[0]?.name || "س").charAt(0)}
+                          {formatPersonName(assignees[0]?.name || "سعید جلیلی", locale).charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <div className="text-xs font-bold text-foreground truncate">{assignees[0]?.name || "سعید جلیلی"}</div>
-                        <div className="text-[10px] text-muted-foreground truncate">{assignees[0]?.role || "لیدر پروژه"}</div>
+                        <div className="text-xs font-bold text-foreground truncate">
+                          {formatPersonName(assignees[0]?.name || "سعید جلیلی", locale)}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground truncate">
+                          {formatRoleName(assignees[0]?.role || "لیدر پروژه", locale)}
+                        </div>
                       </div>
                     </div>
 
@@ -1137,10 +1153,10 @@ export function TaskDetailView({
                     />
                     <div className="flex items-center gap-2 text-xs flex-wrap justify-center">
                       {[
-                        { days: 3, label: "+۳ روز" },
-                        { days: 7, label: "+۱ هفته" },
-                        { days: 14, label: "+۲ هفته" },
-                        { days: 30, label: "+۱ ماه" },
+                        { days: 3, label: isRtl ? "+۳ روز" : "+3 Days" },
+                        { days: 7, label: isRtl ? "+۱ هفته" : "+1 Week" },
+                        { days: 14, label: isRtl ? "+۲ هفته" : "+2 Weeks" },
+                        { days: 30, label: isRtl ? "+۱ ماه" : "+1 Month" },
                       ].map((preset) => (
                         <button
                           key={preset.days}
@@ -1266,7 +1282,9 @@ export function TaskDetailView({
                       {/* Header row with mini progress */}
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-xs text-muted-foreground font-semibold">
-                          {completedSubtasksCount} از {subtasks.length} اقدام تکمیل شده است
+                          {isRtl
+                            ? `${completedSubtasksCount} از ${subtasks.length} اقدام تکمیل شده است`
+                            : `${completedSubtasksCount} of ${subtasks.length} subtasks completed`}
                         </div>
                         <div className="w-28 bg-muted/60 rounded-full h-2 overflow-hidden border border-border/30">
                           <div
@@ -1461,7 +1479,7 @@ export function TaskDetailView({
                 </div>
                 <div className="flex items-center justify-between w-2/3 min-w-0 gap-2">
                   <span className="text-xs sm:text-sm text-foreground truncate px-2 font-semibold">
-                    {task.creatorName || (isRtl ? "کاربر سیستم" : "System User")}
+                    {task.creatorName ? formatPersonName(task.creatorName, locale) : (isRtl ? "کاربر سیستم" : "System User")}
                   </span>
                   <span className="text-[10px] font-medium text-muted-foreground/70 bg-muted/40 px-1.5 py-0.5 rounded">
                     {t("detailPage.readOnly")}
@@ -1561,8 +1579,8 @@ export function TaskDetailView({
                 </div>
                 <div className="flex items-center justify-between w-2/3 min-w-0 gap-2">
                   <span className="text-xs sm:text-sm text-muted-foreground text-start truncate px-2">
-                    {estimatedHours ? `${estimatedHours} ساعت` : t("detailPage.notSet")}
-                    {loggedHours ? ` (ثبت شده: ${loggedHours}h)` : ""}
+                    {estimatedHours ? (isRtl ? `${estimatedHours} ساعت` : `${estimatedHours} hrs`) : t("detailPage.notSet")}
+                    {loggedHours ? (isRtl ? ` (ثبت شده: ${loggedHours}h)` : ` (logged: ${loggedHours}h)`) : ""}
                   </span>
                   <ChevronRight className="size-4 text-zinc-900 dark:text-zinc-100 shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
@@ -1682,19 +1700,19 @@ export function TaskDetailView({
                   <div className="flex items-center gap-3">
                     <Avatar className="size-8 border border-border/50">
                       <AvatarFallback className="bg-muted text-foreground font-bold text-xs">
-                        {assignee.name.charAt(0)}
+                        {formatPersonName(assignee.name, locale).charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-                        <span>{assignee.name}</span>
+                        <span>{formatPersonName(assignee.name, locale)}</span>
                         {assignee.isLead && (
                           <span className="text-[10px] font-bold text-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">
                             {t("detailPage.leadAssignee")}
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">{assignee.role}</div>
+                      <div className="text-[11px] text-muted-foreground">{formatRoleName(assignee.role, locale)}</div>
                     </div>
                   </div>
 

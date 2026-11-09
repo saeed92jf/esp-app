@@ -158,6 +158,7 @@
       "hr": "Human Resources",
       "other": "Other Department",
       "Engineering": "Engineering",
+      "Marketting Development & Sales": "Market Development & Sales",
       "Design": "Design",
       "Marketing": "Marketing",
       "Sales": "Sales"
@@ -372,7 +373,15 @@
       "dana": "Dana Insurance",
       "asia": "Asia Insurance",
       "alborz": "Alborz Insurance",
-      "parsian": "Parsian Insurance"
+      "parsian": "Parsian Insurance",
+      "طرح ویژه": "Executive Complementary Insurance",
+      "طلایی": "Golden Complementary Insurance",
+      "نقره ای": "Silver Complementary Insurance",
+      "نقره‌ای": "Silver Complementary Insurance",
+      "تقاضا ندارم": "No Insurance",
+      "special": "Executive Complementary Insurance",
+      "golden": "Golden Complementary Insurance",
+      "silver": "Silver Complementary Insurance"
     },
     "degreesOptions": {
       "diploma": "High School Diploma",

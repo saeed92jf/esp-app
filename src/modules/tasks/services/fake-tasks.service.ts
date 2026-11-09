@@ -236,7 +236,7 @@ export class FakeTasksService implements TasksService {
         type: file.type,
         url: file.url,
         isDrawing: file.isDrawing,
-        uploaderName: file.uploaderName || "سعید جلیلی",
+        uploaderName: file.uploaderName || "Saeed Jalili",
         uploadedAt: new Intl.DateTimeFormat("fa-IR").format(new Date()),
       };
 
