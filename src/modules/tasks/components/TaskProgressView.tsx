@@ -36,6 +36,7 @@ import {
   Smile,
   Copy,
   Check,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,6 +62,8 @@ import {
   formatBytes,
 } from "./TaskAttachmentList";
 import { TelegramEmojiPicker } from "./TelegramEmojiPicker";
+import { TaskCommentThread } from "./task-comment-thread";
+import { TaskComment, TaskCommentReply, TaskAttachment } from "../types/tasks.types";
 import { PaperPlaneTilt } from "@phosphor-icons/react";
 import { formatPersonName, formatRoleName } from "@/lib/person-names";
 
@@ -304,11 +307,103 @@ export function TaskProgressView({
   const [showChangesBox, setShowChangesBox] = useState(false);
   const [changesFeedback, setChangesFeedback] = useState("");
   const [openSegments, setOpenSegments] = useState<Record<string, boolean>>({
-    details: false,
+    details: true,
     attachments: false,
-    subtasks: false,
-    chat: true,
+    subtasks: true,
+    comments: true,
   });
+
+  const handleAddComment = async (
+    _taskId: string,
+    content: string,
+    attachments?: TaskAttachment[]
+  ) => {
+    const authorName = currentUser.name || (currentUser as any).fullName || (currentUser as any).fullNameFa || "سعید جلیلی";
+    const authorRole = currentUser.role || "superadmin";
+    const newComment: TaskComment = {
+      id: `comm_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      authorName,
+      authorRole,
+      authorAvatar: currentUser.avatar,
+      content,
+      createdAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date()),
+      likes: 0,
+      attachments: attachments || [],
+      replies: [],
+    };
+
+    const updatedComments = [...(currentTask.comments || []), newComment];
+    const updatedTask = {
+      ...currentTask,
+      comments: updatedComments,
+    };
+
+    try {
+      await newTasksService.updateTask(currentTask.id, {
+        comments: updatedComments,
+      } as any);
+    } catch (err) {
+      console.error("Failed to persist comment to backend:", err);
+    }
+
+    setCurrentTask(updatedTask);
+    onTaskUpdated(updatedTask);
+    toast.success(isRtl ? "کامنت شما با موفقیت ثبت گردید." : "Comment posted successfully.");
+  };
+
+  const handleAddReply = async (
+    _taskId: string,
+    commentId: string,
+    content: string,
+    attachments?: TaskAttachment[]
+  ) => {
+    const authorName = currentUser.name || (currentUser as any).fullName || (currentUser as any).fullNameFa || "سعید جلیلی";
+    const authorRole = currentUser.role || "superadmin";
+    const newReply: TaskCommentReply = {
+      id: `reply_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      commentId,
+      authorName,
+      authorRole,
+      authorAvatar: currentUser.avatar,
+      content,
+      createdAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      }).format(new Date()),
+      likes: 0,
+      attachments: attachments || [],
+    };
+
+    const updatedComments = (currentTask.comments || []).map((c: any) => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          replies: [...(c.replies || []), newReply],
+        };
+      }
+      return c;
+    });
+
+    const updatedTask = {
+      ...currentTask,
+      comments: updatedComments,
+    };
+
+    try {
+      await newTasksService.updateTask(currentTask.id, {
+        comments: updatedComments,
+      } as any);
+    } catch (err) {
+      console.error("Failed to persist reply to backend:", err);
+    }
+
+    setCurrentTask(updatedTask);
+    onTaskUpdated(updatedTask);
+    toast.success(isRtl ? "پاسخ شما با موفقیت ثبت گردید." : "Reply posted successfully.");
+  };
 
   const toggleSegment = (key: string) => {
     setOpenSegments((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -974,7 +1069,7 @@ export function TaskProgressView({
   const totalSubtasks = currentTask.subtasks?.length ?? 0;
 
   return (
-    <div className="max-w-3xl mx-auto pb-8">
+    <div className="max-w-[1580px] w-full mx-auto pb-8">
       {/* Top Header: Title with Back Button (Profile Manager Style) */}
       <div className="flex items-center gap-3 sm:gap-4 mb-5">
         <Button
@@ -1008,11 +1103,13 @@ export function TaskProgressView({
         </div>
       </div>
 
-      {/* Independent Segmented Accordion Sections (سگمنت لیست‌های تفکیک‌شده با فاصله) */}
-      <div className="space-y-4">
-        {/* ======================================================== */}
-        {/* SEGMENT 1: مشخصات و اطلاعات تسک (Task Details & Approve) */}
-        {/* ======================================================== */}
+      {/* 2-Column Responsive Layout: Segment Lists (Col 1) + Live Task Chat Column (Col 2) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start w-full">
+        {/* ── Left / Main Column: Segment Lists (سگمنت لیست‌ها) ── */}
+        <div className="lg:col-span-7 xl:col-span-7 flex flex-col space-y-4 min-w-0">
+          {/* ======================================================== */}
+          {/* SEGMENT 1: مشخصات و اطلاعات تسک (Task Details & Approve) */}
+          {/* ======================================================== */}
         <div className="segmented-list flex flex-col gap-[2px] w-full">
           {/* Accordion Header as authentic segmented-item */}
           <div
@@ -1588,36 +1685,119 @@ export function TaskProgressView({
         )}
 
         {/* ======================================================== */}
-        {/* SEGMENT 4: گفتگوی زنده و گزارش پیشرفت (Telegram Live Chat) */}
+        {/* SEGMENT 4: کامنت (Task Comments & Discussions)           */}
         {/* ======================================================== */}
         <div className="segmented-list flex flex-col gap-[2px] w-full">
-          {/* Accordion Header for Item 4 */}
+          {/* Accordion Header for Item 4: کامنت */}
           <div
             role="button"
             tabIndex={0}
-            onClick={() => toggleSegment("chat")}
+            onClick={() => toggleSegment("comments")}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                toggleSegment("chat");
+                toggleSegment("comments");
               }
             }}
             className={cn(
-              "segmented-item group relative flex items-center justify-between gap-3 px-5 py-4 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
-              getSegmentedAccordionHeaderClass(openSegments.chat, { isTopRounded: true, fullCapsuleWhenClosed: true })
+              "segmented-item group relative flex items-center justify-between gap-3 p-4 sm:p-5 w-full outline-none cursor-pointer border border-border/60 shadow-xs text-start select-none",
+              getSegmentedAccordionHeaderClass(openSegments.comments, { isTopRounded: true, fullCapsuleWhenClosed: true })
             )}
           >
-            <div className="flex items-center gap-2">
-              <FileText className="size-4 text-primary" />
-              <h3 className="font-bold text-sm">
-                {isRtl ? "گفتگوی زنده و گزارش پیشرفت تسک" : "Live Task Chat & Progress"}
-              </h3>
-              <span className="text-xs font-mono text-muted-foreground fa-num">
-                ({currentTask.progress?.length || 0})
-              </span>
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 shrink-0">
+                <MessageSquare className="size-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm sm:text-base font-bold text-foreground truncate leading-snug">
+                    {isRtl ? "کامنت" : "Comments"}
+                  </h3>
+                  <span className="text-xs font-mono text-muted-foreground fa-num">
+                    ({(currentTask.comments || []).length})
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground truncate mt-0.5">
+                  {isRtl ? "نظرات، تبادل‌نظر فنی و یادداشت‌های اعضای تیم" : "Technical comments, discussions and notes"}
+                </p>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors shrink-0">
+                <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.comments && "rotate-180")} />
+              </div>
+            </div>
+          </div>
+
+          <AnimatePresence initial={false}>
+            {openSegments.comments && (
+              <motion.div
+                key="comments-body"
+                initial={segmentedAccordionMotion.initial}
+                animate={segmentedAccordionMotion.animate}
+                exit={segmentedAccordionMotion.exit}
+                className="flex flex-col gap-[2px]"
+              >
+                <div className="segmented-item no-hover-bg rounded-t-[6px] rounded-b-[32px] p-4 sm:p-5 w-full border border-border/60 shadow-xs">
+                  <TaskCommentThread
+                    taskId={currentTask.id}
+                    task={{
+                      id: currentTask.id,
+                      title: currentTask.title,
+                      status: currentTask.status as any,
+                      priority: currentTask.priority as any,
+                      category: currentTask.tags?.[0] || "عمومی",
+                      company: (currentTask.company || "ESP") as any,
+                      createdBy: "user",
+                      creatorName: currentTask.created_by_name,
+                      assignedToName: currentTask.assignees?.[0]?.name || "",
+                      assignees: currentTask.assignees?.map((a) => ({
+                        id: a.userId,
+                        name: a.name,
+                        email: a.email,
+                        role: a.role,
+                      })) || [],
+                      comments: currentTask.comments || [],
+                    } as any}
+                    comments={currentTask.comments || []}
+                    onAddComment={handleAddComment}
+                    onAddReply={handleAddReply}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* ── Column 2: Live Task Chat (ستون عمودی گفتگوی زنده تسک) ── */}
+      <div className="lg:col-span-5 xl:col-span-5 flex flex-col w-full min-w-0 lg:sticky lg:top-4">
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className="rounded-[32px] w-full border border-border/60 shadow-xs flex flex-col relative overflow-hidden bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c] h-[640px] lg:h-[calc(100vh-140px)] min-h-[580px] max-h-[850px]"
+        >
+          {/* Live Chat Column Header */}
+          <div className="relative z-10 px-4 py-3 bg-white/80 dark:bg-black/60 backdrop-blur-md border-b border-border/40 flex items-center justify-between gap-2 shrink-0">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
+                <FileText className="size-4 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold text-xs sm:text-sm text-foreground truncate">
+                    {isRtl ? "گفتگوی زنده تسک" : "Live Task Chat"}
+                  </h3>
+                  <span className="text-[11px] font-mono text-muted-foreground fa-num">
+                    ({currentTask.progress?.length || 0})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={async (e) => {
@@ -1641,39 +1821,18 @@ export function TaskProgressView({
                   }
                 }}
                 title={isRtl ? "بررسی و ارسال اعلان تستی به ویندوز" : "Test Windows Notification"}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border/70 bg-background hover:bg-muted text-[11px] font-medium text-foreground transition-colors cursor-pointer shadow-2xs"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-border/70 bg-background/90 hover:bg-background text-[10px] font-medium text-foreground transition-colors cursor-pointer shadow-2xs"
               >
                 <Bell className="size-3 text-primary" />
-                <span>{isRtl ? "تست اعلان ویندوز" : "Test Notification"}</span>
+                <span className="hidden sm:inline">{isRtl ? "تست اعلان ویندوز" : "Test Alert"}</span>
               </button>
 
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-semibold">
-                <span className="size-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                <span>{isRtl ? "به‌روزرسانی آنی" : "Live Sync"}</span>
-              </div>
-
-              <div className="size-8 rounded-full bg-muted/40 hover:bg-muted/70 flex items-center justify-center text-muted-foreground transition-colors ms-1 shrink-0">
-                <ChevronDown className={cn("size-4 transition-transform duration-200", openSegments.chat && "rotate-180")} />
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold">
+                <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                <span>{isRtl ? "زنده" : "Live"}</span>
               </div>
             </div>
           </div>
-
-          {/* Telegram Styled Live Progress Chat Thread (OPEN BY DEFAULT) */}
-          <AnimatePresence initial={false}>
-            {openSegments.chat && (
-              <motion.div
-                key="chat-body"
-                initial={segmentedAccordionMotion.initial}
-                animate={segmentedAccordionMotion.animate}
-                exit={segmentedAccordionMotion.exit}
-                className="flex flex-col gap-[2px]"
-              >
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  className="segmented-item no-hover-bg rounded-t-[6px] rounded-b-[32px] w-full border border-border/60 shadow-xs flex flex-col relative overflow-hidden bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c]"
-                >
                   {/* Drag & Drop Overlay */}
                   {isDraggingOver && (
                     <div className="absolute inset-0 z-50 bg-black/55 backdrop-blur-xs flex flex-col items-center justify-center text-white font-bold gap-2 select-none animate-in fade-in-50 duration-150">
@@ -1692,12 +1851,12 @@ export function TaskProgressView({
                   <div
                     ref={messagesContainerRef}
                     dir="ltr"
-                    className="relative z-0 p-3.5 sm:p-5 space-y-2.5 max-h-[500px] min-h-[380px] overflow-y-auto scroll-smooth select-text pb-4 -mb-16"
+                    className="relative z-0 p-3.5 sm:p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scroll-smooth select-text pb-4 -mb-16"
                     style={{
                       maskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
                       WebkitMaskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
                     }}
-                    >
+                  >
                       {(!currentTask.progress || currentTask.progress.length === 0) ? (
                         <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
                           <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
@@ -2140,11 +2299,8 @@ export function TaskProgressView({
                       </div>
                     </div>
                   </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </div>
         </div>
-      </div>
 
       {/* Image Preview Modal */}
       <Dialog open={!!previewImage} onOpenChange={(open) => !open && setPreviewImage(null)}>

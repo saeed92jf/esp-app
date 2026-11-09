@@ -1820,7 +1820,7 @@
     "workingFormat": "فرمت کاری",
     "addEmployee": "افزودن کارمند",
     "departments": {
-      "Engineering": "مهندسی",
+      "Engineering": "مهندسی (مکانیک، پروسس و پکیج)",
       "Design": "طراحی",
       "Marketing": "بازاریابی",
       "Sales": "فروش",
@@ -1835,7 +1835,6 @@
       "rAndD": "تحقیق و توسعه (R&D)",
       "marketDevelopment": "توسعه بازار و فروش",
       "Marketting Development & Sales": "توسعه بازار و فروش",
-      "Engineering": "مهندسی (مکانیک، پروسس و پکیج)",
       "administrative": "مالی و اداری",
       "production": "تولید و آزمایشگاه نانوپالایش",
       "holding": "مدیریت ارشد هلدینگ و بالادستی گروه",
@@ -2706,6 +2705,21 @@
       "dueDate": "سررسید",
       "progressAll": "همه موارد",
       "actions": "عملیات"
+    },
+    "comments": {
+      "title": "تبادل نظر و گزارش پیشرفت",
+      "placeholder": "نظر یا گزارش خود را بنویسید (امکان الحاق نقشه یا فایل فنی)...",
+      "send": "ارسال نظر",
+      "reply": "پاسخ",
+      "replyTo": "پاسخ به {author}",
+      "replyPlaceholder": "پاسخ خود را بنویسید...",
+      "cancelReply": "انصراف",
+      "noComments": "هنوز نظری ثبت نشده است. اولین نظر را شما ارسال کنید.",
+      "attachFile": "الحاق نقشه یا فایل",
+      "attachedFiles": "پیوست‌های این پیام",
+      "removeAttachment": "حذف فایل",
+      "drawingBadge": "نقشه مهندسی",
+      "selectDrawing": "نقشه P&ID / فایل فنی"
     }
   },
   "ColorPicker": {

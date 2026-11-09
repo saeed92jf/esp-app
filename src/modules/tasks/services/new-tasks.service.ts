@@ -70,6 +70,7 @@ export interface NewTask {
   is_approved: boolean;
   approved_at: string | null;
   approved_by: string | null;
+  comments?: any[];
 }
 
 export interface NewTaskCreate {
@@ -88,6 +89,7 @@ export interface NewTaskCreate {
   project_name?: string | null;
   project_esp_number?: string | null;
   is_independent?: boolean;
+  comments?: any[];
 }
 
 export interface NewTaskUpdate {
@@ -105,6 +107,7 @@ export interface NewTaskUpdate {
   project_name?: string | null;
   project_esp_number?: string | null;
   is_independent?: boolean;
+  comments?: any[];
 }
 
 export interface ProgressCreate {

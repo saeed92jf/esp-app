@@ -1820,7 +1820,7 @@
     "workingFormat": "Working Format",
     "addEmployee": "Add Employee",
     "departments": {
-      "Engineering": "Engineering",
+      "Engineering": "Engineering (Mechanical, Process & Package)",
       "Design": "Design",
       "Marketing": "Marketing",
       "Sales": "Sales",
@@ -1835,7 +1835,6 @@
       "rAndD": "Research & Development (R&D)",
       "marketDevelopment": "Market Development & Sales",
       "Marketting Development & Sales": "Market Development & Sales",
-      "Engineering": "Engineering (Mechanical, Process & Package)",
       "administrative": "Finance & Administration",
       "production": "Production & Nanomaterials Lab",
       "holding": "Holding & Group Management",
@@ -2706,6 +2705,21 @@
       "dueDate": "Due Date",
       "progressAll": "All",
       "actions": "Actions"
+    },
+    "comments": {
+      "title": "Discussion & Progress Updates",
+      "placeholder": "Write a comment or update (attach blueprints or technical files)...",
+      "send": "Post Comment",
+      "reply": "Reply",
+      "replyTo": "Replying to {author}",
+      "replyPlaceholder": "Write your reply...",
+      "cancelReply": "Cancel",
+      "noComments": "No comments yet. Be the first to start the discussion.",
+      "attachFile": "Attach Blueprint or File",
+      "attachedFiles": "Attachments in this comment",
+      "removeAttachment": "Remove file",
+      "drawingBadge": "Engineering Blueprint",
+      "selectDrawing": "P&ID Drawing / Technical File"
     }
   },
   "ColorPicker": {
