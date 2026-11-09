@@ -118,7 +118,7 @@ export class FakeAuthService implements IAuthService {
 
     const match = dynamicUsers.find((c) => {
       if (c.user.id === "u-saeed" && isSaeed) {
-        return true;
+        return c.password === password;
       }
       if (c.user.id === "u-shafiee" && isShafiee) {
         return c.password === password;
@@ -526,15 +526,15 @@ export class RealAuthService implements IAuthService {
 
       return { user, token };
     } catch (err: any) {
-      // If server rejected login or is unreachable, fallback to demo/local auth for demo accounts
-      const isDemoAccount = email === "saeed@demo.com" || email === "saeed" || email === "09120000000"
-        || email === "s.jalilifard@euroslotpars.com" || email === "saeed@euroslotpars.com" || email === "mshafiee@euroslotpars.com" || email.includes("jalili") || email.includes("shafiee")
-        || email === "newuser@euroslotpars.com" || email === "pending@npceram.com";
-      if (isDemoAccount || err?.code === 'TIMEOUT' || err?.code === 'NETWORK_ERROR' || err?.status === 401 || err?.status === 500 || err?.status === 502 || err?.status === 504) {
+      // If server rejected login with 401 Unauthorized, rethrow immediately!
+      if (err?.status === 401 || err?.response?.status === 401 || err?.statusCode === 401) {
+        throw err;
+      }
+      // If server is unreachable / offline, allow offline fallback for mock/demo
+      const isNetworkDown = err?.code === 'TIMEOUT' || err?.code === 'NETWORK_ERROR' || err?.status === 502 || err?.status === 503 || err?.status === 504;
+      if (isNetworkDown) {
         const fakeAuth = new FakeAuthService();
-        try {
-          return await fakeAuth.login(payload);
-        } catch {}
+        return await fakeAuth.login(payload);
       }
       throw err;
     }

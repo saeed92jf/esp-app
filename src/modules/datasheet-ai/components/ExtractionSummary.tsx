@@ -117,3 +117,4 @@ export function ExtractionSummary({ summary, className }: ExtractionSummaryProps
     </div>
   );
 }
+

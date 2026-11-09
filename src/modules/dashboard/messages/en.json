@@ -48,7 +48,8 @@
       "knowledgeBase": "Knowledge Base",
       "userManagement": "User Management",
       "systemLogs": "System Logs",
-      "security": "Security"
+      "security": "Security",
+      "datasheetAI": "Datasheet AI"
     }
   },
   "Dashboard": {

@@ -247,3 +247,4 @@ export function AIChatPanel({ document, onJumpToPage, className }: AIChatPanelPr
     </div>
   );
 }
+

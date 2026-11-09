@@ -48,7 +48,8 @@
       "knowledgeBase": "پایگاه دانش",
       "userManagement": "مدیریت کاربران",
       "systemLogs": "لاگ سیستم",
-      "security": "امنیت"
+      "security": "امنیت",
+      "datasheetAI": "Datasheet AI (استخراج مشخصات)"
     }
   },
   "Dashboard": {
