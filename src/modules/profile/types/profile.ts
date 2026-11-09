@@ -22,6 +22,10 @@ export interface PersonalInfo {
   emailVerified?: boolean;
   maritalStatus?: MaritalStatus;
   childrenCount?: number;
+  fatherName?: string;
+  birthPlace?: string;
+  gender?: 'male' | 'female' | 'other' | string;
+  militaryStatus?: string;
 }
 
 export type WorkLocation = "office" | "factory" | "remote" | "hybrid";
@@ -54,6 +58,20 @@ export interface OrganizationalInfo {
   contractType?: ContractType | string;
   subordinates?: (string | SubordinateItem)[];
   subordinatesCount?: number;
+  jobTitleFa?: string;
+  jobTitleEn?: string;
+  position?: string;
+  positionFa?: string;
+  subUnit?: string;
+  subUnitFa?: string;
+  floorAndUnit?: string;
+  floor?: string;
+  unit?: string;
+  unitFa?: string;
+  duties?: string[];
+  primaryDuty1?: string;
+  primaryDuty2?: string;
+  activities?: string[];
 }
 
 
@@ -84,6 +102,8 @@ export interface InsuranceInfo {
   dependentsCount?: number;
   dependents?: DependentInfo[];
   shebaNumber?: string;
+  bankAccountNumber?: string;
+  accountNumber?: string;
 }
 
 export interface EducationRecord {

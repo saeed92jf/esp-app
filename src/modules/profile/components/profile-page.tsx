@@ -28,6 +28,20 @@ const MARITAL_STATUS_OPTIONS: ComboboxOption[] = [
   { value: "married", label: "متأهل (Married)" },
 ];
 
+const GENDER_OPTIONS: ComboboxOption[] = [
+  { value: "male", label: "مرد (Male)" },
+  { value: "female", label: "زن (Female)" },
+  { value: "other", label: "سایر (Other)" },
+];
+
+const MILITARY_STATUS_OPTIONS: ComboboxOption[] = [
+  { value: "معافیت پزشکی", label: "معافیت پزشکی (Medical Exemption)" },
+  { value: "کارت پایان خدمت", label: "کارت پایان خدمت (Completed Military Service)" },
+  { value: "معافیت کفالت", label: "معافیت کفالت (Sponsorship Exemption)" },
+  { value: "معافیت موارد خاص", label: "معافیت موارد خاص (Special Exemption)" },
+  { value: "معافیت تحصیلی", label: "معافیت تحصیلی (Educational Exemption)" },
+];
+
 const SUPPLEMENTARY_PLAN_OPTIONS: ComboboxOption[] = [
   { value: "golden", label: "طلایی (Golden)" },
   { value: "silver", label: "نقره‌ای (Silver)" },
@@ -293,9 +307,9 @@ const NAV_ITEMS = [
 
 
 const SUGGESTED_SKILLS = [
-  "React", "Next.js", "TypeScript", "Node.js", "Tailwind CSS",
-  "UI/UX Design", "Project Management", "Python", "DevOps", "Docker",
-  "System Architecture", "GraphQL", "PostgreSQL", "Product Strategy"
+  "SolidWorks", "AutoCAD Mechanical", "P&ID & Piping", "ASME / API Standards",
+  "FEA & Stress Analysis", "ANSYS", "Python Automation", "Engineering Documentation",
+  "Manufacturing Processes", "MTO & Material Selection", "Project Engineering", "Quality Control"
 ];
 
 export function ProfilePage() {
@@ -1575,8 +1589,8 @@ export function ProfilePage() {
 
   const renderPersonalView = () => {
     const PERSONAL_FIELDS = [
-      'avatarPhoto', 'avatarInitials', 'picture', 'name', 'nationalId',
-      'birthDate', 'gender', 'maritalStatus', 'childrenCount', 'phone', 'address'
+      'avatarPhoto', 'avatarInitials', 'picture', 'name', 'fatherName', 'nationalId',
+      'birthDate', 'birthPlace', 'gender', 'militaryStatus', 'maritalStatus', 'childrenCount', 'phone', 'address'
     ];
     if (editingField && PERSONAL_FIELDS.includes(editingField)) {
       let title = "";
@@ -1660,6 +1674,26 @@ export function ProfilePage() {
             </div>
           );
           break;
+        case 'fatherName':
+          title = t("fields.fatherName");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-4 max-w-lg">
+               <div className="space-y-2">
+                 <Label htmlFor="fatherName" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.fatherName")}</Label>
+                 <Input 
+                   id="fatherName" 
+                   value={formData.personal.fatherName || ""} 
+                   onChange={(e) => handleChange("personal", "fatherName", e.target.value)} 
+                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   dir="rtl"
+                   placeholder="مثال: محمدجواد"
+                   autoFocus 
+                 />
+               </div>
+            </div>
+          );
+          break;
         case 'nationalId':
           title = t("fields.nationalId");
           description = t("descriptions.personal");
@@ -1692,6 +1726,94 @@ export function ProfilePage() {
                    {t("descriptions.birthDateHelp")}
                  </p>
                </div>
+            </div>
+          );
+          break;
+        case 'birthPlace':
+          title = t("fields.birthPlace");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-4 max-w-lg">
+               <div className="space-y-2">
+                 <Label htmlFor="birthPlace" className="rtl:text-right block font-medium text-muted-foreground">{t("fields.birthPlace")}</Label>
+                 <Input 
+                   id="birthPlace" 
+                   value={formData.personal.birthPlace || ""} 
+                   onChange={(e) => handleChange("personal", "birthPlace", e.target.value)} 
+                   className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none rtl:text-right" 
+                   dir="rtl"
+                   placeholder="مثال: تهران / اقلید / شیراز"
+                   autoFocus 
+                 />
+               </div>
+            </div>
+          );
+          break;
+        case 'gender':
+          title = t("fields.gender");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-6 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.gender")}</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { id: "male", label: t("fields.genderMale") },
+                    { id: "female", label: t("fields.genderFemale") },
+                    { id: "other", label: t("fields.genderOther") },
+                  ].map((g) => {
+                    const isSelected = (formData.personal.gender || "male") === g.id;
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => handleChange("personal", "gender", g.id)}
+                        className={cn(
+                          "p-4 rounded-2xl border text-sm font-bold flex flex-col items-center justify-center gap-2 transition-all cursor-pointer",
+                          isSelected
+                            ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                            : "bg-muted/30 text-foreground border-border/60 hover:bg-muted/60"
+                        )}
+                      >
+                        <User className="size-5" />
+                        <span>{g.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+          break;
+        case 'militaryStatus':
+          title = t("fields.militaryStatus");
+          description = t("descriptions.personal");
+          content = (
+            <div className="space-y-6 max-w-lg">
+              <div className="space-y-2">
+                <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.militaryStatus")}</Label>
+                <div className="grid grid-cols-1 gap-2.5">
+                  {MILITARY_STATUS_OPTIONS.map((opt) => {
+                    const isSelected = (formData.personal.militaryStatus || "") === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => handleChange("personal", "militaryStatus", opt.value)}
+                        className={cn(
+                          "p-3.5 rounded-2xl border text-sm font-semibold flex items-center justify-between transition-all cursor-pointer",
+                          isSelected
+                            ? "bg-primary/10 text-primary border-primary ring-1 ring-primary/30"
+                            : "bg-muted/20 text-foreground border-border/60 hover:bg-muted/50"
+                        )}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <CheckCircle2 className="size-4 text-primary shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           );
           break;
@@ -2174,6 +2296,22 @@ export function ProfilePage() {
              </div>
           </div>
 
+          {/* Father's Name */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('fatherName')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <User className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.fatherName")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.personal.fatherName || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
           {/* National ID */}
           <div 
             className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
@@ -2202,6 +2340,56 @@ export function ProfilePage() {
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2 ltr fa-num">{formData.personal.birthDate || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Birth Place */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('birthPlace')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <MapPin className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.birthPlace")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.personal.birthPlace || t("notSet")}</span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Gender */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('gender')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <User className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.gender")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.personal.gender === "female" ? t("fields.genderFemale") : formData.personal.gender === "other" ? t("fields.genderOther") : t("fields.genderMale")}
+                </span>
+                <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+             </div>
+          </div>
+
+          {/* Military Status */}
+          <div 
+            className="segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]"
+            onClick={() => setEditingField('militaryStatus')}
+          >
+             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+             <div className="flex items-center gap-4 w-1/3">
+                <Shield className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.militaryStatus")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.personal.militaryStatus || t("notSet")}</span>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
              </div>
           </div>
@@ -2321,7 +2509,7 @@ export function ProfilePage() {
 
   const renderOrganizationalView = () => {
     const ORG_FIELDS = [
-      'department', 'role', 'workLocation', 'contractType', 'employeeId',
+      'department', 'subUnit', 'role', 'jobTitleFa', 'workLocation', 'floorAndUnit', 'contractType', 'employeeId',
       'extensionNumber', 'joinDate', 'manager', 'subordinates'
     ];
     if (editingField && ORG_FIELDS.includes(editingField)) {
@@ -2330,8 +2518,11 @@ export function ProfilePage() {
       
       switch (editingField) {
         case 'department': title = t("fields.department"); break;
+        case 'subUnit': title = t("fields.subUnit"); break;
         case 'role': title = t("fields.role"); break;
+        case 'jobTitleFa': title = t("fields.jobTitle"); break;
         case 'workLocation': title = t("fields.workLocation"); break;
+        case 'floorAndUnit': title = t("fields.floorAndUnit"); break;
         case 'contractType': title = t("fields.contractType"); break;
         case 'employeeId': title = t("fields.employeeId"); break;
         case 'extensionNumber': title = t("fields.extensionNumber"); break;
@@ -2626,6 +2817,29 @@ export function ProfilePage() {
              </div>
           </div>
 
+          {/* Sub Unit */}
+          <div 
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('subUnit')}
+          >
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <div className="flex items-center gap-4 w-1/3">
+                <Building2 className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.subUnit")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.subUnitFa || formData.organizational.subUnit || t("notSet")}</span>
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+             </div>
+          </div>
+
           <div 
             className={cn(
               "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
@@ -2640,6 +2854,33 @@ export function ProfilePage() {
              </div>
              <div className="flex items-center justify-between w-2/3">
                 <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.role || t("notSet")}</span>
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+             </div>
+          </div>
+
+          {/* Job Title */}
+          <div 
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('jobTitleFa')}
+          >
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <div className="flex items-center gap-4 w-1/3">
+                <Briefcase className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.jobTitle")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">
+                  {formData.organizational.jobTitleFa 
+                    ? `${formData.organizational.jobTitleFa}${formData.organizational.jobTitleEn ? ` (${formData.organizational.jobTitleEn})` : ''}`
+                    : formData.organizational.jobTitleEn || t("notSet")}
+                </span>
                 {isApprovedByHrAndManager ? (
                   <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
                 ) : (
@@ -2668,6 +2909,29 @@ export function ProfilePage() {
                    formData.organizational.workLocation === 'office' ? t("fields.workLocationOffice") :
                    formData.organizational.workLocation || t("notSet")}
                 </span>
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+             </div>
+          </div>
+
+          {/* Floor & Unit */}
+          <div 
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('floorAndUnit')}
+          >
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <div className="flex items-center gap-4 w-1/3">
+                <MapPin className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.floorAndUnit")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2">{formData.organizational.floorAndUnit || t("notSet")}</span>
                 {isApprovedByHrAndManager ? (
                   <span title={t("lockedFields.orgLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
                 ) : (
@@ -2827,6 +3091,47 @@ export function ProfilePage() {
              </div>
           </div>
         </div>
+
+        {/* Dedicated Section: Organizational Duties (شرح وظایف سازمانی) */}
+        <div className="mt-8 bg-card border border-border/60 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-border/40">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <FileText className="size-5" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-foreground">
+                  {t("fields.duties")}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {t("fields.dutiesDesc")}
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-xs font-semibold px-3 py-1 bg-primary/5 text-primary border-primary/20 rounded-full">
+              {t("fields.dutiesNotice")}
+            </Badge>
+          </div>
+
+          <div className="space-y-3 pt-1">
+            {(formData.organizational.duties && formData.organizational.duties.length > 0) ? (
+              formData.organizational.duties.map((duty, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-muted/25 border border-border/50 flex items-start gap-3.5">
+                  <span className="size-7 rounded-xl bg-primary/15 text-primary font-bold text-xs flex items-center justify-center shrink-0 fa-num mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <p className="text-sm font-medium text-foreground leading-relaxed">
+                    {duty}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="p-4 rounded-2xl bg-muted/20 border border-dashed border-border/60 text-muted-foreground text-xs text-center">
+                {t("notSet")}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -2981,6 +3286,21 @@ export function ProfilePage() {
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
         <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.skills")}</h2>
         
+        {/* Technical Competencies Banner (Decoupled from Duties) */}
+        <div className="mb-6 p-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-start gap-3.5 shadow-xs">
+          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+            <Star className="size-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-xs sm:text-sm font-bold text-foreground">
+              {t("tabs.skills")} - {t("fields.skillsNote")}
+            </h4>
+            <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+              {t("fields.dutiesNotice")}
+            </p>
+          </div>
+        </div>
+
         <div className="segmented-list mb-10">
           {formData.skills.map((skill, index) => {
             const isFirst = index === 0;
@@ -3079,7 +3399,7 @@ export function ProfilePage() {
 
     const INS_FIELDS = [
       'provider', 'type', 'insuranceCode', 'validUntil', 'supplementaryPlan',
-      'shebaNumber', 'dependentsCount', 'dependents'
+      'shebaNumber', 'bankAccountNumber', 'dependentsCount', 'dependents'
     ];
     if (editingField && INS_FIELDS.includes(editingField)) {
       let title = "";
@@ -3092,6 +3412,7 @@ export function ProfilePage() {
         case 'validUntil': title = t("fields.validUntil"); break;
         case 'supplementaryPlan': title = t("fields.supplementaryInsurance"); break;
         case 'shebaNumber': title = t("fields.shebaNumber"); break;
+        case 'bankAccountNumber': title = t("fields.bankAccountNumber"); break;
         case 'dependentsCount':
         case 'dependents': title = t("fields.dependents"); break;
         default: break;
@@ -3711,6 +4032,31 @@ export function ProfilePage() {
                     </span>
                   )}
                 </div>
+                {isApprovedByHrAndManager ? (
+                  <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
+                ) : (
+                  <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                )}
+             </div>
+          </div>
+
+          {/* Bank Account Number */}
+          <div 
+            className={cn(
+              "segmented-item no-hover-bg shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none h-[72px]",
+              isApprovedByHrAndManager ? "cursor-default" : "cursor-pointer group"
+            )}
+            onClick={isApprovedByHrAndManager ? undefined : () => setEditingField('bankAccountNumber')}
+          >
+             {!isApprovedByHrAndManager && <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />}
+             <div className="flex items-center gap-4 w-1/3">
+                <CreditCard className="size-5 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium text-foreground">{t("fields.bankAccountNumber")}</span>
+             </div>
+             <div className="flex items-center justify-between w-2/3">
+                <span className="text-sm text-muted-foreground text-start truncate px-2 ltr font-mono" dir="ltr">
+                  {formData.insurance.bankAccountNumber || formData.insurance.accountNumber || t("notSet")}
+                </span>
                 {isApprovedByHrAndManager ? (
                   <span title={t("lockedFields.insuranceLockedBadge")} className="shrink-0 flex items-center"><Lock className="size-4 text-muted-foreground/60" /></span>
                 ) : (
