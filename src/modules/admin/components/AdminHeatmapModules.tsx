@@ -1,5 +1,5 @@
 import React from "react";
-import { ShieldAlert, KeyRound, ExternalLink, Plus } from "lucide-react";
+import { ShieldAlert, Plus } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { User } from "../types/admin.types";
@@ -61,7 +61,7 @@ export function AdminHeatmapModules({
     <div className="flex flex-col flex-1 h-full min-h-0">
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col flex-1 h-full min-h-0 relative overflow-hidden shadow-2xs">
         
-        {/* Header with Title, Count & Direct Link to Access Section */}
+        {/* Header with Title & Count */}
         <div className="flex items-center justify-between mb-2 xl:mb-2.5 relative z-10 gap-2 shrink-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">{t("accesses")}</h3>
@@ -69,19 +69,6 @@ export function AdminHeatmapModules({
               {isAdmin ? (isRtl ? "دسترسی کامل" : "Full Access") : grantedItems.length}
             </span>
           </div>
-
-          {onNavigateToAccess && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onNavigateToAccess}
-              className="h-7 px-2.5 rounded-lg text-xs font-semibold text-primary hover:text-primary hover:bg-primary/10 inline-flex items-center gap-1.5 shrink-0 cursor-pointer transition-colors"
-            >
-              <KeyRound size={13} className="shrink-0" />
-              <span>{t("manageAccess")}</span>
-              <ExternalLink size={12} className="opacity-70 rtl:rotate-180 shrink-0" />
-            </Button>
-          )}
         </div>
 
         {grantedItems.length === 0 ? (

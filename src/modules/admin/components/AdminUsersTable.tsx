@@ -19,7 +19,7 @@ import {
   FolderKanban, Award, Filter,
   ArrowUp, ArrowDown, ArrowUpDown, Check, RotateCcw,
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
-  Building, Calendar, Users, ExternalLink,
+  Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
   Heart, Shield, Layers, Trash2, Lock, Sparkles
 } from "lucide-react";
@@ -777,12 +777,6 @@ export function AdminUsersTable({
   const handleSelectAndGoHome = (user: User) => {
     setSelectedUser(user);
     setActiveTab('home');
-  };
-
-  const handleSelectAndGoConfig = (user: User) => {
-    setSelectedUser(user);
-    if (setUserToEdit) setUserToEdit(user);
-    setActiveTab('add');
   };
 
   // Accordion Toggle
@@ -2736,18 +2730,6 @@ export function AdminUsersTable({
                                               {activeSubItemsCount} / {totalSubItemsCount} {t("activeStatus")}
                                             </Badge>
                                           )}
-
-                                          <Button
-                                            type="button"
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() => handleSelectAndGoConfig(user)}
-                                            className="h-7.5 px-2.5 rounded-lg text-xs gap-1.5 border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
-                                            title={t("managePermissions")}
-                                          >
-                                            <ExternalLink size={12} />
-                                            <span className="hidden sm:inline">{t("managePermissions")}</span>
-                                          </Button>
 
                                           <button
                                             type="button"
