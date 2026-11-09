@@ -16,7 +16,6 @@ import { User } from "../types/admin.types";
 import { newTasksService, NewTask } from "@/modules/tasks/services/new-tasks.service";
 import { AdminActivities } from "./AdminActivities";
 import { AdminHeatmapModules } from "./AdminHeatmapModules";
-import { AdminUserSearchAvatars } from "./AdminUserSearchAvatars";
 import { formatPersonName } from "@/lib/person-names";
 
 interface AdminTasksTimeProps {
@@ -175,16 +174,6 @@ export function AdminTasksTime({
 
   return (
     <div className="flex flex-col gap-3 w-full h-full">
-      
-      {/* ── Center Header: Search + Department Switcher & Avatars Carousel ── */}
-      <div className={cn("w-full shrink-0", hideSearchAvatarsOnMobile ? "hidden lg:block" : "block")}>
-        <AdminUserSearchAvatars
-          users={users}
-          selectedUser={selectedUser}
-          setSelectedUser={setSelectedUser}
-        />
-      </div>
-
       {/* ── Virtual Grid Row 1: Unified Personnel, Education & Insurance (col 1-2), Activities (col 3) ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[295px] xl:min-h-[315px]">
         

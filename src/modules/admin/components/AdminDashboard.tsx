@@ -685,7 +685,6 @@ export function AdminDashboard() {
                           handleToggleModuleAccess={handleToggleModuleAccess}
                           handleToggleAllModulesAccess={handleToggleAllModulesAccess}
                           onNavigateToAccess={() => { setUserToEdit(selectedUser); setActiveTab('add'); }}
-                          hideSearchAvatarsOnMobile={true}
                         />
                       </div>
                     </div>
