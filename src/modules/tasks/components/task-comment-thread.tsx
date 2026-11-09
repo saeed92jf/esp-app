@@ -53,7 +53,7 @@ export function TaskCommentThread({
   const isSaeed = Boolean(
     user?.id === "u-saeed" ||
     user?.id === "usr_9801" ||
-    (user?.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase().includes("saeed")))
+    (user?.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase() === "s.jalili@euroslotpars.com") && !user.email.toLowerCase().includes("saeedkhani"))
   );
   const isSuperAdmin = user?.role === "superadmin" || isSaeed;
   const isDeptAdmin = user?.role === "dept_admin" || user?.role === "manager";

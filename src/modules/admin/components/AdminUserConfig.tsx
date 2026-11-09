@@ -856,9 +856,11 @@ export function AdminUserConfig({
 
         if (currentUser && (currentUser.id === selectedUser.id || (currentUser.email && mergedUser.email && currentUser.email.toLowerCase() === mergedUser.email.toLowerCase()))) {
           const isSaeed = Boolean(
-            (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+            ((currentUser.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com")) ||
             currentUser.id === "u-saeed" ||
-            selectedUser.id === "u-saeed"
+            selectedUser.id === "u-saeed") &&
+            !currentUser.email?.includes("saeedkhani") &&
+            selectedUser.id !== "u-msaeedkhani"
           );
           const resolvedRole: UserRole = isSaeed || currentUser.role === "superadmin" ? "superadmin" : (mergedUser.role || currentUser.role);
           updateUserStore({

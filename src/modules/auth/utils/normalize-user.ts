@@ -53,9 +53,7 @@ export function normalizeUserFromApi(raw: any): User {
   if (
     roleRaw === "superadmin" ||
     roleRaw === "super_admin" ||
-    rawEmail.includes("jalili") ||
-    rawEmail.includes("saeed") ||
-    idRaw === "u-saeed"
+    ((rawEmail.includes("jalili") || rawEmail === "s.jalili@euroslotpars.com" || rawEmail === "saeed@euroslotpars.com" || idRaw === "u-saeed") && !rawEmail.includes("saeedkhani"))
   ) {
     role = "superadmin";
   } else if (roleRaw === "dept_admin" || roleRaw === "department_admin") {

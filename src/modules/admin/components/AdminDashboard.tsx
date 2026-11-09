@@ -116,7 +116,8 @@ export function AdminDashboard() {
       if (!u) return false;
       const uid = String(u.id || '').toLowerCase();
       const uemail = String(u.email || '').toLowerCase();
-      return uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail.includes('saeed');
+      if (uid === 'u-msaeedkhani' || uemail.includes('saeedkhani')) return false;
+      return uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail === 's.jalili@euroslotpars.com' || uemail === 'saeed@euroslotpars.com';
     };
 
     const isCurrentMatch = (u?: { id?: string; email?: string } | null) => {
@@ -192,7 +193,7 @@ export function AdminDashboard() {
         const adminEmail = currentUser.email?.toLowerCase();
         const adminName = currentUser.fullNameFa || currentUser.name || currentUser.fullName || "سعید جلیلی فرد";
         const isSaeed = Boolean(
-          (adminEmail && (adminEmail.includes("jalili") || adminEmail.includes("saeed"))) ||
+          (adminEmail && (adminEmail.includes("jalili") || adminEmail === "s.jalili@euroslotpars.com" || adminEmail === "saeed@euroslotpars.com") && !adminEmail.includes("saeedkhani")) ||
           currentUser.id === "u-saeed" ||
           currentUser.id === "usr_9801"
         );
@@ -201,7 +202,7 @@ export function AdminDashboard() {
         const foundIdx = userList.findIndex((item) => {
           if (adminEmail && item.email?.toLowerCase() === adminEmail) return true;
           if (currentUser.id && (item.id === currentUser.id || (isSaeed && (item.id === "u-saeed" || item.id === "usr_9801")))) return true;
-          if (isSaeed && item.email && (item.email.includes("jalili") || item.email.includes("saeed"))) return true;
+          if (isSaeed && item.email && (item.email.includes("jalili") || item.email === "s.jalili@euroslotpars.com" || item.email === "saeed@euroslotpars.com") && !item.email.includes("saeedkhani")) return true;
           return false;
         });
         
@@ -336,8 +337,9 @@ export function AdminDashboard() {
           idKey === "u-saeed" ||
           idKey === "usr_9801" ||
           rawEmail.includes("jalili") ||
-          rawEmail.includes("saeed")
-        );
+          rawEmail === "s.jalili@euroslotpars.com" ||
+          rawEmail === "saeed@euroslotpars.com"
+        ) && !rawEmail.includes("saeedkhani") && idKey !== "u-msaeedkhani";
 
         if (isItemSaeed) {
           if (seenIds.has("saeed_canonical")) return false;
@@ -495,7 +497,7 @@ export function AdminDashboard() {
         const computedFullNameEn = mergedUser.fullName || (mergedUser.firstName && mergedUser.lastName ? `${mergedUser.firstName} ${mergedUser.lastName}` : mergedUser.name);
 
         const isSaeed = Boolean(
-          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com") && !currentUser.email.includes("saeedkhani")) ||
           currentUser.id === "u-saeed" ||
           userId === "u-saeed"
         );
@@ -639,8 +641,8 @@ export function AdminDashboard() {
                 )}
                 {activeTab === 'home' && (
                   <div className="flex flex-col w-full max-w-[1600px] mx-auto pb-4 flex-1">
-                    {/* On small screens (< lg): Top Search & Avatars Header */}
-                    <div className="block lg:hidden w-full mb-3">
+                    {/* Top Search & Avatars Header */}
+                    <div className="w-full mb-3">
                       <AdminUserSearchAvatars
                         users={users}
                         selectedUser={selectedUser}

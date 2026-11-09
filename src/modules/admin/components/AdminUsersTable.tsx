@@ -384,7 +384,7 @@ export function AdminUsersTable({
   const [isSavingRole, setIsSavingRole] = useState(false);
 
   const isSaeed = Boolean(
-    (currentUser?.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+    (currentUser?.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com") && !currentUser.email.includes("saeedkhani")) ||
     currentUser?.id === "u-saeed"
   );
   const isSuperAdmin = currentUser?.role === 'superadmin' || isSaeed;
@@ -572,8 +572,8 @@ export function AdminUsersTable({
     const cemail = String(currentUser.email || '').toLowerCase();
     if (uemail && cemail && uemail === cemail) return true;
 
-    const isUserSaeed = uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail.includes('saeed');
-    const isCurrentSaeed = cid === 'u-saeed' || cid === 'usr_9801' || cemail.includes('jalili') || cemail.includes('saeed');
+    const isUserSaeed = (uid === 'u-saeed' || uid === 'usr_9801' || uemail.includes('jalili') || uemail === 's.jalili@euroslotpars.com' || uemail === 'saeed@euroslotpars.com') && !uemail.includes('saeedkhani') && uid !== 'u-msaeedkhani';
+    const isCurrentSaeed = (cid === 'u-saeed' || cid === 'usr_9801' || cemail.includes('jalili') || cemail === 's.jalili@euroslotpars.com' || cemail === 'saeed@euroslotpars.com') && !cemail.includes('saeedkhani') && cid !== 'u-msaeedkhani';
     if (isUserSaeed && isCurrentSaeed) return true;
 
     return false;
@@ -587,7 +587,7 @@ export function AdminUsersTable({
     const uniqueUsers = users.filter((u) => {
       const idKey = (u.id || "").toLowerCase();
       const emailKey = (u.email || "").toLowerCase();
-      const isSaeedUser = idKey === "u-saeed" || idKey === "usr_9801" || emailKey.includes("jalili") || emailKey.includes("saeed");
+      const isSaeedUser = (idKey === "u-saeed" || idKey === "usr_9801" || emailKey.includes("jalili") || emailKey === "s.jalili@euroslotpars.com" || emailKey === "saeed@euroslotpars.com") && !emailKey.includes("saeedkhani") && idKey !== "u-msaeedkhani";
 
       if (isSaeedUser) {
         if (seenUserIds.has("saeed_singleton")) return false;
@@ -1113,7 +1113,7 @@ export function AdminUsersTable({
       // If the edited user is the currently logged in admin, update active session immediately
       if (currentUser && (currentUser.id === userId || (currentUser.email && editFormData.email && currentUser.email.toLowerCase() === editFormData.email.toLowerCase()))) {
         const isSaeed = Boolean(
-          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email.includes("saeed"))) ||
+          (currentUser.email && (currentUser.email.includes("jalili") || currentUser.email === "s.jalili@euroslotpars.com" || currentUser.email === "saeed@euroslotpars.com") && !currentUser.email.includes("saeedkhani")) ||
           currentUser.id === "u-saeed" ||
           userId === "u-saeed"
         );

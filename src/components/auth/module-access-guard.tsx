@@ -106,7 +106,7 @@ export function ModuleAccessGuard() {
     const isSaeed = Boolean(
       user.id === "u-saeed" ||
       user.id === "usr_9801" ||
-      (user.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase().includes("saeed")))
+      (user.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase() === "s.jalili@euroslotpars.com" || user.email.toLowerCase() === "saeed@euroslotpars.com") && !user.email.toLowerCase().includes("saeedkhani"))
     );
     const isSuperAdmin = role === "superadmin" || isSaeed;
     const isSystemAdmin = role === "admin" || isSuperAdmin;

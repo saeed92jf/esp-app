@@ -32,6 +32,7 @@ export function AdminUserSearchAvatars({
 
   const deptConfig: Record<string, { icon: any; iconBg: string }> = {
     engineering: { icon: Code, iconBg: "bg-blue-500 shadow-blue-500/30" },
+    Engineering: { icon: Code, iconBg: "bg-blue-500 shadow-blue-500/30" },
     marketDevelopment: { icon: TrendingUp, iconBg: "bg-emerald-500 shadow-emerald-500/30" },
     projectControl: { icon: FolderKanban, iconBg: "bg-amber-500 shadow-amber-500/30" },
     administrative: { icon: Briefcase, iconBg: "bg-slate-500 shadow-slate-500/30" },
@@ -168,7 +169,7 @@ export function AdminUserSearchAvatars({
         {/* Department Name Badge */}
         <div className="flex items-center gap-1.5 px-1.5 py-0.5 shrink-0 select-none">
           <span className={`size-2 rounded-full ${currentDept.iconBg}`}></span>
-          <span className="text-xs font-bold text-foreground truncate max-w-[90px] sm:max-w-[120px]">
+          <span className="text-xs font-bold text-foreground truncate max-w-[130px] sm:max-w-[200px]" title={t.has(`departments.${deptKey}`) ? t(`departments.${deptKey}`) : deptKey}>
             {t.has(`departments.${deptKey}`) ? t(`departments.${deptKey}`) : deptKey}
           </span>
         </div>

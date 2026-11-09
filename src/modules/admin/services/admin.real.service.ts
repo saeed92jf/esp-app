@@ -79,7 +79,8 @@ export class RealAdminService implements IAdminService {
 
     let name = u.name || fullNameFa || fullName;
     if (!name || name.toLowerCase() === "user") {
-      if (email.toLowerCase().includes("saeed") || String(u.id || u.userId).includes("saeed")) {
+      const isSaeed = (email.toLowerCase().includes("jalili") || email.toLowerCase() === "s.jalilifard@euroslotpars.com" || email.toLowerCase() === "saeed@euroslotpars.com" || String(u.id || u.userId) === "u-saeed") && !email.toLowerCase().includes("saeedkhani") && String(u.id || u.userId) !== "u-msaeedkhani";
+      if (isSaeed) {
         name = "سعید جلیلی";
         fullNameFa = "سعید جلیلی";
         fullName = "Saeed Jalili";
@@ -227,7 +228,8 @@ export class RealAdminService implements IAdminService {
     const email = (personal.email || r.email || "").trim();
     let name = r.name || fullNameFa || fullName;
     if (!name || name.toLowerCase() === "user") {
-      if (email.toLowerCase().includes("saeed") || String(r.id || r.userId).includes("saeed")) {
+      const isSaeed = (email.toLowerCase().includes("jalili") || email.toLowerCase() === "s.jalilifard@euroslotpars.com" || email.toLowerCase() === "saeed@euroslotpars.com" || String(r.id || r.userId) === "u-saeed") && !email.toLowerCase().includes("saeedkhani") && String(r.id || r.userId) !== "u-msaeedkhani";
+      if (isSaeed) {
         name = "سعید جلیلی";
         fullNameFa = "سعید جلیلی";
         fullName = "Saeed Jalili";
