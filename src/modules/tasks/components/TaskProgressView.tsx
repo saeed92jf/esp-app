@@ -312,6 +312,7 @@ export function TaskProgressView({
     subtasks: true,
     comments: true,
   });
+  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
 
   const handleAddComment = async (
     _taskId: string,
@@ -1771,16 +1772,27 @@ export function TaskProgressView({
         </div>
       </div>
 
-      {/* ── Column 2: Live Task Chat (ستون عمودی گفتگوی زنده تسک) ── */}
-      <div className="lg:col-span-5 xl:col-span-5 flex flex-col w-full min-w-0 lg:sticky lg:top-4">
+      {/* ── Column 2: Live Task Chat (ستون عمودی گفتگوی زنده تسک با قابلیت جمع‌شدن و استیک بهینه زیر هدر) ── */}
+      <div className="lg:col-span-5 xl:col-span-5 flex flex-col w-full min-w-0 lg:sticky lg:top-[calc(var(--header-height)+1.25rem)] z-20">
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className="rounded-[32px] w-full border border-border/60 shadow-xs flex flex-col relative overflow-hidden bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c] h-[640px] lg:h-[calc(100vh-140px)] min-h-[580px] max-h-[850px]"
+          className={cn(
+            "w-full border border-border/60 shadow-xs flex flex-col relative overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            isChatCollapsed
+              ? "rounded-[24px] sm:rounded-[28px] h-auto bg-card/90 dark:bg-card/75 backdrop-blur-md"
+              : "rounded-[32px] h-[640px] lg:h-[calc(100dvh-var(--header-height)-2.5rem)] min-h-[520px] max-h-[850px] bg-gradient-to-br from-[#dcf6e1] via-[#bee9c4] to-[#9ad2a4] dark:from-[#0d1c27] dark:via-[#132735] dark:to-[#08131c]"
+          )}
         >
           {/* Live Chat Column Header */}
-          <div className="relative z-10 px-4 py-3 bg-white/80 dark:bg-black/60 backdrop-blur-md border-b border-border/40 flex items-center justify-between gap-2 shrink-0">
+          <div
+            onClick={() => isChatCollapsed && setIsChatCollapsed(false)}
+            className={cn(
+              "relative z-10 px-4 py-3 bg-white/80 dark:bg-black/60 backdrop-blur-md border-b border-border/40 flex items-center justify-between gap-2 shrink-0 select-none transition-colors",
+              isChatCollapsed && "border-b-0 cursor-pointer hover:bg-white/90 dark:hover:bg-black/70"
+            )}
+          >
             <div className="flex items-center gap-2 min-w-0">
               <div className="p-1.5 rounded-xl bg-primary/10 text-primary shrink-0">
                 <FileText className="size-4 text-primary" />
@@ -1793,46 +1805,75 @@ export function TaskProgressView({
                   <span className="text-[11px] font-mono text-muted-foreground fa-num">
                     ({currentTask.progress?.length || 0})
                   </span>
+                  {isChatCollapsed && (
+                    <span className="text-[10px] font-medium text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                      {isRtl ? "کلیک برای باز کردن" : "Click to expand"}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                type="button"
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  if (typeof window !== "undefined") {
-                    if ((window as any).__espTriggerTestNotification) {
-                      await (window as any).__espTriggerTestNotification();
-                    } else {
-                      playNotificationChime();
-                      await triggerDesktopNotification({
-                        title: isRtl ? "تست اعلان ویندوز - گفتگوی تسک" : "Test Notification - Task Chat",
-                        body: isRtl
-                          ? "سامانه اعلان‌های زنده ویندوز با موفقیت متصل و فعال است."
-                          : "Desktop notification is active.",
-                        actionUrl: "/tasks",
-                      });
+              {!isChatCollapsed && (
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (typeof window !== "undefined") {
+                      if ((window as any).__espTriggerTestNotification) {
+                        await (window as any).__espTriggerTestNotification();
+                      } else {
+                        playNotificationChime();
+                        await triggerDesktopNotification({
+                          title: isRtl ? "تست اعلان ویندوز - گفتگوی تسک" : "Test Notification - Task Chat",
+                          body: isRtl
+                            ? "سامانه اعلان‌های زنده ویندوز با موفقیت متصل و فعال است."
+                            : "Desktop notification is active.",
+                          actionUrl: "/tasks",
+                        });
+                      }
+                      toast.success(
+                        isRtl ? "اعلان تستی به ویندوز ارسال گردید." : "Test desktop toast sent."
+                      );
                     }
-                    toast.success(
-                      isRtl ? "اعلان تستی به ویندوز ارسال گردید." : "Test desktop toast sent."
-                    );
-                  }
-                }}
-                title={isRtl ? "بررسی و ارسال اعلان تستی به ویندوز" : "Test Windows Notification"}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-border/70 bg-background/90 hover:bg-background text-[10px] font-medium text-foreground transition-colors cursor-pointer shadow-2xs"
-              >
-                <Bell className="size-3 text-primary" />
-                <span className="hidden sm:inline">{isRtl ? "تست اعلان ویندوز" : "Test Alert"}</span>
-              </button>
+                  }}
+                  title={isRtl ? "بررسی و ارسال اعلان تستی به ویندوز" : "Test Windows Notification"}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full border border-border/70 bg-background/90 hover:bg-background text-[10px] font-medium text-foreground transition-colors cursor-pointer shadow-2xs"
+                >
+                  <Bell className="size-3 text-primary" />
+                  <span className="hidden sm:inline">{isRtl ? "تست اعلان ویندوز" : "Test Alert"}</span>
+                </button>
+              )}
 
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-semibold">
                 <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
                 <span>{isRtl ? "زنده" : "Live"}</span>
               </div>
+
+              {/* Collapse / Expand Toggle Button */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsChatCollapsed((prev) => !prev);
+                }}
+                aria-label={isChatCollapsed ? (isRtl ? "باز کردن گفتگوی زنده" : "Expand Live Chat") : (isRtl ? "جمع کردن گفتگوی زنده" : "Collapse Live Chat")}
+                title={isChatCollapsed ? (isRtl ? "باز کردن گفتگوی زنده" : "Expand Live Chat") : (isRtl ? "جمع کردن گفتگوی زنده" : "Collapse Live Chat")}
+                className="size-7 sm:size-8 rounded-full hover:bg-black/5 dark:hover:bg-white/10 text-muted-foreground hover:text-foreground flex items-center justify-center transition-all cursor-pointer shrink-0"
+              >
+                {isChatCollapsed ? (
+                  <ChevronDown className="size-4 sm:size-4.5 transition-transform" />
+                ) : (
+                  <ChevronUp className="size-4 sm:size-4.5 transition-transform" />
+                )}
+              </button>
             </div>
           </div>
+
+          {/* Collapsible Chat Body */}
+          {!isChatCollapsed && (
+            <div className="flex-1 flex flex-col min-h-0 relative">
                   {/* Drag & Drop Overlay */}
                   {isDraggingOver && (
                     <div className="absolute inset-0 z-50 bg-black/55 backdrop-blur-xs flex flex-col items-center justify-center text-white font-bold gap-2 select-none animate-in fade-in-50 duration-150">
@@ -2299,6 +2340,8 @@ export function TaskProgressView({
                       </div>
                     </div>
                   </div>
+                )}
+            </div>
           </div>
         </div>
 
