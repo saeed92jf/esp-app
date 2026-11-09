@@ -396,52 +396,8 @@ export function AdminUsersTable({
     type: 'view' | 'password' | 'role' | 'edit' | 'access' | 'documents';
   } | null>(null);
 
-  // Track hovered user row for smooth slide-out tab animation with hover-intent management
-  const [hoveredUserId, setHoveredUserId] = useState<string | null>(null);
-  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const leaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleRowMouseEnter = useCallback((userId: string) => {
-    // Cancel any pending leave timer
-    if (leaveTimerRef.current) {
-      clearTimeout(leaveTimerRef.current);
-      leaveTimerRef.current = null;
-    }
-    // If this row is already hovered, do nothing
-    if (hoveredUserId === userId) return;
-
-    // Reset pending enter timer
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-    }
-    // Hover intent delay (140ms): Prevents jitter/peresh when cursor moves rapidly over rows
-    hoverTimerRef.current = setTimeout(() => {
-      setHoveredUserId(userId);
-    }, 140);
-  }, [hoveredUserId]);
-
-  const handleRowMouseLeave = useCallback((userId: string) => {
-    // Cancel enter if mouse quickly moves out before the intent threshold
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-    // Leave grace delay (80ms): Prevents abrupt collapse when moving between cells and tab handle
-    if (leaveTimerRef.current) {
-      clearTimeout(leaveTimerRef.current);
-    }
-    leaveTimerRef.current = setTimeout(() => {
-      setHoveredUserId((prev) => (prev === userId ? null : prev));
-    }, 80);
-  }, []);
-
-  // Cleanup timers on unmount
-  useEffect(() => {
-    return () => {
-      if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-      if (leaveTimerRef.current) clearTimeout(leaveTimerRef.current);
-    };
-  }, []);
+  // Track clicked user row to display action icons tray on click (instead of hover)
+  const [openTrayUserId, setOpenTrayUserId] = useState<string | null>(null);
 
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
@@ -785,6 +741,7 @@ export function AdminUsersTable({
     if (targetUser) {
       setSelectedUser(targetUser);
     }
+    setOpenTrayUserId(userId);
 
     if (activeAccordion?.userId === userId && activeAccordion?.type === type) {
       setActiveAccordion(null);
@@ -962,6 +919,9 @@ export function AdminUsersTable({
           setUsers((prev: User[]) => prev.filter((u: User) => u.id !== targetUser.id));
           if (selectedUser?.id === targetUser.id) {
             setSelectedUser(null);
+          }
+          if (openTrayUserId === targetUser.id) {
+            setOpenTrayUserId(null);
           }
           if (activeAccordion?.userId === targetUser.id) {
             setActiveAccordion(null);
@@ -1666,7 +1626,8 @@ export function AdminUsersTable({
               }
 
               const isAccordionOpen = activeAccordion?.userId === user.id;
-              const isRowActive = activeAccordion ? isAccordionOpen : isSelected;
+              const isTrayOpen = openTrayUserId === user.id;
+              const isRowActive = isAccordionOpen || isTrayOpen;
 
               // Determine unclipped location badge (color & localized label)
               const getLocationBadge = () => {
@@ -1749,14 +1710,13 @@ export function AdminUsersTable({
                 <tbody
                   key={user.id}
                   className="group/row"
-                  onMouseEnter={() => handleRowMouseEnter(user.id)}
-                  onMouseLeave={() => handleRowMouseLeave(user.id)}
                 >
                     
                     {/* ── 1. Main User Data Row ── */}
                     <tr
                       onClick={() => {
                         setSelectedUser(user);
+                        setOpenTrayUserId(prev => prev === user.id ? null : user.id);
                         if (activeAccordion && activeAccordion.userId !== user.id) {
                           setActiveAccordion(null);
                         }
@@ -1958,7 +1918,7 @@ export function AdminUsersTable({
                         <div 
                           className={cn(
                             "grid transition-[grid-template-rows,opacity] duration-200 ease-out",
-                            isAccordionOpen || hoveredUserId === user.id
+                            isAccordionOpen || isTrayOpen
                               ? "grid-rows-[1fr] opacity-100" 
                               : "grid-rows-[0fr] opacity-0 pointer-events-none"
                           )}
@@ -3247,10 +3207,13 @@ export function AdminUsersTable({
 
                               {/* ── Fixed 28px slot for Close (X) so the tab width NEVER shifts when X appears ── */}
                               <div className="size-7 flex items-center justify-center shrink-0 ms-1">
-                                {isAccordionOpen && (
+                                {(isAccordionOpen || isTrayOpen) && (
                                   <button
                                     type="button"
-                                    onClick={() => setActiveAccordion(null)}
+                                    onClick={() => {
+                                      setActiveAccordion(null);
+                                      setOpenTrayUserId(null);
+                                    }}
                                     className="size-6.5 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background/80 dark:hover:bg-card transition-colors cursor-pointer"
                                     title={t("cancel")}
                                     aria-label={t("cancel")}
