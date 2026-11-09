@@ -12,6 +12,7 @@ import {
   AlertCircle,
   Layers,
   FolderKanban,
+  MailCheck,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,8 +25,9 @@ import { simplifiedProjectsService } from "../services/simplified-projects.servi
 import { ProjectRoadmapView } from "./simplified/ProjectRoadmapView";
 import { ProjectCreateWizard } from "./simplified/ProjectCreateWizard";
 import { ProjectDetailView } from "./simplified/ProjectDetailView";
+import { ProjectLettersList } from "./letters/ProjectLettersList";
 
-type ProjectTab = "roadmap" | "create";
+type ProjectTab = "roadmap" | "letters" | "create";
 
 interface NavItem {
   id: ProjectTab;
@@ -110,10 +112,11 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
     }
   };
 
-  // Nav Items: 1. نقشه راه و وضعیت کلی پروژه‌ها, 2. ساخت پروژه جدید
+  // Nav Items: 1. نقشه راه و وضعیت کلی پروژه‌ها, 2. مکاتبات و تایید نامه‌ها, 3. ساخت پروژه جدید
   const navItems: NavItem[] = useMemo(() => {
     return [
       { id: "roadmap", labelFa: "نقشه راه کلی پروژه‌ها", labelEn: "Overall Roadmap", icon: Layers },
+      { id: "letters", labelFa: "مکاتبات و تایید نامه‌ها", labelEn: "Letters & Approvals", icon: MailCheck },
       { id: "create", labelFa: "ساخت پروژه جدید", labelEn: "New Project", icon: PlusCircle },
     ];
   }, []);
@@ -233,6 +236,8 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                     <span>
                       {activeTab === "create"
                         ? isRtl ? "ساخت پروژه جدید" : "Create New Project"
+                        : activeTab === "letters"
+                        ? isRtl ? "مکاتبات و تایید نامه‌ها" : "Project Letters & Approvals"
                         : isRtl ? "نقشه راه کلی پروژه‌ها" : "Projects Roadmap & Overview"}
                     </span>
                     {isAdmin && (
@@ -246,6 +251,10 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                       ? isRtl
                         ? "فرم ساده ثبت و تعریف پروژه جدید همراه با زمان‌بندی و مستندات"
                         : "Simple project wizard with schedule breakdown and document uploads"
+                      : activeTab === "letters"
+                      ? isRtl
+                        ? "کارتابل بارگذاری نامه‌ها توسط بخش اداری، بررسی، کامنت و تایید/رد توسط مدیر پروژه، و ثبت ارسال"
+                        : "Correspondence management: office drafts, manager review/comments, and dispatch tracking"
                       : isRtl
                       ? "رصد پیشرفت قراردادها، وضعیت فازهای مهندسی و ساخت، و کانبان پروژه‌ها"
                       : "Monitor contract progress, engineering DFA, fabrication, and deliverable status"}
@@ -317,6 +326,11 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                   currentUser={user || ({} as any)}
                   onProjectCreated={handleProjectCreated}
                   onCancel={() => setActiveTab("roadmap")}
+                />
+              ) : activeTab === "letters" ? (
+                <ProjectLettersList
+                  projects={projects}
+                  onLettersChange={fetchProjects}
                 />
               ) : (
                 <ProjectRoadmapView

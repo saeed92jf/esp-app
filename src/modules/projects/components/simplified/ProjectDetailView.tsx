@@ -21,6 +21,7 @@ import {
   Loader2,
   AlertCircle,
   Calendar,
+  MailCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ import type {
 } from "../../types/simplified-projects.types";
 import { simplifiedProjectsService } from "../../services/simplified-projects.service";
 import { ProjectCategoryBadge } from "./ProjectCategoryBadge";
+import { ProjectLettersList } from "../letters/ProjectLettersList";
 import {
   getAttachmentIcon,
   readAttachmentFile,
@@ -545,6 +547,31 @@ export function ProjectDetailView({
             ))}
           </div>
         )}
+      </div>
+
+      {/* ── 4. Project Letters & Correspondence (مکاتبات و تایید نامه‌ها) ── */}
+      <div className="bg-card rounded-3xl border border-border/60 p-6 shadow-xs space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/40 pb-4">
+          <div>
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+              <MailCheck className="size-4.5 text-primary" />
+              <span>{isRtl ? "نامه‌ها، مکاتبات و تاییدات اداری پروژه" : "Project Letters & Correspondence"}</span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isRtl
+                ? "ثبت و آپلود پیش‌نویس توسط بخش اداری، بررسی، تایید/رد و کامنت‌گذاری توسط مدیر پروژه، و ارسال نهایی"
+                : "Office letter drafting, manager review & approval with comments and file attachments, and dispatch tracking"}
+            </p>
+          </div>
+        </div>
+
+        <ProjectLettersList
+          projects={[project]}
+          scopedProjectId={project.id}
+          onLettersChange={() => {
+            // Project updated
+          }}
+        />
       </div>
     </div>
   );

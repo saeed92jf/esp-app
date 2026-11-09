@@ -1,6 +1,8 @@
 // src/modules/projects/types/simplified-projects.types.ts
 // Simplified Euroslot Pars project domain models
 
+import type { ProjectLetter } from "./project-letters.types";
+
 export type ProjectCategory =
   | "COLUMN INT."
   | "SEPARATOR INT."
@@ -113,6 +115,7 @@ export interface SimplifiedProject {
   managerName: string;      // مدیر پروژه
   projectTypes: string[];   // نوع پروژه چند انتخابی
   documents: ProjectDocument[]; // بخش مستندات
+  letters?: ProjectLetter[];    // بخش نامه‌ها و مکاتبات اداری
   schedule: ProjectSchedule;// بخش اسکجول
   status: ProjectStatus;
   progressPercentage: number;
@@ -132,6 +135,7 @@ export interface SimplifiedProjectCreate {
   managerName: string;
   projectTypes: string[];
   documents?: ProjectDocument[];
+  letters?: ProjectLetter[];
   schedule: ProjectSchedule;
   company?: string;
   description?: string;

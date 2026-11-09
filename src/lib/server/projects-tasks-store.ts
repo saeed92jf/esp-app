@@ -223,3 +223,88 @@ export function deleteServerTask(id: string): boolean {
   list.splice(idx, 1);
   return true;
 }
+
+// In-memory letters store fallback
+declare global {
+  // eslint-disable-next-line no-var
+  var __espServerLetters_v1: any[] | undefined;
+}
+
+if (!globalThis.__espServerLetters_v1) {
+  globalThis.__espServerLetters_v1 = [];
+}
+
+export function getServerLetters(filters?: { status?: string; projectId?: string; search?: string }): any[] {
+  let list = globalThis.__espServerLetters_v1 || [];
+  if (filters?.projectId && filters.projectId !== "all") {
+    list = list.filter((l) => l.projectId === filters.projectId || l.espNumber === filters.projectId);
+  }
+  if (filters?.status && filters.status !== "all") {
+    list = list.filter((l) => l.status === filters.status);
+  }
+  if (filters?.search && filters.search.trim()) {
+    const q = filters.search.toLowerCase().trim();
+    list = list.filter(
+      (l) =>
+        (l.letterNumber || "").toLowerCase().includes(q) ||
+        (l.subject || "").toLowerCase().includes(q) ||
+        (l.recipient || "").toLowerCase().includes(q) ||
+        (l.projectName || "").toLowerCase().includes(q)
+    );
+  }
+  return [...list].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
+}
+
+export function createServerLetter(projectId: string, data: any): any {
+  const newLetter = {
+    ...data,
+    id: `let_${Date.now()}`,
+    projectId,
+    status: "pending_approval",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  globalThis.__espServerLetters_v1 = [newLetter, ...(globalThis.__espServerLetters_v1 || [])];
+  return newLetter;
+}
+
+export function reviewServerLetter(letterId: string, review: any): any | null {
+  const list = globalThis.__espServerLetters_v1 || [];
+  const idx = list.findIndex((l) => l.id === letterId);
+  if (idx === -1) return null;
+  const isApproved = review.decision === "approved";
+  list[idx] = {
+    ...list[idx],
+    status: isApproved ? "approved" : "rejected",
+    managerReview: {
+      ...review,
+      reviewedAt: new Date().toISOString(),
+    },
+    updatedAt: new Date().toISOString(),
+  };
+  return list[idx];
+}
+
+export function sendServerLetter(letterId: string, info: any): any | null {
+  const list = globalThis.__espServerLetters_v1 || [];
+  const idx = list.findIndex((l) => l.id === letterId);
+  if (idx === -1) return null;
+  list[idx] = {
+    ...list[idx],
+    status: "sent",
+    sentInfo: {
+      ...info,
+      sentAt: new Date().toISOString(),
+    },
+    updatedAt: new Date().toISOString(),
+  };
+  return list[idx];
+}
+
+export function deleteServerLetter(letterId: string): boolean {
+  const list = globalThis.__espServerLetters_v1 || [];
+  const idx = list.findIndex((l) => l.id === letterId);
+  if (idx === -1) return false;
+  list.splice(idx, 1);
+  return true;
+}
