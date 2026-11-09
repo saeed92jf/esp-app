@@ -1,6 +1,7 @@
 "use client";
 
 import { DocumentUploadSection } from "./document-upload-section";
+import { DocumentCategory } from "@/types/auth";
 
 import React, { useState, useEffect, useTransition, useRef } from "react";
 import dynamic from "next/dynamic";
@@ -357,10 +358,12 @@ export function ProfilePage() {
   const isAdmin = Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role.toLowerCase()));
 
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeDocCategory, setActiveDocCategory] = useState<DocumentCategory | null>(null);
   const handleTabChange = (newTab: string) => {
     setEditingField(null);
     setActiveEducationRecord(null);
     setIsAddingCustomSkill(false);
+    setActiveDocCategory(null);
     setActiveTab(newTab);
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setSidebarOpen(false);
@@ -4706,51 +4709,35 @@ export function ProfilePage() {
 
   const renderDocumentsView = () => {
     return (
-      <div className="space-y-6 max-w-4xl mx-auto pb-12 animate-in fade-in duration-200">
-        <Card className="rounded-3xl border border-border/60 bg-card shadow-sm p-6 sm:p-8">
-          <CardHeader className="p-0 pb-6 border-b border-border/40">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div>
-                <CardTitle className="text-xl sm:text-2xl font-black text-foreground">
-                  {isRtl ? "مدارک شناسایی و دانشگاهی" : "Identification & Academic Documents"}
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  {isRtl
-                    ? "بارگذاری تصاویر کارت ملی، شناسنامه و مدرک تحصیلی یا دانشنامه دانشگاهی جهت بررسی و تایید توسط مدیریت"
-                    : "Upload scans/photos of your national ID, birth certificate, and university degree for manager verification."}
-                </CardDescription>
-              </div>
-              <Button
-                onClick={isAccountActive ? () => setIsSubmitEditModalOpen(true) : handleSubmitForApproval}
-                disabled={isUpdating || isSubmittingApproval || (isAccountActive && !isSuperAdmin && remainingProfileEdits <= 0) || (isAccountActive && hasPendingEditRequest)}
-                className="gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
-              >
-                {(isUpdating || isSubmittingApproval) ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-                <span>
-                  {isAccountActive
-                    ? (isRtl ? "ثبت درخواست ویرایش اطلاعات" : "Submit Edit Request")
-                    : (isRtl ? "ذخیره و ارسال برای مدیر" : "Save & Submit for Manager")}
-                </span>
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0 pt-6">
-            <DocumentUploadSection
-              documents={formData?.documents || []}
-              onChange={(newDocs) => {
-                setFormData((prev) => (prev ? { ...prev, documents: newDocs } : prev));
-                if (typeof window !== "undefined") {
-                  try {
-                    const stored = localStorage.getItem("esp_user_profile");
-                    const parsed = stored ? JSON.parse(stored) : {};
-                    parsed.documents = newDocs;
-                    localStorage.setItem("esp_user_profile", JSON.stringify(parsed));
-                  } catch {}
-                }
-              }}
-            />
-          </CardContent>
-        </Card>
+      <div
+        className={cn(
+          "max-w-4xl mx-auto w-full py-8",
+          activeDocCategory
+            ? "px-4 animate-in slide-in-from-bottom-4 duration-300"
+            : "px-4 sm:px-8 animate-in fade-in duration-300"
+        )}
+      >
+        {!activeDocCategory && (
+          <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">
+            {isRtl ? "مدارک شناسایی و دانشگاهی" : "Identification & Academic Documents"}
+          </h2>
+        )}
+        <DocumentUploadSection
+          documents={formData?.documents || []}
+          activeCategory={activeDocCategory}
+          onActiveCategoryChange={setActiveDocCategory}
+          onChange={(newDocs) => {
+            setFormData((prev) => (prev ? { ...prev, documents: newDocs } : prev));
+            if (typeof window !== "undefined") {
+              try {
+                const stored = localStorage.getItem("esp_user_profile");
+                const parsed = stored ? JSON.parse(stored) : {};
+                parsed.documents = newDocs;
+                localStorage.setItem("esp_user_profile", JSON.stringify(parsed));
+              } catch {}
+            }
+          }}
+        />
       </div>
     );
   };

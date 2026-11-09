@@ -350,8 +350,8 @@ export function DocumentUploadSection({
           MODE A: INSIDE THE ITEM (محیط داخلی اختصاصی آیتم)
           ───────────────────────────────────────────────────────────── */}
       {activeDocDef ? (
-        <div className="w-full animate-in slide-in-from-bottom-4 duration-300">
-          {/* Header: Back button + Item Title + Bare Icon */}
+        <div className="w-full">
+          {/* Header: Back button + Item Title */}
           <div className="flex items-center gap-4 mb-8">
             <Button
               variant="ghost"
@@ -361,21 +361,9 @@ export function DocumentUploadSection({
             >
               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
             </Button>
-            <div className="flex items-center gap-3 flex-wrap">
-              {ActiveIcon && <ActiveIcon className="size-6 text-muted-foreground shrink-0" />}
-              <h2 className="text-2xl sm:text-3xl font-normal text-foreground">
-                {isRtl ? activeDocDef.titleFa : activeDocDef.titleEn}
-              </h2>
-              {activeDocDef.required ? (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                  {isRtl ? "الزامی" : "Required"}
-                </span>
-              ) : (
-                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground border border-border/50">
-                  {isRtl ? "اختیاری" : "Optional"}
-                </span>
-              )}
-            </div>
+            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">
+              {isRtl ? activeDocDef.titleFa : activeDocDef.titleEn}
+            </h2>
           </div>
 
           {/* Sub-container inside item */}
@@ -521,14 +509,21 @@ export function DocumentUploadSection({
                 </div>
               )}
 
-              {/* Bottom Actions: Back to documents list */}
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border/40">
+              {/* Bottom Actions: Cancel & Done (matching Personal Info) */}
+              <div className="flex items-center justify-end gap-3 mt-10 pt-6 border-t border-border/40">
                 <Button
                   variant="ghost"
                   onClick={() => setActiveCategory(null)}
                   className="rounded-full px-6 font-medium text-primary hover:bg-primary/5 cursor-pointer"
                 >
-                  {isRtl ? "بازگشت به لیست مدارک" : "Back to Documents List"}
+                  {isRtl ? "انصراف" : "Cancel"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setActiveCategory(null)}
+                  className="rounded-full px-8 font-medium cursor-pointer"
+                >
+                  {isRtl ? "تایید" : "Done"}
                 </Button>
               </div>
             </div>
@@ -615,50 +610,40 @@ export function DocumentUploadSection({
                     aria-hidden="true"
                   />
 
-                  {/* Left: Bare Icon + Title + (الزامی / اختیاری) — Exactly like Personal Info */}
-                  <div className="flex items-center gap-4 min-w-0">
+                  {/* Left: Bare Icon + Title — Exactly like Personal Info (w-1/3) */}
+                  <div className="flex items-center gap-4 w-1/3 min-w-0">
                     <Icon className="size-5 text-muted-foreground shrink-0" />
-                    <div className="flex items-center gap-2.5 min-w-0 flex-wrap">
-                      <span className="text-sm font-medium text-foreground truncate">
-                        {isRtl ? docDef.titleFa : docDef.titleEn}
-                      </span>
-                      {docDef.required ? (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
-                          {isRtl ? "الزامی" : "Required"}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-muted/60 text-muted-foreground border border-border/50 shrink-0">
-                          {isRtl ? "اختیاری" : "Optional"}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-sm font-medium text-foreground truncate">
+                      {isRtl ? docDef.titleFa : docDef.titleEn}
+                    </span>
                   </div>
 
-                  {/* Right: Brief Status Summary & ChevronRight */}
-                  <div className="flex items-center gap-3 shrink-0 ms-2">
-                    {uploaded ? (
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        {/* File brief info */}
-                        <div className="flex flex-col items-end text-end max-w-[120px] sm:max-w-[200px] truncate hidden sm:flex">
-                          <span className="text-xs font-semibold text-foreground truncate max-w-full">
+                  {/* Right: Value/Status & ChevronRight — Exactly like Personal Info (w-2/3) */}
+                  <div className="flex items-center justify-between w-2/3 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 truncate px-2">
+                      {uploaded ? (
+                        <>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+                            <CheckCircle2 className="size-3.5" />
+                            <span>{isRtl ? "ثبت شده" : "Uploaded"}</span>
+                          </span>
+                          <span className="text-xs text-muted-foreground truncate hidden sm:inline max-w-[200px]">
                             {uploaded.fileName}
                           </span>
-                          <span className="text-[10px] text-muted-foreground fa-num">
-                            {formatFileSize(uploaded.fileSize)}
+                        </>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border/40 shrink-0">
+                            <span>{isRtl ? "بارگذاری نشده" : "Not uploaded"}</span>
                           </span>
+                          {docDef.required && (
+                            <span className="text-[10px] font-medium text-rose-500/90 hidden sm:inline">
+                              ({isRtl ? "الزامی" : "Required"})
+                            </span>
+                          )}
                         </div>
-
-                        {/* Uploaded badge */}
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
-                          <CheckCircle2 className="size-3.5" />
-                          <span>{isRtl ? "ثبت شده" : "Uploaded"}</span>
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-normal text-muted-foreground bg-muted/40 px-2.5 py-0.5 rounded-full border border-border/40 shrink-0">
-                        <span>{isRtl ? "بارگذاری نشده" : "Not uploaded"}</span>
-                      </span>
-                    )}
+                      )}
+                    </div>
 
                     <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
