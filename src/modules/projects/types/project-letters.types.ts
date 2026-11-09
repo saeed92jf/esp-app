@@ -85,3 +85,4 @@ export interface ManagerReviewPayload {
   reviewerRole?: string;
   attachmentFile?: LetterAttachment;
 }
+
