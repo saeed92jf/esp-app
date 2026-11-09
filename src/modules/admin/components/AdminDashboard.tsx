@@ -78,6 +78,11 @@ export function AdminDashboard() {
     || currentUser?.id === 'u-saeed';
 
   const handleTabChange = (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings') => {
+    const isOfficeAdmin = currentUser?.role === 'office_admin';
+    if (isOfficeAdmin && !['home', 'usersTable', 'add', 'requests'].includes(tab)) {
+      toast.error(isRtl ? "دسترسی مدیر اداری محدود به مشاهده پرسنل، ایجاد حساب کاربری و تأیید درخواست‌ها می‌باشد." : "Office Admin access is limited to user info, users table, account creation, and request approvals.");
+      return;
+    }
     if (tab === 'auditLogs' && !isSuperAdmin) {
       toast.error(isRtl ? "دسترسی به بخش لاگ‌های سیستم مختص سوپر ادمین است." : "Audit logs are restricted to Super Admin.");
       return;
@@ -451,12 +456,17 @@ export function AdminDashboard() {
   };
 
   const handleUpdateUserRole = async (userId: string, newRole: UserRole) => {
+    if (!isSuperAdmin) {
+      toast.error(isRtl ? "تعیین و تغییر نقش فقط توسط مدیر ارشد سیستم (Super Admin) مجاز است." : "Role definition and modification is strictly restricted to Super Admin only.");
+      return;
+    }
     try {
       const updated = await api.admin.updateUser(userId, { role: newRole });
       setSelectedUser(prev => prev && prev.id === userId ? { ...prev, role: newRole } : prev);
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
       if (currentUser && (currentUser.id === userId || currentUser.email === updated.email)) {
-        updateUserStore({ role: newRole });
+        const isCurrentSaeed = currentUser.id === 'u-saeed' || (currentUser.email && currentUser.email.toLowerCase().includes('jalili'));
+        updateUserStore({ role: isCurrentSaeed ? 'superadmin' : newRole });
       }
       toast.success(
         isRtl

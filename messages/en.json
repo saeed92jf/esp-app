@@ -671,6 +671,7 @@
     "items": {
       "dashboard": "Dashboard",
       "ESP-Flow": "ESP-Flow",
+      "datasheetAI": "Datasheet AI",
       "projects": "Projects",
       "tasks": "Tasks",
       "dictionary": "Dictionary",
@@ -704,6 +705,7 @@
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
       "ESP-Flow": "Interactive process simulation and ASME pressure vessel design.",
+      "datasheetAI": "AI-powered technical specification extraction and industrial document intelligence.",
       "projects": "Define, organize, and track your engineering projects.",
       "tasks": "Manage tasks, Kanban boards, and workflow progress.",
       "dictionary": "Engineering terminology, materials, and standards glossary.",

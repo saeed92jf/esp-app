@@ -39,6 +39,7 @@ export function AdminSidebar({
   const isSuperAdmin = currentUser?.role === 'superadmin'
     || currentUser?.email?.toLowerCase().includes('jalili')
     || currentUser?.id === 'u-saeed';
+  const isOfficeAdmin = currentUser?.role === 'office_admin';
   const t = useTranslations("Admin");
   const locale = useLocale();
   const tooltipSide = locale === "fa" ? "left" : "right";
@@ -72,6 +73,9 @@ export function AdminSidebar({
           >
             {NAV_ITEMS.map((item) => {
               if (item.superAdminOnly && !isSuperAdmin) {
+                return null;
+              }
+              if (isOfficeAdmin && !['home', 'usersTable', 'add', 'requests'].includes(item.id)) {
                 return null;
               }
               const Icon = item.icon;

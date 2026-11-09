@@ -206,6 +206,44 @@ export function useAuth() {
     initAuth();
   }, [store.hydrated, store.user, setColor]);
 
+  // Real-time background sync: updates permissions & module access live when admin toggles access
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncPermissions = async () => {
+      const token = localStorage.getItem(AUTH_TOKEN_KEY);
+      if (!token) return;
+      try {
+        const freshUser = await api.auth.me();
+        if (freshUser && store.user) {
+          const oldMods = JSON.stringify(store.user.modulesAccess || []);
+          const newMods = JSON.stringify(freshUser.modulesAccess || []);
+          const roleChanged = freshUser.role !== store.user.role;
+          if (oldMods !== newMods || roleChanged) {
+            const preferredColor = localStorage.getItem("esp-global-primary-color") || freshUser.primaryColor;
+            const merged = { ...freshUser, primaryColor: preferredColor || freshUser.primaryColor };
+            localStorage.setItem(AUTH_USER_KEY, JSON.stringify(merged));
+            localStorage.setItem("esp_auth_user", JSON.stringify(merged));
+            store.setUser(merged);
+          }
+        }
+      } catch {}
+    };
+
+    const interval = setInterval(syncPermissions, 10000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") syncPermissions();
+    };
+    window.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", syncPermissions);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", syncPermissions);
+    };
+  }, [store.user]);
+
   const login = useCallback(async (identifier: string, password: string) => {
     store.setIsLoggingIn(true);
     try {

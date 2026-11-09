@@ -175,7 +175,7 @@ export function TaskWidget() {
     setIsSubmitting(true);
     try {
       const currentUserName = user?.fullNameFa || user?.fullName || "سعید جلیلی";
-      const currentUserId = user?.id || "usr_9801";
+      const currentUserId = user?.id || "u-saeed";
 
       const created = await newTasksService.createTask({
         title: quickTitle.trim(),

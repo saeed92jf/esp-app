@@ -130,7 +130,16 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
   const router = useRouter();
 
   const { user } = useAuth();
-  const initialRole = user?.role === "admin" ? "admin" : "user";
+  const isSaeed = Boolean(
+    user?.id === "u-saeed" ||
+    user?.id === "usr_9801" ||
+    (user?.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase().includes("saeed")))
+  );
+  const isSuperAdmin = user?.role === "superadmin" || isSaeed;
+  const isSystemAdmin = user?.role === "admin" || isSuperAdmin;
+  const isDeptAdmin = user?.role === "dept_admin" || user?.role === "manager";
+  const canCreateTask = isSystemAdmin || isDeptAdmin;
+  const initialRole = isSystemAdmin ? "admin" : "user";
   const defaultUserName = user?.fullNameFa || user?.fullName || "سعید جلیلی";
 
   const {
@@ -173,15 +182,14 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
   });
 
   const availableNavItems: NavItem[] = useMemo(() => {
-    if (!isAdmin) {
-      // Non-admins (regular users) have NO organizational access:
-      // Exclude 'companies' (corporate portfolio) and 'settings' (admin perspective switcher)
-      return NAV_ITEMS.filter(
-        (item) => item.id !== "companies" && item.id !== "settings"
-      );
-    }
-    return NAV_ITEMS;
-  }, [isAdmin]);
+    return NAV_ITEMS.filter((item) => {
+      // Rule: Only Department Admin, System Admin, and Super Admin can define new tasks
+      if (item.id === "create" && !canCreateTask) return false;
+      // Exclude corporate portfolio & settings for non-system-admins
+      if (!isSystemAdmin && (item.id === "companies" || item.id === "settings")) return false;
+      return true;
+    });
+  }, [canCreateTask, isSystemAdmin]);
 
   const searchParams = useSearchParams();
   const queryTab = searchParams?.get("tab") as TaskTab | null;
@@ -406,14 +414,16 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
             <RefreshCw className={cn("size-4", isLoading && "animate-spin")} />
           </Button>
 
-          {/* New Task Button */}
-          <Button
-            onClick={() => handleOpenCreateWithStatus("pending")}
-            className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 shadow-2xs"
-          >
-            <Plus className="size-4" />
-            <span>{t("newTask")}</span>
-          </Button>
+          {/* New Task Button - Department Admin, System Admin & Super Admin only */}
+          {canCreateTask && (
+            <Button
+              onClick={() => handleOpenCreateWithStatus("pending")}
+              className="rounded-xl h-10 px-4 text-xs font-semibold gap-2 shadow-2xs"
+            >
+              <Plus className="size-4" />
+              <span>{t("newTask")}</span>
+            </Button>
+          )}
         </div>
       </div>
 

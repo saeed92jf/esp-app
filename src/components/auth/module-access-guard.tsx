@@ -62,6 +62,12 @@ const PROTECTED_MODULES: ProtectedModuleDef[] = [
     nameEn: "ESP-Flow System",
   },
   {
+    id: "datasheet-ai",
+    href: "/datasheet-ai",
+    nameFa: "سامانه استخراج هوشمند دیتاشیت (Datasheet AI)",
+    nameEn: "Datasheet AI",
+  },
+  {
     id: "dashboard",
     href: "/dashboard",
     nameFa: "داشبورد سازمانی",
@@ -97,12 +103,28 @@ export function ModuleAccessGuard() {
     if (!user) return true; // Handled by auth-gate / login redirect
 
     const role = (user.role || "").toLowerCase();
-    const isSystemAdmin = role === "admin" || role === "superadmin";
+    const isSaeed = Boolean(
+      user.id === "u-saeed" ||
+      user.id === "usr_9801" ||
+      (user.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase().includes("saeed")))
+    );
+    const isSuperAdmin = role === "superadmin" || isSaeed;
+    const isSystemAdmin = role === "admin" || isSuperAdmin;
+    const isOfficeAdmin = role === "office_admin";
 
-    // System Admins always have full, unrestricted access to everything
+    // 1. Super Admin ALWAYS has full, unconditional, absolute access to everything
+    if (isSuperAdmin) return true;
+
+    // 2. System Admin has full access to all system modules (everything except defining/changing roles)
     if (isSystemAdmin) return true;
 
-    // For admin-only routes (e.g. /admin), non-admins are never permitted
+    // 3. Office Admin is permitted to access the Admin Panel (/admin) for user management & approvals
+    if (matchedModule.id === "admin" || matchedModule.href === "/admin") {
+      if (isOfficeAdmin) return true;
+      return false;
+    }
+
+    // For other admin-only routes, non-admins are never permitted
     if (matchedModule.adminOnly && !isSystemAdmin) {
       return false;
     }
@@ -113,6 +135,7 @@ export function ModuleAccessGuard() {
       (m) =>
         (m.moduleId === matchedModule.id ||
           m.moduleId === matchedModule.href ||
+          (matchedModule.id === "datasheet-ai" && m.moduleId === "engineering") ||
           (matchedModule.id === "tasks" && m.moduleId === "projects") ||
           (matchedModule.id === "tasks" && m.moduleId === "projectManagement") ||
           (matchedModule.id === "projects" && m.moduleId === "projectManagement")) &&

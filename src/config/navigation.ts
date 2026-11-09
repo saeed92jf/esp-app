@@ -10,6 +10,7 @@ import {
   Lightbulb,
   ChatCircleDots,
   Buildings,
+  FileMagnifyingGlass,
 } from "@phosphor-icons/react";
 
 /**
@@ -324,6 +325,14 @@ export const NAVIGATION: NavGroup[] = [
         href: "/ESP-Flow",
         icon: TreeStructure,
         color: "violet",
+        public: true,
+        free: false,
+      },
+      {
+        labelKey: "datasheetAI",
+        href: "/datasheet-ai",
+        icon: FileMagnifyingGlass,
+        color: "cyan",
         public: true,
         free: false,
       },

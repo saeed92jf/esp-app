@@ -618,6 +618,7 @@ export function TaskDetailDrawer({
           {activeTab === "comments" && (
             <TaskCommentThread
               taskId={task.id}
+              task={task}
               comments={task.comments || []}
               onAddComment={onAddComment}
               onAddReply={onAddReply}

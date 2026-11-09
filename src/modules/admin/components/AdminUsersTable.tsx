@@ -799,6 +799,10 @@ export function AdminUsersTable({
       setNewPassword("");
       setConfirmPassword("");
       if (type === 'role') {
+        if (!isSuperAdmin) {
+          toast.error(isRtl ? "تعیین و تغییر نقش فقط توسط مدیر ارشد سیستم (Super Admin) امکان‌پذیر است." : "Role definition and modification is strictly restricted to Super Admin only.");
+          return;
+        }
         setSelectedRoleForUser((targetUser?.role as UserRole) || 'user');
       }
       if (type === 'password') {
@@ -923,8 +927,9 @@ export function AdminUsersTable({
       if (selectedUser?.id === userId) {
         setSelectedUser((prev: User | null) => prev ? { ...prev, role: newRole } : null);
       }
-      if (currentUser?.id === userId || (currentUser?.email && currentUser.email.toLowerCase().includes('jalili'))) {
-        updateUserStore({ role: newRole });
+      if (currentUser?.id === userId) {
+        const isCurrentSaeed = currentUser.id === 'u-saeed' || (currentUser.email && currentUser.email.toLowerCase().includes('jalili'));
+        updateUserStore({ role: isCurrentSaeed ? 'superadmin' : newRole });
       }
       const roleObj = ORDERED_ROLES.find(r => r.value === newRole);
       const roleLabel = isRtl ? (roleObj?.labelFa || newRole) : (roleObj?.labelEn || newRole);
@@ -3195,48 +3200,54 @@ export function AdminUsersTable({
                                 </button>
 
 
-                                {/* 3. Role Assignment (تعیین رول - فقط سوپر ادمین) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'role')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'role'
-                                      ? "bg-purple-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={isRtl ? "تعیین رول" : "Role"}
-                                >
-                                  <UserCog size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{isRtl ? "تعیین رول" : "Role"}</span>
-                                </button>
+                                {/* 3. Role Assignment (تعیین رول - منحصراً سوپر ادمین) */}
+                                {isSuperAdmin && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleAccordion(user.id, 'role')}
+                                    className={cn(
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                      isAccordionOpen && activeAccordion?.type === 'role'
+                                        ? "bg-purple-600 text-white shadow-2xs font-semibold"
+                                        : "text-muted-foreground hover:text-purple-600 dark:hover:text-purple-400 hover:bg-background/80 dark:hover:bg-card"
+                                    )}
+                                    title={isRtl ? "تعیین رول (سوپر ادمین)" : "Role Assignment (Super Admin)"}
+                                  >
+                                    <UserCog size={13} className="shrink-0" />
+                                    <span className="hidden sm:inline">{isRtl ? "تعیین رول" : "Role"}</span>
+                                  </button>
+                                )}
 
-                                {/* 4. Module Access (دسترسی ماژول‌ها - کشویی) */}
-                                <button
-                                  type="button"
-                                  onClick={() => toggleAccordion(user.id, 'access')}
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
-                                    isAccordionOpen && activeAccordion?.type === 'access'
-                                      ? "bg-emerald-600 text-white shadow-2xs font-semibold"
-                                      : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
-                                  )}
-                                  title={t("moduleAccess")}
-                                >
-                                  <ShieldCheck size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{t("moduleAccess")}</span>
-                                </button>
+                                {/* 4. Module Access (دسترسی ماژول‌ها - کشویی، مدیر سیستم و سوپر ادمین) */}
+                                {canEditModuleAccess && (
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleAccordion(user.id, 'access')}
+                                    className={cn(
+                                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer",
+                                      isAccordionOpen && activeAccordion?.type === 'access'
+                                        ? "bg-emerald-600 text-white shadow-2xs font-semibold"
+                                        : "text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-background/80 dark:hover:bg-card"
+                                    )}
+                                    title={t("moduleAccess")}
+                                  >
+                                    <ShieldCheck size={13} className="shrink-0" />
+                                    <span className="hidden sm:inline">{t("moduleAccess")}</span>
+                                  </button>
+                                )}
 
-                                {/* 5. Delete User (حذف کامل کاربر با پیام هشدار حذف اطلاعات) */}
-                                <button
-                                  type="button"
-                                  onClick={() => handleDeleteUser(user)}
-                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
-                                  title={isRtl ? "حذف کاربر" : "Delete User"}
-                                >
-                                  <Trash2 size={13} className="shrink-0" />
-                                  <span className="hidden sm:inline">{isRtl ? "حذف کاربر" : "Delete User"}</span>
-                                </button>
+                                {/* 5. Delete User (حذف کامل کاربر با پیام هشدار حذف اطلاعات، فقط ادمین‌ها) */}
+                                {canEditModuleAccess && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteUser(user)}
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all cursor-pointer text-muted-foreground hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                                    title={isRtl ? "حذف کاربر" : "Delete User"}
+                                  >
+                                    <Trash2 size={13} className="shrink-0" />
+                                    <span className="hidden sm:inline">{isRtl ? "حذف کاربر" : "Delete User"}</span>
+                                  </button>
+                                )}
 
                                 <div className="h-3.5 w-px bg-border/40 mx-0.5 shrink-0" />
 

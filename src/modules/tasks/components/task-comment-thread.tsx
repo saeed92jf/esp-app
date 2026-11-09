@@ -16,6 +16,7 @@ import {
   Download,
   Image as ImageIcon,
   Sparkles,
+  ShieldAlert,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,9 +24,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskComment, TaskCommentReply, TaskAttachment } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
 import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
+import type { TaskItem } from "../types/tasks.types";
 
 interface TaskCommentThreadProps {
   taskId: string;
+  task?: TaskItem;
   comments: TaskComment[];
   onAddComment: (taskId: string, content: string, attachments?: TaskAttachment[]) => Promise<void>;
   onAddReply: (
@@ -38,11 +42,47 @@ interface TaskCommentThreadProps {
 
 export function TaskCommentThread({
   taskId,
+  task,
   comments,
   onAddComment,
   onAddReply,
 }: TaskCommentThreadProps) {
   const t = useTranslations("Tasks.comments");
+  const { user } = useAuth();
+
+  const isSaeed = Boolean(
+    user?.id === "u-saeed" ||
+    user?.id === "usr_9801" ||
+    (user?.email && (user.email.toLowerCase().includes("jalili") || user.email.toLowerCase().includes("saeed")))
+  );
+  const isSuperAdmin = user?.role === "superadmin" || isSaeed;
+  const isDeptAdmin = user?.role === "dept_admin" || user?.role === "manager";
+
+  // Check if current user is an assignee of this task
+  const isAssignee = React.useMemo(() => {
+    if (!user) return false;
+    const taskAssignees = task?.assignees || [];
+    const directAssignedName = (task?.assignedToName || "").toLowerCase();
+    const uId = (user.id || "").toLowerCase();
+    const uEmail = (user.email || "").toLowerCase();
+    const uName = (user.name || user.fullName || user.fullNameFa || "").toLowerCase();
+
+    if (directAssignedName && (directAssignedName.includes(uName) || (uName && uName.includes(directAssignedName)))) {
+      return true;
+    }
+
+    return taskAssignees.some((a) => {
+      const aId = (a.id || "").toLowerCase();
+      const aName = (a.name || "").toLowerCase();
+      if (uId && aId === uId) return true;
+      if (aName && (aName === uName || aName.includes(uName) || uName.includes(aName))) return true;
+      if (uEmail && aName && uEmail.split("@")[0] && aName.includes(uEmail.split("@")[0])) return true;
+      return false;
+    });
+  }, [user, task]);
+
+  // Law: In task discussions, ONLY assignees and department admin (+ super admin) can post comments & replies
+  const canPostComment = isSuperAdmin || isDeptAdmin || isAssignee;
   const locale = useLocale();
   const isRtl = locale === "fa";
   const [newCommentText, setNewCommentText] = useState("");
@@ -163,10 +203,11 @@ export function TaskCommentThread({
   return (
     <div className="flex flex-col gap-4 fa-num">
       {/* ── Main Comment Input Composer with File/Blueprint Attachment ── */}
-      <form
-        onSubmit={handlePostComment}
-        className="flex flex-col gap-2.5 p-3 rounded-2xl border border-border/60 bg-muted/15"
-      >
+      {canPostComment ? (
+        <form
+          onSubmit={handlePostComment}
+          className="flex flex-col gap-2.5 p-3 rounded-2xl border border-border/60 bg-muted/15"
+        >
         <Textarea
           value={newCommentText}
           onChange={(e) => setNewCommentText(e.target.value)}
@@ -253,7 +294,17 @@ export function TaskCommentThread({
             <span>{t("send")}</span>
           </Button>
         </div>
-      </form>
+        </form>
+      ) : (
+        <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs">
+          <ShieldAlert className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="leading-relaxed">
+            {isRtl
+              ? "در گفتگوی این تسک منحصراً افراد تخصیص‌یافته به تسک (Assignees) و مدیر دپارتمان مجاز به ثبت نظر و ارسال پیام هستند."
+              : "In this task discussion, only assigned team members (Assignees) and department managers are authorized to comment."}
+          </p>
+        </div>
+      )}
 
       {/* ── Comments Feed List ── */}
       <div className="flex flex-col gap-3 pt-1">
@@ -351,20 +402,22 @@ export function TaskCommentThread({
               )}
 
               {/* Comment Actions: Reply Trigger */}
-              <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setReplyingToCommentId(
-                      replyingToCommentId === comment.id ? null : comment.id
-                    )
-                  }
-                  className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
-                >
-                  <CornerDownLeft className="size-3 rtl:rotate-180" />
-                  <span>{t("reply")}</span>
-                </button>
-              </div>
+              {canPostComment && (
+                <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setReplyingToCommentId(
+                        replyingToCommentId === comment.id ? null : comment.id
+                      )
+                    }
+                    className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
+                  >
+                    <CornerDownLeft className="size-3 rtl:rotate-180" />
+                    <span>{t("reply")}</span>
+                  </button>
+                </div>
+              )}
 
               {/* Reply Input Box (when active) */}
               {replyingToCommentId === comment.id && (

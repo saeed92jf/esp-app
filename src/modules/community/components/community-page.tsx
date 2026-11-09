@@ -550,9 +550,11 @@ export function CommunityPage() {
         setLoadingThreads((prev) => ({ ...prev, [postId]: true }));
         const postDetail = await communityService.getPostDetail(postId);
         setThreadReplies((prev) => ({ ...prev, [postId]: postDetail.replies || [] }));
-        setPosts((prev) =>
-          prev.map((p) => (p.id === postId ? { ...p, views: (p.views || 0) + 1 } : p))
-        );
+        if (typeof postDetail.views === "number") {
+          setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, views: postDetail.views } : p))
+          );
+        }
       } catch (err: any) {
         console.error("Failed to load thread:", err);
         toast.error(err.message || (isRtl ? "خطا در دریافت پاسخ‌ها" : "Failed to load replies"));
@@ -1718,10 +1720,10 @@ export function CommunityPage() {
                                 <div
                                   key={reply.id}
                                   className={cn(
-                                    "border rounded-xl p-3.5 text-xs transition-all",
+                                    "rounded-2xl p-4 text-xs transition-all relative border border-s-4 shadow-xs",
                                     isAccepted
-                                      ? "bg-emerald-500/10 border-emerald-500/60 shadow-xs"
-                                      : "bg-muted/30 border-border/50"
+                                      ? "bg-gradient-to-br from-emerald-500/[0.08] via-emerald-500/[0.04] to-transparent border-emerald-500/50 border-s-emerald-600 ring-1 ring-emerald-500/20"
+                                      : "bg-gradient-to-br from-slate-100/90 via-slate-50/70 to-white/90 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-card/90 border-slate-200/90 dark:border-slate-800/90 border-s-primary/70 dark:border-s-primary hover:border-primary/40 ring-1 ring-black/[0.03] dark:ring-white/[0.04]"
                                   )}
                                 >
                                   {/* Accepted Answer Banner if marked */}
@@ -1889,14 +1891,7 @@ export function CommunityPage() {
                                 </span>
                               </div>
 
-                              <button
-                                type="button"
-                                onClick={() => insertCodeSnippet(post.id)}
-                                className="inline-flex items-center gap-1 text-[11px] text-primary hover:underline cursor-pointer"
-                              >
-                                <Code className="size-3" />
-                                <span>{isRtl ? "درج کد / فرمول" : "Code Snippet"}</span>
-                              </button>
+
                             </div>
 
                             <Textarea
