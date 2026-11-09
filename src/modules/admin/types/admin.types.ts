@@ -108,6 +108,11 @@ export interface User {
   documents?: UserUploadedDocument[];
   // Deprecated HR compatibility field
   hrApproved?: boolean;
+  profileEditCount?: number;
+  maxProfileEdits?: number;
+  remainingProfileEdits?: number;
+  hasPendingEditRequest?: boolean;
+  pendingEditRequestId?: string;
 }
 
 export interface Activity {

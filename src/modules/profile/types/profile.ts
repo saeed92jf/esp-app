@@ -5,6 +5,8 @@ export interface PersonalInfo {
   lastName: string;
   firstNameFa?: string;
   lastNameFa?: string;
+  fullName?: string;
+  fullNameFa?: string;
   avatar?: string;
   avatarUrl?: string;
   avatarColor?: string;
@@ -129,4 +131,10 @@ export interface UserProfile {
   insurance: InsuranceInfo;
   education: EducationInfo;
   documents?: UserUploadedDocument[];
+  profileEditCount?: number;
+  maxProfileEdits?: number;
+  remainingProfileEdits?: number;
+  hasPendingEditRequest?: boolean;
+  pendingEditRequestId?: string;
+  pendingEditRequestedAt?: string;
 }

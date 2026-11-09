@@ -117,8 +117,16 @@ import {
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
   Heart, Users, PhoneCall, CreditCard, Check, X,
   Building2, Factory, Laptop, Network, AlertCircle, Info,
-  FileCheck
+  FileCheck, UserCog, Send
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { searchProfileItems, type ProfileSearchResult } from "../utils/profile-search";
 import { validateSheba, normalizeSheba, formatSheba, getShebaDigits } from "@/utils/shebaValidator";
 import { User as UserPh, Ghost as GhostPh, Sparkle as SparklePh, Smiley as SmileyPh, Heart as HeartPh, Palette as PalettePh } from "@phosphor-icons/react";
@@ -354,6 +362,17 @@ export function ProfilePage() {
     user && (!user.isProfileCompleted || user.accountStatus === 'pending_profile' || isOnboarding)
   );
   const [isSubmittingApproval, setIsSubmittingApproval] = useState(false);
+  const [isSubmitEditModalOpen, setIsSubmitEditModalOpen] = useState(false);
+  const isSuperAdmin = Boolean(
+    user?.role === 'superadmin' || 
+    user?.id === 'u-saeed' || 
+    (user?.email && user.email.toLowerCase().includes('jalili'))
+  );
+  const profileEditCount = Number(formData?.profileEditCount ?? profile?.profileEditCount ?? user?.profileEditCount ?? 0);
+  const remainingProfileEdits = isSuperAdmin ? 3 : Math.max(0, 3 - profileEditCount);
+  const hasPendingEditRequest = Boolean(
+    formData?.hasPendingEditRequest ?? profile?.hasPendingEditRequest ?? user?.hasPendingEditRequest
+  );
   const [isPendingBannerMinimized, setIsPendingBannerMinimized] = useState(false);
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
   const [otpInput, setOtpInput] = useState("");
@@ -367,14 +386,6 @@ export function ProfilePage() {
   const [newDepBirthDate, setNewDepBirthDate] = useState("");
 
   useEffect(() => {
-    // Only lock org/insurance fields for regular non-admin staff after approval
-    if (isApprovedByHrAndManager && editingField && !isAdmin) {
-      const isOrgField = ['department', 'role', 'workLocation', 'contractType', 'employeeId', 'extensionNumber', 'joinDate', 'manager', 'subordinates'].includes(editingField);
-      const isInsField = ['provider', 'type', 'insuranceCode', 'validUntil', 'supplementaryPlan', 'shebaNumber', 'dependentsCount', 'dependents'].includes(editingField);
-      if (isOrgField || isInsField) {
-        setEditingField(null);
-      }
-    }
     setIsVerifyingPhone(false);
     setOtpInput("");
     setIsVerifyingEmail(false);
@@ -786,26 +797,28 @@ export function ProfilePage() {
           }).catch(() => {});
         } catch {}
 
-        try {
-          api.admin.updateUser(user.id, {
-            name: isRtl ? (fullNamePersian || fullNameEnglish) : (fullNameEnglish || fullNamePersian),
-            fullName: fullNameEnglish,
-            fullNameFa: fullNamePersian,
-            firstNameFa: finalProfile.personal.firstNameFa,
-            lastNameFa: finalProfile.personal.lastNameFa,
-            firstName: finalProfile.personal.firstName,
-            lastName: finalProfile.personal.lastName,
-            email: finalProfile.personal.email,
-            phone: finalProfile.personal.phone,
-            nationalId: finalProfile.personal.nationalId,
-            maritalStatus: finalProfile.personal.maritalStatus as any,
-            childrenCount: finalProfile.personal.childrenCount,
-            department: finalProfile.organizational?.department,
-            jobTitle: finalProfile.organizational?.role,
-            insuranceType: finalProfile.insurance?.type as any,
-            supplementaryPlan: finalProfile.insurance?.supplementaryPlan as any,
-          }).catch(() => {});
-        } catch {}
+        if (!isAlreadyActive || isSuperAdmin) {
+          try {
+            api.admin.updateUser(user.id, {
+              name: isRtl ? (fullNamePersian || fullNameEnglish) : (fullNameEnglish || fullNamePersian),
+              fullName: fullNameEnglish,
+              fullNameFa: fullNamePersian,
+              firstNameFa: finalProfile.personal.firstNameFa,
+              lastNameFa: finalProfile.personal.lastNameFa,
+              firstName: finalProfile.personal.firstName,
+              lastName: finalProfile.personal.lastName,
+              email: finalProfile.personal.email,
+              phone: finalProfile.personal.phone,
+              nationalId: finalProfile.personal.nationalId,
+              maritalStatus: finalProfile.personal.maritalStatus as any,
+              childrenCount: finalProfile.personal.childrenCount,
+              department: finalProfile.organizational?.department,
+              jobTitle: finalProfile.organizational?.role,
+              insuranceType: finalProfile.insurance?.type as any,
+              supplementaryPlan: finalProfile.insurance?.supplementaryPlan as any,
+            }).catch(() => {});
+          } catch {}
+        }
 
         try {
           localStorage.setItem("esp_auth_user", JSON.stringify(updated));
@@ -964,6 +977,113 @@ export function ProfilePage() {
           ? "خطا در ارسال درخواست برای مدیر. لطفاً مجدداً تلاش نمایید."
           : "Failed to submit request for manager review."
       );
+    } finally {
+      setIsSubmittingApproval(false);
+    }
+  };
+
+  const handleSubmitProfileEditRequest = async () => {
+    if (isSubmittingApproval || !formData) return;
+
+    if (!isSuperAdmin && remainingProfileEdits <= 0) {
+      toast.error(
+        isRtl
+          ? "سقف مجاز ۳ مرتبه تغییر اطلاعات برای حساب کاربری شما تکمیل شده است."
+          : "You have used all 3 allowed profile edit requests."
+      );
+      return;
+    }
+
+    if (hasPendingEditRequest) {
+      toast.error(
+        isRtl
+          ? "یک درخواست ویرایش اطلاعات در حال حاضر در انتظار بررسی مدیر است."
+          : "An edit request is currently awaiting manager review."
+      );
+      return;
+    }
+
+    const validation = validateProfileForSubmission(formData);
+    if (!validation.isValid) {
+      toast.error(validation.error);
+      setActiveTab(validation.targetTab);
+      return;
+    }
+
+    setIsSubmittingApproval(true);
+    try {
+      const p = formData.personal || {};
+      const org = formData.organizational || {};
+      const edu = formData.education || {};
+      const fullNameEnglish = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+      const fullNamePersian = (p.firstNameFa && p.lastNameFa)
+        ? `${p.firstNameFa} ${p.lastNameFa}`.trim()
+        : fullNameEnglish;
+
+      await api.admin.createRequest({
+        userId: user?.id,
+        email: user?.email || p.email,
+        name: isRtl ? (fullNamePersian || fullNameEnglish) : (fullNameEnglish || fullNamePersian),
+        fullName: fullNameEnglish || fullNamePersian,
+        fullNameFa: fullNamePersian || fullNameEnglish,
+        firstNameFa: p.firstNameFa,
+        lastNameFa: p.lastNameFa,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        phone: p.phone,
+        nationalId: p.nationalId,
+        birthDate: p.birthDate,
+        maritalStatus: p.maritalStatus as any,
+        childrenCount: p.childrenCount,
+        address: p.address,
+        department: org.department,
+        jobTitle: org.role || (org as any).jobTitle,
+        workLocation: org.workLocation,
+        contractType: org.contractType,
+        company: (user as any)?.company || (org as any)?.company || (isRtl ? "یورو اسلات پارس" : "Euroslot Pars"),
+        companyId: (user as any)?.companyId || (org as any)?.companyId || "euroslot",
+        status: "pending",
+        requestType: "edit_profile",
+        isProfileCompleted: true,
+        documents: formData.documents || [],
+        educationDegree: edu.degree,
+        educationField: edu.fieldOfStudy || (edu as any).field,
+        university: edu.university,
+        educationRecords: edu.records || [],
+        skills: formData.skills || [],
+        insuranceType: formData.insurance?.type as any,
+        supplementaryPlan: formData.insurance?.supplementaryPlan as any,
+        shebaNumber: formData.insurance?.shebaNumber,
+        dependents: formData.insurance?.dependents || [],
+      });
+
+      const nextCount = profileEditCount + 1;
+      setFormData(prev => prev ? {
+        ...prev,
+        profileEditCount: nextCount,
+        remainingProfileEdits: Math.max(0, 3 - nextCount),
+        hasPendingEditRequest: true,
+      } : prev);
+
+      if (user) {
+        updateUser({
+          ...user,
+          profileEditCount: nextCount,
+          remainingProfileEdits: Math.max(0, 3 - nextCount),
+          hasPendingEditRequest: true,
+        });
+      }
+
+      toast.success(
+        isRtl
+          ? "درخواست ویرایش اطلاعات با موفقیت ثبت شد و پس از بررسی و تأیید مدیریت، در پایگاه داده اعمال می‌گردد."
+          : "Profile edit request submitted successfully. It will be saved into the database once approved by the manager."
+      );
+      setIsSubmitEditModalOpen(false);
+    } catch (err: any) {
+      console.error("Error submitting profile edit request:", err);
+      const msg = err?.message || err?.detail || (isRtl ? "خطا در ثبت درخواست ویرایش اطلاعات." : "Failed to submit edit request.");
+      toast.error(msg);
     } finally {
       setIsSubmittingApproval(false);
     }
@@ -4255,12 +4375,16 @@ export function ProfilePage() {
                 </CardDescription>
               </div>
               <Button
-                onClick={handleSubmitForApproval}
-                disabled={isUpdating || isSubmittingApproval}
+                onClick={isAccountActive ? () => setIsSubmitEditModalOpen(true) : handleSubmitForApproval}
+                disabled={isUpdating || isSubmittingApproval || (isAccountActive && !isSuperAdmin && remainingProfileEdits <= 0) || (isAccountActive && hasPendingEditRequest)}
                 className="gap-2 font-bold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm cursor-pointer"
               >
                 {(isUpdating || isSubmittingApproval) ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
-                <span>{isRtl ? "ذخیره و ارسال برای مدیر" : "Save & Submit for Manager"}</span>
+                <span>
+                  {isAccountActive
+                    ? (isRtl ? "ثبت درخواست ویرایش اطلاعات" : "Submit Edit Request")
+                    : (isRtl ? "ذخیره و ارسال برای مدیر" : "Save & Submit for Manager")}
+                </span>
               </Button>
             </div>
           </CardHeader>
@@ -4404,6 +4528,89 @@ export function ProfilePage() {
 
         {/* Main Content Area */}
         <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
+          {/* Active Account Profile Change Quota & Submission Bar */}
+          {isAccountActive && activeTab !== "settings" && (
+            <div className="max-w-4xl mx-auto mb-6 p-4 sm:p-5 rounded-3xl bg-card/90 backdrop-blur-md border border-border/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in duration-300">
+              <div className="flex items-center gap-3.5">
+                <div className={cn(
+                  "size-10 rounded-2xl flex items-center justify-center shrink-0 border",
+                  hasPendingEditRequest
+                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30"
+                    : remainingProfileEdits > 0
+                    ? "bg-primary/10 text-primary border-primary/25"
+                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                )}>
+                  {hasPendingEditRequest ? (
+                    <Clock className="size-5 animate-pulse" />
+                  ) : (
+                    <UserCog className="size-5" />
+                  )}
+                </div>
+
+                <div className="space-y-0.5 text-start">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-foreground">
+                      {isRtl ? "سهمیه و ثبت درخواست تغییر اطلاعات کاربری" : "Profile Changes & Edit Quota"}
+                    </h3>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs",
+                        hasPendingEditRequest
+                          ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                          : remainingProfileEdits > 0
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                          : "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30"
+                      )}
+                    >
+                      {hasPendingEditRequest
+                        ? (isRtl ? "درخواست در انتظار بررسی مدیر" : "Pending Manager Approval")
+                        : isSuperAdmin
+                        ? (isRtl ? "دسترسی نامحدود (مدیر ارشد)" : "Unlimited (SuperAdmin)")
+                        : (isRtl ? `${toPersianDigits(remainingProfileEdits)} از ۳ نوبت ویرایش باقی‌مانده` : `${remainingProfileEdits} of 3 Edits Remaining`)}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hasPendingEditRequest
+                      ? (isRtl
+                          ? "درخواست ویرایش قبلی شما در صف بررسی پنل مدیریت قرار دارد و پس از تأیید در پایگاه داده اعمال می‌گردد."
+                          : "Your previous edit request is in the manager review queue and will be applied upon approval.")
+                      : remainingProfileEdits > 0 || isSuperAdmin
+                      ? (isRtl
+                          ? "هر کاربر حداکثر ۳ بار مجاز به تغییر اطلاعات است. پس از ویرایش، دکمه درخواست را بزنید تا بعد از تأیید مدیر در پایگاه داده ثبت شود."
+                          : "Profile changes are limited to 3 times. Submit your request for manager approval before it is saved into the database.")
+                      : (isRtl
+                          ? "سقف ۳ مرتبه ویرایش اطلاعات شما به پایان رسیده است. برای تغییرات بیشتر با مدیر سیستم تماس بگیرید."
+                          : "You have used all 3 edit requests. Contact the system administrator for further changes.")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end">
+                {hasPendingEditRequest ? (
+                  <Badge variant="outline" className="h-9 px-3.5 text-xs font-semibold border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10 gap-1.5">
+                    <Clock className="size-3.5 animate-spin" />
+                    <span>{isRtl ? "در انتظار بررسی ادمین" : "Awaiting Review"}</span>
+                  </Badge>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={() => setIsSubmitEditModalOpen(true)}
+                    disabled={isSubmittingApproval || (!isSuperAdmin && remainingProfileEdits <= 0)}
+                    className="h-9.5 px-4 rounded-xl text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs cursor-pointer transition-all duration-150"
+                  >
+                    {isSubmittingApproval ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Send className="size-4 rtl:rotate-180" />
+                    )}
+                    <span>{isRtl ? "ثبت درخواست تغییر اطلاعات" : "Submit Change Request"}</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
            {activeTab === "home" ? renderHomeView() : 
             activeTab === "personal" ? renderPersonalView() : 
             activeTab === "documents" ? renderDocumentsView() : 
@@ -4413,6 +4620,90 @@ export function ProfilePage() {
             activeTab === "education" ? renderEducationView() :
             activeTab === "settings" ? renderSettingsView() :
             null}
+
+          {/* Modal Dialog for Submitting Profile Edit Request */}
+          <Dialog open={isSubmitEditModalOpen} onOpenChange={setIsSubmitEditModalOpen}>
+            <DialogContent className="max-w-lg rounded-3xl p-6 border border-border/70 shadow-2xl">
+              <DialogHeader className="text-start space-y-2">
+                <div className="size-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                  <UserCog className="size-5" />
+                </div>
+                <DialogTitle className="text-lg font-bold text-foreground">
+                  {isRtl ? "ثبت درخواست تغییر اطلاعات کاربری" : "Submit Profile Change Request"}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                  {isRtl
+                    ? "با ثبت این درخواست، اطلاعات ویرایش‌شده شما به صف بررسی پنل مدیریت ارسال می‌شود و پس از تأیید مدیر سیستم، در پایگاه داده پایدار ذخیره خواهد شد."
+                    : "Submitting this request will send your updated profile data to the administrator queue. Once approved, changes are saved into the persistent database."}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="my-4 p-4 rounded-2xl bg-muted/40 border border-border/50 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "سهمیه ویرایش:" : "Edit Quota:"}</span>
+                  <span className="font-bold text-foreground">
+                    {isSuperAdmin
+                      ? (isRtl ? "نامحدود (سوپر ادمین)" : "Unlimited")
+                      : (isRtl ? `${toPersianDigits(remainingProfileEdits)} از ۳ نوبت باقی‌مانده` : `${remainingProfileEdits} of 3 remaining`)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "نام و نام خانوادگی:" : "Full Name:"}</span>
+                  <span className="font-semibold text-foreground">
+                    {formData?.personal?.fullNameFa || formData?.personal?.fullName || user?.fullNameFa || user?.fullName}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "واحد سازمانی:" : "Department:"}</span>
+                  <span className="font-semibold text-foreground">
+                    {formData?.organizational?.department || user?.department || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "سمت / عنوان شغلی:" : "Job Title:"}</span>
+                  <span className="font-semibold text-foreground">
+                    {formData?.organizational?.role || user?.jobTitle || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "شماره همراه:" : "Phone:"}</span>
+                  <span className="font-mono text-foreground" dir="ltr">
+                    {formData?.personal?.phone || user?.phone || "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "کد ملی:" : "National ID:"}</span>
+                  <span className="font-mono text-foreground" dir="ltr">
+                    {formData?.personal?.nationalId || user?.nationalId || "-"}
+                  </span>
+                </div>
+              </div>
+
+              <DialogFooter className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsSubmitEditModalOpen(false)}
+                  className="rounded-xl text-xs h-9 px-4 cursor-pointer"
+                >
+                  {isRtl ? "انصراف" : "Cancel"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSubmitProfileEditRequest}
+                  disabled={isSubmittingApproval}
+                  className="rounded-xl text-xs h-9 px-5 font-bold bg-primary hover:bg-primary/90 text-primary-foreground gap-1.5 cursor-pointer shadow-xs"
+                >
+                  {isSubmittingApproval ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-3.5" />
+                  )}
+                  <span>{isRtl ? "تایید و ارسال به مدیریت" : "Confirm & Send to Manager"}</span>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Floating Bottom Navigation Bar while account is pending activation */}

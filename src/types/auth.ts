@@ -38,6 +38,7 @@ export interface User {
   name?: string;
   fullNameFa?: string;
   mobile?: string;
+  phone?: string;
   email?: string;
   avatar?: string;
   role: UserRole;
@@ -58,5 +59,10 @@ export interface User {
   extensionNumber?: string;
   password?: string;
   modulesAccess?: Array<{ moduleId: string; hasAccess: boolean; accessLevel?: string; hoursSpent?: string; usagePercentage?: number }>;
+  profileEditCount?: number;
+  maxProfileEdits?: number;
+  remainingProfileEdits?: number;
+  hasPendingEditRequest?: boolean;
+  pendingEditRequestId?: string;
 }
 export type AppUser = User;
