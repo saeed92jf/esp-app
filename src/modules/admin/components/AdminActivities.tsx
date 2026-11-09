@@ -21,17 +21,39 @@ export interface HeatmapDay {
   isWeekend: boolean;
 }
 
+export interface TimeSlotConfig {
+  key: string;
+  slotIndex: number;
+  label: string;
+  labelFa: string;
+  startHour: number;
+  endHour: number;
+  duration: number;
+  hours: number[];
+  isNight?: boolean;
+}
+
 export interface HeatmapCell {
-  hour: number;
-  hourLabel: string;
+  hour?: number;
+  hourLabel?: string;
+  slotKey: string;
+  slotIndex: number;
+  slotLabel: string;
+  slotLabelFa: string;
+  startHour: number;
+  endHour: number;
+  isNight?: boolean;
   day: number;
   dayKey: string;
   dayNameFa: string;
   dayNameEn: string;
   shortFa: string;
+  shortEn: string;
   minutes: number;
+  maxMinutes?: number;
   percentage: number;
   level: number; // 0..4
+  isHatched: boolean;
   isCurrent: boolean;
 }
 
@@ -44,23 +66,43 @@ export interface ActivityHeatmapData {
   todayHours: number;
   currentDay: number;
   currentHour: number;
+  currentSlotKey?: string;
   days: HeatmapDay[];
-  hours: number[];
-  matrix: Record<number, Record<number, HeatmapCell>>;
+  slots?: TimeSlotConfig[];
+  hours?: number[];
+  matrix: Record<string | number, Record<number, HeatmapCell>>;
 }
 
 const DAYS_CONFIG: HeatmapDay[] = [
   { dayIndex: 0, key: "sat", nameFa: "شنبه", nameEn: "Saturday", shortFa: "شنبه", shortEn: "Sat", isWeekend: false },
-  { dayIndex: 1, key: "sun", nameFa: "یکشنبه", nameEn: "Sunday", shortFa: "یکشنبه", shortEn: "Sun", isWeekend: false },
-  { dayIndex: 2, key: "mon", nameFa: "دوشنبه", nameEn: "Monday", shortFa: "دوشنبه", shortEn: "Mon", isWeekend: false },
-  { dayIndex: 3, key: "tue", nameFa: "سه‌شنبه", nameEn: "Tuesday", shortFa: "سه‌شنبه", shortEn: "Tue", isWeekend: false },
-  { dayIndex: 4, key: "wed", nameFa: "چهارشنبه", nameEn: "Wednesday", shortFa: "چهارشنبه", shortEn: "Wed", isWeekend: false },
-  { dayIndex: 5, key: "thu", nameFa: "پنج‌شنبه", nameEn: "Thursday", shortFa: "پنج‌شنبه", shortEn: "Thu", isWeekend: false },
+  { dayIndex: 1, key: "sun", nameFa: "یکشنبه", nameEn: "Sunday", shortFa: "یک", shortEn: "Sun", isWeekend: false },
+  { dayIndex: 2, key: "mon", nameFa: "دوشنبه", nameEn: "Monday", shortFa: "دو", shortEn: "Mon", isWeekend: false },
+  { dayIndex: 3, key: "tue", nameFa: "سه‌شنبه", nameEn: "Tuesday", shortFa: "سه", shortEn: "Tue", isWeekend: false },
+  { dayIndex: 4, key: "wed", nameFa: "چهارشنبه", nameEn: "Wednesday", shortFa: "چهار", shortEn: "Wed", isWeekend: false },
+  { dayIndex: 5, key: "thu", nameFa: "پنج‌شنبه", nameEn: "Thursday", shortFa: "پنج", shortEn: "Thu", isWeekend: false },
   { dayIndex: 6, key: "fri", nameFa: "جمعه", nameEn: "Friday", shortFa: "جمعه", shortEn: "Fri", isWeekend: true },
 ];
 
-// Working hours from 7:00 AM to 6:00 PM (ساعات کاری از ۷ صبح تا ۶ بعد از ظهر)
-const WORK_HOURS = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+// Exactly 7 time intervals covering all 24 hours (۷ سطر × ۷ ستون روزهای هفته)
+export const TIME_SLOTS: TimeSlotConfig[] = [
+  { key: "6-8", slotIndex: 0, label: "6-8", labelFa: "۰۶-۰۸", startHour: 6, endHour: 8, duration: 2, hours: [6, 7] },
+  { key: "8-10", slotIndex: 1, label: "8-10", labelFa: "۰۸-۱۰", startHour: 8, endHour: 10, duration: 2, hours: [8, 9] },
+  { key: "10-12", slotIndex: 2, label: "10-12", labelFa: "۱۰-۱۲", startHour: 10, endHour: 12, duration: 2, hours: [10, 11] },
+  { key: "12-14", slotIndex: 3, label: "12-14", labelFa: "۱۲-۱۴", startHour: 12, endHour: 14, duration: 2, hours: [12, 13] },
+  { key: "14-16", slotIndex: 4, label: "14-16", labelFa: "۱۴-۱۶", startHour: 14, endHour: 16, duration: 2, hours: [14, 15] },
+  { key: "16-18", slotIndex: 5, label: "16-18", labelFa: "۱۶-۱۸", startHour: 16, endHour: 18, duration: 2, hours: [16, 17] },
+  { key: "18-6", slotIndex: 6, label: "18-6", labelFa: "۱۸-۰۶", startHour: 18, endHour: 6, duration: 12, hours: [18, 19, 20, 21, 22, 23, 0, 1, 2, 3, 4, 5], isNight: true },
+];
+
+function getSlotKeyForHour(h: number): string {
+  if (h >= 6 && h < 8) return "6-8";
+  if (h >= 8 && h < 10) return "8-10";
+  if (h >= 10 && h < 12) return "10-12";
+  if (h >= 12 && h < 14) return "12-14";
+  if (h >= 14 && h < 16) return "14-16";
+  if (h >= 16 && h < 18) return "16-18";
+  return "18-6";
+}
 
 function generateDeterministicHeatmap(userId: string, isOnline: boolean): ActivityHeatmapData {
   const normId = (userId || "u-saeed").toLowerCase();
@@ -80,78 +122,103 @@ function generateDeterministicHeatmap(userId: string, isOnline: boolean): Activi
   const jsDay = tehranDate.getDay();
   const curDay = (jsDay + 1) % 7;
   const curHour = tehranDate.getHours();
+  const curSlotKey = getSlotKeyForHour(curHour);
 
-  const matrix: Record<number, Record<number, HeatmapCell>> = {};
+  const matrix: Record<string | number, Record<number, HeatmapCell>> = {};
   let totalMins = 0;
   let todayMins = 0;
 
-  WORK_HOURS.forEach((h) => {
-    matrix[h] = {};
+  TIME_SLOTS.forEach((slot) => {
+    matrix[slot.key] = {};
+    matrix[slot.slotIndex] = {};
+
     DAYS_CONFIG.forEach((d) => {
       let minutes = 0;
       if (d.dayIndex === 6) {
-        // Friday holiday
+        // Friday holiday (تعطیل)
         minutes = 0;
       } else if (d.dayIndex === 5) {
         // Thursday half-day
-        if ([8, 9, 10, 11].includes(h)) {
-          minutes = 44 + ((seed + h * 7) % 15);
-        } else if ([7, 12].includes(h)) {
-          minutes = 20 + ((seed + h * 5) % 18);
-        } else if (h === 13) {
-          minutes = 10 + (seed % 10);
+        if (slot.key === "6-8") {
+          minutes = 22 + (seed % 14);
+        } else if (slot.key === "8-10" || slot.key === "10-12") {
+          minutes = 90 + ((seed + slot.slotIndex * 5) % 22);
+        } else if (slot.key === "12-14") {
+          minutes = 25 + (seed % 15);
         } else {
           minutes = 0;
         }
       } else {
         // Sat - Wed standard full working hours
-        if ([8, 9, 10, 11, 13, 14, 15].includes(h)) {
-          minutes = 48 + ((seed + d.dayIndex * 5 + h * 3) % 13);
-        } else if (h === 7) {
-          minutes = 26 + ((seed + d.dayIndex * 4) % 22);
-        } else if (h === 12) {
-          minutes = 30 + ((seed + d.dayIndex * 3) % 18);
-        } else if (h === 16) {
-          minutes = 36 + ((seed + d.dayIndex * 7) % 18);
-        } else if (h === 17) {
-          minutes = 18 + ((seed + d.dayIndex * 2) % 20);
-        } else if (h === 18) {
-          minutes = 8 + ((seed + d.dayIndex * 8) % 14);
+        if (slot.key === "6-8") {
+          minutes = 32 + ((seed + d.dayIndex * 4) % 20);
+        } else if (slot.key === "8-10" || slot.key === "10-12") {
+          minutes = 96 + ((seed + d.dayIndex * 6 + slot.slotIndex * 4) % 18);
+        } else if (slot.key === "12-14") {
+          minutes = 70 + ((seed + d.dayIndex * 5) % 20);
+        } else if (slot.key === "14-16") {
+          minutes = 92 + ((seed + d.dayIndex * 7) % 20);
+        } else if (slot.key === "16-18") {
+          minutes = 55 + ((seed + d.dayIndex * 3) % 25);
         } else {
           minutes = 0;
         }
       }
 
-      const isCurrent = d.dayIndex === curDay && h === curHour;
+      const isCurrent = d.dayIndex === curDay && slot.key === curSlotKey;
       if (isCurrent && isOnline) {
-        minutes = Math.max(minutes, 48);
+        minutes = Math.max(minutes, slot.isNight ? 45 : 85);
       }
-      minutes = Math.min(60, Math.max(0, minutes));
+      const maxMinutes = slot.duration * 60;
+      minutes = Math.min(maxMinutes, Math.max(0, minutes));
 
       let level = 0;
-      if (minutes > 45) level = 4;
-      else if (minutes > 30) level = 3;
-      else if (minutes > 15) level = 2;
+      if (minutes > 90) level = 4;
+      else if (minutes > 60) level = 3;
+      else if (minutes > 30) level = 2;
       else if (minutes > 0) level = 1;
+
+      // هاشور خاکستری برای ساعات تعطیل / خارج شیفت با عدم فعالیت
+      let isHatched = false;
+      if (level === 0) {
+        if (slot.isNight || d.dayIndex === 6) {
+          isHatched = true;
+        } else if (d.dayIndex === 5 && (slot.key === "14-16" || slot.key === "16-18" || slot.key === "18-6")) {
+          isHatched = true;
+        }
+      }
 
       totalMins += minutes;
       if (d.dayIndex === curDay) {
         todayMins += minutes;
       }
 
-      matrix[h][d.dayIndex] = {
-        hour: h,
-        hourLabel: `${String(h).padStart(2, "0")}:00`,
+      const cell: HeatmapCell = {
+        hour: slot.startHour,
+        hourLabel: slot.label,
+        slotKey: slot.key,
+        slotIndex: slot.slotIndex,
+        slotLabel: slot.label,
+        slotLabelFa: slot.labelFa,
+        startHour: slot.startHour,
+        endHour: slot.endHour,
+        isNight: slot.isNight,
         day: d.dayIndex,
         dayKey: d.key,
         dayNameFa: d.nameFa,
         dayNameEn: d.nameEn,
         shortFa: d.shortFa,
+        shortEn: d.shortEn,
         minutes,
-        percentage: Math.round((minutes / 60) * 100),
+        maxMinutes,
+        percentage: minutes > 0 ? Math.min(100, Math.round((minutes / 120) * 100)) : 0,
         level,
+        isHatched,
         isCurrent,
       };
+
+      matrix[slot.key][d.dayIndex] = cell;
+      matrix[slot.slotIndex][d.dayIndex] = cell;
     });
   });
 
@@ -164,8 +231,10 @@ function generateDeterministicHeatmap(userId: string, isOnline: boolean): Activi
     todayHours: Math.round((todayMins / 60) * 10) / 10,
     currentDay: curDay,
     currentHour: curHour,
+    currentSlotKey: curSlotKey,
     days: DAYS_CONFIG,
-    hours: WORK_HOURS,
+    slots: TIME_SLOTS,
+    hours: TIME_SLOTS.map((s) => s.startHour),
     matrix,
   };
 }
@@ -287,57 +356,68 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
         <div className="flex flex-col flex-1 min-h-0 justify-between gap-1 overflow-hidden">
           
           {/* ── Interactive Info / Hover Status Banner ── */}
-          <div className="h-6 shrink-0 px-2 rounded-lg bg-background/60 border border-border/30 flex items-center justify-between text-[10.5px] text-muted-foreground overflow-hidden">
+          <div className="h-7 shrink-0 px-2 rounded-lg bg-background/70 border border-border/40 flex items-center justify-between text-[11px] text-muted-foreground overflow-hidden">
             {hoveredCell ? (
               <div className="flex items-center gap-2 truncate font-medium text-foreground w-full justify-between">
-                <span className="truncate">
+                <span className="truncate flex items-center gap-1.5">
                   <strong className="text-primary font-bold">
                     {isRtl ? hoveredCell.dayNameFa : hoveredCell.dayNameEn}
-                  </strong>{" "}
-                  • {isRtl ? "ساعت" : "Hour"} {hoveredCell.hour}:00{" "}
-                  {isRtl ? `تا ${hoveredCell.hour + 1}:00` : `to ${hoveredCell.hour + 1}:00`}
+                  </strong>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="fa-num">
+                    {isRtl ? `بازه ${hoveredCell.slotLabelFa}` : `Slot ${hoveredCell.slotLabel}`}
+                    {hoveredCell.isNight ? (isRtl ? " (شب/خارج شیفت)" : " (Night)") : ""}
+                  </span>
                 </span>
-                <span className="fa-num font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                  {hoveredCell.minutes > 0
-                    ? isRtl
-                      ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
-                      : `${hoveredCell.minutes}m online (${hoveredCell.percentage}%)`
-                    : isRtl
-                    ? "آفلاین / بدون فعالیت"
-                    : "Offline"}
+                <span className="fa-num font-bold shrink-0">
+                  {hoveredCell.level > 0 ? (
+                    <span className="text-primary">
+                      {isRtl
+                        ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
+                        : `${hoveredCell.minutes}m online (${hoveredCell.percentage}%)`}
+                    </span>
+                  ) : hoveredCell.isHatched ? (
+                    <span className="text-muted-foreground/80">
+                      {isRtl ? "خارج از شیفت / تعطیل" : "Off-shift / Holiday"}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground/80">
+                      {isRtl ? "خانه خالی (بدون فعالیت)" : "Empty (Inactive)"}
+                    </span>
+                  )}
                 </span>
               </div>
             ) : (
-              <div className="flex items-center justify-between w-full text-[10px] text-muted-foreground">
+              <div className="flex items-center justify-between w-full text-[10.5px] text-muted-foreground">
                 <span className="truncate flex items-center gap-1">
                   <Sparkles size={11} className="text-primary shrink-0" />
                   {isRtl
                     ? `امروز: ${data.todayHours} ساعت آنلاین`
                     : `Today: ${data.todayHours} hours online`}
                 </span>
-                <span className="fa-num font-semibold text-foreground/80 shrink-0">
+                <span className="fa-num font-medium text-foreground/75 shrink-0">
                   {isRtl ? "روی خانه‌ها حرکت کنید" : "Hover for details"}
                 </span>
               </div>
             )}
           </div>
 
-          {/* ── Heat Map Grid: Horizontal (Days) x Vertical (Working Hours 7:00 - 18:00) ── */}
+          {/* ── Heat Map Grid: 7 Time Slots (Rows) x 7 Days (Cols) forming a Symmetrical 7x7 Square Grid ── */}
           <div className="flex-1 min-h-0 flex flex-col justify-center overflow-x-auto pr-0.5">
-            <div className="min-w-[270px] w-full flex flex-col gap-0.5">
+            <div className="min-w-[270px] w-full flex flex-col gap-1">
               
               {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
-              <div className="grid grid-cols-[40px_repeat(7,1fr)] gap-1 items-center pb-0.5 text-center">
-                <div className="text-[9.5px] font-bold text-muted-foreground text-start ps-0.5">
+              <div className="grid grid-cols-[44px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center pb-0.5 text-center">
+                <div className="text-[10px] font-bold text-muted-foreground text-start ps-0.5">
                   {isRtl ? "ساعت" : "Time"}
                 </div>
                 {DAYS_CONFIG.map((d) => (
                   <div
                     key={d.key}
                     className={cn(
-                      "text-[10px] font-bold truncate rounded-md py-0.5",
+                      "text-[10px] sm:text-[10.5px] font-bold truncate rounded-md py-0.5",
                       d.isWeekend
-                        ? "text-rose-500/80 dark:text-rose-400/80"
+                        ? "text-rose-500/90 dark:text-rose-400/90"
                         : "text-foreground/80"
                     )}
                     title={isRtl ? d.nameFa : d.nameEn}
@@ -347,24 +427,28 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                 ))}
               </div>
 
-              {/* Hour Rows (Vertical Axis - عمودی ساعات کاری ۷ الی ۱۸) */}
-              <div className="flex flex-col gap-[3px]">
-                {WORK_HOURS.map((hour) => {
-                  const rowData = data.matrix[hour] || {};
+              {/* 7 Time Slot Rows (Vertical Axis - عمودی ۷ بازه زمانی ۲۴ ساعت) */}
+              <div className="flex flex-col gap-1 sm:gap-1.5">
+                {TIME_SLOTS.map((slot) => {
+                  const rowData = (data.matrix as any)?.[slot.key] || (data.matrix as any)?.[slot.slotIndex] || {};
                   return (
                     <div
-                      key={hour}
-                      className="grid grid-cols-[40px_repeat(7,1fr)] gap-1 items-center"
+                      key={slot.key}
+                      className="grid grid-cols-[44px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center"
                     >
-                      {/* Vertical Hour Label */}
-                      <span className="text-[9.5px] font-mono font-semibold text-muted-foreground fa-num text-start ps-0.5 leading-none">
-                        {String(hour).padStart(2, "0")}:00
+                      {/* Vertical Time Slot Label (e.g. 6-8, 18-6) */}
+                      <span
+                        className="text-[9.5px] sm:text-[10px] font-mono font-bold text-muted-foreground fa-num text-start ps-0.5 leading-none select-none tracking-tight"
+                        title={isRtl ? `بازه ${slot.labelFa}` : `Time slot ${slot.label}`}
+                      >
+                        {isRtl ? slot.labelFa : slot.label}
                       </span>
 
-                      {/* 7 Day Cells */}
+                      {/* 7 Square Day Cells */}
                       {DAYS_CONFIG.map((d) => {
-                        const cell = rowData[d.dayIndex];
-                        const level = cell?.level || 0;
+                        const cell: HeatmapCell | undefined = rowData[d.dayIndex];
+                        const level = cell?.level ?? 0;
+                        const isHatched = Boolean(cell?.isHatched);
                         const isCurrent = Boolean(cell?.isCurrent);
 
                         return (
@@ -373,17 +457,32 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                             onMouseEnter={() => cell && setHoveredCell(cell)}
                             onMouseLeave={() => setHoveredCell(null)}
                             className={cn(
-                              "h-3 sm:h-3.5 rounded-[3px] transition-all cursor-pointer relative",
-                              level === 0 && "bg-slate-200/60 dark:bg-slate-700/40 hover:bg-slate-300 dark:hover:bg-slate-600",
-                              level === 1 && "bg-emerald-400/30 dark:bg-emerald-500/30 hover:bg-emerald-400/50",
-                              level === 2 && "bg-emerald-500/55 dark:bg-emerald-500/55 hover:bg-emerald-500/75",
-                              level === 3 && "bg-emerald-500/80 dark:bg-emerald-500/80 hover:bg-emerald-500",
-                              level === 4 && "bg-emerald-600 dark:bg-emerald-400 shadow-2xs hover:brightness-110",
-                              isCurrent && "ring-1.5 ring-emerald-500 ring-offset-1 ring-offset-background animate-pulse z-10"
+                              "aspect-square w-full rounded-md sm:rounded-lg transition-all duration-150 cursor-pointer relative flex items-center justify-center",
+                              // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
+                              isHatched && level === 0 && (
+                                "bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
+                              ),
+                              // 2. خانه خالی (Work hours with 0 activity)
+                              !isHatched && level === 0 && (
+                                "bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
+                              ),
+                              // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
+                              level === 1 && "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
+                              level === 2 && "bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
+                              level === 3 && "bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
+                              level === 4 && "bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
+                              // Live real-time indicator
+                              isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
                             )}
                             title={
                               cell
-                                ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} ${cell.hour}:00 - ${cell.minutes}m`
+                                ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
+                                    cell.level > 0
+                                      ? `${cell.minutes}m (${cell.percentage}%)`
+                                      : cell.isHatched
+                                      ? isRtl ? "خارج شیفت / تعطیل" : "Off-shift / Holiday"
+                                      : isRtl ? "بدون فعالیت" : "No activity"
+                                  }`
                                 : ""
                             }
                           />
@@ -396,21 +495,36 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
             </div>
           </div>
 
-          {/* ── Footer: Working Hours Scope & Intensity Legend ── */}
-          <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[9.5px] text-muted-foreground shrink-0 px-0.5">
-            <span className="font-medium fa-num">
-              {isRtl ? "ساعات کاری: ۰۷:۰۰ تا ۱۸:۰۰" : "Working hours: 07:00–18:00"}
+          {/* ── Footer: 24h Coverage & Visual Legend ── */}
+          <div className="flex items-center justify-between pt-1.5 border-t border-border/30 text-[9.5px] sm:text-[10px] text-muted-foreground shrink-0 px-0.5 flex-wrap gap-1">
+            <span className="font-semibold text-foreground/80 fa-num">
+              {isRtl ? "پوشش ۲۴ ساعته (۷×۷)" : "24h Coverage (7×7)"}
             </span>
 
-            {/* Legend Ramp */}
-            <div className="flex items-center gap-1">
-              <span>{isRtl ? "کمتر" : "Less"}</span>
-              <span className="size-2 rounded-[2px] bg-slate-200/70 dark:bg-slate-700/50 inline-block" />
-              <span className="size-2 rounded-[2px] bg-emerald-400/30 inline-block" />
-              <span className="size-2 rounded-[2px] bg-emerald-500/55 inline-block" />
-              <span className="size-2 rounded-[2px] bg-emerald-500/80 inline-block" />
-              <span className="size-2 rounded-[2px] bg-emerald-600 dark:bg-emerald-400 inline-block" />
-              <span>{isRtl ? "بیشتر" : "More"}</span>
+            {/* Visual States Legend: خانه خالی، هاشور خاکستری، طیف پرایمری */}
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              {/* 1. خانه خالی */}
+              <div className="flex items-center gap-1" title={isRtl ? "خانه خالی: شیفت کاری بدون فعالیت" : "Empty cell: In-shift idle"}>
+                <span className="size-2.5 rounded-[3px] bg-background/50 border border-slate-300 dark:border-slate-700 inline-block" />
+                <span>{isRtl ? "خالی" : "Empty"}</span>
+              </div>
+
+              {/* 2. هاشور خاکستری */}
+              <div className="flex items-center gap-1" title={isRtl ? "هاشور خاکستری: خارج از شیفت کاری یا تعطیل" : "Gray hatched: Off-shift / Holiday"}>
+                <span className="size-2.5 rounded-[3px] bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.4)_0px,rgba(148,163,184,0.4)_1.5px,transparent_1.5px,transparent_5px)] bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-600 inline-block" />
+                <span>{isRtl ? "هاشور" : "Hatched"}</span>
+              </div>
+
+              {/* 3. طیف رنگ پرایمری */}
+              <div className="flex items-center gap-1" title={isRtl ? "طیف پرایمری: حضور و فعالیت آنلاین" : "Primary spectrum: Online activity"}>
+                <div className="flex items-center gap-0.5">
+                  <span className="size-2.5 rounded-[2px] bg-primary/20 border border-primary/30 inline-block" />
+                  <span className="size-2.5 rounded-[2px] bg-primary/45 border border-primary/55 inline-block" />
+                  <span className="size-2.5 rounded-[2px] bg-primary/70 border border-primary/80 inline-block" />
+                  <span className="size-2.5 rounded-[2px] bg-primary border border-primary shadow-xs inline-block" />
+                </div>
+                <span>{isRtl ? "طیف پرایمری" : "Active"}</span>
+              </div>
             </div>
           </div>
         </div>
