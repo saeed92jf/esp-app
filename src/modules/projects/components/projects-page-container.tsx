@@ -120,16 +120,9 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header ── */}
+      {/* ── 1. Top Unified Header (Fixed Page Title: Projects) ── */}
       <AppHeader
-        tag={isRtl ? "مدیریت پروژه‌ها" : "Projects Management"}
-        subTag={
-          selectedProject
-            ? selectedProject.name
-            : activeTab === "create"
-            ? isRtl ? "ساخت پروژه جدید" : "Create New Project"
-            : isRtl ? "نقشه راه و وضعیت کلی پروژه‌ها" : "Overall Project Roadmap"
-        }
+        tag="projects"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -237,7 +230,11 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center gap-2.5">
-                    <span>{isRtl ? "نقشه راه و مدیریت پروژه‌ها" : "Projects Roadmap & Workflow"}</span>
+                    <span>
+                      {activeTab === "create"
+                        ? isRtl ? "ساخت پروژه جدید" : "Create New Project"
+                        : isRtl ? "نقشه راه کلی پروژه‌ها" : "Projects Roadmap & Overview"}
+                    </span>
                     {isAdmin && (
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary font-semibold">
                         {isRtl ? "پنل مدیریت" : "Admin Panel"}

@@ -175,18 +175,9 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header ── */}
+      {/* ── 1. Top Unified Header (Fixed Page Title: Tasks) ── */}
       <AppHeader
-        tag={isRtl ? "مدیریت تسک‌ها" : "Task Management"}
-        subTag={
-          selectedTask
-            ? selectedTask.title
-            : isAdmin
-            ? activeTab === "create"
-              ? isRtl ? "ایجاد تسک جدید" : "Create New Task"
-              : isRtl ? "تخته کانبان و نقشه راه" : "Kanban Roadmap"
-            : isRtl ? "تسک‌های محوله من" : "My Assigned Tasks"
-        }
+        tag="tasks"
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -294,7 +285,13 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight flex items-center gap-2.5">
-                    <span>{isRtl ? "تخته کانبان و گردش کار تسک‌ها" : "Task Kanban & Workflow"}</span>
+                    <span>
+                      {isAdmin
+                        ? activeTab === "create"
+                          ? isRtl ? "ایجاد تسک جدید" : "Create New Task"
+                          : isRtl ? "تخته کانبان و نقشه راه" : "Kanban Roadmap"
+                        : isRtl ? "تسک‌های محوله من" : "My Assigned Tasks"}
+                    </span>
                     {isAdmin && (
                       <Badge variant="outline" className="text-xs border-primary/30 text-primary font-semibold">
                         {isRtl ? "پنل مدیریت" : "Admin Panel"}

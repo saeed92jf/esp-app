@@ -120,7 +120,7 @@ export function AppHeader({
       )}
     >
       {/* ── Left Side: Side Menu Button + Logo + Page Tag ── */}
-      <div className="flex items-center min-w-0">
+      <div className="flex items-center min-w-0 flex-1 me-2 sm:me-3 overflow-hidden">
         {(menuTrigger || showMenuButton) && (
           <div className="w-[52px] sm:w-[64px] h-[var(--header-height)] flex items-center justify-center shrink-0">
             {menuTrigger ? (
@@ -152,20 +152,21 @@ export function AppHeader({
           <Logo compact short={logoShort} className="text-[13px] sm:text-[15px]" />
         </Link>
 
-        {/* Centralized Page Tag: Breadcrumb Arrow > and Tag Name */}
+        {/* Centralized Page Tag: Breadcrumb Arrow > and Tag Name (Responsive auto-shrinking with ellipsis & hidden on narrow mobile) */}
         {tag && (
-          <div className="inline-flex items-center gap-1 sm:gap-1.5 shrink-0 select-none ms-1.5 sm:ms-2.5 self-center">
+          <div className="hidden xs:inline-flex items-center gap-1 sm:gap-1.5 min-w-0 flex-shrink select-none ms-1.5 sm:ms-2.5 self-center overflow-hidden">
             <ChevronRight
               className="size-3.5 sm:size-4 text-muted-foreground/60 rtl:rotate-180 shrink-0 stroke-[2.2]"
               aria-hidden="true"
             />
             <span
               className={cn(
-                "text-[12px] sm:text-[14px] text-foreground font-bold select-none max-w-[120px] sm:max-w-none truncate",
+                "text-[12px] sm:text-[14px] text-foreground font-bold select-none truncate min-w-0 max-w-[120px] xs:max-w-[150px] sm:max-w-[220px] md:max-w-[320px] lg:max-w-none",
                 isFa
                   ? "relative -top-[1.5px] sm:-top-[2px] tracking-normal leading-tight"
                   : "uppercase tracking-[0.06em] leading-none"
               )}
+              title={typeof displayTag === "string" ? displayTag : undefined}
             >
               {displayTag}
             </span>
@@ -177,11 +178,12 @@ export function AppHeader({
                 />
                 <span
                   className={cn(
-                    "text-[12px] sm:text-[14px] text-foreground font-bold select-none max-w-[120px] sm:max-w-none truncate",
+                    "text-[12px] sm:text-[14px] text-foreground font-bold select-none truncate min-w-0 max-w-[100px] xs:max-w-[130px] sm:max-w-[180px] md:max-w-[260px] lg:max-w-none",
                     isFa
                       ? "relative -top-[1.5px] sm:-top-[2px] tracking-normal leading-tight"
                       : "uppercase tracking-[0.06em] leading-none"
                   )}
+                  title={typeof displaySubTag === "string" ? displaySubTag : undefined}
                 >
                   {displaySubTag}
                 </span>
