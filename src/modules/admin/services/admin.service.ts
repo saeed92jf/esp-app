@@ -29,6 +29,17 @@ export interface IAdminService {
     requestId: string, 
     options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[]; requestData?: Partial<PendingRequest> }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }>;
+  approveAndDispatchServiceRequest(
+    requestId: string,
+    payload: {
+      assignedUserId: string;
+      emailTo: string;
+      emailSubject: string;
+      emailBody: string;
+      managerNote?: string;
+      priority?: string;
+    }
+  ): Promise<{ success: boolean; request: PendingRequest; message?: string }>;
   rejectRequest(requestId: string, reason: string): Promise<PendingRequest>;
   resendCredentials(requestId: string): Promise<{ success: boolean; tempPassword?: string }>;
   approveRequest(requestId: string): Promise<{ email: string; tempPassword: string }>;

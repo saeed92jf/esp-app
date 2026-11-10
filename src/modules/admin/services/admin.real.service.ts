@@ -242,8 +242,11 @@ export class RealAdminService implements IAdminService {
     }
     let status: RequestStatus = "pending";
     if (r.status === "ACTIVE" || r.status === "active") status = "active";
+    else if (r.status === "APPROVED" || r.status === "approved") status = "approved";
     else if (r.status === "REJECTED" || r.status === "rejected") status = "rejected";
     else if (r.status === "hr_approved") status = "pending";
+    else if (r.status === "in_progress") status = "in_progress";
+    else if (r.status === "completed") status = "completed";
 
     return {
       id: r.id,
@@ -260,6 +263,18 @@ export class RealAdminService implements IAdminService {
       companyId: r.companyId,
       requestedAt: r.submittedAt || r.requestedAt || new Date().toISOString(),
       status,
+      requestType: r.requestType || (r.title && r.category ? "service_request" : "registration"),
+      requestTag: r.requestTag,
+      category: r.category,
+      categoryLabel: r.categoryLabel,
+      title: r.title,
+      description: r.description,
+      priority: r.priority || "normal",
+      targetDepartment: r.targetDepartment,
+      assignedTo: r.assignedTo,
+      assignedAt: r.assignedAt,
+      managerNote: r.managerNote,
+      dispatchEmail: r.dispatchEmail,
       notes: r.notes || "",
       jobTitle: r.jobTitle,
       phone: r.phone,
@@ -510,6 +525,34 @@ export class RealAdminService implements IAdminService {
       };
     } catch (err) {
       console.error(`RealAdminService.approveManager(${requestId}) error:`, err);
+      throw err;
+    }
+  }
+
+  async approveAndDispatchServiceRequest(
+    requestId: string,
+    payload: {
+      assignedUserId: string;
+      emailTo: string;
+      emailSubject: string;
+      emailBody: string;
+      managerNote?: string;
+      priority?: string;
+    }
+  ): Promise<{ success: boolean; request: PendingRequest; message?: string }> {
+    try {
+      const res = await this.http.post<any>(
+        `/admin/requests/${encodeURIComponent(requestId)}/approve-dispatch`,
+        payload
+      );
+      const raw = res?.data ?? res?.request ?? res;
+      return {
+        success: true,
+        request: this.mapPendingRequest(raw),
+        message: res?.message,
+      };
+    } catch (err) {
+      console.error(`RealAdminService.approveAndDispatchServiceRequest(${requestId}) error:`, err);
       throw err;
     }
   }

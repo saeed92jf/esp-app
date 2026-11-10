@@ -1,6 +1,7 @@
 "use client";
 
 import { DocumentUploadSection } from "./document-upload-section";
+import { ProfileRequestsSection } from "./profile-requests-section";
 import { DocumentCategory } from "@/types/auth";
 
 import React, { useState, useEffect, useTransition, useRef } from "react";
@@ -303,6 +304,7 @@ const NAV_ITEMS = [
   { id: "documents", icon: FileCheck, labelKey: "nav.documents" },
   { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
   { id: "skills", icon: Star, labelKey: "nav.skills" },
+  { id: "requests", icon: Send, labelKey: "nav.requests" },
   { id: "insurance", icon: Shield, labelKey: "nav.insurance" },
   { id: "education", icon: GraduationCap, labelKey: "nav.education" },
   { id: "settings", icon: Settings, labelKey: "nav.settings" },
@@ -6235,7 +6237,7 @@ export function ProfilePage() {
         {/* Main Content Area */}
         <div className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 pb-28 min-h-0">
           {/* Active Account Profile Change Quota & Submission Bar */}
-          {isAccountActive && activeTab !== "settings" && (
+          {isAccountActive && activeTab !== "settings" && activeTab !== "requests" && (
             <div className="max-w-4xl mx-auto mb-6 p-4 sm:p-5 rounded-3xl bg-card/90 backdrop-blur-md border border-border/70 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in duration-300">
               <div className="flex items-center gap-3.5">
                 <div className={cn(
@@ -6322,6 +6324,7 @@ export function ProfilePage() {
             activeTab === "documents" ? renderDocumentsView() : 
             activeTab === "organizational" ? renderOrganizationalView() :
             activeTab === "skills" ? renderSkillsView() :
+            activeTab === "requests" ? <ProfileRequestsSection user={user} isRtl={isRtl} /> :
             activeTab === "insurance" ? renderInsuranceView() :
             activeTab === "education" ? renderEducationView() :
             activeTab === "settings" ? renderSettingsView() :

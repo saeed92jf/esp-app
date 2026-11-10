@@ -610,6 +610,57 @@ export class FakeAdminService implements IAdminService {
     return { request: { ...req }, tempPassword, user: existingUser };
   }
 
+  async approveAndDispatchServiceRequest(
+    requestId: string,
+    payload: {
+      assignedUserId: string;
+      emailTo: string;
+      emailSubject: string;
+      emailBody: string;
+      managerNote?: string;
+      priority?: string;
+    }
+  ): Promise<{ success: boolean; request: PendingRequest; message?: string }> {
+    await wait(300);
+    this.syncFromStorage();
+    const req = this.requests.find((r) => r.id === requestId);
+    if (!req) {
+      throw new Error(`Request with ID ${requestId} not found`);
+    }
+
+    const assignedUser = this.users.find(
+      (u) => u.id === payload.assignedUserId || u.email.toLowerCase() === payload.emailTo.toLowerCase()
+    );
+
+    req.status = "approved";
+    req.adminApproved = true;
+    req.managerApproved = true;
+    req.assignedTo = {
+      id: assignedUser?.id || payload.assignedUserId,
+      name: assignedUser?.name || payload.emailTo.split("@")[0],
+      email: payload.emailTo,
+      department: assignedUser?.department,
+      jobTitle: assignedUser?.jobTitle,
+    };
+    req.assignedAt = new Date().toISOString();
+    if (payload.managerNote) req.managerNote = payload.managerNote;
+    if (payload.priority) req.priority = payload.priority as any;
+    req.dispatchEmail = {
+      to: payload.emailTo,
+      subject: payload.emailSubject,
+      body: payload.emailBody,
+      sentAt: new Date().toISOString(),
+      sentStatus: "sent",
+    };
+
+    this.saveToStorage();
+    return {
+      success: true,
+      request: { ...req },
+      message: "درخواست با موفقیت تأیید شد و ابلاغیه ارسال گردید.",
+    };
+  }
+
   async rejectRequest(requestId: string, reason: string): Promise<PendingRequest> {
     await wait(300);
     this.syncFromStorage();

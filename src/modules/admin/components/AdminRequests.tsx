@@ -206,6 +206,16 @@ export function AdminRequests({
   const [rejectReason, setRejectReason] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
 
+  // Service Request Dispatch Dialog states
+  const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
+  const [dispatchAssignedUserId, setDispatchAssignedUserId] = useState("");
+  const [dispatchEmailTo, setDispatchEmailTo] = useState("");
+  const [dispatchEmailSubject, setDispatchEmailSubject] = useState("");
+  const [dispatchEmailBody, setDispatchEmailBody] = useState("");
+  const [dispatchManagerNote, setDispatchManagerNote] = useState("");
+  const [dispatchPriority, setDispatchPriority] = useState<"normal" | "high" | "urgent">("normal");
+  const [isDispatching, setIsDispatching] = useState(false);
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
@@ -225,12 +235,155 @@ export function AdminRequests({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const getCategoryLabel = (cat?: string, isRtlMode = true) => {
+    switch (cat) {
+      case "equipment":
+        return isRtlMode ? "تجهیزات و سخت‌افزار" : "Equipment & Hardware";
+      case "network":
+        return isRtlMode ? "دسترسی به شبکه و سیستم‌ها" : "Network & Systems Access";
+      case "training":
+        return isRtlMode ? "آموزش و دوره‌های مهارتی" : "Training & Courses";
+      case "software":
+        return isRtlMode ? "نرم‌افزار، لایسنس و ابزارها" : "Software & Licenses";
+      case "administrative":
+        return isRtlMode ? "امور اداری و خدمات عمومی" : "Administrative & General Services";
+      case "other":
+        return isRtlMode ? "سایر نیازمندی‌ها" : "Other Requests";
+      default:
+        return cat || (isRtlMode ? "درخواست سازمانی" : "Service Request");
+    }
+  };
+
+  const handleOpenDispatchModal = (req: PendingRequest) => {
+    const currentAssignee = req.assignedTo?.id ? users.find((u) => u.id === req.assignedTo?.id) : null;
+    const defaultUser =
+      currentAssignee ||
+      users.find((u) => u.department?.toLowerCase() === req.targetDepartment?.toLowerCase()) ||
+      users.find((u) => u.role !== "superadmin") ||
+      users[0];
+
+    const assigneeId = defaultUser?.id || "";
+    const assigneeName = defaultUser?.name || defaultUser?.fullNameFa || defaultUser?.fullName || "همکار گرامی";
+    const assigneeEmail = defaultUser?.email || "";
+    const applicantName = req.fullNameFa || req.fullName || req.name || req.email.split("@")[0];
+    const categoryName = getCategoryLabel(req.category, isRtl);
+    const priorityLabel =
+      req.priority === "urgent"
+        ? isRtl ? "اضطراری" : "Urgent"
+        : req.priority === "high"
+        ? isRtl ? "فوری" : "High"
+        : isRtl ? "عادی" : "Normal";
+
+    setDispatchAssignedUserId(assigneeId);
+    setDispatchEmailTo(assigneeEmail);
+    setDispatchPriority((req.priority as any) || "normal");
+    setDispatchManagerNote(req.managerNote || "");
+    setDispatchEmailSubject(`[ESP CORE] دستور کار و ارجاع درخواست: ${req.title || categoryName} (کد پیگیری: ${req.id})`);
+
+    setDispatchEmailBody(
+`همکار گرامی جناب آقای / سرکار خانم ${assigneeName}،
+با سلام و احترام،
+
+بدین‌وسیله درخواست سازمانی زیر که توسط ${applicantName} (${req.department || "واحدهای سازمانی"}) در سامانه ثبت گردیده است، توسط مدیریت بررسی و تأیید شد و با مشخصات ذیل جهت اقدام مقتضی و پیگیری به جنابعالی ارجاع می‌گردد:
+
+📋 مشخصات درخواست سازمانی:
+• عنوان نیازمندی: ${req.title || categoryName}
+• دسته‌بندی موضوعی: ${categoryName}
+• درجه فوریت: ${priorityLabel}
+• واحد سازمانی مخاطب: ${req.targetDepartment || "فناوری اطلاعات و پشتیبانی"}
+• متقاضی درخواست: ${applicantName} (${req.email})
+• کد رهگیری سیستمی: ${req.id}
+
+📝 شرح کامل نیازمندی متقاضی:
+${req.description || "بدون توضیحات تکمیلی"}
+
+دستور مدیریت:
+لطفاً در اسرع وقت ضمن بررسی ابعاد فنی و اجرایی، هماهنگی‌های لازم را معمول داشته و پس از انجام، وضعیت کار را در سامانه به روزرسانی فرمایید.`
+    );
+
+    setDispatchModalOpen(true);
+  };
+
+  const handleAssigneeChange = (userId: string) => {
+    setDispatchAssignedUserId(userId);
+    const selected = users.find((u) => u.id === userId);
+    if (selected) {
+      if (selected.email) {
+        setDispatchEmailTo(selected.email);
+      }
+      const newName = selected.name || selected.fullNameFa || selected.fullName || "همکار گرامی";
+      setDispatchEmailBody((prev) => {
+        const lines = prev.split("\n");
+        if (lines.length > 0 && lines[0].startsWith("همکار گرامی")) {
+          lines[0] = `همکار گرامی جناب آقای / سرکار خانم ${newName}،`;
+          return lines.join("\n");
+        }
+        return prev;
+      });
+    }
+  };
+
+  const handleConfirmDispatch = async () => {
+    if (!reviewData) return;
+    if (!dispatchEmailTo.trim()) {
+      toast.error(isRtl ? "لطفاً ایمیل گیرنده را وارد فرمایید." : "Please enter the recipient email.");
+      return;
+    }
+    if (!dispatchEmailBody.trim()) {
+      toast.error(isRtl ? "متن ایمیل نباید خالی باشد." : "Email body cannot be empty.");
+      return;
+    }
+
+    try {
+      setIsDispatching(true);
+      const res = await api.admin.approveAndDispatchServiceRequest(reviewData.id, {
+        assignedUserId: dispatchAssignedUserId,
+        emailTo: dispatchEmailTo.trim(),
+        emailSubject: dispatchEmailSubject.trim(),
+        emailBody: dispatchEmailBody.trim(),
+        managerNote: dispatchManagerNote.trim(),
+        priority: dispatchPriority,
+      });
+
+      const updatedReq: PendingRequest = res.request || {
+        ...reviewData,
+        status: "approved",
+        adminApproved: true,
+        managerApproved: true,
+        assignedTo: {
+          id: dispatchAssignedUserId,
+          name: users.find((u) => u.id === dispatchAssignedUserId)?.name || dispatchEmailTo.split("@")[0],
+          email: dispatchEmailTo.trim(),
+          department: users.find((u) => u.id === dispatchAssignedUserId)?.department,
+          jobTitle: users.find((u) => u.id === dispatchAssignedUserId)?.jobTitle,
+        },
+        assignedAt: new Date().toISOString(),
+        managerNote: dispatchManagerNote.trim(),
+        priority: dispatchPriority,
+      };
+
+      setRequests((prev) => prev.map((r) => (r.id === updatedReq.id ? updatedReq : r)));
+      setReviewData(updatedReq);
+      setDispatchModalOpen(false);
+
+      toast.success(
+        isRtl
+          ? `درخواست با موفقیت تأیید شد و ایمیل ابلاغ کار با امضای رسمی ESP CORE به ${dispatchEmailTo} ارسال گردید.`
+          : `Request approved and assignment email dispatched with ESP CORE signature to ${dispatchEmailTo}.`
+      );
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در ارجاع و ارسال ایمیل درخواست." : "Failed to dispatch request."));
+    } finally {
+      setIsDispatching(false);
+    }
+  };
+
   // Metrics calculation (Active Account removed per user requirement)
   const metrics = useMemo(() => {
     const validRequests = requests.filter((r) => r.isProfileCompleted !== false && (r.status as any) !== "pending_profile");
     const total = validRequests.length;
     const pending = validRequests.filter((r) => r.status === "pending" || r.status === "hr_approved").length;
-    const active = validRequests.filter((r) => r.status === "active").length;
+    const active = validRequests.filter((r) => r.status === "active" || r.status === "approved").length;
     const rejected = validRequests.filter((r) => r.status === "rejected").length;
     return { total, pending, active, rejected };
   }, [requests]);
@@ -241,8 +394,14 @@ export function AdminRequests({
       if (req.isProfileCompleted === false || (req.status as any) === "pending_profile") {
         return false;
       }
-      if (statusFilter !== "all" && req.status !== statusFilter) {
-        return false;
+      if (statusFilter === "pending") {
+        return req.status === "pending" || req.status === "hr_approved";
+      }
+      if (statusFilter === "active") {
+        return req.status === "active" || req.status === "approved";
+      }
+      if (statusFilter === "rejected") {
+        return req.status === "rejected";
       }
       return true;
     });
@@ -1061,7 +1220,12 @@ export function AdminRequests({
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-mono bg-primary/10 text-primary border border-primary/20 shrink-0">
                           {reviewData.id}
                         </span>
-                        {reviewData.requestType === "edit_profile" ? (
+                        {reviewData.requestType === "service_request" ? (
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
+                            <Sparkles className="size-3 text-amber-500" />
+                            <span>{isRtl ? `درخواست سازمانی: ${reviewData.title || getCategoryLabel(reviewData.category, isRtl)}` : `Service Request: ${reviewData.title || reviewData.category}`}</span>
+                          </span>
+                        ) : reviewData.requestType === "edit_profile" ? (
                           <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
                             <UserCog className="size-3" />
                             <span>{isRtl ? "درخواست ویرایش اطلاعات کاربر" : "User Edit Request"}</span>
@@ -1100,7 +1264,36 @@ export function AdminRequests({
 
                   {/* Actions Header Bar */}
                   <div className="flex flex-wrap items-center gap-2 shrink-0">
-                    {reviewData.status !== "active" ? (
+                    {reviewData.requestType === "service_request" ? (
+                      reviewData.status !== "approved" && reviewData.status !== "active" ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => handleOpenDispatchModal(reviewData)}
+                          className="h-9 px-4 rounded-xl text-xs font-bold gap-2 cursor-pointer bg-primary hover:bg-primary/90 text-white shadow-xs"
+                        >
+                          <Send className="size-3.5" />
+                          <span>{isRtl ? "تأیید و ارجاع دستور کار" : "Approve & Dispatch Work"}</span>
+                        </Button>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold text-xs border border-emerald-500/20">
+                            <CheckCircle2 className="size-3.5 text-emerald-500" />
+                            <span>{isRtl ? `تأیید و ارجاع شده به ${reviewData.assignedTo?.name || "مجری"}` : "Approved & Assigned"}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenDispatchModal(reviewData)}
+                            className="h-9 px-3 rounded-xl text-xs font-medium gap-1.5 cursor-pointer border-border/60 hover:bg-background"
+                          >
+                            <Mail className="size-3.5 text-primary" />
+                            <span>{isRtl ? "ارسال مجدد یا تغییر مجری" : "Re-dispatch Email"}</span>
+                          </Button>
+                        </div>
+                      )
+                    ) : reviewData.status !== "active" ? (
                       <Button
                         type="button"
                         size="sm"
@@ -1122,18 +1315,20 @@ export function AdminRequests({
                       </div>
                     )}
 
-                    {/* Save Button */}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSaveProfileChanges}
-                      disabled={isSaving}
-                      className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/60 hover:bg-background"
-                    >
-                      <Save className="size-3.5 text-muted-foreground" />
-                      <span>{t("saveChangesOnly")}</span>
-                    </Button>
+                    {/* Save Button (only for user registrations/edits) */}
+                    {reviewData.requestType !== "service_request" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSaveProfileChanges}
+                        disabled={isSaving}
+                        className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer border-border/60 hover:bg-background"
+                      >
+                        <Save className="size-3.5 text-muted-foreground" />
+                        <span>{t("saveChangesOnly")}</span>
+                      </Button>
+                    )}
 
                     {/* Reject Button (if not rejected) */}
                     {reviewData.status !== "rejected" && (
@@ -1221,57 +1416,221 @@ export function AdminRequests({
                 {/* =================================================== */}
                 {/* SEGMENTED CONTROL / TABS (FLEXIBLE WRAP - NO SCROLL) */}
                 {/* =================================================== */}
-                <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-2 flex flex-wrap items-center gap-1.5">
-                  {SEGMENTS.map((seg) => {
-                    const isActive = activeSegment === seg.id;
-                    const isCompleted = completedSteps.has(seg.id);
+                {reviewData.requestType !== "service_request" && (
+                  <div className="bg-background/60 dark:bg-background/40 border border-border/40 rounded-2xl p-2 flex flex-wrap items-center gap-1.5">
+                    {SEGMENTS.map((seg) => {
+                      const isActive = activeSegment === seg.id;
+                      const isCompleted = completedSteps.has(seg.id);
 
-                    return (
-                      <button
-                        key={seg.id}
-                        type="button"
-                        onClick={() => {
-                          setActiveSegment(seg.id);
-                          setOpenSegment(seg.id);
-                          // Untick step when clicked on per user requirement
-                          setCompletedSteps((prev) => {
-                            const nextSet = new Set(prev);
-                            nextSet.delete(seg.id);
-                            return nextSet;
-                          });
-                        }}
-                        className={cn(
-                          "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
-                          isActive
-                            ? "bg-primary text-primary-foreground shadow-sm"
-                            : isCompleted
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
-                            : "text-muted-foreground hover:text-foreground hover:bg-background/80"
-                        )}
-                      >
-                        <div
+                      return (
+                        <button
+                          key={seg.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveSegment(seg.id);
+                            setOpenSegment(seg.id);
+                            // Untick step when clicked on per user requirement
+                            setCompletedSteps((prev) => {
+                              const nextSet = new Set(prev);
+                              nextSet.delete(seg.id);
+                              return nextSet;
+                            });
+                          }}
                           className={cn(
-                            "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold transition-colors",
-                            isRtl && "fa-num",
-                            isCompleted
-                              ? "bg-emerald-500 text-white"
-                              : isActive
-                              ? "bg-primary-foreground/20 text-primary-foreground"
-                              : "bg-muted text-muted-foreground"
+                            "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer select-none",
+                            isActive
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : isCompleted
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15"
+                              : "text-muted-foreground hover:text-foreground hover:bg-background/80"
                           )}
                         >
-                          {isCompleted ? (
-                            <Check className="size-3 stroke-[3]" />
-                          ) : (
-                            seg.stepNumber
-                          )}
-                        </div>
-                        <span className="truncate">{t(seg.titleKey)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                          <div
+                            className={cn(
+                              "size-5 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold transition-colors",
+                              isRtl && "fa-num",
+                              isCompleted
+                                ? "bg-emerald-500 text-white"
+                                : isActive
+                                ? "bg-primary-foreground/20 text-primary-foreground"
+                                : "bg-muted text-muted-foreground"
+                            )}
+                          >
+                            {isCompleted ? (
+                              <Check className="size-3 stroke-[3]" />
+                            ) : (
+                              seg.stepNumber
+                            )}
+                          </div>
+                          <span className="truncate">{t(seg.titleKey)}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+
+              {reviewData.requestType === "service_request" ? (
+                <div className="space-y-4 animate-in fade-in duration-200">
+                  {/* Service Request Info & Requester Grid */}
+                  <div className="bg-slate-100/90 dark:bg-slate-800/40 border border-border/40 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-border/40">
+                      <div className="flex items-center gap-2">
+                        <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+                          <Tag className="size-4" />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-muted-foreground">{isRtl ? "دسته‌بندی موضوعی:" : "Category:"}</span>
+                          <span className="text-xs font-bold text-foreground ms-1.5">{getCategoryLabel(reviewData.category, isRtl)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {reviewData.priority === "urgent" ? (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 flex items-center gap-1">
+                            <AlertCircle className="size-3 text-rose-500" />
+                            <span>{isRtl ? "اولویت اضطراری" : "Urgent"}</span>
+                          </span>
+                        ) : reviewData.priority === "high" ? (
+                          <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                            <Clock className="size-3 text-amber-500" />
+                            <span>{isRtl ? "اولویت فوری" : "High"}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-500/20">
+                            {isRtl ? "اولویت عادی" : "Normal"}
+                          </span>
+                        )}
+
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="size-3.5" />
+                          <span>{formatDateFieldForLocale(reviewData.requestedAt, isRtl)}</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Metadata 3-col */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div className="p-3 rounded-2xl bg-background/80 border border-border/50 space-y-1">
+                        <span className="text-muted-foreground text-[11px] block">{isRtl ? "متقاضی:" : "Requester:"}</span>
+                        <div className="font-bold text-foreground">{reviewData.fullNameFa || reviewData.fullName || reviewData.name}</div>
+                        <div className="text-[11px] text-muted-foreground font-mono">{reviewData.email}</div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-background/80 border border-border/50 space-y-1">
+                        <span className="text-muted-foreground text-[11px] block">{isRtl ? "واحد متقاضی:" : "Requester Unit:"}</span>
+                        <div className="font-bold text-foreground">{reviewData.department || "Engineering"}</div>
+                        <div className="text-[11px] text-muted-foreground">{reviewData.jobTitle || "کارشناس سازمانی"}</div>
+                      </div>
+
+                      <div className="p-3 rounded-2xl bg-background/80 border border-border/50 space-y-1">
+                        <span className="text-muted-foreground text-[11px] block">{isRtl ? "واحد اقدام‌کننده مخاطب:" : "Target Unit:"}</span>
+                        <div className="font-bold text-primary">{reviewData.targetDepartment || "IT"}</div>
+                        <div className="text-[11px] text-muted-foreground">{isRtl ? "واحد مسئول رسیدگی" : "Responsible Unit"}</div>
+                      </div>
+                    </div>
+
+                    {/* Full Description */}
+                    <div className="space-y-1.5 pt-2">
+                      <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                        <FileText className="size-3.5 text-primary" />
+                        <span>{isRtl ? "شرح کامل نیازمندی متقاضی:" : "Detailed Requirement Description:"}</span>
+                      </Label>
+                      <div className="p-4 rounded-2xl bg-background/80 border border-border/60 text-xs text-foreground/90 leading-relaxed whitespace-pre-wrap font-sans min-h-[90px]">
+                        {reviewData.description || (isRtl ? "توضیحاتی برای این درخواست ثبت نشده است." : "No description provided.")}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Assignment Card if already assigned, or Directive Prompt */}
+                  {reviewData.assignedTo ? (
+                    <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-[1.75rem] p-5 sm:p-6 shadow-xs space-y-3.5">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="size-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center font-bold shadow-xs">
+                            <UserCheck className="size-5" />
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 block">
+                              {isRtl ? "دستور کار صادر شده و کارشناس مجری تعیین گردید" : "Assignment & Directive Dispatched"}
+                            </span>
+                            <div className="text-sm font-bold text-foreground">
+                              {reviewData.assignedTo.name}{" "}
+                              {reviewData.assignedTo.department && (
+                                <span className="text-muted-foreground text-xs font-normal">
+                                  ({reviewData.assignedTo.department})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenDispatchModal(reviewData)}
+                          className="h-9 px-3.5 rounded-xl text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 cursor-pointer"
+                        >
+                          <Mail className="size-3.5" />
+                          <span>{isRtl ? "ویرایش و ارسال مجدد ابلاغیه" : "Re-dispatch Directive"}</span>
+                        </Button>
+                      </div>
+
+                      {reviewData.managerNote && (
+                        <div className="p-3 rounded-2xl bg-background/80 border border-emerald-500/20 text-xs text-foreground/90 leading-relaxed">
+                          <span className="font-bold text-emerald-700 dark:text-emerald-300">
+                            {isRtl ? "دستور و یادداشت مدیریت: " : "Manager Directive: "}
+                          </span>
+                          <span>{reviewData.managerNote}</span>
+                        </div>
+                      )}
+
+                      {reviewData.dispatchEmail && (
+                        <div className="p-3.5 rounded-2xl bg-background/80 border border-emerald-500/20 text-xs space-y-1.5">
+                          <div className="flex items-center justify-between text-[11px] text-muted-foreground border-b border-border/40 pb-1.5">
+                            <span className="flex items-center gap-1 font-mono">
+                              <Mail className="size-3 text-emerald-600" />
+                              <span>{reviewData.dispatchEmail.to}</span>
+                            </span>
+                            <span>{formatDateFieldForLocale(reviewData.dispatchEmail.sentAt, isRtl)}</span>
+                          </div>
+                          <div className="font-bold text-foreground text-xs">{reviewData.dispatchEmail.subject}</div>
+                          <p className="text-muted-foreground text-[11px] line-clamp-4 whitespace-pre-wrap leading-relaxed">{reviewData.dispatchEmail.body}</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-amber-500/10 border border-amber-500/30 rounded-[1.75rem] p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-11 rounded-2xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                          <Clock className="size-6 animate-pulse" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <h5 className="font-bold text-sm text-foreground">
+                            {isRtl ? "در انتظار تأیید و ابلاغ کار توسط مدیریت" : "Awaiting Manager Assignment & Directive"}
+                          </h5>
+                          <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
+                            {isRtl
+                              ? "جهت ارجاع این نیازمندی، کاربر مسئول را از کادر بالا انتخاب نموده تا ایمیل رسمی دستور کار به همراه متن آماده و امضای ویژه ESP CORE برای وی ارسال گردد."
+                              : "Click 'Approve & Dispatch Work' to select the responsible staff and automatically send an official email with ESP CORE signature."}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={() => handleOpenDispatchModal(reviewData)}
+                        className="h-10 px-5 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-xs gap-2 shrink-0 cursor-pointer shadow-sm"
+                      >
+                        <Send className="size-4" />
+                        <span>{isRtl ? "تأیید و ارجاع دستور کار" : "Approve & Dispatch"}</span>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <>
 
               {/* =================================================== */}
               {/* ACCORDION ITEMS CONTAINER (EDITABLE FIELDS) */}
@@ -3332,9 +3691,11 @@ export function AdminRequests({
                   );
                 })}
               </div>
-            </div>
+            </>
           )}
         </div>
+      )}
+    </div>
 
         {/* ======================================================== */}
         {/* SIDE COLUMN: TAGS, SEARCH & APPLICANTS QUEUE (RIGHT IN EN, LEFT IN FA) */}
@@ -3469,13 +3830,17 @@ export function AdminRequests({
                         </div>
                         <div className="flex flex-col min-w-0 flex-1">
                           <span className="font-bold text-xs sm:text-sm text-foreground break-words leading-tight">
-                            {getReqDisplayName(req) || req.email.split("@")[0]}
+                            {req.requestType === "service_request" && req.title
+                              ? req.title
+                              : getReqDisplayName(req) || req.email.split("@")[0]}
                           </span>
                           <span
                             className="text-[11px] text-muted-foreground font-mono truncate mt-0.5"
                             dir="ltr"
                           >
-                            {req.email}
+                            {req.requestType === "service_request"
+                              ? `${getReqDisplayName(req) || req.name || req.email.split("@")[0]} • ${req.email}`
+                              : req.email}
                           </span>
                         </div>
                         <Button
@@ -3496,7 +3861,12 @@ export function AdminRequests({
                       {/* Middle Row: Tags brought DOWN below the name! */}
                       <div className="flex items-center gap-1.5 flex-wrap pt-1">
                         {/* Request Type Tag */}
-                        {req.requestType === "edit_profile" ? (
+                        {req.requestType === "service_request" ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
+                            <Sparkles className="size-3" />
+                            <span>{isRtl ? "درخواست سازمانی" : "Service Request"}</span>
+                          </span>
+                        ) : req.requestType === "edit_profile" ? (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0 shadow-2xs">
                             <UserCog className="size-3" />
                             <span>{isRtl ? "ویرایش مشخصات" : "Profile Edit"}</span>
@@ -3511,6 +3881,12 @@ export function AdminRequests({
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center gap-1 shrink-0">
                             <UserCheck className="size-3" />
                             <span>{t("statusPendingHr")}</span>
+                          </span>
+                        )}
+                        {req.status === "approved" && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1 shrink-0">
+                            <CheckCircle2 className="size-3" />
+                            <span>{isRtl ? "تأیید و ارجاع شده" : "Approved & Dispatched"}</span>
                           </span>
                         )}
                         {req.status === "hr_approved" && (
@@ -3739,6 +4115,181 @@ export function AdminRequests({
               className="text-xs font-semibold"
             >
               {isRejecting ? t("submitting") : t("confirmRejectBtn")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Service Request Dispatch Dialog ─────────────────────────────────── */}
+      <Dialog open={dispatchModalOpen} onOpenChange={setDispatchModalOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base sm:text-lg font-bold flex items-center gap-2 text-foreground">
+              <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Send className="size-4" />
+              </div>
+              <span>
+                {isRtl ? "تأیید و ارجاع درخواست سازمانی (صدور دستور کار رسمی)" : "Approve & Dispatch Service Request"}
+              </span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap pt-1">
+              <span>
+                {isRtl ? "متقاضی: " : "Requester: "}
+                <strong className="text-foreground">
+                  {reviewData?.fullNameFa || reviewData?.fullName || reviewData?.name || reviewData?.email}
+                </strong>
+              </span>
+              <span>•</span>
+              <span>
+                {isRtl ? "کد رهگیری: " : "Tracking Ref: "}
+                <strong className="font-mono text-primary">{reviewData?.id}</strong>
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="py-2 space-y-4">
+            {/* Row 1: Assignee and Priority */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <UserCheck className="size-3.5 text-primary" />
+                  <span>{isRtl ? "همکار مسئول و مجری کار:" : "Responsible Assignee:"}</span>
+                </Label>
+                <select
+                  value={dispatchAssignedUserId}
+                  onChange={(e) => handleAssigneeChange(e.target.value)}
+                  className="w-full h-10 text-xs rounded-xl border border-border/70 bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                >
+                  {users.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name || u.fullNameFa || u.fullName || u.email} ({u.department || u.role}) - {u.email}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-amber-500" />
+                  <span>{isRtl ? "درجه اولویت و فوریت اقدام:" : "Priority Level:"}</span>
+                </Label>
+                <select
+                  value={dispatchPriority}
+                  onChange={(e) => setDispatchPriority(e.target.value as any)}
+                  className="w-full h-10 text-xs rounded-xl border border-border/70 bg-background px-3 font-medium text-foreground outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                >
+                  <option value="normal">{isRtl ? "عادی (Normal)" : "Normal"}</option>
+                  <option value="high">{isRtl ? "فوری (High)" : "High"}</option>
+                  <option value="urgent">{isRtl ? "اضطراری (Urgent)" : "Urgent"}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Row 2: Recipient Email & Subject */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                  <Mail className="size-3.5 text-primary" />
+                  <span>{isRtl ? "آدرس ایمیل گیرنده ابلاغ:" : "Recipient Email:"}</span>
+                </Label>
+                <Input
+                  value={dispatchEmailTo}
+                  onChange={(e) => setDispatchEmailTo(e.target.value)}
+                  placeholder="user@esp.ir"
+                  dir="ltr"
+                  className="h-10 text-xs font-mono rounded-xl border-border/70"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">
+                  {isRtl ? "عنوان نامه و موضوع ایمیل:" : "Email Subject:"}
+                </Label>
+                <Input
+                  value={dispatchEmailSubject}
+                  onChange={(e) => setDispatchEmailSubject(e.target.value)}
+                  className="h-10 text-xs rounded-xl border-border/70"
+                />
+              </div>
+            </div>
+
+            {/* Row 3: Dispatch Email Body */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs font-bold text-foreground">
+                  {isRtl ? "متن آماده نامه رسمی ابلاغ به مسئول (قابل ویرایش):" : "Official Dispatch Letter Body (Editable):"}
+                </Label>
+                <span className="text-[10px] text-muted-foreground">
+                  {isRtl ? "امضای رسمی ESP CORE خودکار درج می‌شود" : "ESP CORE signature automatically attached"}
+                </span>
+              </div>
+              <Textarea
+                value={dispatchEmailBody}
+                onChange={(e) => setDispatchEmailBody(e.target.value)}
+                rows={8}
+                className="text-xs leading-relaxed font-sans rounded-xl resize-y border-border/70 bg-muted/20"
+              />
+            </div>
+
+            {/* Row 4: Manager Note */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-foreground">
+                {isRtl ? "یادداشت / دستور ویژه مدیر (در سامانه ثبت می‌شود):" : "Manager Note / Special Instruction:"}
+              </Label>
+              <Input
+                value={dispatchManagerNote}
+                onChange={(e) => setDispatchManagerNote(e.target.value)}
+                placeholder={isRtl ? "مثال: هماهنگی قبلی انجام شده، حداکثر ظرف ۴۸ ساعت آینده پیگیری و تحویل گردد." : "e.g. Please process within 48 hours."}
+                className="h-10 text-xs rounded-xl border-border/70"
+              />
+            </div>
+
+            {/* Row 5: ESP CORE Signature Preview */}
+            <div className="p-3 rounded-xl bg-slate-900/5 dark:bg-slate-900/40 border border-border/60 text-xs space-y-1.5">
+              <div className="flex items-center gap-1.5 text-foreground font-bold text-[11px]">
+                <Sparkles className="size-3.5 text-primary" />
+                <span>{isRtl ? "پیش‌نمایش امضای سیستمی و هویت سازمانی ESP CORE:" : "ESP CORE Official System Signature Preview:"}</span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-background/80 border border-border/40 text-[10px] space-y-0.5 select-none font-sans">
+                <div className="text-primary font-bold">⚙️ ESP CORE | سامانه جامع فرآیندها و هسته مرکزی یورو اسلات پارس</div>
+                <div className="text-foreground/80 font-mono">Euroslot Pars Core Enterprise Operations & Workflow System</div>
+                <div className="text-muted-foreground pt-0.5 border-t border-border/30 mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  <span>📞 خط مستقیم داخلی: 101</span>
+                  <span>🌐 پورتال: https://core.esp.ir</span>
+                  <span>📌 شناسه پیگیری: {reviewData?.id || "ESP-REQ-xxx"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-2 border-t border-border/50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDispatchModalOpen(false)}
+              disabled={isDispatching}
+              className="text-xs rounded-xl"
+            >
+              {t("cancelBtn")}
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleConfirmDispatch}
+              disabled={isDispatching}
+              className="text-xs font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white gap-2 shadow-xs cursor-pointer"
+            >
+              {isDispatching ? (
+                <>
+                  <RotateCw className="size-3.5 animate-spin" />
+                  <span>{isRtl ? "در حال ثبت و ارسال ایمیل..." : "Dispatching Email..."}</span>
+                </>
+              ) : (
+                <>
+                  <Send className="size-3.5" />
+                  <span>{isRtl ? "تأیید درخواست و ارسال رسمی ایمیل ابلاغ" : "Approve & Dispatch Email"}</span>
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

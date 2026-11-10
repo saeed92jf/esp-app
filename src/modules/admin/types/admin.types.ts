@@ -131,7 +131,8 @@ export interface ChecklistItem {
   completed: boolean;
 }
 
-export type RequestStatus = 'pending' | 'active' | 'rejected' | 'hr_approved';
+export type RequestStatus = 'pending' | 'active' | 'approved' | 'rejected' | 'hr_approved' | 'in_progress' | 'completed';
+export type RequestPriority = 'normal' | 'high' | 'urgent';
 
 export interface EducationRecord {
   id?: string;
@@ -177,8 +178,30 @@ export interface PendingRequest {
   role?: UserRole;
   requestedAt: string;
   status: RequestStatus;
-  requestType?: 'registration' | 'edit_profile';
+  requestType?: 'registration' | 'edit_profile' | 'service_request';
   requestTag?: string;
+  category?: 'equipment' | 'network' | 'training' | 'software' | 'administrative' | 'other' | string;
+  categoryLabel?: string;
+  title?: string;
+  description?: string;
+  priority?: 'normal' | 'high' | 'urgent';
+  targetDepartment?: string;
+  assignedTo?: {
+    id: string;
+    name: string;
+    email: string;
+    department?: string;
+    jobTitle?: string;
+  };
+  assignedAt?: string;
+  managerNote?: string;
+  dispatchEmail?: {
+    to: string;
+    subject: string;
+    body: string;
+    sentAt: string;
+    sentStatus?: 'sent' | 'failed' | 'queued' | string;
+  };
   isProfileCompleted?: boolean;
   
   // Unified Admin Approval

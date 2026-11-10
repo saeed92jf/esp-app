@@ -391,8 +391,18 @@ export function createServerAdminRequest(payload: Partial<PendingRequest>): Pend
     jobTitle: payload.jobTitle || "کارشناس مهندسی مکانیک",
     requestedAt: payload.requestedAt || new Date().toISOString(),
     status: (payload.status as RequestStatus) || "pending",
-    requestType: payload.requestType || "edit_profile",
-    requestTag: payload.requestTag,
+    requestType: payload.requestType || (payload.title && payload.category ? "service_request" : "edit_profile"),
+    requestTag: payload.requestTag || (payload.requestType === "service_request" ? "درخواست سازمانی" : undefined),
+    category: payload.category,
+    categoryLabel: payload.categoryLabel,
+    title: payload.title,
+    description: payload.description,
+    priority: payload.priority || "normal",
+    targetDepartment: payload.targetDepartment,
+    assignedTo: payload.assignedTo,
+    assignedAt: payload.assignedAt,
+    managerNote: payload.managerNote,
+    dispatchEmail: payload.dispatchEmail,
     notes: payload.notes || "",
     salary: payload.salary ?? 350000000,
     hasOvertime: payload.hasOvertime ?? true,
@@ -571,6 +581,51 @@ export function approveServerAdminRequestManager(
 
   globalThis.__espServerAdminRequests = reqs.filter((r) => r.id !== id);
   return { request: req, tempPassword, user };
+}
+
+export function approveServerAdminRequestDispatch(
+  id: string,
+  payload: {
+    assignedUserId: string;
+    emailTo: string;
+    emailSubject: string;
+    emailBody: string;
+    managerNote?: string;
+    priority?: string;
+  }
+): { success: boolean; request: PendingRequest; message?: string } | null {
+  const reqs = globalThis.__espServerAdminRequests || [];
+  const req = reqs.find((r) => r.id === id);
+  if (!req) return null;
+
+  const users = globalThis.__espServerAdminUsers || [];
+  const assignedUser = users.find(
+    (u) => u.id === payload.assignedUserId || u.email.toLowerCase() === payload.emailTo.toLowerCase()
+  );
+
+  req.status = "approved";
+  req.adminApproved = true;
+  req.managerApproved = true;
+  req.assignedTo = {
+    id: assignedUser?.id || payload.assignedUserId,
+    name: assignedUser?.name || payload.emailTo.split("@")[0],
+    email: payload.emailTo,
+    department: assignedUser?.department,
+    jobTitle: assignedUser?.jobTitle,
+  };
+  req.assignedAt = new Date().toISOString();
+  if (payload.managerNote) req.managerNote = payload.managerNote;
+  if (payload.priority) req.priority = payload.priority as any;
+  req.dispatchEmail = {
+    to: payload.emailTo,
+    subject: payload.emailSubject,
+    body: payload.emailBody,
+    sentAt: new Date().toISOString(),
+    sentStatus: "sent",
+  };
+
+  globalThis.__espServerAdminRequests = reqs;
+  return { success: true, request: req, message: "درخواست با موفقیت تأیید شد و ابلاغیه ارسال گردید." };
 }
 
 export function rejectServerAdminRequest(id: string, reason: string): PendingRequest | null {
