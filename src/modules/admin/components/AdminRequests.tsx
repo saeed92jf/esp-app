@@ -550,97 +550,8 @@ export function AdminRequests({
   };
 
   // Skills Management Handlers
-  const [reqSkillsSubTab, setReqSkillsSubTab] = useState<"skills" | "projects" | "experience">("skills");
-  const [reqProjTypeFilter, setReqProjTypeFilter] = useState<"all" | "esp" | "personal">("all");
-  const [reqExpTypeFilter, setReqExpTypeFilter] = useState<"all" | "esp" | "personal">("all");
-
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillLevel, setNewSkillLevel] = useState(4);
-
-  // Projects Management
-  const [newReqProjTitle, setNewReqProjTitle] = useState("");
-  const [newReqProjType, setNewReqProjType] = useState<"esp" | "personal">("esp");
-  const [newReqProjRole, setNewReqProjRole] = useState("");
-  const [newReqProjClient, setNewReqProjClient] = useState("");
-  const [newReqProjDates, setNewReqProjDates] = useState("");
-
-  const handleAddRequestProject = () => {
-    if (!reviewData) return;
-    const title = newReqProjTitle.trim();
-    if (!title) {
-      toast.warning(isRtl ? "عنوان پروژه الزامی است." : "Project title is required.");
-      return;
-    }
-    const newProj = {
-      id: `proj-${Date.now()}`,
-      title,
-      type: newReqProjType,
-      role: newReqProjRole.trim() || undefined,
-      client: newReqProjClient.trim() || undefined,
-      company: newReqProjType === "esp" ? "یورواسلات پارس" : (newReqProjClient.trim() || undefined),
-      startDate: newReqProjDates.trim() || undefined,
-    };
-    setReviewData({
-      ...reviewData,
-      projects: [...(reviewData.projects || []), newProj],
-    });
-    setNewReqProjTitle("");
-    setNewReqProjRole("");
-    setNewReqProjClient("");
-    setNewReqProjDates("");
-    toast.success(isRtl ? `پروژه «${title}» افزوده شد.` : `Project "${title}" added.`);
-  };
-
-  const handleRemoveRequestProject = (id: string) => {
-    if (!reviewData) return;
-    setReviewData({
-      ...reviewData,
-      projects: (reviewData.projects || []).filter((p: any) => p.id !== id),
-    });
-    toast.info(isRtl ? "پروژه حذف شد." : "Project removed.");
-  };
-
-  // Experience Management
-  const [newReqExpTitle, setNewReqExpTitle] = useState("");
-  const [newReqExpType, setNewReqExpType] = useState<"esp" | "personal">("esp");
-  const [newReqExpCompany, setNewReqExpCompany] = useState("");
-  const [newReqExpDept, setNewReqExpDept] = useState("");
-  const [newReqExpDates, setNewReqExpDates] = useState("");
-
-  const handleAddRequestExperience = () => {
-    if (!reviewData) return;
-    const title = newReqExpTitle.trim();
-    if (!title) {
-      toast.warning(isRtl ? "عنوان شغلی الزامی است." : "Job title is required.");
-      return;
-    }
-    const newExp = {
-      id: `exp-${Date.now()}`,
-      title,
-      type: newReqExpType,
-      company: newReqExpType === "esp" ? "یورواسلات پارس" : (newReqExpCompany.trim() || "سازمان دیگر"),
-      department: newReqExpDept.trim() || undefined,
-      startDate: newReqExpDates.trim() || undefined,
-    };
-    setReviewData({
-      ...reviewData,
-      experiences: [...(reviewData.experiences || []), newExp],
-    });
-    setNewReqExpTitle("");
-    setNewReqExpCompany("");
-    setNewReqExpDept("");
-    setNewReqExpDates("");
-    toast.success(isRtl ? `سابقه کاری «${title}» افزوده شد.` : `Experience "${title}" added.`);
-  };
-
-  const handleRemoveRequestExperience = (id: string) => {
-    if (!reviewData) return;
-    setReviewData({
-      ...reviewData,
-      experiences: (reviewData.experiences || []).filter((e: any) => e.id !== id),
-    });
-    toast.info(isRtl ? "سابقه شغلی حذف شد." : "Experience removed.");
-  };
 
   const handleAddRequestSkill = (name?: string, level?: number) => {
     if (!reviewData) return;
@@ -2482,622 +2393,154 @@ export function AdminRequests({
                               )}
 
                               {/* ========================================= */}
-                              {/* SEGMENT 5: SKILLS, PROJECTS & EXPERIENCE */}
+                              {/* SEGMENT 5: SKILLS & EXPERTISE */}
                               {/* ========================================= */}
                               {seg.id === "skills" && (
                                 <div className="flex flex-col gap-5">
-                                  {/* Sub-navigation tabs: Skills | Projects | Experience */}
-                                  <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50 shadow-xs max-w-lg">
-                                    <button
-                                      type="button"
-                                      onClick={() => setReqSkillsSubTab("skills")}
-                                      className={cn(
-                                        "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                                        reqSkillsSubTab === "skills"
-                                          ? "bg-primary text-primary-foreground shadow-xs"
-                                          : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                      )}
-                                    >
-                                      <Star className="size-3.5" />
-                                      <span>{t("skillsTitle")}</span>
-                                      {(reviewData.skills || []).length > 0 && (
-                                        <span className={cn(
-                                          "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
-                                          reqSkillsSubTab === "skills" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                                        )}>
-                                          {(reviewData.skills || []).length}
-                                        </span>
-                                      )}
-                                    </button>
+                                  {/* Add New Skill Card */}
+                                  <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                                        <Star className="size-4 text-amber-500 fill-amber-500" />
+                                        <span>{t("addSkillBtn")}</span>
+                                      </Label>
+                                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                        <span>{t("skillLevelLabel")}:</span>
+                                        <div className="flex items-center gap-1">
+                                          {[1, 2, 3, 4, 5].map((lvl) => (
+                                            <button
+                                              key={lvl}
+                                              type="button"
+                                              onClick={() => setNewSkillLevel(lvl)}
+                                              className={cn(
+                                                "p-0.5 rounded hover:scale-110 transition-transform cursor-pointer",
+                                                lvl <= newSkillLevel ? "text-amber-500" : "text-muted-foreground/30 hover:text-amber-300"
+                                              )}
+                                              title={`${lvl} / 5`}
+                                            >
+                                              <Star className={cn("size-4", lvl <= newSkillLevel && "fill-amber-500")} />
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
 
-                                    <button
-                                      type="button"
-                                      onClick={() => setReqSkillsSubTab("projects")}
-                                      className={cn(
-                                        "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                                        reqSkillsSubTab === "projects"
-                                          ? "bg-primary text-primary-foreground shadow-xs"
-                                          : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                      )}
-                                    >
-                                      <FolderGit2 className="size-3.5" />
-                                      <span>{isRtl ? "پروژه‌ها" : "Projects"}</span>
-                                      {(reviewData.projects || []).length > 0 && (
-                                        <span className={cn(
-                                          "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
-                                          reqSkillsSubTab === "projects" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                                        )}>
-                                          {(reviewData.projects || []).length}
-                                        </span>
-                                      )}
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                      <Input
+                                        type="text"
+                                        value={newSkillName}
+                                        onChange={(e) => setNewSkillName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            e.preventDefault();
+                                            handleAddRequestSkill();
+                                          }
+                                        }}
+                                        placeholder={t("skillNamePlaceholder")}
+                                        className="h-10 bg-background border-border/50 rounded-xl text-xs flex-1"
+                                      />
+                                      <Button
+                                        type="button"
+                                        onClick={() => handleAddRequestSkill()}
+                                        disabled={!newSkillName.trim()}
+                                        className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                                      >
+                                        <Plus className="size-4" />
+                                        <span>{t("addSkillBtn")}</span>
+                                      </Button>
+                                    </div>
 
-                                    <button
-                                      type="button"
-                                      onClick={() => setReqSkillsSubTab("experience")}
-                                      className={cn(
-                                        "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
-                                        reqSkillsSubTab === "experience"
-                                          ? "bg-primary text-primary-foreground shadow-xs"
-                                          : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
-                                      )}
-                                    >
-                                      <Briefcase className="size-3.5" />
-                                      <span>{isRtl ? "سوابق و تجارب" : "Experience"}</span>
-                                      {(reviewData.experiences || []).length > 0 && (
-                                        <span className={cn(
-                                          "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
-                                          reqSkillsSubTab === "experience" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
-                                        )}>
-                                          {(reviewData.experiences || []).length}
-                                        </span>
-                                      )}
-                                    </button>
+                                    {/* Preset Suggestions */}
+                                    <div className="flex flex-col gap-1.5 pt-1">
+                                      <span className="text-[11px] font-medium text-muted-foreground">
+                                        {t("suggestedSkills")}
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {PRESET_SUGGESTED_SKILLS.map((sk, idx) => (
+                                          <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => handleAddRequestSkill(isRtl ? sk.fa : sk.en, 4)}
+                                            className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-background/80 hover:bg-primary/10 hover:text-primary border border-border/40 hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground flex items-center gap-1"
+                                          >
+                                            <Plus className="size-3 opacity-60" />
+                                            <span>{isRtl ? sk.fa : sk.en}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
                                   </div>
 
-                                  {/* Sub-tab 1: Skills */}
-                                  {reqSkillsSubTab === "skills" && (
-                                    <div className="flex flex-col gap-5">
-                                      {/* Add New Skill Card */}
-                                      <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
-                                        <div className="flex items-center justify-between">
-                                          <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                            <Star className="size-4 text-amber-500 fill-amber-500" />
-                                            <span>{t("addSkillBtn")}</span>
-                                          </Label>
-                                          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                            <span>{t("skillLevelLabel")}:</span>
-                                            <div className="flex items-center gap-1">
-                                              {[1, 2, 3, 4, 5].map((lvl) => (
-                                                <button
-                                                  key={lvl}
-                                                  type="button"
-                                                  onClick={() => setNewSkillLevel(lvl)}
-                                                  className={cn(
-                                                    "p-0.5 rounded hover:scale-110 transition-transform cursor-pointer",
-                                                    lvl <= newSkillLevel ? "text-amber-500" : "text-muted-foreground/30 hover:text-amber-300"
-                                                  )}
-                                                  title={`${lvl} / 5`}
-                                                >
-                                                  <Star className={cn("size-4", lvl <= newSkillLevel && "fill-amber-500")} />
-                                                </button>
-                                              ))}
-                                            </div>
-                                          </div>
-                                        </div>
+                                  {/* Current Skills List */}
+                                  <div className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between">
+                                      <Label className="text-xs font-bold text-foreground">
+                                        {t("skillsTitle")} ({(reviewData.skills || []).length})
+                                      </Label>
+                                    </div>
 
-                                        <div className="flex items-center gap-2">
-                                          <Input
-                                            type="text"
-                                            value={newSkillName}
-                                            onChange={(e) => setNewSkillName(e.target.value)}
-                                            onKeyDown={(e) => {
-                                              if (e.key === "Enter") {
-                                                e.preventDefault();
-                                                handleAddRequestSkill();
-                                              }
-                                            }}
-                                            placeholder={t("skillNamePlaceholder")}
-                                            className="h-10 bg-background border-border/50 rounded-xl text-xs flex-1"
-                                          />
-                                          <Button
-                                            type="button"
-                                            onClick={() => handleAddRequestSkill()}
-                                            disabled={!newSkillName.trim()}
-                                            className="h-10 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                                    {(!reviewData.skills || reviewData.skills.length === 0) ? (
+                                      <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-1">
+                                        <Star className="size-7 mx-auto opacity-30 text-amber-500" />
+                                        <p>{t("noSkillsYet")}</p>
+                                      </div>
+                                    ) : (
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                        {reviewData.skills.map((sk) => (
+                                          <div
+                                            key={sk.id || sk.name}
+                                            className="p-3 rounded-xl bg-background/80 border border-border/50 flex items-center justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors group"
                                           >
-                                            <Plus className="size-4" />
-                                            <span>{t("addSkillBtn")}</span>
-                                          </Button>
-                                        </div>
+                                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                              <div className="size-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                <Star className="size-3.5 fill-amber-500/30 text-amber-600" />
+                                              </div>
+                                              <span className="text-xs font-semibold text-foreground truncate" title={sk.name}>
+                                                {sk.name}
+                                              </span>
+                                            </div>
 
-                                        {/* Preset Suggestions */}
-                                        <div className="flex flex-col gap-1.5 pt-1">
-                                          <span className="text-[11px] font-medium text-muted-foreground">
-                                            {t("suggestedSkills")}
-                                          </span>
-                                          <div className="flex flex-wrap gap-1.5">
-                                            {PRESET_SUGGESTED_SKILLS.map((sk, idx) => (
+                                            <div className="flex items-center gap-2 shrink-0">
+                                              {/* 5-Star Interactive Rating */}
+                                              <div className="flex items-center gap-0.5">
+                                                {[1, 2, 3, 4, 5].map((lvl) => (
+                                                  <button
+                                                    key={lvl}
+                                                    type="button"
+                                                    onClick={() => handleUpdateRequestSkillLevel(sk.id || sk.name, lvl)}
+                                                    className={cn(
+                                                      "p-0.5 transition-transform hover:scale-110 cursor-pointer",
+                                                      lvl <= (sk.level ?? (sk as any).rate ?? 4)
+                                                        ? "text-amber-500"
+                                                        : "text-muted-foreground/30 hover:text-amber-400"
+                                                    )}
+                                                    title={`${lvl} / 5`}
+                                                  >
+                                                    <Star
+                                                      className={cn(
+                                                        "size-3.5",
+                                                        lvl <= (sk.level ?? (sk as any).rate ?? 4) && "fill-amber-500"
+                                                      )}
+                                                    />
+                                                  </button>
+                                                ))}
+                                              </div>
+
+                                              {/* Delete Button */}
                                               <button
-                                                key={idx}
                                                 type="button"
-                                                onClick={() => handleAddRequestSkill(isRtl ? sk.fa : sk.en, 4)}
-                                                className="text-[11px] font-medium px-2.5 py-1 rounded-lg bg-background/80 hover:bg-primary/10 hover:text-primary border border-border/40 hover:border-primary/30 transition-colors cursor-pointer text-muted-foreground flex items-center gap-1"
+                                                onClick={() => handleRemoveRequestSkill(sk.id || sk.name)}
+                                                className="size-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center cursor-pointer"
+                                                title={t("deleteSkill")}
                                               >
-                                                <Plus className="size-3 opacity-60" />
-                                                <span>{isRtl ? sk.fa : sk.en}</span>
+                                                <Trash2 className="size-3.5" />
                                               </button>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Current Skills List */}
-                                      <div className="flex flex-col gap-2">
-                                        <div className="flex items-center justify-between">
-                                          <Label className="text-xs font-bold text-foreground">
-                                            {t("skillsTitle")} ({(reviewData.skills || []).length})
-                                          </Label>
-                                        </div>
-
-                                        {(!reviewData.skills || reviewData.skills.length === 0) ? (
-                                          <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-1">
-                                            <Star className="size-7 mx-auto opacity-30 text-amber-500" />
-                                            <p>{t("noSkillsYet")}</p>
-                                          </div>
-                                        ) : (
-                                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                            {reviewData.skills.map((sk) => (
-                                              <div
-                                                key={sk.id || sk.name}
-                                                className="p-3 rounded-xl bg-background/80 border border-border/50 flex items-center justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors group"
-                                              >
-                                                <div className="flex items-center gap-2 min-w-0 flex-1">
-                                                  <div className="size-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                                                    <Star className="size-3.5 fill-amber-500/30 text-amber-600" />
-                                                  </div>
-                                                  <span className="text-xs font-semibold text-foreground truncate" title={sk.name}>
-                                                    {sk.name}
-                                                  </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                  {/* 5-Star Interactive Rating */}
-                                                  <div className="flex items-center gap-0.5">
-                                                    {[1, 2, 3, 4, 5].map((lvl) => (
-                                                      <button
-                                                        key={lvl}
-                                                        type="button"
-                                                        onClick={() => handleUpdateRequestSkillLevel(sk.id || sk.name, lvl)}
-                                                        className={cn(
-                                                          "p-0.5 transition-transform hover:scale-110 cursor-pointer",
-                                                          lvl <= (sk.level ?? (sk as any).rate ?? 4)
-                                                            ? "text-amber-500"
-                                                            : "text-muted-foreground/30 hover:text-amber-400"
-                                                        )}
-                                                        title={`${lvl} / 5`}
-                                                      >
-                                                        <Star
-                                                          className={cn(
-                                                            "size-3.5",
-                                                            lvl <= (sk.level ?? (sk as any).rate ?? 4) && "fill-amber-500"
-                                                          )}
-                                                        />
-                                                      </button>
-                                                    ))}
-                                                  </div>
-
-                                                  {/* Delete Button */}
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveRequestSkill(sk.id || sk.name)}
-                                                    className="size-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center cursor-pointer"
-                                                    title={t("deleteSkill")}
-                                                  >
-                                                    <Trash2 className="size-3.5" />
-                                                  </button>
-                                                </div>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Sub-tab 2: Projects */}
-                                  {reqSkillsSubTab === "projects" && (
-                                    <div className="flex flex-col gap-5">
-                                      {/* Projects Filter Toggle (All | ESP | Personal) */}
-                                      <div className="flex items-center justify-between gap-3 p-2 rounded-2xl bg-muted/20 border border-border/50">
-                                        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-background border border-border/60">
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqProjTypeFilter("all")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                                              reqProjTypeFilter === "all"
-                                                ? "bg-primary text-primary-foreground shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            {isRtl ? "همه پروژه‌ها" : "All Projects"} ({(reviewData.projects || []).length})
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqProjTypeFilter("esp")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                                              reqProjTypeFilter === "esp"
-                                                ? "bg-blue-600 text-white shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            <Building2 className="size-3" />
-                                            <span>{isRtl ? "پروژه‌های ESP" : "ESP Projects"}</span>
-                                            <span className="text-[10px] opacity-80 font-mono">
-                                              ({(reviewData.projects || []).filter((p: any) => p.type === "esp").length})
-                                            </span>
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqProjTypeFilter("personal")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                                              reqProjTypeFilter === "personal"
-                                                ? "bg-emerald-600 text-white shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            <FolderGit2 className="size-3" />
-                                            <span>{isRtl ? "پروژه‌های شخصی" : "Personal"}</span>
-                                            <span className="text-[10px] opacity-80 font-mono">
-                                              ({(reviewData.projects || []).filter((p: any) => p.type === "personal").length})
-                                            </span>
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      {/* Add Project Card */}
-                                      <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
-                                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                          <FolderGit2 className="size-4 text-blue-500" />
-                                          <span>{isRtl ? "افزودن پروژه جدید" : "Add New Project"}</span>
-                                        </Label>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                          <div className="sm:col-span-2">
-                                            <Input
-                                              type="text"
-                                              value={newReqProjTitle}
-                                              onChange={(e) => setNewReqProjTitle(e.target.value)}
-                                              placeholder={isRtl ? "عنوان پروژه *" : "Project Title *"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <select
-                                              value={newReqProjType}
-                                              onChange={(e) => setNewReqProjType(e.target.value as "esp" | "personal")}
-                                              className="h-9 w-full bg-background border border-border/50 rounded-xl text-xs px-2 text-foreground"
-                                            >
-                                              <option value="esp">{isRtl ? "پروژه ESP (سازمانی)" : "ESP (Corporate)"}</option>
-                                              <option value="personal">{isRtl ? "پروژه شخصی / آزاد" : "Personal / Freelance"}</option>
-                                            </select>
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqProjRole}
-                                              onChange={(e) => setNewReqProjRole(e.target.value)}
-                                              placeholder={isRtl ? "نقش (مثلاً مدیر فنی)" : "Role (e.g. Lead Engineer)"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqProjClient}
-                                              onChange={(e) => setNewReqProjClient(e.target.value)}
-                                              placeholder={isRtl ? "کارفرما / شرکت" : "Client / Company"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqProjDates}
-                                              onChange={(e) => setNewReqProjDates(e.target.value)}
-                                              placeholder={isRtl ? "بازه زمانی (مثلاً ۱۴۰۱ - ۱۴۰۳)" : "Date Range (e.g. 2022 - 2024)"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div className="sm:col-span-2 flex justify-end">
-                                            <Button
-                                              type="button"
-                                              onClick={handleAddRequestProject}
-                                              disabled={!newReqProjTitle.trim()}
-                                              className="h-9 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
-                                            >
-                                              <Plus className="size-4" />
-                                              <span>{isRtl ? "افزودن پروژه" : "Add Project"}</span>
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Projects List */}
-                                      <div className="flex flex-col gap-2">
-                                        <Label className="text-xs font-bold text-foreground">
-                                          {isRtl ? "لیست پروژه‌ها" : "Projects List"} (
-                                          {(reviewData.projects || []).filter((p: any) =>
-                                            reqProjTypeFilter === "all" ? true : p.type === reqProjTypeFilter
-                                          ).length}
-                                          )
-                                        </Label>
-
-                                        {(() => {
-                                          const filtered = (reviewData.projects || []).filter((p: any) =>
-                                            reqProjTypeFilter === "all" ? true : p.type === reqProjTypeFilter
-                                          );
-                                          if (filtered.length === 0) {
-                                            return (
-                                              <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-1">
-                                                <FolderGit2 className="size-7 mx-auto opacity-30 text-blue-500" />
-                                                <p>{isRtl ? "هیچ پروژه‌ای در این بخش ثبت نشده است." : "No projects recorded."}</p>
-                                              </div>
-                                            );
-                                          }
-                                          return (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                              {filtered.map((proj: any) => (
-                                                <div
-                                                  key={proj.id || proj.title}
-                                                  className="p-3 rounded-xl bg-background/80 border border-border/50 flex items-start justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors"
-                                                >
-                                                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                                                    <div className={cn(
-                                                      "size-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                                                      proj.type === "esp"
-                                                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                                                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                                    )}>
-                                                      <FolderGit2 className="size-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0 flex-1">
-                                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="text-xs font-bold text-foreground truncate" title={proj.title}>
-                                                          {proj.title}
-                                                        </span>
-                                                        <span className={cn(
-                                                          "text-[10px] px-1.5 py-0.5 rounded-md font-semibold",
-                                                          proj.type === "esp"
-                                                            ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
-                                                            : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                                                        )}>
-                                                          {proj.type === "esp" ? (isRtl ? "ESP سازمانی" : "ESP Corporate") : (isRtl ? "شخصی" : "Personal")}
-                                                        </span>
-                                                      </div>
-                                                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1 flex-wrap">
-                                                        {proj.role && <span>{proj.role}</span>}
-                                                        {proj.client && <span>• {proj.client}</span>}
-                                                        {proj.startDate && <span>• {proj.startDate}</span>}
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveRequestProject(proj.id)}
-                                                    className="size-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                                    title={isRtl ? "حذف پروژه" : "Delete Project"}
-                                                  >
-                                                    <Trash2 className="size-3.5" />
-                                                  </button>
-                                                </div>
-                                              ))}
                                             </div>
-                                          );
-                                        })()}
+                                          </div>
+                                        ))}
                                       </div>
-                                    </div>
-                                  )}
-
-                                  {/* Sub-tab 3: Experience */}
-                                  {reqSkillsSubTab === "experience" && (
-                                    <div className="flex flex-col gap-5">
-                                      {/* Experience Filter Toggle (All | ESP | External/Personal) */}
-                                      <div className="flex items-center justify-between gap-3 p-2 rounded-2xl bg-muted/20 border border-border/50">
-                                        <div className="flex items-center gap-1.5 p-1 rounded-xl bg-background border border-border/60">
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqExpTypeFilter("all")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                                              reqExpTypeFilter === "all"
-                                                ? "bg-primary text-primary-foreground shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            {isRtl ? "همه سوابق" : "All Experience"} ({(reviewData.experiences || []).length})
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqExpTypeFilter("esp")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                                              reqExpTypeFilter === "esp"
-                                                ? "bg-blue-600 text-white shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            <Building2 className="size-3" />
-                                            <span>{isRtl ? "سوابق ESP" : "ESP Experience"}</span>
-                                            <span className="text-[10px] opacity-80 font-mono">
-                                              ({(reviewData.experiences || []).filter((e: any) => e.type === "esp").length})
-                                            </span>
-                                          </button>
-                                          <button
-                                            type="button"
-                                            onClick={() => setReqExpTypeFilter("personal")}
-                                            className={cn(
-                                              "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
-                                              reqExpTypeFilter === "personal"
-                                                ? "bg-amber-600 text-white shadow-xs"
-                                                : "text-muted-foreground hover:text-foreground"
-                                            )}
-                                          >
-                                            <Briefcase className="size-3" />
-                                            <span>{isRtl ? "سایر شرکت‌ها" : "External"}</span>
-                                            <span className="text-[10px] opacity-80 font-mono">
-                                              ({(reviewData.experiences || []).filter((e: any) => e.type === "personal").length})
-                                            </span>
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      {/* Add Experience Card */}
-                                      <div className="p-4 rounded-2xl bg-muted/20 border border-border/50 flex flex-col gap-3">
-                                        <Label className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                          <Briefcase className="size-4 text-amber-500" />
-                                          <span>{isRtl ? "افزودن سابقه شغلی" : "Add Experience"}</span>
-                                        </Label>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2">
-                                          <div className="sm:col-span-2">
-                                            <Input
-                                              type="text"
-                                              value={newReqExpTitle}
-                                              onChange={(e) => setNewReqExpTitle(e.target.value)}
-                                              placeholder={isRtl ? "سمت یا عنوان شغلی *" : "Job Title *"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <select
-                                              value={newReqExpType}
-                                              onChange={(e) => setNewReqExpType(e.target.value as "esp" | "personal")}
-                                              className="h-9 w-full bg-background border border-border/50 rounded-xl text-xs px-2 text-foreground"
-                                            >
-                                              <option value="esp">{isRtl ? "سابقه درون ESP" : "Within ESP"}</option>
-                                              <option value="personal">{isRtl ? "سابقه در سایر شرکت‌ها" : "External Company"}</option>
-                                            </select>
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqExpCompany}
-                                              onChange={(e) => setNewReqExpCompany(e.target.value)}
-                                              placeholder={isRtl ? "نام شرکت یا سازمان" : "Company / Organization"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqExpDept}
-                                              onChange={(e) => setNewReqExpDept(e.target.value)}
-                                              placeholder={isRtl ? "واحد / دپارتمان" : "Department"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div>
-                                            <Input
-                                              type="text"
-                                              value={newReqExpDates}
-                                              onChange={(e) => setNewReqExpDates(e.target.value)}
-                                              placeholder={isRtl ? "بازه زمانی (مثلاً ۱۳۹۸ - ۱۴۰۱)" : "Date Range (e.g. 2019 - 2022)"}
-                                              className="h-9 bg-background border-border/50 rounded-xl text-xs"
-                                            />
-                                          </div>
-                                          <div className="sm:col-span-2 flex justify-end">
-                                            <Button
-                                              type="button"
-                                              onClick={handleAddRequestExperience}
-                                              disabled={!newReqExpTitle.trim()}
-                                              className="h-9 px-4 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
-                                            >
-                                              <Plus className="size-4" />
-                                              <span>{isRtl ? "افزودن سابقه" : "Add Experience"}</span>
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Experience List */}
-                                      <div className="flex flex-col gap-2">
-                                        <Label className="text-xs font-bold text-foreground">
-                                          {isRtl ? "لیست سوابق کاری" : "Experience List"} (
-                                          {(reviewData.experiences || []).filter((e: any) =>
-                                            reqExpTypeFilter === "all" ? true : e.type === reqExpTypeFilter
-                                          ).length}
-                                          )
-                                        </Label>
-
-                                        {(() => {
-                                          const filtered = (reviewData.experiences || []).filter((e: any) =>
-                                            reqExpTypeFilter === "all" ? true : e.type === reqExpTypeFilter
-                                          );
-                                          if (filtered.length === 0) {
-                                            return (
-                                              <div className="p-8 text-center rounded-2xl border border-dashed border-border/60 bg-muted/10 text-muted-foreground text-xs space-y-1">
-                                                <Briefcase className="size-7 mx-auto opacity-30 text-amber-500" />
-                                                <p>{isRtl ? "هیچ سابقه شغلی در این بخش ثبت نشده است." : "No experience recorded."}</p>
-                                              </div>
-                                            );
-                                          }
-                                          return (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                              {filtered.map((exp: any) => (
-                                                <div
-                                                  key={exp.id || exp.title}
-                                                  className="p-3 rounded-xl bg-background/80 border border-border/50 flex items-start justify-between gap-3 shadow-2xs hover:border-primary/30 transition-colors"
-                                                >
-                                                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                                                    <div className={cn(
-                                                      "size-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                                                      exp.type === "esp"
-                                                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                                                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                                                    )}>
-                                                      <Briefcase className="size-4" />
-                                                    </div>
-                                                    <div className="flex flex-col min-w-0 flex-1">
-                                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                                        <span className="text-xs font-bold text-foreground truncate" title={exp.title}>
-                                                          {exp.title}
-                                                        </span>
-                                                        <span className={cn(
-                                                          "text-[10px] px-1.5 py-0.5 rounded-md font-semibold",
-                                                          exp.type === "esp"
-                                                            ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
-                                                            : "bg-amber-500/15 text-amber-700 dark:text-amber-300"
-                                                        )}>
-                                                          {exp.type === "esp" ? (isRtl ? "ESP سازمانی" : "ESP Corporate") : (isRtl ? "سازمان دیگر" : "External")}
-                                                        </span>
-                                                      </div>
-                                                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-1 flex-wrap">
-                                                        <span>{exp.company}</span>
-                                                        {exp.department && <span>• {exp.department}</span>}
-                                                        {exp.startDate && <span>• {exp.startDate}</span>}
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                  <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveRequestExperience(exp.id)}
-                                                    className="size-7 rounded-lg text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center cursor-pointer shrink-0"
-                                                    title={isRtl ? "حذف سابقه" : "Delete Experience"}
-                                                  >
-                                                    <Trash2 className="size-3.5" />
-                                                  </button>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          );
-                                        })()}
-                                      </div>
-                                    </div>
-                                  )}
+                                    )}
+                                  </div>
                                 </div>
                               )}
 

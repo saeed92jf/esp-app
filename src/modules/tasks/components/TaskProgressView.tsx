@@ -359,7 +359,8 @@ export function TaskProgressView({
     _taskId: string,
     commentId: string,
     content: string,
-    attachments?: TaskAttachment[]
+    attachments?: TaskAttachment[],
+    replyToAuthorName?: string
   ) => {
     const authorName = currentUser.name || (currentUser as any).fullName || (currentUser as any).fullNameFa || "سعید جلیلی";
     const authorRole = currentUser.role || "superadmin";
@@ -376,6 +377,7 @@ export function TaskProgressView({
       }).format(new Date()),
       likes: 0,
       attachments: attachments || [],
+      replyToAuthorName,
     };
 
     const updatedComments = (currentTask.comments || []).map((c: any) => {

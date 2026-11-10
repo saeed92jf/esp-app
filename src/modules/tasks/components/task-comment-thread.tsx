@@ -36,7 +36,8 @@ interface TaskCommentThreadProps {
     taskId: string,
     commentId: string,
     content: string,
-    attachments?: TaskAttachment[]
+    attachments?: TaskAttachment[],
+    replyToAuthorName?: string
   ) => Promise<void>;
 }
 
@@ -87,7 +88,14 @@ export function TaskCommentThread({
   const isRtl = locale === "fa";
   const [newCommentText, setNewCommentText] = useState("");
   const [stagedAttachments, setStagedAttachments] = useState<TaskAttachment[]>([]);
-  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+
+  interface ReplyingTarget {
+    commentId: string;
+    authorName: string;
+    replyId?: string;
+  }
+
+  const [replyingTarget, setReplyingTarget] = useState<ReplyingTarget | null>(null);
   const [replyText, setReplyText] = useState("");
   const [replyStagedAttachments, setReplyStagedAttachments] = useState<TaskAttachment[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -111,7 +119,7 @@ export function TaskCommentThread({
         type: ext || "file",
         isDrawing,
         uploadedAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
-        uploaderName: formatPersonName("سعید جلیلی", locale),
+        uploaderName: formatPersonName(user?.name || user?.fullName || user?.fullNameFa || "کاربر", locale),
       };
     });
 
@@ -122,24 +130,6 @@ export function TaskCommentThread({
     }
 
     if (e.target) e.target.value = "";
-  };
-
-  const handleAddSampleDrawing = (isReply = false) => {
-    const sampleDrawing: TaskAttachment = {
-      id: `att-draw-${Date.now()}`,
-      name: `PID-Unit400-Detail-Rev0${Math.floor(Math.random() * 5) + 1}.dwg`,
-      size: "3.8 MB",
-      type: "dwg",
-      isDrawing: true,
-      uploadedAt: new Intl.DateTimeFormat(isRtl ? "fa-IR" : "en-US").format(new Date()),
-      uploaderName: formatPersonName("سعید جلیلی", locale),
-    };
-
-    if (isReply) {
-      setReplyStagedAttachments((prev) => [...prev, sampleDrawing]);
-    } else {
-      setStagedAttachments((prev) => [...prev, sampleDrawing]);
-    }
   };
 
   const removeStagedAttachment = (id: string, isReply = false) => {
@@ -168,7 +158,38 @@ export function TaskCommentThread({
     }
   };
 
-  const handlePostReply = async (commentId: string) => {
+  const handleStartReplyToComment = (comment: TaskComment) => {
+    if (replyingTarget?.commentId === comment.id && !replyingTarget?.replyId) {
+      setReplyingTarget(null);
+      setReplyStagedAttachments([]);
+      setReplyText("");
+    } else {
+      setReplyingTarget({
+        commentId: comment.id,
+        authorName: comment.authorName,
+      });
+      setReplyText("");
+      setReplyStagedAttachments([]);
+    }
+  };
+
+  const handleStartReplyToReply = (commentId: string, reply: TaskCommentReply) => {
+    if (replyingTarget?.commentId === commentId && replyingTarget?.replyId === reply.id) {
+      setReplyingTarget(null);
+      setReplyStagedAttachments([]);
+      setReplyText("");
+    } else {
+      setReplyingTarget({
+        commentId,
+        authorName: reply.authorName,
+        replyId: reply.id,
+      });
+      setReplyText("");
+      setReplyStagedAttachments([]);
+    }
+  };
+
+  const handlePostReply = async (commentId: string, replyToAuthorName?: string) => {
     if ((!replyText.trim() && replyStagedAttachments.length === 0) || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -177,15 +198,120 @@ export function TaskCommentThread({
         taskId,
         commentId,
         replyText.trim(),
-        replyStagedAttachments.length > 0 ? replyStagedAttachments : undefined
+        replyStagedAttachments.length > 0 ? replyStagedAttachments : undefined,
+        replyToAuthorName
       );
       setReplyText("");
       setReplyStagedAttachments([]);
-      setReplyingToCommentId(null);
+      setReplyingTarget(null);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const renderReplyComposer = (commentId: string, authorName: string) => (
+    <div className="mt-2.5 p-3 rounded-xl border border-primary/25 bg-muted/25 flex flex-col gap-2.5 animate-in fade-in duration-150">
+      <div className="flex items-center justify-between text-[11px] text-muted-foreground pb-0.5">
+        <div className="flex items-center gap-1.5 font-medium text-primary">
+          <CornerDownLeft className="size-3 rtl:rotate-180" />
+          <span>{t("replyTo", { author: formatPersonName(authorName, locale) })}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setReplyingTarget(null);
+            setReplyStagedAttachments([]);
+            setReplyText("");
+          }}
+          className="size-5 rounded-md hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+          title={t("cancelReply")}
+        >
+          <X className="size-3" />
+        </button>
+      </div>
+
+      <Textarea
+        value={replyText}
+        onChange={(e) => setReplyText(e.target.value)}
+        placeholder={t("replyPlaceholder")}
+        autoFocus
+        className="min-h-[65px] resize-none text-xs rounded-lg bg-background border-border/60 focus:ring-1"
+      />
+
+      {/* Reply Staged Attachments */}
+      {replyStagedAttachments.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {replyStagedAttachments.map((att) => (
+            <div
+              key={att.id}
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-background border border-border/60 text-[10px] shadow-2xs"
+            >
+              {renderAttachmentIcon(att.type, att.isDrawing)}
+              <span className="truncate max-w-[130px] font-medium">{att.name}</span>
+              <button
+                type="button"
+                onClick={() => removeStagedAttachment(att.id, true)}
+                className="text-muted-foreground hover:text-destructive cursor-pointer"
+              >
+                <X className="size-2.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-center justify-between pt-1 border-t border-border/30">
+        <div className="flex items-center gap-1">
+          <input
+            ref={replyFileInputRef}
+            type="file"
+            multiple
+            onChange={(e) => handleFileSelect(e, true)}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => replyFileInputRef.current?.click()}
+            className="h-7 text-[11px] gap-1 text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            <Paperclip className="size-3" />
+            <span>{t("attachFile")}</span>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setReplyingTarget(null);
+              setReplyStagedAttachments([]);
+              setReplyText("");
+            }}
+            className="h-7 text-xs cursor-pointer text-muted-foreground hover:text-foreground"
+          >
+            {t("cancelReply")}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={
+              (!replyText.trim() && replyStagedAttachments.length === 0) ||
+              isSubmitting
+            }
+            onClick={() => handlePostReply(commentId, authorName)}
+            className="h-7 text-xs font-semibold gap-1 cursor-pointer shadow-2xs"
+          >
+            <Send className="size-3 rtl:rotate-180" />
+            <span>{t("send")}</span>
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 
   const renderAttachmentIcon = (type: string, isDrawing?: boolean) => {
     if (isDrawing || type === "dwg" || type === "dxf") {
@@ -268,19 +394,6 @@ export function TaskCommentThread({
             >
               <Paperclip className="size-3.5" />
               <span>{t("attachFile")}</span>
-            </Button>
-
-            {/* Quick Button to attach sample Blueprint */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleAddSampleDrawing(false)}
-              className="rounded-lg gap-1 text-[11px] text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 cursor-pointer h-8 hidden sm:flex"
-              title={t("selectDrawing")}
-            >
-              <FileCode className="size-3.5" />
-              <span>+ {t("selectDrawing")}</span>
             </Button>
           </div>
 
@@ -403,11 +516,7 @@ export function TaskCommentThread({
                 <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[11px]">
                   <button
                     type="button"
-                    onClick={() =>
-                      setReplyingToCommentId(
-                        replyingToCommentId === comment.id ? null : comment.id
-                      )
-                    }
+                    onClick={() => handleStartReplyToComment(comment)}
                     className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
                   >
                     <CornerDownLeft className="size-3 rtl:rotate-180" />
@@ -416,165 +525,92 @@ export function TaskCommentThread({
                 </div>
               )}
 
-              {/* Reply Input Box (when active) */}
-              {replyingToCommentId === comment.id && (
-                <div className="mt-2 p-2.5 rounded-xl border border-primary/20 bg-muted/20 flex flex-col gap-2">
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{t("replyTo", { author: formatPersonName(comment.authorName, locale) })}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setReplyingToCommentId(null);
-                        setReplyStagedAttachments([]);
-                      }}
-                      className="text-muted-foreground hover:text-foreground cursor-pointer"
-                    >
-                      <X className="size-3" />
-                    </button>
-                  </div>
-                  <Textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder={t("replyPlaceholder")}
-                    className="min-h-[60px] resize-none text-xs rounded-lg bg-background"
-                  />
-
-                  {/* Reply Staged Attachments */}
-                  {replyStagedAttachments.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {replyStagedAttachments.map((att) => (
-                        <div
-                          key={att.id}
-                          className="flex items-center gap-1 px-2 py-0.5 rounded bg-background border border-border/60 text-[10px]"
-                        >
-                          {renderAttachmentIcon(att.type, att.isDrawing)}
-                          <span className="truncate max-w-[130px]">{att.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => removeStagedAttachment(att.id, true)}
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            <X className="size-2.5" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-1">
-                      <input
-                        ref={replyFileInputRef}
-                        type="file"
-                        multiple
-                        onChange={(e) => handleFileSelect(e, true)}
-                        className="hidden"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => replyFileInputRef.current?.click()}
-                        className="h-7 text-[10px] gap-1 text-muted-foreground"
-                      >
-                        <Paperclip className="size-3" />
-                        <span>{t("attachFile")}</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleAddSampleDrawing(true)}
-                        className="h-7 text-[10px] gap-1 text-amber-600 dark:text-amber-400"
-                      >
-                        <FileCode className="size-3" />
-                        <span>{isRtl ? "+ نقشه" : "+ Drawing"}</span>
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setReplyingToCommentId(null);
-                          setReplyStagedAttachments([]);
-                        }}
-                        className="h-7 text-xs"
-                      >
-                        {t("cancelReply")}
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        disabled={
-                          (!replyText.trim() && replyStagedAttachments.length === 0) ||
-                          isSubmitting
-                        }
-                        onClick={() => handlePostReply(comment.id)}
-                        className="h-7 text-xs font-semibold gap-1"
-                      >
-                        <Send className="size-3 rtl:rotate-180" />
-                        <span>{t("send")}</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+              {/* Reply Input Box (when replying directly to comment) */}
+              {replyingTarget?.commentId === comment.id && !replyingTarget?.replyId && (
+                renderReplyComposer(comment.id, replyingTarget.authorName)
               )}
 
               {/* Replies Thread */}
               {comment.replies && comment.replies.length > 0 && (
                 <div className="ms-4 sm:ms-6 ps-3 border-s-2 border-border/50 flex flex-col gap-2.5 mt-1 pt-1">
                   {comment.replies.map((reply) => (
-                    <div
-                      key={reply.id}
-                      className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/60 flex flex-col gap-1.5 shadow-2xs"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <Avatar className="size-6 border border-primary/20">
-                            <AvatarFallback className="bg-primary/10 text-primary text-[9px] font-bold">
-                              {formatPersonName(reply.authorName, locale).charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col">
-                            <span className="text-[11px] font-semibold text-foreground">
-                              {formatPersonName(reply.authorName, locale)}
-                            </span>
-                          </div>
-                        </div>
-                        <span className="text-[9px] text-muted-foreground">
-                          {reply.createdAt}
-                        </span>
-                      </div>
-
-                      {reply.content && (
-                        <p className="text-[13px] text-slate-800 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed px-1 font-normal select-text">
-                          {reply.content}
-                        </p>
-                      )}
-
-                      {/* Reply Attachments */}
-                      {reply.attachments && reply.attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1">
-                          {reply.attachments.map((att) => (
-                            <div
-                              key={att.id}
-                              className="flex items-center gap-1.5 px-2 py-1 rounded bg-white dark:bg-card border border-border/60 text-[10px]"
-                            >
-                              {renderAttachmentIcon(att.type, att.isDrawing)}
-                              <span className="font-medium truncate max-w-[140px]">
-                                {att.name}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">
-                                ({att.size})
+                    <React.Fragment key={reply.id}>
+                      <div className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/60 flex flex-col gap-1.5 shadow-2xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5">
+                            <Avatar className="size-6 border border-primary/20">
+                              <AvatarFallback className="bg-primary/10 text-primary text-[9px] font-bold">
+                                {formatPersonName(reply.authorName, locale).charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col">
+                              <span className="text-[11px] font-semibold text-foreground">
+                                {formatPersonName(reply.authorName, locale)}
                               </span>
                             </div>
-                          ))}
+                          </div>
+                          <span className="text-[9px] text-muted-foreground">
+                            {reply.createdAt}
+                          </span>
                         </div>
+
+                        {/* Indication of who this reply is addressing */}
+                        {reply.replyToAuthorName && (
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium px-1">
+                            <CornerDownLeft className="size-2.5 text-primary/70 rtl:rotate-180" />
+                            <span>{isRtl ? "در پاسخ به" : "Replying to"}</span>
+                            <span className="text-primary font-semibold">
+                              @{formatPersonName(reply.replyToAuthorName, locale)}
+                            </span>
+                          </div>
+                        )}
+
+                        {reply.content && (
+                          <p className="text-[13px] text-slate-800 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed px-1 font-normal select-text">
+                            {reply.content}
+                          </p>
+                        )}
+
+                        {/* Reply Attachments */}
+                        {reply.attachments && reply.attachments.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 pt-1">
+                            {reply.attachments.map((att) => (
+                              <div
+                                key={att.id}
+                                className="flex items-center gap-1.5 px-2 py-1 rounded bg-white dark:bg-card border border-border/60 text-[10px]"
+                              >
+                                {renderAttachmentIcon(att.type, att.isDrawing)}
+                                <span className="font-medium truncate max-w-[140px]">
+                                  {att.name}
+                                </span>
+                                <span className="text-[9px] text-muted-foreground">
+                                  ({att.size})
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Reply Action on this Reply */}
+                        {canPostComment && (
+                          <div className="flex items-center justify-between pt-1 border-t border-border/20 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => handleStartReplyToReply(comment.id, reply)}
+                              className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
+                            >
+                              <CornerDownLeft className="size-2.5 rtl:rotate-180" />
+                              <span>{t("reply")}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Reply Input Box (when replying specifically to this reply) */}
+                      {replyingTarget?.commentId === comment.id && replyingTarget?.replyId === reply.id && (
+                        renderReplyComposer(comment.id, replyingTarget.authorName)
                       )}
-                    </div>
+                    </React.Fragment>
                   ))}
                 </div>
               )}

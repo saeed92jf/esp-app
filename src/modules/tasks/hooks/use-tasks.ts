@@ -642,6 +642,7 @@ export function useTasks(options?: {
       commentId: string,
       content: string,
       attachments?: TaskAttachment[],
+      replyToAuthorName?: string,
       authorName?: string,
       authorRole?: string
     ) => {
@@ -655,6 +656,7 @@ export function useTasks(options?: {
         content: content.trim(),
         likes: 0,
         attachments,
+        replyToAuthorName,
       });
       await fetchTasks();
     },

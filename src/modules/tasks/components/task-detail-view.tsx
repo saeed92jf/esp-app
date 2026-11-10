@@ -83,7 +83,8 @@ export interface TaskDetailViewProps {
     taskId: string,
     commentId: string,
     content: string,
-    attachments?: TaskAttachment[]
+    attachments?: TaskAttachment[],
+    replyToAuthorName?: string
   ) => Promise<void>;
   onUploadAttachment: (
     taskId: string,

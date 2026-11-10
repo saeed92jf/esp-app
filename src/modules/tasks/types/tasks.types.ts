@@ -45,6 +45,7 @@ export interface TaskCommentReply {
   createdAt: string;
   likes?: number;
   attachments?: TaskAttachment[];
+  replyToAuthorName?: string;
 }
 
 export interface TaskComment {
