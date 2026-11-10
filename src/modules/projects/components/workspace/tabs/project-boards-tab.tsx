@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 import {
   ProjectItem,
   ProjectTaskItem,

@@ -522,7 +522,7 @@ export function ProjectVdisTransmittalTab({
                         <div>
                           <span className="text-muted-foreground font-semibold">فرستنده: </span>
                           <span className="font-bold text-foreground">
-                            {formatPersonName(selectedTransmittal.senderName, locale)} ({formatRoleName(selectedTransmittal.senderRole, locale)})
+                            {formatPersonName(selectedTransmittal.senderName, locale)}
                           </span>
                         </div>
                       </div>

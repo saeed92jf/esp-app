@@ -578,7 +578,6 @@ export function TaskCreateDialog({
                   >
                     <User className="size-3 text-primary" />
                     <span className="font-semibold">{formatPersonName(c.name, locale)}</span>
-                    <span className="text-[10px] text-muted-foreground">({formatRoleName(c.role, locale)})</span>
                     {collaborators.length > 1 && (
                       <button
                         type="button"

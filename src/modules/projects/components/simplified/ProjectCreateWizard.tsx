@@ -566,7 +566,7 @@ export function ProjectCreateWizard({
                     {personnelList.length > 0 ? (
                       personnelList.map((p) => (
                         <option key={p.id} value={p.id}>
-                          {formatPersonName(p.name, locale)} {p.jobTitle ? `(${formatRoleName(p.jobTitle, locale)})` : ""}
+                          {formatPersonName(p.name, locale)}
                         </option>
                       ))
                     ) : (

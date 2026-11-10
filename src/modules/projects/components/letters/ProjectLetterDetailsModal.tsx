@@ -28,7 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ProjectLetter } from "../../types/project-letters.types";
 import { downloadAttachment } from "@/modules/tasks/components/TaskAttachmentList";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 
 interface ProjectLetterDetailsModalProps {
   open: boolean;

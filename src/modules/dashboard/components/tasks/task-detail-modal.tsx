@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 import type {
   DashboardTask,
   TaskComment,
@@ -368,10 +368,7 @@ export function TaskDetailModal({
                       >
                         <div className="flex items-center justify-between text-muted-foreground">
                           <span className="font-semibold text-foreground/90">
-                            {formatPersonName(comment.authorName, locale)}{" "}
-                            <span className="text-[10px] text-muted-foreground font-normal">
-                              ({formatRoleName(comment.authorRole, locale)})
-                            </span>
+                            {formatPersonName(comment.authorName, locale)}
                           </span>
                           <span className="text-[10px] opacity-70 fa-num">
                             {comment.createdAt}

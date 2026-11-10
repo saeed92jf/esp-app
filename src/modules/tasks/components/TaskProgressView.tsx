@@ -2921,7 +2921,7 @@ function ProgressItem({
             </svg>
           )
         )}
-        {/* Header for incoming messages: Name + Badge right beside each other like screenshot */}
+        {/* Header for incoming messages: Name */}
         {!isMe && (
           <div className="flex items-center gap-2 mb-1" dir={isRtl ? "rtl" : "ltr"}>
             <span
@@ -2930,11 +2930,6 @@ function ProgressItem({
             >
               {formatPersonName(progress.author_name, locale)}
             </span>
-            {(isAdminNote || progress.author_role === "admin" || progress.author_role === "مدیر" || progress.author_role === "Owner") && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#ede8f8] text-[#7053d2] dark:bg-purple-900/40 dark:text-purple-300 leading-tight select-none">
-                {formatRoleName(progress.author_role || (isAdminNote ? "admin" : "engineer"), locale)}
-              </span>
-            )}
           </div>
         )}
 

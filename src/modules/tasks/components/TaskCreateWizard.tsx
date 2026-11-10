@@ -752,7 +752,6 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                       >
                         <span className="size-2 rounded-full bg-primary" />
                         <span>{formatPersonName(a.name, locale)}</span>
-                        {a.role && <span className="text-[10px] text-muted-foreground font-normal">({formatRoleName(a.role, locale)})</span>}
                         <button
                           type="button"
                           onClick={() => removeAssigneeById(a.userId)}
@@ -825,9 +824,11 @@ export function TaskCreateWizard({ currentUser, onTaskCreated, onCancel }: TaskC
                             <p className="text-xs sm:text-sm font-bold text-foreground truncate">
                               {formatPersonName(person.name, locale)}
                             </p>
-                            <p className="text-[11px] text-muted-foreground truncate">
-                              {formatRoleName(person.jobTitle, locale)} {person.company ? `• ${person.company === "یورو اسلات پارس" ? (isRtl ? "یورو اسلات پارس" : "Euroslot Pars") : (isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram")}` : ""}
-                            </p>
+                            {person.company && (
+                              <p className="text-[11px] text-muted-foreground truncate">
+                                {person.company === "یورو اسلات پارس" ? (isRtl ? "یورو اسلات پارس" : "Euroslot Pars") : (isRtl ? "نانو پالایش سرام" : "Nano Palayesh Seram")}
+                              </p>
+                            )}
                           </div>
                         </div>
 

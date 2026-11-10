@@ -55,7 +55,7 @@ import {
 import { TaskCommentThread } from "./task-comment-thread";
 import { TaskAttachmentsSection } from "./task-attachments-section";
 import { cn } from "@/lib/utils";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 import {
   segmentedAccordionMotion,
   getSegmentedAccordionHeaderClass,
@@ -1132,9 +1132,6 @@ export function TaskDetailView({
                         <div className="text-xs font-bold text-foreground truncate">
                           {formatPersonName(assignees[0]?.name || "سعید جلیلی", locale)}
                         </div>
-                        <div className="text-[10px] text-muted-foreground truncate">
-                          {formatRoleName(assignees[0]?.role || "لیدر پروژه", locale)}
-                        </div>
                       </div>
                     </div>
 
@@ -1713,7 +1710,6 @@ export function TaskDetailView({
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">{formatRoleName(assignee.role, locale)}</div>
                     </div>
                   </div>
 

@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskComment, TaskCommentReply, TaskAttachment } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { TaskItem } from "../types/tasks.types";
 
@@ -330,9 +330,6 @@ export function TaskCommentThread({
                     <span className="text-xs font-bold text-foreground">
                       {formatPersonName(comment.authorName, locale)}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatRoleName(comment.authorRole, locale)}
-                    </span>
                   </div>
                 </div>
                 <span className="text-[10px] text-muted-foreground">
@@ -544,9 +541,6 @@ export function TaskCommentThread({
                           <div className="flex flex-col">
                             <span className="text-[11px] font-semibold text-foreground">
                               {formatPersonName(reply.authorName, locale)}
-                            </span>
-                            <span className="text-[9px] text-muted-foreground">
-                              {formatRoleName(reply.authorRole, locale)}
                             </span>
                           </div>
                         </div>

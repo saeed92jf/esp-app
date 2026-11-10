@@ -61,7 +61,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 
 type TaskTab = "kanban" | "table" | "timeline" | "create" | "detail" | "companies" | "analytics" | "settings";
 
@@ -874,7 +874,6 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
                         </div>
                         <div>
                           <span className="font-semibold text-xs text-foreground block">{formatPersonName(member.name, locale)}</span>
-                          <span className="text-[10px] text-muted-foreground">{formatRoleName(member.role, locale)}</span>
                         </div>
                       </div>
 
@@ -1044,7 +1043,7 @@ export function TasksManagementPage({ initialTab, initialTaskId }: TasksManageme
               >
                 {allAssignees.map((a) => (
                   <option key={a.name} value={a.name}>
-                    {formatPersonName(a.name, locale)} — {formatRoleName(a.role, locale)}
+                    {formatPersonName(a.name, locale)}
                   </option>
                 ))}
               </select>

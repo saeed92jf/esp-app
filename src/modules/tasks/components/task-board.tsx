@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskItem, TaskStatus, TaskPriority } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
 import { HighlightMatch } from "../utils/task-search";
-import { formatPersonName, formatRoleName } from "@/lib/person-names";
+import { formatPersonName } from "@/lib/person-names";
 
 interface TaskBoardProps {
   tasks: TaskItem[];
@@ -318,7 +318,7 @@ export function TaskBoard({
                         {/* Overlapping Collaborators Stack */}
                         <div
                           className="flex items-center -space-x-1.5 rtl:space-x-reverse"
-                          title={assignees.map((a) => `${formatPersonName(a.name, locale)} (${formatRoleName(a.role, locale)})`).join(isRtl ? "، " : ", ")}
+                          title={assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ")}
                         >
                           {visibleAssignees.map((assignee) => (
                             <Avatar

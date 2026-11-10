@@ -73,38 +73,6 @@ const CATEGORIES: CategoryItem[] = [
 ];
 
 
-function getRoleBadge(role?: string, isRtl = false) {
-  const r = (role || "").toLowerCase();
-  if (r === "superadmin") {
-    return {
-      label: isRtl ? "مدیر ارشد" : "Super Admin",
-      className: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30",
-    };
-  }
-  if (r === "admin") {
-    return {
-      label: isRtl ? "مدیر سیستم" : "Admin",
-      className: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-    };
-  }
-  if (r === "engineer") {
-    return {
-      label: isRtl ? "کارشناس مهندسی" : "Engineer",
-      className: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30",
-    };
-  }
-  if (r === "manager") {
-    return {
-      label: isRtl ? "مدیر واحد" : "Manager",
-      className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30",
-    };
-  }
-  return {
-    label: isRtl ? "پرسنل" : "Staff",
-    className: "bg-slate-500/15 text-slate-600 dark:text-slate-400 border-slate-500/30",
-  };
-}
-
 function UserAvatar({
   name,
   nameFa,
@@ -1152,12 +1120,6 @@ export function CommunityPage() {
                     </span>
                   </div>
                 </div>
-                <Badge
-                  variant="secondary"
-                  className={cn("text-[10px] px-2 py-0.5", getRoleBadge(user.role, isRtl).className)}
-                >
-                  {getRoleBadge(user.role, isRtl).label}
-                </Badge>
               </div>
 
               <h3 className="text-sm font-semibold mb-3 flex items-center gap-2 text-foreground">
@@ -1416,8 +1378,6 @@ export function CommunityPage() {
                     user.role === "superadmin" ||
                     user.role === "admin");
 
-                const roleBadge = getRoleBadge(post.authorRole, isRtl);
-
                 const rawAuthor = post.authorNameFa || post.authorName || post.authorNameEn || "";
                 const postAuthorDisplayName = rawAuthor
                   ? formatPersonName(rawAuthor, locale)
@@ -1654,12 +1614,6 @@ export function CommunityPage() {
                                 <span className="text-xs font-semibold text-foreground truncate">
                                   {postAuthorDisplayName}
                                 </span>
-                                <Badge
-                                  variant="secondary"
-                                  className={cn("text-[9px] px-1 py-0 h-3.5 border", roleBadge.className)}
-                                >
-                                  {roleBadge.label}
-                                </Badge>
                               </div>
                               <span className="text-[10px] text-muted-foreground block">
                                 {new Date(post.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US", {
@@ -1698,7 +1652,6 @@ export function CommunityPage() {
                         ) : (
                           <div className="space-y-3">
                             {replies.map((reply) => {
-                              const replyRoleBadge = getRoleBadge(reply.authorRole, isRtl);
                               const isAccepted = Boolean(reply.isAccepted || post.acceptedReplyId === reply.id);
                               const replyUpvoted = (reply.upvotes || []).includes(user?.id || "");
                               const replyDownvoted = (reply.downvotes || []).includes(user?.id || "");
@@ -1813,12 +1766,6 @@ export function CommunityPage() {
                                             isRtl={isRtl}
                                           />
                                           <span className="font-semibold text-foreground">{replyAuthorDisplayName}</span>
-                                          <Badge
-                                            variant="outline"
-                                            className={cn("text-[9px] px-1 py-0 h-3.5", replyRoleBadge.className)}
-                                          >
-                                            {replyRoleBadge.label}
-                                          </Badge>
                                         </div>
 
                                         <div className="flex items-center gap-2">
