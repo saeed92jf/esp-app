@@ -79,6 +79,42 @@ export interface Skill {
   id: string;
   name: string;
   level: number; // 1-5
+  tags?: string[];
+  category?: string;
+}
+
+export type ProjectType = 'esp' | 'personal';
+
+export interface ProjectItem {
+  id: string;
+  title: string;
+  type: ProjectType; // 'esp' | 'personal'
+  role?: string;
+  client?: string;
+  company?: string;
+  startDate?: string;
+  endDate?: string;
+  isOngoing?: boolean;
+  description?: string;
+  tags?: string[];
+  link?: string;
+}
+
+export type ExperienceType = 'esp' | 'personal';
+
+export interface ExperienceItem {
+  id: string;
+  title: string;
+  type: ExperienceType; // 'esp' | 'personal'
+  company: string;
+  department?: string;
+  location?: string;
+  employmentType?: string;
+  startDate?: string;
+  endDate?: string;
+  isCurrent?: boolean;
+  description?: string;
+  achievements?: string[];
 }
 
 export type SupplementaryInsurancePlan = "golden" | "silver" | "special" | "none";
@@ -148,6 +184,8 @@ export interface UserProfile {
   personal: PersonalInfo;
   organizational: OrganizationalInfo;
   skills: Skill[];
+  projects?: ProjectItem[];
+  experiences?: ExperienceItem[];
   insurance: InsuranceInfo;
   education: EducationInfo;
   documents?: UserUploadedDocument[];

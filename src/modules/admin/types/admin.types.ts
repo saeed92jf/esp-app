@@ -70,6 +70,8 @@ export interface User {
   recentActivities?: { id: string; title: string; date: string; status: 'pending' | 'approved' | 'rejected'; grade?: number }[];
   checklists?: { id: string; title: string; completed: boolean }[];
   skills?: { name: string; rate: number }[];
+  projects?: any[];
+  experiences?: any[];
   employeeId?: string;
   contractType?: string;
   joinDate?: string;
@@ -235,6 +237,8 @@ export interface PendingRequest {
   graduationYear?: string;
   educationRecords?: EducationRecord[];
   skills?: { id: string; name: string; level: number }[];
+  projects?: any[];
+  experiences?: any[];
   documents?: UserUploadedDocument[];
   duties?: string[];
 

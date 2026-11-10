@@ -32,7 +32,7 @@
     "avatarMode": "photo",
     "joinedAt": "1402/03/25",
     "daysInCompany": 1100,
-    "doneProjects": 28,
+    "doneProjects": 0,
     "salary": 650000000,
     "hasOvertime": true,
     "maxOvertimeHours": 40,
@@ -118,7 +118,9 @@
     "hrApproved": true,
     "password": "Esp@394526",
     "reset_token": "R3FD1I0F6f6hKH1-WwvhI39n9E3n6HQo2gSBbBdKnGM",
-    "reset_token_created_at": "2026-11-04T13:42:16.407023"
+    "reset_token_created_at": "2026-11-04T13:42:16.407023",
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-shafiee",
@@ -145,7 +147,7 @@
     "avatarMode": "photo",
     "joinedAt": "1386/12/01",
     "daysInCompany": 300,
-    "doneProjects": 15,
+    "doneProjects": 0,
     "salary": 620000000,
     "hasOvertime": false,
     "maxOvertimeHours": 0,
@@ -362,7 +364,9 @@
     "dependents": [],
     "graduationYear": "",
     "educationRecords": [],
-    "manager": "مدیر عامل"
+    "manager": "مدیر عامل",
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-mcharmchi",
@@ -477,7 +481,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-amasoumian",
@@ -592,7 +599,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-rsharifi",
@@ -707,7 +717,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-mabbasi",
@@ -822,7 +835,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-pnavidi",
@@ -937,7 +953,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-anavidian",
@@ -1052,7 +1071,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-sjokar",
@@ -1167,7 +1189,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-zhassani",
@@ -1282,7 +1307,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-htayyar",
@@ -1397,7 +1425,10 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   },
   {
     "id": "u-psharifi",
@@ -1512,6 +1543,9 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
-    ]
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
   }
 ]

@@ -7,7 +7,7 @@ import React, { useState, useEffect, useTransition, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
-import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan } from "../types/profile";
+import { UserProfile, EducationRecord, DependentInfo, SupplementaryInsurancePlan, ProjectItem, ExperienceItem } from "../types/profile";
 import { api } from "@/services";
 import { DatePicker, getJalaliDate, jalaliToGregorianDate } from "@/components/ui/date-picker";
 import { Combobox, ComboboxOption } from "@/components/ui/combobox";
@@ -118,6 +118,7 @@ const LocationPickerMap = dynamic(
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,7 +133,8 @@ import {
   Monitor, Sun, Moon, Palette, Languages, Clock, CheckCircle2,
   Heart, Users, PhoneCall, CreditCard, Check, X,
   Building2, Factory, Laptop, Network, AlertCircle, Info,
-  FileCheck, UserCog, Send
+  FileCheck, UserCog, Send,
+  FolderGit2, Tag, Filter, ExternalLink, Award, Layers, Globe
 } from "lucide-react";
 import {
   Dialog,
@@ -311,6 +313,17 @@ const SUGGESTED_SKILLS = [
   "SolidWorks", "AutoCAD Mechanical", "P&ID & Piping", "ASME / API Standards",
   "FEA & Stress Analysis", "ANSYS", "Python Automation", "Engineering Documentation",
   "Manufacturing Processes", "MTO & Material Selection", "Project Engineering", "Quality Control"
+];
+
+const SUGGESTED_SKILL_TAGS = [
+  "فنی و مهندسی",
+  "نرم‌افزار و ابزار",
+  "طراحی و CAD",
+  "مدیریت و نظارت",
+  "کنترل کیفیت و بازرسی",
+  "استانداردها و کدها",
+  "زبان و ارتباطات",
+  "عمومی و فردی",
 ];
 
 export function ProfilePage() {
@@ -578,6 +591,103 @@ export function ProfilePage() {
     }) : prev);
     setEditingField(null);
     toast.success(t("actions.skillDeleted"));
+  };
+
+  // Skills, Projects & Experience Sub-Tab Management
+  const [skillsSubTab, setSkillsSubTab] = useState<"skills" | "projects" | "experience">("skills");
+  const [skillTagFilter, setSkillTagFilter] = useState<string>("all");
+  const [skillSearchQuery, setSkillSearchQuery] = useState<string>("");
+  const [projectTypeFilter, setProjectTypeFilter] = useState<"all" | "esp" | "personal">("all");
+  const [experienceTypeFilter, setExperienceTypeFilter] = useState<"all" | "esp" | "personal">("all");
+  const [customTagInput, setCustomTagInput] = useState<string>("");
+
+  const handleDeleteProject = (id: string) => {
+    setFormData(prev => {
+      if (!prev) return prev;
+      const updated = (prev.projects || []).filter(p => p.id !== id);
+      const updatedProfile = { ...prev, projects: updated };
+      updateProfile(updatedProfile);
+      return updatedProfile;
+    });
+    setEditingField(null);
+    toast.success(isRtl ? "پروژه با موفقیت حذف شد." : "Project successfully removed.");
+  };
+
+  const handleCancelProject = (id?: string) => {
+    if (id && formData) {
+      const proj = (formData.projects || []).find(p => p.id === id);
+      if (proj && !proj.title.trim()) {
+        setFormData({
+          ...formData,
+          projects: (formData.projects || []).filter(p => p.id !== id)
+        });
+      }
+    }
+    setEditingField(null);
+  };
+
+  const handleDeleteExperience = (id: string) => {
+    setFormData(prev => {
+      if (!prev) return prev;
+      const updated = (prev.experiences || []).filter(e => e.id !== id);
+      const updatedProfile = { ...prev, experiences: updated };
+      updateProfile(updatedProfile);
+      return updatedProfile;
+    });
+    setEditingField(null);
+    toast.success(isRtl ? "تجربه کاری با موفقیت حذف شد." : "Experience successfully removed.");
+  };
+
+  const handleCancelExperience = (id?: string) => {
+    if (id && formData) {
+      const exp = (formData.experiences || []).find(e => e.id === id);
+      if (exp && !exp.title.trim()) {
+        setFormData({
+          ...formData,
+          experiences: (formData.experiences || []).filter(e => e.id !== id)
+        });
+      }
+    }
+    setEditingField(null);
+  };
+
+  const handleAddProject = () => {
+    const newId = `proj_${Date.now()}`;
+    const newProj: ProjectItem = {
+      id: newId.replace('proj_', ''),
+      title: '',
+      type: 'esp',
+      role: '',
+      client: '',
+      company: '',
+      startDate: '',
+      endDate: '',
+      isOngoing: false,
+      description: '',
+      tags: [],
+      link: '',
+    };
+    setFormData(prev => prev ? ({ ...prev, projects: [...(prev.projects || []), newProj] }) : prev);
+    setEditingField(newId);
+  };
+
+  const handleAddExperience = () => {
+    const newId = `exp_${Date.now()}`;
+    const newExp: ExperienceItem = {
+      id: newId.replace('exp_', ''),
+      title: '',
+      type: 'esp',
+      company: 'یورواسلات پارس (Euroslot Pars)',
+      department: '',
+      location: 'تهران',
+      employmentType: 'full_time',
+      startDate: '',
+      endDate: '',
+      isCurrent: true,
+      description: '',
+    };
+    setFormData(prev => prev ? ({ ...prev, experiences: [...(prev.experiences || []), newExp] }) : prev);
+    setEditingField(newId);
   };
   const [isAvatarAccordionOpen, setIsAvatarAccordionOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -3140,250 +3250,1513 @@ export function ProfilePage() {
   };
 
   const renderSkillsView = () => {
+    // ─────────────────────────────────────────────────────────────
+    // 1. EDITING: Individual Skill Edit Screen
+    // ─────────────────────────────────────────────────────────────
     if (editingField?.startsWith('skill_')) {
       const skillId = editingField.replace('skill_', '');
       const skill = formData.skills.find(s => s.id === skillId);
       
       if (skill) {
+        const title = t("fields.skillName");
+        
+        const handleLocalSave = () => {
+          if (!skill.name.trim()) return;
+          handleSave();
+          setEditingField(null);
+          toast.success(t("actions.skillSaved"));
+        };
 
-      const title = t("fields.skillName");
-      
-      const handleLocalSave = () => {
-        if (!skill.name.trim()) return;
-        handleSave();
-        setEditingField(null);
-        toast.success(t("actions.skillSaved"));
-      };
+        const currentTags: string[] = Array.isArray(skill.tags) ? skill.tags : [];
 
-      return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
-          <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelSkill(skillId)}>
-               <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
-            </Button>
-            <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{title}</h2>
-          </div>
-          
-          <div className="ps-0 sm:ps-14">
-            <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
-               <div className="space-y-6 max-w-lg">
-                 {/* Skill Name Input */}
-                 <div className="space-y-2">
-                   <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
-                   <Input 
-                     value={skill.name} 
-                     onChange={(e) => {
-                       const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: e.target.value } : s);
-                       setFormData({ ...formData, skills: updated });
-                     }} 
-                     placeholder={t("placeholders.skillName")}
-                     className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" 
-                     autoFocus
-                   />
-                 </div>
+        const toggleTag = (tagName: string) => {
+          const exists = currentTags.includes(tagName);
+          const updatedTags = exists 
+            ? currentTags.filter(t => t !== tagName) 
+            : [...currentTags, tagName];
+          const updated = formData.skills.map(s => s.id === skillId ? { ...s, tags: updatedTags } : s);
+          setFormData({ ...formData, skills: updated });
+        };
 
-                 {/* Suggested Skill Chips */}
-                 <div className="space-y-2 pt-1">
-                   <Label className="text-xs font-semibold text-muted-foreground">{t("skillsSuggestions")}</Label>
-                   <div className="flex flex-wrap gap-1.5">
-                     {SUGGESTED_SKILLS.map((item: string) => (
-                       <button
-                         key={item}
-                         type="button"
-                         onClick={() => {
-                           const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: item } : s);
-                           setFormData({ ...formData, skills: updated });
-                         }}
-                         className="text-xs px-3 py-1.5 rounded-full bg-muted/40 hover:bg-primary/10 hover:text-primary border border-border/60 transition-colors cursor-pointer select-none"
-                       >
-                         + {item}
-                       </button>
-                     ))}
+        const handleAddCustomTag = () => {
+          const trimmed = customTagInput.trim();
+          if (!trimmed) return;
+          if (!currentTags.includes(trimmed)) {
+            const updated = formData.skills.map(s => s.id === skillId ? { ...s, tags: [...currentTags, trimmed] } : s);
+            setFormData({ ...formData, skills: updated });
+          }
+          setCustomTagInput("");
+        };
+
+        return (
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-4 mb-8">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelSkill(skillId)}>
+                 <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+              </Button>
+              <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{title}</h2>
+            </div>
+            
+            <div className="ps-0 sm:ps-14">
+              <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+                 <div className="space-y-6 max-w-lg">
+                   {/* Skill Name Input */}
+                   <div className="space-y-2">
+                     <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.skillName")}</Label>
+                     <Input 
+                       value={skill.name} 
+                       onChange={(e) => {
+                         const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: e.target.value } : s);
+                         setFormData({ ...formData, skills: updated });
+                       }} 
+                       placeholder={t("placeholders.skillName")}
+                       className="h-14 bg-transparent border-t-0 border-x-0 border-b-2 border-primary/20 rounded-none px-0 text-lg focus-visible:ring-0 focus-visible:border-primary shadow-none" 
+                       autoFocus
+                     />
                    </div>
-                 </div>
 
-                 {/* Proficiency Level Selector */}
-                 <div className="space-y-3 pt-4">
-                   <div className="flex items-center justify-between">
-                     <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.level")}</Label>
-                     <span 
-                       dir="ltr"
-                       className={cn(
-                         "text-xs font-bold px-2.5 py-0.5 rounded-full border text-left",
-                         getSkillBadgeStyle(skill.level)
-                       )}
-                     >
-                       {t(`skillsLevels.${skill.level}`)}
-                     </span>
-                   </div>
-                   
-                   <div className="grid grid-cols-5 gap-2">
-                     {[1, 2, 3, 4, 5].map((lvl) => {
-                       const isSelected = skill.level === lvl;
-                       return (
+                   {/* Suggested Skill Chips */}
+                   <div className="space-y-2 pt-1">
+                     <Label className="text-xs font-semibold text-muted-foreground">{t("skillsSuggestions")}</Label>
+                     <div className="flex flex-wrap gap-1.5">
+                       {SUGGESTED_SKILLS.map((item: string) => (
                          <button
-                           key={lvl}
+                           key={item}
                            type="button"
                            onClick={() => {
-                             const updated = formData.skills.map(s => s.id === skillId ? { ...s, level: lvl } : s);
+                             const updated = formData.skills.map(s => s.id === skillId ? { ...s, name: item } : s);
                              setFormData({ ...formData, skills: updated });
                            }}
-                           className={cn(
-                             "h-12 rounded-xl flex flex-col items-center justify-center gap-0.5 border transition-all cursor-pointer select-none",
-                             isSelected
-                               ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                               : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted/70 hover:text-foreground"
-                           )}
+                           className="text-xs px-3 py-1.5 rounded-full bg-muted/40 hover:bg-primary/10 hover:text-primary border border-border/60 transition-colors cursor-pointer select-none"
                          >
-                           <span className="font-bold text-sm font-mono">{lvl}</span>
-                           <span className="text-[10px] font-medium truncate px-1">
-                             {t(`skillsLevels.${lvl}`).split(" ")[0]}
-                           </span>
+                           + {item}
                          </button>
-                       );
-                     })}
+                       ))}
+                     </div>
+                   </div>
+
+                   {/* Skill Tags & Categories (قابلیت تگ‌گذاری) */}
+                   <div className="space-y-3 pt-2">
+                     <div className="flex items-center justify-between">
+                       <Label className="rtl:text-right block font-medium text-muted-foreground">
+                         {isRtl ? "دسته‌بندی و برچسب‌های مهارت (تگ‌ها)" : "Skill Tags & Category"}
+                       </Label>
+                       <span className="text-[11px] text-muted-foreground font-medium">
+                         {currentTags.length > 0 ? (isRtl ? `${currentTags.length} برچسب انتخاب شده` : `${currentTags.length} tags selected`) : ""}
+                       </span>
+                     </div>
+
+                     {/* Active Selected Tags */}
+                     {currentTags.length > 0 && (
+                       <div className="flex flex-wrap gap-1.5 p-2 rounded-xl bg-muted/20 border border-border/50">
+                         {currentTags.map((tag) => (
+                           <span
+                             key={tag}
+                             className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/25 font-medium"
+                           >
+                             <Tag className="size-3" />
+                             <span>{tag}</span>
+                             <button
+                               type="button"
+                               onClick={() => toggleTag(tag)}
+                               className="hover:text-destructive transition-colors ml-0.5 rtl:mr-0.5"
+                               title={isRtl ? "حذف برچسب" : "Remove tag"}
+                             >
+                               <X className="size-3" />
+                             </button>
+                           </span>
+                         ))}
+                       </div>
+                     )}
+
+                     {/* Predefined Tag Suggestions */}
+                     <div className="flex flex-wrap gap-1.5">
+                       {SUGGESTED_SKILL_TAGS.map((tag) => {
+                         const isSelected = currentTags.includes(tag);
+                         return (
+                           <button
+                             key={tag}
+                             type="button"
+                             onClick={() => toggleTag(tag)}
+                             className={cn(
+                               "text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer select-none inline-flex items-center gap-1",
+                               isSelected
+                                 ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                                 : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted/60 hover:text-foreground"
+                             )}
+                           >
+                             {isSelected ? <Check className="size-3" /> : <Plus className="size-3" />}
+                             <span>{tag}</span>
+                           </button>
+                         );
+                       })}
+                     </div>
+
+                     {/* Custom Tag Input */}
+                     <div className="flex items-center gap-2 pt-1">
+                       <Input
+                         value={customTagInput}
+                         onChange={(e) => setCustomTagInput(e.target.value)}
+                         onKeyDown={(e) => {
+                           if (e.key === 'Enter') {
+                             e.preventDefault();
+                             handleAddCustomTag();
+                           }
+                         }}
+                         placeholder={isRtl ? "افزودن برچسب سفارشی جدید..." : "Add custom tag..."}
+                         className="h-10 text-xs rounded-xl"
+                       />
+                       <Button
+                         type="button"
+                         size="sm"
+                         variant="outline"
+                         onClick={handleAddCustomTag}
+                         disabled={!customTagInput.trim()}
+                         className="h-10 rounded-xl px-3 text-xs shrink-0"
+                       >
+                         <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                         <span>{isRtl ? "افزودن تگ" : "Add"}</span>
+                       </Button>
+                     </div>
+                   </div>
+
+                   {/* Proficiency Level Selector */}
+                   <div className="space-y-3 pt-4">
+                     <div className="flex items-center justify-between">
+                       <Label className="rtl:text-right block font-medium text-muted-foreground">{t("fields.level")}</Label>
+                       <span 
+                         dir="ltr"
+                         className={cn(
+                           "text-xs font-bold px-2.5 py-0.5 rounded-full border text-left",
+                           getSkillBadgeStyle(skill.level)
+                         )}
+                       >
+                         {t(`skillsLevels.${skill.level}`)}
+                       </span>
+                     </div>
+                     
+                     <div className="grid grid-cols-5 gap-2">
+                       {[1, 2, 3, 4, 5].map((lvl) => {
+                         const isSelected = skill.level === lvl;
+                         return (
+                           <button
+                             key={lvl}
+                             type="button"
+                             onClick={() => {
+                               const updated = formData.skills.map(s => s.id === skillId ? { ...s, level: lvl } : s);
+                               setFormData({ ...formData, skills: updated });
+                             }}
+                             className={cn(
+                               "h-12 rounded-xl flex flex-col items-center justify-center gap-0.5 border transition-all cursor-pointer select-none",
+                               isSelected
+                                 ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                                 : "bg-muted/30 text-muted-foreground border-border/60 hover:bg-muted/70 hover:text-foreground"
+                             )}
+                           >
+                             <span className="font-bold text-sm font-mono">{lvl}</span>
+                             <span className="text-[10px] font-medium truncate px-1">
+                               {t(`skillsLevels.${lvl}`).split(" ")[0]}
+                             </span>
+                           </button>
+                         );
+                       })}
+                     </div>
                    </div>
                  </div>
-               </div>
 
-               {/* Action Footer */}
-               <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
-                 <Button 
-                   type="button"
-                   variant="ghost" 
-                   onClick={() => handleDeleteSkill(skillId)} 
-                   className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
-                 >
-                   <Trash className="size-4" />
-                   <span>{t("actions.deleteSkill")}</span>
-                 </Button>
-
-                 <div className="flex items-center gap-2">
+                 {/* Action Footer */}
+                 <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
                    <Button 
                      type="button"
                      variant="ghost" 
-                     onClick={() => handleCancelSkill(skillId)} 
-                     className="rounded-full px-6 font-medium text-muted-foreground hover:bg-muted/50"
+                     onClick={() => handleDeleteSkill(skillId)} 
+                     className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
                    >
-                     {t("actions.cancel")}
+                     <Trash className="size-4" />
+                     <span>{t("actions.deleteSkill")}</span>
                    </Button>
-                   <Button 
-                     type="button"
-                     onClick={handleLocalSave} 
-                     disabled={isUpdating || !skill.name.trim()} 
-                     className="rounded-full px-8 font-medium"
-                   >
-                     {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                     {t("actions.save")}
-                   </Button>
+
+                   <div className="flex items-center gap-2">
+                     <Button 
+                       type="button"
+                       variant="ghost" 
+                       onClick={() => handleCancelSkill(skillId)} 
+                       className="rounded-full px-6 font-medium text-muted-foreground hover:bg-muted/50"
+                     >
+                       {t("actions.cancel")}
+                     </Button>
+                     <Button 
+                       type="button"
+                       onClick={handleLocalSave} 
+                       disabled={isUpdating || !skill.name.trim()} 
+                       className="rounded-full px-8 font-medium"
+                     >
+                       {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                       {t("actions.save")}
+                     </Button>
+                   </div>
                  </div>
-               </div>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
       }
     }
 
+    // ─────────────────────────────────────────────────────────────
+    // 2. EDITING: Individual Project Edit Screen
+    // ─────────────────────────────────────────────────────────────
+    if (editingField?.startsWith('proj_')) {
+      const projId = editingField.replace('proj_', '');
+      const project = (formData.projects || []).find(p => p.id === projId);
+
+      if (project) {
+        const isExisting = Boolean(project.title?.trim());
+        const screenTitle = isRtl 
+          ? (isExisting ? "ویرایش پروژه" : "ثبت پروژه جدید")
+          : (isExisting ? "Edit Project" : "Add New Project");
+
+        const handleLocalSaveProject = () => {
+          if (!project.title.trim()) return;
+          handleSave();
+          setEditingField(null);
+          toast.success(isRtl ? "پروژه با موفقیت ذخیره شد." : "Project saved successfully.");
+        };
+
+        const updateProjectField = (patch: Partial<ProjectItem>) => {
+          const updated = (formData.projects || []).map(p => p.id === projId ? { ...p, ...patch } : p);
+          setFormData({ ...formData, projects: updated });
+        };
+
+        return (
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-4 mb-8">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelProject(projId)}>
+                 <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+              </Button>
+              <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{screenTitle}</h2>
+            </div>
+
+            <div className="ps-0 sm:ps-14">
+              <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+                <div className="space-y-6 max-w-xl">
+                  {/* Project Type Segmented Selector (ESP vs Personal) */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "نوع پروژه" : "Project Type"}
+                    </Label>
+                    <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50">
+                      <button
+                        type="button"
+                        onClick={() => updateProjectField({ type: 'esp' })}
+                        className={cn(
+                          "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                          project.type === 'esp'
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Building2 className="size-3.5" />
+                        <span>{isRtl ? "پروژه یورواسلات پارس (ESP)" : "Euroslot Pars (ESP) Project"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateProjectField({ type: 'personal' })}
+                        className={cn(
+                          "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                          project.type === 'personal'
+                            ? "bg-emerald-600 text-white shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <User className="size-3.5" />
+                        <span>{isRtl ? "پروژه شخصی / آزاد" : "Personal / Independent Project"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Project Title */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "عنوان پروژه *" : "Project Title *"}
+                    </Label>
+                    <Input
+                      value={project.title}
+                      onChange={(e) => updateProjectField({ title: e.target.value })}
+                      placeholder={isRtl ? "مثال: سیستم مانیتورینگ آنلاین ارتعاشات توربین" : "e.g. Turbine Online Vibration Monitoring System"}
+                      className="h-12 text-base rounded-xl"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Role & Client in 2 columns */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "سمت / نقش در پروژه" : "Your Role / Position"}
+                      </Label>
+                      <Input
+                        value={project.role || ""}
+                        onChange={(e) => updateProjectField({ role: e.target.value })}
+                        placeholder={isRtl ? "مثال: سرپرست فنی یا طراح مکانیک" : "e.g. Lead Technical Engineer"}
+                        className="h-11 text-sm rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "کارفرما / سازمان مشتری" : "Client / Organization"}
+                      </Label>
+                      <Input
+                        value={project.client || project.company || ""}
+                        onChange={(e) => updateProjectField({ client: e.target.value, company: e.target.value })}
+                        placeholder={isRtl ? "مثال: شرکت پتروشیمی زاگرس / ملی گاز" : "e.g. Zagros Petrochemical Co."}
+                        className="h-11 text-sm rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Period: Start Date & End Date / Ongoing */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "دوره زمانی پروژه" : "Project Timeline"}
+                      </Label>
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(project.isOngoing)}
+                          onChange={(e) => updateProjectField({ isOngoing: e.target.checked })}
+                          className="rounded border-border accent-primary size-3.5"
+                        />
+                        <span>{isRtl ? "در حال اجرا / جاری" : "Currently ongoing"}</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Input
+                          value={project.startDate || ""}
+                          onChange={(e) => updateProjectField({ startDate: e.target.value })}
+                          placeholder={isRtl ? "تاریخ شروع (مثلاً ۱۴۰۲/۰۲)" : "Start date (e.g. 2023/05)"}
+                          className="h-11 text-sm rounded-xl"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          value={project.isOngoing ? (isRtl ? "در حال اجرا" : "Present") : (project.endDate || "")}
+                          disabled={Boolean(project.isOngoing)}
+                          onChange={(e) => updateProjectField({ endDate: e.target.value })}
+                          placeholder={isRtl ? "تاریخ پایان (مثلاً ۱۴۰۳/۰۴)" : "End date (e.g. 2024/07)"}
+                          className="h-11 text-sm rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Project Description */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "شرح پروژه و دستاوردها" : "Description & Key Achievements"}
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      value={project.description || ""}
+                      onChange={(e) => updateProjectField({ description: e.target.value })}
+                      placeholder={isRtl ? "شرح مختصری از اهداف، نوآوری‌ها، استانداردهای به کار رفته و نتایج کلیدی پروژه..." : "Brief overview of goals, technologies used and delivered value..."}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+
+                  {/* Technologies & Tags */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "فناوری‌ها، استانداردها یا مهارت‌های کلیدی (با کاما جدا کنید)" : "Technologies & Skills Used (Comma-separated)"}
+                    </Label>
+                    <Input
+                      value={(project.tags || []).join("، ")}
+                      onChange={(e) => {
+                        const splitted = e.target.value.split(/[,،]/).map(s => s.trim()).filter(Boolean);
+                        updateProjectField({ tags: splitted });
+                      }}
+                      placeholder={isRtl ? "مثال: SolidWorks، تحلیل تنش، ASME Sec VIII، Python" : "e.g. SolidWorks, FEA, ASME Sec VIII, Python"}
+                      className="h-11 text-sm rounded-xl"
+                    />
+                  </div>
+
+                  {/* Project URL / Link */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "لینک مستندات یا معرفی پروژه (اختیاری)" : "Project Link / Documentation (Optional)"}
+                    </Label>
+                    <Input
+                      value={project.link || ""}
+                      onChange={(e) => updateProjectField({ link: e.target.value })}
+                      placeholder="https://..."
+                      dir="ltr"
+                      className="h-11 text-sm rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    onClick={() => handleDeleteProject(projId)} 
+                    className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
+                  >
+                    <Trash className="size-4" />
+                    <span>{isRtl ? "حذف پروژه" : "Delete Project"}</span>
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      onClick={() => handleCancelProject(projId)} 
+                      className="rounded-full px-6 font-medium text-muted-foreground hover:bg-muted/50"
+                    >
+                      {t("actions.cancel")}
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={handleLocalSaveProject} 
+                      disabled={isUpdating || !project.title.trim()} 
+                      className="rounded-full px-8 font-medium"
+                    >
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t("actions.save")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 3. EDITING: Individual Experience Edit Screen
+    // ─────────────────────────────────────────────────────────────
+    if (editingField?.startsWith('exp_')) {
+      const expId = editingField.replace('exp_', '');
+      const experience = (formData.experiences || []).find(e => e.id === expId);
+
+      if (experience) {
+        const isExisting = Boolean(experience.title?.trim());
+        const screenTitle = isRtl 
+          ? (isExisting ? "ویرایش سابقه شغلی" : "ثبت تجربه و سابقه کاری جدید")
+          : (isExisting ? "Edit Experience" : "Add New Experience");
+
+        const handleLocalSaveExperience = () => {
+          if (!experience.title.trim()) return;
+          handleSave();
+          setEditingField(null);
+          toast.success(isRtl ? "سابقه کاری با موفقیت ذخیره شد." : "Experience saved successfully.");
+        };
+
+        const updateExpField = (patch: Partial<ExperienceItem>) => {
+          const updated = (formData.experiences || []).map(e => e.id === expId ? { ...e, ...patch } : e);
+          setFormData({ ...formData, experiences: updated });
+        };
+
+        return (
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-4 mb-8">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelExperience(expId)}>
+                 <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
+              </Button>
+              <h2 className="text-2xl sm:text-3xl font-normal text-foreground">{screenTitle}</h2>
+            </div>
+
+            <div className="ps-0 sm:ps-14">
+              <div className="bg-white dark:bg-card border border-border/60 rounded-[24px] p-6 sm:p-8 shadow-sm">
+                <div className="space-y-6 max-w-xl">
+                  {/* Experience Type Segmented Selector (ESP vs Personal/External) */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "نوع سابقه شغلی" : "Experience Type"}
+                    </Label>
+                    <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50">
+                      <button
+                        type="button"
+                        onClick={() => updateExpField({ 
+                          type: 'esp', 
+                          company: 'یورواسلات پارس (Euroslot Pars)' 
+                        })}
+                        className={cn(
+                          "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                          experience.type === 'esp'
+                            ? "bg-blue-600 text-white shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Building2 className="size-3.5" />
+                        <span>{isRtl ? "سابقه در شرکت یورواسلات پارس (ESP)" : "Euroslot Pars (ESP)"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateExpField({ type: 'personal' })}
+                        className={cn(
+                          "flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                          experience.type === 'personal'
+                            ? "bg-amber-600 text-white shadow-xs"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Briefcase className="size-3.5" />
+                        <span>{isRtl ? "سابقه در سایر شرکت‌ها / فعالیت آزاد" : "Personal / External Experience"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Job Title / Role */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "عنوان شغلی / سمت *" : "Job Title / Role *"}
+                    </Label>
+                    <Input
+                      value={experience.title}
+                      onChange={(e) => updateExpField({ title: e.target.value })}
+                      placeholder={isRtl ? "مثال: کارشناس ارشد مهندسی مکانیک" : "e.g. Senior Mechanical Engineer"}
+                      className="h-12 text-base rounded-xl"
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Company & Department in 2 columns */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "نام شرکت یا سازمان *" : "Company / Organization *"}
+                      </Label>
+                      <Input
+                        value={experience.company}
+                        onChange={(e) => updateExpField({ company: e.target.value })}
+                        placeholder={isRtl ? "نام شرکت..." : "Company name..."}
+                        className="h-11 text-sm rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "واحد / دپارتمان" : "Department / Unit"}
+                      </Label>
+                      <Input
+                        value={experience.department || ""}
+                        onChange={(e) => updateExpField({ department: e.target.value })}
+                        placeholder={isRtl ? "مثال: واحد طراحی و مهندسی" : "e.g. Engineering & Design"}
+                        className="h-11 text-sm rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Employment Type & Location */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "نوع همکاری" : "Employment Type"}
+                      </Label>
+                      <select
+                        value={experience.employmentType || "full_time"}
+                        onChange={(e) => updateExpField({ employmentType: e.target.value })}
+                        className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value="full_time">{isRtl ? "تمام وقت (Full Time)" : "Full Time"}</option>
+                        <option value="part_time">{isRtl ? "پاره وقت (Part Time)" : "Part Time"}</option>
+                        <option value="contractual">{isRtl ? "قراردادی / پروژه‌ای" : "Contractual"}</option>
+                        <option value="remote">{isRtl ? "دورکاری / فریلنس" : "Remote / Freelance"}</option>
+                        <option value="internship">{isRtl ? "کارآموزی" : "Internship"}</option>
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "شهر / محل کار" : "Location"}
+                      </Label>
+                      <Input
+                        value={experience.location || ""}
+                        onChange={(e) => updateExpField({ location: e.target.value })}
+                        placeholder={isRtl ? "مثال: تهران / عسلویه" : "e.g. Tehran"}
+                        className="h-11 text-sm rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dates: Start Date & End Date / Current */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="rtl:text-right block font-medium text-muted-foreground">
+                        {isRtl ? "دوره اشتغال" : "Employment Period"}
+                      </Label>
+                      <label className="flex items-center gap-1.5 cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(experience.isCurrent)}
+                          onChange={(e) => updateExpField({ isCurrent: e.target.checked })}
+                          className="rounded border-border accent-primary size-3.5"
+                        />
+                        <span>{isRtl ? "در حال حاضر در این سمت مشغول به کار هستم" : "Currently working here"}</span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <Input
+                          value={experience.startDate || ""}
+                          onChange={(e) => updateExpField({ startDate: e.target.value })}
+                          placeholder={isRtl ? "تاریخ شروع (مثلاً ۱۳۹۹/۰۱)" : "Start date (e.g. 2020/03)"}
+                          className="h-11 text-sm rounded-xl"
+                        />
+                      </div>
+                      <div>
+                        <Input
+                          value={experience.isCurrent ? (isRtl ? "مشغول به کار" : "Present") : (experience.endDate || "")}
+                          disabled={Boolean(experience.isCurrent)}
+                          onChange={(e) => updateExpField({ endDate: e.target.value })}
+                          placeholder={isRtl ? "تاریخ پایان (مثلاً ۱۴۰۲/۱۲)" : "End date (e.g. 2024/03)"}
+                          className="h-11 text-sm rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Responsibilities & Key Contributions */}
+                  <div className="space-y-2">
+                    <Label className="rtl:text-right block font-medium text-muted-foreground">
+                      {isRtl ? "شرح وظایف و تجارب کلیدی" : "Responsibilities & Key Achievements"}
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      value={experience.description || ""}
+                      onChange={(e) => updateExpField({ description: e.target.value })}
+                      placeholder={isRtl ? "خلاصه‌ای از مسئولیت‌ها، تیم‌های تحت مدیریت، پروژه‌های عمده و دستاوردهای کاری..." : "Summary of key responsibilities, projects, and achievements..."}
+                      className="rounded-xl text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="flex items-center justify-between gap-3 mt-10 pt-6 border-t border-border/40">
+                  <Button 
+                    type="button"
+                    variant="ghost" 
+                    onClick={() => handleDeleteExperience(expId)} 
+                    className="rounded-full px-4 text-xs font-semibold text-destructive hover:bg-destructive/10 gap-1.5"
+                  >
+                    <Trash className="size-4" />
+                    <span>{isRtl ? "حذف سابقه" : "Delete Experience"}</span>
+                  </Button>
+
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      onClick={() => handleCancelExperience(expId)} 
+                      className="rounded-full px-6 font-medium text-muted-foreground hover:bg-muted/50"
+                    >
+                      {t("actions.cancel")}
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={handleLocalSaveExperience} 
+                      disabled={isUpdating || !experience.title.trim()} 
+                      className="rounded-full px-8 font-medium"
+                    >
+                      {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {t("actions.save")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 4. MAIN LIST VIEW WITH SUB-TABS (Skills - Projects - Experience)
+    // ─────────────────────────────────────────────────────────────
+    const allSkills = formData.skills || [];
+    const allProjects = formData.projects || [];
+    const allExperiences = formData.experiences || [];
+
+    // Extract all unique tags present across user skills
+    const existingSkillTags = Array.from(
+      new Set(allSkills.flatMap(s => s.tags || []).filter(Boolean))
+    );
+
+    // Filter skills by selected tag & search query
+    const filteredSkills = allSkills.filter((s) => {
+      const matchesTag = skillTagFilter === "all" || (s.tags && s.tags.includes(skillTagFilter));
+      const query = skillSearchQuery.trim().toLowerCase();
+      const matchesSearch = !query || 
+        s.name.toLowerCase().includes(query) ||
+        (s.tags && s.tags.some(t => t.toLowerCase().includes(query)));
+      return matchesTag && matchesSearch;
+    });
+
+    // Filter projects by type (All, ESP, Personal)
+    const filteredProjects = allProjects.filter((p) => {
+      if (projectTypeFilter === "all") return true;
+      return p.type === projectTypeFilter;
+    });
+
+    // Filter experiences by type (All, ESP, Personal)
+    const filteredExperiences = allExperiences.filter((e) => {
+      if (experienceTypeFilter === "all") return true;
+      return e.type === experienceTypeFilter;
+    });
+
     return (
       <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-300">
-        <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-8">{t("tabs.skills")}</h2>
-        
-        {/* Technical Competencies Banner (Decoupled from Duties) */}
-        <div className="mb-6 p-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-start gap-3.5 shadow-xs">
-          <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
-            <Star className="size-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h4 className="text-xs sm:text-sm font-bold text-foreground">
-              {t("tabs.skills")} - {t("fields.skillsNote")}
-            </h4>
-            <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-              {t("fields.dutiesNotice")}
-            </p>
-          </div>
+        <h2 className="text-3xl sm:text-4xl font-normal text-foreground mb-6">
+          {isRtl ? "مهارت‌ها، پروژه‌ها و تجارب" : "Skills, Projects & Experience"}
+        </h2>
+
+        {/* ── Top Segmented Sub-Navigation (Skills - Projects - Experience) ── */}
+        <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-muted/40 border border-border/50 max-w-lg mb-8 shadow-xs">
+          <button
+            type="button"
+            onClick={() => setSkillsSubTab("skills")}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+              skillsSubTab === "skills"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            )}
+          >
+            <Star className="size-3.5" />
+            <span>{isRtl ? "مهارت‌ها" : "Skills"}</span>
+            {allSkills.length > 0 && (
+              <span className={cn(
+                "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                skillsSubTab === "skills" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                {allSkills.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSkillsSubTab("projects")}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+              skillsSubTab === "projects"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            )}
+          >
+            <FolderGit2 className="size-3.5" />
+            <span>{isRtl ? "پروژه‌ها" : "Projects"}</span>
+            {allProjects.length > 0 && (
+              <span className={cn(
+                "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                skillsSubTab === "projects" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                {allProjects.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSkillsSubTab("experience")}
+            className={cn(
+              "flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+              skillsSubTab === "experience"
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+            )}
+          >
+            <Briefcase className="size-3.5" />
+            <span>{isRtl ? "سوابق و تجارب" : "Experience"}</span>
+            {allExperiences.length > 0 && (
+              <span className={cn(
+                "text-[10px] px-1.5 py-0.2 rounded-full font-mono",
+                skillsSubTab === "experience" ? "bg-primary-foreground/20 text-primary-foreground" : "bg-muted text-muted-foreground"
+              )}>
+                {allExperiences.length}
+              </span>
+            )}
+          </button>
         </div>
 
-        <div className="segmented-list mb-10">
-          {formData.skills.map((skill, index) => {
-            const isFirst = index === 0;
-            const isLast = index === formData.skills.length - 1;
-            const roundedClass = isFirst && isLast 
-              ? "rounded-[8px]"
-              : isFirst 
-                ? "rounded-t-[24px] rounded-b-[8px]" 
-                : isLast 
-                  ? "rounded-[8px]"
-                  : "rounded-[8px]";
+        {/* ─────────────────────────────────────────────────────────────
+            SUB-TAB 1: SKILLS (با قابلیت تگ و فیلتر برچسب‌ها)
+        ───────────────────────────────────────────────────────────── */}
+        {skillsSubTab === "skills" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Technical Competencies Banner */}
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 flex items-start gap-3.5 shadow-xs">
+              <div className="size-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                <Star className="size-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  {t("tabs.skills")} - {t("fields.skillsNote")}
+                </h4>
+                <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                  {t("fields.dutiesNotice")}
+                </p>
+              </div>
+            </div>
 
-            return (
-              <div 
-                key={skill.id}
-                className={cn(
-                  "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group h-[72px]",
-                  roundedClass
-                )}
-                onClick={() => setEditingField('skill_' + skill.id)}
-              >
-                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-                 <div className="flex items-center gap-4 w-1/3 min-w-0">
-                    <Star className="size-5 text-muted-foreground shrink-0" />
-                    <span className="text-sm font-medium text-foreground truncate">{skill.name || t("notSet")}</span>
-                 </div>
-                 <div className="flex items-center justify-end w-2/3 gap-3">
-                    <span 
-                      dir="ltr"
-                      className={cn(
-                        "text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-left shrink-0 inline-flex items-center justify-center min-w-[70px]",
-                        getSkillBadgeStyle(skill.level)
-                      )}
-                    >
-                      {t(`skillsLevels.${skill.level}`).split(" ")[0]}
-                    </span>
-                    <div className="flex items-center gap-1.5 px-2" dir="ltr">
-                      {[1, 2, 3, 4, 5].map((level) => (
-                        <div 
-                          key={level} 
-                          className={cn(
-                            "size-2 sm:size-2.5 rounded-full transition-colors",
-                            level <= skill.level ? 'bg-primary' : 'bg-muted'
-                          )}
-                        />
-                      ))}
-                    </div>
+            {/* Filter & Tag Filter Bar (فیلتر و برچسب‌های مهارت‌ها) */}
+            <div className="space-y-3 p-4 rounded-2xl bg-muted/20 border border-border/50">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                {/* Search in Skills / Tags */}
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="size-3.5 absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                  <Input
+                    value={skillSearchQuery}
+                    onChange={(e) => setSkillSearchQuery(e.target.value)}
+                    placeholder={isRtl ? "جستجو در عنوان مهارت‌ها یا تگ‌ها..." : "Search skills or tags..."}
+                    className="h-9 ps-8 pe-8 text-xs rounded-xl bg-background"
+                  />
+                  {skillSearchQuery && (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteSkill(skill.id);
-                      }}
-                      className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
-                      title={t("actions.deleteSkill")}
+                      onClick={() => setSkillSearchQuery("")}
+                      className="absolute end-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
-                      <Trash className="size-4" />
+                      <X className="size-3" />
                     </button>
-                    <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </div>
+
+                <div className="text-[11px] text-muted-foreground font-medium shrink-0">
+                  {isRtl ? `${filteredSkills.length} مهارت نمایش داده شده` : `${filteredSkills.length} skills shown`}
+                </div>
+              </div>
+
+              {/* Tag Filter Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setSkillTagFilter("all")}
+                  className={cn(
+                    "text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer font-medium flex items-center gap-1",
+                    skillTagFilter === "all"
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                      : "bg-background text-muted-foreground border-border/60 hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  <Filter className="size-3" />
+                  <span>{isRtl ? "همه برچسب‌ها" : "All Tags"}</span>
+                  <span className="text-[10px] font-mono opacity-80">({allSkills.length})</span>
+                </button>
+
+                {existingSkillTags.map((tag) => {
+                  const tagCount = allSkills.filter(s => s.tags?.includes(tag)).length;
+                  const isSelected = skillTagFilter === tag;
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setSkillTagFilter(isSelected ? "all" : tag)}
+                      className={cn(
+                        "text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer font-medium flex items-center gap-1",
+                        isSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-xs"
+                          : "bg-background text-muted-foreground border-border/60 hover:bg-muted/50 hover:text-foreground"
+                      )}
+                    >
+                      <Tag className="size-3" />
+                      <span>{tag}</span>
+                      <span className="text-[10px] font-mono opacity-80">({tagCount})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Segmented List of Skills */}
+            <div className="segmented-list mb-10">
+              {filteredSkills.map((skill, index) => {
+                const isFirst = index === 0;
+                const isLast = index === filteredSkills.length - 1;
+                const roundedClass = isFirst && isLast 
+                  ? "rounded-[8px]"
+                  : isFirst 
+                    ? "rounded-t-[24px] rounded-b-[8px]" 
+                    : isLast 
+                      ? "rounded-[8px]"
+                      : "rounded-[8px]";
+
+                const tags = Array.isArray(skill.tags) ? skill.tags : [];
+
+                return (
+                  <div 
+                    key={skill.id}
+                    className={cn(
+                      "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group min-h-[72px] py-3",
+                      roundedClass
+                    )}
+                    onClick={() => setEditingField('skill_' + skill.id)}
+                  >
+                     <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                     <div className="flex items-center gap-3.5 flex-1 min-w-0 me-3">
+                        <Star className="size-5 text-amber-500 shrink-0" />
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-foreground block truncate">
+                            {skill.name || t("notSet")}
+                          </span>
+                          {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {tags.map(tag => (
+                                <span 
+                                  key={tag}
+                                  className="text-[10px] px-2 py-0.2 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium inline-flex items-center gap-0.5"
+                                >
+                                  <Tag className="size-2.5" />
+                                  <span>{tag}</span>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                     </div>
+                     <div className="flex items-center justify-end gap-3 shrink-0">
+                        <span 
+                          dir="ltr"
+                          className={cn(
+                            "text-[11px] font-bold px-2.5 py-0.5 rounded-full border text-left shrink-0 inline-flex items-center justify-center min-w-[70px]",
+                            getSkillBadgeStyle(skill.level)
+                          )}
+                        >
+                          {t(`skillsLevels.${skill.level}`).split(" ")[0]}
+                        </span>
+                        <div className="hidden sm:flex items-center gap-1.5 px-2" dir="ltr">
+                          {[1, 2, 3, 4, 5].map((level) => (
+                            <div 
+                              key={level} 
+                              className={cn(
+                                "size-2 sm:size-2.5 rounded-full transition-colors",
+                                level <= skill.level ? 'bg-primary' : 'bg-muted'
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSkill(skill.id);
+                          }}
+                          className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
+                          title={t("actions.deleteSkill")}
+                        >
+                          <Trash className="size-4" />
+                        </button>
+                        <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     </div>
+                  </div>
+                );
+              })}
+
+              {filteredSkills.length === 0 && (
+                <div className="p-8 text-center rounded-[16px] bg-muted/15 border border-dashed border-border/60">
+                  <Star className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {skillSearchQuery || skillTagFilter !== "all" 
+                      ? (isRtl ? "مهارتی با مشخصات و فیلترهای انتخابی یافت نشد." : "No skills match the selected filter/search.")
+                      : (isRtl ? "هنوز مهارتی ثبت نشده است." : "No skills added yet.")}
+                  </p>
+                  {(skillSearchQuery || skillTagFilter !== "all") && (
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={() => { setSkillSearchQuery(""); setSkillTagFilter("all"); }}
+                      className="text-xs mt-1"
+                    >
+                      {isRtl ? "پاک کردن فیلترها" : "Clear filters"}
+                    </Button>
+                  )}
+                </div>
+              )}
+              
+              <div 
+                onClick={() => {
+                  const newId = `skill_${Date.now()}`;
+                  const newSkill = { id: newId.replace('skill_', ''), name: '', level: 3, tags: [] };
+                  setFormData(prev => prev ? ({ ...prev, skills: [...prev.skills, newSkill] }) : prev);
+                  setEditingField(newId);
+                }}
+                className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] rounded-b-[24px] border-t border-border/40 hover:bg-muted/20 transition-colors"
+              >
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                 <div className="flex items-center gap-2 text-primary font-medium">
+                    <Plus className="size-5 shrink-0" />
+                    <span>{t("actions.addSkill")}</span>
                  </div>
               </div>
-            );
-          })}
-          
-          <div 
-            onClick={() => {
-              const newId = `skill_${Date.now()}`;
-              const newSkill = { id: newId.replace('skill_', ''), name: '', level: 3 };
-              setFormData(prev => prev ? ({ ...prev, skills: [...prev.skills, newSkill] }) : prev);
-              setEditingField(newId);
-            }}
-            className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] rounded-b-[24px] border-t border-border/40 hover:bg-muted/20 transition-colors">
-             <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
-
-             <div className="flex items-center gap-2 text-primary font-medium">
-                <Plus className="size-5 shrink-0" />
-                <span>{t("actions.addSkill")}</span>
-             </div>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* ─────────────────────────────────────────────────────────────
+            SUB-TAB 2: PROJECTS (پروژه‌های شخصی و ESP)
+        ───────────────────────────────────────────────────────────── */}
+        {skillsSubTab === "projects" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Projects Banner */}
+            <div className="p-4 rounded-2xl bg-blue-500/5 border border-blue-500/20 flex items-start gap-3.5 shadow-xs">
+              <div className="size-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                <FolderGit2 className="size-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  {isRtl ? "پروژه‌های اجرایی و توسعه‌ای" : "Engineering & Professional Projects"}
+                </h4>
+                <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                  {isRtl 
+                    ? "امکان تفکیک و ثبت پروژه‌های درون‌سازمانی یورواسلات پارس (ESP) و همچنین پروژه‌های شخصی و آزاد جهت ارائه سوابق فنی کامل."
+                    : "Track corporate Euroslot Pars (ESP) projects alongside personal and freelance projects for a complete engineering portfolio."}
+                </p>
+              </div>
+            </div>
+
+            {/* Projects Filter Toggle (همه | ESP | شخصی) */}
+            <div className="flex items-center justify-between gap-3 p-2 rounded-2xl bg-muted/20 border border-border/50">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-background border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setProjectTypeFilter("all")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    projectTypeFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {isRtl ? "همه پروژه‌ها" : "All Projects"} ({allProjects.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProjectTypeFilter("esp")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    projectTypeFilter === "esp"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Building2 className="size-3" />
+                  <span>{isRtl ? "پروژه‌های ESP" : "ESP Projects"}</span>
+                  <span className="text-[10px] opacity-80 font-mono">
+                    ({allProjects.filter(p => p.type === 'esp').length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProjectTypeFilter("personal")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    projectTypeFilter === "personal"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <User className="size-3" />
+                  <span>{isRtl ? "پروژه‌های شخصی" : "Personal Projects"}</span>
+                  <span className="text-[10px] opacity-80 font-mono">
+                    ({allProjects.filter(p => p.type === 'personal').length})
+                  </span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground font-medium hidden sm:block">
+                {isRtl ? `${filteredProjects.length} پروژه ثبت شده` : `${filteredProjects.length} projects recorded`}
+              </div>
+            </div>
+
+            {/* Segmented List of Projects */}
+            <div className="segmented-list mb-10">
+              {filteredProjects.map((project, index) => {
+                const isFirst = index === 0;
+                const isLast = index === filteredProjects.length - 1;
+                const roundedClass = isFirst && isLast 
+                  ? "rounded-[8px]"
+                  : isFirst 
+                    ? "rounded-t-[24px] rounded-b-[8px]" 
+                    : isLast 
+                      ? "rounded-[8px]"
+                      : "rounded-[8px]";
+
+                const isEsp = project.type === 'esp';
+                const tags = Array.isArray(project.tags) ? project.tags : [];
+
+                return (
+                  <div 
+                    key={project.id}
+                    className={cn(
+                      "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group min-h-[76px] py-3.5",
+                      roundedClass
+                    )}
+                    onClick={() => setEditingField('proj_' + project.id)}
+                  >
+                     <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                     <div className="flex items-center gap-3.5 flex-1 min-w-0 me-3">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 border",
+                          isEsp 
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25"
+                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                        )}>
+                          <FolderGit2 className="size-5" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-foreground truncate">
+                              {project.title || (isRtl ? "پروژه بدون عنوان" : "Untitled Project")}
+                            </span>
+                            <span className={cn(
+                              "text-[10px] font-bold px-2 py-0.2 rounded-full border inline-flex items-center gap-1",
+                              isEsp 
+                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/25"
+                                : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25"
+                            )}>
+                              {isEsp ? <Building2 className="size-2.5" /> : <User className="size-2.5" />}
+                              <span>{isEsp ? (isRtl ? "پروژه ESP" : "ESP") : (isRtl ? "پروژه شخصی" : "Personal")}</span>
+                            </span>
+
+                            {project.isOngoing && (
+                              <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
+                                {isRtl ? "در حال اجرا" : "Ongoing"}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                            {project.role && (
+                              <span className="font-medium text-foreground/80">{project.role}</span>
+                            )}
+                            {(project.client || project.company) && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span>{project.client || project.company}</span>
+                              </>
+                            )}
+                            {(project.startDate || project.endDate) && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span className="font-mono text-[11px]" dir="ltr">
+                                  {project.startDate || ""}{project.endDate ? ` - ${project.endDate}` : ""}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          {tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1.5">
+                              {tags.slice(0, 4).map(t => (
+                                <span key={t} className="text-[10px] px-2 py-0.2 rounded-md bg-muted/40 text-muted-foreground border border-border/50">
+                                  {t}
+                                </span>
+                              ))}
+                              {tags.length > 4 && (
+                                <span className="text-[10px] px-1 text-muted-foreground font-mono">
+                                  +{tags.length - 4}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                     </div>
+
+                     <div className="flex items-center justify-end gap-2 shrink-0">
+                        {project.link && (
+                          <a
+                            href={project.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors z-10"
+                            title={isRtl ? "مشاهده لینک پروژه" : "View Project Link"}
+                          >
+                            <ExternalLink className="size-4" />
+                          </a>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteProject(project.id);
+                          }}
+                          className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
+                          title={isRtl ? "حذف پروژه" : "Delete Project"}
+                        >
+                          <Trash className="size-4" />
+                        </button>
+                        <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     </div>
+                  </div>
+                );
+              })}
+
+              {filteredProjects.length === 0 && (
+                <div className="p-8 text-center rounded-[16px] bg-muted/15 border border-dashed border-border/60">
+                  <FolderGit2 className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {projectTypeFilter !== "all" 
+                      ? (isRtl ? "هیچ پروژه‌ای در این دسته‌بندی ثبت نشده است." : "No projects recorded in this category.")
+                      : (isRtl ? "هنوز هیچ پروژه‌ای ثبت نشده است." : "No projects recorded yet.")}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddProject}
+                    className="text-xs mt-3 rounded-full"
+                  >
+                    <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                    <span>{isRtl ? "افزودن اولین پروژه" : "Add First Project"}</span>
+                  </Button>
+                </div>
+              )}
+
+              <div 
+                onClick={handleAddProject}
+                className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] rounded-b-[24px] border-t border-border/40 hover:bg-muted/20 transition-colors"
+              >
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                 <div className="flex items-center gap-2 text-primary font-medium">
+                    <Plus className="size-5 shrink-0" />
+                    <span>{isRtl ? "افزودن پروژه جدید (Add Project)" : "Add New Project"}</span>
+                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─────────────────────────────────────────────────────────────
+            SUB-TAB 3: EXPERIENCE (سوابق و تجارب کاری در ESP و سایر شرکت‌ها)
+        ───────────────────────────────────────────────────────────── */}
+        {skillsSubTab === "experience" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            {/* Experience Banner */}
+            <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-start gap-3.5 shadow-xs">
+              <div className="size-9 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                <Briefcase className="size-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-foreground">
+                  {isRtl ? "سوابق و تجارب شغلی" : "Work Experience & Career History"}
+                </h4>
+                <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                  {isRtl 
+                    ? "ثبت سوابق فعالیت در شرکت یورواسلات پارس و تجارب کاری پیشین در سایر صنایع و سازمان‌ها با امکان درج موقعیت و دستاوردها."
+                    : "Manage your Euroslot Pars work history and previous external career achievements in one place."}
+                </p>
+              </div>
+            </div>
+
+            {/* Experience Filter Toggle (همه | ESP | شخصی و قبلی) */}
+            <div className="flex items-center justify-between gap-3 p-2 rounded-2xl bg-muted/20 border border-border/50">
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-background border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => setExperienceTypeFilter("all")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    experienceTypeFilter === "all"
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {isRtl ? "همه تجارب" : "All Experience"} ({allExperiences.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExperienceTypeFilter("esp")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    experienceTypeFilter === "esp"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Building2 className="size-3" />
+                  <span>{isRtl ? "تجارب ESP" : "ESP Experience"}</span>
+                  <span className="text-[10px] opacity-80 font-mono">
+                    ({allExperiences.filter(e => e.type === 'esp').length})
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExperienceTypeFilter("personal")}
+                  className={cn(
+                    "py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5",
+                    experienceTypeFilter === "personal"
+                      ? "bg-amber-600 text-white shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <Briefcase className="size-3" />
+                  <span>{isRtl ? "تجارب شخصی / سایر شرکت‌ها" : "Personal / External"}</span>
+                  <span className="text-[10px] opacity-80 font-mono">
+                    ({allExperiences.filter(e => e.type === 'personal').length})
+                  </span>
+                </button>
+              </div>
+
+              <div className="text-[11px] text-muted-foreground font-medium hidden sm:block">
+                {isRtl ? `${filteredExperiences.length} سابقه شغلی ثبت شده` : `${filteredExperiences.length} experiences recorded`}
+              </div>
+            </div>
+
+            {/* Segmented List of Experiences */}
+            <div className="segmented-list mb-10">
+              {filteredExperiences.map((experience, index) => {
+                const isFirst = index === 0;
+                const isLast = index === filteredExperiences.length - 1;
+                const roundedClass = isFirst && isLast 
+                  ? "rounded-[8px]"
+                  : isFirst 
+                    ? "rounded-t-[24px] rounded-b-[8px]" 
+                    : isLast 
+                      ? "rounded-[8px]"
+                      : "rounded-[8px]";
+
+                const isEsp = experience.type === 'esp';
+
+                return (
+                  <div 
+                    key={experience.id}
+                    className={cn(
+                      "segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-between px-4 sm:px-6 relative outline-none cursor-pointer group min-h-[76px] py-3.5",
+                      roundedClass
+                    )}
+                    onClick={() => setEditingField('exp_' + experience.id)}
+                  >
+                     <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                     <div className="flex items-center gap-3.5 flex-1 min-w-0 me-3">
+                        <div className={cn(
+                          "size-10 rounded-xl flex items-center justify-center shrink-0 border",
+                          isEsp 
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/25"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
+                        )}>
+                          <Briefcase className="size-5" />
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-bold text-foreground truncate">
+                              {experience.title || (isRtl ? "سمت بدون عنوان" : "Untitled Position")}
+                            </span>
+                            <span className={cn(
+                              "text-[10px] font-bold px-2 py-0.2 rounded-full border inline-flex items-center gap-1",
+                              isEsp 
+                                ? "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/25"
+                                : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25"
+                            )}>
+                              {isEsp ? <Building2 className="size-2.5" /> : <Briefcase className="size-2.5" />}
+                              <span>{isEsp ? (isRtl ? "سابقه ESP" : "ESP") : (isRtl ? "سابقه شخصی / قبلی" : "External")}</span>
+                            </span>
+
+                            {experience.isCurrent && (
+                              <span className="text-[10px] font-medium px-2 py-0.2 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                                {isRtl ? "مشغول به کار" : "Current"}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2 flex-wrap">
+                            {experience.company && (
+                              <span className="font-medium text-foreground/80">{experience.company}</span>
+                            )}
+                            {experience.department && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span>{experience.department}</span>
+                              </>
+                            )}
+                            {experience.location && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span className="inline-flex items-center gap-0.5">
+                                  <MapPin className="size-2.5" />
+                                  <span>{experience.location}</span>
+                                </span>
+                              </>
+                            )}
+                            {(experience.startDate || experience.endDate) && (
+                              <>
+                                <span className="opacity-40">•</span>
+                                <span className="font-mono text-[11px]" dir="ltr">
+                                  {experience.startDate || ""}{experience.endDate ? ` - ${experience.endDate}` : ""}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          {experience.description && (
+                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1 opacity-80">
+                              {experience.description}
+                            </p>
+                          )}
+                        </div>
+                     </div>
+
+                     <div className="flex items-center justify-end gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteExperience(experience.id);
+                          }}
+                          className="size-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors z-10"
+                          title={isRtl ? "حذف سابقه کاری" : "Delete Experience"}
+                        >
+                          <Trash className="size-4" />
+                        </button>
+                        <ChevronRight className="size-5 text-muted-foreground shrink-0 rtl:rotate-180 opacity-0 group-hover:opacity-100 transition-opacity" />
+                     </div>
+                  </div>
+                );
+              })}
+
+              {filteredExperiences.length === 0 && (
+                <div className="p-8 text-center rounded-[16px] bg-muted/15 border border-dashed border-border/60">
+                  <Briefcase className="size-8 text-muted-foreground/50 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {experienceTypeFilter !== "all" 
+                      ? (isRtl ? "هیچ سابقه‌ای در این دسته‌بندی ثبت نشده است." : "No experience recorded in this category.")
+                      : (isRtl ? "هنوز هیچ سابقه کاری ثبت نشده است." : "No work experience recorded yet.")}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddExperience}
+                    className="text-xs mt-3 rounded-full"
+                  >
+                    <Plus className="size-3.5 mr-1 rtl:ml-1" />
+                    <span>{isRtl ? "افزودن اولین سابقه شغلی" : "Add First Experience"}</span>
+                  </Button>
+                </div>
+              )}
+
+              <div 
+                onClick={handleAddExperience}
+                className="relative outline-none segmented-item no-hover-bg bg-white dark:bg-card shadow-none flex items-center justify-center px-4 sm:px-6 cursor-pointer group h-[72px] rounded-b-[24px] border-t border-border/40 hover:bg-muted/20 transition-colors"
+              >
+                 <span className="absolute inset-0 bg-[#98c1d9]/30 opacity-0 group-hover:opacity-100 transition-opacity duration-100 ease-out group-hover:duration-0 pointer-events-none" aria-hidden="true" />
+                 <div className="flex items-center gap-2 text-primary font-medium">
+                    <Plus className="size-5 shrink-0" />
+                    <span>{isRtl ? "افزودن سابقه و تجربه شغلی (Add Experience)" : "Add New Experience"}</span>
+                 </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

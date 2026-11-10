@@ -25,10 +25,8 @@
     "fullNameFa": "سعید جلیلی",
     "birthNo": "2530095760",
     "birthLoc": "اقلید",
-    "birthPlace": "اقلید",
     "birthIssue": "اقلید",
     "dutyStatus": "معافیت پزشکی",
-    "militaryStatus": "معافیت پزشکی",
     "gender": "male",
     "fatherName": "محمدجواد"
   },
@@ -37,7 +35,7 @@
     "role": "کارشناس",
     "employeeId": "ESP-205",
     "joinDate": "1402/03/25",
-    "manager": "M.Shafiee (مدیر مهندسی)",
+    "manager": "مدیر مهندسی",
     "managerId": "usr_1001",
     "extensionNumber": "187",
     "workLocation": "دفتر تهران",
@@ -46,21 +44,11 @@
     "subordinatesCount": 0,
     "position": "Expert",
     "positionFa": "کارشناس",
-    "jobTitleFa": "کارشناس",
-    "jobTitleEn": "Expert",
     "floor": "Grourd Floor",
     "unit": "No. 1",
     "unitFa": "واحد 1",
-    "floorAndUnit": "Grourd Floor - واحد 1",
-    "subUnit": "مهندسی",
     "subUnitFa": "مهندسی",
     "managerTitle": "مدیر مهندسی",
-    "primaryDuty1": "ارائه و ثبت و بایگانی مدارک مهندسی شامل محاسبات، نقشه های ساخت،دستورالعملها و MTO مواد مصرفی",
-    "primaryDuty2": "ارائه گزارشات پیشرفت کار به مافوق",
-    "duties": [
-      "ارائه و ثبت و بایگانی مدارک مهندسی شامل محاسبات، نقشه های ساخت،دستورالعملها و MTO مواد مصرفی",
-      "ارائه گزارشات پیشرفت کار به مافوق"
-    ],
     "activities": [
       "ارائه و ثبت و بایگانی مدارک مهندسی شامل محاسبات، نقشه های ساخت،دستورالعملها و MTO مواد مصرفی",
       "ارائه گزارشات پیشرفت کار به مافوق",
@@ -71,28 +59,23 @@
   "skills": [
     {
       "id": "sk-1",
-      "name": "مدل‌سازی و طراحی سه‌بعدی با SolidWorks",
-      "level": 5
+      "name": "ارائه و ثبت و بایگانی مدارک مهندسی شامل ...",
+      "rate": 90
     },
     {
       "id": "sk-2",
-      "name": "طراحی سیستم‌های پایپینگ و تجهیزات (Piping & Equipment)",
-      "level": 5
+      "name": "ارائه گزارشات پیشرفت کار به مافوق",
+      "rate": 95
     },
     {
       "id": "sk-3",
-      "name": "استانداردهای مهندسی نفت و گاز (ASME / API / DIN)",
-      "level": 4
+      "name": "حضور در جلسات کارخانه و یا سایت",
+      "rate": 85
     },
     {
       "id": "sk-4",
-      "name": "تحلیل‌های تنش و شبیه‌سازی اجزای محدود (FEA / ANSYS)",
-      "level": 4
-    },
-    {
-      "id": "sk-5",
-      "name": "برنامه‌نویسی و اتوماسیون محاسبات مهندسی (Python)",
-      "level": 5
+      "name": "Engineering Documentation",
+      "rate": 90
     }
   ],
   "insurance": {
@@ -107,7 +90,6 @@
     "dependentsCount": 0,
     "dependents": [],
     "supplementaryPlanFa": "طرح ویژه",
-    "bankAccountNumber": "824-800-4272331-1",
     "accountNumber": "824-800-4272331-1"
   },
   "education": {
@@ -174,5 +156,8 @@
       "verified": true,
       "fileUrl": "https://images.unsplash.com/photo-1589330694653-dad6d3240a2a?w=800&auto=format&fit=crop&q=80"
     }
-  ]
+  ],
+  "projects": [],
+  "experiences": [],
+  "doneProjects": 0
 }

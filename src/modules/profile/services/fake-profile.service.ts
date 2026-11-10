@@ -34,6 +34,8 @@ export class FakeProfileService implements ProfileService {
                 ...(parsed.education || {}),
               },
               skills: Array.isArray(parsed.skills) && parsed.skills.length > 0 ? parsed.skills : MOCK_PROFILE.skills,
+              projects: Array.isArray(parsed.projects) ? parsed.projects : (MOCK_PROFILE.projects || []),
+              experiences: Array.isArray(parsed.experiences) ? parsed.experiences : (MOCK_PROFILE.experiences || []),
               documents: Array.isArray(parsed.documents) && parsed.documents.length > 0 ? parsed.documents : (MOCK_PROFILE as any).documents || [],
             };
           }

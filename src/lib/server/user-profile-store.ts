@@ -97,6 +97,8 @@ export function updateServerUserProfile(patch: Partial<UserProfile>): UserProfil
       ...(patch.education || {}),
     },
     skills: Array.isArray(patch.skills) ? patch.skills : current.skills,
+    projects: Array.isArray(patch.projects) ? patch.projects : (current.projects || []),
+    experiences: Array.isArray(patch.experiences) ? patch.experiences : (current.experiences || []),
     documents: Array.isArray(patch.documents) ? patch.documents : current.documents,
   };
 
