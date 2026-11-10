@@ -1899,8 +1899,8 @@ export function TaskProgressView({
                     }}
                   >
                       {(!currentTask.progress || currentTask.progress.length === 0) ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none" dir={isRtl ? "rtl" : "ltr"}>
-                          <div className="p-3 rounded-full bg-black/20 backdrop-blur-xs mb-2">
+                        <div className="flex flex-col items-center justify-center py-16 text-white drop-shadow-sm select-none bg-transparent" dir={isRtl ? "rtl" : "ltr"}>
+                          <div className="p-3 rounded-full bg-transparent border border-white/20 mb-2">
                             <FileText className="size-6 text-white" />
                           </div>
                           <p className="font-semibold text-sm">{isRtl ? "هنوز پیامی در این تسک رد و بدل نشده است." : "No messages yet."}</p>
@@ -1937,6 +1937,7 @@ export function TaskProgressView({
                                 <ProgressItem
                                   progress={p}
                                   isRtl={isRtl}
+                                  currentUser={currentUser}
                                   currentUserId={currentUser.id}
                                   isAdmin={isAdmin}
                                   onReply={(msg) => {
@@ -2737,6 +2738,7 @@ function TelegramDocumentCard({
 function ProgressItem({
   progress,
   isRtl,
+  currentUser,
   currentUserId,
   isAdmin,
   onReply,
@@ -2748,6 +2750,7 @@ function ProgressItem({
 }: {
   progress: NewTaskProgress;
   isRtl: boolean;
+  currentUser?: User;
   currentUserId: string;
   isAdmin: boolean;
   onReply: (progress: NewTaskProgress) => void;
@@ -2758,7 +2761,45 @@ function ProgressItem({
   onToggleSelect?: () => void;
 }) {
   const locale = useLocale();
-  const isMe = progress.author_id === currentUserId;
+
+  // Determine if the message was sent by the currently logged-in user.
+  // Checks user ID, email, name variants, and canonical Saeed superadmin aliases.
+  const myId = String(currentUser?.id || currentUserId || "").trim().toLowerCase();
+  const authorId = String(progress.author_id || "").trim().toLowerCase();
+  const isSameId = Boolean(myId && authorId && myId === authorId);
+
+  const myEmail = String(currentUser?.email || "").trim().toLowerCase();
+  const isSameEmail = Boolean(myEmail && authorId && authorId === myEmail);
+
+  const isSaeedAuthor =
+    authorId === "u-saeed" ||
+    String(progress.author_name || "").toLowerCase().includes("jalili") ||
+    String(progress.author_name || "").includes("جلیلی");
+
+  const isCurrentSaeed =
+    myId === "u-saeed" ||
+    myEmail.includes("jalili") ||
+    String(currentUser?.name || "").toLowerCase().includes("jalili") ||
+    String(currentUser?.fullName || "").toLowerCase().includes("jalili") ||
+    String(currentUser?.fullNameFa || "").includes("جلیلی");
+
+  const isSameSaeed = Boolean(isSaeedAuthor && isCurrentSaeed);
+
+  const authorNameClean = String(progress.author_name || "").trim().toLowerCase();
+  const myFullNameClean = String(currentUser?.fullName || "").trim().toLowerCase();
+  const myFullNameFaClean = String(currentUser?.fullNameFa || "").trim().toLowerCase();
+  const myNameClean = String(currentUser?.name || "").trim().toLowerCase();
+
+  const isSameName = Boolean(
+    authorNameClean &&
+    (
+      (myFullNameClean && authorNameClean === myFullNameClean) ||
+      (myFullNameFaClean && authorNameClean === myFullNameFaClean) ||
+      (myNameClean && authorNameClean === myNameClean)
+    )
+  );
+
+  const isMe = isSameId || isSameEmail || isSameSaeed || isSameName;
   const isAdminNote = progress.is_admin_note;
   const timeStr = formatMessageTime(progress.created_at, isRtl);
   const senderColor = getSenderColor(progress.author_name);
@@ -2796,8 +2837,8 @@ function ProgressItem({
         }
       }}
       className={cn(
-        "relative flex my-2 group items-end gap-2.5 sm:gap-3 px-2 py-1 rounded-2xl transition-all duration-150",
-        isMe ? "justify-end" : "justify-start",
+        "w-full relative flex my-2 group items-end gap-2.5 sm:gap-3 px-2 py-1 rounded-2xl transition-all duration-150",
+        isMe ? "justify-end ml-auto" : "justify-start mr-auto",
         isSelectionMode && "cursor-pointer select-none",
         isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
       )}
