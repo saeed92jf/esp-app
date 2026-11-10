@@ -853,6 +853,8 @@ export function AdminUsersTable({
         university: targetUser.university || "",
         graduationYear: resolvedGradYear,
         skills: targetUser.skills as any,
+        projects: (targetUser.projects || rawUser.projects || []) as any,
+        experiences: (targetUser.experiences || rawUser.experiences || []) as any,
         modulesAccess: targetUser.modulesAccess,
         documents: targetUser.documents,
         duties: resolvedDuties,
