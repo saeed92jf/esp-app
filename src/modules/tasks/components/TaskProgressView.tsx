@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
   ArrowLeft,
+  ArrowDown,
   Paperclip,
   Image as ImageIcon,
   FolderKanban,
@@ -440,6 +441,7 @@ export function TaskProgressView({
     message: NewTaskProgress;
   } | null>(null);
   const [selectedMessageIds, setSelectedMessageIds] = useState<Set<string>>(new Set());
+  const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [deletingMessages, setDeletingMessages] = useState<NewTaskProgress[] | null>(null);
   const [isDeletingMessage, setIsDeletingMessage] = useState(false);
 
@@ -696,8 +698,20 @@ export function TaskProgressView({
     }
   };
 
+  const handleChatScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    setShowScrollBottom(distanceFromBottom > 100);
+  }, []);
+
   const scrollToBottom = useCallback((smooth = true) => {
-    if (messagesEndRef.current) {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    } else if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
     }
   }, []);
@@ -1893,8 +1907,9 @@ export function TaskProgressView({
 
                   <div
                     ref={messagesContainerRef}
+                    onScroll={handleChatScroll}
                     dir="ltr"
-                    className="relative z-0 p-3.5 sm:p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto scroll-smooth select-text pb-4 -mb-16"
+                    className="relative z-0 p-3.5 sm:p-4 space-y-2.5 flex-1 min-h-0 overflow-y-auto overflow-x-hidden scroll-smooth select-text pb-4 -mb-16"
                     style={{
                       maskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
                       WebkitMaskImage: "linear-gradient(to bottom, black 0%, black calc(100% - 90px), rgba(0, 0, 0, 0.35) 100%)",
@@ -1964,6 +1979,32 @@ export function TaskProgressView({
                       <div className="h-20 sm:h-24 shrink-0 pointer-events-none" />
                       <div ref={messagesEndRef} />
                     </div>
+
+                    {/* Telegram Scroll-To-Bottom Floating Button */}
+                    <AnimatePresence>
+                      {showScrollBottom && (
+                        <motion.button
+                          initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          type="button"
+                          onClick={() => scrollToBottom(true)}
+                          title={isRtl ? "برو به آخرین پیام" : "Scroll to bottom"}
+                          aria-label={isRtl ? "برو به آخرین پیام" : "Scroll to bottom"}
+                          className={cn(
+                            "absolute z-30 size-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-150",
+                            "bg-white/95 dark:bg-[#182533]/95 text-slate-700 dark:text-zinc-200 hover:text-[#2481cc] dark:hover:text-[#2481cc]",
+                            "border border-slate-200/90 dark:border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)]",
+                            "backdrop-blur-md active:scale-90",
+                            "bottom-24 sm:bottom-28",
+                            isRtl ? "left-4" : "right-4"
+                          )}
+                        >
+                          <ArrowDown className="size-5 stroke-[2.2]" />
+                        </motion.button>
+                      )}
+                    </AnimatePresence>
 
                     {/* Chat Input Area directly inside the chat environment: Transparent background so doodle wallpaper shows cleanly */}
                     <div className="relative z-10 p-2.5 sm:p-3.5 space-y-2 bg-transparent">
@@ -2618,9 +2659,9 @@ function SystemEventPill({
         }
       }}
       className={cn(
-        "relative flex items-center justify-center my-2.5 px-3 py-1.5 rounded-2xl select-none transition-all duration-150 cursor-context-menu gap-2.5",
+        "relative flex items-center justify-center my-1 py-1.5 select-none transition-colors duration-150 cursor-context-menu gap-2.5 -mx-3.5 sm:-mx-4 px-3.5 sm:px-4 rounded-none",
         isSelectionMode && "cursor-pointer",
-        isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
+        isSelected && "bg-[#2481cc]/25 dark:bg-[#2481cc]/35"
       )}
       dir={isRtl ? "rtl" : "ltr"}
     >
@@ -2839,10 +2880,10 @@ function ProgressItem({
         }
       }}
       className={cn(
-        "w-full relative flex my-2 group items-end gap-2.5 sm:gap-3 px-2 py-1 rounded-2xl transition-all duration-150",
-        isMe ? "justify-end ml-auto" : "justify-start mr-auto",
+        "relative flex my-0.5 py-1.5 group items-end gap-2.5 sm:gap-3 transition-colors duration-150 -mx-3.5 sm:-mx-4 px-3.5 sm:px-4 rounded-none",
+        isMe ? "justify-end" : "justify-start",
         isSelectionMode && "cursor-pointer select-none",
-        isSelected && "bg-black/25 dark:bg-black/45 ring-1 ring-black/10 dark:ring-white/10"
+        isSelected && "bg-[#2481cc]/25 dark:bg-[#2481cc]/35"
       )}
     >
       {/* Telegram Selection Check Indicator */}
