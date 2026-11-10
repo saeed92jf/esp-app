@@ -55,6 +55,7 @@ export interface HeatmapCell {
   level: number; // 0..4
   isHatched: boolean;
   isCurrent: boolean;
+  isFuture?: boolean;
 }
 
 export interface ActivityHeatmapData {
@@ -133,54 +134,88 @@ function generateDeterministicHeatmap(userId: string, isOnline: boolean): Activi
     matrix[slot.slotIndex] = {};
 
     DAYS_CONFIG.forEach((d) => {
-      let minutes = 0;
-      if (d.dayIndex === 6) {
-        // Friday holiday (تعطیل)
-        minutes = 0;
-      } else if (d.dayIndex === 5) {
-        // Thursday half-day
-        if (slot.key === "6-8") {
-          minutes = 22 + (seed % 14);
-        } else if (slot.key === "8-10" || slot.key === "10-12") {
-          minutes = 90 + ((seed + slot.slotIndex * 5) % 22);
-        } else if (slot.key === "12-14") {
-          minutes = 25 + (seed % 15);
-        } else {
-          minutes = 0;
-        }
+      // Determine if slot is in the future
+      let isFuture = false;
+      if (d.dayIndex > curDay) {
+        isFuture = true;
+      } else if (d.dayIndex < curDay) {
+        isFuture = false;
       } else {
-        // Sat - Wed standard full working hours
-        if (slot.key === "6-8") {
-          minutes = 32 + ((seed + d.dayIndex * 4) % 20);
-        } else if (slot.key === "8-10" || slot.key === "10-12") {
-          minutes = 96 + ((seed + d.dayIndex * 6 + slot.slotIndex * 4) % 18);
-        } else if (slot.key === "12-14") {
-          minutes = 70 + ((seed + d.dayIndex * 5) % 20);
-        } else if (slot.key === "14-16") {
-          minutes = 92 + ((seed + d.dayIndex * 7) % 20);
-        } else if (slot.key === "16-18") {
-          minutes = 55 + ((seed + d.dayIndex * 3) % 25);
+        // Today
+        if (slot.isNight) {
+          isFuture = curHour < 18;
         } else {
-          minutes = 0;
+          isFuture = slot.startHour > curHour;
         }
       }
 
-      const isCurrent = d.dayIndex === curDay && slot.key === curSlotKey;
-      if (isCurrent && isOnline) {
-        minutes = Math.max(minutes, slot.isNight ? 45 : 85);
+      const isCurrent = Boolean(!isFuture && d.dayIndex === curDay && slot.key === curSlotKey);
+
+      let minutes = 0;
+      if (isFuture) {
+        // Future slot: zero activity, never colored
+        minutes = 0;
+      } else if (isCurrent && isOnline) {
+        // Current active slot if user is online
+        const slotStart = slot.startHour;
+        let minsInSlot = 0;
+        if (slot.isNight) {
+          minsInSlot = (curHour >= 18 ? curHour - 18 : curHour + 6) * 60 + tehranDate.getMinutes();
+        } else {
+          minsInSlot = (curHour - slotStart) * 60 + tehranDate.getMinutes();
+        }
+        minutes = Math.min(slot.duration * 60, Math.max(15, minsInSlot));
+      } else {
+        // Past slot baseline
+        if (d.dayIndex === 6) {
+          // Friday holiday (تعطیل)
+          minutes = 0;
+        } else if (d.dayIndex === 5) {
+          // Thursday half-day
+          if (slot.key === "6-8") {
+            minutes = 22 + (seed % 14);
+          } else if (slot.key === "8-10" || slot.key === "10-12") {
+            minutes = 90 + ((seed + slot.slotIndex * 5) % 22);
+          } else if (slot.key === "12-14") {
+            minutes = 25 + (seed % 15);
+          } else {
+            minutes = 0;
+          }
+        } else {
+          // Sat - Wed standard full working hours
+          if (slot.key === "6-8") {
+            minutes = 32 + ((seed + d.dayIndex * 4) % 20);
+          } else if (slot.key === "8-10" || slot.key === "10-12") {
+            minutes = 96 + ((seed + d.dayIndex * 6 + slot.slotIndex * 4) % 18);
+          } else if (slot.key === "12-14") {
+            minutes = 70 + ((seed + d.dayIndex * 5) % 20);
+          } else if (slot.key === "14-16") {
+            minutes = 92 + ((seed + d.dayIndex * 7) % 20);
+          } else if (slot.key === "16-18") {
+            minutes = 55 + ((seed + d.dayIndex * 3) % 25);
+          } else {
+            minutes = 0;
+          }
+        }
       }
+
       const maxMinutes = slot.duration * 60;
       minutes = Math.min(maxMinutes, Math.max(0, minutes));
 
       let level = 0;
-      if (minutes > 90) level = 4;
-      else if (minutes > 60) level = 3;
-      else if (minutes > 30) level = 2;
-      else if (minutes > 0) level = 1;
+      if (!isFuture) {
+        if (minutes > 90) level = 4;
+        else if (minutes > 60) level = 3;
+        else if (minutes > 30) level = 2;
+        else if (minutes > 0) level = 1;
+      }
 
-      // هاشور خاکستری برای ساعات تعطیل / خارج شیفت با عدم فعالیت
+      // Visual state:
+      // 1. Future: not reached yet (isFuture = true)
+      // 2. Hatched: off-hours / weekend (isHatched = true)
+      // 3. Empty: working hours in the past with 0 activity
       let isHatched = false;
-      if (level === 0) {
+      if (!isFuture && level === 0) {
         if (slot.isNight || d.dayIndex === 6) {
           isHatched = true;
         } else if (d.dayIndex === 5 && (slot.key === "14-16" || slot.key === "16-18" || slot.key === "18-6")) {
@@ -188,9 +223,11 @@ function generateDeterministicHeatmap(userId: string, isOnline: boolean): Activi
         }
       }
 
-      totalMins += minutes;
-      if (d.dayIndex === curDay) {
-        todayMins += minutes;
+      if (!isFuture) {
+        totalMins += minutes;
+        if (d.dayIndex === curDay) {
+          todayMins += minutes;
+        }
       }
 
       const cell: HeatmapCell = {
@@ -215,6 +252,7 @@ function generateDeterministicHeatmap(userId: string, isOnline: boolean): Activi
         level,
         isHatched,
         isCurrent,
+        isFuture,
       };
 
       matrix[slot.key][d.dayIndex] = cell;
@@ -370,7 +408,11 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                   </span>
                 </span>
                 <span className="fa-num font-bold shrink-0">
-                  {hoveredCell.level > 0 ? (
+                  {hoveredCell.isFuture ? (
+                    <span className="text-muted-foreground/60 italic">
+                      {isRtl ? "آینده (هنوز فرا نرسیده)" : "Future (Not reached yet)"}
+                    </span>
+                  ) : hoveredCell.level > 0 ? (
                     <span className="text-primary">
                       {isRtl
                         ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
@@ -378,11 +420,11 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                     </span>
                   ) : hoveredCell.isHatched ? (
                     <span className="text-muted-foreground/80">
-                      {isRtl ? "خارج از شیفت / تعطیل" : "Off-shift / Holiday"}
+                      {isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"}
                     </span>
                   ) : (
                     <span className="text-muted-foreground/80">
-                      {isRtl ? "خانه خالی (بدون فعالیت)" : "Empty (Inactive)"}
+                      {isRtl ? "خانه خالی (شیفت کاری بدون فعالیت)" : "Empty (In-shift Idle)"}
                     </span>
                   )}
                 </span>
@@ -447,9 +489,10 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                       {/* 7 Square Day Cells */}
                       {DAYS_CONFIG.map((d) => {
                         const cell: HeatmapCell | undefined = rowData[d.dayIndex];
-                        const level = cell?.level ?? 0;
-                        const isHatched = Boolean(cell?.isHatched);
-                        const isCurrent = Boolean(cell?.isCurrent);
+                        const isFuture = Boolean(cell?.isFuture);
+                        const level = isFuture ? 0 : (cell?.level ?? 0);
+                        const isHatched = Boolean(cell?.isHatched) && !isFuture;
+                        const isCurrent = Boolean(cell?.isCurrent) && !isFuture;
 
                         return (
                           <div
@@ -457,31 +500,37 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
                             onMouseEnter={() => cell && setHoveredCell(cell)}
                             onMouseLeave={() => setHoveredCell(null)}
                             className={cn(
-                              "aspect-square w-full rounded-md sm:rounded-lg transition-all duration-150 cursor-pointer relative flex items-center justify-center",
-                              // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
-                              isHatched && level === 0 && (
-                                "bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
+                              "aspect-square w-full rounded-md sm:rounded-lg transition-all duration-150 relative flex items-center justify-center",
+                              // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
+                              isFuture && (
+                                "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
                               ),
-                              // 2. خانه خالی (Work hours with 0 activity)
-                              !isHatched && level === 0 && (
-                                "bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
+                              // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
+                              !isFuture && isHatched && level === 0 && (
+                                "cursor-pointer bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
+                              ),
+                              // 2. خانه خالی (Work hours with 0 activity in past)
+                              !isFuture && !isHatched && level === 0 && (
+                                "cursor-pointer bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
                               ),
                               // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
-                              level === 1 && "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
-                              level === 2 && "bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
-                              level === 3 && "bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
-                              level === 4 && "bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
+                              !isFuture && level === 1 && "cursor-pointer bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
+                              !isFuture && level === 2 && "cursor-pointer bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
+                              !isFuture && level === 3 && "cursor-pointer bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
+                              !isFuture && level === 4 && "cursor-pointer bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
                               // Live real-time indicator
                               isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
                             )}
                             title={
                               cell
                                 ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
-                                    cell.level > 0
+                                    cell.isFuture
+                                      ? isRtl ? "آینده (هنوز فرا نرسیده)" : "Future"
+                                      : cell.level > 0
                                       ? `${cell.minutes}m (${cell.percentage}%)`
                                       : cell.isHatched
-                                      ? isRtl ? "خارج شیفت / تعطیل" : "Off-shift / Holiday"
-                                      : isRtl ? "بدون فعالیت" : "No activity"
+                                      ? isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"
+                                      : isRtl ? "شیفت کاری بدون فعالیت" : "In-shift idle"
                                   }`
                                 : ""
                             }
@@ -501,29 +550,35 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
               {isRtl ? "پوشش ۲۴ ساعته (۷×۷)" : "24h Coverage (7×7)"}
             </span>
 
-            {/* Visual States Legend: خانه خالی، هاشور خاکستری، طیف پرایمری */}
+            {/* Visual States Legend: خانه خالی، هاشور خاکستری، آینده، طیف پرایمری */}
             <div className="flex items-center gap-2 sm:gap-2.5">
               {/* 1. خانه خالی */}
-              <div className="flex items-center gap-1" title={isRtl ? "خانه خالی: شیفت کاری بدون فعالیت" : "Empty cell: In-shift idle"}>
+              <div className="flex items-center gap-1" title={isRtl ? "خانه خالی: شیفت کاری گذشته بدون فعالیت" : "Empty cell: In-shift idle"}>
                 <span className="size-2.5 rounded-[3px] bg-background/50 border border-slate-300 dark:border-slate-700 inline-block" />
                 <span>{isRtl ? "خالی" : "Empty"}</span>
               </div>
 
               {/* 2. هاشور خاکستری */}
-              <div className="flex items-center gap-1" title={isRtl ? "هاشور خاکستری: خارج از شیفت کاری یا تعطیل" : "Gray hatched: Off-shift / Holiday"}>
+              <div className="flex items-center gap-1" title={isRtl ? "هاشور خاکستری: خارج از شیفت کاری یا تعطیل رسمی" : "Gray hatched: Off-shift / Holiday"}>
                 <span className="size-2.5 rounded-[3px] bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.4)_0px,rgba(148,163,184,0.4)_1.5px,transparent_1.5px,transparent_5px)] bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-600 inline-block" />
                 <span>{isRtl ? "هاشور" : "Hatched"}</span>
               </div>
 
-              {/* 3. طیف رنگ پرایمری */}
-              <div className="flex items-center gap-1" title={isRtl ? "طیف پرایمری: حضور و فعالیت آنلاین" : "Primary spectrum: Online activity"}>
+              {/* 3. آینده */}
+              <div className="flex items-center gap-1" title={isRtl ? "آینده: روزها و ساعاتی که هنوز فرا نرسیده‌اند" : "Future: Days and hours not reached yet"}>
+                <span className="size-2.5 rounded-[3px] bg-slate-200/30 dark:bg-slate-800/30 border border-dashed border-slate-300 dark:border-slate-600 opacity-60 inline-block" />
+                <span>{isRtl ? "آینده" : "Future"}</span>
+              </div>
+
+              {/* 4. طیف رنگ پرایمری */}
+              <div className="flex items-center gap-1" title={isRtl ? "طیف پرایمری: حضور و فعالیت ثبت‌شده" : "Primary spectrum: Online activity"}>
                 <div className="flex items-center gap-0.5">
                   <span className="size-2.5 rounded-[2px] bg-primary/20 border border-primary/30 inline-block" />
                   <span className="size-2.5 rounded-[2px] bg-primary/45 border border-primary/55 inline-block" />
                   <span className="size-2.5 rounded-[2px] bg-primary/70 border border-primary/80 inline-block" />
                   <span className="size-2.5 rounded-[2px] bg-primary border border-primary shadow-xs inline-block" />
                 </div>
-                <span>{isRtl ? "طیف پرایمری" : "Active"}</span>
+                <span>{isRtl ? "فعالیت" : "Active"}</span>
               </div>
             </div>
           </div>
