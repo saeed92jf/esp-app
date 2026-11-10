@@ -7,6 +7,9 @@ import {
 import { BACKEND_API_URL } from "@/lib/server/backend-config";
 import type { RequestStatus } from "@/modules/admin/types/admin.types";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -24,17 +27,22 @@ export async function GET(req: NextRequest) {
           ...(authHeader ? { Authorization: authHeader } : {}),
           Accept: "application/json",
         },
+        cache: "no-store",
         signal: AbortSignal.timeout(4000),
       });
 
       if (remoteRes.ok) {
         const remoteData = await remoteRes.json();
-        return NextResponse.json(remoteData);
+        return NextResponse.json(remoteData, {
+          headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+        });
       }
     } catch {}
 
     const result = getServerAdminRequests({ status, search });
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (err: any) {
     console.error("GET /api/admin/requests error:", err);
     return NextResponse.json(

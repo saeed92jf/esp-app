@@ -27,7 +27,7 @@ export interface IAdminService {
   approveHr(requestId: string, notes?: string): Promise<PendingRequest>;
   approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[] }
+    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[]; requestData?: Partial<PendingRequest> }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }>;
   rejectRequest(requestId: string, reason: string): Promise<PendingRequest>;
   resendCredentials(requestId: string): Promise<{ success: boolean; tempPassword?: string }>;

@@ -351,23 +351,59 @@ export function AdminRequests({
   }, [reviewData?.email]);
 
   const departmentOptions = useMemo(() => {
-    return getDepartmentsForCompany(detectedCompany.id, isRtl);
-  }, [detectedCompany.id, isRtl]);
+    const list = getDepartmentsForCompany(detectedCompany.id, isRtl);
+    if (reviewData?.department) {
+      const trimmed = reviewData.department.trim();
+      const match = list.find(
+        (d) =>
+          d.value.toLowerCase() === trimmed.toLowerCase() ||
+          d.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (!match && trimmed) {
+        list.unshift({
+          value: trimmed,
+          label: trimmed,
+        });
+      }
+    }
+    return list;
+  }, [detectedCompany.id, reviewData?.department, isRtl]);
 
   const jobTitleOptions = useMemo(() => {
-    return getJobTitlesForDepartment(detectedCompany.id, reviewData?.department, isRtl);
-  }, [detectedCompany.id, reviewData?.department, isRtl]);
+    const list = getJobTitlesForDepartment(detectedCompany.id, reviewData?.department, isRtl);
+    if (reviewData?.jobTitle) {
+      const trimmed = reviewData.jobTitle.trim();
+      const match = list.find(
+        (t) =>
+          t.value.toLowerCase() === trimmed.toLowerCase() ||
+          t.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (!match && trimmed) {
+        list.unshift({
+          value: trimmed,
+          label: trimmed,
+        });
+      }
+    }
+    return list;
+  }, [detectedCompany.id, reviewData?.department, reviewData?.jobTitle, isRtl]);
 
   const managerOptions = useMemo(() => {
     return getManagerialTitlesWithOccupants(detectedCompany.id, users, isRtl);
   }, [detectedCompany.id, users, isRtl]);
 
-  // Synchronize department when email domain / company switches
+  // Synchronize department when email domain / company switches, without blindly overwriting valid departments
   useEffect(() => {
     if (reviewData?.department && departmentOptions.length > 0) {
-      const isValid = departmentOptions.some((d) => d.value === reviewData.department);
-      if (!isValid) {
-        setReviewData((prev) => (prev ? { ...prev, department: departmentOptions[0].value } : null));
+      const trimmed = reviewData.department.trim();
+      const matchedOpt = departmentOptions.find(
+        (d) =>
+          d.value.toLowerCase() === trimmed.toLowerCase() ||
+          d.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (matchedOpt && matchedOpt.value !== reviewData.department) {
+        // Normalize to canonical ID (e.g. "Engineering" -> "engineering")
+        setReviewData((prev) => (prev ? { ...prev, department: matchedOpt.value } : null));
       }
     }
   }, [departmentOptions, reviewData?.department]);
@@ -620,10 +656,19 @@ export function AdminRequests({
 
       await api.admin.updateRequest(reviewData.id, dataToSave);
 
+      if (reviewData.userId) {
+        try {
+          await api.admin.updateUser(reviewData.userId, dataToSave as any);
+        } catch (uErr) {
+          console.warn("Direct updateUser sync warning:", uErr);
+        }
+      }
+
       if (reviewData.status !== "active") {
         const res = await api.admin.approveManager(reviewData.id, {
           role: reviewData.role || "user",
           modulesAccess: dataToSave.modulesAccess,
+          requestData: dataToSave,
         });
         
         // Remove from active queue immediately
@@ -632,19 +677,30 @@ export function AdminRequests({
         setReviewData(null);
 
         // Update users list immediately
-        if (res?.user && setUsers) {
+        const approvedUser: User = {
+          ...(res?.user || {}),
+          ...dataToSave,
+          id: res?.user?.id || reviewData.userId || reviewData.id,
+          role: reviewData.role || res?.user?.role || "user",
+          status: (res?.user?.status === "online" ? "online" : "offline") as "online" | "offline",
+          accountStatus: "active" as const,
+          skills: res?.user?.skills || [],
+          insuranceType: ((dataToSave.insuranceType as any) || res?.user?.insuranceType || "none") as any,
+        };
+
+        if (setUsers) {
           setUsers((prev) => {
-            const targetId = res.user.id;
-            const targetEmail = res.user.email?.toLowerCase();
+            const targetId = approvedUser.id;
+            const targetEmail = approvedUser.email?.toLowerCase();
             const existingIdx = prev.findIndex(
               (u) => (targetId && u.id === targetId) || (targetEmail && u.email?.toLowerCase() === targetEmail)
             );
             if (existingIdx !== -1) {
               const copy = [...prev];
-              copy[existingIdx] = { ...copy[existingIdx], ...res.user };
+              copy[existingIdx] = { ...copy[existingIdx], ...approvedUser };
               return copy;
             }
-            return [res.user, ...prev];
+            return [approvedUser as any, ...prev];
           });
         }
 
@@ -736,9 +792,19 @@ export function AdminRequests({
         companyId: reqCompany.id,
       };
       await api.admin.updateRequest(reviewData.id, dataToSave);
+
+      if (reviewData.userId) {
+        try {
+          await api.admin.updateUser(reviewData.userId, dataToSave as any);
+        } catch (uErr) {
+          console.warn("Direct updateUser sync warning:", uErr);
+        }
+      }
+
       const res = await api.admin.approveManager(reviewData.id, {
         role: reviewData.role || "user",
         modulesAccess: dataToSave.modulesAccess,
+        requestData: dataToSave,
       });
 
       // Remove from active queue immediately
@@ -747,19 +813,30 @@ export function AdminRequests({
       setReviewData(null);
 
       // Update users list immediately
-      if (res?.user && setUsers) {
+      const approvedUser: User = {
+        ...(res?.user || {}),
+        ...dataToSave,
+        id: res?.user?.id || reviewData.userId || reviewData.id,
+        role: reviewData.role || res?.user?.role || "user",
+        status: (res?.user?.status === "online" ? "online" : "offline") as "online" | "offline",
+        accountStatus: "active" as const,
+        skills: res?.user?.skills || [],
+        insuranceType: ((dataToSave.insuranceType as any) || res?.user?.insuranceType || "none") as any,
+      };
+
+      if (setUsers) {
         setUsers((prev) => {
-          const targetId = res.user.id;
-          const targetEmail = res.user.email?.toLowerCase();
+          const targetId = approvedUser.id;
+          const targetEmail = approvedUser.email?.toLowerCase();
           const existingIdx = prev.findIndex(
             (u) => (targetId && u.id === targetId) || (targetEmail && u.email?.toLowerCase() === targetEmail)
           );
           if (existingIdx !== -1) {
             const copy = [...prev];
-            copy[existingIdx] = { ...copy[existingIdx], ...res.user };
+            copy[existingIdx] = { ...copy[existingIdx], ...approvedUser };
             return copy;
           }
-          return [res.user, ...prev];
+          return [approvedUser as any, ...prev];
         });
       }
 

@@ -236,6 +236,20 @@ export interface PendingRequest {
   educationRecords?: EducationRecord[];
   skills?: { id: string; name: string; level: number }[];
   documents?: UserUploadedDocument[];
+  duties?: string[];
+
+  // Extended Profile & Personnel Fields
+  birthPlace?: string;
+  fatherName?: string;
+  gender?: string;
+  militaryStatus?: string;
+  militaryDuty?: string;
+  subUnit?: string;
+  jobPosition?: string;
+  jobPositionEn?: string;
+  personnelCode?: string;
+  employmentDate?: string;
+  fieldOfStudy?: string;
 
   // Compensation & Benefits (حقوق، اضافه کاری و پاداش)
   salary?: number;

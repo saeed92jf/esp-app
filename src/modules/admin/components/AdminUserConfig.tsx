@@ -470,12 +470,42 @@ export function AdminUserConfig({
 
   // Company-scoped dynamic options
   const departmentOptions = React.useMemo(() => {
-    return getDepartmentsForCompany(form.companyId || detectedCompany.id, isRtl);
-  }, [form.companyId, detectedCompany.id, isRtl]);
+    const list = getDepartmentsForCompany(form.companyId || detectedCompany.id, isRtl);
+    if (form.department) {
+      const trimmed = form.department.trim();
+      const match = list.find(
+        (d) =>
+          d.value.toLowerCase() === trimmed.toLowerCase() ||
+          d.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (!match && trimmed) {
+        list.unshift({
+          value: trimmed,
+          label: trimmed,
+        });
+      }
+    }
+    return list;
+  }, [form.companyId, detectedCompany.id, form.department, isRtl]);
 
   const jobTitleOptions = React.useMemo(() => {
-    return getJobTitlesForDepartment(form.companyId || detectedCompany.id, form.department, isRtl);
-  }, [form.companyId, detectedCompany.id, form.department, isRtl]);
+    const list = getJobTitlesForDepartment(form.companyId || detectedCompany.id, form.department, isRtl);
+    if (form.jobTitle) {
+      const trimmed = form.jobTitle.trim();
+      const match = list.find(
+        (t) =>
+          t.value.toLowerCase() === trimmed.toLowerCase() ||
+          t.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (!match && trimmed) {
+        list.unshift({
+          value: trimmed,
+          label: trimmed,
+        });
+      }
+    }
+    return list;
+  }, [form.companyId, detectedCompany.id, form.department, form.jobTitle, isRtl]);
 
   const managerOptions = React.useMemo(() => {
     return getManagerialTitlesWithOccupants(form.companyId || detectedCompany.id, users, isRtl);
@@ -489,11 +519,18 @@ export function AdminUserConfig({
     return getUniversityOptions(locale);
   }, [locale]);
 
-  // Synchronize department when email domain / company switches
+  // Synchronize department when email domain / company switches, without blindly overwriting valid departments
   React.useEffect(() => {
-    const isDeptValid = departmentOptions.some((d) => d.value === form.department);
-    if (!isDeptValid && departmentOptions.length > 0) {
-      setForm((prev) => ({ ...prev, department: departmentOptions[0].value }));
+    if (form.department && departmentOptions.length > 0) {
+      const trimmed = form.department.trim();
+      const matchedOpt = departmentOptions.find(
+        (d) =>
+          d.value.toLowerCase() === trimmed.toLowerCase() ||
+          d.label.toLowerCase() === trimmed.toLowerCase()
+      );
+      if (matchedOpt && matchedOpt.value !== form.department) {
+        setForm((prev) => ({ ...prev, department: matchedOpt.value }));
+      }
     }
   }, [departmentOptions, form.department]);
 

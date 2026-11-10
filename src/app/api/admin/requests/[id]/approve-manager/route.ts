@@ -26,8 +26,22 @@ export async function POST(
 
       if (remoteRes.ok) {
         const remoteData = await remoteRes.json();
+        if (remoteData?.user) {
+          const users = globalThis.__espServerAdminUsers || [];
+          const idx = users.findIndex(
+            (u) => u.id === remoteData.user.id || u.email.toLowerCase() === remoteData.user.email?.toLowerCase()
+          );
+          if (idx !== -1) {
+            users[idx] = { ...users[idx], ...remoteData.user };
+          } else {
+            users.unshift(remoteData.user);
+          }
+          globalThis.__espServerAdminUsers = users;
+        }
         approveServerAdminRequestManager(id, body);
-        return NextResponse.json(remoteData);
+        return NextResponse.json(remoteData, {
+          headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+        });
       }
     } catch {}
 
@@ -35,6 +49,9 @@ export async function POST(
       tempPassword: body?.tempPassword,
       role: body?.role,
       modulesAccess: body?.modulesAccess,
+      requestData: body?.requestData,
+      userId: body?.userId,
+      email: body?.email,
     });
 
     if (!result) {
@@ -44,13 +61,18 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "حساب کاربری با موفقیت تأیید قطعی و فعال شد.",
-      request: result.request,
-      tempPassword: result.tempPassword,
-      user: result.user,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "حساب کاربری با موفقیت تأیید قطعی و فعال شد.",
+        request: result.request,
+        tempPassword: result.tempPassword,
+        user: result.user,
+      },
+      {
+        headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+      }
+    );
   } catch (err: any) {
     console.error("POST /api/admin/requests/[id]/approve-manager error:", err);
     return NextResponse.json(

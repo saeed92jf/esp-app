@@ -792,6 +792,19 @@ export function AdminUsersTable({
     try {
       setCreatingReqUserId(targetUser.id);
       const comp = getCompanyFromEmail(targetUser.email);
+      const rawUser = targetUser as any;
+      const resolvedDept = targetUser.department || rawUser.subUnit || "Engineering";
+      const resolvedJoinDate = targetUser.joinDate || targetUser.joinedAt || rawUser.employmentDate || "";
+      const resolvedGradYear = targetUser.graduationYear || rawUser.graduationDate || "";
+      const resolvedEduDegree = targetUser.educationDegree || rawUser.education || "master";
+      const resolvedEduField = targetUser.educationField || rawUser.fieldOfStudy || "";
+      const resolvedInsCode = targetUser.insuranceCode || rawUser.insuranceNumber || "";
+      const resolvedSheba = targetUser.shebaNumber || rawUser.bankAccount || "";
+      const resolvedJobTitle = targetUser.jobTitle || rawUser.jobPosition || rawUser.jobPositionEn || "";
+      const resolvedEmpId = targetUser.employeeId || (rawUser.personnelCode ? `ESP-${rawUser.personnelCode}` : "");
+      const resolvedManager = targetUser.manager || rawUser.directManager || "";
+      const resolvedDuties = rawUser.duties || [];
+
       const newReqPayload: Partial<PendingRequest> = {
         userId: targetUser.id,
         name: targetUser.name || targetUser.fullNameFa || targetUser.fullName || targetUser.email.split("@")[0],
@@ -802,40 +815,49 @@ export function AdminUsersTable({
         firstNameFa: targetUser.firstNameFa,
         lastNameFa: targetUser.lastNameFa,
         email: targetUser.email,
-        phone: targetUser.phone,
+        phone: targetUser.phone || rawUser.mobile,
         nationalId: targetUser.nationalId,
-        department: targetUser.department,
+        department: resolvedDept,
         company: isRtl ? comp.nameFa : comp.nameEn,
         companyId: comp.id,
-        jobTitle: targetUser.jobTitle,
+        jobTitle: resolvedJobTitle,
         role: targetUser.role,
-        workLocation: targetUser.workLocation,
-        contractType: targetUser.contractType,
+        workLocation: targetUser.workLocation || "office",
+        contractType: targetUser.contractType || "full_time",
+        employeeId: resolvedEmpId,
+        extensionNumber: targetUser.extensionNumber || "",
         salary: targetUser.salary,
-        hasOvertime: targetUser.hasOvertime,
-        maxOvertimeHours: targetUser.maxOvertimeHours,
-        monthlyBonusType: targetUser.monthlyBonusType,
-        monthlyBonusAmount: targetUser.monthlyBonusAmount,
+        hasOvertime: targetUser.hasOvertime ?? true,
+        maxOvertimeHours: targetUser.maxOvertimeHours ?? 40,
+        monthlyBonusType: targetUser.monthlyBonusType || "cash",
+        monthlyBonusAmount: targetUser.monthlyBonusAmount ?? 25000000,
         monthlyBonusTitle: targetUser.monthlyBonusTitle,
         monthlyBonuses: targetUser.monthlyBonuses,
-        maritalStatus: targetUser.maritalStatus,
-        childrenCount: targetUser.childrenCount,
-        insuranceType: targetUser.insuranceType,
-        insuranceCode: targetUser.insuranceCode,
-        insuranceProvider: targetUser.insuranceProvider,
-        insuranceValidUntil: targetUser.insuranceValidUntil,
-        supplementaryPlan: targetUser.supplementaryPlan as any,
-        supplementaryProvider: targetUser.supplementaryProvider,
-        shebaNumber: targetUser.shebaNumber,
-        educationDegree: targetUser.educationDegree,
-        educationField: targetUser.educationField,
-        university: targetUser.university,
-        graduationYear: targetUser.graduationYear,
+        maritalStatus: targetUser.maritalStatus || "single",
+        childrenCount: targetUser.childrenCount ?? 0,
+        birthDate: targetUser.birthDate || rawUser.birthDate || "",
+        birthPlace: targetUser.birthPlace || rawUser.birthPlace || "",
+        fatherName: targetUser.fatherName || rawUser.fatherName || "",
+        gender: rawUser.gender || "مرد",
+        militaryStatus: rawUser.militaryStatus || rawUser.militaryDuty || "",
+        joinDate: resolvedJoinDate,
+        insuranceType: targetUser.insuranceType || "complementary",
+        insuranceCode: resolvedInsCode,
+        insuranceProvider: targetUser.insuranceProvider || "تأمین اجتماعی",
+        insuranceValidUntil: targetUser.insuranceValidUntil || "",
+        supplementaryPlan: (targetUser.supplementaryPlan || rawUser.supplementalInsurance || "special") as any,
+        supplementaryProvider: targetUser.supplementaryProvider || "SOS",
+        shebaNumber: resolvedSheba,
+        educationDegree: resolvedEduDegree,
+        educationField: resolvedEduField,
+        university: targetUser.university || "",
+        graduationYear: resolvedGradYear,
         skills: targetUser.skills as any,
         modulesAccess: targetUser.modulesAccess,
         documents: targetUser.documents,
-        manager: targetUser.manager,
-        subordinates: targetUser.subordinates,
+        duties: resolvedDuties,
+        manager: resolvedManager,
+        subordinates: targetUser.subordinates || [],
         status: "pending",
         requestType: "edit_profile",
         requestTag: "ویرایش اطلاعات کاربر",
@@ -844,11 +866,17 @@ export function AdminUsersTable({
           : `Profile information update request for ${formatPersonName(targetUser.name, locale)} (#${targetUser.id})`,
       };
 
-      await api.admin.createRequest(newReqPayload);
+      try {
+        await api.admin.createRequest(newReqPayload);
+      } catch (err: any) {
+        // If an active request already exists for this user, gracefully continue
+        console.warn("Edit request already open or updated:", err);
+      }
+
       toast.success(
         isRtl
-          ? `درخواست ویرایش برای «${formatPersonName(targetUser.name, locale)}» ثبت گردید و به کارتابل درخواست‌ها منتقل شد.`
-          : `Edit request created for "${formatPersonName(targetUser.name, locale)}" and sent to Requests.`
+          ? `فرم ویرایش برای «${formatPersonName(targetUser.name, locale)}» بارگذاری شد و به بخش بررسی منتقل شد.`
+          : `Edit form for "${formatPersonName(targetUser.name, locale)}" loaded in Requests.`
       );
 
       if (onRefresh) {
@@ -859,7 +887,7 @@ export function AdminUsersTable({
       }
     } catch (err: any) {
       console.error("handleCreateEditRequest error:", err);
-      toast.error(isRtl ? "خطا در ثبت درخواست ویرایش اطلاعات." : "Failed to create edit request.");
+      toast.error(isRtl ? "خطا در آماده‌سازی فرم ویرایش اطلاعات." : "Failed to prepare edit form.");
     } finally {
       setCreatingReqUserId(null);
     }
@@ -2049,15 +2077,15 @@ export function AdminUsersTable({
                                               "bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/25",
                                               creatingReqUserId === user.id && "opacity-70 pointer-events-none"
                                             )}
-                                            title={isRtl ? "ایجاد درخواست ویرایش اطلاعات (انتقال به بخش درخواست‌ها)" : "Create Edit Request"}
-                                            aria-label={isRtl ? "ایجاد درخواست ویرایش اطلاعات" : "Create Edit Request"}
+                                            title={isRtl ? "ویرایش مشخصات کاربر" : "Edit User Profile"}
+                                            aria-label={isRtl ? "ویرایش مشخصات کاربر" : "Edit User Profile"}
                                           >
                                             {creatingReqUserId === user.id ? (
                                               <RotateCw className="size-3.5 animate-spin" />
                                             ) : (
-                                              <UserCog className="size-3.5" />
+                                              <Edit2 className="size-3.5" />
                                             )}
-                                            <span className="hidden sm:inline">{isRtl ? "درخواست ویرایش" : "Request Edit"}</span>
+                                            <span className="hidden sm:inline">{isRtl ? "ویرایش" : "Edit"}</span>
                                           </button>
                                           <button
                                             type="button"

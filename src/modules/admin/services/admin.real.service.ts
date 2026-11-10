@@ -490,7 +490,7 @@ export class RealAdminService implements IAdminService {
 
   async approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[] }
+    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[]; requestData?: Partial<PendingRequest> }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }> {
     try {
       const res = await this.http.post<any>(
@@ -499,6 +499,7 @@ export class RealAdminService implements IAdminService {
           tempPassword: options?.tempPassword,
           role: options?.role || "user",
           modulesAccess: options?.modulesAccess,
+          requestData: options?.requestData,
         }
       );
       const raw = res?.data ?? res;

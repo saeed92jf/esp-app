@@ -7,6 +7,9 @@ import {
 import { BACKEND_API_URL } from "@/lib/server/backend-config";
 import type { UserRole } from "@/types/auth";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -34,12 +37,15 @@ export async function GET(req: NextRequest) {
           ...(authHeader ? { Authorization: authHeader } : {}),
           Accept: "application/json",
         },
+        cache: "no-store",
         signal: AbortSignal.timeout(4000),
       });
 
       if (remoteRes.ok) {
         const remoteData = await remoteRes.json();
-        return NextResponse.json(remoteData);
+        return NextResponse.json(remoteData, {
+          headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+        });
       }
     } catch {
       // Fallback transparently to server store
@@ -55,7 +61,9 @@ export async function GET(req: NextRequest) {
       limit,
     });
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "no-store, no-cache, must-revalidate" },
+    });
   } catch (err: any) {
     console.error("GET /api/admin/users error:", err);
     return NextResponse.json(

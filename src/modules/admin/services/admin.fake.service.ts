@@ -464,7 +464,7 @@ export class FakeAdminService implements IAdminService {
 
   async approveManager(
     requestId: string, 
-    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[] }
+    options?: { tempPassword?: string; role?: UserRole; modulesAccess?: UserModuleAccess[]; requestData?: Partial<PendingRequest> }
   ): Promise<{ request: PendingRequest; tempPassword?: string; user: User }> {
     await wait(400);
     this.syncFromStorage();
@@ -472,6 +472,10 @@ export class FakeAdminService implements IAdminService {
     const req = this.requests.find((r) => r.id === requestId);
     if (!req) {
       throw new Error(`Request with ID ${requestId} not found`);
+    }
+
+    if (options?.requestData) {
+      Object.assign(req, options.requestData);
     }
 
     const tempPassword = options?.tempPassword || "Esp@" + Math.floor(100000 + Math.random() * 900000);
@@ -533,21 +537,40 @@ export class FakeAdminService implements IAdminService {
       this.users.unshift(newUser);
       existingUser = newUser;
     } else {
+      const mergedFields = { ...(req || {}), ...(options?.requestData || {}) };
       existingUser.accountStatus = "active";
       existingUser.role = targetRole;
       existingUser.hrApproved = true;
       existingUser.managerApproved = true;
-      if (req.salary !== undefined) existingUser.salary = req.salary;
-      if (req.hasOvertime !== undefined) existingUser.hasOvertime = req.hasOvertime;
-      if (req.maxOvertimeHours !== undefined) existingUser.maxOvertimeHours = req.maxOvertimeHours;
-      if (req.monthlyBonusType) existingUser.monthlyBonusType = req.monthlyBonusType;
-      if (req.monthlyBonusAmount !== undefined) existingUser.monthlyBonusAmount = req.monthlyBonusAmount;
-      if (req.monthlyBonusTitle) existingUser.monthlyBonusTitle = req.monthlyBonusTitle;
-      if (req.monthlyBonuses) existingUser.monthlyBonuses = req.monthlyBonuses;
+      if (mergedFields.name) existingUser.name = mergedFields.name;
+      if (mergedFields.fullName) existingUser.fullName = mergedFields.fullName;
+      if (mergedFields.fullNameFa) existingUser.fullNameFa = mergedFields.fullNameFa;
+      if (mergedFields.firstName) existingUser.firstName = mergedFields.firstName;
+      if (mergedFields.lastName) existingUser.lastName = mergedFields.lastName;
+      if (mergedFields.firstNameFa) existingUser.firstNameFa = mergedFields.firstNameFa;
+      if (mergedFields.lastNameFa) existingUser.lastNameFa = mergedFields.lastNameFa;
+      if (mergedFields.department) existingUser.department = mergedFields.department;
+      if (mergedFields.jobTitle) existingUser.jobTitle = mergedFields.jobTitle;
+      if (mergedFields.phone) existingUser.phone = mergedFields.phone;
+      if (mergedFields.nationalId) existingUser.nationalId = mergedFields.nationalId;
+      if (mergedFields.workLocation) existingUser.workLocation = mergedFields.workLocation;
+      if (mergedFields.contractType) existingUser.contractType = mergedFields.contractType;
+      if (mergedFields.employeeId) existingUser.employeeId = mergedFields.employeeId;
+      if (mergedFields.extensionNumber) existingUser.extensionNumber = mergedFields.extensionNumber;
+      if (mergedFields.manager) existingUser.manager = mergedFields.manager;
+      if (mergedFields.salary !== undefined) existingUser.salary = mergedFields.salary;
+      if (mergedFields.hasOvertime !== undefined) existingUser.hasOvertime = mergedFields.hasOvertime;
+      if (mergedFields.maxOvertimeHours !== undefined) existingUser.maxOvertimeHours = mergedFields.maxOvertimeHours;
+      if (mergedFields.monthlyBonusType) existingUser.monthlyBonusType = mergedFields.monthlyBonusType;
+      if (mergedFields.monthlyBonusAmount !== undefined) existingUser.monthlyBonusAmount = mergedFields.monthlyBonusAmount;
+      if (mergedFields.monthlyBonusTitle) existingUser.monthlyBonusTitle = mergedFields.monthlyBonusTitle;
+      if (mergedFields.monthlyBonuses) existingUser.monthlyBonuses = mergedFields.monthlyBonuses;
+      if (mergedFields.skills) existingUser.skills = mergedFields.skills as any;
+      if (mergedFields.documents) existingUser.documents = mergedFields.documents;
       if (options?.modulesAccess) {
         existingUser.modulesAccess = options.modulesAccess;
-      } else if (req.modulesAccess) {
-        existingUser.modulesAccess = req.modulesAccess;
+      } else if (mergedFields.modulesAccess) {
+        existingUser.modulesAccess = mergedFields.modulesAccess;
       }
     }
 

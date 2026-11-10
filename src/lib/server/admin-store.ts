@@ -491,16 +491,44 @@ export function approveServerAdminRequestManager(
   if (existingIndex !== -1) {
     const isSuperAdmin = users[existingIndex].role === "superadmin" || users[existingIndex].id === "u-saeed" || users[existingIndex].email.includes("jalili");
     const safeRole = isSuperAdmin ? "superadmin" : (users[existingIndex].role === "admin" && targetRole === "user" ? "admin" : targetRole);
+    const mergedData = { ...(req || {}), ...(options?.requestData || {}) };
     users[existingIndex] = {
       ...users[existingIndex],
       accountStatus: "active",
       role: safeRole,
-      modulesAccess: options?.modulesAccess || req.modulesAccess || users[existingIndex].modulesAccess,
+      modulesAccess: options?.modulesAccess || mergedData.modulesAccess || users[existingIndex].modulesAccess,
       adminApproved: true,
       managerApproved: true,
-      department: req.department || users[existingIndex].department,
-      jobTitle: req.jobTitle || users[existingIndex].jobTitle,
-      salary: req.salary ?? users[existingIndex].salary,
+      ...(mergedData.name && { name: mergedData.name }),
+      ...(mergedData.fullName && { fullName: mergedData.fullName }),
+      ...(mergedData.fullNameFa && { fullNameFa: mergedData.fullNameFa }),
+      ...(mergedData.firstName && { firstName: mergedData.firstName }),
+      ...(mergedData.lastName && { lastName: mergedData.lastName }),
+      ...(mergedData.firstNameFa && { firstNameFa: mergedData.firstNameFa }),
+      ...(mergedData.lastNameFa && { lastNameFa: mergedData.lastNameFa }),
+      ...(mergedData.department && { department: mergedData.department }),
+      ...(mergedData.jobTitle && { jobTitle: mergedData.jobTitle }),
+      ...(mergedData.phone && { phone: mergedData.phone }),
+      ...(mergedData.nationalId && { nationalId: mergedData.nationalId }),
+      ...(mergedData.workLocation && { workLocation: mergedData.workLocation }),
+      ...(mergedData.contractType && { contractType: mergedData.contractType }),
+      ...(mergedData.employeeId && { employeeId: mergedData.employeeId }),
+      ...(mergedData.extensionNumber && { extensionNumber: mergedData.extensionNumber }),
+      ...(mergedData.manager && { manager: mergedData.manager }),
+      ...(mergedData.salary !== undefined && { salary: mergedData.salary }),
+      ...(mergedData.hasOvertime !== undefined && { hasOvertime: mergedData.hasOvertime }),
+      ...(mergedData.maxOvertimeHours !== undefined && { maxOvertimeHours: mergedData.maxOvertimeHours }),
+      ...(mergedData.monthlyBonusType && { monthlyBonusType: mergedData.monthlyBonusType }),
+      ...(mergedData.monthlyBonusAmount !== undefined && { monthlyBonusAmount: mergedData.monthlyBonusAmount }),
+      ...(mergedData.monthlyBonusTitle && { monthlyBonusTitle: mergedData.monthlyBonusTitle }),
+      ...(mergedData.monthlyBonuses && { monthlyBonuses: mergedData.monthlyBonuses }),
+      ...(mergedData.skills && {
+        skills: mergedData.skills.map((s: any) => ({
+          name: s.name,
+          rate: typeof s.rate === "number" ? s.rate : (s.level || 3) * 20,
+        })),
+      }),
+      ...(mergedData.documents && { documents: mergedData.documents }),
     };
     user = users[existingIndex];
     globalThis.__espServerAdminUsers = users;
