@@ -99,6 +99,7 @@ import {
   resolveStudyFieldLabel,
   resolveUniversityLabel,
 } from "@/modules/profile/data/education-options";
+import { getSupplementaryPlanOptions } from "@/config/profile-options";
 import type { UserUploadedDocument } from "@/types/auth";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
@@ -596,19 +597,9 @@ ${req.description || "بدون توضیحات تکمیلی"}
     { value: "internship", label: t("contractInternship") },
   ];
 
-  const supplementaryPlanOptions = [
-    { value: "golden", label: t("planGolden") },
-    { value: "silver", label: t("planSilver") },
-    { value: "special", label: t("planSpecial") },
-    { value: "none", label: t("planNone") },
-  ];
+  const supplementaryPlanOptions = getSupplementaryPlanOptions(locale);
 
-  const degreeOptions = [
-    { value: "diploma", label: t("degreesOptions.diploma") },
-    { value: "bachelors", label: t("degreesOptions.bachelors") },
-    { value: "master", label: t("degreesOptions.master") },
-    { value: "phd", label: t("degreesOptions.phd") },
-  ];
+  const degreeOptions = getDegreeOptions(locale);
 
   const relationshipOptions = [
     { value: "spouse", label: t("relationshipSpouse") },

@@ -82,11 +82,32 @@ export class RealSearchService implements ISearchService {
   constructor(private http: HttpClient) {}
 
   async search(payload: SearchPayload): Promise<SearchResponse> {
-    const params = Object.fromEntries(
-      Object.entries(payload).filter(([, value]) => value !== undefined),
-    ) as Record<string, string | number | boolean | undefined>;
+    try {
+      const params = Object.fromEntries(
+        Object.entries(payload).filter(([, value]) => value !== undefined),
+      ) as Record<string, string | number | boolean | undefined>;
 
-    return this.http.get<SearchResponse>("/search", { params });
+      return await this.http.get<SearchResponse>("/search", { params });
+    } catch {
+      const q = (payload.query || "").toLowerCase().trim();
+      if (q.length < 1) return { results: [], total: 0, query: payload.query };
+
+      const uniRes = await universalSearchService.search(q, "all", payload.locale || "fa");
+      const results: SearchResult[] = uniRes.results.map((item) => ({
+        href: item.href,
+        title: item.title,
+        section: item.breadcrumbs[item.breadcrumbs.length - 1] || item.category,
+        type: (item.category === "modules" ? "navigation" : item.category === "tasks" ? "project" : "document") as SearchResult["type"],
+        excerpt: item.snippet,
+      }));
+
+      const filtered = payload.types ? results.filter((r) => payload.types!.includes(r.type)) : results;
+      return {
+        results: filtered.slice(0, payload.limit || 20),
+        total: filtered.length,
+        query: payload.query,
+      };
+    }
   }
 
   async searchNavigation(

@@ -17,9 +17,22 @@ import {
   Image as ImageIcon,
   Sparkles,
   ShieldAlert,
+  Mail,
+  Trash2,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { TaskComment, TaskCommentReply, TaskAttachment } from "../types/tasks.types";
 import { cn } from "@/lib/utils";
@@ -39,6 +52,9 @@ interface TaskCommentThreadProps {
     attachments?: TaskAttachment[],
     replyToAuthorName?: string
   ) => Promise<void>;
+  onDeleteComment?: (commentId: string) => Promise<void>;
+  onDeleteReply?: (commentId: string, replyId: string) => Promise<void>;
+  onEmailComment?: (comment: TaskComment, recipientEmails: string[], includeAttachments: boolean) => Promise<void>;
 }
 
 export function TaskCommentThread({
@@ -47,9 +63,18 @@ export function TaskCommentThread({
   comments,
   onAddComment,
   onAddReply,
+  onDeleteComment,
+  onDeleteReply,
+  onEmailComment,
 }: TaskCommentThreadProps) {
   const t = useTranslations("Tasks.comments");
   const { user } = useAuth();
+
+  const [emailModalComment, setEmailModalComment] = useState<TaskComment | null>(null);
+  const [recipientEmails, setRecipientEmails] = useState<string[]>([]);
+  const [newRecipientInput, setNewRecipientInput] = useState("");
+  const [includeAttachments, setIncludeAttachments] = useState(true);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const isSaeed = Boolean(
     user?.id === "u-saeed" ||
@@ -58,6 +83,68 @@ export function TaskCommentThread({
   );
   const isSuperAdmin = user?.role === "superadmin" || isSaeed;
   const isDeptAdmin = user?.role === "dept_admin" || user?.role === "manager";
+
+  const canDeleteComment = (authorName: string, authorId?: string) => {
+    if (isSuperAdmin || user?.role === "admin") return true;
+    const currentName = (user?.name || user?.fullName || user?.fullNameFa || "").toLowerCase().trim();
+    const currentId = (user?.id || "").toLowerCase().trim();
+    const authN = (authorName || "").toLowerCase().trim();
+    const authI = (authorId || "").toLowerCase().trim();
+    return (currentName && authN && (currentName === authN || currentName.includes(authN) || authN.includes(currentName))) ||
+           (currentId && authI && currentId === authI);
+  };
+
+  const handleOpenEmailModal = (comment: TaskComment) => {
+    setEmailModalComment(comment);
+    const emails = new Set<string>();
+    (task?.assignees || []).forEach((a: any) => {
+      if (a.email && a.email.includes("@")) emails.add(a.email.toLowerCase().trim());
+    });
+    if ((task as any)?.creatorEmail) emails.add((task as any).creatorEmail.toLowerCase().trim());
+    setRecipientEmails(Array.from(emails));
+    setIncludeAttachments(Boolean(comment.attachments && comment.attachments.length > 0));
+  };
+
+  const handleAddRecipient = () => {
+    const trimmed = newRecipientInput.trim().toLowerCase();
+    if (trimmed && trimmed.includes("@") && !recipientEmails.includes(trimmed)) {
+      setRecipientEmails((prev) => [...prev, trimmed]);
+      setNewRecipientInput("");
+    }
+  };
+
+  const handleRemoveRecipient = (email: string) => {
+    setRecipientEmails((prev) => prev.filter((e) => e !== email));
+  };
+
+  const handleConfirmSendEmail = async () => {
+    if (!emailModalComment || recipientEmails.length === 0) return;
+    setIsSendingEmail(true);
+    try {
+      if (onEmailComment) {
+        await onEmailComment(emailModalComment, recipientEmails, includeAttachments);
+      } else {
+        await fetch(`/api/real/tasks/${taskId}/email-comment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            comment_id: emailModalComment.id,
+            comment_content: emailModalComment.content,
+            author_name: emailModalComment.authorName,
+            author_role: emailModalComment.authorRole,
+            recipient_emails: recipientEmails,
+            include_attachments: includeAttachments,
+            attachments: emailModalComment.attachments || [],
+          }),
+        });
+      }
+      setEmailModalComment(null);
+    } catch (err) {
+      console.error("Failed to email comment:", err);
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
 
   // Check if current user is an assignee of this task
   const isAssignee = React.useMemo(() => {
@@ -511,19 +598,41 @@ export function TaskCommentThread({
                 </div>
               )}
 
-              {/* Comment Actions: Reply Trigger */}
-              {canPostComment && (
-                <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[11px]">
+              {/* Comment Actions: Reply, Email & Delete */}
+              <div className="flex items-center justify-between pt-1 border-t border-border/30 text-[11px]">
+                <div className="flex items-center gap-3">
+                  {canPostComment && (
+                    <button
+                      type="button"
+                      onClick={() => handleStartReplyToComment(comment)}
+                      className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
+                    >
+                      <CornerDownLeft className="size-3 rtl:rotate-180" />
+                      <span>{t("reply")}</span>
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => handleStartReplyToComment(comment)}
-                    className="flex items-center gap-1 text-primary hover:text-primary/80 font-medium cursor-pointer"
+                    onClick={() => handleOpenEmailModal(comment)}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground font-medium cursor-pointer transition-colors"
+                    title={isRtl ? "ارسال این نظر به ایمیل مخاطبان" : "Email this comment"}
                   >
-                    <CornerDownLeft className="size-3 rtl:rotate-180" />
-                    <span>{t("reply")}</span>
+                    <Mail className="size-3 text-sky-500" />
+                    <span>{isRtl ? "ارسال به ایمیل" : "Email"}</span>
                   </button>
                 </div>
-              )}
+
+                {canDeleteComment(comment.authorName, (comment as any).authorId) && (
+                  <button
+                    type="button"
+                    onClick={() => onDeleteComment && onDeleteComment(comment.id)}
+                    className="text-muted-foreground hover:text-destructive cursor-pointer p-1 transition-colors"
+                    title={isRtl ? "حذف نظر" : "Delete comment"}
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                )}
+              </div>
 
               {/* Reply Input Box (when replying directly to comment) */}
               {replyingTarget?.commentId === comment.id && !replyingTarget?.replyId && (
@@ -591,9 +700,9 @@ export function TaskCommentThread({
                           </div>
                         )}
 
-                        {/* Reply Action on this Reply */}
-                        {canPostComment && (
-                          <div className="flex items-center justify-between pt-1 border-t border-border/20 text-[10px]">
+                        {/* Reply Action & Delete on this Reply */}
+                        <div className="flex items-center justify-between pt-1 border-t border-border/20 text-[10px]">
+                          {canPostComment ? (
                             <button
                               type="button"
                               onClick={() => handleStartReplyToReply(comment.id, reply)}
@@ -602,8 +711,19 @@ export function TaskCommentThread({
                               <CornerDownLeft className="size-2.5 rtl:rotate-180" />
                               <span>{t("reply")}</span>
                             </button>
-                          </div>
-                        )}
+                          ) : <div />}
+
+                          {canDeleteComment(reply.authorName, (reply as any).authorId) && (
+                            <button
+                              type="button"
+                              onClick={() => onDeleteReply && onDeleteReply(comment.id, reply.id)}
+                              className="text-muted-foreground hover:text-destructive cursor-pointer p-0.5 transition-colors"
+                              title={isRtl ? "حذف پاسخ" : "Delete reply"}
+                            >
+                              <Trash2 className="size-3" />
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {/* Reply Input Box (when replying specifically to this reply) */}
@@ -618,6 +738,125 @@ export function TaskCommentThread({
           ))
         )}
       </div>
+
+      {/* ── Dialog for Emailing Comment ── */}
+      <Dialog open={Boolean(emailModalComment)} onOpenChange={(open) => !open && setEmailModalComment(null)}>
+        <DialogContent className="sm:max-w-md fa-num">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-base font-bold text-foreground">
+              <Mail className="size-5 text-sky-500" />
+              <span>{isRtl ? "ارسال نظر تسک به ایمیل سازمانی" : "Email Task Comment"}</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          {emailModalComment && (
+            <div className="space-y-4 py-2">
+              {/* Comment Content Preview */}
+              <div className="p-3 rounded-xl bg-muted/40 border border-border/50 text-xs">
+                <p className="text-muted-foreground font-semibold mb-1">
+                  {formatPersonName(emailModalComment.authorName, locale)} ({emailModalComment.createdAt}):
+                </p>
+                <p className="text-foreground line-clamp-3 leading-relaxed whitespace-pre-wrap">
+                  {emailModalComment.content}
+                </p>
+                {emailModalComment.attachments && emailModalComment.attachments.length > 0 && (
+                  <p className="text-[11px] text-sky-600 dark:text-sky-400 mt-2 font-medium">
+                    📎 {emailModalComment.attachments.length} {isRtl ? "فایل پیوست" : "attachments"}
+                  </p>
+                )}
+              </div>
+
+              {/* Recipients Input */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-foreground">
+                  {isRtl ? "گیرندگان ایمیل (ایمیل‌های سازمانی):" : "Recipients:"}
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newRecipientInput}
+                    onChange={(e) => setNewRecipientInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddRecipient())}
+                    placeholder="user@euroslotpars.com"
+                    className="h-8 text-xs font-mono"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddRecipient}
+                    className="h-8 px-3 text-xs cursor-pointer"
+                  >
+                    {isRtl ? "افزودن" : "Add"}
+                  </Button>
+                </div>
+
+                {/* Recipient Chips */}
+                <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pt-1">
+                  {recipientEmails.map((email) => (
+                    <span
+                      key={email}
+                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/20 text-xs font-mono"
+                    >
+                      <span>{email}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveRecipient(email)}
+                        className="hover:text-destructive cursor-pointer"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                  {recipientEmails.length === 0 && (
+                    <span className="text-xs text-rose-500">
+                      {isRtl ? "حداقل یک گیرنده باید مشخص شود." : "At least one recipient is required."}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Include attachments toggle */}
+              {emailModalComment.attachments && emailModalComment.attachments.length > 0 && (
+                <div className="flex items-center gap-2 pt-2 border-t border-border/40">
+                  <Checkbox
+                    id="include-att"
+                    checked={includeAttachments}
+                    onCheckedChange={(checked) => setIncludeAttachments(Boolean(checked))}
+                  />
+                  <label htmlFor="include-att" className="text-xs text-foreground cursor-pointer select-none">
+                    {isRtl ? "ارسال فایل‌های پیوست به همراه ایمیل" : "Include attached files in email"}
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setEmailModalComment(null)}
+              disabled={isSendingEmail}
+            >
+              {isRtl ? "انصراف" : "Cancel"}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleConfirmSendEmail}
+              disabled={isSendingEmail || recipientEmails.length === 0}
+              className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white cursor-pointer"
+            >
+              {isSendingEmail ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Send className="size-3.5 rtl:rotate-180" />
+              )}
+              <span>{isRtl ? "ارسال ایمیل" : "Send Email"}</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

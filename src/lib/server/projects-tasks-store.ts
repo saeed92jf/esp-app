@@ -1,8 +1,15 @@
 // src/lib/server/projects-tasks-store.ts
-import { INITIAL_PROJECTS, DEFAULT_PROJECT_PHASES } from "@/modules/projects/services/fake-projects.service";
-import { INITIAL_MOCK_TASKS } from "@/modules/tasks/services/fake-tasks.service";
-import type { ProjectItem, ProjectTaskItem } from "@/modules/projects/types/projects.types";
+import type { ProjectItem, ProjectTaskItem, ProjectPhase } from "@/modules/projects/types/projects.types";
 import type { TaskItem } from "@/modules/tasks/types/tasks.types";
+
+export const DEFAULT_PROJECT_PHASES: ProjectPhase[] = [
+  { id: "ph-1", name: "Basic Engineering", order: 1, progressPercent: 0, status: "pending" },
+  { id: "ph-2", name: "Detailed Engineering", order: 2, progressPercent: 0, status: "pending" },
+  { id: "ph-3", name: "Procurement", order: 3, progressPercent: 0, status: "pending" },
+  { id: "ph-4", name: "Fabrication", order: 4, progressPercent: 0, status: "pending" },
+  { id: "ph-5", name: "QC & Testing", order: 5, progressPercent: 0, status: "pending" },
+  { id: "ph-6", name: "Delivery & Commissioning", order: 6, progressPercent: 0, status: "pending" },
+];
 
 // In-memory persistent server singleton across hot-reloads
 declare global {
@@ -17,7 +24,7 @@ if (!globalThis.__espServerProjects_v4) {
 }
 
 if (!globalThis.__espServerTasks_v9) {
-  globalThis.__espServerTasks_v9 = JSON.parse(JSON.stringify(INITIAL_MOCK_TASKS));
+  globalThis.__espServerTasks_v9 = [];
 }
 
 export function getServerProjects(filters?: {

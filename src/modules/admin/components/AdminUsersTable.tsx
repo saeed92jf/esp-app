@@ -35,6 +35,7 @@ import { getCompanyFromEmail } from "../utils/company";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { getLocalizedDocumentTitle } from "@/modules/profile/utils/document-helpers";
 import { addUserNotification } from "@/modules/dashboard/services/dashboard.service";
+import { resolveDegreeLabel } from "@/config/profile-options";
 
 interface AdminUsersTableProps {
   users: User[];
@@ -1700,21 +1701,7 @@ export function AdminUsersTable({
 
               const getEducationLabel = () => {
                 const deg = user.educationDegree;
-                const degMapFa: Record<string, string> = {
-                  phd: "دکتری",
-                  master: "کارشناسی ارشد",
-                  bachelor: "کارشناسی",
-                  associate: "کاردانی",
-                  diploma: "دیپلم",
-                };
-                const degMapEn: Record<string, string> = {
-                  phd: "Ph.D.",
-                  master: "Master's",
-                  bachelor: "Bachelor's",
-                  associate: "Associate",
-                  diploma: "Diploma",
-                };
-                const degTitle = deg ? (isRtl ? (degMapFa[deg] || deg) : (degMapEn[deg] || deg)) : "";
+                const degTitle = deg ? resolveDegreeLabel(deg, locale) : "";
                 const field = user.educationField?.trim();
                 if (degTitle && field) return `${degTitle} (${field})`;
                 return degTitle || field || (isRtl ? "مدرک ثبت نشده" : "Degree not set");

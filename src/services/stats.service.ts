@@ -37,9 +37,13 @@ export class RealStatsService implements IStatsService {
   constructor(private http: HttpClient) {}
 
   async getHomeStats(): Promise<StatItem[]> {
-    return this.http.get<StatItem[]>('/stats/home', {
-      auth: false,
-      revalidate: 86_400, // ۲۴ ساعت — آمار خیلی کم تغییر می‌کند
-    });
+    try {
+      return await this.http.get<StatItem[]>('/stats/home', {
+        auth: false,
+        revalidate: 86_400, // ۲۴ ساعت
+      });
+    } catch {
+      return FAKE_STATS;
+    }
   }
 }

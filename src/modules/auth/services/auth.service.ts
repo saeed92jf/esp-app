@@ -526,16 +526,6 @@ export class RealAuthService implements IAuthService {
 
       return { user, token };
     } catch (err: any) {
-      // If server rejected login with 401 Unauthorized, rethrow immediately!
-      if (err?.status === 401 || err?.response?.status === 401 || err?.statusCode === 401) {
-        throw err;
-      }
-      // If server is unreachable / offline, allow offline fallback for mock/demo
-      const isNetworkDown = err?.code === 'TIMEOUT' || err?.code === 'NETWORK_ERROR' || err?.status === 502 || err?.status === 503 || err?.status === 504;
-      if (isNetworkDown) {
-        const fakeAuth = new FakeAuthService();
-        return await fakeAuth.login(payload);
-      }
       throw err;
     }
   }
@@ -624,9 +614,7 @@ export class RealAuthService implements IAuthService {
         status: raw.status || "pending_profile",
       };
     } catch (err: any) {
-      console.warn("RealAuthService.requestAccount error, attempting resilient fallback:", err);
-      const fakeAuth = new FakeAuthService();
-      return await fakeAuth.requestAccount(payload);
+      throw err;
     }
   }
 

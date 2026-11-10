@@ -286,5 +286,26 @@
       "avatarColor": "#8b5cf6",
       "avatar": null
     }
+  },
+  {
+    "email": "ar.karami@euroslotpars.com",
+    "mobile": "",
+    "password": "Esp@842926!",
+    "user": {
+      "id": "u-arkarami",
+      "fullName": "Arashk Karami",
+      "fullNameFa": "ارشک کرمی",
+      "email": "ar.karami@euroslotpars.com",
+      "mobile": "",
+      "avatarMode": "initials",
+      "role": "engineer",
+      "primaryColor": "blue",
+      "accountStatus": "active",
+      "isProfileCompleted": true,
+      "hrApproved": true,
+      "managerApproved": true,
+      "avatarColor": "#0ea5e9",
+      "avatar": null
+    }
   }
 ]

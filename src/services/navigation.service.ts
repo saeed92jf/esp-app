@@ -43,10 +43,17 @@ export class RealNavigationService implements INavigationService {
   constructor(private http: HttpClient) {}
 
   async getNavigation(locale = 'fa'): Promise<NavigationResult> {
-    // سرور می‌تواند منوهای پویا، badge، و اطلاعات دسترسی را برگرداند
-    return this.http.get<NavigationResult>('/navigation', {
-      params: { locale },
-      revalidate: 3600, // ۱ ساعت — منو به‌ندرت عوض می‌شود
-    });
+    try {
+      return await this.http.get<NavigationResult>('/navigation', {
+        params: { locale },
+        revalidate: 3600,
+      });
+    } catch {
+      const publicItems = NAVIGATION.flatMap((g) => g.items.filter((i) => i.public));
+      const defaultQuickAccess = NAVIGATION.flatMap((g) => g.items.slice(0, 1))
+        .slice(0, 5)
+        .map((i) => i.href);
+      return { groups: NAVIGATION, publicItems, defaultQuickAccess };
+    }
   }
 }

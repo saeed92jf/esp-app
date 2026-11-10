@@ -1,14 +1,14 @@
 [
   {
     "id": "u-saeed",
-    "name": "سعید جلیلی",
-    "fullName": "Saeed Jalili",
-    "fullNameFa": "سعید جلیلی",
+    "name": "سعید جلیلی فرد",
+    "fullName": "Saeed Jalili Fard",
+    "fullNameFa": "سعید جلیلی فرد",
     "firstName": "Saeed",
-    "lastName": "Jalili",
+    "lastName": "Jalili Fard",
     "firstNameFa": "سعید",
-    "lastNameFa": "جلیلی",
-    "email": "s.jalili@euroslotpars.com",
+    "lastNameFa": "جلیلی فرد",
+    "email": "s.jalilifard@euroslotpars.com",
     "phone": "09179528781",
     "nationalId": "2530095760",
     "role": "superadmin",
@@ -1543,6 +1543,244 @@
         "hoursSpent": "00:00:00",
         "usagePercentage": 0
       }
+    ],
+    "doneProjects": 0,
+    "projects": [],
+    "experiences": []
+  },
+  {
+    "id": "u-arkarami",
+    "name": "ارشک کرمی",
+    "fullName": "Arashk Karami",
+    "fullNameFa": "ارشک کرمی",
+    "firstName": "Arashk",
+    "lastName": "Karami",
+    "firstNameFa": "ارشک",
+    "lastNameFa": "کرمی",
+    "email": "ar.karami@euroslotpars.com",
+    "phone": "",
+    "nationalId": "",
+    "role": "engineer",
+    "status": "offline",
+    "accountStatus": "active",
+    "company": "یورواسلات پارس",
+    "companyId": "euroslot",
+    "department": "Engineering",
+    "jobTitle": "کارشناس مهندسی",
+    "jobPosition": "کارشناس",
+    "jobPositionEn": "Engineer",
+    "avatarColor": "#0ea5e9",
+    "primaryColor": "blue",
+    "avatarMode": "initials",
+    "joinedAt": "1405/08/20",
+    "daysInCompany": 1,
+    "workLocation": "دفتر تهران",
+    "contractType": "full_time",
+    "employeeId": "ESP-182",
+    "personnelCode": "182",
+    "extensionNumber": "",
+    "manager": "M.Shafiee (مدیر مهندسی)",
+    "password": "Esp@842926!",
+    "isProfileCompleted": true,
+    "adminApproved": true,
+    "managerApproved": true,
+    "hrApproved": true,
+    "createdAt": "2026-11-10",
+    "workingFormat": {
+      "office": 60,
+      "factory": 20,
+      "mission": 10,
+      "leave": 10
+    },
+    "modulesAccess": [
+      {
+        "moduleId": "dashboard",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projects",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "tasks",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "projectManagement",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/ESP-Flow",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "engineering",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "customers",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/customers",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "knowledge",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "dictionary",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/dictionary",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "did-you-know",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/did-you-know",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "aparat",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/aparat",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "community",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/community",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "/datasheet-ai",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "calculations",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "cad",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "edms",
+        "hasAccess": true,
+        "accessLevel": "write",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "inventory",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "finance",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      },
+      {
+        "moduleId": "reports",
+        "hasAccess": true,
+        "accessLevel": "read",
+        "hoursSpent": "00:00:00",
+        "usagePercentage": 0
+      }
+    ],
+    "duties": [
+      " ارائه و ثبت و بایگانی مدارک مهندسی شامل محاسبات، نقشه های ساخت،دستورالعملها و MTO مواد مصرفی",
+      " ارائه گزارشات پیشرفت کار به مافوق",
+      "حضور در جلسات کارخانه و یا سایت",
+      "تهیه نرم افزارهای محاسبات مکانیکی و محاسبه اوزان"
     ],
     "doneProjects": 0,
     "projects": [],

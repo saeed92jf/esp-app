@@ -17,59 +17,46 @@
 import { HttpClient } from "./core/http";
 
 import {
-  FakeAuthService,
   RealAuthService,
   type IAuthService,
 } from "@/modules/auth/services/auth.service";
 import {
-  FakeDashboardService,
   RealDashboardService,
   type IDashboardService,
 } from "@/modules/dashboard/services/dashboard.service";
 import {
-  FakeNavigationService,
   RealNavigationService,
   type INavigationService,
 } from "./navigation.service";
 import {
-  FakeSearchService,
   RealSearchService,
   type ISearchService,
 } from "./search.service";
 import {
-  FakeStatsService,
   RealStatsService,
   type IStatsService,
 } from "./stats.service";
 import {
-  FakeUserService,
   RealUserService,
   type IUserService,
 } from "./user.service";
 import {
-  FakePreferencesService,
   RealPreferencesService,
   type IPreferencesService,
 } from "./preferences.service";
 import {
-  FakeCommoditiesService,
   RealCommoditiesService,
   type ICommoditiesService,
 } from "@/modules/dashboard/services/commodities.service";
 import {
-  FakeExchangeRatesService,
   RealExchangeRatesService,
   type IExchangeRatesService,
 } from "@/modules/dashboard/services/exchange-rates.service";
 import { AparatService, type IAparatService } from "./aparat.service";
 import {
-  FakeAdminService,
-} from "@/modules/admin/services/admin.fake.service";
-import {
   RealAdminService,
 } from "@/modules/admin/services/admin.real.service";
 import {
-  FakeNotificationsService,
   RealNotificationsService,
   type INotificationsService,
 } from './notifications.service';
@@ -107,10 +94,10 @@ const http = new HttpClient(API_BASE_URL);
 const SERVICE_MODES = {
   // ──────────────────────────────────── Backend سرویس‌های
   auth:          'real',     // 🟢 REAL  — متصل به بک‌اند واقعی (http://localhost:8080)
-  dashboard:     'fake',  // 🔴 Fake  — داده‌های داشبورد هنوز از backend نمی‌آیند
-  navigation:    'fake',  // 🔴 Fake  — منوی ناوبری هنوز static است
-  search:        'fake',  // 🔴 Fake  — جستجوی سراسری هنوز backend ندارد
-  stats:         'fake',  // 🔴 Fake  — آمارها هنوز از backend نمی‌آیند
+  dashboard:     'real',     // 🟢 REAL  — داشبورد سازمانی متصل به داده‌های واقعی
+  navigation:    'real',     // 🟢 REAL  — منوی ناوبری
+  search:        'real',     // 🟢 REAL  — جستجوی یکپارچه
+  stats:         'real',     // 🟢 REAL  — آمارها
   user:          'real',     // 🟢 REAL  — پروفایل کاربری به backend واقعی متصل است
   preferences:   'real',     // 🟢 REAL  — تنظیمات کاربر در backend واقعی ذخیره می‌شوند
   admin:         'real',     // 🟢 REAL  — مدیریت کاربران و درخواست‌ها به backend واقعی متصل است
@@ -122,20 +109,6 @@ const SERVICE_MODES = {
   aparat:        'real',     // 🟢 REAL   — ویدیوهای آپارات، همیشه واقعی
 } as const satisfies Record<string, 'fake' | 'real' | 'inherit'>;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// تابع کمکی: بر اساس جدول SERVICE_MODES، پیاده‌سازی صحیح را انتخاب می‌کند
-// ─────────────────────────────────────────────────────────────────────────────
-
-function pickService<T>(
-  service: keyof typeof SERVICE_MODES,
-  fake: T,
-  real: T
-): T {
-  const override: 'fake' | 'real' | 'inherit' = SERVICE_MODES[service];
-  const effectiveMode: ApiMode = (override as string) === 'inherit' ? GLOBAL_API_MODE : override;
-  return effectiveMode === 'real' ? real : fake;
-}
-
 // Re-export for backward compatibility (some hooks use API_MODE directly)
 export const API_MODE = GLOBAL_API_MODE;
 
@@ -144,66 +117,18 @@ export const API_MODE = GLOBAL_API_MODE;
 // ═════════════════════════════════════════════════════════════════════════════
 
 export const api = {
-  auth: pickService<IAuthService>('auth',
-    new FakeAuthService(),
-    new RealAuthService(http),
-  ),
-
-  dashboard: pickService<IDashboardService>('dashboard',
-    new FakeDashboardService(),
-    new RealDashboardService(http),
-  ),
-
-  navigation: pickService<INavigationService>('navigation',
-    new FakeNavigationService(),
-    new RealNavigationService(http),
-  ),
-
-  search: pickService<ISearchService>('search',
-    new FakeSearchService(),
-    new RealSearchService(http),
-  ),
-
-  stats: pickService<IStatsService>('stats',
-    new FakeStatsService(),
-    new RealStatsService(http),
-  ),
-
-  user: pickService<IUserService>('user',
-    new FakeUserService(),
-    new RealUserService(http),
-  ),
-
-  preferences: pickService<IPreferencesService>('preferences',
-    new FakePreferencesService(),
-    new RealPreferencesService(http),
-  ),
-
-  commodities: pickService<ICommoditiesService>('commodities',
-    new FakeCommoditiesService(),
-    new RealCommoditiesService(http),
-  ),
-
-  // نرخ ارز — همیشه Real (مستقل از GLOBAL_API_MODE)
-  exchangeRates: pickService<IExchangeRatesService>('exchangeRates',
-    new FakeExchangeRatesService(),
-    new RealExchangeRatesService(),
-  ),
-
-  // آپارات — همیشه Real (مستقل از GLOBAL_API_MODE)
+  auth: new RealAuthService(http),
+  dashboard: new RealDashboardService(http),
+  navigation: new RealNavigationService(http),
+  search: new RealSearchService(http),
+  stats: new RealStatsService(http),
+  user: new RealUserService(http),
+  preferences: new RealPreferencesService(http),
+  commodities: new RealCommoditiesService(http),
+  exchangeRates: new RealExchangeRatesService(),
   aparat: new AparatService() as IAparatService,
-
-  // سیستم اعلان‌ها و نوتیفیکیشن‌های سازمانی (Real / Fake)
-  notifications: pickService<INotificationsService>('notifications',
-    new FakeNotificationsService(),
-    new RealNotificationsService(http),
-  ),
-
-  // مدیریت کاربران و درخواست‌های سازمانی (HR و Admin)
-  admin: pickService<IAdminService>('admin',
-    new FakeAdminService(),
-    new RealAdminService(http),
-  ),
+  notifications: new RealNotificationsService(http),
+  admin: new RealAdminService(http),
 };
 
 // ─── Re-export برای راحتی import ──────────────────────────────────────────────

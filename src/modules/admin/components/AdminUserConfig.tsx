@@ -59,6 +59,13 @@ import { api } from "@/services";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { UserCog } from "lucide-react";
 import {
+  getDegreeOptions,
+  getSupplementaryPlanOptions,
+  getContractTypeOptions,
+  getStudyFieldOptions,
+  getUniversityOptions,
+} from "@/config/profile-options";
+import {
   CompanyId,
   getCompanyFromEmail,
   isValidCorporateEmail,
@@ -77,11 +84,6 @@ import {
   SUPPLEMENTARY_INSURANCE_PROVIDERS,
   BASIC_INSURANCE_PROVIDERS,
 } from "../data/organization-data";
-import {
-  getDegreeOptions,
-  getStudyFieldOptions,
-  getUniversityOptions,
-} from "@/modules/profile/data/education-options";
 import { SubordinateSelector } from "./SubordinateSelector";
 import { DocumentUploadSection } from "@/modules/profile/components/document-upload-section";
 import type { UserUploadedDocument, UserRole } from "@/types/auth";
@@ -718,20 +720,9 @@ export function AdminUserConfig({
     { value: "complementary", label: t("insuranceOptions.complementary") },
   ];
 
-  const supplementaryPlanOptions = [
-    { value: "golden", label: isRtl ? "طرح طلایی (کامل)" : "Golden Plan" },
-    { value: "silver", label: isRtl ? "طرح نقره‌ای" : "Silver Plan" },
-    { value: "special", label: isRtl ? "طرح ویژه" : "Special Plan" },
-    { value: "none", label: isRtl ? "فاقد بیمه تکمیلی" : "None" },
-  ];
+  const supplementaryPlanOptions = getSupplementaryPlanOptions(locale);
 
-  const degreeOptions = [
-    { value: "diploma", label: t("degreesOptions.diploma") },
-    { value: "associate", label: isRtl ? "کاردانی" : "Associate" },
-    { value: "bachelors", label: t("degreesOptions.bachelors") },
-    { value: "master", label: t("degreesOptions.master") },
-    { value: "phd", label: t("degreesOptions.phd") },
-  ];
+  const degreeOptions = getDegreeOptions(locale);
 
   const workModeOptions = [
     { value: "office", label: t("workFormatOffice") },
@@ -740,13 +731,7 @@ export function AdminUserConfig({
     { value: "remote", label: t("workFormatRemote") },
   ];
 
-  const contractTypeOptions = [
-    { value: "full_time", label: isRtl ? "تمام وقت" : "Full Time" },
-    { value: "part_time", label: isRtl ? "پاره وقت" : "Part Time" },
-    { value: "contractual", label: isRtl ? "قراردادی / پروژه‌ای" : "Contractual" },
-    { value: "hourly", label: isRtl ? "ساعتی" : "Hourly" },
-    { value: "internship", label: isRtl ? "کارآموزی" : "Internship" },
-  ];
+  const contractTypeOptions = getContractTypeOptions(locale);
 
   const formatNumberWithCommas = (val: number | string | undefined | null) => {
     if (val === undefined || val === null || val === "") return "";

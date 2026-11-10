@@ -409,6 +409,85 @@ export function TaskProgressView({
     toast.success(isRtl ? "پاسخ شما با موفقیت ثبت گردید." : "Reply posted successfully.");
   };
 
+  const handleDeleteComment = async (commentId: string) => {
+    if (!confirm(isRtl ? "آیا از حذف این نظر اطمینان دارید؟" : "Delete this comment?")) return;
+    const updatedComments = (currentTask.comments || []).filter((c: any) => c.id !== commentId);
+    const updatedTask = {
+      ...currentTask,
+      comments: updatedComments,
+    };
+    try {
+      await newTasksService.updateTask(currentTask.id, {
+        comments: updatedComments,
+      } as any);
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
+    }
+    setCurrentTask(updatedTask);
+    onTaskUpdated(updatedTask);
+    toast.success(isRtl ? "نظر با موفقیت حذف گردید." : "Comment deleted successfully.");
+  };
+
+  const handleDeleteReply = async (commentId: string, replyId: string) => {
+    if (!confirm(isRtl ? "آیا از حذف این پاسخ اطمینان دارید؟" : "Delete this reply?")) return;
+    const updatedComments = (currentTask.comments || []).map((c: any) => {
+      if (c.id === commentId) {
+        return {
+          ...c,
+          replies: (c.replies || []).filter((r: any) => r.id !== replyId),
+        };
+      }
+      return c;
+    });
+    const updatedTask = {
+      ...currentTask,
+      comments: updatedComments,
+    };
+    try {
+      await newTasksService.updateTask(currentTask.id, {
+        comments: updatedComments,
+      } as any);
+    } catch (err) {
+      console.error("Failed to delete reply:", err);
+    }
+    setCurrentTask(updatedTask);
+    onTaskUpdated(updatedTask);
+    toast.success(isRtl ? "پاسخ با موفقیت حذف گردید." : "Reply deleted successfully.");
+  };
+
+  const handleEmailComment = async (comment: TaskComment, recipientEmails: string[], includeAttachments: boolean) => {
+    try {
+      const payload = {
+        comment_id: comment.id,
+        comment_content: comment.content,
+        author_name: comment.authorName,
+        author_role: comment.authorRole,
+        recipient_emails: recipientEmails,
+        include_attachments: includeAttachments,
+        attachments: comment.attachments || [],
+      };
+      let res = await fetch(`/api/tasks/${currentTask.id}/email-comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        res = await fetch(`/api/real/tasks/${currentTask.id}/email-comment`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.detail || "Failed to send email");
+      }
+      toast.success(isRtl ? "ایمیل نظر با موفقیت برای مخاطبان ارسال گردید." : "Comment email sent successfully.");
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در ارسال ایمیل نظر" : "Failed to email comment"));
+    }
+  };
+
   const toggleSegment = (key: string) => {
     setOpenSegments((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -1023,9 +1102,25 @@ export function TaskProgressView({
     }
   };
 
-  const canToggleSubtask = true;
+  const isCreator = Boolean(
+    currentUser && (
+      currentUser.id === currentTask.created_by ||
+      currentUser.email === currentTask.created_by ||
+      (currentTask.created_by_name && (
+        currentUser.fullName === currentTask.created_by_name ||
+        currentUser.fullNameFa === currentTask.created_by_name ||
+        currentUser.name === currentTask.created_by_name
+      ))
+    )
+  );
+  const canControlTask = isAdmin || isCreator;
+  const canToggleSubtask = canControlTask;
 
   const handleToggleSubtask = async (subtaskId: string, isDone: boolean) => {
+    if (!canToggleSubtask) {
+      toast.error(isRtl ? "تنها سازنده تسک و ادمین مجاز به تیک زدن و تغییر وضعیت مراحل هستند." : "Only task creator and admin can toggle steps.");
+      return;
+    }
     const prevTask = currentTask;
     const authorName = formatPersonName(currentUser.fullName || currentUser.fullNameFa || currentUser.name, locale) || (isRtl ? "کاربر" : "User");
 
@@ -1153,14 +1248,21 @@ export function TaskProgressView({
                   {isRtl ? "مشخصات و جزئیات تکمیلی تسک" : "Task Details & Information"}
                 </h3>
                 <p className="text-xs text-muted-foreground truncate mt-0.5">
-                  {currentTask.project_name ? `${currentTask.project_name} · ` : ""}{currentTask.assignees?.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ") || (isRtl ? "بدون مجری" : "No assignees")}
+                  {currentTask.project_name ? `${currentTask.project_name} · ` : ""}
+                  {currentTask.assignees?.length > 0
+                    ? (currentTask.assignees.length <= 3
+                        ? currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ")
+                        : (isRtl
+                            ? `${currentTask.assignees.slice(0, 3).map((a) => formatPersonName(a.name, locale)).join("، ")} و ${(currentTask.assignees.length - 3)} نفر دیگر`
+                            : `${currentTask.assignees.slice(0, 3).map((a) => formatPersonName(a.name, locale)).join(", ")} and ${currentTask.assignees.length - 3} more`))
+                    : (isRtl ? "بدون مجری" : "No assignees")}
                 </p>
               </div>
             </div>
 
             {/* Action on Item 1: APPROVE BUTTON & Controls */}
             <div className="flex items-center gap-2 shrink-0">
-              {isAdmin && !currentTask.is_approved && currentTask.status !== "cancelled" && (
+              {canControlTask && !currentTask.is_approved && currentTask.status !== "cancelled" && (
                 <Button
                   type="button"
                   onClick={(e) => {
@@ -1239,15 +1341,19 @@ export function TaskProgressView({
                 </div>
               </div>
 
-              {currentTask.assignees?.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <Users className="size-4 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "مجریان" : "Assignees"}</p>
-                    <p className="text-sm font-semibold">{currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ")}</p>
-                  </div>
+              {/* Task Creator */}
+              <div className="flex items-start gap-2">
+                <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs text-muted-foreground mb-0.5">{isRtl ? "سازنده تسک" : "Task Creator"}</p>
+                  <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                    <span>{formatPersonName(currentTask.created_by_name || (isRtl ? "مدیر سیستم" : "System Admin"), locale)}</span>
+                    <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+                      {isRtl ? "ایجادکننده" : "Creator"}
+                    </Badge>
+                  </p>
                 </div>
-              )}
+              </div>
 
               {/* Deadline Block */}
               <div className="flex items-start gap-2 min-w-[200px]">
@@ -1335,6 +1441,45 @@ export function TaskProgressView({
               )}
             </div>
 
+            {/* Dedicated Assignees Container (Supports 1 to 1000+ Assignees smoothly) */}
+            <div className="pt-3 border-t border-border/40">
+              <div className="flex items-start gap-2.5">
+                <Users className="size-4 text-primary shrink-0 mt-1" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <p className="text-xs font-semibold text-foreground">
+                      {isRtl ? `مجری یا مجریان تسک (${currentTask.assignees?.length || 0} نفر)` : `Performers / Assignees (${currentTask.assignees?.length || 0})`}
+                    </p>
+                    {(currentTask.assignees?.length || 0) > 8 && (
+                      <span className="text-[10px] text-muted-foreground fa-num">
+                        {isRtl ? "برای مشاهده همه اعضا اسکرول کنید" : "Scroll to view all"}
+                      </span>
+                    )}
+                  </div>
+                  {currentTask.assignees?.length > 0 ? (
+                    <div className="max-h-36 overflow-y-auto pr-1 flex flex-wrap gap-1.5 scrollbar-thin">
+                      {currentTask.assignees.map((a, idx) => (
+                        <span
+                          key={a.userId || idx}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/60 hover:bg-muted text-foreground border border-border/50 shadow-2xs transition-colors"
+                          title={a.email || undefined}
+                        >
+                          <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
+                            {formatPersonName(a.name, locale).slice(0, 1)}
+                          </span>
+                          <span className="truncate max-w-[160px]">{formatPersonName(a.name, locale)}</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">
+                      {isRtl ? "هنوز مجری مشخصی برای این تسک تخصیص نیافته است." : "No assignees assigned yet."}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Automated Task Lifecycle Tracker */}
             <div className="pt-3 border-t border-border/40 space-y-3">
               <div className="flex items-center justify-between">
@@ -1398,38 +1543,50 @@ export function TaskProgressView({
 
                 <div className="flex items-center gap-2 shrink-0 justify-end flex-wrap">
                   {currentTask.status === "todo" && (
-                    <Button
-                      onClick={handleStartTask}
-                      disabled={isStartingTask}
-                      size="sm"
-                      className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
-                    >
-                      {isStartingTask ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <Play className="size-3.5 fill-current" />
-                      )}
-                      <span>{isRtl ? "شروع انجام تسک" : "Start Working on Task"}</span>
-                    </Button>
+                    canControlTask ? (
+                      <Button
+                        onClick={handleStartTask}
+                        disabled={isStartingTask}
+                        size="sm"
+                        className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                      >
+                        {isStartingTask ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <Play className="size-3.5 fill-current" />
+                        )}
+                        <span>{isRtl ? "شروع انجام تسک" : "Start Working on Task"}</span>
+                      </Button>
+                    ) : (
+                      <Badge variant="outline" className="text-xs bg-muted/60 text-muted-foreground border-border/40 px-3 py-1.5">
+                        {isRtl ? "در انتظار شروع توسط سازنده یا مدیر" : "Pending start by creator or admin"}
+                      </Badge>
+                    )
                   )}
 
                   {currentTask.status === "in_progress" && (
-                    <Button
-                      onClick={handleSubmitForReview}
-                      disabled={isSubmittingReview}
-                      size="sm"
-                      className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs cursor-pointer"
-                    >
-                      {isSubmittingReview ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <Send className="size-3.5" />
-                      )}
-                      <span>{isRtl ? "ارسال جهت بررسی و تایید مدیر" : "Submit for Review"}</span>
-                    </Button>
+                    canControlTask ? (
+                      <Button
+                        onClick={handleSubmitForReview}
+                        disabled={isSubmittingReview}
+                        size="sm"
+                        className="rounded-xl h-9 px-4 text-xs font-bold gap-1.5 bg-pink-600 hover:bg-pink-700 text-white shadow-xs cursor-pointer"
+                      >
+                        {isSubmittingReview ? (
+                          <Loader2 className="size-3.5 animate-spin" />
+                        ) : (
+                          <Send className="size-3.5" />
+                        )}
+                        <span>{isRtl ? "ارسال جهت بررسی و تایید مدیر" : "Submit for Review"}</span>
+                      </Button>
+                    ) : (
+                      <Badge variant="outline" className="text-xs bg-muted/60 text-muted-foreground border-border/40 px-3 py-1.5">
+                        {isRtl ? "در حال اجرا توسط مجریان" : "In Progress"}
+                      </Badge>
+                    )
                   )}
 
-                  {currentTask.status === "review" && isAdmin && (
+                  {currentTask.status === "review" && canControlTask && (
                     <>
                       <Button
                         onClick={() => setShowChangesBox(!showChangesBox)}
@@ -1456,7 +1613,7 @@ export function TaskProgressView({
                     </>
                   )}
 
-                  {currentTask.status === "review" && !isAdmin && (
+                  {currentTask.status === "review" && !canControlTask && (
                     <Badge variant="outline" className="text-xs bg-pink-500/10 text-pink-600 border-pink-500/30 px-3 py-1">
                       {isRtl ? "تسک در حال بازبینی و بررسی مدیریت می‌باشد" : "Under Manager Review"}
                     </Badge>
@@ -1472,7 +1629,7 @@ export function TaskProgressView({
               </div>
 
               {/* Admin Changes Feedback Box */}
-              {showChangesBox && isAdmin && (
+              {showChangesBox && canControlTask && (
                 <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-amber-500/5 space-y-2 mt-2">
                   <label className="text-xs font-bold text-amber-700 dark:text-amber-400 block">
                     {isRtl ? "توضیحات و موارد نیازمند اصلاح و بازنگری:" : "Revision Feedback:"}
@@ -1630,9 +1787,7 @@ export function TaskProgressView({
                         <span>{isRtl ? "افراد مجاز برای تیک‌زدن ریزتسک‌ها:" : "Authorized to check off subtasks:"}</span>
                       </span>
                       <span className="font-semibold text-[11px]">
-                        {currentTask.assignees?.length > 0
-                          ? currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(isRtl ? "، " : ", ") + (isRtl ? " و مدیر سیستم" : " & System Admin")
-                          : (isRtl ? "مجریان و مدیر سیستم" : "Assignees & System Admin")}
+                        {isRtl ? "فقط سازنده تسک و مدیر سیستم" : "Task Creator & System Admin only"}
                       </span>
                     </div>
 
@@ -1654,14 +1809,20 @@ export function TaskProgressView({
                           <div className="flex items-center gap-3 min-w-0">
                             <button
                               type="button"
-                              onClick={() => handleToggleSubtask(sub.id, !sub.is_done)}
+                              onClick={() => canControlTask && handleToggleSubtask(sub.id, !sub.is_done)}
+                              disabled={!canControlTask}
                               className={cn(
-                                "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0 cursor-pointer",
+                                "size-5 rounded-md border-2 flex items-center justify-center transition-all shrink-0",
+                                canControlTask ? "cursor-pointer" : "cursor-not-allowed opacity-50",
                                 sub.is_done
                                   ? "bg-emerald-600 border-emerald-600 text-white"
                                   : "border-border hover:border-primary"
                               )}
-                              title={isRtl ? "تغییر وضعیت ریزتسک" : "Toggle subtask"}
+                              title={
+                                !canControlTask
+                                  ? (isRtl ? "فقط سازنده تسک و ادمین می‌توانند استپ‌ها را تیک بزنند" : "Only task creator and admin can toggle steps")
+                                  : (isRtl ? "تغییر وضعیت ریزتسک" : "Toggle subtask")
+                              }
                             >
                               {sub.is_done && <CheckCircle2 className="size-3" />}
                             </button>
@@ -1680,16 +1841,12 @@ export function TaskProgressView({
                                     : (isRtl ? "تکمیل‌شده" : "Completed")}
                                 </span>
                               </span>
-                            ) : (
+                            ) : sub.assigned_to_name ? (
                               <span className="text-[10px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <Users className="size-2.5" />
-                                <span>
-                                  {currentTask.assignees?.length > 0
-                                    ? (isRtl ? `مسئول: ${currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join("، ")}` : `Assignee: ${currentTask.assignees.map((a) => formatPersonName(a.name, locale)).join(", ")}`)
-                                    : (isRtl ? "در انتظار اقدام مجری" : "Pending")}
-                                </span>
+                                <span>{formatPersonName(sub.assigned_to_name, locale)}</span>
                               </span>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       ))}
@@ -1780,6 +1937,9 @@ export function TaskProgressView({
                     comments={currentTask.comments || []}
                     onAddComment={handleAddComment}
                     onAddReply={handleAddReply}
+                    onDeleteComment={handleDeleteComment}
+                    onDeleteReply={handleDeleteReply}
+                    onEmailComment={handleEmailComment}
                   />
                 </div>
               </motion.div>
