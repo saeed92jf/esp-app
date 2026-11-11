@@ -8,28 +8,39 @@ import {
   Filter,
   Grid,
   List,
-  Phone,
   RefreshCw,
   Sparkles,
-  SlidersHorizontal,
-  Briefcase,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useLocale, useTranslations } from "next-intl";
 import { PersonnelCard } from "./PersonnelCard";
 import { PersonnelDetailModal } from "./PersonnelDetailModal";
 import type { PersonnelItem } from "../types";
+import {
+  getLocalizedText,
+  getLocalizedJobTitle,
+  getLocalizedName,
+} from "../utils";
 
 export function PersonnelDirectory() {
+  const locale = useLocale();
+  const isFa = locale === "fa";
+  const t = useTranslations("Directory");
+
   const [personnel, setPersonnel] = useState<PersonnelItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCompany, setSelectedCompany] = useState<"all" | "esp" | "npc" | "dual">("all");
+  const [selectedCompany, setSelectedCompany] = useState<
+    "all" | "esp" | "npc" | "dual"
+  >("all");
   const [selectedDept, setSelectedDept] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
-  const [selectedPerson, setSelectedPerson] = useState<PersonnelItem | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<PersonnelItem | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Fetch personnel directory from API
@@ -61,19 +72,21 @@ export function PersonnelDirectory() {
     return { total, espCount, npcCount, dualCount };
   }, [personnel]);
 
-  // Extract unique departments for filter
+  // Extract unique departments for filter (localized)
   const departments = useMemo(() => {
-    const depts = new Set<string>();
+    const deptMap = new Map<string, string>(); // localized -> rawKey
     personnel.forEach((p) => {
       if (p.esp.department) {
-        depts.add(p.esp.department.split("/")[0].trim());
+        const loc = getLocalizedText(p.esp.department, locale);
+        if (loc) deptMap.set(loc, p.esp.department);
       }
       if (p.npc.department) {
-        depts.add(p.npc.department.split("/")[0].trim());
+        const loc = getLocalizedText(p.npc.department, locale);
+        if (loc) deptMap.set(loc, p.npc.department);
       }
     });
-    return Array.from(depts).filter(Boolean);
-  }, [personnel]);
+    return Array.from(deptMap.keys()).sort();
+  }, [personnel, locale]);
 
   // Filtered personnel list
   const filteredPersonnel = useMemo(() => {
@@ -85,17 +98,19 @@ export function PersonnelDirectory() {
 
       // 2. Department filter
       if (selectedDept !== "all") {
-        const espDeptMatch = person.esp.department?.includes(selectedDept);
-        const npcDeptMatch = person.npc.department?.includes(selectedDept);
-        if (!espDeptMatch && !npcDeptMatch) return false;
+        const espLoc = getLocalizedText(person.esp.department, locale);
+        const npcLoc = getLocalizedText(person.npc.department, locale);
+        if (espLoc !== selectedDept && npcLoc !== selectedDept) {
+          return false;
+        }
       }
 
-      // 3. Search query (search across name, extension, titles, email)
+      // 3. Search query (search across FA & EN names, extension, titles, email, departments)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchName =
-          person.fullNameFa.toLowerCase().includes(q) ||
-          person.fullNameEn.toLowerCase().includes(q);
+          person.fullNameFa?.toLowerCase().includes(q) ||
+          person.fullNameEn?.toLowerCase().includes(q);
         const matchExt = person.contact.extension?.includes(q);
         const matchEmail =
           person.esp.email?.toLowerCase().includes(q) ||
@@ -109,14 +124,20 @@ export function PersonnelDirectory() {
           person.esp.department?.toLowerCase().includes(q) ||
           person.npc.department?.toLowerCase().includes(q);
 
-        if (!matchName && !matchExt && !matchEmail && !matchTitle && !matchDept) {
+        if (
+          !matchName &&
+          !matchExt &&
+          !matchEmail &&
+          !matchTitle &&
+          !matchDept
+        ) {
           return false;
         }
       }
 
       return true;
     });
-  }, [personnel, selectedCompany, selectedDept, searchQuery]);
+  }, [personnel, selectedCompany, selectedDept, searchQuery, locale]);
 
   const handleOpenDetails = (person: PersonnelItem) => {
     setSelectedPerson(person);
@@ -126,41 +147,57 @@ export function PersonnelDirectory() {
   return (
     <div className="container max-w-7xl mx-auto px-4 py-8 space-y-8">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card/80 via-card/40 to-background/90 p-8 shadow-sm backdrop-blur-xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card/80 via-card/40 to-background/90 p-6 sm:p-8 shadow-sm backdrop-blur-xl">
+        <div className="absolute top-0 end-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 start-0 w-80 h-80 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
+          <div className="space-y-2.5 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>شبکه ارتباطات سازمانی و دایرکتوری همکاران</span>
+              <span>{t("badgeHero")}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
-              راهنمای همکاران و شناسنامه سازمانی
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+              {t("heroTitle")}
             </h1>
-            <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-              دسترسی سریع به شماره‌های داخلی، ایمیل‌های کاری، جایگاه‌های شغلی و اطلاعات ارتباطی پرسنل شرکت‌های یورواسلات پارس و نانو پالایش سرام
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              {t("heroDescription")}
             </p>
           </div>
 
           {/* Quick Stats Badges */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-card border border-border/60 shadow-sm min-w-[90px]">
-              <span className="text-xs text-muted-foreground font-medium">کل همکاران</span>
-              <span className="text-xl font-bold text-foreground font-mono">{stats.total}</span>
+              <span className="text-xs text-muted-foreground font-medium">
+                {t("stats.total")}
+              </span>
+              <span className="text-xl font-bold text-foreground font-mono">
+                {stats.total}
+              </span>
             </div>
             <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-sky-500/10 border border-sky-500/30 shadow-sm min-w-[90px]">
-              <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">یورواسلات</span>
-              <span className="text-xl font-bold text-sky-600 dark:text-sky-400 font-mono">{stats.espCount}</span>
+              <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">
+                {t("stats.esp")}
+              </span>
+              <span className="text-xl font-bold text-sky-600 dark:text-sky-400 font-mono">
+                {stats.espCount}
+              </span>
             </div>
             <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 shadow-sm min-w-[90px]">
-              <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">نانوپالایش</span>
-              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{stats.npcCount}</span>
+              <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                {t("stats.npc")}
+              </span>
+              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                {stats.npcCount}
+              </span>
             </div>
             <div className="flex flex-col items-center justify-center p-3 rounded-2xl bg-purple-500/10 border border-purple-500/30 shadow-sm min-w-[90px]">
-              <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">سمت دوگانه</span>
-              <span className="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono">{stats.dualCount}</span>
+              <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
+                {t("stats.dual")}
+              </span>
+              <span className="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono">
+                {stats.dualCount}
+              </span>
             </div>
           </div>
         </div>
@@ -171,20 +208,21 @@ export function PersonnelDirectory() {
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1">
-            <Search className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
             <Input
               type="text"
-              placeholder="جستجو بر اساس نام، شماره داخلی، دپارتمان، سمت سازمانی یا ایمیل..."
+              placeholder={t("search.placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pr-10 rounded-xl bg-background/80 border-border/60 text-sm h-11"
+              className="ps-10 pe-14 rounded-xl bg-background/80 border-border/60 text-sm h-11"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground font-medium px-1"
               >
-                پاک کردن
+                {t("search.clear")}
               </button>
             )}
           </div>
@@ -194,13 +232,13 @@ export function PersonnelDirectory() {
             <select
               value={selectedDept}
               onChange={(e) => setSelectedDept(e.target.value)}
-              aria-label="فیلتر دپارتمان"
+              aria-label={t("filters.departmentLabel")}
               className="h-11 px-3.5 rounded-xl border border-border/60 bg-background/80 text-xs font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
             >
-              <option value="all">تمام دپارتمان‌ها</option>
+              <option value="all">{t("filters.allDepartments")}</option>
               {departments.map((dept) => (
                 <option key={dept} value={dept}>
-                  دپارتمان {dept}
+                  {dept}
                 </option>
               ))}
             </select>
@@ -211,7 +249,7 @@ export function PersonnelDirectory() {
                 size="icon"
                 className="h-9 w-9 rounded-lg"
                 onClick={() => setViewMode("grid")}
-                title="چیدمان کارتی"
+                title={t("views.grid")}
               >
                 <Grid className="w-4 h-4" />
               </Button>
@@ -220,7 +258,7 @@ export function PersonnelDirectory() {
                 size="icon"
                 className="h-9 w-9 rounded-lg"
                 onClick={() => setViewMode("table")}
-                title="چیدمان جدولی"
+                title={t("views.table")}
               >
                 <List className="w-4 h-4" />
               </Button>
@@ -231,18 +269,20 @@ export function PersonnelDirectory() {
               size="icon"
               className="h-11 w-11 rounded-xl"
               onClick={fetchDirectory}
-              title="بارگذاری مجدد"
+              title={t("views.refresh")}
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
+              />
             </Button>
           </div>
         </div>
 
         {/* Company Filter Tabs */}
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/40">
-          <span className="text-xs font-medium text-muted-foreground ml-2 flex items-center gap-1">
+          <span className="text-xs font-medium text-muted-foreground me-2 flex items-center gap-1">
             <Filter className="w-3 h-3" />
-            فیلتر شرکت:
+            {t("filters.companyLabel")}
           </span>
 
           <Button
@@ -251,7 +291,7 @@ export function PersonnelDirectory() {
             className="rounded-xl text-xs h-8 px-3"
             onClick={() => setSelectedCompany("all")}
           >
-            همه همکاران ({stats.total})
+            {t("filters.allPersonnel")} ({stats.total})
           </Button>
 
           <Button
@@ -264,8 +304,8 @@ export function PersonnelDirectory() {
             }`}
             onClick={() => setSelectedCompany("esp")}
           >
-            <Building2 className="w-3 h-3 ml-1" />
-            یورواسلات پارس ({stats.espCount})
+            <Building2 className="w-3 h-3 me-1" />
+            {t("filters.espCompany")} ({stats.espCount})
           </Button>
 
           <Button
@@ -278,8 +318,8 @@ export function PersonnelDirectory() {
             }`}
             onClick={() => setSelectedCompany("npc")}
           >
-            <Building2 className="w-3 h-3 ml-1" />
-            نانو پالایش سرام ({stats.npcCount})
+            <Building2 className="w-3 h-3 me-1" />
+            {t("filters.npcCompany")} ({stats.npcCount})
           </Button>
 
           <Button
@@ -292,8 +332,8 @@ export function PersonnelDirectory() {
             }`}
             onClick={() => setSelectedCompany("dual")}
           >
-            <Sparkles className="w-3 h-3 ml-1" />
-            سمت دوگانه و مشترک ({stats.dualCount})
+            <Sparkles className="w-3 h-3 me-1" />
+            {t("filters.dualCompany")} ({stats.dualCount})
           </Button>
         </div>
       </div>
@@ -302,7 +342,10 @@ export function PersonnelDirectory() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="h-80 rounded-2xl border border-border/50 p-5 space-y-4">
+            <div
+              key={i}
+              className="h-80 rounded-2xl border border-border/50 p-5 space-y-4"
+            >
               <Skeleton className="h-14 w-14 rounded-2xl" />
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
@@ -317,10 +360,10 @@ export function PersonnelDirectory() {
             <Users className="w-8 h-8 opacity-50" />
           </div>
           <h3 className="text-base font-bold text-foreground mb-1">
-            همکاری با مشخصات مورد نظر یافت نشد
+            {t("empty.title")}
           </h3>
           <p className="text-xs text-muted-foreground max-w-sm mb-4">
-            لطفاً عبارت جستجو را تغییر دهید یا فیلترهای انتخابی را بازنشانی کنید.
+            {t("empty.desc")}
           </p>
           <Button
             variant="outline"
@@ -332,7 +375,7 @@ export function PersonnelDirectory() {
             }}
             className="rounded-xl text-xs"
           >
-            بازنشانی فیلترها
+            {t("filters.reset")}
           </Button>
         </div>
       ) : viewMode === "grid" ? (
@@ -348,90 +391,125 @@ export function PersonnelDirectory() {
       ) : (
         /* Table View */
         <div className="overflow-x-auto rounded-2xl border border-border/60 bg-card shadow-sm">
-          <table className="w-full text-xs text-right border-collapse">
+          <table className="w-full text-xs text-start border-collapse">
             <thead>
               <tr className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
-                <th className="p-3.5">نام و نام خانوادگی</th>
-                <th className="p-3.5">عضویت شرکتی</th>
-                <th className="p-3.5">سمت سازمانی</th>
-                <th className="p-3.5">دپارتمان</th>
-                <th className="p-3.5 text-center">شماره داخلی</th>
-                <th className="p-3.5">ایمیل سازمانی</th>
-                <th className="p-3.5">محل خدمت</th>
-                <th className="p-3.5 text-center">عملیات</th>
+                <th className="p-3.5 text-start">{t("table.fullName")}</th>
+                <th className="p-3.5 text-start">{t("table.company")}</th>
+                <th className="p-3.5 text-start">{t("table.jobTitle")}</th>
+                <th className="p-3.5 text-start">{t("table.department")}</th>
+                <th className="p-3.5 text-center">{t("table.extension")}</th>
+                <th className="p-3.5 text-start">{t("table.email")}</th>
+                <th className="p-3.5 text-start">{t("table.location")}</th>
+                <th className="p-3.5 text-center">{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
-              {filteredPersonnel.map((person) => (
-                <tr
-                  key={person.id}
-                  className="hover:bg-muted/30 transition-colors"
-                >
-                  <td className="p-3.5 font-bold text-foreground">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-bold text-[10px] flex-shrink-0"
-                        style={{ backgroundColor: person.avatarColor || "#0284c7" }}
-                      >
-                        {person.fullNameFa.slice(0, 1)}
-                      </div>
-                      <div>
-                        <div>{person.fullNameFa}</div>
-                        <div className="text-[10px] text-muted-foreground font-mono dir-ltr text-right">
-                          {person.fullNameEn}
+              {filteredPersonnel.map((person) => {
+                const { primary: primaryName, secondary: secondaryName } =
+                  getLocalizedName(person, locale);
+                const espTitle = getLocalizedJobTitle(person.esp, locale);
+                const npcTitle = getLocalizedJobTitle(person.npc, locale);
+                const espDept = getLocalizedText(
+                  person.esp.department,
+                  locale
+                );
+                const npcDept = getLocalizedText(
+                  person.npc.department,
+                  locale
+                );
+                const loc = getLocalizedText(
+                  person.contact.workLocation,
+                  locale
+                );
+
+                return (
+                  <tr
+                    key={person.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="p-3.5 font-bold text-foreground">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-bold text-[10px] shrink-0"
+                          style={{
+                            backgroundColor:
+                              person.avatarColor || "#0284c7",
+                          }}
+                        >
+                          {(primaryName || "E").slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <div>{primaryName}</div>
+                          {secondaryName ? (
+                            <div className="text-[10px] text-muted-foreground font-mono">
+                              {secondaryName}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="p-3.5">
-                    {person.isDual ? (
-                      <Badge variant="outline" className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-[10px]">
-                        مشترک (ESP & NPC)
-                      </Badge>
-                    ) : person.isNpcOnly ? (
-                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px]">
-                        نانوپالایش
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 text-[10px]">
-                        یورواسلات
-                      </Badge>
-                    )}
-                  </td>
-                  <td className="p-3.5">
-                    {person.isDual ? (
-                      <div className="space-y-0.5">
-                        <div className="text-sky-600 dark:text-sky-400">ESP: {person.esp.jobTitleFa}</div>
-                        <div className="text-emerald-600 dark:text-emerald-400">NPC: {person.npc.jobTitleFa}</div>
-                      </div>
-                    ) : (
-                      person.esp.jobTitleFa || person.npc.jobTitleFa
-                    )}
-                  </td>
-                  <td className="p-3.5 text-muted-foreground">
-                    {person.esp.department?.split("/")[0].trim() || person.npc.department?.split("/")[0].trim()}
-                  </td>
-                  <td className="p-3.5 text-center font-mono font-bold text-primary">
-                    {person.contact.extension || "--"}
-                  </td>
-                  <td className="p-3.5 font-mono text-[11px] text-muted-foreground dir-ltr text-right">
-                    {person.esp.email || person.npc.email || "--"}
-                  </td>
-                  <td className="p-3.5 text-muted-foreground">
-                    {person.contact.workLocation.split("/")[0].trim()}
-                  </td>
-                  <td className="p-3.5 text-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleOpenDetails(person)}
-                      className="rounded-lg text-xs h-7 px-2"
-                    >
-                      شناسنامه
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-3.5">
+                      {person.isDual ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-[10px]"
+                        >
+                          {t("card.dualBadge")}
+                        </Badge>
+                      ) : person.isNpcOnly ? (
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px]"
+                        >
+                          {t("card.npcBadge")}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 text-[10px]"
+                        >
+                          {t("card.espBadge")}
+                        </Badge>
+                      )}
+                    </td>
+                    <td className="p-3.5">
+                      {person.isDual ? (
+                        <div className="space-y-0.5">
+                          <div className="text-sky-600 dark:text-sky-400">
+                            ESP: {espTitle}
+                          </div>
+                          <div className="text-emerald-600 dark:text-emerald-400">
+                            NPC: {npcTitle}
+                          </div>
+                        </div>
+                      ) : (
+                        espTitle || npcTitle || "--"
+                      )}
+                    </td>
+                    <td className="p-3.5 text-muted-foreground">
+                      {espDept || npcDept || "--"}
+                    </td>
+                    <td className="p-3.5 text-center font-mono font-bold text-primary">
+                      {person.contact.extension || "--"}
+                    </td>
+                    <td className="p-3.5 font-mono text-[11px] text-muted-foreground dir-ltr text-start">
+                      {person.esp.email || person.npc.email || "--"}
+                    </td>
+                    <td className="p-3.5 text-muted-foreground">{loc}</td>
+                    <td className="p-3.5 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDetails(person)}
+                        className="rounded-lg text-xs h-7 px-2"
+                      >
+                        {t("table.profile")}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

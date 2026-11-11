@@ -129,7 +129,7 @@ export async function GET() {
           hasRole: !isNpcOnly,
           personnelCode: u.personnelCodeEsp || (isNpcOnly ? null : u.personnelCode),
           jobTitleFa: u.espJobTitle || (isNpcOnly ? null : u.jobTitle),
-          jobTitleEn: u.jobTitleEn && !isNpcOnly ? u.jobTitleEn : null,
+          jobTitleEn: (u.espJobTitleEn as string) || (u.jobTitleEn && !isNpcOnly ? (u.jobTitleEn as string) : null),
           department: org.departmentEsp || (isNpcOnly ? null : u.department),
           manager: u.managerEsp || (isNpcOnly ? null : u.manager),
           email: u.email && u.email.includes("@euroslotpars") ? u.email : (isNpcOnly ? null : u.email),
@@ -140,7 +140,7 @@ export async function GET() {
           hasRole: isDual || isNpcOnly,
           personnelCode: u.personnelCodeNpc || (isNpcOnly ? u.personnelCode : null),
           jobTitleFa: u.npcJobTitle || (isNpcOnly ? u.jobTitle : null),
-          jobTitleEn: isNpcOnly ? u.jobTitleEn : null,
+          jobTitleEn: (u.npcJobTitleEn as string) || (isNpcOnly ? (u.jobTitleEn as string) : null),
           department: org.departmentNpc || (isNpcOnly ? u.department : (isDual ? "نانوپالایش سرام" : null)),
           manager: u.managerNpc || (isNpcOnly ? u.manager : null),
           email: u.email && u.email.includes("@npceram") ? u.email : (isDual ? `${u.id.replace("u-", "")}@npceram.com` : null),
@@ -150,8 +150,8 @@ export async function GET() {
         contact: {
           extension: u.extensionNumber || "",
           mobile: u.phone || pers.phone || "",
-          workLocation: u.workLocation || org.workLocation || "دفتر تهران",
-          floor: u.floor || org.floor || "",
+          workLocation: (u.workLocation as string) || (org.workLocation as string) || "دفتر تهران / Tehran Office",
+          floor: (u.floor as string) || (org.floor as string) || "",
         },
         // Education
         education: {
@@ -175,3 +175,4 @@ export async function GET() {
     );
   }
 }
+

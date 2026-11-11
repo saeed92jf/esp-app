@@ -137,10 +137,19 @@ export function Header() {
 
   const isSitemapPage = pathname === "/sitemap" || pathname.startsWith("/sitemap/");
   const isCustomersPage = pathname === "/customers" || pathname.startsWith("/customers/");
+  const isDirectoryPage = pathname === "/directory" || pathname.startsWith("/directory/");
 
   return (
     <AppHeader
-      tag={isSitemapPage ? "sitemap" : isCustomersPage ? "customers" : undefined}
+      tag={
+        isSitemapPage
+          ? "sitemap"
+          : isCustomersPage
+          ? "customers"
+          : isDirectoryPage
+          ? "directory"
+          : undefined
+      }
       menuTrigger={<SideMenu />}
       logoHref="/"
       rightActions={rightActions}

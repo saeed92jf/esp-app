@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,12 +16,18 @@ import {
   MapPin,
   GraduationCap,
   Briefcase,
-  User,
   ShieldCheck,
-  CheckCircle2,
-  Layers,
+  Copy,
+  Check,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import type { PersonnelItem } from "../types";
+import {
+  getLocalizedText,
+  getLocalizedJobTitle,
+  getLocalizedName,
+} from "../utils";
 
 interface PersonnelDetailModalProps {
   person: PersonnelItem | null;
@@ -35,7 +40,20 @@ export function PersonnelDetailModal({
   isOpen,
   onClose,
 }: PersonnelDetailModalProps) {
+  const locale = useLocale();
+  const isFa = locale === "fa";
+  const t = useTranslations("Directory");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
   if (!person) return null;
+
+  const copyToClipboard = (text: string, label: string) => {
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(label);
+    toast.success(`${label} ${t("card.copied")}`);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const getInitials = (name: string) => {
     if (!name) return "EP";
@@ -46,106 +64,208 @@ export function PersonnelDetailModal({
     return name.slice(0, 2).toUpperCase();
   };
 
+  const { primary: primaryName, secondary: secondaryName } = getLocalizedName(
+    person,
+    locale
+  );
+
+  const primaryEmail = person.esp.email || person.npc.email || "";
+  const localizedLocation = getLocalizedText(
+    person.contact.workLocation,
+    locale
+  );
+  const localizedFloor = getLocalizedText(person.contact.floor, locale);
+
+  // ESP details
+  const espJobTitle = getLocalizedJobTitle(person.esp, locale);
+  const espAltTitle = isFa ? person.esp.jobTitleEn : person.esp.jobTitleFa;
+  const espDept = getLocalizedText(person.esp.department, locale);
+
+  // NPC details
+  const npcJobTitle = getLocalizedJobTitle(person.npc, locale);
+  const npcAltTitle = isFa ? person.npc.jobTitleEn : person.npc.jobTitleFa;
+  const npcDept = getLocalizedText(person.npc.department, locale);
+
+  // Education details
+  const localizedDegree = getLocalizedText(person.education.degree, locale);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border border-border/60 bg-background/95 backdrop-blur-xl">
-        {/* Header Hero Banner */}
+      <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border border-border/60 bg-background/95 backdrop-blur-2xl shadow-2xl flex flex-col">
+        <DialogTitle className="sr-only">{primaryName}</DialogTitle>
+
+        {/* Top Hero Banner */}
         <div
-          className={`h-24 w-full relative ${
+          className={`h-28 sm:h-32 w-full relative shrink-0 overflow-hidden ${
             person.isDual
-              ? "bg-gradient-to-r from-purple-700 via-indigo-600 to-sky-600"
+              ? "bg-gradient-to-r from-purple-800 via-indigo-700 to-sky-700"
               : person.isNpcOnly
-              ? "bg-gradient-to-r from-emerald-600 to-teal-700"
-              : "bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-600"
+              ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800"
+              : "bg-gradient-to-r from-blue-800 via-sky-700 to-cyan-700"
           }`}
         >
-          <div className="absolute -bottom-10 right-6">
-            <Avatar className="h-20 w-20 rounded-2xl ring-4 ring-background shadow-xl">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-80 h-80 bg-black/20 rounded-full blur-2xl pointer-events-none" />
+        </div>
+
+        {/* Profile Identity Bar */}
+        <div className="px-6 sm:px-8 -mt-12 sm:-mt-14 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 relative z-10 shrink-0">
+          <div className="flex items-end gap-4 min-w-0">
+            <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl ring-4 ring-background shadow-xl shrink-0">
               {person.avatar ? (
-                <AvatarImage src={person.avatar} alt={person.fullNameFa} />
+                <AvatarImage
+                  src={person.avatar}
+                  alt={primaryName}
+                  className="object-cover"
+                />
               ) : null}
               <AvatarFallback
-                className="rounded-2xl font-bold text-white text-xl"
+                className="rounded-2xl font-bold text-white text-2xl"
                 style={{ backgroundColor: person.avatarColor || "#0284c7" }}
               >
                 {getInitials(person.fullNameEn || person.fullNameFa)}
               </AvatarFallback>
             </Avatar>
+
+            <div className="space-y-0.5 pb-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight truncate">
+                {primaryName}
+              </h2>
+              {secondaryName ? (
+                <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
+                  {secondaryName}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-2 pb-1">
+            {person.isDual ? (
+              <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
+                {t("modal.dualBadge")}
+              </Badge>
+            ) : person.isNpcOnly ? (
+              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
+                {t("card.npcBadge")}
+              </Badge>
+            ) : (
+              <Badge className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
+                {t("card.espBadge")}
+              </Badge>
+            )}
+
+            {(person.role === "superadmin" || person.role === "admin") && (
+              <Badge
+                variant="outline"
+                className="border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs px-2.5 py-0.5"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 me-1" />
+                {person.role === "superadmin"
+                  ? t("card.superadmin")
+                  : t("card.admin")}
+              </Badge>
+            )}
           </div>
         </div>
 
-        {/* Content Body */}
-        <div className="pt-12 p-6 space-y-6">
-          {/* Identity Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">
-                {person.fullNameFa}
-              </h2>
-              <p className="text-sm text-muted-foreground font-mono mt-0.5 dir-ltr text-right">
-                {person.fullNameEn}
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              {person.isDual ? (
-                <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1">
-                  عضویت هر دو شرکت (مشترک)
-                </Badge>
-              ) : person.isNpcOnly ? (
-                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1">
-                  نانو پالایش سرام
-                </Badge>
-              ) : (
-                <Badge className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1">
-                  یورواسلات پارس
-                </Badge>
-              )}
-
-              {person.role === "superadmin" && (
-                <Badge variant="outline" className="border-amber-500 text-amber-600 dark:text-amber-400">
-                  <ShieldCheck className="w-3 h-3 mr-1" />
-                  مدیر ارشد
-                </Badge>
-              )}
-            </div>
-          </div>
-
+        {/* Modal Scrollable Content */}
+        <div className="p-6 sm:p-8 space-y-6 pt-2 flex-1">
           {/* Quick Contact & Extension Ribbon */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-muted/40 border border-border/50 text-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                <Phone className="w-4 h-4" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 p-4 rounded-2xl bg-muted/40 border border-border/50 text-xs">
+            {/* Extension */}
+            <div className="flex items-center justify-between gap-2.5 p-1">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Phone className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-[11px]">
+                    {t("modal.extension")}
+                  </p>
+                  <p className="font-bold text-sm font-mono text-primary">
+                    {person.contact.extension || t("modal.none")}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-muted-foreground text-[11px]">شماره داخلی</p>
-                <p className="font-bold text-sm font-mono text-foreground">
-                  {person.contact.extension || "ندارد"}
-                </p>
-              </div>
+              {person.contact.extension && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                  onClick={() =>
+                    copyToClipboard(
+                      person.contact.extension,
+                      t("modal.extension")
+                    )
+                  }
+                  title={t("modal.extension")}
+                >
+                  {copiedField === t("modal.extension") ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              )}
             </div>
 
-            <div className="flex items-center gap-2.5 sm:border-r sm:pr-3 border-border/50">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
-                <Mail className="w-4 h-4" />
+            {/* Corporate Email */}
+            <div className="flex items-center justify-between gap-2.5 p-1 sm:border-s sm:ps-3.5 border-border/50">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-muted-foreground text-[11px]">
+                    {t("modal.email")}
+                  </p>
+                  {primaryEmail ? (
+                    <a
+                      href={`mailto:${primaryEmail}`}
+                      className="font-mono text-xs text-foreground truncate block hover:underline dir-ltr text-start"
+                      title={primaryEmail}
+                    >
+                      {primaryEmail}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      {t("modal.none")}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-muted-foreground text-[11px]">ایمیل سازمانی</p>
-                <p className="font-mono text-xs text-foreground truncate dir-ltr text-right">
-                  {person.esp.email || person.npc.email || "ندارد"}
-                </p>
-              </div>
+              {primaryEmail && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                  onClick={() =>
+                    copyToClipboard(primaryEmail, t("modal.email"))
+                  }
+                  title={t("modal.email")}
+                >
+                  {copiedField === t("modal.email") ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3.5 h-3.5" />
+                  )}
+                </Button>
+              )}
             </div>
 
-            <div className="flex items-center gap-2.5 sm:border-r sm:pr-3 border-border/50">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+            {/* Work Location */}
+            <div className="flex items-center gap-3 p-1 sm:border-s sm:ps-3.5 border-border/50 col-span-1 sm:col-span-2 md:col-span-1">
+              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-muted-foreground text-[11px]">محل خدمت</p>
-                <p className="text-xs text-foreground truncate font-medium">
-                  {person.contact.workLocation.split("/")[0].trim()}{" "}
-                  {person.contact.floor ? `(${person.contact.floor.split("/")[0].trim()})` : ""}
+                <p className="text-muted-foreground text-[11px]">
+                  {t("modal.location")}
+                </p>
+                <p className="text-xs text-foreground font-medium truncate">
+                  {localizedLocation || t("modal.none")}
+                  {localizedFloor ? ` (${localizedFloor})` : ""}
                 </p>
               </div>
             </div>
@@ -155,47 +275,53 @@ export function PersonnelDetailModal({
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-primary" />
-              <span>جایگاه و سمت‌های سازمانی در گروه</span>
+              <span>{t("modal.groupRoles")}</span>
             </h3>
 
             {/* Euroslot Pars Role Card */}
             {person.esp.hasRole && (
-              <div className="rounded-2xl border border-sky-500/20 bg-sky-500/[0.02] p-4.5 space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.03] p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-sky-500/20">
                   <div className="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-bold text-sm">
                     <Building2 className="w-4 h-4" />
-                    <span>شرکت مهندسی یورواسلات پارس (Euroslot Pars)</span>
+                    <span>{t("modal.espTitle")}</span>
                   </div>
                   {person.esp.personnelCode && (
                     <Badge variant="secondary" className="font-mono text-xs">
-                      کد پرسنلی: {person.esp.personnelCode}
+                      {t("modal.personnelCode")} {person.esp.personnelCode}
                     </Badge>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
                   <div>
-                    <span className="text-muted-foreground">سمت سازمانی:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {person.esp.jobTitleFa || "کارشناس"}
+                    <span className="text-muted-foreground">
+                      {t("modal.jobTitle")}
+                    </span>{" "}
+                    <span className="font-bold text-foreground">
+                      {espJobTitle || t("modal.none")}
                     </span>
-                    {person.esp.jobTitleEn && (
-                      <span className="text-muted-foreground block text-[11px] dir-ltr text-right mt-0.5">
-                        {person.esp.jobTitleEn}
+                    {espAltTitle && espAltTitle !== espJobTitle && (
+                      <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                        {espAltTitle}
                       </span>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-muted-foreground">دپارتمان:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {person.esp.department || "مهندسی"}
+                    <span className="text-muted-foreground">
+                      {t("modal.department")}
+                    </span>{" "}
+                    <span className="font-bold text-foreground">
+                      {espDept || t("modal.none")}
                     </span>
                   </div>
 
                   {person.esp.manager && (
                     <div>
-                      <span className="text-muted-foreground">مدیر مستقیم:</span>{" "}
+                      <span className="text-muted-foreground">
+                        {t("modal.manager")}
+                      </span>{" "}
                       <span className="font-medium text-foreground">
                         {person.esp.manager}
                       </span>
@@ -204,20 +330,25 @@ export function PersonnelDetailModal({
 
                   {person.esp.email && (
                     <div>
-                      <span className="text-muted-foreground">ایمیل اختصاصی ESP:</span>{" "}
-                      <span className="font-mono text-foreground dir-ltr inline-block">
+                      <span className="text-muted-foreground">
+                        {t("modal.dedicatedEmail")}
+                      </span>{" "}
+                      <a
+                        href={`mailto:${person.esp.email}`}
+                        className="font-mono text-primary hover:underline dir-ltr inline-block text-start"
+                      >
                         {person.esp.email}
-                      </span>
+                      </a>
                     </div>
                   )}
                 </div>
 
                 {person.esp.duties && (
-                  <div className="pt-2 border-t border-border/40 text-xs">
-                    <span className="text-muted-foreground font-medium block mb-1">
-                      شرح وظایف و مسئولیت‌ها:
+                  <div className="pt-3 border-t border-sky-500/20 text-xs space-y-1.5">
+                    <span className="text-muted-foreground font-semibold block">
+                      {t("modal.duties")}
                     </span>
-                    <p className="text-muted-foreground leading-relaxed bg-background/50 p-2.5 rounded-xl border border-border/30">
+                    <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-sky-500/15 whitespace-pre-line text-xs">
                       {person.esp.duties}
                     </p>
                   </div>
@@ -227,42 +358,48 @@ export function PersonnelDetailModal({
 
             {/* Nano Palayesh Ceram Role Card */}
             {person.npc.hasRole && (
-              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.02] p-4.5 space-y-3">
-                <div className="flex items-center justify-between">
+              <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.03] p-5 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
                   <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
                     <Building2 className="w-4 h-4" />
-                    <span>شرکت نانو پالایش سرام (Nano Palayesh Ceram)</span>
+                    <span>{t("modal.npcTitle")}</span>
                   </div>
                   {person.npc.personnelCode && (
                     <Badge variant="secondary" className="font-mono text-xs">
-                      کد پرسنلی: {person.npc.personnelCode}
+                      {t("modal.personnelCode")} {person.npc.personnelCode}
                     </Badge>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
                   <div>
-                    <span className="text-muted-foreground">سمت سازمانی:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {person.npc.jobTitleFa || "کارشناس فنی"}
+                    <span className="text-muted-foreground">
+                      {t("modal.jobTitle")}
+                    </span>{" "}
+                    <span className="font-bold text-foreground">
+                      {npcJobTitle || t("modal.none")}
                     </span>
-                    {person.npc.jobTitleEn && (
-                      <span className="text-muted-foreground block text-[11px] dir-ltr text-right mt-0.5">
-                        {person.npc.jobTitleEn}
+                    {npcAltTitle && npcAltTitle !== npcJobTitle && (
+                      <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                        {npcAltTitle}
                       </span>
                     )}
                   </div>
 
                   <div>
-                    <span className="text-muted-foreground">دپارتمان:</span>{" "}
-                    <span className="font-semibold text-foreground">
-                      {person.npc.department || "نانوپالایش سرام"}
+                    <span className="text-muted-foreground">
+                      {t("modal.department")}
+                    </span>{" "}
+                    <span className="font-bold text-foreground">
+                      {npcDept || t("modal.none")}
                     </span>
                   </div>
 
                   {person.npc.manager && (
                     <div>
-                      <span className="text-muted-foreground">مدیر مستقیم:</span>{" "}
+                      <span className="text-muted-foreground">
+                        {t("modal.manager")}
+                      </span>{" "}
                       <span className="font-medium text-foreground">
                         {person.npc.manager}
                       </span>
@@ -271,20 +408,25 @@ export function PersonnelDetailModal({
 
                   {person.npc.email && (
                     <div>
-                      <span className="text-muted-foreground">ایمیل اختصاصی NPC:</span>{" "}
-                      <span className="font-mono text-foreground dir-ltr inline-block">
+                      <span className="text-muted-foreground">
+                        {t("modal.dedicatedEmail")}
+                      </span>{" "}
+                      <a
+                        href={`mailto:${person.npc.email}`}
+                        className="font-mono text-primary hover:underline dir-ltr inline-block text-start"
+                      >
                         {person.npc.email}
-                      </span>
+                      </a>
                     </div>
                   )}
                 </div>
 
                 {person.npc.duties && (
-                  <div className="pt-2 border-t border-border/40 text-xs">
-                    <span className="text-muted-foreground font-medium block mb-1">
-                      شرح وظایف و مسئولیت‌ها:
+                  <div className="pt-3 border-t border-emerald-500/20 text-xs space-y-1.5">
+                    <span className="text-muted-foreground font-semibold block">
+                      {t("modal.duties")}
                     </span>
-                    <p className="text-muted-foreground leading-relaxed bg-background/50 p-2.5 rounded-xl border border-border/30">
+                    <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-emerald-500/15 whitespace-pre-line text-xs">
                       {person.npc.duties}
                     </p>
                   </div>
@@ -295,27 +437,33 @@ export function PersonnelDetailModal({
 
           {/* Education Info */}
           {(person.education.degree || person.education.university) && (
-            <div className="rounded-2xl border border-border/50 bg-muted/20 p-4 space-y-2 text-xs">
+            <div className="rounded-2xl border border-border/50 bg-muted/20 p-4.5 space-y-2.5 text-xs">
               <div className="flex items-center gap-2 font-bold text-foreground">
                 <GraduationCap className="w-4 h-4 text-primary" />
-                <span>سوابق تحصیلی و دانشگاهی</span>
+                <span>{t("modal.educationTitle")}</span>
               </div>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-muted-foreground">
                 {person.education.degree && (
                   <span>
-                    <strong className="text-foreground">مقطع:</strong>{" "}
-                    {person.education.degree.split("/")[0].trim()}
+                    <strong className="text-foreground">
+                      {t("modal.degree")}
+                    </strong>{" "}
+                    {localizedDegree}
                   </span>
                 )}
                 {person.education.fieldOfStudy && (
                   <span>
-                    <strong className="text-foreground">رشته:</strong>{" "}
+                    <strong className="text-foreground">
+                      {t("modal.field")}
+                    </strong>{" "}
                     {person.education.fieldOfStudy}
                   </span>
                 )}
                 {person.education.university && (
                   <span>
-                    <strong className="text-foreground">دانشگاه:</strong>{" "}
+                    <strong className="text-foreground">
+                      {t("modal.university")}
+                    </strong>{" "}
                     {person.education.university}
                   </span>
                 )}
@@ -325,8 +473,12 @@ export function PersonnelDetailModal({
 
           {/* Footer Action */}
           <div className="flex justify-end pt-2">
-            <Button variant="outline" onClick={onClose} className="rounded-xl text-xs">
-              بستن
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="rounded-xl text-xs px-5 h-9"
+            >
+              {t("modal.close")}
             </Button>
           </div>
         </div>

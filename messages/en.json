@@ -2920,5 +2920,88 @@
     "noDiscussions": "No questions found",
     "beTheFirst": "Be the first to ask a technical question in this category.",
     "codeSnippet": "Code snippet / Formula"
+  },
+  "Directory": {
+    "pageTitle": "Personnel Directory & Organizational Identity | Euroslot Pars CORE",
+    "badgeHero": "Corporate Directory & Personnel Identity Network",
+    "heroTitle": "Personnel Directory & Organizational Identity",
+    "heroDescription": "Quick access to internal extensions, corporate emails, job titles, and contact information for Euroslot Pars and Nano Palayesh Ceram personnel",
+    "stats": {
+      "total": "Total Personnel",
+      "esp": "Euroslot Pars",
+      "npc": "Nano Palayesh",
+      "dual": "Dual Role"
+    },
+    "search": {
+      "placeholder": "Search by name, extension, department, title, or email...",
+      "clear": "Clear"
+    },
+    "filters": {
+      "departmentLabel": "Filter Department",
+      "allDepartments": "All Departments",
+      "departmentPrefix": "Dept.",
+      "companyLabel": "Filter Company:",
+      "allPersonnel": "All Personnel",
+      "espCompany": "Euroslot Pars",
+      "npcCompany": "Nano Palayesh Ceram",
+      "dualCompany": "Dual Role (ESP & NPC)",
+      "reset": "Reset Filters"
+    },
+    "views": {
+      "grid": "Grid View",
+      "table": "Table View",
+      "refresh": "Reload"
+    },
+    "empty": {
+      "title": "No personnel found matching criteria",
+      "desc": "Please modify your search query or reset active filters."
+    },
+    "table": {
+      "fullName": "Full Name",
+      "company": "Company",
+      "jobTitle": "Job Title",
+      "department": "Department",
+      "extension": "Internal Ext.",
+      "email": "Corporate Email",
+      "location": "Location",
+      "actions": "Actions",
+      "profile": "Profile"
+    },
+    "card": {
+      "dualBadge": "Dual (ESP & NPC)",
+      "espBadge": "Euroslot Pars",
+      "npcBadge": "Nano Palayesh Ceram",
+      "activeStaff": "Active Staff",
+      "superadmin": "Super Admin",
+      "admin": "System Admin",
+      "extensionLabel": "Internal Ext:",
+      "extension": "Internal Ext.",
+      "corporateEmail": "Corporate Email",
+      "none": "None",
+      "copied": "Copied",
+      "viewProfile": "View Organizational Profile"
+    },
+    "modal": {
+      "dualBadge": "Dual Company Membership (ESP & NPC)",
+      "superadmin": "Super Admin",
+      "extension": "Internal Ext.",
+      "email": "Corporate Email",
+      "location": "Work Location",
+      "groupRoles": "Organizational Positions & Group Roles",
+      "espTitle": "Euroslot Pars Engineering Co. (Euroslot Pars)",
+      "npcTitle": "Nano Palayesh Ceram Co. (Nano Palayesh Ceram)",
+      "personnelCode": "Personnel Code:",
+      "jobTitle": "Job Title:",
+      "department": "Department:",
+      "manager": "Direct Manager:",
+      "dedicatedEmail": "Dedicated Email:",
+      "duties": "Duties & Responsibilities:",
+      "educationTitle": "Educational Background",
+      "degree": "Degree:",
+      "field": "Field:",
+      "university": "University:",
+      "close": "Close",
+      "none": "None"
+    }
   }
 }
