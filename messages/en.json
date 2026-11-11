@@ -2947,6 +2947,23 @@
       "dualCompany": "Dual Role (ESP & NPC)",
       "reset": "Reset Filters"
     },
+    "resultsCount": "Showing {count} of {total} personnel",
+    "departmentTag": "Department: {name}",
+    "sidebar": {
+      "directory": "Directory",
+      "settings": "Settings"
+    },
+    "settings": {
+      "title": "Directory Settings",
+      "description": "Configuration and display settings for personnel profiles and visibility will be available soon.",
+      "comingSoon": "Coming Soon",
+      "backToDirectory": "Back to Directory"
+    },
+    "pagination": {
+      "espRole": "Euroslot Pars details (ESP)",
+      "npcRole": "Nano Palayesh Ceram details (NPC)",
+      "pageOf": "Page {current} of {total}"
+    },
     "views": {
       "grid": "Grid View",
       "table": "Table View",

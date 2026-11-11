@@ -1,15 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-  Home,
-  Users,
-  LayoutDashboard,
-  User,
-  CheckSquare,
-  FolderKanban,
-} from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { Users, Settings } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -22,58 +14,33 @@ import {
 export interface DirectorySidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
+  activeTab: "directory" | "settings";
+  onTabChange: (tab: "directory" | "settings") => void;
 }
 
 export function DirectorySidebar({
   sidebarOpen,
   setSidebarOpen,
+  activeTab,
+  onTabChange,
 }: DirectorySidebarProps) {
   const locale = useLocale();
   const isFa = locale === "fa";
+  const t = useTranslations("Directory");
   const tooltipSide = isFa ? "left" : "right";
 
   const navItems = [
     {
-      id: "home",
-      label: isFa ? "صفحه اصلی" : "Home",
-      icon: Home,
-      href: "/",
-      isActive: false,
-    },
-    {
-      id: "directory",
-      label: isFa ? "همکاران" : "Directory",
+      id: "directory" as const,
+      label: t("sidebar.directory"),
       icon: Users,
-      href: "/directory",
-      isActive: true,
+      isActive: activeTab === "directory",
     },
     {
-      id: "dashboard",
-      label: isFa ? "داشبورد" : "Dashboard",
-      icon: LayoutDashboard,
-      href: "/dashboard",
-      isActive: false,
-    },
-    {
-      id: "profile",
-      label: isFa ? "پروفایل من" : "My Profile",
-      icon: User,
-      href: "/profile",
-      isActive: false,
-    },
-    {
-      id: "tasks",
-      label: isFa ? "تسک‌ها" : "Tasks",
-      icon: CheckSquare,
-      href: "/tasks",
-      isActive: false,
-    },
-    {
-      id: "projects",
-      label: isFa ? "پروژه‌ها" : "Projects",
-      icon: FolderKanban,
-      href: "/projects",
-      isActive: false,
+      id: "settings" as const,
+      label: t("sidebar.settings"),
+      icon: Settings,
+      isActive: activeTab === "settings",
     },
   ];
 
@@ -109,11 +76,12 @@ export function DirectorySidebar({
               const Icon = item.icon;
               const isActive = item.isActive;
 
-              const linkContent = (
-                <Link
+              const buttonContent = (
+                <button
                   key={item.id}
-                  href={item.href}
+                  type="button"
                   onClick={() => {
+                    onTabChange(item.id);
                     if (
                       typeof window !== "undefined" &&
                       window.innerWidth < 768
@@ -122,7 +90,7 @@ export function DirectorySidebar({
                     }
                   }}
                   className={cn(
-                    "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
+                    "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 text-start",
                     sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]",
                     isActive
                       ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30"
@@ -156,13 +124,13 @@ export function DirectorySidebar({
                   >
                     {item.label}
                   </span>
-                </Link>
+                </button>
               );
 
               if (!sidebarOpen) {
                 return (
                   <Tooltip key={item.id}>
-                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+                    <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
                     <TooltipContent
                       side={tooltipSide}
                       className="text-xs font-medium"
@@ -173,7 +141,7 @@ export function DirectorySidebar({
                 );
               }
 
-              return linkContent;
+              return buttonContent;
             })}
           </nav>
         </TooltipProvider>

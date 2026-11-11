@@ -10,6 +10,7 @@ import {
   X,
   Grid,
   List,
+  Settings,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ export function PersonnelDirectory() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"directory" | "settings">("directory");
 
   // Fetch personnel directory from API
   const fetchDirectory = async () => {
@@ -210,64 +212,86 @@ export function PersonnelDirectory() {
         <DirectorySidebar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
         />
 
         {/* Main Content Area: Centered with compact, elegant width (max-w-5xl) */}
         <main className="flex-1 min-w-0 px-3 sm:px-6 lg:px-8 py-6">
           <div className="max-w-5xl mx-auto w-full space-y-6">
-            {/* Hero Header Banner */}
-            <div className="relative overflow-hidden rounded-3xl border border-border/50 bg-gradient-to-br from-card/85 via-card/50 to-muted/30 p-6 sm:p-7 shadow-xs backdrop-blur-xl">
-              <div className="absolute top-0 end-0 w-80 h-80 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute bottom-0 start-0 w-72 h-72 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+            {/* Simple Minimalist Title Header (No tag, no border box) */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+              <div className="space-y-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">
+                  {t("heroTitle")}
+                </h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">
+                  {t("heroDescription")}
+                </p>
+              </div>
 
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
-                <div className="space-y-2 max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{t("badgeHero")}</span>
-                  </div>
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-foreground tracking-tight">
-                    {t("heroTitle")}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {t("heroDescription")}
-                  </p>
+              {/* Quick Summary Pill Badges */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border/60 shadow-xs">
+                  <span className="text-xs text-muted-foreground font-medium">
+                    {t("stats.total")}:
+                  </span>
+                  <span className="text-sm font-bold text-foreground">
+                    {stats.total}
+                  </span>
                 </div>
-
-                {/* Quick Summary Pill Badges */}
-                <div className="flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card/90 border border-border/60 shadow-xs">
-                    <span className="text-xs text-muted-foreground font-medium">
-                      {t("stats.total")}:
-                    </span>
-                    <span className="text-sm font-bold text-foreground">
-                      {stats.total}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 shadow-xs">
-                    <Building2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                    <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">
-                      {stats.espCount}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 shadow-xs">
-                    <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
-                      {stats.npcCount}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 shadow-xs">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                    <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
-                      {stats.dualCount}
-                    </span>
-                  </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/30 shadow-xs">
+                  <Building2 className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                  <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">
+                    {stats.espCount}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 shadow-xs">
+                  <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
+                    {stats.npcCount}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/30 shadow-xs">
+                  <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                  <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
+                    {stats.dualCount}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* ── Filter Bar Above Cards: Company Options + Department Combobox + Search ── */}
-            <div className="space-y-3 p-4 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md shadow-xs">
+            {/* Main Tabs View: Settings Tab vs Directory Tab */}
+            {activeTab === "settings" ? (
+              <div className="flex flex-col items-center justify-center p-12 sm:p-16 text-center rounded-3xl border border-dashed border-border/70 bg-card/40 backdrop-blur-md">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4 shadow-sm">
+                  <Settings className="w-8 h-8" />
+                </div>
+                <Badge
+                  variant="secondary"
+                  className="mb-3 text-xs rounded-full px-3 py-0.5"
+                >
+                  {t("settings.comingSoon")}
+                </Badge>
+                <h3 className="text-lg font-bold text-foreground mb-2">
+                  {t("settings.title")}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground max-w-md mb-6 leading-relaxed">
+                  {t("settings.description")}
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab("directory")}
+                  className="rounded-xl text-xs"
+                >
+                  {t("settings.backToDirectory")}
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* ── Filter Bar Above Cards: Company Options + Department Combobox + Search ── */}
+                <div className="space-y-3 p-4 rounded-2xl border border-border/50 bg-card/70 backdrop-blur-md shadow-xs">
               {/* Row 1: Company Selection Options (Pills) */}
               <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-border/40">
                 <div className="flex flex-wrap items-center gap-2">
@@ -425,21 +449,18 @@ export function PersonnelDirectory() {
               </div>
             </div>
 
-            {/* Results Count Banner */}
+            {/* Results Count Banner (Fully Bilingual) */}
             <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
               <div>
-                <span>نمایش </span>
-                <strong className="text-foreground">
-                  {filteredPersonnel.length}
-                </strong>
-                <span> نفر از مجموع </span>
-                <strong className="text-foreground">{stats.total}</strong>
-                <span> همکار</span>
+                {t("resultsCount", {
+                  count: filteredPersonnel.length,
+                  total: stats.total,
+                })}
               </div>
 
               {selectedDept !== "all" && (
                 <Badge variant="outline" className="text-xs bg-card/60">
-                  دپارتمان: {selectedDept}
+                  {t("departmentTag", { name: selectedDept })}
                 </Badge>
               )}
             </div>
@@ -622,6 +643,8 @@ export function PersonnelDirectory() {
                   </tbody>
                 </table>
               </div>
+            )}
+              </>
             )}
           </div>
         </main>

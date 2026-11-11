@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Building2,
   Mail,
@@ -43,8 +44,16 @@ export function PersonnelDetailModal({
   const isFa = locale === "fa";
   const t = useTranslations("Directory");
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [roleIndex, setRoleIndex] = useState<0 | 1>(0);
+
+  // Reset role index when person changes or modal opens
+  useEffect(() => {
+    setRoleIndex(0);
+  }, [person?.id, isOpen]);
 
   if (!person) return null;
+
+  const isDual = Boolean(person.isDual);
 
   const copyToClipboard = (text: string, label: string) => {
     if (!text) return;
@@ -86,9 +95,11 @@ export function PersonnelDetailModal({
   // Education details
   const localizedDegree = getLocalizedText(person.education.degree, locale);
 
-  // Gradient ring based on company
-  const ringGradient = person.isDual
-    ? "from-purple-600 via-sky-500 to-emerald-500"
+  // Gradient ring based on active role
+  const ringGradient = isDual
+    ? roleIndex === 0
+      ? "from-sky-600 via-blue-500 to-indigo-600"
+      : "from-emerald-600 via-teal-400 to-emerald-700"
     : person.isNpcOnly
     ? "from-emerald-600 via-teal-400 to-emerald-700"
     : "from-sky-600 via-blue-500 to-indigo-600";
@@ -100,9 +111,11 @@ export function PersonnelDetailModal({
 
         {/* Top Hero Banner */}
         <div
-          className={`h-28 sm:h-36 w-full relative shrink-0 overflow-hidden ${
-            person.isDual
-              ? "bg-gradient-to-r from-purple-800 via-indigo-700 to-sky-700"
+          className={`h-28 sm:h-36 w-full relative shrink-0 overflow-hidden transition-all duration-500 ${
+            isDual
+              ? roleIndex === 0
+                ? "bg-gradient-to-r from-blue-800 via-sky-700 to-cyan-700"
+                : "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800"
               : person.isNpcOnly
               ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800"
               : "bg-gradient-to-r from-blue-800 via-sky-700 to-cyan-700"
@@ -116,7 +129,7 @@ export function PersonnelDetailModal({
         <div className="relative mx-auto -mt-16 sm:-mt-20 z-10 flex flex-col items-center px-6 shrink-0">
           {/* Outer Gradient Ring Wrapper */}
           <div
-            className={`relative p-1 rounded-full bg-gradient-to-tr ${ringGradient} shadow-2xl ring-4 ring-background`}
+            className={`relative p-1 rounded-full bg-gradient-to-tr ${ringGradient} shadow-2xl ring-4 ring-background transition-all duration-500`}
           >
             <Avatar className="size-28 sm:size-32 rounded-full border-2 border-background shadow-inner">
               {person.avatar ? (
@@ -141,12 +154,41 @@ export function PersonnelDetailModal({
               {displayName}
             </h2>
 
-            {/* Company Membership Badge (No System Role Badges) */}
+            {/* Company Membership Badge (Clickable for Dual Role) */}
             <div className="flex items-center justify-center gap-2 pt-0.5">
-              {person.isDual ? (
-                <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
-                  {t("modal.dualBadge")}
-                </Badge>
+              {isDual ? (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
+                    {t("modal.dualBadge")}
+                  </Badge>
+                  <button
+                    type="button"
+                    onClick={() => setRoleIndex(roleIndex === 0 ? 1 : 0)}
+                    className={cn(
+                      "rounded-full text-xs px-3 py-1 font-medium flex items-center gap-1.5 transition-all duration-300 border cursor-pointer",
+                      roleIndex === 0
+                        ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 hover:bg-sky-500/20"
+                        : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20"
+                    )}
+                  >
+                    <Building2
+                      className={cn(
+                        "w-3 h-3 transition-colors",
+                        roleIndex === 0
+                          ? "text-sky-600 dark:text-sky-400"
+                          : "text-emerald-600 dark:text-emerald-400"
+                      )}
+                    />
+                    <span>
+                      {roleIndex === 0
+                        ? t("card.espBadge")
+                        : t("card.npcBadge")}
+                    </span>
+                    <span className="text-[10px] opacity-75 font-mono">
+                      ({roleIndex + 1}/2)
+                    </span>
+                  </button>
+                </div>
               ) : person.isNpcOnly ? (
                 <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
                   {t("card.npcBadge")}
@@ -264,164 +306,372 @@ export function PersonnelDetailModal({
 
           {/* Company Roles Breakdown */}
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Briefcase className="w-4 h-4 text-primary" />
-              <span>{t("modal.groupRoles")}</span>
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Briefcase className="w-4 h-4 text-primary" />
+                <span>{t("modal.groupRoles")}</span>
+              </h3>
+              {isDual && (
+                <span className="text-xs text-muted-foreground font-mono">
+                  {t("pagination.pageOf", { current: roleIndex + 1, total: 2 })}
+                </span>
+              )}
+            </div>
 
-            {/* Euroslot Pars Role Card */}
-            {person.esp.hasRole && (
-              <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.03] p-5 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-sky-500/20">
-                  <div className="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-bold text-sm">
-                    <Building2 className="w-4 h-4" />
-                    <span>{t("modal.espTitle")}</span>
-                  </div>
-                  {person.esp.personnelCode && (
-                    <Badge variant="secondary" className="text-xs rounded-lg">
-                      {t("modal.personnelCode")} {person.esp.personnelCode}
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">
-                      {t("modal.jobTitle")}
-                    </span>{" "}
-                    <span className="font-bold text-foreground">
-                      {espJobTitle || t("modal.none")}
-                    </span>
-                    {espAltTitle && espAltTitle !== espJobTitle && (
-                      <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
-                        {espAltTitle}
-                      </span>
+            {/* Multi-role displays the selected company's role page */}
+            {isDual ? (
+              roleIndex === 0 ? (
+                /* Euroslot Pars Role Card */
+                <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.03] p-5 space-y-4 transition-all duration-300">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-sky-500/20">
+                    <div className="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-bold text-sm">
+                      <Building2 className="w-4 h-4" />
+                      <span>{t("modal.espTitle")}</span>
+                    </div>
+                    {person.esp.personnelCode && (
+                      <Badge variant="secondary" className="text-xs rounded-lg">
+                        {t("modal.personnelCode")} {person.esp.personnelCode}
+                      </Badge>
                     )}
                   </div>
 
-                  <div>
-                    <span className="text-muted-foreground">
-                      {t("modal.department")}
-                    </span>{" "}
-                    <span className="font-bold text-foreground">
-                      {espDept || t("modal.none")}
-                    </span>
-                  </div>
-
-                  {person.esp.manager && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
                     <div>
                       <span className="text-muted-foreground">
-                        {t("modal.manager")}
+                        {t("modal.jobTitle")}
                       </span>{" "}
-                      <span className="font-medium text-foreground">
-                        {person.esp.manager}
+                      <span className="font-bold text-foreground">
+                        {espJobTitle || t("modal.none")}
+                      </span>
+                      {espAltTitle && espAltTitle !== espJobTitle && (
+                        <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                          {espAltTitle}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-muted-foreground">
+                        {t("modal.department")}
+                      </span>{" "}
+                      <span className="font-bold text-foreground">
+                        {espDept || t("modal.none")}
                       </span>
                     </div>
-                  )}
 
-                  {person.esp.email && (
-                    <div>
-                      <span className="text-muted-foreground">
-                        {t("modal.dedicatedEmail")}
-                      </span>{" "}
-                      <a
-                        href={`mailto:${person.esp.email}`}
-                        className="text-primary hover:underline dir-ltr inline-block text-start"
-                      >
-                        {person.esp.email}
-                      </a>
+                    {person.esp.manager && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.manager")}
+                        </span>{" "}
+                        <span className="font-medium text-foreground">
+                          {person.esp.manager}
+                        </span>
+                      </div>
+                    )}
+
+                    {person.esp.email && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.dedicatedEmail")}
+                        </span>{" "}
+                        <a
+                          href={`mailto:${person.esp.email}`}
+                          className="text-primary hover:underline dir-ltr inline-block text-start"
+                        >
+                          {person.esp.email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {person.esp.duties && (
+                    <div className="pt-3 border-t border-sky-500/20 text-xs space-y-1.5">
+                      <span className="text-muted-foreground font-semibold block">
+                        {t("modal.duties")}
+                      </span>
+                      <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-sky-500/15 whitespace-pre-line text-xs">
+                        {person.esp.duties}
+                      </p>
                     </div>
                   )}
                 </div>
+              ) : (
+                /* Nano Palayesh Ceram Role Card */
+                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.03] p-5 space-y-4 transition-all duration-300">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
+                    <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
+                      <Building2 className="w-4 h-4" />
+                      <span>{t("modal.npcTitle")}</span>
+                    </div>
+                    {person.npc.personnelCode && (
+                      <Badge variant="secondary" className="text-xs rounded-lg">
+                        {t("modal.personnelCode")} {person.npc.personnelCode}
+                      </Badge>
+                    )}
+                  </div>
 
-                {person.esp.duties && (
-                  <div className="pt-3 border-t border-sky-500/20 text-xs space-y-1.5">
-                    <span className="text-muted-foreground font-semibold block">
-                      {t("modal.duties")}
-                    </span>
-                    <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-sky-500/15 whitespace-pre-line text-xs">
-                      {person.esp.duties}
-                    </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
+                    <div>
+                      <span className="text-muted-foreground">
+                        {t("modal.jobTitle")}
+                      </span>{" "}
+                      <span className="font-bold text-foreground">
+                        {npcJobTitle || t("modal.none")}
+                      </span>
+                      {npcAltTitle && npcAltTitle !== npcJobTitle && (
+                        <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                          {npcAltTitle}
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-muted-foreground">
+                        {t("modal.department")}
+                      </span>{" "}
+                      <span className="font-bold text-foreground">
+                        {npcDept || t("modal.none")}
+                      </span>
+                    </div>
+
+                    {person.npc.manager && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.manager")}
+                        </span>{" "}
+                        <span className="font-medium text-foreground">
+                          {person.npc.manager}
+                        </span>
+                      </div>
+                    )}
+
+                    {person.npc.email && (
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.dedicatedEmail")}
+                        </span>{" "}
+                        <a
+                          href={`mailto:${person.npc.email}`}
+                          className="text-primary hover:underline dir-ltr inline-block text-start"
+                        >
+                          {person.npc.email}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {person.npc.duties && (
+                    <div className="pt-3 border-t border-emerald-500/20 text-xs space-y-1.5">
+                      <span className="text-muted-foreground font-semibold block">
+                        {t("modal.duties")}
+                      </span>
+                      <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-emerald-500/15 whitespace-pre-line text-xs">
+                        {person.npc.duties}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            ) : (
+              /* Non-dual personnel */
+              <>
+                {person.esp.hasRole && (
+                  <div className="rounded-2xl border border-sky-500/25 bg-sky-500/[0.03] p-5 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-sky-500/20">
+                      <div className="flex items-center gap-2 text-sky-700 dark:text-sky-300 font-bold text-sm">
+                        <Building2 className="w-4 h-4" />
+                        <span>{t("modal.espTitle")}</span>
+                      </div>
+                      {person.esp.personnelCode && (
+                        <Badge variant="secondary" className="text-xs rounded-lg">
+                          {t("modal.personnelCode")} {person.esp.personnelCode}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.jobTitle")}
+                        </span>{" "}
+                        <span className="font-bold text-foreground">
+                          {espJobTitle || t("modal.none")}
+                        </span>
+                        {espAltTitle && espAltTitle !== espJobTitle && (
+                          <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                            {espAltTitle}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.department")}
+                        </span>{" "}
+                        <span className="font-bold text-foreground">
+                          {espDept || t("modal.none")}
+                        </span>
+                      </div>
+
+                      {person.esp.manager && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            {t("modal.manager")}
+                          </span>{" "}
+                          <span className="font-medium text-foreground">
+                            {person.esp.manager}
+                          </span>
+                        </div>
+                      )}
+
+                      {person.esp.email && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            {t("modal.dedicatedEmail")}
+                          </span>{" "}
+                          <a
+                            href={`mailto:${person.esp.email}`}
+                            className="text-primary hover:underline dir-ltr inline-block text-start"
+                          >
+                            {person.esp.email}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {person.esp.duties && (
+                      <div className="pt-3 border-t border-sky-500/20 text-xs space-y-1.5">
+                        <span className="text-muted-foreground font-semibold block">
+                          {t("modal.duties")}
+                        </span>
+                        <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-sky-500/15 whitespace-pre-line text-xs">
+                          {person.esp.duties}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+
+                {person.npc.hasRole && (
+                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.03] p-5 space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
+                      <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
+                        <Building2 className="w-4 h-4" />
+                        <span>{t("modal.npcTitle")}</span>
+                      </div>
+                      {person.npc.personnelCode && (
+                        <Badge variant="secondary" className="text-xs rounded-lg">
+                          {t("modal.personnelCode")} {person.npc.personnelCode}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.jobTitle")}
+                        </span>{" "}
+                        <span className="font-bold text-foreground">
+                          {npcJobTitle || t("modal.none")}
+                        </span>
+                        {npcAltTitle && npcAltTitle !== npcJobTitle && (
+                          <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
+                            {npcAltTitle}
+                          </span>
+                        )}
+                      </div>
+
+                      <div>
+                        <span className="text-muted-foreground">
+                          {t("modal.department")}
+                        </span>{" "}
+                        <span className="font-bold text-foreground">
+                          {npcDept || t("modal.none")}
+                        </span>
+                      </div>
+
+                      {person.npc.manager && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            {t("modal.manager")}
+                          </span>{" "}
+                          <span className="font-medium text-foreground">
+                            {person.npc.manager}
+                          </span>
+                        </div>
+                      )}
+
+                      {person.npc.email && (
+                        <div>
+                          <span className="text-muted-foreground">
+                            {t("modal.dedicatedEmail")}
+                          </span>{" "}
+                          <a
+                            href={`mailto:${person.npc.email}`}
+                            className="text-primary hover:underline dir-ltr inline-block text-start"
+                          >
+                            {person.npc.email}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {person.npc.duties && (
+                      <div className="pt-3 border-t border-emerald-500/20 text-xs space-y-1.5">
+                        <span className="text-muted-foreground font-semibold block">
+                          {t("modal.duties")}
+                        </span>
+                        <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-emerald-500/15 whitespace-pre-line text-xs">
+                          {person.npc.duties}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Nano Palayesh Ceram Role Card */}
-            {person.npc.hasRole && (
-              <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.03] p-5 space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-500/20">
-                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold text-sm">
-                    <Building2 className="w-4 h-4" />
-                    <span>{t("modal.npcTitle")}</span>
-                  </div>
-                  {person.npc.personnelCode && (
-                    <Badge variant="secondary" className="text-xs rounded-lg">
-                      {t("modal.personnelCode")} {person.npc.personnelCode}
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">
-                      {t("modal.jobTitle")}
-                    </span>{" "}
-                    <span className="font-bold text-foreground">
-                      {npcJobTitle || t("modal.none")}
-                    </span>
-                    {npcAltTitle && npcAltTitle !== npcJobTitle && (
-                      <span className="text-muted-foreground block text-[11px] mt-0.5 font-sans">
-                        {npcAltTitle}
-                      </span>
+            {/* Pagination Dots for Dual Role */}
+            {isDual && (
+              <div className="flex flex-col items-center justify-center gap-2 pt-2 pb-1">
+                <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setRoleIndex(0)}
+                    className={cn(
+                      "transition-all duration-300 rounded-full focus:outline-none cursor-pointer",
+                      roleIndex === 0
+                        ? "w-8 h-2.5 bg-sky-500 shadow-xs ring-2 ring-sky-500/30"
+                        : "w-2.5 h-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/60"
                     )}
-                  </div>
-
-                  <div>
-                    <span className="text-muted-foreground">
-                      {t("modal.department")}
-                    </span>{" "}
-                    <span className="font-bold text-foreground">
-                      {npcDept || t("modal.none")}
-                    </span>
-                  </div>
-
-                  {person.npc.manager && (
-                    <div>
-                      <span className="text-muted-foreground">
-                        {t("modal.manager")}
-                      </span>{" "}
-                      <span className="font-medium text-foreground">
-                        {person.npc.manager}
-                      </span>
-                    </div>
-                  )}
-
-                  {person.npc.email && (
-                    <div>
-                      <span className="text-muted-foreground">
-                        {t("modal.dedicatedEmail")}
-                      </span>{" "}
-                      <a
-                        href={`mailto:${person.npc.email}`}
-                        className="text-primary hover:underline dir-ltr inline-block text-start"
-                      >
-                        {person.npc.email}
-                      </a>
-                    </div>
-                  )}
+                    title={t("pagination.espRole")}
+                    aria-label={t("pagination.espRole")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setRoleIndex(1)}
+                    className={cn(
+                      "transition-all duration-300 rounded-full focus:outline-none cursor-pointer",
+                      roleIndex === 1
+                        ? "w-8 h-2.5 bg-emerald-500 shadow-xs ring-2 ring-emerald-500/30"
+                        : "w-2.5 h-2.5 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+                    )}
+                    title={t("pagination.npcRole")}
+                    aria-label={t("pagination.npcRole")}
+                  />
                 </div>
-
-                {person.npc.duties && (
-                  <div className="pt-3 border-t border-emerald-500/20 text-xs space-y-1.5">
-                    <span className="text-muted-foreground font-semibold block">
-                      {t("modal.duties")}
-                    </span>
-                    <p className="text-foreground/90 leading-relaxed bg-background/60 p-3 rounded-xl border border-emerald-500/15 whitespace-pre-line text-xs">
-                      {person.npc.duties}
-                    </p>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setRoleIndex(roleIndex === 0 ? 1 : 0)}
+                    className="hover:text-foreground transition-colors underline cursor-pointer"
+                  >
+                    {roleIndex === 0
+                      ? t("pagination.espRole")
+                      : t("pagination.npcRole")}
+                  </button>
+                </div>
               </div>
             )}
           </div>

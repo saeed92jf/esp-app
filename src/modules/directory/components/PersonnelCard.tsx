@@ -33,6 +33,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
   const locale = useLocale();
   const t = useTranslations("Directory");
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [roleIndex, setRoleIndex] = useState<0 | 1>(0);
 
   const copyToClipboard = (text: string, label: string) => {
     if (!text) return;
@@ -54,6 +55,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
   // Strictly single language name (FA in fa, EN in en)
   const displayName = getSingleLocalizedName(person, locale);
 
+  const isDual = Boolean(person.isDual);
   const primaryEmail = person.esp.email || person.npc.email || "";
 
   // Localized values
@@ -67,13 +69,38 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
   );
   const localizedFloor = getLocalizedText(person.contact.floor, locale);
 
+  // Active role-specific values for multi-role employees
+  const activeDept = isDual
+    ? roleIndex === 0
+      ? espDept
+      : npcDept
+    : person.isNpcOnly
+    ? npcDept
+    : espDept;
+
+  const activeTitle = isDual
+    ? roleIndex === 0
+      ? espTitle
+      : npcTitle
+    : person.isNpcOnly
+    ? npcTitle
+    : espTitle;
+
+  const activeEmail = isDual
+    ? roleIndex === 0
+      ? person.esp.email || primaryEmail
+      : person.npc.email || primaryEmail
+    : primaryEmail;
+
   return (
     <div
       className={cn(
         "group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 font-sans",
         "bg-white dark:bg-card shadow-xs hover:shadow-xl hover:-translate-y-1",
-        person.isDual
-          ? "border-purple-500/25 hover:border-purple-500/50"
+        isDual
+          ? roleIndex === 0
+            ? "border-sky-500/25 hover:border-sky-500/50"
+            : "border-emerald-500/25 hover:border-emerald-500/50"
           : person.isNpcOnly
           ? "border-emerald-500/25 hover:border-emerald-500/50"
           : "border-sky-500/25 hover:border-sky-500/50"
@@ -82,9 +109,11 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
       {/* Top Banner Accent */}
       <div
         className={cn(
-          "h-1.5 w-full",
-          person.isDual
-            ? "bg-gradient-to-r from-purple-600 via-sky-500 to-emerald-500"
+          "h-1.5 w-full transition-all duration-500",
+          isDual
+            ? roleIndex === 0
+              ? "bg-gradient-to-r from-sky-500 to-blue-600"
+              : "bg-gradient-to-r from-emerald-500 to-teal-600"
             : person.isNpcOnly
             ? "bg-gradient-to-r from-emerald-500 to-teal-600"
             : "bg-gradient-to-r from-sky-500 to-blue-600"
@@ -94,14 +123,33 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
       <div className="p-5 flex-1 flex flex-col">
         {/* Card Header: Company Badge ONLY */}
         <div className="flex items-center justify-between gap-2 mb-4">
-          {person.isDual ? (
-            <Badge
-              variant="outline"
-              className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1.5"
+          {isDual ? (
+            <button
+              type="button"
+              onClick={() => setRoleIndex(roleIndex === 0 ? 1 : 0)}
+              className={cn(
+                "rounded-full text-xs px-2.5 py-0.5 font-medium flex items-center gap-1.5 transition-all duration-300 border cursor-pointer",
+                roleIndex === 0
+                  ? "bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 hover:bg-sky-500/20"
+                  : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/20"
+              )}
+              title={t("card.dualBadge")}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
-              {t("card.dualBadge")}
-            </Badge>
+              <Building2
+                className={cn(
+                  "w-3 h-3 transition-colors",
+                  roleIndex === 0
+                    ? "text-sky-600 dark:text-sky-400"
+                    : "text-emerald-600 dark:text-emerald-400"
+                )}
+              />
+              <span>
+                {roleIndex === 0 ? t("card.espBadge") : t("card.npcBadge")}
+              </span>
+              <span className="text-[10px] opacity-75 font-mono">
+                ({roleIndex + 1}/2)
+              </span>
+            </button>
           ) : person.isNpcOnly ? (
             <Badge
               variant="outline"
@@ -153,55 +201,56 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
 
             {/* Department Tag */}
             <div className="mt-1 flex flex-wrap gap-1">
-              {espDept && (
-                <span className="inline-flex items-center text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md font-medium">
-                  {espDept}
-                </span>
-              )}
-              {person.isDual && npcDept && (
-                <span className="inline-flex items-center text-[11px] text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-md font-medium">
-                  {npcDept}
+              {activeDept && (
+                <span
+                  className={cn(
+                    "inline-flex items-center text-[11px] px-2 py-0.5 rounded-md font-medium transition-colors duration-300",
+                    isDual
+                      ? roleIndex === 0
+                        ? "text-sky-700 dark:text-sky-300 bg-sky-500/10"
+                        : "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10"
+                      : "text-muted-foreground bg-muted/60"
+                  )}
+                >
+                  {activeDept}
                 </span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Job Titles Block */}
-        <div className="rounded-xl bg-slate-50 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3 mb-4 space-y-1.5 text-xs">
-          {person.isDual ? (
-            <>
-              <div className="flex items-start gap-1.5">
-                <span className="font-semibold text-sky-600 dark:text-sky-400 shrink-0">
-                  ESP:
-                </span>
-                <span className="text-foreground truncate font-medium">
-                  {espTitle || t("card.none")}
-                </span>
-              </div>
-              <div className="flex items-start gap-1.5">
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
-                  NPC:
-                </span>
-                <span className="text-foreground truncate font-medium">
-                  {npcTitle || t("card.none")}
-                </span>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              <span className="text-foreground font-medium truncate">
-                {person.isNpcOnly
-                  ? npcTitle || t("card.none")
-                  : espTitle || t("card.none")}
+        {/* Job Titles Block with smooth transition */}
+        <div className="rounded-xl bg-slate-50 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3 mb-4 space-y-1.5 text-xs transition-all duration-300">
+          <div className="flex items-center gap-2">
+            <Briefcase
+              className={cn(
+                "w-3.5 h-3.5 shrink-0 transition-colors",
+                isDual
+                  ? roleIndex === 0
+                    ? "text-sky-600 dark:text-sky-400"
+                    : "text-emerald-600 dark:text-emerald-400"
+                  : "text-muted-foreground"
+              )}
+            />
+            <span className="text-foreground font-semibold truncate">
+              {activeTitle || t("card.none")}
+            </span>
+          </div>
+
+          {isDual && (
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+              <span className="font-medium">
+                {roleIndex === 0 ? t("card.espBadge") : t("card.npcBadge")}
+              </span>
+              <span className="font-mono text-[10px] opacity-75">
+                {t("pagination.pageOf", { current: roleIndex + 1, total: 2 })}
               </span>
             </div>
           )}
         </div>
 
         {/* Contact Strip */}
-        <div className="space-y-2 text-xs mb-4">
+        <div className="space-y-2 text-xs mb-3">
           {/* Internal Extension */}
           <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-sky-50 dark:bg-primary/[0.06] border border-sky-100 dark:border-primary/15">
             <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
@@ -233,22 +282,22 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
           </div>
 
           {/* Email */}
-          {primaryEmail && (
+          {activeEmail && (
             <div className="flex items-center justify-between gap-2 text-muted-foreground hover:text-foreground transition-colors px-1">
               <a
-                href={`mailto:${primaryEmail}`}
+                href={`mailto:${activeEmail}`}
                 className="flex items-center gap-2 truncate dir-ltr text-start hover:underline"
-                title={primaryEmail}
+                title={activeEmail}
               >
                 <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <span className="truncate text-[11px]">{primaryEmail}</span>
+                <span className="truncate text-[11px]">{activeEmail}</span>
               </a>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-5 w-5 text-muted-foreground hover:text-foreground shrink-0"
                 onClick={() =>
-                  copyToClipboard(primaryEmail, t("card.corporateEmail"))
+                  copyToClipboard(activeEmail, t("card.corporateEmail"))
                 }
                 title={t("card.corporateEmail")}
               >
@@ -272,6 +321,36 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
             </div>
           )}
         </div>
+
+        {/* Dual Role Pagination Dots */}
+        {isDual && (
+          <div className="flex items-center justify-center gap-2 pt-1 pb-2">
+            <button
+              type="button"
+              onClick={() => setRoleIndex(0)}
+              className={cn(
+                "transition-all duration-300 rounded-full focus:outline-none cursor-pointer",
+                roleIndex === 0
+                  ? "w-6 h-2 bg-sky-500 shadow-xs"
+                  : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+              )}
+              title={t("pagination.espRole")}
+              aria-label={t("pagination.espRole")}
+            />
+            <button
+              type="button"
+              onClick={() => setRoleIndex(1)}
+              className={cn(
+                "transition-all duration-300 rounded-full focus:outline-none cursor-pointer",
+                roleIndex === 1
+                  ? "w-6 h-2 bg-emerald-500 shadow-xs"
+                  : "w-2 h-2 bg-muted-foreground/30 hover:bg-muted-foreground/60"
+              )}
+              title={t("pagination.npcRole")}
+              aria-label={t("pagination.npcRole")}
+            />
+          </div>
+        )}
       </div>
 
       {/* Card Footer Button */}
