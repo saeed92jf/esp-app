@@ -1750,12 +1750,20 @@ export function AdminUsersTable({
                         <div className="flex items-center gap-2.5">
                           {/* Avatar with unclipped location tag (ring removed) */}
                           <div className="relative size-9 shrink-0 rounded-full flex items-center justify-center">
-                            <div 
-                              className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"
-                              style={{ backgroundColor: avatarBg }}
-                            >
-                              <span className="leading-none">{userInitial}</span>
-                            </div>
+                            {user.avatar || (user as any).photoUrl || (user as any).imageUrl ? (
+                              <img
+                                src={user.avatar || (user as any).photoUrl || (user as any).imageUrl}
+                                alt={userDisplayName}
+                                className="size-full rounded-full object-cover select-none shadow-xs border border-white/20 dark:border-white/10"
+                              />
+                            ) : (
+                              <div 
+                                className="size-full rounded-full flex items-center justify-center select-none shadow-xs text-white font-bold text-xs border border-white/20 dark:border-white/10"
+                                style={{ backgroundColor: avatarBg }}
+                              >
+                                <span className="leading-none">{userInitial}</span>
+                              </div>
+                            )}
                             <span
                               className={cn(
                                 "absolute -bottom-0.5 -end-0.5 size-3 rounded-full border-2 border-background z-10 pointer-events-none shadow-2xs transition-colors",
@@ -1968,12 +1976,20 @@ export function AdminUsersTable({
                                       {/* Top Header Bar */}
                                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/40">
                                         <div className="flex items-center gap-3">
-                                          <div 
-                                            className="size-10 rounded-2xl flex items-center justify-center font-medium text-sm text-white shrink-0 shadow-xs"
-                                            style={{ backgroundColor: user.avatarColor || '#0284c7' }}
-                                          >
-                                            {user.name ? user.name.slice(0, 2) : "US"}
-                                          </div>
+                                          {user.avatar || (user as any).photoUrl || (user as any).imageUrl ? (
+                                            <img
+                                              src={user.avatar || (user as any).photoUrl || (user as any).imageUrl}
+                                              alt={user.name || "User"}
+                                              className="size-10 rounded-2xl object-cover shrink-0 shadow-xs border border-border/50"
+                                            />
+                                          ) : (
+                                            <div 
+                                              className="size-10 rounded-2xl flex items-center justify-center font-medium text-sm text-white shrink-0 shadow-xs"
+                                              style={{ backgroundColor: user.avatarColor || '#0284c7' }}
+                                            >
+                                              {user.name ? user.name.slice(0, 2) : "US"}
+                                            </div>
+                                          )}
                                           <div className="flex flex-col">
                                             <div className="flex items-center gap-2 flex-wrap">
                                               <h4 className="text-sm font-medium text-foreground">

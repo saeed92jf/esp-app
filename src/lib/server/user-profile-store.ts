@@ -82,68 +82,101 @@ function persistAuthUsersToDisk() {
   }
 }
 
-export function getServerUserProfile(userId?: string): UserProfile {
-  const map = globalThis.__espServerUserProfiles || {};
+export function getServerUserProfile(userId?: string): UserProfile | null {
   const normId = (userId || "").trim().toLowerCase();
+  if (!normId) {
+    return null;
+  }
 
-  if (normId && map[normId]) {
+  const map = globalThis.__espServerUserProfiles || {};
+
+  if (map[normId]) {
     return map[normId];
   }
 
   // Check by email
-  if (normId) {
-    for (const p of Object.values(map)) {
-      if (p.personal?.email?.toLowerCase() === normId) {
-        return p;
-      }
+  for (const p of Object.values(map)) {
+    if (p.personal?.email?.toLowerCase() === normId) {
+      return p;
     }
   }
 
-  // If Saeed
-  const isSaeed = !normId || normId === "u-saeed" || normId.includes("jalili");
+  // If explicitly Saeed
+  const isSaeed = normId === "u-saeed" || normId === "s.jalili@euroslotpars.com";
   if (isSaeed && map["u-saeed"]) {
     return map["u-saeed"];
   }
 
-  // Find user in auth users list to create an isolated stub
+  // Find user in auth users list to create an isolated clean stub
   const authUsers = globalThis.__espServerAuthUsers || [];
   const foundAuth = authUsers.find(
     (au) => au.user?.id?.toLowerCase() === normId || au.email?.toLowerCase() === normId
   );
 
-  const base = (map["u-saeed"] || initialProfileMock) as unknown as UserProfile;
-  const userProfile: UserProfile = {
-    ...base,
-    id: `prof-${normId || "unknown"}`,
-    userId: foundAuth?.user?.id || normId || "unknown",
-    personal: {
-      ...base.personal,
-      firstName: foundAuth?.user?.fullName?.split(" ")[0] || "",
-      lastName: foundAuth?.user?.fullName?.split(" ").slice(1).join(" ") || "",
-      firstNameFa: foundAuth?.user?.fullNameFa?.split(" ")[0] || "",
-      lastNameFa: foundAuth?.user?.fullNameFa?.split(" ").slice(1).join(" ") || "",
-      fullName: foundAuth?.user?.fullName || "",
-      fullNameFa: foundAuth?.user?.fullNameFa || "",
-      email: foundAuth?.email || (normId.includes("@") ? normId : ""),
-      phone: foundAuth?.mobile || "",
-      avatarColor: foundAuth?.user?.avatarColor || "#0ea5e9",
-      avatar: foundAuth?.user?.avatar || null,
-      avatarMode: foundAuth?.user?.avatarMode || "initials",
-    },
-    organizational: {
-      ...base.organizational,
-      role: foundAuth?.user?.role || "engineer",
-    },
-  };
+  if (foundAuth) {
+    const cleanProfile: UserProfile = {
+      id: `prof-${foundAuth.user?.id || normId}`,
+      userId: foundAuth.user?.id || normId,
+      personal: {
+        firstName: foundAuth.user?.fullName?.split(" ")[0] || "",
+        lastName: foundAuth.user?.fullName?.split(" ").slice(1).join(" ") || "",
+        firstNameFa: foundAuth.user?.fullNameFa?.split(" ")[0] || "",
+        lastNameFa: foundAuth.user?.fullNameFa?.split(" ").slice(1).join(" ") || "",
+        fullName: foundAuth.user?.fullName || "",
+        fullNameFa: foundAuth.user?.fullNameFa || "",
+        email: foundAuth.email || (normId.includes("@") ? normId : ""),
+        phone: foundAuth.mobile || "",
+        nationalId: "",
+        birthDate: "",
+        gender: "other",
+        maritalStatus: "single",
+        militaryStatus: "exempt",
+        address: "",
+        avatarColor: foundAuth.user?.avatarColor || "#0ea5e9",
+        avatar: foundAuth.user?.avatar || undefined,
+        avatarMode: foundAuth.user?.avatarMode || "initials",
+      },
+      organizational: {
+        department: foundAuth.user?.department || "engineering",
+        role: foundAuth.user?.role || "engineer",
+        employeeId: foundAuth.user?.id || "",
+        joinDate: "",
+        manager: "سعید جلیلی فرد",
+        workLocation: "office",
+      },
+      insurance: {
+        insuranceCode: "",
+        provider: "تامین اجتماعی",
+        validUntil: "",
+        type: "tamin_ejtemaei",
+        supplementaryPlan: "none",
+        supplementaryProvider: "",
+      },
+      education: {
+        degree: "",
+        fieldOfStudy: "",
+        university: "",
+        graduationYear: "",
+        records: [],
+      },
+      skills: [],
+      projects: [],
+      experiences: [],
+      documents: [],
+    };
 
-  if (normId) {
-    map[normId] = userProfile;
+    map[normId] = cleanProfile;
+    return cleanProfile;
   }
-  return userProfile;
+
+  return null;
 }
 
 export function updateServerUserProfile(patch: Partial<UserProfile>, userId?: string): UserProfile {
   const current = getServerUserProfile(userId);
+  if (!current) {
+    throw new Error("User profile not found");
+  }
   const updated: UserProfile = {
     ...current,
     ...patch,
@@ -208,6 +241,7 @@ export function updateServerUserPreferences(
 ): { primaryColor?: string; theme?: string } {
   if (!userId) return patch;
   const current = getServerUserProfile(userId);
+  if (!current) return patch;
   if (patch.primaryColor) {
     current.personal = {
       ...current.personal,

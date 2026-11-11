@@ -29,11 +29,18 @@ export async function GET(req: NextRequest) {
     const user = extractUserFromAuthHeader(authHeader);
     const userIdent = user?.userId || user?.email;
 
+    if (!authHeader || !userIdent) {
+      return NextResponse.json(
+        { error_code: "UNAUTHORIZED", message: "Authentication required to access profile." },
+        { status: 401 }
+      );
+    }
+
     try {
       const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/profile`, {
         headers: {
-          ...(authHeader ? { Authorization: authHeader } : {}),
-          ...(userIdent ? { "X-User-Id": userIdent } : {}),
+          Authorization: authHeader,
+          "X-User-Id": userIdent,
           Accept: "application/json",
         },
         signal: AbortSignal.timeout(3000),
@@ -48,6 +55,13 @@ export async function GET(req: NextRequest) {
     }
 
     const profile = getServerUserProfile(userIdent);
+    if (!profile) {
+      return NextResponse.json(
+        { error_code: "NOT_FOUND", message: "User profile not found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       profile,

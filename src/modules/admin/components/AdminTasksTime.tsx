@@ -174,12 +174,12 @@ export function AdminTasksTime({
 
   return (
     <div className="flex flex-col gap-3 w-full h-full">
-      {/* ── Virtual Grid Row 1: Unified Personnel, Education & Insurance (col 1-2), Activities (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[295px] xl:min-h-[315px]">
+      {/* ── Main Layout: Personnel Profile (vertical down), Tasks beside it, and Heatmap + Access on 3rd col ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 flex-1 min-h-0 items-stretch">
         
-        {/* Unified Module: Personnel, Education & Insurance Profile (مشخصات پرسنلی، تحصیلات و بیمه) */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-0 col-span-1 md:col-span-2 lg:col-span-2 overflow-hidden">
-          <div className="flex items-center justify-between mb-2 px-0.5 shrink-0 flex-wrap gap-2">
+        {/* Module 1: Personnel, Education & Insurance Profile (عمودی تا پایین) */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-4 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col justify-between shadow-2xs h-full min-h-[500px] overflow-hidden">
+          <div className="flex items-center justify-between mb-2.5 px-0.5 shrink-0 flex-wrap gap-2 pb-2 border-b border-border/30">
             <div className="flex items-center gap-1.5 min-w-0">
               <Briefcase size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
@@ -205,82 +205,69 @@ export function AdminTasksTime({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 xl:gap-2.5 flex-1 justify-center py-0.5 overflow-hidden text-xs">
-            {/* Column 1: Personnel & Administrative Specs */}
-            <div className="flex flex-col gap-1.5 xl:gap-2">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "کد ملی:" : "National ID:"}</span>
-                <span className="font-bold text-foreground fa-num">{selectedUser?.nationalId || "-"}</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "سمت / واحد:" : "Position / Unit:"}</span>
-                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
-                  {selectedUser?.jobPosition || selectedUser?.jobTitle || selectedUser?.subUnit || (selectedUser?.department ? (t.has(`departments.${selectedUser.department}`) ? t(`departments.${selectedUser.department}`) : selectedUser.department) : "-")}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "مدیر مستقیم:" : "Direct Manager:"}</span>
-                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
-                  {selectedUser?.directManager || selectedUser?.manager
-                    ? formatPersonName(selectedUser.directManager || selectedUser.manager, locale)
-                    : "-"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "داخلی / محل:" : "Ext / Location:"}</span>
-                <span className="font-bold text-foreground truncate max-w-[155px] text-end fa-num">
-                  {selectedUser?.extensionNumber ? (isRtl ? `داخلی ${selectedUser.extensionNumber}` : `Ext ${selectedUser.extensionNumber}`) : ""} {selectedUser?.workLocation ? `(${isRtl ? (selectedUser.workLocation === 'office' ? 'دفتر مرکزی' : selectedUser.workLocation === 'factory' ? 'کارخانه' : selectedUser.workLocation) : selectedUser.workLocation})` : ""}
-                </span>
-              </div>
+          {/* All 8 Specs Stacked Vertically Down the Card */}
+          <div className="flex flex-col gap-1.5 xl:gap-2 flex-1 justify-between py-1 overflow-y-auto text-xs">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "کد ملی:" : "National ID:"}</span>
+              <span className="font-bold text-foreground fa-num">{selectedUser?.nationalId || "-"}</span>
             </div>
 
-            {/* Column 2: Education & Insurance Specs */}
-            <div className="flex flex-col gap-1.5 xl:gap-2">
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "رشته / دانشگاه:" : "Major / University:"}</span>
-                <span className="font-bold text-foreground truncate max-w-[155px] text-end">
-                  {selectedUser?.fieldOfStudy || selectedUser?.university ? `${selectedUser.fieldOfStudy || ''} (${selectedUser.university || ''})` : (selectedUser?.education || "-")}
-                </span>
-              </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "سمت / واحد:" : "Position / Unit:"}</span>
+              <span className="font-bold text-foreground truncate max-w-[170px] text-end">
+                {selectedUser?.jobPosition || selectedUser?.jobTitle || selectedUser?.subUnit || (selectedUser?.department ? (t.has(`departments.${selectedUser.department}`) ? t(`departments.${selectedUser.department}`) : selectedUser.department) : "-")}
+              </span>
+            </div>
 
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "تاریخ استخدام:" : "Hire Date:"}</span>
-                <span className="font-bold text-foreground fa-num">
-                  {selectedUser?.employmentDate || selectedUser?.joinedAt || "-"}
-                </span>
-              </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "مدیر مستقیم:" : "Direct Manager:"}</span>
+              <span className="font-bold text-foreground truncate max-w-[170px] text-end">
+                {selectedUser?.directManager || selectedUser?.manager
+                  ? formatPersonName(selectedUser.directManager || selectedUser.manager, locale)
+                  : "-"}
+              </span>
+            </div>
 
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره بیمه:" : "Insurance No:"}</span>
-                <span className="font-bold text-foreground truncate max-w-[155px] text-end fa-num">
-                  {selectedUser?.insuranceNumber ? `${selectedUser.insuranceNumber} (${selectedUser.insuranceType || (isRtl ? 'تکمیلی' : 'Complementary')})` : "-"}
-                </span>
-              </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "داخلی / محل:" : "Ext / Location:"}</span>
+              <span className="font-bold text-foreground truncate max-w-[170px] text-end fa-num">
+                {selectedUser?.extensionNumber ? (isRtl ? `داخلی ${selectedUser.extensionNumber}` : `Ext ${selectedUser.extensionNumber}`) : ""} {selectedUser?.workLocation ? `(${isRtl ? (selectedUser.workLocation === 'office' ? 'دفتر مرکزی' : selectedUser.workLocation === 'factory' ? 'کارخانه' : selectedUser.workLocation) : selectedUser.workLocation})` : ""}
+              </span>
+            </div>
 
-              <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
-                <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره حساب بانکی:" : "Bank Account:"}</span>
-                <span className="font-bold text-foreground font-mono text-[10.5px] truncate max-w-[155px] text-end fa-num">
-                  {selectedUser?.shebaNumber || selectedUser?.bankAccount || "-"}
-                </span>
-              </div>
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "رشته / دانشگاه:" : "Major / University:"}</span>
+              <span className="font-bold text-foreground truncate max-w-[170px] text-end">
+                {selectedUser?.fieldOfStudy || selectedUser?.university ? `${selectedUser.fieldOfStudy || ''} (${selectedUser.university || ''})` : (selectedUser?.education || "-")}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "تاریخ استخدام:" : "Hire Date:"}</span>
+              <span className="font-bold text-foreground fa-num">
+                {selectedUser?.employmentDate || selectedUser?.joinedAt || "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره بیمه:" : "Insurance No:"}</span>
+              <span className="font-bold text-foreground truncate max-w-[170px] text-end fa-num">
+                {selectedUser?.insuranceNumber ? `${selectedUser.insuranceNumber} (${selectedUser.insuranceType || (isRtl ? 'تکمیلی' : 'Complementary')})` : "-"}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded-xl bg-background/50 border border-border/30">
+              <span className="text-muted-foreground text-[11px]">{isRtl ? "شماره حساب بانکی:" : "Bank Account:"}</span>
+              <span className="font-bold text-foreground font-mono text-[10.5px] truncate max-w-[170px] text-end fa-num">
+                {selectedUser?.shebaNumber || selectedUser?.bankAccount || "-"}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Module C: Activities (فعالیت‌ها) */}
-        <div className="col-span-1 h-full min-h-0 overflow-hidden">
-          <AdminActivities selectedUser={selectedUser} />
-        </div>
-      </div>
-
-      {/* ── Virtual Grid Row 2: Urgent Tasks (col 1-2), Module Access (col 3) ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 min-h-[190px]">
-        {/* Module D: Assigned User Tasks (تسک‌های متصل به کاربر در پنل ادمین) */}
-        <div className="col-span-1 md:col-span-2 lg:col-span-2 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden">
-          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 flex-wrap gap-2">
+        {/* Module 2: Assigned User Tasks (کنارش: هم‌ارتفاع و هماهنگ) */}
+        <div className="col-span-1 md:col-span-1 lg:col-span-5 bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-[500px] shadow-2xs overflow-hidden">
+          <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 flex-wrap gap-2 pb-2 border-b border-border/30">
             <div className="flex items-center gap-1.5 min-w-0">
               <FolderKanban size={16} className="text-primary shrink-0" />
               <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
@@ -429,16 +416,21 @@ export function AdminTasksTime({
           </div>
         </div>
 
-        {/* Module E: Module Access (دسترسی‌ها - اختصاص ۱ ستون هم‌تراز با تسک‌ها) */}
-        <div className="col-span-1 md:col-span-1 lg:col-span-1 flex flex-col h-full min-h-0">
-          <AdminHeatmapModules 
-            selectedUser={selectedUser}
-            availableModules={availableModules}
-            tMenu={tMenu}
-            handleToggleModuleAccess={handleToggleModuleAccess}
-            handleToggleAllModulesAccess={handleToggleAllModulesAccess}
-            onNavigateToAccess={onNavigateToAccess}
-          />
+        {/* Module 3 & 4: Online Heatmap & Module Access (ستون سوم) */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col gap-3 h-full min-h-0">
+          <div className="flex-1 min-h-[260px]">
+            <AdminActivities selectedUser={selectedUser} />
+          </div>
+          <div className="flex-1 min-h-[220px]">
+            <AdminHeatmapModules 
+              selectedUser={selectedUser}
+              availableModules={availableModules}
+              tMenu={tMenu}
+              handleToggleModuleAccess={handleToggleModuleAccess}
+              handleToggleAllModulesAccess={handleToggleAllModulesAccess}
+              onNavigateToAccess={onNavigateToAccess}
+            />
+          </div>
         </div>
       </div>
 

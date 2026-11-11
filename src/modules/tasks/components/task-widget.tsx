@@ -174,8 +174,8 @@ export function TaskWidget() {
 
     setIsSubmitting(true);
     try {
-      const currentUserName = user?.fullNameFa || user?.fullName || "سعید جلیلی";
-      const currentUserId = user?.id || "u-saeed";
+      const currentUserName = user?.fullNameFa || user?.fullName || (locale === "fa" ? "کاربر جاری" : "Current User");
+      const currentUserId = user?.id || "unknown";
 
       const created = await newTasksService.createTask({
         title: quickTitle.trim(),

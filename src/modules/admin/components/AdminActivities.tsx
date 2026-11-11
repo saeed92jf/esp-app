@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Clock, Activity, CheckCircle2, Grid, List, Sparkles } from "lucide-react";
+import { Clock, Activity, CheckCircle2, Sparkles } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { User } from "../types/admin.types";
 import { cn } from "@/lib/utils";
@@ -106,7 +106,7 @@ function getSlotKeyForHour(h: number): string {
 }
 
 function generateDeterministicHeatmap(userId: string, isOnline: boolean): ActivityHeatmapData {
-  const normId = (userId || "u-saeed").toLowerCase();
+  const normId = (userId || "anonymous").toLowerCase();
   let hash = 0;
   for (let i = 0; i < normId.length; i++) {
     hash = (hash << 5) - hash + normId.charCodeAt(i);
@@ -282,12 +282,11 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
 
-  const [activeTab, setActiveTab] = useState<"heatmap" | "logs">("heatmap");
   const [hoveredCell, setHoveredCell] = useState<HeatmapCell | null>(null);
   const [serverData, setServerData] = useState<ActivityHeatmapData | null>(null);
 
   const isUserOnline = selectedUser?.isOnline || selectedUser?.status === "online";
-  const userId = selectedUser?.id || "u-saeed";
+  const userId = selectedUser?.id || "anonymous";
 
   // Deterministic local state as immediate fallback
   const fallbackData = useMemo(() => {
@@ -298,6 +297,7 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   useEffect(() => {
     let isMounted = true;
     async function fetchHeatmap() {
+      if (!userId || userId === "anonymous") return;
       try {
         const res = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/activity-heatmap`);
         if (res.ok) {
@@ -317,21 +317,16 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
   }, [userId, isUserOnline]);
 
   const data = serverData || fallbackData;
-  const activities = selectedUser?.recentActivities || [];
 
   return (
     <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-3 sm:p-3.5 xl:p-4 flex flex-col h-full min-h-0 shadow-2xs overflow-hidden select-none">
       
-      {/* ── Top Header: Title, Online Status, Total Hours & Tab Toggle ── */}
+      {/* ── Top Header: Title, Online Status & Total Hours ── */}
       <div className="flex items-center justify-between mb-2 xl:mb-2.5 px-0.5 shrink-0 gap-1.5 flex-wrap">
         <div className="flex items-center gap-1.5 min-w-0">
           <Activity size={15} className="text-emerald-500 shrink-0" />
           <h3 className="font-semibold text-xs sm:text-[13px] xl:text-[14px] text-foreground truncate">
-            {activeTab === "heatmap"
-              ? isRtl
-                ? "هیت‌مپ ساعات آنلاین"
-                : "Online Hours Heatmap"
-              : t("activities")}
+            {isRtl ? "هیت‌مپ ساعات آنلاین" : "Online Hours Heatmap"}
           </h3>
 
           {/* Real-time online pulse badge */}
@@ -347,287 +342,206 @@ export function AdminActivities({ selectedUser }: AdminActivitiesProps) {
           )}
         </div>
 
-        {/* View Switch: Heatmap vs Event Logs */}
         <div className="flex items-center gap-1 shrink-0">
-          <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold fa-num hidden sm:inline-block">
+          <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold fa-num">
             {isRtl ? `${data.totalWeeklyHours} ساعت/هفته` : `${data.totalWeeklyHours}h/wk`}
           </span>
-
-          <div className="flex items-center p-0.5 rounded-lg bg-background/60 border border-border/40">
-            <button
-              type="button"
-              onClick={() => setActiveTab("heatmap")}
-              title={isRtl ? "نمودار هیت‌مپ ساعات حضور" : "Heatmap View"}
-              className={cn(
-                "p-1 rounded-md transition-colors cursor-pointer",
-                activeTab === "heatmap"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Grid size={13} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("logs")}
-              title={isRtl ? "لیست رویدادها و فعالیت‌ها" : "Activity Logs"}
-              className={cn(
-                "p-1 rounded-md transition-colors cursor-pointer flex items-center gap-1",
-                activeTab === "logs"
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <List size={13} />
-              {activities.length > 0 && (
-                <span className="text-[9px] font-bold fa-num px-1">
-                  {activities.length}
-                </span>
-              )}
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* ── Content View: Heatmap or Logs ── */}
-      {activeTab === "heatmap" ? (
-        <div className="flex flex-col flex-1 min-h-0 justify-between gap-1 overflow-hidden">
-          
-          {/* ── Interactive Info / Hover Status Banner ── */}
-          <div className="h-7 shrink-0 px-2 rounded-lg bg-background/70 border border-border/40 flex items-center justify-between text-[11px] text-muted-foreground overflow-hidden">
-            {hoveredCell ? (
-              <div className="flex items-center gap-2 truncate font-medium text-foreground w-full justify-between">
-                <span className="truncate flex items-center gap-1.5">
-                  <strong className="text-primary font-bold">
-                    {isRtl ? hoveredCell.dayNameFa : hoveredCell.dayNameEn}
-                  </strong>
-                  <span className="text-muted-foreground">•</span>
-                  <span className="fa-num">
-                    {isRtl ? `بازه ${hoveredCell.slotLabelFa}` : `Slot ${hoveredCell.slotLabel}`}
-                    {hoveredCell.isNight ? (isRtl ? " (شب/خارج شیفت)" : " (Night)") : ""}
+      {/* ── Content View: Flexible Online Heatmap (No fixed width, no scroll) ── */}
+      <div className="flex flex-col flex-1 min-h-0 justify-between gap-1 overflow-hidden w-full">
+        
+        {/* ── Interactive Info / Hover Status Banner ── */}
+        <div className="h-7 shrink-0 px-2 rounded-lg bg-background/70 border border-border/40 flex items-center justify-between text-[11px] text-muted-foreground overflow-hidden w-full">
+          {hoveredCell ? (
+            <div className="flex items-center gap-2 truncate font-medium text-foreground w-full justify-between">
+              <span className="truncate flex items-center gap-1.5">
+                <strong className="text-primary font-bold">
+                  {isRtl ? hoveredCell.dayNameFa : hoveredCell.dayNameEn}
+                </strong>
+                <span className="text-muted-foreground">•</span>
+                <span className="fa-num">
+                  {isRtl ? `بازه ${hoveredCell.slotLabelFa}` : `Slot ${hoveredCell.slotLabel}`}
+                  {hoveredCell.isNight ? (isRtl ? " (شب/خارج شیفت)" : " (Night)") : ""}
+                </span>
+              </span>
+              <span className="fa-num font-bold shrink-0">
+                {hoveredCell.isFuture ? (
+                  <span className="text-muted-foreground/60 italic">
+                    {isRtl ? "آینده (هنوز فرا نرسیده)" : "Future (Not reached yet)"}
                   </span>
-                </span>
-                <span className="fa-num font-bold shrink-0">
-                  {hoveredCell.isFuture ? (
-                    <span className="text-muted-foreground/60 italic">
-                      {isRtl ? "آینده (هنوز فرا نرسیده)" : "Future (Not reached yet)"}
-                    </span>
-                  ) : hoveredCell.level > 0 ? (
-                    <span className="text-primary">
-                      {isRtl
-                        ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
-                        : `${hoveredCell.minutes}m online (${hoveredCell.percentage}%)`}
-                    </span>
-                  ) : hoveredCell.isHatched ? (
-                    <span className="text-muted-foreground/80">
-                      {isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground/80">
-                      {isRtl ? "خانه خالی (شیفت کاری بدون فعالیت)" : "Empty (In-shift Idle)"}
-                    </span>
-                  )}
-                </span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between w-full text-[10.5px] text-muted-foreground">
-                <span className="truncate flex items-center gap-1">
-                  <Sparkles size={11} className="text-primary shrink-0" />
-                  {isRtl
-                    ? `امروز: ${data.todayHours} ساعت آنلاین`
-                    : `Today: ${data.todayHours} hours online`}
-                </span>
-                <span className="fa-num font-medium text-foreground/75 shrink-0">
-                  {isRtl ? "روی خانه‌ها حرکت کنید" : "Hover for details"}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* ── Heat Map Grid: 7 Time Slots (Rows) x 7 Days (Cols) forming a Symmetrical 7x7 Square Grid ── */}
-          <div className="flex-1 min-h-0 flex flex-col justify-center overflow-x-auto pr-0.5">
-            <div className="min-w-[270px] w-full flex flex-col gap-1">
-              
-              {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
-              <div className="grid grid-cols-[44px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center pb-0.5 text-center">
-                <div className="text-[10px] font-bold text-muted-foreground text-start ps-0.5">
-                  {isRtl ? "ساعت" : "Time"}
-                </div>
-                {DAYS_CONFIG.map((d) => (
-                  <div
-                    key={d.key}
-                    className={cn(
-                      "text-[10px] sm:text-[10.5px] font-bold truncate rounded-md py-0.5",
-                      d.isWeekend
-                        ? "text-rose-500/90 dark:text-rose-400/90"
-                        : "text-foreground/80"
-                    )}
-                    title={isRtl ? d.nameFa : d.nameEn}
-                  >
-                    {isRtl ? d.shortFa : d.shortEn}
-                  </div>
-                ))}
-              </div>
-
-              {/* 7 Time Slot Rows (Vertical Axis - عمودی ۷ بازه زمانی ۲۴ ساعت) */}
-              <div className="flex flex-col gap-1 sm:gap-1.5">
-                {TIME_SLOTS.map((slot) => {
-                  const rowData = (data.matrix as any)?.[slot.key] || (data.matrix as any)?.[slot.slotIndex] || {};
-                  return (
-                    <div
-                      key={slot.key}
-                      className="grid grid-cols-[44px_repeat(7,1fr)] gap-1 sm:gap-1.5 items-center"
-                    >
-                      {/* Vertical Time Slot Label (e.g. 6-8, 18-6) */}
-                      <span
-                        className="text-[9.5px] sm:text-[10px] font-mono font-bold text-muted-foreground fa-num text-start ps-0.5 leading-none select-none tracking-tight"
-                        title={isRtl ? `بازه ${slot.labelFa}` : `Time slot ${slot.label}`}
-                      >
-                        {isRtl ? slot.labelFa : slot.label}
-                      </span>
-
-                      {/* 7 Square Day Cells */}
-                      {DAYS_CONFIG.map((d) => {
-                        const cell: HeatmapCell | undefined = rowData[d.dayIndex];
-                        const isFuture = Boolean(cell?.isFuture);
-                        const level = isFuture ? 0 : (cell?.level ?? 0);
-                        const isHatched = Boolean(cell?.isHatched) && !isFuture;
-                        const isCurrent = Boolean(cell?.isCurrent) && !isFuture;
-
-                        return (
-                          <div
-                            key={d.key}
-                            onMouseEnter={() => cell && setHoveredCell(cell)}
-                            onMouseLeave={() => setHoveredCell(null)}
-                            className={cn(
-                              "aspect-square w-full rounded-md sm:rounded-lg transition-all duration-150 relative flex items-center justify-center",
-                              // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
-                              isFuture && (
-                                "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
-                              ),
-                              // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
-                              !isFuture && isHatched && level === 0 && (
-                                "cursor-pointer bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
-                              ),
-                              // 2. خانه خالی (Work hours with 0 activity in past)
-                              !isFuture && !isHatched && level === 0 && (
-                                "cursor-pointer bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
-                              ),
-                              // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
-                              !isFuture && level === 1 && "cursor-pointer bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
-                              !isFuture && level === 2 && "cursor-pointer bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
-                              !isFuture && level === 3 && "cursor-pointer bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
-                              !isFuture && level === 4 && "cursor-pointer bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
-                              // Live real-time indicator
-                              isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
-                            )}
-                            title={
-                              cell
-                                ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
-                                    cell.isFuture
-                                      ? isRtl ? "آینده (هنوز فرا نرسیده)" : "Future"
-                                      : cell.level > 0
-                                      ? `${cell.minutes}m (${cell.percentage}%)`
-                                      : cell.isHatched
-                                      ? isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"
-                                      : isRtl ? "شیفت کاری بدون فعالیت" : "In-shift idle"
-                                  }`
-                                : ""
-                            }
-                          />
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* ── Footer: 24h Coverage & Visual Legend ── */}
-          <div className="flex items-center justify-between pt-1.5 border-t border-border/30 text-[9.5px] sm:text-[10px] text-muted-foreground shrink-0 px-0.5 flex-wrap gap-1">
-            <span className="font-semibold text-foreground/80 fa-num">
-              {isRtl ? "پوشش ۲۴ ساعته (۷×۷)" : "24h Coverage (7×7)"}
-            </span>
-
-            {/* Visual States Legend: خانه خالی، هاشور خاکستری، آینده، طیف پرایمری */}
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              {/* 1. خانه خالی */}
-              <div className="flex items-center gap-1" title={isRtl ? "خانه خالی: شیفت کاری گذشته بدون فعالیت" : "Empty cell: In-shift idle"}>
-                <span className="size-2.5 rounded-[3px] bg-background/50 border border-slate-300 dark:border-slate-700 inline-block" />
-                <span>{isRtl ? "خالی" : "Empty"}</span>
-              </div>
-
-              {/* 2. هاشور خاکستری */}
-              <div className="flex items-center gap-1" title={isRtl ? "هاشور خاکستری: خارج از شیفت کاری یا تعطیل رسمی" : "Gray hatched: Off-shift / Holiday"}>
-                <span className="size-2.5 rounded-[3px] bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.4)_0px,rgba(148,163,184,0.4)_1.5px,transparent_1.5px,transparent_5px)] bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-600 inline-block" />
-                <span>{isRtl ? "هاشور" : "Hatched"}</span>
-              </div>
-
-              {/* 3. آینده */}
-              <div className="flex items-center gap-1" title={isRtl ? "آینده: روزها و ساعاتی که هنوز فرا نرسیده‌اند" : "Future: Days and hours not reached yet"}>
-                <span className="size-2.5 rounded-[3px] bg-slate-200/30 dark:bg-slate-800/30 border border-dashed border-slate-300 dark:border-slate-600 opacity-60 inline-block" />
-                <span>{isRtl ? "آینده" : "Future"}</span>
-              </div>
-
-              {/* 4. طیف رنگ پرایمری */}
-              <div className="flex items-center gap-1" title={isRtl ? "طیف پرایمری: حضور و فعالیت ثبت‌شده" : "Primary spectrum: Online activity"}>
-                <div className="flex items-center gap-0.5">
-                  <span className="size-2.5 rounded-[2px] bg-primary/20 border border-primary/30 inline-block" />
-                  <span className="size-2.5 rounded-[2px] bg-primary/45 border border-primary/55 inline-block" />
-                  <span className="size-2.5 rounded-[2px] bg-primary/70 border border-primary/80 inline-block" />
-                  <span className="size-2.5 rounded-[2px] bg-primary border border-primary shadow-xs inline-block" />
-                </div>
-                <span>{isRtl ? "فعالیت" : "Active"}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ── Event Logs View ── */
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-1.5 xl:space-y-2 pr-0.5 scrollbar-thin">
-          {activities.length > 0 ? (
-            activities.map((act) => (
-              <div
-                key={act.id}
-                className="p-2 xl:p-2.5 bg-background/80 hover:bg-background border border-border/40 hover:border-emerald-500/30 rounded-xl flex items-center justify-between gap-2 transition-colors shadow-2xs"
-              >
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <p className="font-semibold text-[12px] text-foreground truncate">
-                    {act.title}
-                  </p>
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-medium fa-num">
-                    <Clock size={11} className="opacity-70" />
-                    <span>{act.date}</span>
-                  </div>
-                </div>
-
-                {act.status && (
-                  <span
-                    className={cn(
-                      "text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0",
-                      act.status === "approved"
-                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
-                    )}
-                  >
-                    {act.status === "approved"
-                      ? t("statusApproved")
-                      : act.status === "pending"
-                      ? t("statusPending")
-                      : act.status}
+                ) : hoveredCell.level > 0 ? (
+                  <span className="text-primary">
+                    {isRtl
+                      ? `${hoveredCell.minutes} دقیقه آنلاین (${hoveredCell.percentage}٪)`
+                      : `${hoveredCell.minutes}m online (${hoveredCell.percentage}%)`}
+                  </span>
+                ) : hoveredCell.isHatched ? (
+                  <span className="text-muted-foreground/80">
+                    {isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground/80">
+                    {isRtl ? "خانه خالی (شیفت کاری بدون فعالیت)" : "Empty (In-shift Idle)"}
                   </span>
                 )}
-              </div>
-            ))
+              </span>
+            </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground opacity-60">
-              <CheckCircle2 size={28} className="text-muted-foreground mb-1.5 opacity-50" />
-              <p className="text-xs font-medium">{t("noActivity")}</p>
+            <div className="flex items-center justify-between w-full text-[10.5px] text-muted-foreground">
+              <span className="truncate flex items-center gap-1">
+                <Sparkles size={11} className="text-primary shrink-0" />
+                {isRtl
+                  ? `امروز: ${data.todayHours} ساعت آنلاین`
+                  : `Today: ${data.todayHours} hours online`}
+              </span>
+              <span className="fa-num font-medium text-foreground/75 shrink-0">
+                {isRtl ? "روی خانه‌ها حرکت کنید" : "Hover for details"}
+              </span>
             </div>
           )}
         </div>
-      )}
+
+        {/* ── Heat Map Grid: 7 Time Slots (Rows) x 7 Days (Cols) forming a Symmetrical 7x7 Flexible Grid ── */}
+        <div className="flex-1 min-h-0 flex flex-col justify-center w-full overflow-hidden">
+          <div className="w-full flex flex-col gap-1">
+            
+            {/* Day Headers (Horizontal Axis - افقی روزهای هفته) */}
+            <div className="grid grid-cols-[38px_repeat(7,1fr)] sm:grid-cols-[44px_repeat(7,1fr)] gap-0.5 sm:gap-1 items-center pb-0.5 text-center w-full">
+              <div className="text-[10px] font-bold text-muted-foreground text-start ps-0.5">
+                {isRtl ? "ساعت" : "Time"}
+              </div>
+              {DAYS_CONFIG.map((d) => (
+                <div
+                  key={d.key}
+                  className={cn(
+                    "text-[10px] sm:text-[10.5px] font-bold truncate rounded-md py-0.5",
+                    d.isWeekend
+                      ? "text-rose-500/90 dark:text-rose-400/90"
+                      : "text-foreground/80"
+                  )}
+                  title={isRtl ? d.nameFa : d.nameEn}
+                >
+                  {isRtl ? d.shortFa : d.shortEn}
+                </div>
+              ))}
+            </div>
+
+            {/* 7 Time Slot Rows (Vertical Axis - عمودی ۷ بازه زمانی ۲۴ ساعت) */}
+            <div className="flex flex-col gap-1 sm:gap-1.5 w-full">
+              {TIME_SLOTS.map((slot) => {
+                const rowData = (data.matrix as any)?.[slot.key] || (data.matrix as any)?.[slot.slotIndex] || {};
+                return (
+                  <div
+                    key={slot.key}
+                    className="grid grid-cols-[38px_repeat(7,1fr)] sm:grid-cols-[44px_repeat(7,1fr)] gap-0.5 sm:gap-1 items-center w-full"
+                  >
+                    {/* Vertical Time Slot Label (e.g. 6-8, 18-6) */}
+                    <span
+                      className="text-[9px] sm:text-[9.5px] font-mono font-bold text-muted-foreground fa-num text-start ps-0.5 leading-none select-none tracking-tight"
+                      title={isRtl ? `بازه ${slot.labelFa}` : `Time slot ${slot.label}`}
+                    >
+                      {isRtl ? slot.labelFa : slot.label}
+                    </span>
+
+                    {/* 7 Square Day Cells */}
+                    {DAYS_CONFIG.map((d) => {
+                      const cell: HeatmapCell | undefined = rowData[d.dayIndex];
+                      const isFuture = Boolean(cell?.isFuture);
+                      const level = isFuture ? 0 : (cell?.level ?? 0);
+                      const isHatched = Boolean(cell?.isHatched) && !isFuture;
+                      const isCurrent = Boolean(cell?.isCurrent) && !isFuture;
+
+                      return (
+                        <div
+                          key={d.key}
+                          onMouseEnter={() => cell && setHoveredCell(cell)}
+                          onMouseLeave={() => setHoveredCell(null)}
+                          className={cn(
+                            "aspect-square w-full rounded sm:rounded-md transition-all duration-150 relative flex items-center justify-center",
+                            // 0. آینده (هنوز فرا نرسیده - بدون رنگ، بوردر خط‌چین ظریف)
+                            isFuture && (
+                              "bg-slate-200/20 dark:bg-slate-900/15 border border-dashed border-slate-300/50 dark:border-slate-700/50 opacity-40 hover:opacity-75 cursor-default"
+                            ),
+                            // 1. هاشور خاکستری (Off-hours / holiday with 0 activity)
+                            !isFuture && isHatched && level === 0 && (
+                              "cursor-pointer bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.32)_0px,rgba(148,163,184,0.32)_1.5px,transparent_1.5px,transparent_6px)] dark:bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.18)_0px,rgba(148,163,184,0.18)_1.5px,transparent_1.5px,transparent_6px)] bg-slate-100/50 dark:bg-slate-900/30 border border-slate-300/60 dark:border-slate-700/60 hover:border-slate-400 dark:hover:border-slate-500"
+                            ),
+                            // 2. خانه خالی (Work hours with 0 activity in past)
+                            !isFuture && !isHatched && level === 0 && (
+                              "cursor-pointer bg-background/40 dark:bg-slate-900/40 border border-slate-200/90 dark:border-slate-800/80 hover:bg-slate-200/40 dark:hover:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700"
+                            ),
+                            // 3. طیف رنگ پرایمری (Activity levels 1 to 4)
+                            !isFuture && level === 1 && "cursor-pointer bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30 hover:scale-[1.04]",
+                            !isFuture && level === 2 && "cursor-pointer bg-primary/45 text-primary-foreground border border-primary/55 hover:bg-primary/55 hover:scale-[1.04]",
+                            !isFuture && level === 3 && "cursor-pointer bg-primary/70 text-primary-foreground border border-primary/80 hover:bg-primary/80 hover:scale-[1.04] shadow-2xs",
+                            !isFuture && level === 4 && "cursor-pointer bg-primary text-primary-foreground border border-primary hover:brightness-110 hover:scale-[1.04] shadow-xs",
+                            // Live real-time indicator
+                            isCurrent && "ring-2 ring-primary ring-offset-1.5 ring-offset-background animate-pulse z-10"
+                          )}
+                          title={
+                            cell
+                              ? `${isRtl ? cell.dayNameFa : cell.dayNameEn} (${isRtl ? cell.slotLabelFa : cell.slotLabel}) - ${
+                                  cell.isFuture
+                                    ? isRtl ? "آینده (هنوز فرا نرسیده)" : "Future"
+                                    : cell.level > 0
+                                    ? `${cell.minutes}m (${cell.percentage}%)`
+                                    : cell.isHatched
+                                    ? isRtl ? "خارج از شیفت کاری / تعطیل" : "Off-shift / Holiday"
+                                    : isRtl ? "شیفت کاری بدون فعالیت" : "In-shift idle"
+                                }`
+                              : ""
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Footer: 24h Coverage & Visual Legend ── */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-border/30 text-[9.5px] sm:text-[10px] text-muted-foreground shrink-0 px-0.5 flex-wrap gap-1 w-full">
+          <span className="font-semibold text-foreground/80 fa-num">
+            {isRtl ? "پوشش ۲۴ ساعته (۷×۷)" : "24h Coverage (7×7)"}
+          </span>
+
+          {/* Visual States Legend: خانه خالی، هاشور خاکستری، آینده، طیف پرایمری */}
+          <div className="flex items-center gap-2 sm:gap-2.5">
+            {/* 1. خانه خالی */}
+            <div className="flex items-center gap-1" title={isRtl ? "خانه خالی: شیفت کاری گذشته بدون فعالیت" : "Empty cell: In-shift idle"}>
+              <span className="size-2.5 rounded-[3px] bg-background/50 border border-slate-300 dark:border-slate-700 inline-block" />
+              <span>{isRtl ? "خالی" : "Empty"}</span>
+            </div>
+
+            {/* 2. هاشور خاکستری */}
+            <div className="flex items-center gap-1" title={isRtl ? "هاشور خاکستری: خارج از شیفت کاری یا تعطیل رسمی" : "Gray hatched: Off-shift / Holiday"}>
+              <span className="size-2.5 rounded-[3px] bg-[repeating-linear-gradient(-45deg,rgba(148,163,184,0.4)_0px,rgba(148,163,184,0.4)_1.5px,transparent_1.5px,transparent_5px)] bg-slate-100 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-600 inline-block" />
+              <span>{isRtl ? "هاشور" : "Hatched"}</span>
+            </div>
+
+            {/* 3. آینده */}
+            <div className="flex items-center gap-1" title={isRtl ? "آینده: روزها و ساعاتی که هنوز فرا نرسیده‌اند" : "Future: Days and hours not reached yet"}>
+              <span className="size-2.5 rounded-[3px] bg-slate-200/30 dark:bg-slate-800/30 border border-dashed border-slate-300 dark:border-slate-600 opacity-60 inline-block" />
+              <span>{isRtl ? "آینده" : "Future"}</span>
+            </div>
+
+            {/* 4. طیف رنگ پرایمری */}
+            <div className="flex items-center gap-1" title={isRtl ? "طیف پرایمری: حضور و فعالیت ثبت‌شده" : "Primary spectrum: Online activity"}>
+              <div className="flex items-center gap-0.5">
+                <span className="size-2.5 rounded-[2px] bg-primary/20 border border-primary/30 inline-block" />
+                <span className="size-2.5 rounded-[2px] bg-primary/45 border border-primary/55 inline-block" />
+                <span className="size-2.5 rounded-[2px] bg-primary/70 border border-primary/80 inline-block" />
+                <span className="size-2.5 rounded-[2px] bg-primary border border-primary shadow-xs inline-block" />
+              </div>
+              <span>{isRtl ? "فعالیت" : "Active"}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

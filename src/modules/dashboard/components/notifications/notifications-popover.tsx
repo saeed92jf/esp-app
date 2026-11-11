@@ -13,7 +13,9 @@ import {
   Flame,
   CheckCheck,
   ChevronDown,
+  ChevronLeft,
 } from "lucide-react";
+import { useRouter } from "@/i18n/navigation";
 import { IoNotifications } from "react-icons/io5";
 import {
   Popover,
@@ -151,6 +153,64 @@ function getLocalizedNotification(notif: any, locale: string) {
   return { title, description, date };
 }
 
+function getNotificationTargetUrl(notif: any): string {
+  if (notif.actionUrl) return notif.actionUrl;
+  if (notif.link) return notif.link;
+  if (notif.url) return notif.url;
+
+  if (notif.taskId) return `/tasks/${notif.taskId}`;
+
+  const type = notif.type;
+  const title = (notif.titleFa || notif.titleEn || notif.title || "").toLowerCase();
+  const desc = (notif.descriptionFa || notif.descriptionEn || notif.description || "").toLowerCase();
+
+  if (type === "manager_task") return "/tasks";
+  if (type === "event") return "/calendar";
+  if (type === "routine") return "/dashboard";
+
+  // Request notifications (edit request, account request, etc.)
+  if (
+    type === "approval_req" ||
+    title.includes("درخواست") ||
+    desc.includes("درخواست") ||
+    title.includes("request") ||
+    desc.includes("request")
+  ) {
+    if (
+      title.includes("ویرایش") ||
+      desc.includes("ویرایش") ||
+      title.includes("edit") ||
+      desc.includes("edit")
+    ) {
+      return "/profile?tab=requests";
+    }
+    return "/admin?tab=requests";
+  }
+
+  // User activation or account
+  if (
+    title.includes("فعال‌سازی") ||
+    title.includes("حساب کاربری") ||
+    title.includes("رمز عبور") ||
+    title.includes("activated") ||
+    title.includes("password")
+  ) {
+    return "/profile";
+  }
+
+  // Projects
+  if (title.includes("پروژه") || desc.includes("پروژه") || title.includes("project") || desc.includes("project")) {
+    return "/projects";
+  }
+
+  // Tasks
+  if (title.includes("تسک") || desc.includes("تسک") || title.includes("task") || desc.includes("task")) {
+    return "/tasks";
+  }
+
+  return "/dashboard";
+}
+
 export function NotificationsPopover({
   notifications,
   tasks = [],
@@ -158,6 +218,7 @@ export function NotificationsPopover({
   iconClassName,
   unreadCount: externalUnreadCount,
 }: NotificationsPopoverProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const [anchorEdge, setAnchorEdge] = useState<"left" | "right">("right");
@@ -416,6 +477,26 @@ export function NotificationsPopover({
       try {
         await api.notifications.markAsRead(id);
       } catch { }
+    }
+  };
+
+  const markAsRead = async (id: string) => {
+    setItems((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+    try {
+      await api.notifications.markAsRead(id);
+    } catch { }
+  };
+
+  const handleNotificationClick = async (notif: DashboardNotificationItem) => {
+    if (!notif.read) {
+      await markAsRead(notif.id);
+    }
+    setOpen(false);
+    const targetUrl = getNotificationTargetUrl(notif);
+    if (targetUrl) {
+      router.push(targetUrl);
     }
   };
 
@@ -736,9 +817,9 @@ export function NotificationsPopover({
                           return (
                             <div
                               key={notif.id}
-                              onClick={() => handleToggleRead(notif.id)}
+                              onClick={() => handleNotificationClick(notif)}
                               className={cn(
-                                "segmented-item relative flex items-start gap-2.5 sm:gap-3 p-3.5 sm:p-4 outline-none group w-full max-w-full min-w-0 box-border cursor-pointer select-none overflow-hidden",
+                                "segmented-item relative flex items-start gap-2.5 sm:gap-3 p-3.5 sm:p-4 outline-none group w-full max-w-full min-w-0 box-border cursor-pointer select-none overflow-hidden hover:bg-accent/40 transition-colors",
                                 "rounded-t-[6px]",
                                 isLast ? "rounded-b-[28px]" : "rounded-b-[6px]"
                               )}
@@ -762,14 +843,32 @@ export function NotificationsPopover({
                               <div className="relative z-10 flex-1 min-w-0 max-w-full overflow-hidden">
                                 <div className="flex items-center justify-between gap-2 mb-1 w-full min-w-0">
                                   <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-                                    {!notif.read ? (
-                                      <span className="size-1.5 rounded-full bg-red-600 dark:bg-red-500 shrink-0" />
-                                    ) : (
-                                      <CheckCheck className="size-3.5 text-primary shrink-0 stroke-[2.2]" />
-                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleRead(notif.id);
+                                      }}
+                                      title={
+                                        notif.read
+                                          ? dir === "rtl"
+                                            ? "علامت به عنوان خوانده‌نشده"
+                                            : "Mark as unread"
+                                          : dir === "rtl"
+                                          ? "علامت به عنوان خوانده‌شده"
+                                          : "Mark as read"
+                                      }
+                                      className="p-0.5 rounded hover:bg-muted/60 transition-colors shrink-0 cursor-pointer"
+                                    >
+                                      {!notif.read ? (
+                                        <span className="size-1.5 rounded-full bg-red-600 dark:bg-red-500 shrink-0 block" />
+                                      ) : (
+                                        <CheckCheck className="size-3.5 text-primary shrink-0 stroke-[2.2]" />
+                                      )}
+                                    </button>
                                     <h4
                                       className={cn(
-                                        "text-xs sm:text-[13px] truncate min-w-0 flex-1 text-start",
+                                        "text-xs sm:text-[13px] truncate min-w-0 flex-1 text-start group-hover:text-primary transition-colors",
                                         notif.read
                                           ? "font-medium text-foreground/80"
                                           : "font-bold text-foreground"
@@ -778,9 +877,17 @@ export function NotificationsPopover({
                                       {displayTitle}
                                     </h4>
                                   </div>
-                                  <span className="text-[10px] text-muted-foreground shrink-0 fa-num whitespace-nowrap">
-                                    {displayDate}
-                                  </span>
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <span className="text-[10px] text-muted-foreground shrink-0 fa-num whitespace-nowrap">
+                                      {displayDate}
+                                    </span>
+                                    <ChevronLeft
+                                      className={cn(
+                                        "size-3.5 text-muted-foreground/40 group-hover:text-primary transition-all shrink-0 opacity-0 group-hover:opacity-100",
+                                        dir !== "rtl" && "rotate-180"
+                                      )}
+                                    />
+                                  </div>
                                 </div>
 
                                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 break-words w-full text-start">
