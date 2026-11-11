@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { User, UserModuleAccess, MonthlyBonusItem } from "../types/admin.types";

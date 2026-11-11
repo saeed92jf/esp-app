@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, PendingRequest } from "../types/admin.types";
