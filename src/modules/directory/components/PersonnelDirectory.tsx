@@ -22,12 +22,11 @@ import type { PersonnelItem } from "../types";
 import {
   getLocalizedText,
   getLocalizedJobTitle,
-  getLocalizedName,
+  getSingleLocalizedName,
 } from "../utils";
 
 export function PersonnelDirectory() {
   const locale = useLocale();
-  const isFa = locale === "fa";
   const t = useTranslations("Directory");
 
   const [personnel, setPersonnel] = useState<PersonnelItem[]>([]);
@@ -145,7 +144,7 @@ export function PersonnelDirectory() {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="container max-w-7xl mx-auto px-4 py-8 space-y-8 font-sans">
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card/80 via-card/40 to-background/90 p-6 sm:p-8 shadow-sm backdrop-blur-xl">
         <div className="absolute top-0 end-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -157,7 +156,7 @@ export function PersonnelDirectory() {
               <Sparkles className="w-3.5 h-3.5" />
               <span>{t("badgeHero")}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
               {t("heroTitle")}
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -171,7 +170,7 @@ export function PersonnelDirectory() {
               <span className="text-xs text-muted-foreground font-medium">
                 {t("stats.total")}
               </span>
-              <span className="text-xl font-bold text-foreground font-mono">
+              <span className="text-xl font-bold text-foreground">
                 {stats.total}
               </span>
             </div>
@@ -179,7 +178,7 @@ export function PersonnelDirectory() {
               <span className="text-xs text-sky-700 dark:text-sky-300 font-medium">
                 {t("stats.esp")}
               </span>
-              <span className="text-xl font-bold text-sky-600 dark:text-sky-400 font-mono">
+              <span className="text-xl font-bold text-sky-600 dark:text-sky-400">
                 {stats.espCount}
               </span>
             </div>
@@ -187,7 +186,7 @@ export function PersonnelDirectory() {
               <span className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
                 {t("stats.npc")}
               </span>
-              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
                 {stats.npcCount}
               </span>
             </div>
@@ -195,7 +194,7 @@ export function PersonnelDirectory() {
               <span className="text-xs text-purple-700 dark:text-purple-300 font-medium">
                 {t("stats.dual")}
               </span>
-              <span className="text-xl font-bold text-purple-600 dark:text-purple-400 font-mono">
+              <span className="text-xl font-bold text-purple-600 dark:text-purple-400">
                 {stats.dualCount}
               </span>
             </div>
@@ -346,7 +345,7 @@ export function PersonnelDirectory() {
               key={i}
               className="h-80 rounded-2xl border border-border/50 p-5 space-y-4"
             >
-              <Skeleton className="h-14 w-14 rounded-2xl" />
+              <Skeleton className="h-14 w-14 rounded-full" />
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-4 w-1/2" />
               <Skeleton className="h-16 w-full rounded-xl" />
@@ -406,8 +405,7 @@ export function PersonnelDirectory() {
             </thead>
             <tbody className="divide-y divide-border/40">
               {filteredPersonnel.map((person) => {
-                const { primary: primaryName, secondary: secondaryName } =
-                  getLocalizedName(person, locale);
+                const displayName = getSingleLocalizedName(person, locale);
                 const espTitle = getLocalizedJobTitle(person.esp, locale);
                 const npcTitle = getLocalizedJobTitle(person.npc, locale);
                 const espDept = getLocalizedText(
@@ -431,21 +429,16 @@ export function PersonnelDirectory() {
                     <td className="p-3.5 font-bold text-foreground">
                       <div className="flex items-center gap-2.5">
                         <div
-                          className="w-7 h-7 rounded-lg text-white flex items-center justify-center font-bold text-[10px] shrink-0"
+                          className="w-8 h-8 rounded-full text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm"
                           style={{
                             backgroundColor:
                               person.avatarColor || "#0284c7",
                           }}
                         >
-                          {(primaryName || "E").slice(0, 1).toUpperCase()}
+                          {(displayName || "E").slice(0, 1).toUpperCase()}
                         </div>
-                        <div>
-                          <div>{primaryName}</div>
-                          {secondaryName ? (
-                            <div className="text-[10px] text-muted-foreground font-mono">
-                              {secondaryName}
-                            </div>
-                          ) : null}
+                        <div className="font-semibold text-foreground">
+                          {displayName}
                         </div>
                       </div>
                     </td>
@@ -490,10 +483,10 @@ export function PersonnelDirectory() {
                     <td className="p-3.5 text-muted-foreground">
                       {espDept || npcDept || "--"}
                     </td>
-                    <td className="p-3.5 text-center font-mono font-bold text-primary">
+                    <td className="p-3.5 text-center font-bold text-primary">
                       {person.contact.extension || "--"}
                     </td>
-                    <td className="p-3.5 font-mono text-[11px] text-muted-foreground dir-ltr text-start">
+                    <td className="p-3.5 text-[11px] text-muted-foreground dir-ltr text-start">
                       {person.esp.email || person.npc.email || "--"}
                     </td>
                     <td className="p-3.5 text-muted-foreground">{loc}</td>

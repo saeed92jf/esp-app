@@ -10,7 +10,6 @@ import {
   Check,
   ExternalLink,
   Briefcase,
-  ShieldCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +21,7 @@ import type { PersonnelItem } from "../types";
 import {
   getLocalizedText,
   getLocalizedJobTitle,
-  getLocalizedName,
+  getSingleLocalizedName,
 } from "../utils";
 
 interface PersonnelCardProps {
@@ -52,10 +51,8 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
     return name.slice(0, 2).toUpperCase();
   };
 
-  const { primary: primaryName, secondary: secondaryName } = getLocalizedName(
-    person,
-    locale
-  );
+  // Strictly single language name (FA in fa, EN in en)
+  const displayName = getSingleLocalizedName(person, locale);
 
   const primaryEmail = person.esp.email || person.npc.email || "";
 
@@ -73,7 +70,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
   return (
     <div
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300",
+        "group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 font-sans",
         "bg-card/70 hover:bg-card/95 backdrop-blur-md shadow-sm hover:shadow-xl hover:-translate-y-1",
         person.isDual
           ? "border-purple-500/25 hover:border-purple-500/50 bg-gradient-to-b from-purple-500/[0.03] to-transparent"
@@ -95,12 +92,12 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
       />
 
       <div className="p-5 flex-1 flex flex-col">
-        {/* Card Header: Company Badge & Status */}
+        {/* Card Header: Company Badge ONLY (No System Roles) */}
         <div className="flex items-center justify-between gap-2 mb-4">
           {person.isDual ? (
             <Badge
               variant="outline"
-              className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1"
+              className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1.5"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" />
               {t("card.dualBadge")}
@@ -108,7 +105,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
           ) : person.isNpcOnly ? (
             <Badge
               variant="outline"
-              className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1"
+              className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1.5"
             >
               <Building2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               {t("card.npcBadge")}
@@ -116,61 +113,46 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
           ) : (
             <Badge
               variant="outline"
-              className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1"
+              className="bg-sky-500/10 text-sky-700 dark:text-sky-300 border-sky-500/30 text-xs px-2.5 py-0.5 font-medium flex items-center gap-1.5"
             >
               <Building2 className="w-3 h-3 text-sky-600 dark:text-sky-400" />
               {t("card.espBadge")}
             </Badge>
           )}
 
-          {person.role === "superadmin" || person.role === "admin" ? (
-            <Badge
-              variant="secondary"
-              className="text-[11px] font-normal bg-muted text-muted-foreground"
-            >
-              <ShieldCheck className="w-3 h-3 text-amber-500 me-1 inline" />
-              {person.role === "superadmin"
-                ? t("card.superadmin")
-                : t("card.admin")}
-            </Badge>
-          ) : (
-            <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              {t("card.activeStaff")}
+          {person.contact.extension ? (
+            <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+              <Phone className="w-3 h-3 text-primary" />
+              <span>{person.contact.extension}</span>
             </span>
-          )}
+          ) : null}
         </div>
 
-        {/* User Identity: Avatar & Name */}
-        <div className="flex items-start gap-3.5 mb-4">
-          <Avatar className="h-14 w-14 rounded-2xl ring-2 ring-primary/20 shadow-md shrink-0">
+        {/* User Identity: Circular Avatar & Single Language Name */}
+        <div className="flex items-center gap-3.5 mb-4">
+          <Avatar className="h-14 w-14 rounded-full ring-2 ring-primary/20 shadow-md shrink-0">
             {person.avatar ? (
               <AvatarImage
                 src={person.avatar}
-                alt={primaryName}
-                className="object-cover"
+                alt={displayName}
+                className="object-cover size-full rounded-full"
               />
             ) : null}
             <AvatarFallback
-              className="rounded-2xl font-bold text-white text-base"
+              className="rounded-full font-bold text-white text-base"
               style={{ backgroundColor: person.avatarColor || "#0284c7" }}
             >
-              {getInitials(person.fullNameEn || person.fullNameFa)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
 
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-bold text-foreground leading-snug truncate group-hover:text-primary transition-colors">
-              {primaryName}
+              {displayName}
             </h3>
-            {secondaryName ? (
-              <p className="text-xs text-muted-foreground font-mono truncate mt-0.5">
-                {secondaryName}
-              </p>
-            ) : null}
 
             {/* Department Tag */}
-            <div className="mt-1.5 flex flex-wrap gap-1">
+            <div className="mt-1 flex flex-wrap gap-1">
               {espDept && (
                 <span className="inline-flex items-center text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md font-medium">
                   {espDept}
@@ -186,10 +168,10 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
         </div>
 
         {/* Job Titles Block */}
-        <div className="rounded-xl bg-muted/40 p-3 mb-4 space-y-1.5 border border-border/40">
+        <div className="rounded-xl bg-muted/40 p-3 mb-4 space-y-1.5 border border-border/40 text-xs">
           {person.isDual ? (
             <>
-              <div className="flex items-start gap-1.5 text-xs">
+              <div className="flex items-start gap-1.5">
                 <span className="font-semibold text-sky-600 dark:text-sky-400 shrink-0">
                   ESP:
                 </span>
@@ -197,7 +179,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
                   {espTitle || t("card.none")}
                 </span>
               </div>
-              <div className="flex items-start gap-1.5 text-xs">
+              <div className="flex items-start gap-1.5">
                 <span className="font-semibold text-emerald-600 dark:text-emerald-400 shrink-0">
                   NPC:
                 </span>
@@ -207,7 +189,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
               </div>
             </>
           ) : (
-            <div className="flex items-center gap-1.5 text-xs">
+            <div className="flex items-center gap-1.5">
               <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <span className="text-foreground font-medium truncate">
                 {person.isNpcOnly
@@ -223,11 +205,11 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
           {/* Internal Extension */}
           <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-primary/[0.04] border border-primary/10">
             <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
-              <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <Phone className="w-3.5 h-3.5" />
               </div>
               <span className="truncate">{t("card.extensionLabel")}</span>
-              <span className="font-bold text-sm text-primary font-mono shrink-0">
+              <span className="font-bold text-sm text-primary shrink-0">
                 {person.contact.extension || t("card.none")}
               </span>
             </div>
@@ -259,9 +241,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
                 title={primaryEmail}
               >
                 <Mail className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                <span className="truncate font-mono text-[11px]">
-                  {primaryEmail}
-                </span>
+                <span className="truncate text-[11px]">{primaryEmail}</span>
               </a>
               <Button
                 variant="ghost"

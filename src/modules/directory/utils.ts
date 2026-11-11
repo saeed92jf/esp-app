@@ -42,20 +42,16 @@ export function getLocalizedJobTitle(roleInfo: CompanyRoleInfo | undefined | nul
 }
 
 /**
- * Returns primary and secondary names based on active locale.
+ * Returns strictly the name in the active language:
+ * In Persian (fa): ONLY the Persian name.
+ * In English (en): ONLY the English name.
+ * Never displays or leaks the opposite language name.
  */
-export function getLocalizedName(person: PersonnelItem, locale: string): { primary: string; secondary: string } {
+export function getSingleLocalizedName(person: PersonnelItem, locale: string): string {
   const isFa = locale === "fa";
   if (isFa) {
-    return {
-      primary: person.fullNameFa || person.fullNameEn,
-      secondary: person.fullNameEn || "",
-    };
+    return person.fullNameFa || person.fullNameEn || "";
   } else {
-    return {
-      primary: person.fullNameEn || person.fullNameFa,
-      secondary: person.fullNameFa || "",
-    };
+    return person.fullNameEn || person.fullNameFa || "";
   }
 }
-

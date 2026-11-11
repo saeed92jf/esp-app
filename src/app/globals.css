@@ -43,7 +43,7 @@
    ============================================ */
 
 html[dir="rtl"] {
-  --font-base: 'Inter', 'Shabnam', system-ui, sans-serif;
+  --font-base: 'Shabnam', 'Inter', system-ui, sans-serif;
 }
 
 html[dir="ltr"] {

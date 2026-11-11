@@ -16,7 +16,6 @@ import {
   MapPin,
   GraduationCap,
   Briefcase,
-  ShieldCheck,
   Copy,
   Check,
 } from "lucide-react";
@@ -26,7 +25,7 @@ import type { PersonnelItem } from "../types";
 import {
   getLocalizedText,
   getLocalizedJobTitle,
-  getLocalizedName,
+  getSingleLocalizedName,
 } from "../utils";
 
 interface PersonnelDetailModalProps {
@@ -64,10 +63,8 @@ export function PersonnelDetailModal({
     return name.slice(0, 2).toUpperCase();
   };
 
-  const { primary: primaryName, secondary: secondaryName } = getLocalizedName(
-    person,
-    locale
-  );
+  // Strictly single language name (FA in fa, EN in en)
+  const displayName = getSingleLocalizedName(person, locale);
 
   const primaryEmail = person.esp.email || person.npc.email || "";
   const localizedLocation = getLocalizedText(
@@ -89,14 +86,21 @@ export function PersonnelDetailModal({
   // Education details
   const localizedDegree = getLocalizedText(person.education.degree, locale);
 
+  // Gradient ring based on company
+  const ringGradient = person.isDual
+    ? "from-purple-600 via-sky-500 to-emerald-500"
+    : person.isNpcOnly
+    ? "from-emerald-600 via-teal-400 to-emerald-700"
+    : "from-sky-600 via-blue-500 to-indigo-600";
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border border-border/60 bg-background/95 backdrop-blur-2xl shadow-2xl flex flex-col">
-        <DialogTitle className="sr-only">{primaryName}</DialogTitle>
+      <DialogContent className="w-[95vw] sm:max-w-3xl md:max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl p-0 border border-border/60 bg-background/95 backdrop-blur-2xl shadow-2xl flex flex-col font-sans">
+        <DialogTitle className="sr-only">{displayName}</DialogTitle>
 
         {/* Top Hero Banner */}
         <div
-          className={`h-28 sm:h-32 w-full relative shrink-0 overflow-hidden ${
+          className={`h-28 sm:h-36 w-full relative shrink-0 overflow-hidden ${
             person.isDual
               ? "bg-gradient-to-r from-purple-800 via-indigo-700 to-sky-700"
               : person.isNpcOnly
@@ -104,86 +108,73 @@ export function PersonnelDetailModal({
               : "bg-gradient-to-r from-blue-800 via-sky-700 to-cyan-700"
           }`}
         >
-          <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-black/20 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 end-0 w-80 h-80 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 start-0 w-80 h-80 bg-black/20 rounded-full blur-2xl pointer-events-none" />
         </div>
 
-        {/* Profile Identity Bar */}
-        <div className="px-6 sm:px-8 -mt-12 sm:-mt-14 flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 relative z-10 shrink-0">
-          <div className="flex items-end gap-4 min-w-0">
-            <Avatar className="h-24 w-24 sm:h-28 sm:w-28 rounded-2xl ring-4 ring-background shadow-xl shrink-0">
+        {/* Centered Profile Avatar & Identity Header (Profile Manager Style with Ring) */}
+        <div className="relative mx-auto -mt-16 sm:-mt-20 z-10 flex flex-col items-center px-6 shrink-0">
+          {/* Outer Gradient Ring Wrapper */}
+          <div
+            className={`relative p-1 rounded-full bg-gradient-to-tr ${ringGradient} shadow-2xl ring-4 ring-background`}
+          >
+            <Avatar className="size-28 sm:size-32 rounded-full border-2 border-background shadow-inner">
               {person.avatar ? (
                 <AvatarImage
                   src={person.avatar}
-                  alt={primaryName}
-                  className="object-cover"
+                  alt={displayName}
+                  className="object-cover size-full rounded-full"
                 />
               ) : null}
               <AvatarFallback
-                className="rounded-2xl font-bold text-white text-2xl"
+                className="text-4xl sm:text-5xl font-bold text-white rounded-full"
                 style={{ backgroundColor: person.avatarColor || "#0284c7" }}
               >
-                {getInitials(person.fullNameEn || person.fullNameFa)}
+                {getInitials(displayName)}
               </AvatarFallback>
             </Avatar>
-
-            <div className="space-y-0.5 pb-1 min-w-0">
-              <h2 className="text-xl sm:text-2xl font-black text-foreground tracking-tight truncate">
-                {primaryName}
-              </h2>
-              {secondaryName ? (
-                <p className="text-xs sm:text-sm text-muted-foreground font-mono truncate">
-                  {secondaryName}
-                </p>
-              ) : null}
-            </div>
           </div>
 
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 pb-1">
-            {person.isDual ? (
-              <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
-                {t("modal.dualBadge")}
-              </Badge>
-            ) : person.isNpcOnly ? (
-              <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
-                {t("card.npcBadge")}
-              </Badge>
-            ) : (
-              <Badge className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3 py-1 font-medium shadow-sm">
-                {t("card.espBadge")}
-              </Badge>
-            )}
+          {/* Centered Name (Single Language Only) */}
+          <div className="mt-3.5 text-center space-y-1.5 max-w-xl">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">
+              {displayName}
+            </h2>
 
-            {(person.role === "superadmin" || person.role === "admin") && (
-              <Badge
-                variant="outline"
-                className="border-amber-500/50 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs px-2.5 py-0.5"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 me-1" />
-                {person.role === "superadmin"
-                  ? t("card.superadmin")
-                  : t("card.admin")}
-              </Badge>
-            )}
+            {/* Company Membership Badge (No System Role Badges) */}
+            <div className="flex items-center justify-center gap-2 pt-0.5">
+              {person.isDual ? (
+                <Badge className="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
+                  {t("modal.dualBadge")}
+                </Badge>
+              ) : person.isNpcOnly ? (
+                <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
+                  {t("card.npcBadge")}
+                </Badge>
+              ) : (
+                <Badge className="bg-sky-600 hover:bg-sky-700 text-white text-xs px-3.5 py-1 font-medium shadow-sm rounded-full">
+                  {t("card.espBadge")}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Modal Scrollable Content */}
-        <div className="p-6 sm:p-8 space-y-6 pt-2 flex-1">
+        {/* Modal Scrollable Content Body */}
+        <div className="p-6 sm:p-8 space-y-6 pt-5 flex-1">
           {/* Quick Contact & Extension Ribbon */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 p-4 rounded-2xl bg-muted/40 border border-border/50 text-xs">
             {/* Extension */}
             <div className="flex items-center justify-between gap-2.5 p-1">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-muted-foreground text-[11px]">
                     {t("modal.extension")}
                   </p>
-                  <p className="font-bold text-sm font-mono text-primary">
+                  <p className="font-bold text-sm text-primary">
                     {person.contact.extension || t("modal.none")}
                   </p>
                 </div>
@@ -192,7 +183,7 @@ export function PersonnelDetailModal({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0 rounded-full"
                   onClick={() =>
                     copyToClipboard(
                       person.contact.extension,
@@ -213,7 +204,7 @@ export function PersonnelDetailModal({
             {/* Corporate Email */}
             <div className="flex items-center justify-between gap-2.5 p-1 sm:border-s sm:ps-3.5 border-border/50">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -223,7 +214,7 @@ export function PersonnelDetailModal({
                   {primaryEmail ? (
                     <a
                       href={`mailto:${primaryEmail}`}
-                      className="font-mono text-xs text-foreground truncate block hover:underline dir-ltr text-start"
+                      className="text-xs text-foreground truncate block hover:underline dir-ltr text-start"
                       title={primaryEmail}
                     >
                       {primaryEmail}
@@ -239,7 +230,7 @@ export function PersonnelDetailModal({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
+                  className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0 rounded-full"
                   onClick={() =>
                     copyToClipboard(primaryEmail, t("modal.email"))
                   }
@@ -256,7 +247,7 @@ export function PersonnelDetailModal({
 
             {/* Work Location */}
             <div className="flex items-center gap-3 p-1 sm:border-s sm:ps-3.5 border-border/50 col-span-1 sm:col-span-2 md:col-span-1">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
               <div className="min-w-0 flex-1">
@@ -287,7 +278,7 @@ export function PersonnelDetailModal({
                     <span>{t("modal.espTitle")}</span>
                   </div>
                   {person.esp.personnelCode && (
-                    <Badge variant="secondary" className="font-mono text-xs">
+                    <Badge variant="secondary" className="text-xs rounded-lg">
                       {t("modal.personnelCode")} {person.esp.personnelCode}
                     </Badge>
                   )}
@@ -335,7 +326,7 @@ export function PersonnelDetailModal({
                       </span>{" "}
                       <a
                         href={`mailto:${person.esp.email}`}
-                        className="font-mono text-primary hover:underline dir-ltr inline-block text-start"
+                        className="text-primary hover:underline dir-ltr inline-block text-start"
                       >
                         {person.esp.email}
                       </a>
@@ -365,7 +356,7 @@ export function PersonnelDetailModal({
                     <span>{t("modal.npcTitle")}</span>
                   </div>
                   {person.npc.personnelCode && (
-                    <Badge variant="secondary" className="font-mono text-xs">
+                    <Badge variant="secondary" className="text-xs rounded-lg">
                       {t("modal.personnelCode")} {person.npc.personnelCode}
                     </Badge>
                   )}
@@ -413,7 +404,7 @@ export function PersonnelDetailModal({
                       </span>{" "}
                       <a
                         href={`mailto:${person.npc.email}`}
-                        className="font-mono text-primary hover:underline dir-ltr inline-block text-start"
+                        className="text-primary hover:underline dir-ltr inline-block text-start"
                       >
                         {person.npc.email}
                       </a>
