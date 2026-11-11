@@ -21,7 +21,7 @@ import {
   AlertCircle, KeyRound, Edit2, ShieldCheck, UserCheck, UserCog,
   Building, Calendar, Users,
   Building2, Briefcase, DollarSign, Clock, MapPin,
-  Heart, Shield, Layers, Trash2, Lock, Sparkles
+  Heart, Shield, Layers, Trash2, Lock, Sparkles, Loader2, Send
 } from "lucide-react";
 import { useConfirm } from "@/hooks/use-confirm";
 import type { UserRole } from "@/types/auth";
@@ -403,6 +403,10 @@ export function AdminUsersTable({
   // State for Password Change accordion
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isSendingCurrentPassword, setIsSendingCurrentPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [sendNewPasswordEmail, setSendNewPasswordEmail] = useState(true);
   const [lightboxDoc, setLightboxDoc] = useState<{ src: string; title: string; fileName: string } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
@@ -1028,18 +1032,33 @@ export function AdminUsersTable({
     toast.success(t("accessUpdated"));
   };
 
-  // Save Changed Password
+  // Save Changed Password (Real authenticated token change + optional email dispatch)
   const handleSavePassword = async (userId: string) => {
     if (!newPassword.trim()) return;
     if (newPassword !== confirmPassword) {
       toast.error(t("passwordMismatch"));
       return;
     }
+    if (newPassword.length < 6) {
+      toast.error(isRtl ? "رمز عبور باید حداقل ۶ کاراکتر باشد." : "Password must be at least 6 characters.");
+      return;
+    }
+    setIsSavingPassword(true);
     try {
       const targetUser = users.find(u => u.id === userId);
       const targetName = targetUser?.name || userId;
       await api.admin.updateUser(userId, { password: newPassword });
       setUsers(users.map(u => (u.id === userId ? { ...u, password: newPassword } : u)));
+
+      // If option to send updated credentials email is enabled
+      if (sendNewPasswordEmail) {
+        try {
+          await api.admin.sendPassword(userId);
+        } catch (mailErr) {
+          console.warn("Failed to dispatch updated password email:", mailErr);
+        }
+      }
+
       addUserNotification({
         title: isRtl ? "تغییر رمز عبور کاربر" : "Password Changed",
         description: isRtl
@@ -1049,12 +1068,55 @@ export function AdminUsersTable({
         operatorName,
         operatorRole: operatorRoleLabel,
       });
-      toast.success(t("passwordChangedSuccess"));
+
+      toast.success(
+        sendNewPasswordEmail
+          ? (isRtl ? `رمز عبور با موفقیت ذخیره شد و به ایمیل کاربر (${targetUser?.email || ''}) ارسال گردید.` : t("passwordChangedSuccess"))
+          : t("passwordChangedSuccess")
+      );
       setActiveAccordion(null);
       setNewPassword("");
       setConfirmPassword("");
-    } catch {
-      toast.error(isRtl ? "خطا در ذخیره رمز عبور روی سرور" : "Failed to update password on server");
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در ذخیره رمز عبور روی سرور" : "Failed to update password on server"));
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  // Dispatch Current Password Directly to User Email in Corporate Template
+  const handleSendCurrentPassword = async (userId: string) => {
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+    const targetEmail = targetUser.email;
+    if (!targetEmail) {
+      toast.error(isRtl ? "این کاربر فاقد آدرس ایمیل معتبر است." : "User has no valid email address.");
+      return;
+    }
+    setIsSendingCurrentPassword(true);
+    try {
+      const res = await api.admin.sendPassword(userId);
+      if (res?.password && !targetUser.password) {
+        setUsers(users.map(u => (u.id === userId ? { ...u, password: res.password } : u)));
+      }
+      toast.success(
+        isRtl
+          ? `رمز عبور فعلی کاربر در قالب ایمیل سازمانی به آدرس (${targetEmail}) ارسال گردید.`
+          : `Current credentials email dispatched to ${targetEmail}.`
+      );
+      addUserNotification({
+        title: isRtl ? "ارسال رمز عبور فعلی" : "Current Password Dispatched",
+        description: isRtl
+          ? `رمز عبور فعلی کاربر (${targetUser.name || targetEmail}) توسط ${operatorName} به ایمیل وی ارسال شد.`
+          : `Current password for ${targetUser.name || targetEmail} was sent by ${operatorName}.`,
+        type: "system",
+        operatorName,
+        operatorRole: operatorRoleLabel,
+      });
+    } catch (err: any) {
+      toast.error(err?.message || (isRtl ? "خطا در ارسال ایمیل حاوی کلمه عبور" : "Failed to send password email"));
+    } finally {
+      setIsSendingCurrentPassword(false);
     }
   };
 
@@ -2251,32 +2313,10 @@ export function AdminUsersTable({
                                   );
                                 })()}
 
-                                {/* ── Mode B: Change Password (تغییر رمز عبور) ── */}
+                                {/* ── Mode B: Change Password & Resend Credentials (تغییر رمز عبور و ارسال رمز فعلی) ── */}
                                 {activeAccordion.type === 'password' && (
-                                  <form 
-                                    onSubmit={(e) => {
-                                      e.preventDefault();
-                                      handleSavePassword(user.id);
-                                    }}
-                                    autoComplete="off"
-                                    className="flex flex-col gap-3.5"
-                                  >
-                                    {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
-                                    <input 
-                                      type="text" 
-                                      name="fake_username_prevention" 
-                                      tabIndex={-1} 
-                                      style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
-                                      autoComplete="username" 
-                                    />
-                                    <input 
-                                      type="password" 
-                                      name="fake_password_prevention" 
-                                      tabIndex={-1} 
-                                      style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
-                                      autoComplete="current-password" 
-                                    />
-
+                                  <div className="flex flex-col gap-3.5">
+                                    {/* Header */}
                                     <div className="flex items-center justify-between pb-2.5 border-b border-border/40">
                                       <div className="flex items-center gap-2.5">
                                         <div className="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
@@ -2284,10 +2324,10 @@ export function AdminUsersTable({
                                         </div>
                                         <div>
                                           <h4 className="text-xs font-bold text-foreground">
-                                            {isRtl ? "رمز عبور" : "Password"} — {userDisplayName}
+                                            {isRtl ? "مدیریت و بازنشانی رمز عبور" : "Password Management"} — {userDisplayName}
                                           </h4>
                                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                                            {t("enterNewPassword")}
+                                            {isRtl ? "مشاهده رمز فعلی، ارسال به ایمیل کاربر در قالب سازمانی و یا تعیین رمز جدید" : "View current credentials, dispatch corporate email, or set a new password"}
                                           </p>
                                         </div>
                                       </div>
@@ -2301,61 +2341,180 @@ export function AdminUsersTable({
                                       </button>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl">
-                                      <div className="space-y-1.5">
-                                        <Label htmlFor={`new_pwd_${user.id}`} className="text-xs font-medium text-foreground">
-                                          {t("newPassword")}
-                                        </Label>
-                                        <PasswordInput
-                                          id={`new_pwd_${user.id}`}
-                                          name={`new_pwd_${user.id}`}
-                                          autoComplete="new-password"
-                                          data-lpignore="true"
-                                          value={newPassword}
-                                          onChange={(e) => setNewPassword(e.target.value)}
-                                          placeholder="••••••••"
-                                          className="h-9 text-xs bg-background rounded-xl border-border/50"
-                                          dir="ltr"
-                                        />
+                                    {/* Section 1: Current Password & Direct Email Dispatch Option */}
+                                    <div className="p-3.5 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                                      <div className="flex items-center gap-3 min-w-0">
+                                        <div className="size-8 rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                          <Lock size={16} />
+                                        </div>
+                                        <div className="min-w-0">
+                                          <span className="text-[11px] font-medium text-muted-foreground block">
+                                            {isRtl ? "کلمه عبور فعلی کاربر در سامانه:" : "Current Password on File:"}
+                                          </span>
+                                          <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="font-mono text-xs font-bold text-foreground tracking-wider select-all" dir="ltr">
+                                              {user.password
+                                                ? (showCurrentPassword ? user.password : "••••••••••••")
+                                                : (isRtl ? "در حال دریافت / پیش‌فرض" : "Default / Fetching...")}
+                                            </span>
+                                            {user.password && (
+                                              <>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                  className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                                                  title={showCurrentPassword ? (isRtl ? "مخفی کردن" : "Hide") : (isRtl ? "نمایش رمز" : "Show")}
+                                                >
+                                                  {showCurrentPassword ? <EyeOff size={13} /> : <Eye size={13} />}
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => {
+                                                    navigator.clipboard.writeText(user.password || "");
+                                                    toast.success(isRtl ? "رمز عبور کپی شد." : "Password copied.");
+                                                  }}
+                                                  className="p-1 text-muted-foreground hover:text-foreground rounded transition-colors cursor-pointer"
+                                                  title={isRtl ? "کپی رمز" : "Copy"}
+                                                >
+                                                  <Copy size={13} />
+                                                </button>
+                                              </>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
 
-                                      <div className="space-y-1.5">
-                                        <Label htmlFor={`confirm_pwd_${user.id}`} className="text-xs font-medium text-foreground">
-                                          {t("confirmPassword")}
-                                        </Label>
-                                        <PasswordInput
-                                          id={`confirm_pwd_${user.id}`}
-                                          name={`confirm_pwd_${user.id}`}
-                                          autoComplete="new-password"
-                                          data-lpignore="true"
-                                          value={confirmPassword}
-                                          onChange={(e) => setConfirmPassword(e.target.value)}
-                                          placeholder="••••••••"
-                                          className="h-9 text-xs bg-background rounded-xl border-border/50"
-                                          dir="ltr"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                      {/* THE REQUESTED OPTION: Send Current Password via Corporate Email */}
                                       <Button
                                         type="button"
-                                        variant="ghost"
+                                        variant="outline"
                                         size="sm"
-                                        onClick={() => setActiveAccordion(null)}
-                                        className="h-8.5 px-3.5 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                        onClick={() => handleSendCurrentPassword(user.id)}
+                                        disabled={isSendingCurrentPassword || isSavingPassword}
+                                        className="h-8.5 px-3.5 rounded-xl text-xs font-semibold border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 gap-2 cursor-pointer shrink-0 w-full sm:w-auto transition-all"
                                       >
-                                        {t("cancel")}
-                                      </Button>
-                                      <Button
-                                        type="submit"
-                                        size="sm"
-                                        className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-xs transition-colors"
-                                      >
-                                        {t("save")}
+                                        {isSendingCurrentPassword ? (
+                                          <Loader2 size={14} className="animate-spin text-amber-600" />
+                                        ) : (
+                                          <Mail size={14} className="text-amber-600 dark:text-amber-400" />
+                                        )}
+                                        <span>
+                                          {isSendingCurrentPassword
+                                            ? (isRtl ? "در حال ارسال ایمیل..." : "Sending Email...")
+                                            : (isRtl ? "ارسال رمز فعلی به ایمیل کاربر" : "Send Current Password via Email")}
+                                        </span>
                                       </Button>
                                     </div>
-                                  </form>
+
+                                    {/* Section 2: Set New Password Form */}
+                                    <form 
+                                      onSubmit={(e) => {
+                                        e.preventDefault();
+                                        handleSavePassword(user.id);
+                                      }}
+                                      autoComplete="off"
+                                      className="flex flex-col gap-3 pt-1"
+                                    >
+                                      {/* Hidden dummy inputs to safely absorb browser password manager autofill heuristics */}
+                                      <input 
+                                        type="text" 
+                                        name="fake_username_prevention" 
+                                        tabIndex={-1} 
+                                        style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                        autoComplete="username" 
+                                      />
+                                      <input 
+                                        type="password" 
+                                        name="fake_password_prevention" 
+                                        tabIndex={-1} 
+                                        style={{ position: 'absolute', opacity: 0, height: 0, width: 0, pointerEvents: 'none' }} 
+                                        autoComplete="current-password" 
+                                      />
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-2xl">
+                                        <div className="space-y-1.5">
+                                          <Label htmlFor={`new_pwd_${user.id}`} className="text-xs font-medium text-foreground">
+                                            {t("newPassword")}
+                                          </Label>
+                                          <PasswordInput
+                                            id={`new_pwd_${user.id}`}
+                                            name={`new_pwd_${user.id}`}
+                                            autoComplete="new-password"
+                                            data-lpignore="true"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="h-9 text-xs bg-background rounded-xl border-border/50"
+                                            dir="ltr"
+                                          />
+                                        </div>
+
+                                        <div className="space-y-1.5">
+                                          <Label htmlFor={`confirm_pwd_${user.id}`} className="text-xs font-medium text-foreground">
+                                            {t("confirmPassword")}
+                                          </Label>
+                                          <PasswordInput
+                                            id={`confirm_pwd_${user.id}`}
+                                            name={`confirm_pwd_${user.id}`}
+                                            autoComplete="new-password"
+                                            data-lpignore="true"
+                                            value={confirmPassword}
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            placeholder="••••••••"
+                                            className="h-9 text-xs bg-background rounded-xl border-border/50"
+                                            dir="ltr"
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {/* Option to also email the new password upon saving */}
+                                      <div className="flex items-center gap-2 pt-1">
+                                        <Checkbox
+                                          id={`email_new_pwd_${user.id}`}
+                                          checked={sendNewPasswordEmail}
+                                          onCheckedChange={(checked) => setSendNewPasswordEmail(Boolean(checked))}
+                                        />
+                                        <label
+                                          htmlFor={`email_new_pwd_${user.id}`}
+                                          className="text-xs text-foreground cursor-pointer select-none font-medium flex items-center gap-1.5"
+                                        >
+                                          <Mail size={13} className="text-muted-foreground" />
+                                          <span>{isRtl ? `ارسال رمز جدید به ایمیل کاربر (${user.email}) پس از ذخیره` : `Email new credentials to user (${user.email}) upon save`}</span>
+                                        </label>
+                                      </div>
+
+                                      <div className="flex items-center justify-end gap-2 pt-2 border-t border-border/30">
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => setActiveAccordion(null)}
+                                          disabled={isSavingPassword || isSendingCurrentPassword}
+                                          className="h-8.5 px-3.5 rounded-xl text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                        >
+                                          {t("cancel")}
+                                        </Button>
+                                        <Button
+                                          type="submit"
+                                          size="sm"
+                                          disabled={isSavingPassword || isSendingCurrentPassword || !newPassword.trim()}
+                                          className="h-8.5 px-4 rounded-xl text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white cursor-pointer shadow-xs transition-colors gap-1.5"
+                                        >
+                                          {isSavingPassword ? (
+                                            <>
+                                              <Loader2 size={13} className="animate-spin" />
+                                              <span>{isRtl ? "در حال ذخیره..." : "Saving..."}</span>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <Check size={13} />
+                                              <span>{t("save")}</span>
+                                            </>
+                                          )}
+                                        </Button>
+                                      </div>
+                                    </form>
+                                  </div>
                                 )}
 
                                 {/* ── Mode C: Quick Edit User Info (ویرایش مشخصات با استفاده از کامپوننت‌های پروژه) ── */}

@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 
 import { HtmlLangSync } from '@/components/layout/html-lang-sync';
+import { AuthSessionSync } from '@/components/auth/auth-session-sync';
 import { PersianDigitsProvider } from '@/components/PersianDigitsProvider';
 import { AppShell } from '@/components/layout/app-shell';
 import { ScrollToTop } from '@/components/layout/scroll-to-top';
@@ -34,6 +35,7 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <PersianDigitsProvider enabled={locale === 'fa'} />
       <HtmlLangSync locale={locale} />
+      <AuthSessionSync />
       <TooltipProvider>
         <AppShell>{children}</AppShell>
         <ScrollToTop />

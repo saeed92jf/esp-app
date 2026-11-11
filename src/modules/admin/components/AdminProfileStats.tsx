@@ -4,7 +4,7 @@ import type { UserRole } from "@/types/auth";
 import React, { useState, useEffect } from "react";
 import { 
   Mail, Phone, ShieldCheck, ShieldAlert, GraduationCap, Users, UserCheck, 
-  Briefcase, Eye, EyeOff, Building2, RotateCw, Settings
+  Briefcase, Eye, EyeOff, Building2, RotateCw, Settings, Download
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
@@ -167,43 +167,142 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
 
   const firstLetter = (displayName || selectedUser.name || "U").trim().charAt(0).toUpperCase();
 
+  const userPhoto = (selectedUser as any).avatarUrl || selectedUser.avatar || (selectedUser as any).picture || (selectedUser as any).personal?.avatarUrl || (selectedUser as any).personal?.avatar;
+
+  const handleDownloadAvatar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      if (userPhoto) {
+        try {
+          const response = await fetch(userPhoto);
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = blobUrl;
+          a.download = `${(selectedUser.fullName || selectedUser.name || "user").replace(/\s+/g, "_")}-avatar.jpg`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(blobUrl);
+          toast.success(isRtl ? "تصویر آواتار با موفقیت دانلود شد" : "Avatar image downloaded successfully");
+          return;
+        } catch {
+          const a = document.createElement("a");
+          a.href = userPhoto;
+          a.download = `${(selectedUser.fullName || selectedUser.name || "user").replace(/\s+/g, "_")}-avatar.jpg`;
+          a.target = "_blank";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          toast.success(isRtl ? "تصویر آواتار با موفقیت دانلود شد" : "Avatar image downloaded successfully");
+          return;
+        }
+      }
+
+      // If no image file, render crisp PNG using 512x512 canvas
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = avatarBgColor || "#3a86ff";
+        ctx.beginPath();
+        ctx.arc(256, 256, 256, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 220px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(firstLetter || "U", 256, 266);
+
+        const dataUrl = canvas.toDataURL("image/png");
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = `${(selectedUser.fullName || selectedUser.name || "user").replace(/\s+/g, "_")}-avatar.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success(isRtl ? "تصویر آواتار با موفقیت دانلود شد" : "Avatar image downloaded successfully");
+      }
+    } catch {
+      toast.error(isRtl ? "خطا در دانلود تصویر آواتار" : "Failed to download avatar");
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full h-full select-none">
       
       {/* ── 1. Profile Header Card (Avatar, Badges & Contacts) ── */}
       <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-4 sm:p-5 flex flex-col items-center justify-center text-center shadow-2xs flex-1 min-h-[210px] overflow-hidden transition-all">
-        {/* Avatar Ring */}
-        <div 
-          className={cn(
-            "p-[5px] sm:p-[6px] rounded-full shrink-0 transition-transform duration-300",
-            getRoleGradient(selectedUser.role),
-            getRoleGlowShadow(selectedUser.role)
-          )}
-        >
-          <div className="p-1 rounded-full bg-white dark:bg-card">
-            <div 
-              className="size-16 sm:size-20 lg:size-24 rounded-full flex items-center justify-center font-bold text-2xl sm:text-3xl lg:text-4xl text-white select-none shadow-inner transition-all duration-300"
-              style={{ backgroundColor: avatarBgColor }}
-            >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={selectedUser.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {firstLetter}
-                </motion.span>
-              </AnimatePresence>
+        {/* Avatar Ring with Photo & Download */}
+        <div className="relative group/avatar">
+          <div 
+            className={cn(
+              "p-[5px] sm:p-[6px] rounded-full shrink-0 transition-transform duration-300",
+              getRoleGradient(selectedUser.role),
+              getRoleGlowShadow(selectedUser.role)
+            )}
+          >
+            <div className="p-1 rounded-full bg-white dark:bg-card">
+              <div 
+                className="size-16 sm:size-20 lg:size-24 rounded-full flex items-center justify-center font-bold text-2xl sm:text-3xl lg:text-4xl text-white select-none shadow-inner overflow-hidden relative transition-all duration-300"
+                style={{ backgroundColor: avatarBgColor }}
+              >
+                {userPhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={userPhoto}
+                    alt={displayName}
+                    className="size-full object-cover rounded-full select-none"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                ) : (
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={selectedUser.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {firstLetter}
+                    </motion.span>
+                  </AnimatePresence>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Quick Download Avatar Button */}
+          <button
+            type="button"
+            onClick={handleDownloadAvatar}
+            title={isRtl ? "دانلود تصویر آواتار کاربر" : "Download avatar image"}
+            className="absolute bottom-0 end-0 size-7 sm:size-7.5 rounded-full bg-background border border-border/60 shadow-md flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all cursor-pointer z-10 hover:scale-110 active:scale-95 group-hover/avatar:opacity-100 opacity-90"
+          >
+            <Download size={13} className="stroke-[2.2]" />
+          </button>
         </div>
 
         {/* User Name */}
         <h2 className="text-foreground font-bold text-sm sm:text-base 2xl:text-lg mt-1.5 truncate max-w-full leading-tight">
           {displayName}
         </h2>
+
+        {/* Degree of Education directly under User Name in Avatar Card */}
+        {(selectedUser.education || selectedUser.educationDegree || selectedUser.fieldOfStudy) && (
+          <div 
+            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-0.5 mt-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10.5px] sm:text-[11.5px] font-semibold max-w-full truncate shadow-2xs"
+            title={isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
+          >
+            <GraduationCap size={13} className="stroke-[2.2] shrink-0" />
+            <span className="truncate">
+              {isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
+            </span>
+          </div>
+        )}
 
         {/* Role & Company Badges */}
         <div className="flex items-center justify-center gap-1.5 flex-nowrap mt-1 max-w-full overflow-hidden">
@@ -321,20 +420,7 @@ export function AdminProfileStats({ selectedUser, onUpdateRole }: AdminProfileSt
       {/* ── Boxes Under Avatar: Expanded down to the end of the page ── */}
       <div className="flex flex-col gap-3 shrink-0 w-full">
         
-        {/* ── 2. Education Card (مستقیماً زیر باکس آواتار) ── */}
-        <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-2xl py-2 px-3 sm:px-3.5 flex items-center justify-center text-center shadow-2xs shrink-0 min-h-[44px] h-auto overflow-hidden w-full">
-          <div 
-            className="flex items-center justify-center gap-2 px-1 max-w-full"
-            title={isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
-          >
-            <GraduationCap size={15} className="stroke-[2.2] text-primary shrink-0" />
-            <span className="text-xs sm:text-[13px] font-bold text-foreground truncate">
-              {isRtl ? `${educationDegree} ${educationField}` : `${educationDegree} of ${educationField}`}
-            </span>
-          </div>
-        </div>
-
-        {/* ── 3. Performance & Career Stats Card ── */}
+        {/* ── Performance & Career Stats Card ── */}
         <div className="bg-slate-100/80 dark:bg-slate-800/40 border border-border/40 rounded-[1.5rem] p-2.5 sm:p-3 flex flex-col justify-center shadow-2xs shrink-0 min-h-[140px] h-auto overflow-hidden w-full">
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 sm:gap-2.5 w-full h-full min-h-0">
             {/* Days in Company */}

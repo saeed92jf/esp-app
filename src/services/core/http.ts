@@ -5,6 +5,7 @@
 
 import { ApiError, toApiError, type ErrorCode } from './errors';
 import { AUTH_TOKEN_KEY } from './types';
+import { getAuthToken, removeAuthToken } from '@/lib/auth/token-storage';
 
 const TIMEOUT_MS  = 12_000;
 const MAX_RETRIES = 2;
@@ -17,8 +18,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  try { return localStorage.getItem(AUTH_TOKEN_KEY); } catch { return null; }
+  return getAuthToken();
 }
 
 function isRetryable(status: number): boolean {
@@ -103,6 +103,12 @@ export class HttpClient {
             } else if (res.status === 401) {
               code = 'UNAUTHORIZED';
               message = 'احراز هویت انجام نشده یا اعتبار نشست شما منقضی شده است.';
+              if (auth) {
+                removeAuthToken();
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('esp_auth_unauthorized'));
+                }
+              }
             } else {
               message = `خطای سرور (کد ${res.status})`;
             }

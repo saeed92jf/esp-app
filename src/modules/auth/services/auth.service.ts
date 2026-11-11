@@ -1,5 +1,6 @@
 import { ApiError } from "@/services/core/errors";
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "@/services/core/types";
+import { setAuthToken, removeAuthToken } from "@/lib/auth/token-storage";
 import { HttpClient } from "@/services/core/http";
 import type { User, UserRole, AccountStatus } from "@/types/auth";
 import { companyEmailRe, normalizeDigits } from "@/lib/validations/auth";
@@ -492,13 +493,8 @@ export class RealAuthService implements IAuthService {
       const raw = res?.data ?? res;
       const token = raw.tokens?.access_token || raw.token || "";
 
-      if (typeof window !== "undefined" && token) {
-        try {
-          localStorage.setItem(AUTH_TOKEN_KEY, token);
-          if (raw.tokens?.refresh_token) {
-            localStorage.setItem("esp-refresh-token", raw.tokens.refresh_token);
-          }
-        } catch {}
+      if (token) {
+        setAuthToken(token, raw.tokens?.refresh_token);
       }
 
       // Attempt to fetch full user info from /users/me
@@ -531,14 +527,7 @@ export class RealAuthService implements IAuthService {
   }
 
   async logout(): Promise<void> {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem("esp-refresh-token");
-        localStorage.removeItem(AUTH_USER_KEY);
-        localStorage.removeItem("esp_auth_user");
-      } catch {}
-    }
+    removeAuthToken();
   }
 
   async me(): Promise<User> {
@@ -553,8 +542,8 @@ export class RealAuthService implements IAuthService {
     const res = await this.client.post<any>(`/auth/refresh`, { refresh_token: refreshToken }, { auth: false });
     const raw = res?.data ?? res;
     const token = raw?.tokens?.access_token || raw?.token || "";
-    if (typeof window !== "undefined" && token) {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
+    if (token) {
+      setAuthToken(token);
     }
     return { token };
   }

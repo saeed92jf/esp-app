@@ -18,7 +18,8 @@ import {
 
 import { useRouter, Link } from "@/i18n/navigation";
 import { api } from "@/services";
-import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from "@/services/core/types";
+import { AUTH_USER_KEY } from "@/services/core/types";
+import { setAuthToken } from "@/lib/auth/token-storage";
 import { ROLE_HOME } from "@/lib/auth/roles";
 
 import { Button } from "@/components/ui/button";
@@ -136,7 +137,7 @@ export default function RegisterPage() {
 
       setTimeout(() => {
         if (token) {
-          localStorage.setItem(AUTH_TOKEN_KEY, token);
+          setAuthToken(token);
           localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
           localStorage.setItem("esp_auth_user", JSON.stringify(user));
           router.replace(ROLE_HOME[user.role] ?? "/dashboard");

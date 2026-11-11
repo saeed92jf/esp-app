@@ -331,7 +331,7 @@ const SUGGESTED_SKILL_TAGS = [
 export function ProfilePage() {
   const t = useTranslations("Profile");
   const tAuth = useTranslations("Auth");
-  const { profile, isLoading, isError, updateProfile, isUpdating } = useProfile();
+  const { profile, isLoading, isError, updateProfile, isUpdating, refetch } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
   const { user, updatePrimaryColor, updateAvatarColor, updateUser } = useAuth();
@@ -787,11 +787,47 @@ export function ProfilePage() {
   }
 
   if (isError || !formData) {
-    return (
-      <div className="flex flex-1 min-h-[calc(100dvh-var(--footer-height))] items-center justify-center bg-panel dark:bg-background">
-        <div className="text-center text-destructive p-8 text-xl font-medium">
-          {t("errorLoading")}
+    if (!user) {
+      return (
+        <div className="flex flex-1 min-h-[calc(100dvh-var(--footer-height))] items-center justify-center bg-panel dark:bg-background">
+          <Loader2 className="size-8 animate-spin text-primary" />
         </div>
+      );
+    }
+    return (
+      <div className="flex flex-1 min-h-[calc(100dvh-var(--footer-height))] items-center justify-center p-4 bg-panel dark:bg-background">
+        <Card className="w-full max-w-md p-6 text-center space-y-4 shadow-xl border-border/60 bg-card/90 backdrop-blur-md rounded-2xl">
+          <div className="size-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+            <AlertCircle className="size-6" />
+          </div>
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-bold text-foreground">
+              {t("errorLoading")}
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {locale === "fa"
+                ? "ارتباط با سرور برقرار نشد یا اطلاعات پروفایل موقتاً در دسترس نیست."
+                : "Unable to retrieve profile data from the server. Please try again."}
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push("/dashboard")}
+              className="rounded-xl"
+            >
+              {locale === "fa" ? "داشبورد" : "Dashboard"}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => refetch()}
+              className="rounded-xl shadow-xs"
+            >
+              {locale === "fa" ? "تلاش مجدد" : "Try Again"}
+            </Button>
+          </div>
+        </Card>
       </div>
     );
   }

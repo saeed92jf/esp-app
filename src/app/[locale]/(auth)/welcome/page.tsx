@@ -11,7 +11,9 @@ import {
   Layers, 
   Compass, 
   CheckCircle2, 
-  ShieldCheck 
+  ShieldCheck,
+  LogIn,
+  UserPlus
 } from "lucide-react";
 
 import { Link } from "@/i18n/navigation";
@@ -114,19 +116,39 @@ export default function WelcomePage() {
 
           {/* Action Buttons */}
           <div className="space-y-2.5 pt-2">
-            <Button asChild className="w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold shadow-md shadow-primary/20">
-              <Link href="/dashboard" className="flex items-center justify-center gap-2">
-                <LayoutDashboard className="size-4.5" />
-                <span>{isFa ? "ورود به میز کار (داشبورد)" : "Go to Dashboard"}</span>
-              </Link>
-            </Button>
+            {user ? (
+              <>
+                <Button asChild className="w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold shadow-md shadow-primary/20">
+                  <Link href="/dashboard" className="flex items-center justify-center gap-2">
+                    <LayoutDashboard className="size-4.5" />
+                    <span>{isFa ? "ورود به میز کار (داشبورد)" : "Go to Dashboard"}</span>
+                  </Link>
+                </Button>
 
-            <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs sm:text-sm font-medium border-border/60 hover:bg-muted/50">
-              <Link href="/profile" className="flex items-center justify-center gap-2">
-                <UserCheck className="size-4" />
-                <span>{isFa ? "مشاهده و ویرایش مشخصات پرسنلی" : "View Personnel Profile"}</span>
-              </Link>
-            </Button>
+                <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs sm:text-sm font-medium border-border/60 hover:bg-muted/50">
+                  <Link href="/profile" className="flex items-center justify-center gap-2">
+                    <UserCheck className="size-4" />
+                    <span>{isFa ? "مشاهده و ویرایش مشخصات پرسنلی" : "View Personnel Profile"}</span>
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild className="w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-semibold shadow-md shadow-primary/20">
+                  <Link href="/login" className="flex items-center justify-center gap-2">
+                    <LogIn className="size-4.5" />
+                    <span>{isFa ? "ورود به سامانه" : "Sign In to Account"}</span>
+                  </Link>
+                </Button>
+
+                <Button asChild variant="outline" className="w-full h-11 rounded-xl text-xs sm:text-sm font-medium border-border/60 hover:bg-muted/50">
+                  <Link href="/account-request" className="flex items-center justify-center gap-2">
+                    <UserPlus className="size-4" />
+                    <span>{isFa ? "درخواست حساب کاربری" : "Request Account"}</span>
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Bottom Link */}

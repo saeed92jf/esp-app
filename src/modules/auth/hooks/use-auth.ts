@@ -9,6 +9,7 @@ import { useCallback, useEffect } from 'react';
 import { create } from 'zustand';
 import { api, ApiError } from '@/services';
 import { AUTH_TOKEN_KEY, AUTH_USER_KEY } from '@/services/core/types';
+import { setAuthToken, getAuthToken, removeAuthToken, syncAuthToken } from '@/lib/auth/token-storage';
 import type { User } from '@/types/auth';
 import { usePrimaryColor } from '@/hooks/use-primary-color';
 import { DEFAULT_PRIMARY_COLOR } from '@/config/settings';
@@ -36,10 +37,9 @@ function getInitialUser(): User | null {
   if (typeof window === 'undefined') return null;
   try {
     // Zero-Trust: A valid session MUST have an active authentication token.
-    const token = localStorage.getItem(AUTH_TOKEN_KEY);
+    const token = getAuthToken();
     if (!token) {
-      localStorage.removeItem(AUTH_USER_KEY);
-      localStorage.removeItem('esp_auth_user');
+      removeAuthToken();
       return null;
     }
     const raw = localStorage.getItem(AUTH_USER_KEY) || localStorage.getItem('esp_auth_user');
@@ -141,7 +141,7 @@ export function useAuth() {
     
     const initAuth = async () => {
       try {
-        const token = typeof window !== "undefined" ? localStorage.getItem(AUTH_TOKEN_KEY) : null;
+        const token = getAuthToken();
         if (token) {
           try {
             const user = await api.auth.me();
@@ -173,12 +173,7 @@ export function useAuth() {
             }
 
             if (err?.status === 401 || err?.code === "UNAUTHORIZED" || err?.code === "MISSING_TOKEN") {
-              if (typeof window !== "undefined") {
-                localStorage.removeItem(AUTH_TOKEN_KEY);
-                localStorage.removeItem("esp-refresh-token");
-                localStorage.removeItem(AUTH_USER_KEY);
-                localStorage.removeItem("esp_auth_user");
-              }
+              removeAuthToken();
               store.setUser(null);
               setColor(DEFAULT_PRIMARY_COLOR);
               return;
@@ -188,10 +183,7 @@ export function useAuth() {
 
         // Zero-Trust Security: If no token exists, the user is unauthenticated.
         // Wipe any orphaned cached user data immediately.
-        if (typeof window !== "undefined") {
-          localStorage.removeItem(AUTH_USER_KEY);
-          localStorage.removeItem("esp_auth_user");
-        }
+        removeAuthToken();
 
         store.setUser(null);
         setColor(DEFAULT_PRIMARY_COLOR);
@@ -244,11 +236,23 @@ export function useAuth() {
     };
   }, [store.user]);
 
+  // Synchronize auth tokens between localStorage and cookies on mount
+  useEffect(() => {
+    syncAuthToken();
+    const handleUnauthorized = () => {
+      removeAuthToken();
+      store.setUser(null);
+      setColor(DEFAULT_PRIMARY_COLOR);
+    };
+    window.addEventListener("esp_auth_unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("esp_auth_unauthorized", handleUnauthorized);
+  }, [setColor, store]);
+
   const login = useCallback(async (identifier: string, password: string) => {
     store.setIsLoggingIn(true);
     try {
       const { user: loggedIn, token } = await api.auth.login({ identifier, password });
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
+      setAuthToken(token);
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(loggedIn));
       localStorage.setItem("esp_auth_user", JSON.stringify(loggedIn));
       store.setUser(loggedIn);
@@ -269,9 +273,7 @@ export function useAuth() {
     } catch {
       // ignore
     } finally {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_USER_KEY);
-      localStorage.removeItem("esp_auth_user");
+      removeAuthToken();
       store.setUser(null);
       setColor(DEFAULT_PRIMARY_COLOR);
     }

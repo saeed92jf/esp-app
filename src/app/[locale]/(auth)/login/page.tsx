@@ -41,11 +41,40 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const { login } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const emailParam = searchParams.get("email") || searchParams.get("identifier") || "";
+
+  // Helper to resolve clean redirect destination
+  const getCleanRedirectTarget = (rawRedirect: string | null): string | null => {
+    if (!rawRedirect || rawRedirect.includes("/login")) return null;
+    let target = rawRedirect;
+    for (const loc of ["fa", "en"]) {
+      if (target === `/${loc}`) {
+        target = "/";
+        break;
+      } else if (target.startsWith(`/${loc}/`)) {
+        target = target.slice(loc.length + 1);
+        break;
+      }
+    }
+    return target.startsWith("/") && !target.startsWith("//") ? target : null;
+  };
+
+  // If user is already authenticated, redirect them directly to intended page or dashboard
+  useEffect(() => {
+    if (user && !authLoading) {
+      const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
+      const target = getCleanRedirectTarget(redirectParam);
+      if (target) {
+        router.replace(target as any);
+      } else {
+        router.replace("/dashboard");
+      }
+    }
+  }, [user, authLoading, searchParams, router]);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(getLoginSchema(t)),
@@ -68,15 +97,15 @@ export default function LoginPage() {
 
     try {
       if (login) {
-        const user = await login(data.identifier, data.password);
-        if (user) {
+        const loggedUser = await login(data.identifier, data.password);
+        if (loggedUser) {
           // Admins and superadmins bypass profile onboarding and pending checks
-          const isPrivileged = user.role === "admin" || user.role === "superadmin";
+          const isPrivileged = loggedUser.role === "admin" || loggedUser.role === "superadmin";
 
           // Non-privileged users who are not active go directly to /account-pending
           if (!isPrivileged) {
             const isFullyApproved = Boolean(
-              user.accountStatus === "active" || (user.hrApproved && user.managerApproved)
+              loggedUser.accountStatus === "active" || (loggedUser.hrApproved && loggedUser.managerApproved)
             );
             if (!isFullyApproved) {
               router.push("/account-pending");
@@ -85,6 +114,15 @@ export default function LoginPage() {
             }
           }
         }
+
+        const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
+        const target = getCleanRedirectTarget(redirectParam);
+        if (target) {
+          router.push(target as any);
+          router.refresh();
+          return;
+        }
+
         router.push("/");
         router.refresh();
       } else {

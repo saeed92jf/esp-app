@@ -1,7 +1,7 @@
 // src/modules/tasks/components/TaskProgressView.tsx
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -38,6 +38,9 @@ import {
   Copy,
   Check,
   MessageSquare,
+  Plus,
+  UserPlus,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,12 +52,38 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
   segmentedAccordionMotion,
   getSegmentedAccordionHeaderClass,
 } from "@/lib/animations/segmented-accordion";
-import { NewTask, NewTaskProgress, newTasksService, TaskAttachmentItem } from "../services/new-tasks.service";
+import {
+  NewTask,
+  NewTaskProgress,
+  NewTaskAssignee,
+  newTasksService,
+  TaskAttachmentItem,
+} from "../services/new-tasks.service";
+
+export interface SystemPersonnel {
+  id: string;
+  name: string;
+  fullName?: string;
+  fullNameFa?: string;
+  email: string;
+  jobTitle?: string;
+  role?: string;
+  department?: string;
+  company?: string;
+  avatarColor?: string;
+  avatar?: string;
+}
 import {
   TaskAttachmentList,
   readAttachmentFile,
@@ -551,6 +580,14 @@ export function TaskProgressView({
       setDeletingMessages(msgs);
     }
   };
+
+  // State for dynamic assignee management (add/remove performers by creator & admin)
+  const [personnelList, setPersonnelList] = useState<SystemPersonnel[]>([]);
+  const [isLoadingPersonnel, setIsLoadingPersonnel] = useState(false);
+  const [assigneeSearchQuery, setAssigneeSearchQuery] = useState("");
+  const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
+  const [isUpdatingAssignees, setIsUpdatingAssignees] = useState(false);
+
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const attachMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -1113,7 +1150,8 @@ export function TaskProgressView({
       ))
     )
   );
-  const canControlTask = isAdmin || isCreator;
+  const effectiveIsAdmin = isAdmin || currentUser?.role === "admin" || currentUser?.role === "superadmin";
+  const canControlTask = effectiveIsAdmin || isCreator;
   const canToggleSubtask = canControlTask;
 
   const handleToggleSubtask = async (subtaskId: string, isDone: boolean) => {
@@ -1174,6 +1212,153 @@ export function TaskProgressView({
       onTaskDeleted?.();
     } catch (err: any) {
       toast.error(err?.message || "Failed to delete task");
+    }
+  };
+
+  // Fetch real system personnel for assignee assignment when allowed
+  useEffect(() => {
+    if (!canControlTask || personnelList.length > 0) return;
+    let isMounted = true;
+    async function fetchPersonnel() {
+      setIsLoadingPersonnel(true);
+      try {
+        const res = await fetch("/api/admin/users?limit=100");
+        if (res.ok) {
+          const json = await res.json();
+          const items: any[] = Array.isArray(json) ? json : (json.data || json.users || []);
+          if (isMounted) {
+            const mapped: SystemPersonnel[] = items.map((u) => {
+              const displayName = u.fullNameFa || u.name || u.fullName || u.email?.split("@")[0] || "کاربر";
+              return {
+                id: String(u.id),
+                name: displayName,
+                fullName: u.fullName,
+                fullNameFa: u.fullNameFa,
+                email: u.email || "",
+                jobTitle: u.jobTitle || u.role || "کارشناس",
+                role: u.role,
+                department: u.department,
+                company: u.company || (u.companyId === "nano" ? "نانو پالایش سرام" : "یورو اسلات پارس"),
+                avatarColor: u.avatarColor || "#0284c7",
+                avatar: u.avatar,
+              };
+            });
+            setPersonnelList(mapped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load personnel list for task assignees:", err);
+      } finally {
+        if (isMounted) setIsLoadingPersonnel(false);
+      }
+    }
+    fetchPersonnel();
+    return () => {
+      isMounted = false;
+    };
+  }, [canControlTask, personnelList.length]);
+
+  const filteredPersonnel = useMemo(() => {
+    if (!assigneeSearchQuery.trim()) return personnelList;
+    const q = assigneeSearchQuery.toLowerCase().trim();
+    return personnelList.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        (p.fullName && p.fullName.toLowerCase().includes(q)) ||
+        (p.fullNameFa && p.fullNameFa.toLowerCase().includes(q)) ||
+        (p.email && p.email.toLowerCase().includes(q)) ||
+        (p.jobTitle && p.jobTitle.toLowerCase().includes(q)) ||
+        (p.department && p.department.toLowerCase().includes(q))
+    );
+  }, [personnelList, assigneeSearchQuery]);
+
+  const handleToggleAssignee = async (person: SystemPersonnel) => {
+    if (!canControlTask) {
+      toast.error(isRtl ? "تنها سازنده تسک و ادمین مجاز به ویرایش مجریان هستند." : "Only task creator and admin can edit assignees.");
+      return;
+    }
+    if (isUpdatingAssignees) return;
+
+    const personId = String(person.id);
+    const currentAssignees = currentTask.assignees || [];
+    const isAssigned = currentAssignees.some((a) => String(a.userId) === personId);
+
+    const prevTask = currentTask;
+    let nextAssignees: NewTaskAssignee[];
+
+    if (isAssigned) {
+      nextAssignees = currentAssignees.filter((a) => String(a.userId) !== personId);
+    } else {
+      const newAssignee: NewTaskAssignee = {
+        userId: personId,
+        name: person.name,
+        email: person.email,
+        role: person.jobTitle || person.role,
+        avatar: person.avatar,
+      };
+      nextAssignees = [...currentAssignees, newAssignee];
+    }
+
+    const optimisticTask: NewTask = {
+      ...currentTask,
+      assignees: nextAssignees,
+    };
+    setCurrentTask(optimisticTask);
+    onTaskUpdated(optimisticTask);
+    setIsUpdatingAssignees(true);
+
+    try {
+      const updatedTask = await newTasksService.updateTask(currentTask.id, {
+        assignees: nextAssignees,
+      });
+      setCurrentTask(updatedTask);
+      onTaskUpdated(updatedTask);
+      toast.success(
+        isAssigned
+          ? (isRtl ? `${formatPersonName(person.name, locale)} از لیست مجریان تسک حذف شد.` : `${formatPersonName(person.name, locale)} removed from assignees.`)
+          : (isRtl ? `${formatPersonName(person.name, locale)} به عنوان مجری تسک افزوده شد.` : `${formatPersonName(person.name, locale)} added as assignee.`)
+      );
+    } catch (err: any) {
+      setCurrentTask(prevTask);
+      onTaskUpdated(prevTask);
+      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی لیست مجریان" : "Failed to update assignees"));
+    } finally {
+      setIsUpdatingAssignees(false);
+    }
+  };
+
+  const handleRemoveAssignee = async (userId: string, name: string) => {
+    if (!canControlTask) {
+      toast.error(isRtl ? "تنها سازنده تسک و ادمین مجاز به حذف مجری هستند." : "Only task creator and admin can remove assignees.");
+      return;
+    }
+    if (isUpdatingAssignees) return;
+
+    const prevTask = currentTask;
+    const currentAssignees = currentTask.assignees || [];
+    const nextAssignees = currentAssignees.filter((a) => String(a.userId) !== String(userId));
+
+    const optimisticTask: NewTask = {
+      ...currentTask,
+      assignees: nextAssignees,
+    };
+    setCurrentTask(optimisticTask);
+    onTaskUpdated(optimisticTask);
+    setIsUpdatingAssignees(true);
+
+    try {
+      const updatedTask = await newTasksService.updateTask(currentTask.id, {
+        assignees: nextAssignees,
+      });
+      setCurrentTask(updatedTask);
+      onTaskUpdated(updatedTask);
+      toast.success(isRtl ? `${formatPersonName(name, locale)} از لیست مجریان تسک حذف شد.` : `${formatPersonName(name, locale)} removed from assignees.`);
+    } catch (err: any) {
+      setCurrentTask(prevTask);
+      onTaskUpdated(prevTask);
+      toast.error(err?.message || (isRtl ? "خطا در حذف مجری" : "Failed to remove assignee"));
+    } finally {
+      setIsUpdatingAssignees(false);
     }
   };
 
@@ -1441,19 +1626,129 @@ export function TaskProgressView({
               )}
             </div>
 
-            {/* Dedicated Assignees Container (Supports 1 to 1000+ Assignees smoothly) */}
+            {/* Dedicated Assignees Container (Supports dynamic add/remove by creator & admin) */}
             <div className="pt-3 border-t border-border/40">
               <div className="flex items-start gap-2.5">
                 <Users className="size-4 text-primary shrink-0 mt-1" />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <p className="text-xs font-semibold text-foreground">
-                      {isRtl ? `مجری یا مجریان تسک (${currentTask.assignees?.length || 0} نفر)` : `Performers / Assignees (${currentTask.assignees?.length || 0})`}
-                    </p>
-                    {(currentTask.assignees?.length || 0) > 8 && (
-                      <span className="text-[10px] text-muted-foreground fa-num">
-                        {isRtl ? "برای مشاهده همه اعضا اسکرول کنید" : "Scroll to view all"}
-                      </span>
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-semibold text-foreground">
+                        {isRtl ? `مجری یا مجریان تسک (${currentTask.assignees?.length || 0} نفر)` : `Performers / Assignees (${currentTask.assignees?.length || 0})`}
+                      </p>
+                      {(currentTask.assignees?.length || 0) > 8 && (
+                        <span className="text-[10px] text-muted-foreground fa-num hidden sm:inline">
+                          {isRtl ? "برای مشاهده همه اعضا اسکرول کنید" : "Scroll to view all"}
+                        </span>
+                      )}
+                    </div>
+                    {canControlTask && (
+                      <Popover open={isAssigneePopoverOpen} onOpenChange={setIsAssigneePopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs font-medium text-primary hover:text-primary hover:bg-primary/10 rounded-lg gap-1.5 cursor-pointer"
+                          >
+                            <UserPlus className="size-3.5" />
+                            <span>{isRtl ? "مدیریت / افزودن مجری" : "Manage / Add Assignee"}</span>
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align={isRtl ? "start" : "end"}
+                          sideOffset={6}
+                          className="w-72 sm:w-80 p-3 rounded-2xl bg-card border border-border shadow-xl space-y-2.5 z-50"
+                        >
+                          <div className="flex items-center justify-between pb-2 border-b border-border/60">
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                              <Users className="size-3.5 text-primary" />
+                              <span>{isRtl ? "تخصیص مجریان تسک" : "Assign Team Members"}</span>
+                            </span>
+                            <span className="text-[10px] text-muted-foreground fa-num">
+                              {currentTask.assignees?.length || 0} {isRtl ? "نفر انتخاب‌شده" : "selected"}
+                            </span>
+                          </div>
+
+                          <div className="relative">
+                            <Search className="absolute start-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+                            <Input
+                              value={assigneeSearchQuery}
+                              onChange={(e) => setAssigneeSearchQuery(e.target.value)}
+                              placeholder={isRtl ? "جستجوی نام یا سمت..." : "Search member..."}
+                              className="h-8 ps-8 text-xs rounded-xl bg-muted/30"
+                              autoFocus
+                            />
+                          </div>
+
+                          <div className="max-h-56 overflow-y-auto space-y-1 pe-1 scrollbar-thin">
+                            {isLoadingPersonnel ? (
+                              <div className="py-6 flex flex-col items-center justify-center gap-1.5 text-muted-foreground text-xs">
+                                <Loader2 className="size-4 animate-spin text-primary" />
+                                <span>{isRtl ? "در حال دریافت لیست پرسنل..." : "Loading personnel..."}</span>
+                              </div>
+                            ) : filteredPersonnel.length === 0 ? (
+                              <div className="py-5 text-center text-xs text-muted-foreground">
+                                {isRtl ? "موردی یافت نشد." : "No members found."}
+                              </div>
+                            ) : (
+                              filteredPersonnel.map((person) => {
+                                const isAssigned = (currentTask.assignees || []).some(
+                                  (a) => String(a.userId) === String(person.id)
+                                );
+                                return (
+                                  <button
+                                    key={person.id}
+                                    type="button"
+                                    onClick={() => handleToggleAssignee(person)}
+                                    disabled={isUpdatingAssignees}
+                                    className={cn(
+                                      "w-full flex items-center justify-between gap-2 p-1.5 rounded-xl text-start transition-colors cursor-pointer text-xs",
+                                      isAssigned
+                                        ? "bg-primary/10 text-primary font-medium hover:bg-primary/15"
+                                        : "hover:bg-muted text-foreground"
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <span
+                                        className="size-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 shadow-2xs overflow-hidden"
+                                        style={{ backgroundColor: person.avatarColor || "#0284c7" }}
+                                      >
+                                        {person.avatar ? (
+                                          <img src={person.avatar} alt="" className="size-full object-cover" />
+                                        ) : (
+                                          formatPersonName(person.name, locale).charAt(0)
+                                        )}
+                                      </span>
+                                      <div className="min-w-0">
+                                        <p className="truncate text-xs font-semibold leading-tight">
+                                          {formatPersonName(person.name, locale)}
+                                        </p>
+                                        {person.jobTitle && (
+                                          <p className="truncate text-[10px] text-muted-foreground leading-tight">
+                                            {person.jobTitle}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="shrink-0 flex items-center">
+                                      {isAssigned ? (
+                                        <span className="size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                                          <Check className="size-3" />
+                                        </span>
+                                      ) : (
+                                        <span className="size-5 rounded-full border border-border/80 flex items-center justify-center text-muted-foreground hover:border-primary/50">
+                                          <Plus className="size-3" />
+                                        </span>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })
+                            )}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     )}
                   </div>
                   {currentTask.assignees?.length > 0 ? (
@@ -1461,20 +1756,49 @@ export function TaskProgressView({
                       {currentTask.assignees.map((a, idx) => (
                         <span
                           key={a.userId || idx}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/60 hover:bg-muted text-foreground border border-border/50 shadow-2xs transition-colors"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/60 hover:bg-muted text-foreground border border-border/50 shadow-2xs transition-colors group"
                           title={a.email || undefined}
                         >
                           <span className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
                             {formatPersonName(a.name, locale).slice(0, 1)}
                           </span>
                           <span className="truncate max-w-[160px]">{formatPersonName(a.name, locale)}</span>
+                          {canControlTask && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveAssignee(a.userId, a.name);
+                              }}
+                              disabled={isUpdatingAssignees}
+                              aria-label={isRtl ? `حذف ${a.name} از مجریان` : `Remove ${a.name}`}
+                              title={isRtl ? `حذف ${a.name} از مجریان` : `Remove ${a.name}`}
+                              className="size-4 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors ml-0.5 rtl:mr-0.5 rtl:ml-0 cursor-pointer disabled:opacity-50"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          )}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-muted-foreground italic">
-                      {isRtl ? "هنوز مجری مشخصی برای این تسک تخصیص نیافته است." : "No assignees assigned yet."}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-xs text-muted-foreground italic">
+                        {isRtl ? "هنوز مجری مشخصی برای این تسک تخصیص نیافته است." : "No assignees assigned yet."}
+                      </p>
+                      {canControlTask && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setIsAssigneePopoverOpen(true)}
+                          className="h-6 text-[11px] px-2 rounded-md border-dashed"
+                        >
+                          <Plus className="size-3 me-1" />
+                          <span>{isRtl ? "افزودن اولین مجری" : "Add first assignee"}</span>
+                        </Button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
