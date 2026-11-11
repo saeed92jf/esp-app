@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Kanban,
@@ -34,28 +35,45 @@ interface NavItem {
   labelFa: string;
   labelEn: string;
   icon: React.ComponentType<{ className?: string }>;
+  href: string;
 }
 
 function isAdminRole(role?: string): boolean {
   return role === "superadmin" || role === "admin";
 }
 
-export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?: string } = {}) {
+export function ProjectsPageContainer({
+  initialProjectId,
+  initialTab,
+}: {
+  initialProjectId?: string;
+  initialTab?: ProjectTab;
+} = {}) {
   const { user } = useAuth();
   const locale = useLocale();
   const isRtl = locale === "fa";
   const isAdmin = isAdminRole(user?.role);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isNewRoute = pathname.endsWith("/projects/new") || pathname.endsWith("/new");
+  const isLettersRoute = pathname.endsWith("/projects/letters") || pathname.endsWith("/letters");
 
   const [projects, setProjects] = useState<SimplifiedProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<ProjectTab>(() => {
+  const activeTab: ProjectTab = useMemo(() => {
+    if (initialTab) return initialTab;
+    if (isNewRoute) return "create";
+    if (isLettersRoute) return "letters";
     const tab = searchParams?.get("tab");
     const isNew = searchParams?.get("new");
-    return isNew === "true" || tab === "create" ? "create" : "roadmap";
-  });
+    if (isNew === "true" || tab === "create") return "create";
+    if (tab === "letters") return "letters";
+    return "roadmap";
+  }, [initialTab, isNewRoute, isLettersRoute, searchParams]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<SimplifiedProject | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -94,8 +112,8 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
 
   const handleProjectCreated = (newProject: SimplifiedProject) => {
     setProjects((prev) => [newProject, ...prev]);
-    setActiveTab("roadmap");
     setSelectedProject(newProject);
+    router.push("/projects");
   };
 
   const handleProjectUpdated = (updatedProject: SimplifiedProject) => {
@@ -115,9 +133,9 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
   // Nav Items: 1. نقشه راه و وضعیت کلی پروژه‌ها, 2. مکاتبات و تایید نامه‌ها, 3. ساخت پروژه جدید
   const navItems: NavItem[] = useMemo(() => {
     return [
-      { id: "roadmap", labelFa: "نقشه راه کلی پروژه‌ها", labelEn: "Overall Roadmap", icon: Layers },
-      { id: "letters", labelFa: "مکاتبات و تایید نامه‌ها", labelEn: "Letters & Approvals", icon: MailCheck },
-      { id: "create", labelFa: "ساخت پروژه جدید", labelEn: "New Project", icon: PlusCircle },
+      { id: "roadmap", labelFa: "نقشه راه کلی پروژه‌ها", labelEn: "Overall Roadmap", icon: Layers, href: "/projects" },
+      { id: "letters", labelFa: "مکاتبات و تایید نامه‌ها", labelEn: "Letters & Approvals", icon: MailCheck, href: "/projects/letters" },
+      { id: "create", labelFa: "ساخت پروژه جدید", labelEn: "New Project", icon: PlusCircle, href: "/projects/new" },
     ];
   }, []);
 
@@ -164,12 +182,11 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                 const label = isRtl ? item.labelFa : item.labelEn;
 
                 const buttonElement = (
-                  <button
+                  <Link
                     key={item.id}
-                    type="button"
+                    href={item.href}
                     onClick={() => {
                       setSelectedProject(null);
-                      setActiveTab(item.id);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
                         setSidebarOpen(false);
                       }
@@ -205,7 +222,7 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                     >
                       {label}
                     </span>
-                  </button>
+                  </Link>
                 );
 
                 if (!sidebarOpen) {
@@ -275,15 +292,14 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
 
                   {activeTab !== "create" && (
                     <Button
+                      asChild
                       size="sm"
-                      onClick={() => {
-                        setSelectedProject(null);
-                        setActiveTab("create");
-                      }}
                       className="rounded-xl gap-1.5 text-xs h-9 font-bold bg-primary text-white shadow-xs cursor-pointer"
                     >
-                      <PlusCircle className="size-4" />
-                      <span>{isRtl ? "پروژه جدید" : "New Project"}</span>
+                      <Link href="/projects/new" onClick={() => setSelectedProject(null)}>
+                        <PlusCircle className="size-4" />
+                        <span>{isRtl ? "پروژه جدید" : "New Project"}</span>
+                      </Link>
                     </Button>
                   )}
                 </div>
@@ -325,7 +341,7 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                 <ProjectCreateWizard
                   currentUser={user || ({} as any)}
                   onProjectCreated={handleProjectCreated}
-                  onCancel={() => setActiveTab("roadmap")}
+                  onCancel={() => router.push("/projects")}
                 />
               ) : activeTab === "letters" ? (
                 <ProjectLettersList
@@ -336,7 +352,7 @@ export function ProjectsPageContainer({ initialProjectId }: { initialProjectId?:
                 <ProjectRoadmapView
                   projects={projects}
                   onSelectProject={(proj) => setSelectedProject(proj)}
-                  onCreateNewClick={() => setActiveTab("create")}
+                  onCreateNewClick={() => router.push("/projects/new")}
                 />
               )}
             </div>
