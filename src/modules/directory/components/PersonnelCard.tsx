@@ -71,12 +71,12 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
     <div
       className={cn(
         "group relative flex flex-col justify-between overflow-hidden rounded-2xl border transition-all duration-300 font-sans",
-        "bg-card/70 hover:bg-card/95 backdrop-blur-md shadow-sm hover:shadow-xl hover:-translate-y-1",
+        "bg-white dark:bg-card shadow-xs hover:shadow-xl hover:-translate-y-1",
         person.isDual
-          ? "border-purple-500/25 hover:border-purple-500/50 bg-gradient-to-b from-purple-500/[0.03] to-transparent"
+          ? "border-purple-500/25 hover:border-purple-500/50"
           : person.isNpcOnly
-          ? "border-emerald-500/25 hover:border-emerald-500/50 bg-gradient-to-b from-emerald-500/[0.03] to-transparent"
-          : "border-sky-500/25 hover:border-sky-500/50 bg-gradient-to-b from-sky-500/[0.03] to-transparent"
+          ? "border-emerald-500/25 hover:border-emerald-500/50"
+          : "border-sky-500/25 hover:border-sky-500/50"
       )}
     >
       {/* Top Banner Accent */}
@@ -92,7 +92,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
       />
 
       <div className="p-5 flex-1 flex flex-col">
-        {/* Card Header: Company Badge ONLY (No System Roles) */}
+        {/* Card Header: Company Badge ONLY */}
         <div className="flex items-center justify-between gap-2 mb-4">
           {person.isDual ? (
             <Badge
@@ -168,7 +168,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
         </div>
 
         {/* Job Titles Block */}
-        <div className="rounded-xl bg-muted/40 p-3 mb-4 space-y-1.5 border border-border/40 text-xs">
+        <div className="rounded-xl bg-slate-50 dark:bg-muted/40 border border-slate-100 dark:border-border/40 p-3 mb-4 space-y-1.5 text-xs">
           {person.isDual ? (
             <>
               <div className="flex items-start gap-1.5">
@@ -203,7 +203,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
         {/* Contact Strip */}
         <div className="space-y-2 text-xs mb-4">
           {/* Internal Extension */}
-          <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-primary/[0.04] border border-primary/10">
+          <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-sky-50 dark:bg-primary/[0.06] border border-sky-100 dark:border-primary/15">
             <div className="flex items-center gap-2 text-foreground font-medium min-w-0">
               <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                 <Phone className="w-3.5 h-3.5" />
@@ -279,7 +279,7 @@ export function PersonnelCard({ person, onOpenDetails }: PersonnelCardProps) {
         <Button
           variant="outline"
           size="sm"
-          className="w-full text-xs font-medium rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
+          className="w-full text-xs font-medium rounded-xl bg-slate-50/50 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-300"
           onClick={() => onOpenDetails(person)}
         >
           <span>{t("card.viewProfile")}</span>
