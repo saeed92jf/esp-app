@@ -154,3 +154,4 @@ export function getRelationshipOptions(locale: string): ComboboxOption[] {
     triggerLabel: isFa ? r.labelFa : r.labelEn,
   }));
 }
+
