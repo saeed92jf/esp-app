@@ -3,6 +3,7 @@
 
 import React, { useState, useMemo } from "react";
 import { useLocale } from "next-intl";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import {
   Building2,
   PlusCircle,
@@ -22,42 +23,47 @@ interface NavItem {
   labelFa: string;
   labelEn: string;
   icon: React.ComponentType<{ className?: string }>;
+  href: string;
 }
 
 function isAdminRole(role?: string): boolean {
   return role === "superadmin" || role === "admin";
 }
 
-export function CustomersPageContainer() {
+export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTab } = {}) {
   const { user } = useAuth();
   const locale = useLocale();
   const isRtl = locale === "fa";
   const isAdmin = isAdminRole(user?.role);
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<CustomerTab>("directory");
+  const isNewRoute = pathname.endsWith("/customers/new") || pathname.endsWith("/new");
+
+  const activeTab: CustomerTab = useMemo(() => {
+    if (initialTab) return initialTab;
+    if (isNewRoute) return "create";
+    return "directory";
+  }, [initialTab, isNewRoute]);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems: NavItem[] = useMemo(() => {
     return [
-      { id: "directory", labelFa: "اطلاعات و بانک کارفرماها", labelEn: "Clients Directory", icon: Building2 },
-      { id: "create", labelFa: "ساخت کاستومر جدید", labelEn: "New Client", icon: PlusCircle },
+      { id: "directory", labelFa: "اطلاعات و بانک کارفرماها", labelEn: "Clients Directory", icon: Building2, href: "/customers" },
+      { id: "create", labelFa: "ساخت کاستومر جدید", labelEn: "New Client", icon: PlusCircle, href: "/customers/new" },
     ];
   }, []);
 
   const handleCustomerCreated = (_newCustomer: Customer) => {
-    setActiveTab("directory");
+    router.push("/customers");
   };
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header ── */}
+      {/* ── 1. Top Unified Header (Stable Title: Clients) ── */}
       <AppHeader
         tag={isRtl ? "اطلاعات کارفرماها" : "Clients & Industrial Customers"}
-        subTag={
-          activeTab === "create"
-            ? isRtl ? "ساخت کاستومر جدید" : "Add New Client"
-            : isRtl ? "اطلاعات و بانک کارفرماها" : "Clients Directory"
-        }
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -96,11 +102,10 @@ export function CustomersPageContainer() {
                 const label = isRtl ? item.labelFa : item.labelEn;
 
                 const buttonElement = (
-                  <button
+                  <Link
                     key={item.id}
-                    type="button"
+                    href={item.href}
                     onClick={() => {
-                      setActiveTab(item.id);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
                         setSidebarOpen(false);
                       }
@@ -136,7 +141,7 @@ export function CustomersPageContainer() {
                     >
                       {label}
                     </span>
-                  </button>
+                  </Link>
                 );
 
                 if (!sidebarOpen) {
@@ -161,12 +166,12 @@ export function CustomersPageContainer() {
           {activeTab === "create" ? (
             <CreateCustomerView
               onCustomerCreated={handleCustomerCreated}
-              onCancel={() => setActiveTab("directory")}
+              onCancel={() => router.push("/customers")}
             />
           ) : (
             <CustomersDirectoryView
               isAdmin={isAdmin}
-              onNavigateToCreate={() => setActiveTab("create")}
+              onNavigateToCreate={() => router.push("/customers/new")}
             />
           )}
         </main>
