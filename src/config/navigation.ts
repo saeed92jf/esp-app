@@ -11,6 +11,8 @@ import {
   ChatCircleDots,
   Buildings,
   FileMagnifyingGlass,
+  AddressBook,
+  Users,
 } from "@phosphor-icons/react";
 
 /**
@@ -401,6 +403,22 @@ export const NAVIGATION: NavGroup[] = [
         href: "/aparat",
         icon: VideoCamera,
         color: "rose",
+        public: true,
+        free: true,
+      },
+    ],
+  },
+  {
+    id: "organization",
+    labelKey: "organization",
+    icon: Users,
+    color: "sky",
+    items: [
+      {
+        labelKey: "directory",
+        href: "/directory",
+        icon: AddressBook,
+        color: "sky",
         public: true,
         free: true,
       },

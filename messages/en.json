@@ -126,7 +126,10 @@
       "reports": "Reports",
       "sitemap": "Sitemap",
       "community": "Community",
-      "customers": "Customers"
+      "customers": "Customers",
+      "directory": "Directory",
+      "همکاران": "Directory",
+      "راهنمای سازمانی": "Personnel Directory"
     }
   },
   "Home": {
@@ -666,7 +669,8 @@
       "multimedia": "Multimedia",
       "settings": "Settings",
       "language": "Language",
-      "customers": "Clients & Customers"
+      "customers": "Clients & Customers",
+      "organization": "Organization & Team"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -700,7 +704,8 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "Claud-Flow": "Claude Flow",
-      "customers": "Clients & Customers Information"
+      "customers": "Clients & Customers Information",
+      "directory": "Personnel Directory"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
