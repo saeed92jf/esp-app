@@ -25,7 +25,7 @@ export default async function DirectoryPage({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <div className="w-full flex-1 flex flex-col min-h-full bg-background text-foreground">
+    <div className="w-full flex-1 flex flex-col min-h-full bg-panel dark:bg-background text-foreground">
       <PersonnelDirectory />
     </div>
   );
