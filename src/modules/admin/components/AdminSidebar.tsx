@@ -1,7 +1,16 @@
 "use client";
 
 import React from "react";
-import { Briefcase, TableProperties, Users, ShieldAlert, KeyRound, ScrollText, Settings } from "lucide-react";
+import {
+  Briefcase,
+  TableProperties,
+  Users,
+  ShieldAlert,
+  KeyRound,
+  ScrollText,
+  Settings,
+} from "lucide-react";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -10,38 +19,90 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { AdminTab } from "../context/AdminContext";
 
 export interface AdminSidebarProps {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  activeTab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings';
-  setActiveTab: (tab: 'home' | 'usersTable' | 'add' | 'requests' | 'moduleRequests' | 'auditLogs' | 'settings') => void;
+  sidebarOpen?: boolean;
+  setSidebarOpen?: (open: boolean) => void;
+  activeTab?: AdminTab;
+  setActiveTab?: (tab: AdminTab) => void;
   currentUser?: any;
 }
 
-const NAV_ITEMS = [
-  { id: 'home', icon: Briefcase, labelKey: "userInfo", superAdminOnly: false },
-  { id: 'usersTable', icon: TableProperties, labelKey: "usersTable", superAdminOnly: false },
-  { id: 'add', icon: Users, labelKey: "userConfig", superAdminOnly: false },
-  { id: 'requests', icon: ShieldAlert, labelKey: "sidebarReq", superAdminOnly: false },
-  { id: 'moduleRequests', icon: KeyRound, labelKey: "moduleRequests", superAdminOnly: false },
-  { id: 'auditLogs', icon: ScrollText, labelKey: "auditLogs", superAdminOnly: true },
-  { id: 'settings', icon: Settings, labelKey: "sidebarSettings", superAdminOnly: false },
+export const ADMIN_NAV_ITEMS = [
+  {
+    id: "home" as const,
+    href: "/admin",
+    exact: true,
+    icon: Briefcase,
+    labelKey: "userInfo",
+    superAdminOnly: false,
+  },
+  {
+    id: "usersTable" as const,
+    href: "/admin/users",
+    exact: false,
+    icon: TableProperties,
+    labelKey: "usersTable",
+    superAdminOnly: false,
+  },
+  {
+    id: "add" as const,
+    href: "/admin/config",
+    exact: false,
+    icon: Users,
+    labelKey: "userConfig",
+    superAdminOnly: false,
+  },
+  {
+    id: "requests" as const,
+    href: "/admin/requests",
+    exact: false,
+    icon: ShieldAlert,
+    labelKey: "sidebarReq",
+    superAdminOnly: false,
+  },
+  {
+    id: "moduleRequests" as const,
+    href: "/admin/module-requests",
+    exact: false,
+    icon: KeyRound,
+    labelKey: "moduleRequests",
+    superAdminOnly: false,
+  },
+  {
+    id: "auditLogs" as const,
+    href: "/admin/audit-logs",
+    exact: false,
+    icon: ScrollText,
+    labelKey: "auditLogs",
+    superAdminOnly: true,
+  },
+  {
+    id: "settings" as const,
+    href: "/admin/settings",
+    exact: false,
+    icon: Settings,
+    labelKey: "sidebarSettings",
+    superAdminOnly: false,
+  },
 ] as const;
 
 export function AdminSidebar({
-  sidebarOpen,
+  sidebarOpen = false,
   setSidebarOpen,
   activeTab,
   setActiveTab,
   currentUser,
 }: AdminSidebarProps) {
-  const isSuperAdmin = currentUser?.role === 'superadmin'
-    || currentUser?.email?.toLowerCase().includes('jalili')
-    || currentUser?.id === 'u-saeed';
-  const isOfficeAdmin = currentUser?.role === 'office_admin';
+  const isSuperAdmin =
+    currentUser?.role === "superadmin" ||
+    currentUser?.email?.toLowerCase().includes("jalili") ||
+    currentUser?.id === "u-saeed";
+  const isOfficeAdmin = currentUser?.role === "office_admin";
   const t = useTranslations("Admin");
   const locale = useLocale();
+  const pathname = usePathname();
   const tooltipSide = locale === "fa" ? "left" : "right";
 
   return (
@@ -50,7 +111,7 @@ export function AdminSidebar({
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 backdrop-blur-xs z-20 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={() => setSidebarOpen?.(false)}
           aria-hidden="true"
         />
       )}
@@ -71,44 +132,59 @@ export function AdminSidebar({
               sidebarOpen ? "pe-3 sm:pe-4" : "pe-[5px] sm:pe-[11px]"
             )}
           >
-            {NAV_ITEMS.map((item) => {
+            {ADMIN_NAV_ITEMS.map((item) => {
               if (item.superAdminOnly && !isSuperAdmin) {
                 return null;
               }
-              if (isOfficeAdmin && !['home', 'usersTable', 'add', 'requests'].includes(item.id)) {
+              if (
+                isOfficeAdmin &&
+                !["home", "usersTable", "add", "requests"].includes(item.id)
+              ) {
                 return null;
               }
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              const label = item.id === 'auditLogs'
-                ? (locale === 'fa' ? 'لاگ‌های سیستم' : 'Audit Logs')
-                : t(item.labelKey);
 
-              const buttonElement = (
-                <button
+              const Icon = item.icon;
+              // Check route-based active state synchronized with browser URL
+              const isRouteActive = item.exact
+                ? pathname === item.href
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const isActive = activeTab ? activeTab === item.id : isRouteActive;
+
+              const label =
+                item.id === "auditLogs"
+                  ? locale === "fa"
+                    ? "لاگ‌های سیستم"
+                    : "Audit Logs"
+                  : t(item.labelKey);
+
+              const linkElement = (
+                <Link
                   key={item.id}
-                  type="button"
+                  href={item.href}
                   onClick={() => {
-                    setActiveTab(item.id);
-                    if (window.innerWidth < 768) setSidebarOpen(false);
+                    setActiveTab?.(item.id);
+                    if (typeof window !== "undefined" && window.innerWidth < 768) {
+                      setSidebarOpen?.(false);
+                    }
                   }}
                   className={cn(
                     "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
-                    sidebarOpen
-                      ? "w-full h-[42px]"
-                      : "w-[42px] h-[42px]",
+                    sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]",
                     isActive
                       ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30"
                       : "bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60"
                   )}
                   aria-label={label}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   {/* Fixed 42px circle icon - 100% fixed position, aligned with header button */}
                   <div className="size-[42px] shrink-0 flex items-center justify-center">
                     <Icon
                       className={cn(
                         "size-5 shrink-0 transition-colors duration-150",
-                        isActive ? "text-white" : "text-foreground/60 group-hover:text-foreground"
+                        isActive
+                          ? "text-white"
+                          : "text-foreground/60 group-hover:text-foreground"
                       )}
                     />
                   </div>
@@ -117,7 +193,9 @@ export function AdminSidebar({
                   <span
                     className={cn(
                       "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none",
-                      isActive ? "font-semibold text-white" : "font-medium text-foreground/75 group-hover:text-foreground",
+                      isActive
+                        ? "font-semibold text-white"
+                        : "font-medium text-foreground/75 group-hover:text-foreground",
                       sidebarOpen
                         ? "opacity-100 max-w-[170px] pe-3 ps-1"
                         : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
@@ -125,23 +203,24 @@ export function AdminSidebar({
                   >
                     {label}
                   </span>
-                </button>
+                </Link>
               );
 
               if (!sidebarOpen) {
                 return (
                   <Tooltip key={item.id}>
-                    <TooltipTrigger asChild>
-                      {buttonElement}
-                    </TooltipTrigger>
-                    <TooltipContent side={tooltipSide} className="text-xs font-medium">
+                    <TooltipTrigger asChild>{linkElement}</TooltipTrigger>
+                    <TooltipContent
+                      side={tooltipSide}
+                      className="text-xs font-medium"
+                    >
                       {label}
                     </TooltipContent>
                   </Tooltip>
                 );
               }
 
-              return buttonElement;
+              return linkElement;
             })}
           </nav>
         </TooltipProvider>
