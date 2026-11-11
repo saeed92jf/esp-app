@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Kanban,
@@ -32,28 +33,41 @@ interface NavItem {
   labelFa: string;
   labelEn: string;
   icon: React.ComponentType<{ className?: string }>;
+  href: string;
 }
 
 function isAdminRole(role?: string): boolean {
   return role === "superadmin" || role === "admin";
 }
 
-export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
+export function TasksPage({
+  initialTaskId,
+  initialTab,
+}: {
+  initialTaskId?: string;
+  initialTab?: TaskTab;
+} = {}) {
   const { user } = useAuth();
   const locale = useLocale();
   const isRtl = locale === "fa";
   const isAdmin = isAdminRole(user?.role);
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const isNewRoute = pathname.endsWith("/tasks/new") || pathname.endsWith("/new");
 
   const [tasks, setTasks] = useState<NewTask[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<TaskTab>(() => {
+  const activeTab: TaskTab = useMemo(() => {
+    if (initialTab) return initialTab;
+    if (isNewRoute) return "create";
     const tab = searchParams?.get("tab");
     const isNew = searchParams?.get("new");
     return isNew === "true" || tab === "create" ? "create" : "kanban";
-  });
+  }, [initialTab, isNewRoute, searchParams]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<NewTask | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -133,7 +147,7 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
   const handleTaskCreated = (newTask: NewTask) => {
     setTasks((prev) => [newTask, ...prev]);
-    setActiveTab("kanban");
+    router.push("/tasks");
   };
 
   const handleTaskUpdated = (updatedTask: NewTask) => {
@@ -154,12 +168,12 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
   const navItems: NavItem[] = useMemo(() => {
     if (isAdmin) {
       return [
-        { id: "kanban", labelFa: "تخته کانبان و نقشه راه", labelEn: "Kanban Roadmap", icon: Kanban },
-        { id: "create", labelFa: "ایجاد تسک جدید", labelEn: "New Task", icon: PlusCircle },
+        { id: "kanban", labelFa: "تخته کانبان و نقشه راه", labelEn: "Kanban Roadmap", icon: Kanban, href: "/tasks" },
+        { id: "create", labelFa: "ایجاد تسک جدید", labelEn: "New Task", icon: PlusCircle, href: "/tasks/new" },
       ];
     }
     return [
-      { id: "kanban", labelFa: "تسک‌های من", labelEn: "My Tasks", icon: ListChecks },
+      { id: "kanban", labelFa: "تسک‌های من", labelEn: "My Tasks", icon: ListChecks, href: "/tasks" },
     ];
   }, [isAdmin]);
 
@@ -216,12 +230,11 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
                 const label = isRtl ? item.labelFa : item.labelEn;
 
                 const buttonElement = (
-                  <button
+                  <Link
                     key={item.id}
-                    type="button"
+                    href={item.href}
                     onClick={() => {
                       setSelectedTask(null);
-                      setActiveTab(item.id);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
                         setSidebarOpen(false);
                       }
@@ -257,7 +270,7 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
                     >
                       {label}
                     </span>
-                  </button>
+                  </Link>
                 );
 
                 if (!sidebarOpen) {
@@ -318,11 +331,13 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
 
                   {isAdmin && activeTab !== "create" && (
                     <Button
-                      onClick={() => setActiveTab("create")}
-                      className="rounded-xl gap-2 h-10 font-bold shadow-xs"
+                      asChild
+                      className="rounded-xl gap-2 h-10 font-bold shadow-xs cursor-pointer"
                     >
-                      <PlusCircle className="size-4" />
-                      <span>{isRtl ? "تسک جدید" : "New Task"}</span>
+                      <Link href="/tasks/new">
+                        <PlusCircle className="size-4" />
+                        <span>{isRtl ? "تسک جدید" : "New Task"}</span>
+                      </Link>
                     </Button>
                   )}
                 </div>
@@ -407,7 +422,7 @@ export function TasksPage({ initialTaskId }: { initialTaskId?: string } = {}) {
                   <TaskCreateWizard
                     currentUser={user!}
                     onTaskCreated={handleTaskCreated}
-                    onCancel={() => setActiveTab("kanban")}
+                    onCancel={() => router.push("/tasks")}
                   />
                 </motion.div>
               )}
