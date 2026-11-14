@@ -3,9 +3,12 @@
 
 import React, { useState, useMemo } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import {
   Building2,
+  Landmark,
+  Factory,
   PlusCircle,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
@@ -14,9 +17,11 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import type { Customer } from "../types/customers.types";
 import { CustomersDirectoryView } from "./CustomersDirectoryView";
+import { HoldingsDirectoryView } from "./HoldingsDirectoryView";
+import { PlantsDirectoryView } from "./PlantsDirectoryView";
 import { CreateCustomerView } from "./CreateCustomerView";
 
-type CustomerTab = "directory" | "create";
+type CustomerTab = "directory" | "holdings" | "plants" | "create";
 
 interface NavItem {
   id: CustomerTab;
@@ -37,21 +42,27 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
   const isAdmin = isAdminRole(user?.role);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabQuery = searchParams.get("tab");
 
   const isNewRoute = pathname.endsWith("/customers/new") || pathname.endsWith("/new");
 
   const activeTab: CustomerTab = useMemo(() => {
     if (initialTab) return initialTab;
     if (isNewRoute) return "create";
+    if (tabQuery === "holdings") return "holdings";
+    if (tabQuery === "plants") return "plants";
     return "directory";
-  }, [initialTab, isNewRoute]);
+  }, [initialTab, isNewRoute, tabQuery]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navItems: NavItem[] = useMemo(() => {
     return [
-      { id: "directory", labelFa: "اطلاعات و بانک کارفرماها", labelEn: "Clients Directory", icon: Building2, href: "/customers" },
-      { id: "create", labelFa: "ساخت کاستومر جدید", labelEn: "New Client", icon: PlusCircle, href: "/customers/new" },
+      { id: "directory", labelFa: "همه", labelEn: "All", icon: Building2, href: "/customers" },
+      { id: "holdings", labelFa: "هلدینگ‌ها", labelEn: "Holdings", icon: Landmark, href: "/customers?tab=holdings" },
+      { id: "plants", labelFa: "پلنت‌ها", labelEn: "Plants", icon: Factory, href: "/customers?tab=plants" },
+      { id: "create", labelFa: "افزودن کارفرما", labelEn: "New Client", icon: PlusCircle, href: "/customers/new" },
     ];
   }, []);
 
@@ -170,6 +181,10 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
               onCustomerCreated={handleCustomerCreated}
               onCancel={() => router.push("/customers")}
             />
+          ) : activeTab === "holdings" ? (
+            <HoldingsDirectoryView />
+          ) : activeTab === "plants" ? (
+            <PlantsDirectoryView />
           ) : (
             <CustomersDirectoryView
               isAdmin={isAdmin}
