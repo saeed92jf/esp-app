@@ -212,9 +212,11 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
   // Form State
   const [formFirstName, setFormFirstName] = useState("");
   const [formLastName, setFormLastName] = useState("");
+  const [formFullNameEn, setFormFullNameEn] = useState("");
   const [formCompanyName, setFormCompanyName] = useState("");
   const [formIndustry, setFormIndustry] = useState<ContactIndustry>("petrochemical");
   const [formJobTitle, setFormJobTitle] = useState("");
+  const [formJobTitleEn, setFormJobTitleEn] = useState("");
   const [formDept, setFormDept] = useState<ContactDepartment>("commercial");
   const [formPhone, setFormPhone] = useState("");
   const [formExtension, setFormExtension] = useState("");
@@ -350,6 +352,8 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       if (!exists && contacts.length > 0) {
         setSelectedContactId(contacts[0].id);
       }
+    } else if (contacts.length === 0 && !isCreatingNew) {
+      setIsCreatingNew(true);
     }
   }, [contacts, selectedContactId, isCreatingNew]);
 
@@ -434,9 +438,11 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     setSelectedContactId(null);
     setFormFirstName("");
     setFormLastName("");
+    setFormFullNameEn("");
     setFormCompanyName(selectedCompany !== "all" ? selectedCompany : "");
     setFormIndustry(selectedIndustry !== "all" ? selectedIndustry : "petrochemical");
     setFormJobTitle("");
+    setFormJobTitleEn("");
     setFormDept("commercial");
     setFormPhone("");
     setFormExtension("");
@@ -457,6 +463,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     const parts = contact.fullNameFa.split(" ");
     setFormFirstName(parts[0] || "");
     setFormLastName(parts.slice(1).join(" ") || "");
+    setFormFullNameEn(contact.fullNameEn || "");
     setFormCompanyName(
       contact.companyNameFa === "بدون شرکت (مستقل)" || contact.companyNameFa === "مستقل"
         ? ""
@@ -464,6 +471,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     );
     setFormIndustry(contact.industry || inferContactIndustry(contact) || "other");
     setFormJobTitle(contact.jobTitleFa);
+    setFormJobTitleEn(contact.jobTitleEn || "");
     setFormDept(contact.department);
     setFormPhone(contact.phoneDirect || "");
     setFormExtension(contact.phoneExtension || "");
@@ -495,9 +503,11 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       if (isEditing && selectedContactId) {
         contactsService.updateContact(selectedContactId, {
           fullNameFa: fullName,
+          fullNameEn: formFullNameEn.trim() || undefined,
           companyNameFa: companyName,
           industry: formIndustry,
           jobTitleFa: formJobTitle.trim() || (isRtl ? "کارشناس" : "Specialist"),
+          jobTitleEn: formJobTitleEn.trim() || undefined,
           department: formDept,
           departmentTitleFa: deptConf.labelFa,
           phoneDirect: formPhone.trim() || undefined,
@@ -512,9 +522,11 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       } else {
         const input: ContactCreateInput = {
           fullNameFa: fullName,
+          fullNameEn: formFullNameEn.trim() || undefined,
           companyNameFa: companyName,
           industry: formIndustry,
           jobTitleFa: formJobTitle.trim() || (isRtl ? "کارشناس" : "Specialist"),
+          jobTitleEn: formJobTitleEn.trim() || undefined,
           department: formDept,
           departmentTitleFa: deptConf.labelFa,
           phoneDirect: formPhone.trim() || undefined,
@@ -661,21 +673,21 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
               </div>
 
               {/* Floating Card 1: Company Selector & Industry Tag */}
-              <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 space-y-2.5 relative z-10">
-                <div className="flex items-start gap-2.5">
-                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
-                    <Building2 className="size-4.5" />
+              <div className="-mt-6 mx-3.5 sm:mx-4 rounded-2xl bg-card border border-border/80 shadow-xs p-3.5 sm:p-4 space-y-3 relative z-10">
+                <div className="flex items-start gap-3">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <Building2 className="size-5" />
                   </div>
-                  <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground font-semibold uppercase tracking-wider block">
                         {isRtl ? "شرکت یا مجتمع صنعتی:" : "Company / Complex:"}
                       </span>
                       {formCompanyName && (
                         <button
                           type="button"
                           onClick={() => handleCompanyChange("NONE")}
-                          className="text-[9.5px] text-muted-foreground hover:text-destructive cursor-pointer"
+                          className="text-[10px] text-muted-foreground hover:text-destructive cursor-pointer transition-colors"
                         >
                           {isRtl ? "ثبت بدون شرکت" : "Clear (No Company)"}
                         </button>
@@ -692,23 +704,23 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                       creatable={true}
                       allowClear={true}
                       size="sm"
-                      className="w-full text-xs font-semibold rounded-lg bg-background border-border/70 shadow-none focus:border-primary"
+                      className="w-full text-xs sm:text-sm font-semibold rounded-xl bg-background border-border/70 shadow-none focus:border-primary h-9"
                     />
                   </div>
                 </div>
 
                 {/* Industry Tag Selector */}
-                <div className="pt-2 border-t border-border/40 space-y-1.5">
+                <div className="pt-2.5 border-t border-border/40 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9.5px] font-semibold text-muted-foreground">
+                    <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
                       {isRtl ? "تگ صنعت / دسته‌بندی:" : "Industry Tag:"}
                     </span>
-                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 border-primary/30 text-primary font-normal">
+                    <Badge variant="outline" className="text-[10px] py-0.5 px-2.5 border-primary/30 text-primary font-medium rounded-full">
                       {INDUSTRY_TAGS.find((t) => t.id === formIndustry)?.labelFa || (isRtl ? "سایر" : "Other")}
                     </Badge>
                   </div>
 
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {INDUSTRY_TAGS.map((tag) => {
                       const isSelected = formIndustry === tag.id;
                       const Icon = tag.icon;
@@ -720,13 +732,13 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                           size="xs"
                           onClick={() => setFormIndustry(tag.id)}
                           className={cn(
-                            "h-5.5 px-2 rounded-full text-[10px] font-medium transition-all gap-1 cursor-pointer",
+                            "h-6.5 sm:h-7 px-2.5 sm:px-3 rounded-full text-[11px] font-medium transition-all gap-1.5 cursor-pointer",
                             isSelected
                               ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs border-primary"
                               : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60 hover:text-foreground"
                           )}
                         >
-                          <Icon className="size-2.5" />
+                          <Icon className="size-3" />
                           <span>{isRtl ? tag.labelFa : tag.labelEn}</span>
                         </Button>
                       );
@@ -736,85 +748,151 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
               </div>
 
               {/* Floating Card 2: Contact Form Inputs */}
-              <div className="mt-2.5 mx-3 mb-4 rounded-xl bg-card border border-border/80 shadow-xs p-3.5 space-y-3.5">
+              <div className="mt-3 mx-3.5 sm:mx-4 mb-4 rounded-2xl bg-card border border-border/80 shadow-xs p-3.5 sm:p-4 space-y-4">
                 {/* Person Section */}
-                <div className="flex items-start gap-2.5">
-                  <div className="size-6 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                    <User className="size-3.5" />
+                <div className="flex items-start gap-3">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="size-5" />
                   </div>
-                  <div className="flex-1 space-y-1.5 min-w-0">
-                    <Input
-                      value={formFirstName}
-                      onChange={(e) => setFormFirstName(e.target.value)}
-                      placeholder={isRtl ? "نام کوچک (First name)" : "Enter your First name"}
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                      required
-                    />
-                    <Input
-                      value={formLastName}
-                      onChange={(e) => setFormLastName(e.target.value)}
-                      placeholder={isRtl ? "نام خانوادگی (Last name)" : "Last name"}
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
-                    <Input
-                      value={formJobTitle}
-                      onChange={(e) => setFormJobTitle(e.target.value)}
-                      placeholder={isRtl ? "سمت سازمانی (Job title)" : "Job title"}
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
+                  <div className="flex-1 space-y-3 min-w-0">
+                    {/* Persian Name */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10.5px] sm:text-xs font-semibold text-foreground">
+                        {isRtl ? "نام و نام خانوادگی به فارسی:" : "Name in Persian:"}
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Input
+                          value={formFirstName}
+                          onChange={(e) => setFormFirstName(e.target.value)}
+                          placeholder={isRtl ? "نام کوچک (فارسی)" : "First name"}
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 focus-visible:border-primary"
+                          required
+                        />
+                        <Input
+                          value={formLastName}
+                          onChange={(e) => setFormLastName(e.target.value)}
+                          placeholder={isRtl ? "نام خانوادگی (فارسی)" : "Last name"}
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 focus-visible:border-primary"
+                        />
+                      </div>
+                    </div>
+
+                    {/* English Name */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10.5px] sm:text-xs font-semibold text-foreground">
+                        {isRtl ? "نام و نام خانوادگی به انگلیسی (English Full Name):" : "Full Name in English:"}
+                      </Label>
+                      <Input
+                        value={formFullNameEn}
+                        onChange={(e) => setFormFullNameEn(e.target.value)}
+                        placeholder="e.g. Dr. Reza Alizadeh"
+                        dir="ltr"
+                        className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-sans focus-visible:border-primary"
+                      />
+                    </div>
+
+                    {/* Job Title */}
+                    <div className="space-y-1.5">
+                      <Label className="text-[10.5px] sm:text-xs font-semibold text-foreground">
+                        {isRtl ? "سمت سازمانی:" : "Job Title:"}
+                      </Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <Input
+                          value={formJobTitle}
+                          onChange={(e) => setFormJobTitle(e.target.value)}
+                          placeholder={isRtl ? "سمت به فارسی" : "Job title (Fa)"}
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 focus-visible:border-primary"
+                        />
+                        <Input
+                          value={formJobTitleEn}
+                          onChange={(e) => setFormJobTitleEn(e.target.value)}
+                          placeholder={isRtl ? "سمت به انگلیسی" : "Job title (En)"}
+                          dir="ltr"
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-sans focus-visible:border-primary"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Phone Section */}
-                <div className="flex items-start gap-2.5 pt-1">
-                  <div className="size-6 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                    <Phone className="size-3.5" />
+                <div className="flex items-start gap-3 pt-2.5 border-t border-border/40">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <Phone className="size-5" />
                   </div>
-                  <div className="flex-1 space-y-1.5 min-w-0">
-                    <Input
-                      value={formPhone}
-                      onChange={(e) => setFormPhone(e.target.value)}
-                      placeholder={isRtl ? "تلفن مستقیم (Phone)" : "Phone"}
-                      dir="ltr"
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
-                    <Input
-                      value={formExtension}
-                      onChange={(e) => setFormExtension(e.target.value)}
-                      placeholder={isRtl ? "داخلی (Extension)" : "Extension"}
-                      dir="ltr"
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
-                    <Input
-                      value={formMobile}
-                      onChange={(e) => setFormMobile(e.target.value)}
-                      placeholder={isRtl ? "شماره همراه (Mobile)" : "Mobile"}
-                      dir="ltr"
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
+                  <div className="flex-1 space-y-2.5 min-w-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div className="sm:col-span-2 space-y-1">
+                        <Label className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
+                          {isRtl ? "تلفن مستقیم:" : "Direct Phone:"}
+                        </Label>
+                        <Input
+                          value={formPhone}
+                          onChange={(e) => setFormPhone(e.target.value)}
+                          placeholder="021-88880000"
+                          dir="ltr"
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-mono focus-visible:border-primary"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
+                          {isRtl ? "داخلی:" : "Ext:"}
+                        </Label>
+                        <Input
+                          value={formExtension}
+                          onChange={(e) => setFormExtension(e.target.value)}
+                          placeholder="123"
+                          dir="ltr"
+                          className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-mono focus-visible:border-primary"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <Label className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
+                        {isRtl ? "شماره همراه (موبایل):" : "Mobile Phone:"}
+                      </Label>
+                      <Input
+                        value={formMobile}
+                        onChange={(e) => setFormMobile(e.target.value)}
+                        placeholder="09121234567"
+                        dir="ltr"
+                        className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-mono focus-visible:border-primary"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                {/* Mail Section */}
-                <div className="flex items-start gap-2.5 pt-1">
-                  <div className="size-6 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-1">
-                    <Mail className="size-3.5" />
+                {/* Mail & Office Location Section */}
+                <div className="flex items-start gap-3 pt-2.5 border-t border-border/40">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <Mail className="size-5" />
                   </div>
-                  <div className="flex-1 space-y-1.5 min-w-0">
-                    <Input
-                      value={formEmail}
-                      onChange={(e) => setFormEmail(e.target.value)}
-                      placeholder={isRtl ? "پست الکترونیکی (Email)" : "Email"}
-                      dir="ltr"
-                      type="email"
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
-                    <Input
-                      value={formLocation}
-                      onChange={(e) => setFormLocation(e.target.value)}
-                      placeholder={isRtl ? "موقعیت / دفتر (Office / Site)" : "Office / Home"}
-                      className="h-8 text-xs border-0 border-b border-border/70 rounded-none px-1 bg-transparent focus-visible:ring-0 focus-visible:border-primary"
-                    />
+                  <div className="flex-1 space-y-2.5 min-w-0">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
+                        {isRtl ? "پست الکترونیکی:" : "Email Address:"}
+                      </Label>
+                      <Input
+                        value={formEmail}
+                        onChange={(e) => setFormEmail(e.target.value)}
+                        placeholder="name@company.ir"
+                        dir="ltr"
+                        type="email"
+                        className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 font-sans focus-visible:border-primary"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground">
+                        {isRtl ? "موقعیت / دفتر کار:" : "Office / Site Location:"}
+                      </Label>
+                      <Input
+                        value={formLocation}
+                        onChange={(e) => setFormLocation(e.target.value)}
+                        placeholder={isRtl ? "مثلاً: تهران، دفتر مرکزی" : "e.g. Tehran, Central Office"}
+                        className="h-9 text-xs sm:text-sm rounded-xl bg-background border-border/70 focus-visible:border-primary"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -824,17 +902,17 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                     type="button"
                     variant="ghost"
                     onClick={() => setIsMoreFieldsOpen(!isMoreFieldsOpen)}
-                    className="w-full text-primary hover:text-primary/80 font-bold text-xs uppercase tracking-wider hover:bg-muted/40 h-7 gap-1 cursor-pointer"
+                    className="w-full text-primary hover:text-primary/80 font-bold text-xs uppercase tracking-wider hover:bg-muted/40 h-8 gap-1 cursor-pointer rounded-xl"
                   >
                     <span>{isRtl ? "فیلدهای بیشتر و واحد سازمانی" : "MORE FIELDS"}</span>
                     <ChevronDown className={cn("size-3.5 transition-transform", isMoreFieldsOpen && "rotate-180")} />
                   </Button>
 
                   {isMoreFieldsOpen && (
-                    <div className="mt-2.5 p-3 rounded-xl bg-muted/20 border border-border/70 space-y-2.5 animate-in fade-in duration-150">
-                      <div className="space-y-1">
+                    <div className="mt-2.5 p-3 sm:p-3.5 rounded-xl bg-muted/20 border border-border/70 space-y-3 animate-in fade-in duration-150">
+                      <div className="space-y-1.5">
                         <Label className="text-[11px] font-semibold">{isRtl ? "واحد / دپارتمان سازمانی:" : "Department:"}</Label>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-2 gap-1.5">
                           {(Object.keys(DEPARTMENT_CONFIG) as ContactDepartment[]).map((dKey) => {
                             const conf = DEPARTMENT_CONFIG[dKey];
                             const isSelected = formDept === dKey;
@@ -846,9 +924,9 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                                 variant={isSelected ? "default" : "outline"}
                                 size="xs"
                                 onClick={() => setFormDept(dKey)}
-                                className="h-6 text-[10px] justify-start gap-1 px-1.5"
+                                className="h-7 text-[11px] justify-start gap-1.5 px-2 rounded-lg"
                               >
-                                <Icon className="size-2.5" />
+                                <Icon className="size-3" />
                                 <span className="truncate">{isRtl ? conf.labelFa : conf.labelEn}</span>
                               </Button>
                             );
@@ -856,13 +934,13 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                         </div>
                       </div>
 
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         <Label className="text-[11px] font-semibold">{isRtl ? "توضیحات و سوابق همکاری:" : "Notes:"}</Label>
                         <Textarea
                           value={formNotes}
                           onChange={(e) => setFormNotes(e.target.value)}
                           placeholder={isRtl ? "یادداشت‌های مرتبط با پروژه‌ها و پیگیری‌ها..." : "Project notes..."}
-                          className="text-xs min-h-[60px] rounded-lg"
+                          className="text-xs min-h-[70px] rounded-xl"
                         />
                       </div>
                     </div>
@@ -930,38 +1008,44 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
           {/* Scrollable Content Body */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-0 space-y-0 scrollbar-thin">
             {/* Primary Hero Banner with Avatar */}
-            <div className="bg-primary text-primary-foreground p-5 pb-10 flex flex-col items-center justify-center relative shadow-inner text-center">
-              <div className="size-20 sm:size-22 rounded-full border-3 border-white/80 flex items-center justify-center bg-white/10 text-white shadow-md overflow-hidden">
+            <div className="bg-primary text-primary-foreground p-6 pb-12 flex flex-col items-center justify-center relative shadow-inner text-center">
+              <div className="size-20 sm:size-24 rounded-full border-3 border-white/80 flex items-center justify-center bg-white/10 text-white shadow-md overflow-hidden">
                 {selectedContact.avatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={selectedContact.avatarUrl} alt={selectedContact.fullNameFa} className="size-full object-cover" />
                 ) : (
-                  <div className="text-2xl font-bold font-sans">
+                  <div className="text-2xl sm:text-3xl font-bold font-sans">
                     {selectedContact.fullNameFa.slice(0, 1)}
                   </div>
                 )}
               </div>
 
-              <h3 className="text-base font-bold text-white mt-2.5 leading-snug">
+              <h3 className="text-lg sm:text-xl font-bold text-white mt-3 leading-snug">
                 {selectedContact.fullNameFa}
               </h3>
-              <p className="text-xs text-white/85 font-medium mt-0.5">
+              {selectedContact.fullNameEn && (
+                <p className="text-xs sm:text-sm font-semibold text-white/90 font-sans tracking-wide mt-0.5">
+                  {selectedContact.fullNameEn}
+                </p>
+              )}
+              <p className="text-xs sm:text-sm text-white/80 font-medium mt-1">
                 {selectedContact.jobTitleFa}
+                {selectedContact.jobTitleEn ? ` • ${selectedContact.jobTitleEn}` : ""}
               </p>
             </div>
 
             {/* Floating Card 1: Company Profile with Link & Industry Tag */}
-            <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 space-y-2 relative z-10">
-              <div className="flex items-center justify-between gap-2.5">
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <Building2 className="size-4.5" />
+            <div className="-mt-6 mx-3.5 sm:mx-4 rounded-2xl bg-card border border-border/80 shadow-xs p-3.5 sm:p-4 space-y-3 relative z-10">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Building2 className="size-5" />
                   </div>
                   <div className="min-w-0">
-                    <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
+                    <span className="text-[10px] sm:text-[11px] text-muted-foreground font-semibold uppercase tracking-wider block">
                       {isRtl ? "شرکت و مجتمع تابعه:" : "Company / Complex"}
                     </span>
-                    <span className="text-xs font-bold text-foreground truncate block">
+                    <span className="text-sm sm:text-base font-bold text-foreground truncate block">
                       {selectedContact.companyNameFa || (isRtl ? "بدون شرکت (مستقل)" : "Independent")}
                     </span>
                   </div>
@@ -972,38 +1056,45 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                   !selectedContact.companyNameFa.includes("مستقل") && (
                     <Link
                       href={`/customers?search=${encodeURIComponent(selectedContact.companyNameFa)}`}
-                      className="p-1 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/40 transition-colors shrink-0"
+                      className="p-1.5 rounded-xl text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors shrink-0"
                       title={isRtl ? "مشاهده پرونده شرکت در بخش کارفرمایان" : "View Company"}
                     >
-                      <ArrowUpRight className="size-3.5" />
+                      <ArrowUpRight className="size-4" />
                     </Link>
                   )}
               </div>
 
-              {/* Industry Tag in Preview Card */}
-              <div className="pt-1.5 border-t border-border/40 flex items-center justify-between">
-                <span className="text-[9.5px] text-muted-foreground font-medium">{isRtl ? "حوزه و صنعت:" : "Industry:"}</span>
-                <Badge variant="outline" className="text-[9.5px] py-0 px-2 border-primary/30 text-primary">
-                  {INDUSTRY_TAGS.find((t) => t.id === (selectedContact.industry || inferContactIndustry(selectedContact)))?.labelFa || (isRtl ? "سایر" : "Other")}
+              {/* Industry Tag & Department Badges */}
+              <div className="pt-2.5 border-t border-border/40 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{isRtl ? "صنعت:" : "Industry:"}</span>
+                  <Badge variant="outline" className="text-xs py-0.5 px-3 rounded-full border-primary/30 text-primary font-semibold">
+                    {INDUSTRY_TAGS.find((t) => t.id === (selectedContact.industry || inferContactIndustry(selectedContact)))?.labelFa || (isRtl ? "سایر" : "Other")}
+                  </Badge>
+                </div>
+
+                <Badge variant="secondary" className="text-xs py-0.5 px-3 rounded-full font-medium gap-1.5">
+                  <DeptIcon className="size-3 text-primary" />
+                  <span>{isRtl ? deptConf.labelFa : deptConf.labelEn}</span>
                 </Badge>
               </div>
             </div>
 
             {/* Floating Card 2: Contact Information Details */}
-            <div className="mt-2.5 mx-3 mb-4 rounded-xl bg-card border border-border/80 shadow-xs p-3.5 space-y-3">
+            <div className="mt-3 mx-3.5 sm:mx-4 mb-4 rounded-2xl bg-card border border-border/80 shadow-xs p-3.5 sm:p-4 space-y-3.5">
               {/* Direct Phone */}
               {selectedContact.phoneDirect && (
-                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/20 border border-border/50">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Phone className="size-3.5" />
+                <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/20 border border-border/50 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Phone className="size-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[9.5px] text-muted-foreground block">{isRtl ? "تلفن مستقیم" : "Direct Phone"}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium block">{isRtl ? "تلفن مستقیم" : "Direct Phone"}</span>
                       <a
                         href={`tel:${selectedContact.phoneDirect}`}
                         dir="ltr"
-                        className="text-xs font-semibold text-foreground hover:text-primary font-mono truncate block"
+                        className="text-xs sm:text-sm font-semibold text-foreground hover:text-primary font-mono truncate block"
                       >
                         {selectedContact.phoneDirect}
                         {selectedContact.phoneExtension ? ` (${selectedContact.phoneExtension})` : ""}
@@ -1011,26 +1102,26 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-xs"
                       onClick={(e) => handleCopy(selectedContact.phoneDirect || "", "p-dir", e)}
-                      className="size-6 text-muted-foreground hover:text-foreground"
+                      className="size-7 text-muted-foreground hover:text-foreground rounded-lg"
                       title={isRtl ? "کپی شماره" : "Copy"}
                     >
-                      {copiedField === "p-dir" ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                      {copiedField === "p-dir" ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="xs"
                       asChild
-                      className="h-6 px-1.5 text-[10px] gap-1 border-border/60 hover:bg-primary/10 hover:text-primary"
+                      className="h-7 px-2 text-xs gap-1 border-border/60 hover:bg-primary/10 hover:text-primary rounded-lg"
                     >
                       <a href={`tel:${selectedContact.phoneDirect}`}>
-                        <Phone className="size-2.5" />
+                        <Phone className="size-3" />
                         <span>{isRtl ? "تماس" : "Call"}</span>
                       </a>
                     </Button>
@@ -1040,47 +1131,47 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
 
               {/* Mobile Phone */}
               {selectedContact.mobilePhone && (
-                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/20 border border-border/50">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <MessageCircle className="size-3.5" />
+                <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/20 border border-border/50 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <MessageCircle className="size-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[9.5px] text-muted-foreground block">{isRtl ? "شماره همراه" : "Mobile"}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium block">{isRtl ? "شماره همراه (موبایل)" : "Mobile"}</span>
                       <a
                         href={`tel:${selectedContact.mobilePhone}`}
                         dir="ltr"
-                        className="text-xs font-semibold text-foreground hover:text-primary font-mono truncate block"
+                        className="text-xs sm:text-sm font-semibold text-foreground hover:text-primary font-mono truncate block"
                       >
                         {selectedContact.mobilePhone}
                       </a>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon-xs"
                       onClick={(e) => handleCopy(selectedContact.mobilePhone || "", "p-mob", e)}
-                      className="size-6 text-muted-foreground hover:text-foreground"
+                      className="size-7 text-muted-foreground hover:text-foreground rounded-lg"
                       title={isRtl ? "کپی شماره" : "Copy"}
                     >
-                      {copiedField === "p-mob" ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                      {copiedField === "p-mob" ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="xs"
                       asChild
-                      className="h-6 px-1.5 text-[10px] gap-1 border-border/60 hover:bg-emerald-500/10 hover:text-emerald-600"
+                      className="h-7 px-2 text-xs gap-1 border-border/60 hover:bg-emerald-500/10 hover:text-emerald-600 rounded-lg"
                     >
                       <a
                         href={`https://wa.me/${selectedContact.mobilePhone.replace(/[^0-9]/g, "").replace(/^0/, "98")}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <MessageCircle className="size-2.5" />
+                        <MessageCircle className="size-3" />
                         <span>{isRtl ? "واتس‌اپ" : "WhatsApp"}</span>
                       </a>
                     </Button>
@@ -1090,17 +1181,17 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
 
               {/* Email */}
               {selectedContact.email && (
-                <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-muted/20 border border-border/50">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Mail className="size-3.5" />
+                <div className="flex items-center justify-between gap-3 p-2.5 sm:p-3 rounded-xl bg-muted/20 border border-border/50 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="size-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                      <Mail className="size-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-[9.5px] text-muted-foreground block">{isRtl ? "ایمیل سازمانی" : "Email"}</span>
+                      <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium block">{isRtl ? "ایمیل سازمانی" : "Email"}</span>
                       <a
                         href={`mailto:${selectedContact.email}`}
                         dir="ltr"
-                        className="text-xs font-semibold text-foreground hover:text-primary truncate block"
+                        className="text-xs sm:text-sm font-semibold text-foreground hover:text-primary truncate block font-sans"
                       >
                         {selectedContact.email}
                       </a>
@@ -1112,27 +1203,27 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                     variant="ghost"
                     size="icon-xs"
                     onClick={(e) => handleCopy(selectedContact.email || "", "p-mail", e)}
-                    className="size-6 text-muted-foreground hover:text-foreground shrink-0"
+                    className="size-7 text-muted-foreground hover:text-foreground shrink-0 rounded-lg"
                     title={isRtl ? "کپی ایمیل" : "Copy"}
                   >
-                    {copiedField === "p-mail" ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                    {copiedField === "p-mail" ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
                   </Button>
                 </div>
               )}
 
               {/* Department & Location */}
               <div className="grid grid-cols-2 gap-2 pt-0.5">
-                <div className="p-2 rounded-lg bg-muted/15 border border-border/40">
-                  <span className="text-[9.5px] text-muted-foreground block">{isRtl ? "دپارتمان" : "Department"}</span>
-                  <Badge variant="outline" className={cn("text-[9.5px] mt-1 gap-1 border py-0", deptConf.color)}>
-                    <DeptIcon className="size-2.5" />
+                <div className="p-2.5 rounded-xl bg-muted/15 border border-border/40">
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground block font-medium">{isRtl ? "دپارتمان:" : "Department:"}</span>
+                  <Badge variant="outline" className={cn("text-xs mt-1 gap-1 border py-0.5 px-2 rounded-lg", deptConf.color)}>
+                    <DeptIcon className="size-3" />
                     <span className="truncate">{isRtl ? deptConf.labelFa : deptConf.labelEn}</span>
                   </Badge>
                 </div>
 
-                <div className="p-2 rounded-lg bg-muted/15 border border-border/40">
-                  <span className="text-[9.5px] text-muted-foreground block">{isRtl ? "موقعیت" : "Location"}</span>
-                  <span className="text-[10.5px] font-medium text-foreground truncate block mt-0.5">
+                <div className="p-2.5 rounded-xl bg-muted/15 border border-border/40">
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground block font-medium">{isRtl ? "موقعیت:" : "Location:"}</span>
+                  <span className="text-xs sm:text-sm font-medium text-foreground truncate block mt-1">
                     {selectedContact.locationFa || (isRtl ? "دفتر مرکزی" : "Headquarters")}
                   </span>
                 </div>
@@ -1140,9 +1231,9 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
 
               {/* Notes */}
               {selectedContact.notesFa && (
-                <div className="p-2.5 rounded-lg bg-muted/15 border border-border/40 space-y-1">
-                  <span className="text-[9.5px] text-muted-foreground font-semibold block">{isRtl ? "یادداشت‌ها:" : "Notes:"}</span>
-                  <p className="text-xs text-foreground leading-relaxed whitespace-pre-wrap">
+                <div className="p-3 rounded-xl bg-muted/15 border border-border/40 space-y-1.5">
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground font-semibold block">{isRtl ? "یادداشت‌ها و سوابق:" : "Notes:"}</span>
+                  <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap">
                     {selectedContact.notesFa}
                   </p>
                 </div>
@@ -1157,7 +1248,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
               variant="outline"
               size="xs"
               onClick={handleStartCreateNew}
-              className="rounded-xl text-xs gap-1 border-primary/40 hover:bg-primary/10 text-primary h-7 px-2.5"
+              className="rounded-xl text-xs gap-1 border-primary/40 hover:bg-primary/10 text-primary h-7 px-2.5 font-semibold"
             >
               <UserPlus className="size-3.5" />
               <span>{isRtl ? "مخاطب جدید" : "New Contact"}</span>
@@ -1193,7 +1284,29 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       );
     }
 
-    return null;
+    return (
+      <div className="w-full h-80 rounded-[24px] border border-dashed border-border bg-card flex flex-col items-center justify-center p-6 text-center text-muted-foreground gap-3 animate-in fade-in duration-150">
+        <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+          <UserPlus className="size-7" />
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-foreground">
+            {isRtl ? "دفترچه تلفن آماده ثبت مخاطب است" : "Phonebook Ready"}
+          </h4>
+          <p className="text-xs text-muted-foreground max-w-[240px]">
+            {isRtl ? "برای ثبت مخاطب روی دکمه زیر کلیک کنید." : "Click below to add a contact."}
+          </p>
+        </div>
+        <Button
+          type="button"
+          onClick={handleStartCreateNew}
+          className="rounded-xl text-xs gap-1.5 h-8 px-3 font-semibold mt-1"
+        >
+          <UserPlus className="size-3.5" />
+          <span>{isRtl ? "ثبت مخاطب جدید" : "Add New Contact"}</span>
+        </Button>
+      </div>
+    );
   };
 
   return (
@@ -1375,9 +1488,16 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                             </div>
 
                             <div className="min-w-0">
-                              <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
-                                {c.fullNameFa}
-                              </h4>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                                  {c.fullNameFa}
+                                </h4>
+                                {c.fullNameEn && (
+                                  <span className="text-[11px] text-muted-foreground font-sans font-medium hidden sm:inline truncate max-w-[150px]">
+                                    ({c.fullNameEn})
+                                  </span>
+                                )}
+                              </div>
                               <p className="text-[10.5px] text-muted-foreground truncate mt-0.5">
                                 {c.companyNameFa} {c.jobTitleFa ? `• ${c.jobTitleFa}` : ""}
                               </p>
@@ -1438,7 +1558,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
         </div>
 
         {/* ── RIGHT COLUMN (Desktop): Contact Detail / Create Form Card (ALWAYS PRESENT & STICKY BELOW HEADER) ── */}
-        <div className="hidden lg:block w-[320px] xl:w-[350px] 2xl:w-[380px] shrink-0 sticky top-[calc(var(--header-height,64px)+1rem)] self-start max-w-full z-20">
+        <div className="hidden lg:block w-[440px] xl:w-[480px] 2xl:w-[520px] shrink-0 sticky top-[calc(var(--header-height,64px)+0.75rem)] self-start max-w-full z-20">
           {renderRightPanelContent()}
         </div>
       </div>
@@ -1446,7 +1566,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       {/* ── Mobile Modal Dialog (ONLY rendered and mounted on small screens < 1024px) ── */}
       {isMobile && (
         <Dialog open={isMobileModalOpen} onOpenChange={setIsMobileModalOpen}>
-          <DialogContent className="p-0 max-w-[400px] w-[95vw] max-h-[90vh] rounded-[24px] overflow-hidden flex flex-col border border-border/80">
+          <DialogContent className="p-0 max-w-[480px] w-[95vw] max-h-[90vh] rounded-[24px] overflow-hidden flex flex-col border border-border/80">
             <DialogHeader className="sr-only">
               <DialogTitle>
                 {isCreatingNew ? (isRtl ? "ثبت مخاطب جدید" : "Create new contact") : selectedContact?.fullNameFa || "Contact"}

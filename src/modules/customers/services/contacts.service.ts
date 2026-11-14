@@ -4,7 +4,7 @@ import { INITIAL_COMPANY_CONTACTS } from "../data/contacts.data";
 import { normalizeTitle } from "../utils/petro-unifier";
 import type { CompanyContact, ContactCreateInput, ContactIndustry } from "../types/contacts.types";
 
-const CONTACTS_STORAGE_KEY = "esp_petro_company_contacts_v1";
+const CONTACTS_STORAGE_KEY = "esp_petro_company_contacts_v2";
 
 export function inferContactIndustry(c: CompanyContact): ContactIndustry {
   if (c.industry) return c.industry;
@@ -72,14 +72,14 @@ class ContactsService {
     }
 
     try {
+      // Purge legacy mock contacts storage
+      localStorage.removeItem("esp_petro_company_contacts_v1");
+
       const stored = localStorage.getItem(CONTACTS_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Merge custom stored contacts with any initial contacts not yet stored
-          const seen = new Set(parsed.map((c: CompanyContact) => c.id));
-          const additions = INITIAL_COMPANY_CONTACTS.filter((c) => !seen.has(c.id));
-          this.contacts = [...parsed, ...additions];
+        if (Array.isArray(parsed)) {
+          this.contacts = parsed;
           this.isLoaded = true;
           return;
         }
@@ -225,6 +225,11 @@ class ContactsService {
       nameFa,
       count,
     }));
+  }
+
+  public clearAll(): void {
+    this.contacts = [];
+    this.save();
   }
 }
 
