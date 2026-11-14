@@ -31,6 +31,7 @@ import {
   BookUser,
   Download,
   Award,
+  X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -311,24 +312,26 @@ export function PlantsDirectoryView() {
             const isSelected = selectedProcess === tab.id;
 
             return (
-              <button
+              <Button
                 key={tab.id}
                 type="button"
+                variant={isSelected ? (tab.id === "olefin" ? "default" : "default") : tab.highlight ? "secondary" : "outline"}
+                size="sm"
                 onClick={() => setSelectedProcess(tab.id)}
                 className={cn(
-                  "h-9 px-3.5 rounded-xl text-xs font-medium flex items-center gap-2 transition-all duration-150 cursor-pointer select-none border outline-none",
+                  "h-9 px-3.5 rounded-xl text-xs font-medium flex items-center gap-2",
                   isSelected
                     ? tab.id === "olefin"
-                      ? "bg-amber-500 text-white border-amber-600 shadow-sm font-bold ring-2 ring-amber-400/40"
-                      : "bg-primary text-white border-primary shadow-sm font-bold ring-2 ring-primary/40"
+                      ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-sm font-bold ring-2 ring-amber-400/40"
+                      : "bg-primary text-primary-foreground shadow-sm font-bold ring-2 ring-primary/40"
                     : tab.highlight
                     ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20 font-semibold"
-                    : "bg-background text-foreground/80 border-border/70 hover:border-border hover:bg-muted/30"
+                    : "border-border/70 hover:border-border hover:bg-muted/30"
                 )}
               >
                 <Icon className={cn("size-3.5 shrink-0", isSelected ? "text-white" : tab.highlight ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground")} />
                 <span>{isRtl ? tab.labelFa : tab.labelEn}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -350,13 +353,15 @@ export function PlantsDirectoryView() {
                 className="ps-9 pe-8 h-9 text-xs rounded-xl bg-background border-border/70"
               />
               {search && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => setSearch("")}
-                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                  className="absolute end-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  ✕
-                </button>
+                  <X className="size-3.5" />
+                </Button>
               )}
             </div>
 
@@ -393,29 +398,33 @@ export function PlantsDirectoryView() {
                 { id: "mahshahr", labelFa: "ماهشهر (PETZONE)", labelEn: "Mahshahr" },
                 { id: "other_provinces", labelFa: "سایر استان‌ها", labelEn: "Other" },
               ].map((zone) => (
-                <button
+                <Button
                   key={zone.id}
                   type="button"
+                  variant={selectedZone === zone.id ? "default" : "outline"}
+                  size="xs"
                   onClick={() => setSelectedZone(zone.id)}
                   className={cn(
-                    "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border",
+                    "h-7 px-2.5 rounded-lg text-[11px] font-medium",
                     selectedZone === zone.id
                       ? "bg-foreground text-background border-foreground font-semibold"
                       : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
                   )}
                 >
                   {isRtl ? zone.labelFa : zone.labelEn}
-                </button>
+                </Button>
               ))}
             </div>
 
             {/* Quick Sort Shortcuts */}
             <div className="flex items-center gap-1.5 ms-auto">
-              <button
+              <Button
                 type="button"
+                variant={sortBy === "capacity_desc" ? "default" : "outline"}
+                size="xs"
                 onClick={() => setSortBy(sortBy === "capacity_desc" ? "default" : "capacity_desc")}
                 className={cn(
-                  "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border flex items-center gap-1",
+                  "h-7 px-2.5 rounded-lg text-[11px] font-medium gap-1",
                   sortBy === "capacity_desc"
                     ? "bg-primary text-white border-primary font-semibold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
@@ -424,13 +433,15 @@ export function PlantsDirectoryView() {
               >
                 <BarChart3 className="size-3" />
                 <span>{isRtl ? "بیشترین ظرفیت" : "Highest Capacity"}</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant={sortBy === "year_desc" || sortBy === "year_asc" ? "default" : "outline"}
+                size="xs"
                 onClick={() => setSortBy(sortBy === "year_desc" ? "year_asc" : sortBy === "year_asc" ? "default" : "year_desc")}
                 className={cn(
-                  "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border flex items-center gap-1",
+                  "h-7 px-2.5 rounded-lg text-[11px] font-medium gap-1",
                   sortBy === "year_desc" || sortBy === "year_asc"
                     ? "bg-primary text-white border-primary font-semibold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
@@ -445,7 +456,7 @@ export function PlantsDirectoryView() {
                     ? isRtl ? "قدیمی‌ترین احداث" : "Oldest"
                     : isRtl ? "سال احداث" : "Commission Year"}
                 </span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -721,8 +732,10 @@ export function PlantsDirectoryView() {
                     )}
                   </div>
                   {selectedPlant.logoUrl && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="xs"
                       onClick={async (e) => {
                         e.stopPropagation();
                         const ok = await downloadLogo(selectedPlant.logoUrl, selectedPlant.nameFa);
@@ -730,12 +743,12 @@ export function PlantsDirectoryView() {
                           toast.success(isRtl ? "لوگوی مجتمع با موفقیت دانلود شد." : "Plant logo downloaded successfully.");
                         }
                       }}
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                      className="h-6 px-2 text-[10px] gap-1 font-semibold text-muted-foreground hover:text-primary rounded-lg border-border/60"
                       title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
                     >
                       <Download className="size-3" />
                       <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
 

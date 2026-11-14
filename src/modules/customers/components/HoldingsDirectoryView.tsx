@@ -649,8 +649,10 @@ export function HoldingsDirectoryView() {
                     )}
                   </div>
                   {selectedHolding.logoUrl && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="xs"
                       onClick={async (e) => {
                         e.stopPropagation();
                         const ok = await downloadLogo(selectedHolding.logoUrl, selectedHolding.nameFa);
@@ -658,12 +660,12 @@ export function HoldingsDirectoryView() {
                           toast.success(isRtl ? "لوگوی هلدینگ با موفقیت دانلود شد." : "Holding logo downloaded successfully.");
                         }
                       }}
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                      className="h-6 px-2 text-[10px] gap-1 font-semibold text-muted-foreground hover:text-primary rounded-lg border-border/60"
                       title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
                     >
                       <Download className="size-3" />
                       <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
 

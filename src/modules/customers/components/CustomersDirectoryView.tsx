@@ -27,6 +27,7 @@ import {
   Pencil,
   Factory,
   BookUser,
+  X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -274,12 +275,15 @@ export function CustomersDirectoryView({
                 className="ps-10 pe-10 h-11 text-sm rounded-xl bg-background"
               />
               {search && (
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => setSearch("")}
-                  className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground p-1"
+                  className="absolute end-2 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                 >
-                  ✕
-                </button>
+                  <X className="size-3.5" />
+                </Button>
               )}
             </div>
 
@@ -311,58 +315,52 @@ export function CustomersDirectoryView({
             </Button>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center rounded-xl border border-border p-1 bg-muted/30 shrink-0">
-              <button
+            <div className="flex items-center rounded-xl border border-border p-1 bg-muted/30 shrink-0 gap-1">
+              <Button
                 type="button"
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="icon-sm"
                 onClick={() => setViewMode("grid")}
-                className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  viewMode === "grid" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                )}
+                className="size-8 rounded-lg cursor-pointer"
                 title={isRtl ? "نمایش شبکه‌ای" : "Grid View"}
               >
                 <LayoutGrid className="size-4" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={viewMode === "table" ? "default" : "ghost"}
+                size="icon-sm"
                 onClick={() => setViewMode("table")}
-                className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  viewMode === "table" ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                )}
+                className="size-8 rounded-lg cursor-pointer"
                 title={isRtl ? "نمایش جدول" : "Table View"}
               >
                 <List className="size-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
           {/* Industry Pills */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
-            <button
+            <Button
+              type="button"
+              variant={selectedIndustry === "ALL" ? "default" : "outline"}
+              size="xs"
               onClick={() => setSelectedIndustry("ALL")}
-              className={cn(
-                "px-3 py-1.5 rounded-full font-medium transition-all shrink-0",
-                selectedIndustry === "ALL"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-              )}
+              className="rounded-full text-xs font-medium shrink-0 h-7 px-3 tabular-nums cursor-pointer"
             >
-              {isRtl ? "همه صنایع" : "All Industries"} ({totalCount})
-            </button>
+              {isRtl ? "همه صنایع" : "All Industries"} ({formatLocaleNumber(totalCount, isRtl)})
+            </Button>
             {industriesList.slice(0, 10).map((ind) => (
-              <button
+              <Button
                 key={ind.name}
+                type="button"
+                variant={selectedIndustry === ind.name ? "default" : "outline"}
+                size="xs"
                 onClick={() => setSelectedIndustry(ind.name)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full font-medium transition-all shrink-0",
-                  selectedIndustry === ind.name
-                    ? "bg-primary text-primary-foreground shadow-xs"
-                    : "bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-                )}
+                className="rounded-full text-xs font-medium shrink-0 h-7 px-3 tabular-nums cursor-pointer"
               >
-                {ind.name} ({ind.count})
-              </button>
+                {ind.name} ({formatLocaleNumber(ind.count, isRtl)})
+              </Button>
             ))}
           </div>
         </div>

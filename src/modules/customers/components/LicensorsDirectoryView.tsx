@@ -203,12 +203,15 @@ export function LicensorsDirectoryView() {
               className="ps-10 h-10 rounded-xl text-xs sm:text-sm bg-background border-border/70"
             />
             {search && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setSearch("")}
-                className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute end-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X className="size-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -231,18 +234,21 @@ export function LicensorsDirectoryView() {
           {CATEGORY_TABS.map((tab) => {
             const isSelected = selectedCategory === tab.id;
             return (
-              <button
+              <Button
                 key={tab.id}
+                type="button"
+                variant={isSelected ? "default" : "outline"}
+                size="xs"
                 onClick={() => setSelectedCategory(tab.id)}
                 className={cn(
-                  "px-3 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all border",
+                  "h-7 px-3 rounded-xl text-xs font-semibold shrink-0 transition-all",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary shadow-xs"
                     : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60"
                 )}
               >
                 {isRtl ? tab.labelFa : tab.labelEn}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -303,8 +309,10 @@ export function LicensorsDirectoryView() {
                         </div>
 
                         {licensor.logoUrl && (
-                          <button
+                          <Button
                             type="button"
+                            variant="outline"
+                            size="xs"
                             onClick={async (e) => {
                               e.stopPropagation();
                               const ok = await downloadLogo(licensor.logoUrl, licensor.nameFa);
@@ -312,12 +320,12 @@ export function LicensorsDirectoryView() {
                                 toast.success(isRtl ? "لوگوی لایسنسور دانلود شد." : "Licensor logo downloaded.");
                               }
                             }}
-                            className="inline-flex items-center gap-0.5 text-[9.5px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/40 hover:bg-primary/10 px-1.5 py-0.5 rounded border border-border/60"
+                            className="h-5 px-1.5 text-[9.5px] gap-0.5 font-semibold text-muted-foreground hover:text-primary rounded border-border/60"
                             title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
                           >
                             <Download className="size-2.5" />
                             <span>{isRtl ? "لوگو" : "Logo"}</span>
-                          </button>
+                          </Button>
                         )}
                       </div>
 
@@ -467,8 +475,10 @@ export function LicensorsDirectoryView() {
                   </div>
 
                   {selectedLicensor.logoUrl && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="xs"
                       onClick={async (e) => {
                         e.stopPropagation();
                         const ok = await downloadLogo(selectedLicensor.logoUrl, selectedLicensor.nameFa);
@@ -476,12 +486,12 @@ export function LicensorsDirectoryView() {
                           toast.success(isRtl ? "لوگوی لایسنسور دانلود شد." : "Licensor logo downloaded.");
                         }
                       }}
-                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                      className="h-6 px-2 text-[10px] gap-1 font-semibold text-muted-foreground hover:text-primary rounded-lg border-border/60"
                       title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
                     >
                       <Download className="size-3" />
                       <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -648,3 +658,4 @@ export function LicensorsDirectoryView() {
     </div>
   );
 }
+

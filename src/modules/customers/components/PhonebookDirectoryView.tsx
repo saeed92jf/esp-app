@@ -318,12 +318,15 @@ export function PhonebookDirectoryView() {
               className="ps-10 h-10 text-xs sm:text-sm rounded-xl bg-muted/30 border-border"
             />
             {search && (
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setSearch("")}
-                className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute end-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
                 <X className="size-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -355,28 +358,34 @@ export function PhonebookDirectoryView() {
             <span>{isRtl ? "دپارتمان:" : "Dept:"}</span>
           </span>
 
-          <button
+          <Button
+            type="button"
+            variant={selectedDept === "all" ? "default" : "outline"}
+            size="xs"
             onClick={() => setSelectedDept("all")}
             className={cn(
-              "px-3 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all border",
+              "h-7 px-3 rounded-xl text-xs font-semibold shrink-0 transition-all",
               selectedDept === "all"
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60"
             )}
           >
             {isRtl ? "همه واحدها" : "All Departments"}
-          </button>
+          </Button>
 
           {(Object.keys(DEPARTMENT_CONFIG) as ContactDepartment[]).map((dKey) => {
             const conf = DEPARTMENT_CONFIG[dKey];
             const isSelected = selectedDept === dKey;
             const Icon = conf.icon;
             return (
-              <button
+              <Button
                 key={dKey}
+                type="button"
+                variant={isSelected ? "default" : "outline"}
+                size="xs"
                 onClick={() => setSelectedDept(dKey)}
                 className={cn(
-                  "px-3 py-1 rounded-xl text-xs font-semibold shrink-0 transition-all border flex items-center gap-1.5",
+                  "h-7 px-3 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5",
                   isSelected
                     ? "bg-primary text-primary-foreground border-primary"
                     : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60"
@@ -384,7 +393,7 @@ export function PhonebookDirectoryView() {
               >
                 <Icon className="size-3" />
                 <span>{isRtl ? conf.labelFa : conf.labelEn}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -396,13 +405,16 @@ export function PhonebookDirectoryView() {
               <Building2 className="size-3.5" />
               <span>{isRtl ? `در حال نمایش مخاطبین شرکت: «${selectedCompany}»` : `Showing contacts for: "${selectedCompany}"`}</span>
             </div>
-            <button
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
               onClick={() => setSelectedCompany("all")}
-              className="text-xs text-muted-foreground hover:text-foreground underline flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-foreground underline flex items-center gap-1 h-6 px-2"
             >
               <X className="size-3" />
               <span>{isRtl ? "نمایش همه شرکت‌ها" : "Clear filter"}</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -524,14 +536,16 @@ export function PhonebookDirectoryView() {
                         </div>
 
                         {contact.phoneDirect && (
-                          <button
+                          <Button
                             type="button"
+                            variant="ghost"
+                            size="icon-xs"
                             onClick={() => handleCopy(`${contact.phoneDirect}${contact.phoneExtension ? ` داخلی ${contact.phoneExtension}` : ""}`, `p-${contact.id}`)}
-                            className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                            className="size-6 text-muted-foreground hover:text-foreground"
                             title={isRtl ? "کپی شماره" : "Copy"}
                           >
                             {copiedField === `p-${contact.id}` ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                          </button>
+                          </Button>
                         )}
                       </div>
                     )}
@@ -551,14 +565,16 @@ export function PhonebookDirectoryView() {
                           </a>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-xs"
                           onClick={() => handleCopy(contact.mobilePhone || "", `m-${contact.id}`)}
-                          className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                          className="size-6 text-muted-foreground hover:text-foreground"
                           title={isRtl ? "کپی شماره" : "Copy"}
                         >
                           {copiedField === `m-${contact.id}` ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                        </button>
+                        </Button>
                       </div>
                     )}
 
@@ -577,14 +593,16 @@ export function PhonebookDirectoryView() {
                           </a>
                         </div>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon-xs"
                           onClick={() => handleCopy(contact.email || "", `e-${contact.id}`)}
-                          className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                          className="size-6 text-muted-foreground hover:text-foreground"
                           title={isRtl ? "کپی ایمیل" : "Copy"}
                         >
                           {copiedField === `e-${contact.id}` ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
-                        </button>
+                        </Button>
                       </div>
                     )}
 
@@ -631,13 +649,16 @@ export function PhonebookDirectoryView() {
 
                   {/* Delete Button (if custom) */}
                   {contact.id.startsWith("cnt-custom") && (
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
                       onClick={() => handleDeleteContact(contact.id, contact.fullNameFa)}
-                      className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                       title={isRtl ? "حذف مخاطب" : "Delete"}
                     >
                       <Trash2 className="size-3.5" />
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>

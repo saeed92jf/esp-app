@@ -48,3 +48,4 @@ export interface Licensor {
   espRelevanceFa: string;
   sources: LicensorSource[];
 }
+

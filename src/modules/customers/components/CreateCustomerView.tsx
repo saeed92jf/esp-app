@@ -35,6 +35,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { customersService } from "../services/customers.service";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
@@ -615,19 +616,21 @@ export function CreateCustomerView({
                     {PROCESS_TYPES.map((pt) => {
                       const isSelected = processType === pt.id;
                       return (
-                        <button
+                        <Button
                           key={pt.id}
                           type="button"
+                          variant={isSelected ? "default" : "outline"}
                           onClick={() => setProcessType(pt.id)}
-                          className={`p-3 rounded-xl border text-start transition-all text-xs flex flex-col gap-1 ${
+                          className={cn(
+                            "h-auto p-3 rounded-xl justify-start text-start text-xs flex flex-col gap-1 items-start cursor-pointer transition-all",
                             isSelected
-                              ? "border-primary bg-primary/10 ring-2 ring-primary/20 font-bold"
+                              ? "ring-2 ring-primary/20 font-bold"
                               : "border-border/80 bg-background hover:border-primary/40 hover:bg-muted/30"
-                          }`}
+                          )}
                         >
-                          <span className="font-semibold text-foreground truncate">{pt.labelFa}</span>
-                          <span className="text-[10px] text-muted-foreground truncate">{pt.labelEn}</span>
-                        </button>
+                          <span className="font-semibold text-foreground truncate w-full">{pt.labelFa}</span>
+                          <span className="text-[10px] text-muted-foreground truncate w-full">{pt.labelEn}</span>
+                        </Button>
                       );
                     })}
                   </div>
@@ -833,14 +836,16 @@ export function CreateCustomerView({
                   <div className="flex flex-wrap items-center gap-1 pt-2 border-t border-border/40">
                     <span className="text-[10.5px] text-muted-foreground">{isRtl ? "پیشنهاد سریع:" : "Quick add:"}</span>
                     {SUGGESTED_LICENSORS.map((sug) => (
-                      <button
+                      <Button
                         key={sug}
                         type="button"
+                        variant="outline"
+                        size="xs"
                         onClick={() => handleAddTag("licensor", sug)}
-                        className="text-[10px] px-2 py-0.5 rounded-md bg-background border border-border/60 hover:border-primary/40 hover:text-primary transition-colors"
+                        className="h-6 text-[10px] px-2 py-0 rounded-md font-normal hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
                       >
                         + {sug}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -892,14 +897,16 @@ export function CreateCustomerView({
                   <div className="flex flex-wrap items-center gap-1 pt-2 border-t border-border/40">
                     <span className="text-[10.5px] text-muted-foreground">{isRtl ? "پیشنهاد سریع:" : "Quick add:"}</span>
                     {SUGGESTED_ENGINEERING.map((sug) => (
-                      <button
+                      <Button
                         key={sug}
                         type="button"
+                        variant="outline"
+                        size="xs"
                         onClick={() => handleAddTag("engineering", sug)}
-                        className="text-[10px] px-2 py-0.5 rounded-md bg-background border border-border/60 hover:border-primary/40 hover:text-primary transition-colors"
+                        className="h-6 text-[10px] px-2 py-0 rounded-md font-normal hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
                       >
                         + {sug}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -951,14 +958,16 @@ export function CreateCustomerView({
                   <div className="flex flex-wrap items-center gap-1 pt-2 border-t border-border/40">
                     <span className="text-[10.5px] text-muted-foreground">{isRtl ? "پیشنهاد سریع:" : "Quick add:"}</span>
                     {SUGGESTED_PRODUCTS.map((sug) => (
-                      <button
+                      <Button
                         key={sug}
                         type="button"
+                        variant="outline"
+                        size="xs"
                         onClick={() => handleAddTag("product", sug)}
-                        className="text-[10px] px-2 py-0.5 rounded-md bg-background border border-border/60 hover:border-primary/40 hover:text-primary transition-colors"
+                        className="h-6 text-[10px] px-2 py-0 rounded-md font-normal hover:border-primary/40 hover:text-primary transition-colors cursor-pointer"
                       >
                         + {sug}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>

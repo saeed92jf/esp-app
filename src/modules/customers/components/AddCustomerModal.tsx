@@ -30,6 +30,7 @@ import { Combobox } from "@/components/ui/combobox";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { customersService } from "../services/customers.service";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
@@ -271,12 +272,15 @@ export function AddCustomerModal({
             </div>
           </div>
 
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Tab Selector */}
@@ -442,18 +446,19 @@ export function AddCustomerModal({
                 <Label className="text-xs font-semibold">{isRtl ? "نوع واحد فرآیندی تخصصی" : "Process Type"}</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
                   {PROCESS_TYPES.map((pt) => (
-                    <button
+                    <Button
                       key={pt.id}
                       type="button"
+                      variant={processType === pt.id ? "default" : "outline"}
+                      size="sm"
                       onClick={() => setProcessType(pt.id)}
-                      className={`p-2 rounded-lg border text-start text-xs transition-colors ${
-                        processType === pt.id
-                          ? "border-primary bg-primary/10 font-bold"
-                          : "border-border/70 hover:bg-muted/40"
-                      }`}
+                      className={cn(
+                        "h-auto p-2 justify-start text-xs font-normal border transition-colors cursor-pointer",
+                        processType === pt.id ? "font-bold" : "border-border/70 hover:bg-muted/40"
+                      )}
                     >
                       <span className="truncate block">{pt.labelFa}</span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
