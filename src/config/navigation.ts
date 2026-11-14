@@ -1,14 +1,18 @@
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
-  House,
-  Kanban,
-  ListChecks,
-  VideoCamera,
-  BookOpenText,
-  Cpu,
+  Coffee,
+  ForkKnife,
+  CookingPot,
+  Sparkle,
+  Gauge,
+  Package,
   TreeStructure,
-  Lightbulb,
-  ChatCircleDots,
+  CurrencyDollar,
+  Receipt,
+  UsersThree,
+  ClipboardText,
+  Plant,
+  ChartLineUp,
 } from "@phosphor-icons/react";
 
 /**
@@ -153,7 +157,7 @@ export const NAV_COLOR_MAP: Record<
   lime: {
     icon: "text-lime-500",
     iconHover: "group-hover:text-white",
-    iconBg: "bg-lime-500/10 group-hover:bg-gradient-to-br group-hover:from-lime-400 group-hover:to-green-500",
+    iconBg: "bg-lime-500/10 group-hover:bg-gradient-to-br group-hover:from-lime-400 group-hover:to-green-600",
     bg: "group-hover:bg-lime-500/5",
     ring: "group-hover:border-lime-500/40",
     hover: "group-hover:bg-lime-500/10",
@@ -161,7 +165,7 @@ export const NAV_COLOR_MAP: Record<
   yellow: {
     icon: "text-yellow-500",
     iconHover: "group-hover:text-white",
-    iconBg: "bg-yellow-500/10 group-hover:bg-gradient-to-br group-hover:from-yellow-400 group-hover:to-amber-500",
+    iconBg: "bg-yellow-500/10 group-hover:bg-gradient-to-br group-hover:from-yellow-400 group-hover:to-amber-600",
     bg: "group-hover:bg-yellow-500/5",
     ring: "group-hover:border-yellow-500/40",
     hover: "group-hover:bg-yellow-500/10",
@@ -169,7 +173,7 @@ export const NAV_COLOR_MAP: Record<
   amber: {
     icon: "text-amber-500",
     iconHover: "group-hover:text-white",
-    iconBg: "bg-amber-500/10 group-hover:bg-gradient-to-br group-hover:from-amber-400 group-hover:to-orange-500",
+    iconBg: "bg-amber-500/10 group-hover:bg-gradient-to-br group-hover:from-amber-400 group-hover:to-orange-600",
     bg: "group-hover:bg-amber-500/5",
     ring: "group-hover:border-amber-500/40",
     hover: "group-hover:bg-amber-500/10",
@@ -177,7 +181,7 @@ export const NAV_COLOR_MAP: Record<
   orange: {
     icon: "text-orange-500",
     iconHover: "group-hover:text-white",
-    iconBg: "bg-orange-500/10 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-red-500",
+    iconBg: "bg-orange-500/10 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-red-600",
     bg: "group-hover:bg-orange-500/5",
     ring: "group-hover:border-orange-500/40",
     hover: "group-hover:bg-orange-500/10",
@@ -193,7 +197,7 @@ export const NAV_COLOR_MAP: Record<
   sunset: {
     icon: "text-orange-500",
     iconHover: "group-hover:text-white",
-    iconBg: "bg-orange-500/10 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-pink-500",
+    iconBg: "bg-orange-500/10 group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-rose-600",
     bg: "group-hover:bg-orange-500/5",
     ring: "group-hover:border-orange-500/40",
     hover: "group-hover:bg-orange-500/10",
@@ -297,8 +301,7 @@ export interface NavItem {
  * - id       : stable identifier, also used as a React key.
  * - labelKey : i18n key resolved under `Menu.sections.*`.
  * - icon     : section icon.
- * - color    : optional default color for all items in this group (can be
- *              overridden per-item).
+ * - color    : optional default color for all items in this group.
  * - items    : leaf items belonging to this group.
  */
 export interface NavGroup {
@@ -308,89 +311,129 @@ export interface NavGroup {
   /** Default color applied to items that don't specify their own color. */
   color?: NavColor;
   items: NavItem[];
-  custom?: "Cpu";
+  custom?: string;
 }
 
+/**
+ * Coffee Zheen Pure Café Navigation
+ * Contains exclusively Café Operations & Enterprise Café ERP modules.
+ */
 export const NAVIGATION: NavGroup[] = [
   {
-    id: "engineering",
-    labelKey: "engineering",
-    icon: Cpu,
-    color: "violet",
-    items: [
-      {
-        labelKey: "ESP-Flow",
-        href: "/ESP-Flow",
-        icon: TreeStructure,
-        color: "violet",
-        public: true,
-        free: false,
-      },
-    ],
-  },
-  {
-    id: "projectManagement",
-    labelKey: "projectManagement",
-    icon: Kanban,
+    id: "cafeOperations",
+    labelKey: "cafeOperations",
+    icon: Coffee,
     color: "amber",
     items: [
       {
-        labelKey: "projects",
-        href: "/projects",
-        icon: Kanban,
-        color: "blue",
-      },
-      {
-        labelKey: "tasks",
-        href: "/tasks",
-        icon: ListChecks,
-        color: "sky",
-      },
-    ],
-  },
-  {
-    id: "knowledge",
-    labelKey: "knowledge",
-    icon: BookOpenText,
-    color: "emerald",
-    items: [
-      {
-        labelKey: "dictionary",
-        href: "/dictionary",
-        icon: BookOpenText,
-        color: "emerald",
-        public: true,
-        free: true,
-      },
-      {
-        labelKey: "didYouKnow",
-        href: "/did-you-know",
-        icon: Lightbulb,
+        labelKey: "pos",
+        href: "/cafe",
+        icon: Coffee,
         color: "amber",
         public: true,
         free: true,
       },
       {
-        labelKey: "videos",
-        href: "/aparat",
-        icon: VideoCamera,
-        color: "rose",
+        labelKey: "tables",
+        href: "/cafe?tab=tables",
+        icon: ForkKnife,
+        color: "orange",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "kds",
+        href: "/cafe?tab=kds",
+        icon: CookingPot,
+        color: "red",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "blueChocolate",
+        href: "/cafe?tab=chocolate",
+        icon: Sparkle,
+        color: "sky",
         public: true,
         free: true,
       },
     ],
   },
   {
-    id: "community",
-    labelKey: "community",
-    icon: ChatCircleDots,
-    color: "indigo",
+    id: "zheenErp",
+    labelKey: "zheenErp",
+    icon: Gauge,
+    color: "violet",
     items: [
       {
-        labelKey: "community",
-        href: "/community",
-        icon: ChatCircleDots,
-        color: "indigo",
+        labelKey: "erpDashboard",
+        href: "/zheen-erp",
+        icon: Gauge,
+        color: "violet",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "inventory",
+        href: "/zheen-erp?tab=inventory",
+        icon: Package,
+        color: "emerald",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "production",
+        href: "/zheen-erp?tab=production",
+        icon: TreeStructure,
+        color: "cyan",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "costing",
+        href: "/zheen-erp?tab=costing",
+        icon: CurrencyDollar,
+        color: "lime",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "expenses",
+        href: "/zheen-erp?tab=expenses",
+        icon: Receipt,
+        color: "rose",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "hr",
+        href: "/zheen-erp?tab=hr",
+        icon: UsersThree,
+        color: "blue",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "operations",
+        href: "/zheen-erp?tab=operations",
+        icon: ClipboardText,
+        color: "teal",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "plants",
+        href: "/zheen-erp?tab=plants",
+        icon: Plant,
+        color: "green",
+        public: true,
+        free: true,
+      },
+      {
+        labelKey: "reports",
+        href: "/zheen-erp?tab=reports",
+        icon: ChartLineUp,
+        color: "purple",
         public: true,
         free: true,
       },
@@ -398,9 +441,9 @@ export const NAVIGATION: NavGroup[] = [
   },
 ];
 
-/** Primary navigation derived from the `main` group (top bar). */
+/** Primary navigation derived from the `cafeOperations` group. */
 export const PRIMARY_NAV: NavItem[] =
-  NAVIGATION.find((group) => group.id === "main")?.items ?? [];
+  NAVIGATION.find((group) => group.id === "cafeOperations")?.items ?? [];
 
 /** All items flagged as public (visible without authentication). */
 export const PUBLIC_NAV_ITEMS: NavItem[] = NAVIGATION.flatMap((group) =>

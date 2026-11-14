@@ -147,7 +147,7 @@ export function Footer({
           {/* Copyright */}
           <p className="text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-300 tracking-wider truncate font-medium shrink-0">
             <span>© <bdi>2024-{year}</bdi> </span>
-            <span className="font-semibold text-primary">EUROSLOT PARS</span>
+            <span className="font-semibold text-primary">COFFEE ZHEEN</span>
             <span className="hidden sm:inline"> | {tCommon('footer.allRightsReserved')}</span>
           </p>
         </div>

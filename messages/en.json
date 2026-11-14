@@ -85,14 +85,14 @@
     "empty": "No language found."
   },
   "Metadata": {
-    "title": "Euroslot Pars CORE",
-    "description": "Consolidate your projects, clients, and billing into one integrated, easy-to-use platform.",
-    "keywords": "CRM, Project Management, Service Business, ESP CORE",
-    "ogTitle": "ESP CORE",
-    "ogDescription": "Unified platform for engineering and service businesses"
+    "title": "Coffee Zheen | Café ERP & POS",
+    "description": "Integrated Café Management System for Coffee Zheen: 3-tier inventory, BOM recipes, costing, maintenance, HR and operations.",
+    "keywords": "Coffee Zheen, Café Management, POS, Inventory, Recipe BOM, Costing",
+    "ogTitle": "Coffee Zheen | Café ERP",
+    "ogDescription": "Smart Integrated Management Platform for Coffee Zheen"
   },
   "Header": {
-    "brand": "Euroslot Pars CORE",
+    "brand": "Coffee Zheen",
     "home": "Home",
     "categories": "Categories",
     "about": "About",
@@ -125,7 +125,20 @@
       "strategic": "Strategic OKRs",
       "reports": "Reports",
       "sitemap": "Sitemap",
-      "community": "Community"
+      "community": "Community",
+      "cafe": "Coffee Zheen",
+      "zheen-erp": "Zheen ERP",
+      "pos": "POS",
+      "tables": "Tables",
+      "kds": "Kitchen KDS",
+      "chocolate": "Blue Chocolate",
+      "inventory": "Inventory",
+      "production": "Production BOM",
+      "costing": "Costing",
+      "expenses": "Expenses",
+      "hr": "HR & Payroll",
+      "operations": "Operations",
+      "plants": "Plants"
     }
   },
   "Home": {
@@ -664,7 +677,9 @@
       "employees": "Employees",
       "multimedia": "Multimedia",
       "settings": "Settings",
-      "language": "Language"
+      "language": "Language",
+      "cafeOperations": "Café Operations & POS",
+      "zheenErp": "Zheen ERP Management"
     },
     "items": {
       "dashboard": "Dashboard",
@@ -682,7 +697,7 @@
       "analytics": "Analytics",
       "newTask": "New Task",
       "calendar": "Calendar",
-      "reports": "Reports",
+      "reports": "Financial Reports",
       "board": "Board",
       "documents": "Documents",
       "contracts": "Contracts",
@@ -696,7 +711,19 @@
       "audio": "Audio",
       "mediaLibrary": "Media Library",
       "standards": "Standards",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "pos": "POS & Orders",
+      "tables": "Table Map",
+      "kds": "Kitchen Display (KDS)",
+      "blueChocolate": "3D Blue Chocolate",
+      "erpDashboard": "Executive Dashboard",
+      "inventory": "3-Tier Inventory",
+      "production": "Recipes & BOM",
+      "costing": "Unit Costing & Packaging",
+      "expenses": "Expenses & Assets",
+      "hr": "Staff & Contracts",
+      "operations": "Daily Checklists",
+      "plants": "Café Plants"
     },
     "descriptions": {
       "dashboard": "A clear overview of your key metrics and activity.",
@@ -712,7 +739,7 @@
       "email": "Design and send targeted email campaigns.",
       "analytics": "Measure performance and understand your results.",
       "calendar": "See events and deadlines in a unified calendar.",
-      "reports": "Build detailed reports on project progress.",
+      "reports": "Revenue, net profit, expense breakdown and weekly charts.",
       "board": "Manage work visually with a Kanban board.",
       "documents": "Store and categorize organizational documents.",
       "contracts": "Archive and manage contracts in one hub.",
@@ -726,7 +753,19 @@
       "audio": "Access and manage your audio files.",
       "mediaLibrary": "A unified library for all your media files.",
       "standards": "API Standards",
-      "Claud-Flow": "Claude Flow"
+      "Claud-Flow": "Claude Flow",
+      "pos": "Fast touch POS ordering, bills, and customer service.",
+      "tables": "Floor plan, seating occupancy and table orders.",
+      "kds": "Kitchen & bar orders monitor with prep timing.",
+      "blueChocolate": "Interactive 3D cinematic simulation of signature Blue Chocolate.",
+      "erpDashboard": "KPIs, urgent stock shortage alerts, and financial overview.",
+      "inventory": "Raw materials, semi-finished and consumables with FIFO.",
+      "production": "Multi-level recipes, production batch runs, and auto deductions.",
+      "costing": "12-factor cost breakdown, Dine-in vs Takeaway margins.",
+      "expenses": "Operating expenses, equipment maintenance and depreciation.",
+      "hr": "Personnel files, contract renewals and monthly wages.",
+      "operations": "Opening, barista routines, closing and manager verification.",
+      "plants": "Plant catalog with smart watering intervals and history."
     }
   },
   "NotFound": {

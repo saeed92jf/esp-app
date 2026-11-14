@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "@/i18n/navigation";
 
 // Sub-components
 import { PosTerminalView } from "./pos-terminal-view";
@@ -165,7 +166,14 @@ export function CafeView() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
+          <Link
+            href="/zheen-erp"
+            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-md text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs transition-colors"
+          >
+            <Boxes className="size-4" />
+            سامانه جامع ERP ژین
+          </Link>
           <Button
             variant="default"
             size="sm"
