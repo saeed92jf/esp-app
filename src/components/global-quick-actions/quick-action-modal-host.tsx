@@ -10,11 +10,13 @@ import { IdeaDialog } from "@/modules/bug-reports/components/IdeaDialog";
 interface QuickActionModalHostProps {
   activeActionId: string | null;
   onClose: () => void;
+  onSubmitted?: (ticketNumber: string) => void;
 }
 
 export function QuickActionModalHost({
   activeActionId,
   onClose,
+  onSubmitted,
 }: QuickActionModalHostProps) {
   if (!activeActionId) return null;
 
@@ -26,6 +28,7 @@ export function QuickActionModalHost({
         onOpenChange={(open) => {
           if (!open) onClose();
         }}
+        onSubmitted={onSubmitted}
       />
       <SupportRequestDialog
         open={activeActionId === "support-request"}

@@ -34,7 +34,8 @@ export function GlobalQuickActions() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeModalId, setActiveModalId] = useState<string | null>(null);
   const [bottomOffset, setBottomOffset] = useState(24); // default 24px from bottom
-  const [openIssuesCount, setOpenIssuesCount] = useState<number>(1);
+  const [openIssuesCount, setOpenIssuesCount] = useState<number>(0);
+  const [userReportsCount, setUserReportsCount] = useState<number>(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerButtonRef = useRef<HTMLButtonElement>(null);
@@ -52,26 +53,49 @@ export function GlobalQuickActions() {
     setIsOpen(false);
   }, [pathname]);
 
-  // Load analytics count for badge
+  // Load analytics & user reports count
   useEffect(() => {
     let isMounted = true;
+
+    // 1. Fetch user reports if logged in
+    if (user?.id) {
+      bugReportsService
+        .getMyBugReports(user.id)
+        .then((reports) => {
+          if (!isMounted) return;
+          const active = reports.filter(
+            (r) =>
+              r.status !== "Closed" &&
+              r.status !== "Resolved" &&
+              r.status !== "Rejected"
+          );
+          setUserReportsCount(active.length > 0 ? active.length : reports.length);
+        })
+        .catch(() => {
+          if (isMounted) setUserReportsCount(0);
+        });
+    } else {
+      setUserReportsCount(0);
+    }
+
+    // 2. Fetch general analytics for badge
     bugReportsService
       .getAnalytics()
       .then((data) => {
         if (!isMounted) return;
         const count = (data.new || 0) + (data.inProgress || 0);
-        setOpenIssuesCount(count > 0 ? count : data.total || 1);
+        setOpenIssuesCount(count > 0 ? count : data.total || 0);
       })
       .catch(() => {
-        // Fallback default
-        if (isMounted) setOpenIssuesCount(1);
+        if (isMounted) setOpenIssuesCount(0);
       });
+
     return () => {
       isMounted = false;
     };
-  }, [pathname]);
+  }, [user?.id, pathname]);
 
-  // Dynamic Push-up calculation: detects footer and pushes FAB cleanly above it
+  // Dynamic Push-up calculation: detects footer and elevates FAB identically with ScrollToTop
   useEffect(() => {
     const handleScroll = () => {
       const footer = document.querySelector("footer");
@@ -85,9 +109,8 @@ export function GlobalQuickActions() {
 
       // If the top edge of the footer enters or is visible in the viewport
       if (rect.top < windowHeight) {
-        const overlap = windowHeight - rect.top;
-        // Float cleanly 16px above the top border of the footer, never dipping below default 24px
-        setBottomOffset(Math.max(24, Math.round(overlap + 16)));
+        const visibleFooterHeight = windowHeight - rect.top;
+        setBottomOffset(Math.max(24, Math.round(visibleFooterHeight + 24)));
       } else {
         setBottomOffset(24);
       }
@@ -163,9 +186,8 @@ export function GlobalQuickActions() {
         ref={containerRef}
         style={{ bottom: `${bottomOffset}px` }}
         className={cn(
-          "fixed end-6 z-40 select-none print:hidden flex flex-col items-end",
-          "transition-[bottom] duration-150 ease-out",
-          "pe-[env(safe-area-inset-right)]"
+          "fixed right-[84px] z-40 select-none print:hidden flex flex-col items-end",
+          "transition-[bottom,right] duration-150 ease-out"
         )}
       >
         {/* Minimal Expandable Menu Popover matching user reference */}
@@ -256,7 +278,8 @@ export function GlobalQuickActions() {
           )}
         </AnimatePresence>
 
-        {/* Floating Action Button (FAB) matching reference style */}
+        {/* Floating Action Button (FAB) */}
+        {/* Same size as ScrollToTop (size-12) & circular, expands into bean shape only when user has reported */}
         <button
           ref={triggerButtonRef}
           type="button"
@@ -273,36 +296,51 @@ export function GlobalQuickActions() {
               : "Quick Actions"
           }
           className={cn(
-            "group relative flex items-center justify-center cursor-pointer select-none outline-none transition-all duration-200",
+            "group relative flex items-center justify-center cursor-pointer select-none outline-none transition-all duration-300 ease-out",
             "bg-[#9C0002] hover:bg-[#EC2527] text-white shadow-lg hover:shadow-xl active:scale-95",
             "ring-2 ring-white/20 dark:ring-black/20 focus-visible:ring-4 focus-visible:ring-primary/40",
-            // Desktop: pill style button matching reference; Mobile: compact circle
-            "h-10 rounded-full px-3 gap-2 max-md:size-11 max-md:p-0"
+            // If user has reported issues: Bean / Pill shape. Otherwise: circular matching ScrollToTop
+            userReportsCount > 0
+              ? "h-12 rounded-full px-4 gap-2.5 min-w-[130px]"
+              : "size-12 rounded-full p-0"
           )}
         >
-          {/* Inner Monogram / Circle (matching the (N) circular badge in photo) */}
-          <div className="size-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-bold text-white shrink-0">
-            E
-          </div>
+          {userReportsCount > 0 ? (
+            /* Bean / Pill shape (لوبیایی) showing how many issues user has */
+            <>
+              {/* Inner Monogram / Badge */}
+              <div className="size-6 rounded-full bg-white/25 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                E
+              </div>
 
-          {/* Desktop Text Label (matching "1 Issue" in photo) */}
-          <span className="hidden md:inline-block text-xs font-bold tracking-wide whitespace-nowrap">
-            {openIssuesCount > 0
-              ? `${openIssuesCount} ${isRtl ? "اشکال و اقدام" : openIssuesCount === 1 ? "Issue" : "Issues"}`
-              : isRtl
-              ? "اقدامات سریع"
-              : "Quick Actions"}
-          </span>
+              {/* Issues Count Label */}
+              <span className="text-xs font-bold tracking-wide whitespace-nowrap">
+                {isRtl
+                  ? `${userReportsCount} ایشو داریم`
+                  : `${userReportsCount} ${userReportsCount === 1 ? "Issue" : "Issues"}`}
+              </span>
 
-          {/* Animated Plus / Close Icon (matching 'x' in photo when open) */}
-          <div
-            className={cn(
-              "transition-transform duration-200 flex items-center justify-center shrink-0",
-              isOpen ? "rotate-90" : "rotate-0"
-            )}
-          >
-            {isOpen ? <X className="size-4" /> : <Plus className="size-4" />}
-          </div>
+              {/* Animated Plus / Close Icon */}
+              <div
+                className={cn(
+                  "transition-transform duration-200 flex items-center justify-center shrink-0",
+                  isOpen ? "rotate-90" : "rotate-0"
+                )}
+              >
+                {isOpen ? <X className="size-4" /> : <Plus className="size-4" />}
+              </div>
+            </>
+          ) : (
+            /* Circular shape (دایره) matching ScrollToTop exactly */
+            <div
+              className={cn(
+                "transition-transform duration-200 flex items-center justify-center",
+                isOpen ? "rotate-90" : "rotate-0 group-hover:rotate-90"
+              )}
+            >
+              {isOpen ? <X className="size-5.5 stroke-[2.2]" /> : <Plus className="size-5.5 stroke-[2.2]" />}
+            </div>
+          )}
         </button>
       </div>
 
@@ -310,6 +348,9 @@ export function GlobalQuickActions() {
       <QuickActionModalHost
         activeActionId={activeModalId}
         onClose={() => setActiveModalId(null)}
+        onSubmitted={() => {
+          setUserReportsCount((prev) => prev + 1);
+        }}
       />
     </>
   );
