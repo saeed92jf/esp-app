@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { IRANIAN_PLANTS } from "../data/plants.data";
+import { getAllUnifiedPlants } from "../utils/petro-unifier";
 import { formatLocaleNumber } from "@/lib/format-number";
 import type { PlantFacility, PlantProcessType } from "../types/plants.types";
 import {
@@ -77,18 +78,27 @@ export function PlantsDirectoryView() {
   const [sortBy, setSortBy] = useState<PlantSortOption>("default");
   const [selectedPlant, setSelectedPlant] = useState<PlantFacility | null>(null);
 
+  const [allPlants, setAllPlants] = useState<PlantFacility[]>(() => getAllUnifiedPlants());
+
+  useEffect(() => {
+    setAllPlants(getAllUnifiedPlants());
+    const onStorage = () => setAllPlants(getAllUnifiedPlants());
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   useEffect(() => {
     if (urlPlantId) {
-      const found = IRANIAN_PLANTS.find((p) => p.id === urlPlantId);
+      const found = allPlants.find((p) => p.id === urlPlantId);
       if (found) {
         setSelectedPlant(found);
       }
     }
-  }, [urlPlantId]);
+  }, [urlPlantId, allPlants]);
 
   // Filtered and Sorted dataset
   const filteredPlants = useMemo(() => {
-    const list = IRANIAN_PLANTS.filter((plant) => {
+    const list = allPlants.filter((plant) => {
       // Process filter
       if (selectedProcess !== "all" && plant.processType !== selectedProcess) {
         return false;
@@ -144,27 +154,27 @@ export function PlantsDirectoryView() {
           return 0; // Natural curated order
       }
     });
-  }, [selectedProcess, selectedZone, search, sortBy]);
+  }, [allPlants, selectedProcess, selectedZone, search, sortBy]);
 
   // Specific Olefin plants count
   const olefinCount = useMemo(() => {
-    return IRANIAN_PLANTS.filter((p) => p.processType === "olefin").length;
-  }, []);
+    return allPlants.filter((p) => p.processType === "olefin").length;
+  }, [allPlants]);
 
   const totalCapacityMillionTons = useMemo(() => {
-    const sum = IRANIAN_PLANTS.reduce((acc, p) => acc + (p.capacityTonsPerYear ?? 0), 0);
+    const sum = allPlants.reduce((acc, p) => acc + (p.capacityTonsPerYear ?? 0), 0);
     return Math.round(sum / 1_000_000);
-  }, []);
+  }, [allPlants]);
 
   const licensorsCount = useMemo(() => {
     const set = new Set<string>();
-    IRANIAN_PLANTS.forEach((p) => {
+    allPlants.forEach((p) => {
       p.licensors?.forEach((l) => {
         if (l && l.trim()) set.add(l.trim());
       });
     });
     return set.size;
-  }, []);
+  }, [allPlants]);
 
   const getProcessBadgeColor = (type: PlantProcessType) => {
     switch (type) {
@@ -225,7 +235,7 @@ export function PlantsDirectoryView() {
               {isRtl ? "کل پلنت‌ها و واحدهای شاخص" : "Process Plants"}
             </div>
             <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
-              {formatLocaleNumber(IRANIAN_PLANTS.length, isRtl)}{" "}
+              {formatLocaleNumber(allPlants.length, isRtl)}{" "}
               <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "واحد اصلی" : "Units"}</span>
             </div>
           </div>

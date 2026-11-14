@@ -1,7 +1,7 @@
 // src/modules/customers/components/EditCustomerModal.tsx
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useLocale } from "next-intl";
 import {
   X,
@@ -14,14 +14,26 @@ import {
   MapPin,
   Pencil,
   Image as ImageIcon,
+  Factory,
+  Flame,
+  Cpu,
+  Landmark,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { customersService } from "../services/customers.service";
+import { IRANIAN_HOLDINGS } from "../data/holdings.data";
+import { storeCustomPlant, customerToPlantFacility } from "../utils/petro-unifier";
 import type { Customer, CustomerCreateInput } from "../types/customers.types";
+import type { PlantProcessType } from "../types/plants.types";
 
 interface EditCustomerModalProps {
   customer: Customer | null;
@@ -43,27 +55,36 @@ const COMMON_INDUSTRIES = [
   "EPC",
   "Trading & Contracting",
   "Cement & Lime",
-  "Food Industry",
   "Mining Industry",
   "سایر صنایع",
 ];
 
 const COMMON_CITIES = [
+  "عسلویه",
+  "بندر ماهشهر",
   "تهران",
-  "اصفهان",
-  "مشهد",
-  "تبریز",
-  "شیراز",
   "اهواز",
   "بندرعباس",
   "بوشهر",
-  "عسلویه",
   "کنگان",
-  "بندر ماهشهر",
   "اراک",
-  "یزد",
+  "اصفهان",
+  "تبریز",
+  "شیراز",
+  "مشهد",
+  "ایلام",
   "قزوین",
-  "کرمان",
+];
+
+const PROCESS_TYPES: { id: PlantProcessType; labelFa: string; labelEn: string }[] = [
+  { id: "olefin", labelFa: "واحد الفین (اتیلن / پروپیلن)", labelEn: "Olefin" },
+  { id: "aromatic", labelFa: "واحد آروماتیک (بنزن / پارازایلین)", labelEn: "Aromatic" },
+  { id: "methanol", labelFa: "واحد متانول (مگامتانول)", labelEn: "Methanol" },
+  { id: "urea_ammonia", labelFa: "واحد اوره و آمونیاک", labelEn: "Urea & Ammonia" },
+  { id: "polymer", labelFa: "واحد پلیمر (HDPE/LDPE/PP)", labelEn: "Polymer" },
+  { id: "refinery", labelFa: "پالایشگاه و میعانات گازی", labelEn: "Refinery" },
+  { id: "utility", labelFa: "یوتیلیتی متمرکز", labelEn: "Utility" },
+  { id: "chemicals", labelFa: "صنایع شیمیایی و پایین‌دستی", labelEn: "Chemicals" },
 ];
 
 export function EditCustomerModal({
@@ -75,6 +96,9 @@ export function EditCustomerModal({
   const locale = useLocale();
   const isRtl = locale === "fa";
 
+  const [activeTab, setActiveTab] = useState<"general" | "petro" | "legal">("general");
+
+  // General
   const [persianTitle, setPersianTitle] = useState("");
   const [companyNameEn, setCompanyNameEn] = useState("");
   const [abbrv, setAbbrv] = useState("");
@@ -85,14 +109,45 @@ export function EditCustomerModal({
   const [tel2, setTel2] = useState("");
   const [officeAddress, setOfficeAddress] = useState("");
   const [plantAddress, setPlantAddress] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  // Petrochemical
+  const [isPetro, setIsPetro] = useState(true);
+  const [processType, setProcessType] = useState<PlantProcessType>("olefin");
+  const [complexNameFa, setComplexNameFa] = useState("");
+  const [plantCode, setPlantCode] = useState("");
+  const [unitTypeFa, setUnitTypeFa] = useState("");
+  const [phaseFa, setPhaseFa] = useState("");
+  const [holdingId, setHoldingId] = useState("holding-pgpic");
+  const [owner1Fa, setOwner1Fa] = useState("");
+  const [nominalCapacityFa, setNominalCapacityFa] = useState("");
+  const [capacityTonsPerYear, setCapacityTonsPerYear] = useState<number | "">("");
+  const [feedstockFa, setFeedstockFa] = useState("");
+  const [licensorsText, setLicensorsText] = useState("");
+  const [engineeringText, setEngineeringText] = useState("");
+  const [productsText, setProductsText] = useState("");
+  const [reactorOrFurnaceInfoFa, setReactorOrFurnaceInfoFa] = useState("");
+  const [espInstalledBase, setEspInstalledBase] = useState("");
+  const [commissionedYear, setCommissionedYear] = useState<number | "">("");
+  const [tseSymbol, setTseSymbol] = useState("");
+
+  // Legal
   const [economicCode, setEconomicCode] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [regNumber, setRegNumber] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postalCode, setPostalCode] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const holdingOptions = useMemo(() => {
+    return [
+      ...IRANIAN_HOLDINGS.map((h) => ({ value: h.id, label: h.nameFa })),
+      { value: "private", label: isRtl ? "بخش خصوصی" : "Private" },
+      { value: "governmental", label: isRtl ? "بخش دولتی" : "Governmental" },
+    ];
+  }, [isRtl]);
 
   useEffect(() => {
     if (customer) {
@@ -109,7 +164,27 @@ export function EditCustomerModal({
       setEconomicCode(customer.economic_code || "");
       setNationalId(customer.national_id_number || "");
       setRegNumber(customer.registration_number || "");
+      setPostalCode(customer.postal_code || "");
       setLogoUrl(customer.logo_url || "");
+
+      // Petro
+      setIsPetro(Boolean(customer.is_petrochemical || customer.process_type || customer.industry === "Petrochemical"));
+      setProcessType((customer.process_type as PlantProcessType) || "olefin");
+      setComplexNameFa(customer.complex_name_fa || "");
+      setPlantCode(customer.plant_code || "");
+      setUnitTypeFa(customer.unit_type_fa || "");
+      setPhaseFa(customer.phase_fa || "");
+      setHoldingId(customer.holding_id || "holding-pgpic");
+      setOwner1Fa(customer.owner1_fa || "");
+      setNominalCapacityFa(customer.nominal_capacity_fa || "");
+      setCapacityTonsPerYear(customer.capacity_tons_per_year ?? "");
+      setFeedstockFa(customer.feedstock_fa || "");
+      setLicensorsText(customer.licensors ? customer.licensors.join(", ") : "");
+      setEngineeringText(customer.engineering_companies ? customer.engineering_companies.join(", ") : "");
+      setProductsText(customer.main_products_fa ? customer.main_products_fa.join(", ") : "");
+      setReactorOrFurnaceInfoFa(customer.reactor_or_furnace_info_fa || "");
+      setEspInstalledBase(customer.esp_installed_base || "");
+      setTseSymbol(customer.tse_symbol || "");
     }
   }, [customer]);
 
@@ -151,11 +226,16 @@ export function EditCustomerModal({
 
     setIsSubmitting(true);
     try {
+      const selectedHolding = IRANIAN_HOLDINGS.find((h) => h.id === holdingId);
+      const licensors = licensorsText.split(/[,،]+/).map((s) => s.trim()).filter(Boolean);
+      const engineeringCompanies = engineeringText.split(/[,،]+/).map((s) => s.trim()).filter(Boolean);
+      const mainProductsFa = productsText.split(/[,،]+/).map((s) => s.trim()).filter(Boolean);
+
       const payload: Partial<CustomerCreateInput> = {
         persian_title_fa: persianTitle.trim() || companyNameEn.trim(),
         company_name_en: companyNameEn.trim(),
         company_abbrv: abbrv.trim() || undefined,
-        industry: industry.trim() || "سایر صنایع",
+        industry: isPetro ? "Petrochemical" : (industry.trim() || "سایر صنایع"),
         city: city.trim() || undefined,
         website: website.trim() || undefined,
         tel_code1: tel1.trim() || undefined,
@@ -165,46 +245,69 @@ export function EditCustomerModal({
         economic_code: economicCode.trim() || undefined,
         national_id_number: nationalId.trim() || undefined,
         registration_number: regNumber.trim() || undefined,
+        postal_code: postalCode.trim() || undefined,
         logo_url: logoUrl.trim() || undefined,
+
+        is_petrochemical: isPetro,
+        process_type: isPetro ? processType : undefined,
+        plant_code: plantCode.trim() || undefined,
+        complex_name_fa: complexNameFa.trim() || persianTitle.trim() || undefined,
+        unit_type_fa: unitTypeFa.trim() || undefined,
+        phase_fa: phaseFa.trim() || undefined,
+        holding_id: holdingId || undefined,
+        holding_name_fa: selectedHolding?.nameFa || undefined,
+        owner1_fa: owner1Fa.trim() || undefined,
+        nominal_capacity_fa: nominalCapacityFa.trim() || undefined,
+        capacity_tons_per_year: typeof capacityTonsPerYear === "number" ? capacityTonsPerYear : undefined,
+        feedstock_fa: feedstockFa.trim() || undefined,
+        licensors: licensors.length > 0 ? licensors : undefined,
+        engineering_companies: engineeringCompanies.length > 0 ? engineeringCompanies : undefined,
+        main_products_fa: mainProductsFa.length > 0 ? mainProductsFa : undefined,
+        reactor_or_furnace_info_fa: reactorOrFurnaceInfoFa.trim() || undefined,
+        esp_installed_base: espInstalledBase.trim() || undefined,
+        commissioned_year: typeof commissionedYear === "number" ? commissionedYear : undefined,
+        tse_symbol: tseSymbol.trim() || undefined,
       };
 
       const updated = await customersService.updateCustomer(customer.id, payload);
+
+      if (isPetro) {
+        const facility = customerToPlantFacility(updated);
+        storeCustomPlant(facility);
+      }
+
       toast.success(isRtl ? "اطلاعات کارفرما با موفقیت به‌روزرسانی شد." : "Customer updated successfully.");
       onCustomerUpdated(updated);
       onClose();
     } catch (err: any) {
-      toast.error(err?.message || (isRtl ? "خطا در به‌روزرسانی کارفرما" : "Failed to update customer"));
+      toast.error(err?.message || (isRtl ? "خطا در ویرایش کارفرما" : "Failed to update customer"));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+        className="relative w-full max-w-2xl bg-card border border-border rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden"
         dir={isRtl ? "rtl" : "ltr"}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/80 bg-muted/30">
-          <div className="flex items-center gap-2.5">
-            <div className="size-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border/80 bg-muted/30">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
               <Pencil className="size-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-foreground">
-                  {isRtl ? "ویرایش مشخصات کارفرما (ویژه ادمین)" : "Edit Customer Details (Admin Only)"}
-                </h2>
-                <span className="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 font-mono px-1.5 py-0.5 rounded-md font-semibold">
-                  Admin
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground truncate max-w-md">
+              <h2 className="text-sm sm:text-base font-bold text-foreground">
+                {isRtl ? "ویرایش اطلاعات کارفرما و پلنت (ادمین)" : "Edit Customer & Plant (Admin)"}
+              </h2>
+              <p className="text-[11px] text-muted-foreground">
                 {customer.persian_title_fa || customer.company_name_en}
               </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -213,238 +316,340 @@ export function EditCustomerModal({
           </button>
         </div>
 
+        {/* Tab Selector */}
+        <div className="px-5 pt-3 pb-1 border-b border-border/60 bg-background">
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+            <TabsList className="grid grid-cols-3 w-full h-9 p-0.5 bg-muted/60 rounded-lg">
+              <TabsTrigger value="general" className="text-xs font-semibold">
+                {isRtl ? "۱. مشخصات شرکت" : "1. Company"}
+              </TabsTrigger>
+              <TabsTrigger value="petro" className="text-xs font-semibold">
+                {isRtl ? "۲. مشخصات فنی پلنت" : "2. Petro Specs"}
+              </TabsTrigger>
+              <TabsTrigger value="legal" className="text-xs font-semibold">
+                {isRtl ? "۳. اطلاعات حقوقی" : "3. Legal"}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* Logo upload row */}
-          <div className="flex items-center gap-4 p-3 rounded-xl border border-dashed border-border bg-muted/20">
-            <div className="relative size-16 rounded-xl border border-border/70 bg-background flex items-center justify-center overflow-hidden shrink-0">
-              {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={logoUrl} alt="Logo preview" className="object-contain size-full p-1" />
-              ) : (
-                <ImageIcon className="size-6 text-muted-foreground/60" />
-              )}
-            </div>
-            <div className="flex-1 space-y-1">
-              <div className="text-xs font-semibold text-foreground">
-                {isRtl ? "لوگوی شرکت" : "Company Logo"}
-              </div>
-              <div className="text-[11px] text-muted-foreground">
-                {isRtl ? "تصویر با فرمت PNG یا JPG" : "PNG or JPG image"}
-              </div>
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleLogoFileChange}
-                  accept="image/png, image/jpeg, image/svg+xml, image/webp"
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={isUploadingLogo}
-                  onClick={() => fileInputRef.current?.click()}
-                  className="h-7 text-xs rounded-lg gap-1.5"
-                >
-                  {isUploadingLogo ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4">
+          {activeTab === "general" && (
+            <div className="space-y-4">
+              {/* Logo Preview */}
+              <div className="flex items-center gap-3 p-3 rounded-xl border border-dashed border-border bg-muted/20">
+                <div className="relative size-14 rounded-xl border border-border bg-background flex items-center justify-center overflow-hidden shrink-0">
+                  {logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt="Logo" className="object-contain size-full p-1" />
                   ) : (
-                    <UploadCloud className="size-3.5" />
+                    <ImageIcon className="size-6 text-muted-foreground/50" />
                   )}
-                  {isRtl ? "تغییر لوگو..." : "Change Logo..."}
-                </Button>
-                {logoUrl && (
+                </div>
+                <div className="flex-1">
+                  <span className="text-xs font-bold text-foreground block">
+                    {isRtl ? "لوگوی شرکت" : "Logo"}
+                  </span>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLogoFileChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    onClick={() => setLogoUrl("")}
-                    className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                    disabled={isUploadingLogo}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="h-7 text-xs rounded-lg mt-1 gap-1"
                   >
-                    {isRtl ? "حذف لوگو" : "Remove"}
+                    {isUploadingLogo ? <Loader2 className="size-3 animate-spin" /> : <UploadCloud className="size-3" />}
+                    <span>{isRtl ? "تغییر لوگو..." : "Change..."}</span>
                   </Button>
-                )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "نام رسمی (فارسی) *" : "Persian Name *"}</Label>
+                  <Input
+                    value={persianTitle}
+                    onChange={(e) => setPersianTitle(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "نام لاتین" : "English Name"}</Label>
+                  <Input
+                    value={companyNameEn}
+                    onChange={(e) => setCompanyNameEn(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "نماد اختصاری" : "Abbrv"}</Label>
+                  <Input
+                    value={abbrv}
+                    onChange={(e) => setAbbrv(e.target.value.toUpperCase())}
+                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "صنعت" : "Industry"}</Label>
+                  <Combobox
+                    options={COMMON_INDUSTRIES.map((i) => ({ id: i, value: i, label: i }))}
+                    value={industry}
+                    onChange={(v) => setIndustry(v)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "شهر" : "City"}</Label>
+                  <Combobox
+                    options={COMMON_CITIES.map((c) => ({ id: c, value: c, label: c }))}
+                    value={city}
+                    onChange={(v) => setCity(v)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "وب‌سایت" : "Website"}</Label>
+                  <Input
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "تلفن دفتر مرکزی" : "Phone"}</Label>
+                  <Input
+                    value={tel1}
+                    onChange={(e) => setTel1(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">{isRtl ? "آدرس دفتر مرکزی" : "Address"}</Label>
+                <Textarea
+                  value={officeAddress}
+                  onChange={(e) => setOfficeAddress(e.target.value)}
+                  className="min-h-[50px] text-xs rounded-lg"
+                />
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Persian & English Name */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">
-                {isRtl ? "نام / عنوان رسمی شرکت (فارسی) *" : "Official Company Name (Persian) *"}
-              </label>
-              <Input
-                value={persianTitle}
-                onChange={(e) => setPersianTitle(e.target.value)}
-                placeholder={isRtl ? "مثال: شرکت پتروشیمی زاگرس" : "e.g. Zagros Petrochemical Co."}
-                className="h-10 text-sm rounded-xl"
-                required
-              />
-            </div>
+          {activeTab === "petro" && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-2">
+                  <Switch checked={isPetro} onCheckedChange={setIsPetro} id="edit-petro-switch" />
+                  <Label htmlFor="edit-petro-switch" className="text-xs font-bold cursor-pointer">
+                    {isRtl ? "واحد فرآیندی / مجتمع پتروشیمی فعال است" : "Petrochemical Unit Active"}
+                  </Label>
+                </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">
-                {isRtl ? "نام انگلیسی شرکت (Company Name En)" : "Company Name (English)"}
-              </label>
-              <Input
-                value={companyNameEn}
-                onChange={(e) => setCompanyNameEn(e.target.value)}
-                placeholder="e.g. Zagros Petrochemical Co."
-                className="h-10 text-sm rounded-xl font-sans"
-              />
-            </div>
-          </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">{isRtl ? "نوع واحد فرآیندی تخصصی" : "Process Type"}</Label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                  {PROCESS_TYPES.map((pt) => (
+                    <button
+                      key={pt.id}
+                      type="button"
+                      onClick={() => setProcessType(pt.id)}
+                      className={`p-2 rounded-lg border text-start text-xs transition-colors ${
+                        processType === pt.id
+                          ? "border-primary bg-primary/10 font-bold"
+                          : "border-border/70 hover:bg-muted/40"
+                      }`}
+                    >
+                      <span className="truncate block">{pt.labelFa}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-          {/* Industry & City */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="space-y-1.5 sm:col-span-2">
-              <label className="text-xs font-semibold text-foreground">
-                {isRtl ? "حوزه فعالیت و صنعت (Industry) *" : "Industry *"}
-              </label>
-              <Combobox
-                options={COMMON_INDUSTRIES.map((ind) => ({ value: ind, label: ind }))}
-                value={industry}
-                onChange={(val) => setIndustry(val || "Petrochemical")}
-                placeholder={isRtl ? "انتخاب یا جستجوی صنعت..." : "Select industry..."}
-                className="h-10 text-sm rounded-xl w-full"
-                allowClear={false}
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "کد پلنت (e.g. OLEFIN-10)" : "Plant Code"}</Label>
+                  <Input
+                    value={plantCode}
+                    onChange={(e) => setPlantCode(e.target.value.toUpperCase())}
+                    className="h-9 text-xs rounded-lg text-left uppercase font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "هلدینگ مادر" : "Parent Holding"}</Label>
+                  <Combobox
+                    options={holdingOptions}
+                    value={holdingId}
+                    onChange={(v) => setHoldingId(v)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "نماد بورس (TSE)" : "TSE Ticker"}</Label>
+                  <Input
+                    value={tseSymbol}
+                    onChange={(e) => setTseSymbol(e.target.value)}
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground">
-                {isRtl ? "شهر / استان" : "City"}
-              </label>
-              <Input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder={isRtl ? "مثال: عسلویه" : "e.g. Asalouyeh"}
-                className="h-10 text-sm rounded-xl"
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "ظرفیت اسمی سالانه" : "Capacity Text"}</Label>
+                  <Input
+                    value={nominalCapacityFa}
+                    onChange={(e) => setNominalCapacityFa(e.target.value)}
+                    placeholder="۱،۳۲۰،۰۰۰ تن در سال"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "ظرفیت عددی (تن/سال)" : "Capacity Number"}</Label>
+                  <Input
+                    type="number"
+                    value={capacityTonsPerYear}
+                    onChange={(e) => setCapacityTonsPerYear(e.target.value ? Number(e.target.value) : "")}
+                    placeholder="1320000"
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
 
-          {/* Phone & Website */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Phone className="size-3.5 text-primary" />
-                <span>{isRtl ? "شماره تماس رسمی" : "Phone Number"}</span>
-              </label>
-              <Input
-                value={tel1}
-                onChange={(e) => setTel1(e.target.value)}
-                placeholder="+98-21-..."
-                className="h-10 text-sm rounded-xl font-mono text-left"
-                dir="ltr"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "لایسنسورها" : "Licensors"}</Label>
+                  <Input
+                    value={licensorsText}
+                    onChange={(e) => setLicensorsText(e.target.value)}
+                    placeholder="Technip, Linde"
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "محصولات اصلی" : "Products"}</Label>
+                  <Input
+                    value={productsText}
+                    onChange={(e) => setProductsText(e.target.value)}
+                    placeholder="اتیلن، پروپیلن"
+                    className="h-9 text-xs rounded-lg"
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Globe className="size-3.5 text-primary" />
-                <span>{isRtl ? "وب‌سایت" : "Website"}</span>
-              </label>
-              <Input
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="www.company.com"
-                className="h-10 text-sm rounded-xl font-mono text-left"
-                dir="ltr"
-              />
-            </div>
-          </div>
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-primary">{isRtl ? "تجهیزات ونت اسلات و سینی‌های ESP" : "ESP Installed Base"}</Label>
+                <Input
+                  value={espInstalledBase}
+                  onChange={(e) => setEspInstalledBase(e.target.value)}
+                  className="h-9 text-xs rounded-lg border-primary/30"
+                />
+              </div>
 
-          {/* Office & Plant Address */}
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <MapPin className="size-3.5 text-primary" />
-                <span>{isRtl ? "آدرس دفتر مرکزی" : "Head Office Address"}</span>
-              </label>
-              <Textarea
-                value={officeAddress}
-                onChange={(e) => setOfficeAddress(e.target.value)}
-                rows={2}
-                className="text-xs rounded-xl resize-none"
-              />
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">{isRtl ? "مشخصات کوره‌ها / راکتورها" : "Furnaces & Reactors"}</Label>
+                <Input
+                  value={reactorOrFurnaceInfoFa}
+                  onChange={(e) => setReactorOrFurnaceInfoFa(e.target.value)}
+                  className="h-9 text-xs rounded-lg"
+                />
+              </div>
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Building2 className="size-3.5 text-primary" />
-                <span>{isRtl ? "آدرس مجتمع / کارخانه (Plant Address)" : "Plant / Factory Address"}</span>
-              </label>
-              <Textarea
-                value={plantAddress}
-                onChange={(e) => setPlantAddress(e.target.value)}
-                rows={2}
-                className="text-xs rounded-xl resize-none"
-              />
-            </div>
-          </div>
+          {activeTab === "legal" && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "شناسه ملی" : "National ID"}</Label>
+                  <Input
+                    value={nationalId}
+                    onChange={(e) => setNationalId(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "کد اقتصادی" : "Economic Code"}</Label>
+                  <Input
+                    value={economicCode}
+                    onChange={(e) => setEconomicCode(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
 
-          {/* Legal / Tax Numbers */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-muted/20 border border-border/60">
-            <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">
-                {isRtl ? "کد اقتصادی" : "Economic Code"}
-              </label>
-              <Input
-                value={economicCode}
-                onChange={(e) => setEconomicCode(e.target.value)}
-                className="h-8 text-xs rounded-lg font-mono"
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "شماره ثبت" : "Reg Number"}</Label>
+                  <Input
+                    value={regNumber}
+                    onChange={(e) => setRegNumber(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{isRtl ? "کد پستی ۱۰ رقمی" : "Postal Code"}</Label>
+                  <Input
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
+                    className="h-9 text-xs rounded-lg text-left font-sans"
+                    dir="ltr"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">
-                {isRtl ? "شناسه ملی" : "National ID"}
-              </label>
-              <Input
-                value={nationalId}
-                onChange={(e) => setNationalId(e.target.value)}
-                className="h-8 text-xs rounded-lg font-mono"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[11px] font-medium text-muted-foreground">
-                {isRtl ? "شماره ثبت" : "Registration No."}
-              </label>
-              <Input
-                value={regNumber}
-                onChange={(e) => setRegNumber(e.target.value)}
-                className="h-8 text-xs rounded-lg font-mono"
-              />
-            </div>
-          </div>
+          )}
 
           {/* Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+          <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="rounded-xl h-10 px-5 text-sm"
-              disabled={isSubmitting}
+              className="rounded-xl h-9 px-4 text-xs"
             >
               {isRtl ? "انصراف" : "Cancel"}
             </Button>
+
             <Button
               type="submit"
-              disabled={isSubmitting || (!persianTitle.trim() && !companyNameEn.trim())}
-              className="rounded-xl h-10 px-6 text-sm font-semibold gap-2 shadow-md bg-amber-600 hover:bg-amber-700 text-white"
+              disabled={isSubmitting}
+              className="rounded-xl h-9 px-6 text-xs font-bold gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>{isRtl ? "در حال ذخیره تغییرات..." : "Updating..."}</span>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  <span>{isRtl ? "در حال ذخیره..." : "Saving..."}</span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="size-4" />
+                  <CheckCircle2 className="size-3.5" />
                   <span>{isRtl ? "ذخیره تغییرات" : "Save Changes"}</span>
                 </>
               )}
@@ -455,4 +660,3 @@ export function EditCustomerModal({
     </div>
   );
 }
-

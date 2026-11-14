@@ -25,6 +25,7 @@ import {
   RefreshCw,
   Info,
   Pencil,
+  Factory,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { customersService } from "../services/customers.service";
+import { isPetrochemicalCustomer } from "../utils/petro-unifier";
 import type { Customer, CustomersListResponse } from "../types/customers.types";
 import { AddCustomerModal } from "./AddCustomerModal";
 import { CustomerDetailModal } from "./CustomerDetailModal";
@@ -461,7 +463,15 @@ export function CustomersDirectoryView({
                     </div>
 
                     <div className="flex flex-col items-end gap-1">
-                      {c.industry && (
+                      {isPetrochemicalCustomer(c) ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-2 py-0.5 max-w-[150px] truncate bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
+                        >
+                          <Factory className="size-3 shrink-0" />
+                          <span>{c.unit_type_fa || (c.process_type ? `واحد ${c.process_type}` : (isRtl ? "پتروشیمی" : "Petro Plant"))}</span>
+                        </Badge>
+                      ) : c.industry ? (
                         <Badge
                           variant="secondary"
                           className="text-[10px] px-2 py-0.5 max-w-[140px] truncate"
@@ -469,7 +479,7 @@ export function CustomersDirectoryView({
                         >
                           {c.industry}
                         </Badge>
-                      )}
+                      ) : null}
                       {c.city && (
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                           <MapPin className="size-3 text-muted-foreground/80" />
@@ -589,7 +599,15 @@ export function CustomersDirectoryView({
                         {c.company_name_en || "—"}
                       </td>
                       <td className="py-2.5 px-4">
-                        {c.industry ? (
+                        {isPetrochemicalCustomer(c) ? (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
+                          >
+                            <Factory className="size-3" />
+                            <span>{isRtl ? "پتروشیمی" : "Petro"}</span>
+                          </Badge>
+                        ) : c.industry ? (
                           <Badge variant="secondary" className="text-[10px]">
                             {c.industry}
                           </Badge>
@@ -598,7 +616,7 @@ export function CustomersDirectoryView({
                         )}
                       </td>
                       <td className="py-2.5 px-4 text-muted-foreground">{c.city || "—"}</td>
-                      <td className="py-2.5 px-4 font-mono">
+                      <td className="py-2.5 px-4 text-xs font-sans">
                         {c.website ? (
                           <a
                             href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
@@ -607,14 +625,14 @@ export function CustomersDirectoryView({
                             onClick={(e) => e.stopPropagation()}
                             className="text-primary hover:underline flex items-center gap-1"
                           >
-                            <span>{c.website}</span>
+                            <span className="truncate max-w-[120px] block">{c.website.replace("https://", "").replace("http://", "")}</span>
                             <ExternalLink className="size-3 shrink-0" />
                           </a>
                         ) : (
                           "—"
                         )}
                       </td>
-                      <td className="py-2.5 px-4 font-mono" dir="ltr">
+                      <td className="py-2.5 px-4 text-xs tabular-nums" dir="ltr">
                         {c.tel_code1 || "—"}
                       </td>
                       <td className="py-2.5 px-4 text-center">

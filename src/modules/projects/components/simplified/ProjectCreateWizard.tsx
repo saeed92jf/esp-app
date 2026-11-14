@@ -195,10 +195,11 @@ export function ProjectCreateWizard({
             }
             if (!seen.has(val)) {
               seen.add(val);
+              const petroHint = c.holding_name_fa ? `هلدینگ ${c.holding_name_fa}` : (c.is_petrochemical ? "صنایع پتروشیمی" : undefined);
               mapped.push({
                 value: val,
                 label: val,
-                hint: c.industry ? `${c.industry}${c.city ? ` - ${c.city}` : ""}` : c.city || undefined,
+                hint: petroHint || (c.industry ? `${c.industry}${c.city ? ` - ${c.city}` : ""}` : c.city || undefined),
               });
             }
           }
@@ -220,10 +221,11 @@ export function ProjectCreateWizard({
 
   const handleNewCustomerAdded = (newCust: Customer) => {
     const custName = (newCust.persian_title_fa || newCust.company_name_en).trim();
+    const petroHint = newCust.holding_name_fa ? `هلدینگ ${newCust.holding_name_fa}` : (newCust.is_petrochemical ? "صنایع پتروشیمی" : undefined);
     const newOpt: ComboboxOption = {
       value: custName,
       label: custName,
-      hint: newCust.industry ? `${newCust.industry}${newCust.city ? ` - ${newCust.city}` : ""}` : newCust.city || undefined,
+      hint: petroHint || (newCust.industry ? `${newCust.industry}${newCust.city ? ` - ${newCust.city}` : ""}` : newCust.city || undefined),
     };
     setCustomerOptions((prev) => [newOpt, ...prev]);
     setClient(custName);

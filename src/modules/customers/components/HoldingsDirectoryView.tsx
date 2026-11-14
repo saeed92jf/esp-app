@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
 import { IRANIAN_PLANTS } from "../data/plants.data";
+import { getAllUnifiedPlants } from "../utils/petro-unifier";
 import { formatLocaleNumber } from "@/lib/format-number";
 import type { Holding, HoldingSubsidiary } from "../types/holdings.types";
 import {
@@ -47,12 +48,13 @@ export type HoldingSortOption = "default" | "subs_desc" | "year_desc" | "year_as
 // Helper to resolve subsidiary logo from plant catalog or customer data
 function getSubsidiaryLogo(sub: HoldingSubsidiary): string | undefined {
   if (sub.logoUrl) return sub.logoUrl;
+  const allPlants = getAllUnifiedPlants();
   if (sub.plantId) {
-    const pl = IRANIAN_PLANTS.find((p) => p.id === sub.plantId);
+    const pl = allPlants.find((p) => p.id === sub.plantId);
     if (pl?.logoUrl) return pl.logoUrl;
   }
   const clean = sub.nameFa.replace(/شرکت|پتروشیمی|صنایع/g, "").trim();
-  const matched = IRANIAN_PLANTS.find(
+  const matched = allPlants.find(
     (p) => p.complexNameFa.includes(clean) || p.nameFa.includes(clean)
   );
   if (matched?.logoUrl) return matched.logoUrl;
