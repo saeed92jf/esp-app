@@ -17,22 +17,18 @@ const BACKEND_URL =
 const tabMotionVariants: Variants = {
   initial: {
     opacity: 0,
-    y: 12,
   },
   animate: {
     opacity: 1,
-    y: 0,
     transition: {
-      duration: 0.22,
-      ease: [0.22, 1, 0.36, 1],
+      duration: 0.14,
+      ease: "easeOut",
     },
   },
   exit: {
     opacity: 0,
-    y: -8,
     transition: {
-      duration: 0.14,
-      ease: [0.4, 0, 1, 1],
+      duration: 0.1,
     },
   },
 };
@@ -76,7 +72,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
         {/* Main Content Area */}
         <div className="flex-1 bg-transparent w-full relative z-10 p-2.5 sm:p-3.5 lg:p-4 xl:p-5 flex flex-col min-h-0">
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence initial={false}>
             {loading && users.length === 0 && requests.length === 0 ? (
               <motion.div
                 key="admin-loading-skeleton"

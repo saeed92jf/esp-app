@@ -17,8 +17,36 @@ export interface CustomersQueryParams {
 
 class CustomersService {
   private baseUrl = "/api/customers";
+  private cache = new Map<string, { data: CustomersListResponse; timestamp: number }>();
 
-  async getCustomers(params?: CustomersQueryParams): Promise<CustomersListResponse> {
+  private getCacheKey(params?: Record<string, any>): string {
+    return JSON.stringify(params || {});
+  }
+
+  getCachedCustomers(params?: CustomersQueryParams): CustomersListResponse | null {
+    const key = this.getCacheKey(params);
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    return entry.data;
+  }
+
+  hasCachedCustomers(params?: CustomersQueryParams): boolean {
+    return Boolean(this.getCachedCustomers(params));
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  async getCustomers(params?: CustomersQueryParams, forceRefresh = false): Promise<CustomersListResponse> {
+    const key = this.getCacheKey(params);
+    const entry = this.cache.get(key);
+    const now = Date.now();
+
+    if (!forceRefresh && entry && (now - entry.timestamp < 10000)) {
+      return entry.data;
+    }
+
     const url = new URL(this.baseUrl, typeof window !== "undefined" ? window.location.origin : "http://localhost:3000");
     if (params?.search) url.searchParams.set("search", params.search);
     if (params?.industry) url.searchParams.set("industry", params.industry);
@@ -38,7 +66,9 @@ class CustomersService {
       throw new Error(err.error || `Failed to fetch customers: ${res.statusText}`);
     }
 
-    return await res.json();
+    const data: CustomersListResponse = await res.json();
+    this.cache.set(key, { data, timestamp: Date.now() });
+    return data;
   }
 
   async getCustomerOptions(search?: string, limit = 400): Promise<CustomerOption[]> {
@@ -87,6 +117,7 @@ class CustomersService {
       throw new Error(err.error || `Failed to create customer: ${res.statusText}`);
     }
 
+    this.clearCache();
     return await res.json();
   }
 
@@ -105,6 +136,7 @@ class CustomersService {
       throw new Error(err.error || `Failed to update customer: ${res.statusText}`);
     }
 
+    this.clearCache();
     return await res.json();
   }
 
@@ -118,6 +150,8 @@ class CustomersService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || `Failed to delete customer: ${res.statusText}`);
     }
+
+    this.clearCache();
   }
 
   async uploadLogo(file: File): Promise<{ url: string; fileName: string }> {

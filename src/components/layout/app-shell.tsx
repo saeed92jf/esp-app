@@ -10,6 +10,7 @@ import { GlobalConfirmModal } from '@/components/global-confirm-modal';
 import { PresenceTracker } from '@/modules/auth/hooks/use-presence';
 import { DesktopNotificationManager } from '@/modules/notifications/components/desktop-notification-manager';
 import { ModuleAccessGuard } from '@/components/auth/module-access-guard';
+import { GlobalQuickActions } from '@/components/global-quick-actions/global-quick-actions';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -45,6 +46,7 @@ export function AppShell({ children }: AppShellProps) {
       <PresenceTracker />
       <DesktopNotificationManager />
       <ModuleAccessGuard />
+      <GlobalQuickActions />
       <ConditionalFooter />
     </div>
   );

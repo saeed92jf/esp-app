@@ -105,6 +105,8 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
                   <Link
                     key={item.id}
                     href={item.href}
+                    onMouseEnter={() => router.prefetch(item.href)}
+                    onFocus={() => router.prefetch(item.href)}
                     onClick={() => {
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
                         setSidebarOpen(false);

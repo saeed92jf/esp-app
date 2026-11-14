@@ -10,7 +10,7 @@ import {
   ScrollText,
   Settings,
 } from "lucide-react";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -103,6 +103,7 @@ export function AdminSidebar({
   const t = useTranslations("Admin");
   const locale = useLocale();
   const pathname = usePathname();
+  const router = useRouter();
   const tooltipSide = locale === "fa" ? "left" : "right";
 
   return (
@@ -161,6 +162,8 @@ export function AdminSidebar({
                 <Link
                   key={item.id}
                   href={item.href}
+                  onMouseEnter={() => router.prefetch(item.href)}
+                  onFocus={() => router.prefetch(item.href)}
                   onClick={() => {
                     setActiveTab?.(item.id);
                     if (typeof window !== "undefined" && window.innerWidth < 768) {

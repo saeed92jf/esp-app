@@ -36,6 +36,8 @@ interface DepartmentInfo {
   count: number;
 }
 
+let cachedPersonnelDirectory: PersonnelItem[] | null = null;
+
 export function PersonnelDirectory({ initialTab }: { initialTab?: "directory" | "settings" } = {}) {
   const locale = useLocale();
   const isFa = locale === "fa";
@@ -44,8 +46,8 @@ export function PersonnelDirectory({ initialTab }: { initialTab?: "directory" | 
 
   const isSettingsRoute = pathname.endsWith("/directory/settings") || pathname.endsWith("/settings");
 
-  const [personnel, setPersonnel] = useState<PersonnelItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [personnel, setPersonnel] = useState<PersonnelItem[]>(() => cachedPersonnelDirectory || []);
+  const [loading, setLoading] = useState(() => !cachedPersonnelDirectory);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<
     "all" | "esp" | "npc" | "dual"
@@ -62,10 +64,13 @@ export function PersonnelDirectory({ initialTab }: { initialTab?: "directory" | 
   // Fetch personnel directory from API
   const fetchDirectory = async () => {
     try {
-      setLoading(true);
+      if (!cachedPersonnelDirectory) {
+        setLoading(true);
+      }
       const res = await fetch("/api/directory");
       const json = await res.json();
       if (json.success && Array.isArray(json.data)) {
+        cachedPersonnelDirectory = json.data;
         setPersonnel(json.data);
       }
     } catch (err) {

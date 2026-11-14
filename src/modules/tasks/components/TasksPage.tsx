@@ -57,8 +57,14 @@ export function TasksPage({
 
   const isNewRoute = pathname.endsWith("/tasks/new") || pathname.endsWith("/new");
 
-  const [tasks, setTasks] = useState<NewTask[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryParams = useMemo(() => (isAdmin ? undefined : { assigneeId: user?.id }), [isAdmin, user?.id]);
+
+  const [tasks, setTasks] = useState<NewTask[]>(() => {
+    return newTasksService.getCachedTasks(queryParams) || [];
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    return !newTasksService.hasCachedTasks(queryParams);
+  });
   const [error, setError] = useState<string | null>(null);
 
   const activeTab: TaskTab = useMemo(() => {
@@ -75,14 +81,13 @@ export function TasksPage({
   const targetTaskId = initialTaskId || searchParams?.get("id");
 
   const fetchTasks = useCallback(async (isSilent = false) => {
-    if (!isSilent) {
+    const hasCache = newTasksService.hasCachedTasks(queryParams);
+    if (!isSilent && !hasCache) {
       setIsLoading(true);
     }
     setError(null);
     try {
-      // Admin sees all tasks; regular users see only their assigned tasks
-      const params = isAdmin ? undefined : { assigneeId: user?.id };
-      const data = await newTasksService.getTasks(params);
+      const data = await newTasksService.getTasks(queryParams);
       setTasks(data);
 
       setSelectedTask((prev) => {
@@ -96,15 +101,13 @@ export function TasksPage({
         return prev;
       });
     } catch (err: any) {
-      if (!isSilent) {
+      if (!isSilent && !hasCache) {
         setError(err?.message || "Failed to load tasks");
       }
     } finally {
-      if (!isSilent) {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     }
-  }, [isAdmin, user?.id, targetTaskId]);
+  }, [queryParams, targetTaskId]);
 
   useEffect(() => {
     fetchTasks();
@@ -233,6 +236,8 @@ export function TasksPage({
                   <Link
                     key={item.id}
                     href={item.href}
+                    onMouseEnter={() => router.prefetch(item.href)}
+                    onFocus={() => router.prefetch(item.href)}
                     onClick={() => {
                       setSelectedTask(null);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -395,14 +400,14 @@ export function TasksPage({
             </div>
           ) : isAdmin ? (
             /* Admin Views: Kanban Roadmap or Create Wizard */
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               {activeTab === "kanban" && (
                 <motion.div
                   key="admin-kanban"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.18 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.14 }}
                 >
                   <AdminRoadmapView
                     tasks={tasks}
@@ -414,10 +419,10 @@ export function TasksPage({
               {activeTab === "create" && (
                 <motion.div
                   key="admin-create"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.18 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.14 }}
                 >
                   <TaskCreateWizard
                     currentUser={user!}

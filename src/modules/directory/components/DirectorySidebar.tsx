@@ -3,7 +3,7 @@
 import React from "react";
 import { Users, Settings } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -25,6 +25,7 @@ export function DirectorySidebar({
   activeTab,
   onTabChange,
 }: DirectorySidebarProps) {
+  const router = useRouter();
   const locale = useLocale();
   const isFa = locale === "fa";
   const t = useTranslations("Directory");
@@ -83,6 +84,8 @@ export function DirectorySidebar({
                 <Link
                   key={item.id}
                   href={item.href}
+                  onMouseEnter={() => router.prefetch(item.href)}
+                  onFocus={() => router.prefetch(item.href)}
                   onClick={() => {
                     onTabChange?.(item.id);
                     if (

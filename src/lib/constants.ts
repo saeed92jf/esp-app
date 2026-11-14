@@ -24,6 +24,7 @@ export const PANEL_BACKGROUND_PREFIXES = [
   '/did-you-know',
   '/dictionary',
   '/directory',
+  '/bug-reports',
 ];
 
 export function isPanelBackgroundRoute(pathname: string | null | undefined): boolean {

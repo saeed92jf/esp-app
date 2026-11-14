@@ -126,8 +126,37 @@ export interface ProgressCreate {
 
 class NewTasksService {
   private baseUrl = "/api/tasks";
+  private cache = new Map<string, { data: NewTask[]; timestamp: number }>();
 
-  async getTasks(params?: { assigneeId?: string; status?: string }): Promise<NewTask[]> {
+  private getCacheKey(params?: Record<string, any>): string {
+    return JSON.stringify(params || {});
+  }
+
+  getCachedTasks(params?: { assigneeId?: string; status?: string }): NewTask[] | null {
+    const key = this.getCacheKey(params);
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    return entry.data;
+  }
+
+  hasCachedTasks(params?: { assigneeId?: string; status?: string }): boolean {
+    return Boolean(this.getCachedTasks(params));
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+  }
+
+  async getTasks(params?: { assigneeId?: string; status?: string }, forceRefresh = false): Promise<NewTask[]> {
+    const key = this.getCacheKey(params);
+    const entry = this.cache.get(key);
+    const now = Date.now();
+
+    // If cache is fresh (< 8s) and not forceRefresh, return immediately
+    if (!forceRefresh && entry && (now - entry.timestamp < 8000)) {
+      return entry.data;
+    }
+
     const url = new URL(this.baseUrl, typeof window !== "undefined" ? window.location.origin : "http://localhost:4000");
     if (params?.assigneeId) url.searchParams.set("assignee_id", params.assigneeId);
     if (params?.status) url.searchParams.set("status", params.status);
@@ -135,8 +164,10 @@ class NewTasksService {
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error("Failed to fetch tasks");
     const data = await res.json();
-    // Handle both array response and object with items
-    return Array.isArray(data) ? data : (data.items || data.tasks || []);
+    const result: NewTask[] = Array.isArray(data) ? data : (data.items || data.tasks || []);
+
+    this.cache.set(key, { data: result, timestamp: Date.now() });
+    return result;
   }
 
   async getTaskById(id: string): Promise<NewTask | null> {
@@ -156,6 +187,7 @@ class NewTasksService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || err.detail || "Failed to create task");
     }
+    this.clearCache();
     return res.json();
   }
 
@@ -166,12 +198,14 @@ class NewTasksService {
       body: JSON.stringify(updates),
     });
     if (!res.ok) throw new Error(`Failed to update task ${id}`);
+    this.clearCache();
     return res.json();
   }
 
   async deleteTask(id: string): Promise<void> {
     const res = await fetch(`${this.baseUrl}/${id}`, { method: "DELETE" });
     if (!res.ok) throw new Error(`Failed to delete task ${id}`);
+    this.clearCache();
   }
 
   async addProgress(taskId: string, progress: ProgressCreate): Promise<NewTask> {
@@ -184,6 +218,7 @@ class NewTasksService {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || err.detail || "Failed to add progress");
     }
+    this.clearCache();
     return res.json();
   }
 

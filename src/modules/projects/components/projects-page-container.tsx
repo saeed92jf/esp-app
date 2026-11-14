@@ -60,8 +60,12 @@ export function ProjectsPageContainer({
   const isNewRoute = pathname.endsWith("/projects/new") || pathname.endsWith("/new");
   const isLettersRoute = pathname.endsWith("/projects/letters") || pathname.endsWith("/letters");
 
-  const [projects, setProjects] = useState<SimplifiedProject[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [projects, setProjects] = useState<SimplifiedProject[]>(() => {
+    return simplifiedProjectsService.getCachedProjects() || [];
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    return !simplifiedProjectsService.hasCachedProjects();
+  });
   const [error, setError] = useState<string | null>(null);
 
   const activeTab: ProjectTab = useMemo(() => {
@@ -80,11 +84,14 @@ export function ProjectsPageContainer({
 
   const targetProjectId = initialProjectId || searchParams?.get("id");
 
-  const fetchProjects = useCallback(async () => {
-    setIsLoading(true);
+  const fetchProjects = useCallback(async (isSilent = false) => {
+    const hasCache = simplifiedProjectsService.hasCachedProjects();
+    if (!isSilent && !hasCache) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
-      const data = await simplifiedProjectsService.getProjects();
+      const data = await simplifiedProjectsService.getProjects(undefined, isSilent);
       setProjects(data);
 
       if (targetProjectId) {
@@ -94,7 +101,9 @@ export function ProjectsPageContainer({
         }
       }
     } catch (err: any) {
-      setError(err?.message || "Failed to load projects");
+      if (!isSilent && !hasCache) {
+        setError(err?.message || "Failed to load projects");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -185,6 +194,8 @@ export function ProjectsPageContainer({
                   <Link
                     key={item.id}
                     href={item.href}
+                    onMouseEnter={() => router.prefetch(item.href)}
+                    onFocus={() => router.prefetch(item.href)}
                     onClick={() => {
                       setSelectedProject(null);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -320,7 +331,7 @@ export function ProjectsPageContainer({
             <div className="p-6 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive flex items-center gap-3 my-4">
               <AlertCircle className="size-5 shrink-0" />
               <div className="flex-1 text-sm font-semibold">{error}</div>
-              <Button variant="outline" size="sm" onClick={fetchProjects} className="rounded-xl">
+              <Button variant="outline" size="sm" onClick={() => fetchProjects()} className="rounded-xl">
                 {isRtl ? "تلاش مجدد" : "Retry"}
               </Button>
             </div>

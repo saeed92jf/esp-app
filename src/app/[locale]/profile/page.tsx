@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { ProfilePage } from "@/modules/profile/components/profile-page";
 import { AuthGate } from "@/modules/auth/components/auth-gate";
-import { RefreshCw } from "lucide-react";
+import { ModulePageSkeleton } from "@/components/layout/module-page-skeleton";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -26,13 +26,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <AuthGate>
-      <Suspense
-        fallback={
-          <div className="flex-1 min-h-screen flex items-center justify-center bg-panel dark:bg-background">
-            <RefreshCw className="size-8 animate-spin text-primary" />
-          </div>
-        }
-      >
+      <Suspense fallback={<ModulePageSkeleton />}>
         <ProfilePage />
       </Suspense>
     </AuthGate>

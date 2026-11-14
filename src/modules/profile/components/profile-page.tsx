@@ -6255,6 +6255,8 @@ export function ProfilePage({
                   <Link
                     key={item.id}
                     href={item.href}
+                    onMouseEnter={() => router.prefetch(item.href)}
+                    onFocus={() => router.prefetch(item.href)}
                     onClick={() => {
                       setEditingField(null);
                       setActiveEducationRecord(null);

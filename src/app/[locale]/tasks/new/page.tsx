@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { TasksPage } from "@/modules/tasks/components/TasksPage";
-import { RefreshCw } from "lucide-react";
+import { ModulePageSkeleton } from "@/components/layout/module-page-skeleton";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -21,13 +21,7 @@ export default async function NewTaskPage({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <Suspense
-      fallback={
-        <div className="flex-1 min-h-screen flex items-center justify-center bg-panel dark:bg-background">
-          <RefreshCw className="size-8 animate-spin text-primary" />
-        </div>
-      }
-    >
+    <Suspense fallback={<ModulePageSkeleton />}>
       <TasksPage initialTab="create" />
     </Suspense>
   );

@@ -53,11 +53,15 @@ export function CustomersDirectoryView({
   const locale = useLocale();
   const isRtl = locale === "fa";
 
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [industriesList, setIndustriesList] = useState<{ name: string; count: number }[]>([]);
-  const [citiesList, setCitiesList] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const cachedInitial = useMemo(() => {
+    return customersService.getCachedCustomers({ limit: PAGE_SIZE, offset: 0 });
+  }, []);
+
+  const [customers, setCustomers] = useState<Customer[]>(() => cachedInitial?.items || []);
+  const [totalCount, setTotalCount] = useState(() => cachedInitial?.total || 0);
+  const [industriesList, setIndustriesList] = useState<{ name: string; count: number }[]>(() => cachedInitial?.industries || []);
+  const [citiesList, setCitiesList] = useState<string[]>(() => cachedInitial?.cities || []);
+  const [isLoading, setIsLoading] = useState(() => !cachedInitial);
   const [isPending, startTransition] = useTransition();
 
   // Filters
@@ -97,9 +101,12 @@ export function CustomersDirectoryView({
     loadMore = false,
     newOffset = 0
   ) => {
+    const isUnfilteredInitial = !currentSearch.trim() && currentInd === "ALL" && currentCity === "ALL" && !withLogo && newOffset === 0;
+    const hasCache = isUnfilteredInitial && Boolean(cachedInitial);
+
     if (loadMore) {
       setIsLoadingMore(true);
-    } else {
+    } else if (!hasCache) {
       setIsLoading(true);
     }
 
