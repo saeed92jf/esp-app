@@ -171,7 +171,7 @@ export function LicensorDetailModal({
                 {isRtl ? cleanNameFa : licensor.nameEn}
               </h2>
               <p className="text-xs text-muted-foreground truncate font-sans">
-                {isRtl ? licensor.nameEn : licensor.nameFa}
+                {isRtl ? licensor.nameEn : (licensor.headquartersEn || licensor.countryEn)}
               </p>
             </div>
           </div>
@@ -591,16 +591,27 @@ export function LicensorDetailModal({
                   </h3>
 
                   <div className="flex flex-wrap gap-2">
-                    {licensor.keyTechnologies.map((tech, idx) => (
-                      <Badge
-                        key={idx}
-                        variant="secondary"
-                        className="text-xs py-1.5 px-3 rounded-xl bg-card border border-border/80 shadow-2xs hover:border-primary/50 transition-colors font-medium text-foreground gap-1.5"
-                      >
-                        <span className="size-1.5 rounded-full bg-primary" />
-                        <span>{tech}</span>
-                      </Badge>
-                    ))}
+                    {licensor.keyTechnologies.map((tech, idx) => {
+                      const displayTech = isRtl
+                        ? tech
+                        : tech.replace(/\s*\([^\)]*[\u0600-\u06FF][^\)]*\)/g, "").trim();
+
+                      // If still contains Persian in English mode, check if there is Latin acronym/words
+                      const finalTech = !isRtl && /[\u0600-\u06FF]/.test(displayTech)
+                        ? displayTech.replace(/[\u0600-\u06FF\u200c]+/g, "").replace(/^[()/\s-]+|[()/\s-]+$/g, "").trim() || "Advanced Process Package"
+                        : displayTech;
+
+                      return (
+                        <Badge
+                          key={idx}
+                          variant="secondary"
+                          className="text-xs py-1.5 px-3 rounded-xl bg-card border border-border/80 shadow-2xs hover:border-primary/50 transition-colors font-medium text-foreground gap-1.5"
+                        >
+                          <span className="size-1.5 rounded-full bg-primary" />
+                          <span>{finalTech}</span>
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
 

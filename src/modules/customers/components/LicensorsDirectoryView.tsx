@@ -58,14 +58,23 @@ function getLicensorDisplayName(licensor: Licensor, isRtl: boolean): string {
     const cleaned = licensor.nameFa.replace(/\s*\([A-Za-z0-9\s/.\-&]+\)/g, "").trim();
     return cleaned || licensor.nameFa;
   }
-  return licensor.nameEn || licensor.nameFa;
+  return licensor.nameEn || licensor.id;
 }
 
 function getLicensorDisplayDescription(licensor: Licensor, isRtl: boolean): string {
   if (isRtl) {
     return licensor.descriptionFa;
   }
-  return licensor.descriptionEn || licensor.descriptionFa;
+  return (
+    licensor.descriptionEn ||
+    "Global process licensor with established technological references in energy and chemical industries."
+  );
+}
+
+function getCategoryLabel(category: LicensorCategory, isRtl: boolean): string {
+  const found = CATEGORY_TABS.find((t) => t.id === category);
+  if (!found) return "";
+  return isRtl ? found.labelFa : found.labelEn;
 }
 
 export function LicensorsDirectoryView() {
@@ -387,38 +396,40 @@ export function LicensorsDirectoryView() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {filteredLicensors.map((licensor) => {
             const currentLogo = getLicensorLogo(licensor);
             const hasLogo = Boolean(currentLogo);
             const displayName = getLicensorDisplayName(licensor, isRtl);
             const displayDescription = getLicensorDisplayDescription(licensor, isRtl);
+            const primaryCategory = licensor.processCategories[0];
+            const categoryLabel = primaryCategory ? getCategoryLabel(primaryCategory, isRtl) : null;
 
             return (
               <div
                 key={licensor.id}
                 onClick={() => handleOpenDetail(licensor)}
-                className="group rounded-2xl border border-border/80 hover:border-primary/50 bg-card p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-150 shadow-xs hover:shadow-md cursor-pointer text-start relative overflow-hidden"
+                className="group rounded-2xl border border-border/80 hover:border-primary/50 bg-card p-4 sm:p-5 flex flex-col justify-between transition-all duration-150 shadow-xs hover:shadow-md cursor-pointer text-start relative overflow-hidden"
               >
-                {/* Top Section: Logo & Details */}
-                <div className="space-y-3">
-                  {/* 1. Large Logo Showcase */}
+                {/* Top Section: Logo & Core Info */}
+                <div className="space-y-4">
+                  {/* 1. Large Crisp Logo Showcase */}
                   <div className="relative group/logo-thumb w-full">
-                    <div className="w-full h-32 sm:h-36 rounded-xl bg-white dark:bg-zinc-900 border border-border/80 p-3 sm:p-4 flex items-center justify-center overflow-hidden shadow-2xs group-hover:border-primary/40 transition-all">
+                    <div className="w-full h-36 sm:h-40 rounded-xl sm:rounded-2xl bg-white dark:bg-zinc-900 border border-border/70 p-4 sm:p-5 flex items-center justify-center overflow-hidden shadow-2xs group-hover:border-primary/40 group-hover:shadow-xs transition-all">
                       {hasLogo ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={currentLogo}
                           alt={displayName}
-                          className="max-h-22 sm:max-h-24 max-w-[85%] object-contain transition-transform duration-200 group-hover:scale-105 select-none"
+                          className="max-h-24 sm:max-h-28 max-w-[85%] object-contain transition-transform duration-200 group-hover:scale-105 select-none"
                           onError={(e) => {
                             (e.target as HTMLElement).style.display = "none";
                           }}
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-center gap-1 text-muted-foreground/60 group-hover:text-primary transition-colors">
-                          <Camera className="size-6" />
-                          <span className="text-[10px] font-semibold">{isRtl ? "بدون لوگو" : "No Logo"}</span>
+                        <div className="flex flex-col items-center justify-center text-center gap-1.5 text-muted-foreground/50 group-hover:text-primary transition-colors">
+                          <Camera className="size-7" />
+                          <span className="text-[11px] font-semibold">{isRtl ? "بدون لوگو" : "No Logo"}</span>
                         </div>
                       )}
                     </div>
@@ -432,65 +443,58 @@ export function LicensorsDirectoryView() {
                         e.stopPropagation();
                         openEditLogo(licensor);
                       }}
-                      className="size-6 rounded-md absolute top-2 end-2 bg-background/90 backdrop-blur-xs border border-border shadow-xs opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
-                      title={isRtl ? "ویرایش و تغییر لوگو" : "Edit Logo"}
+                      className="size-7 rounded-lg absolute top-2.5 end-2.5 bg-background/90 backdrop-blur-xs border border-border shadow-xs opacity-0 group-hover:opacity-100 hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer"
+                      title={isRtl ? "ویرایش و تغییر لوگو" : "Edit / Upload Logo"}
                     >
-                      <Pencil className="size-3" />
+                      <Pencil className="size-3.5" />
                     </Button>
                   </div>
 
-                  {/* 2. Licensor Name & Metadata */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between gap-1.5 text-[11px]">
-                      <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5 border-border gap-1 font-medium shrink-0">
+                  {/* 2. Metadata: Country & Status */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="outline" className="text-[11px] py-0.5 px-2 h-5.5 border-border gap-1.5 font-medium shrink-0">
                         <span>{licensor.countryCode === "IR" ? "🇮🇷" : licensor.countryCode === "DE" ? "🇩🇪" : licensor.countryCode === "NL" ? "🇳🇱" : licensor.countryCode === "IT" ? "🇮🇹" : licensor.countryCode === "JP" ? "🇯🇵" : licensor.countryCode === "US" ? "🇺🇸" : licensor.countryCode === "DK" ? "🇩🇰" : licensor.countryCode === "CH" ? "🇨🇭" : "🌐"}</span>
                         <span>{isRtl ? licensor.countryFa : licensor.countryEn}</span>
                       </Badge>
 
-                      {licensor.licenseId && (
-                        <span className="text-[10px] font-mono text-muted-foreground/80 shrink-0">
-                          ID #{licensor.licenseId}
-                        </span>
-                      )}
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] py-0 px-2 h-5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-semibold"
+                      >
+                        {isRtl ? "فعال" : "Active"}
+                      </Badge>
                     </div>
 
-                    <h4 className="text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                    {/* Company Title (Strictly Single Language!) */}
+                    <h4 className="text-base sm:text-lg font-bold tracking-tight text-foreground group-hover:text-primary transition-colors line-clamp-1">
                       {displayName}
                     </h4>
 
-                    <div className="text-[11px] text-muted-foreground line-clamp-1 font-sans">
-                      {isRtl ? licensor.nameEn : licensor.nameFa}
-                    </div>
+                    {/* Category Chip (Strictly in Active Language!) */}
+                    {categoryLabel && (
+                      <div>
+                        <span className="inline-block text-[11px] font-medium px-2 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/40">
+                          {categoryLabel}
+                        </span>
+                      </div>
+                    )}
 
+                    {/* Description (Strictly in Active Language!) */}
                     <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-0.5">
                       {displayDescription}
                     </p>
-
-                    {/* Key Technologies Tags */}
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {licensor.keyTechnologies.slice(0, 2).map((t, idx) => (
-                        <span
-                          key={idx}
-                          className="text-[10px] px-1.5 py-0.5 rounded-md bg-muted/60 text-muted-foreground font-medium line-clamp-1 max-w-[130px]"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                      {licensor.keyTechnologies.length > 2 && (
-                        <span className="text-[10px] px-1 py-0.5 rounded-md bg-muted/40 text-muted-foreground/80 font-mono">
-                          +{licensor.keyTechnologies.length - 2}
-                        </span>
-                      )}
-                    </div>
                   </div>
                 </div>
 
                 {/* Bottom Section */}
-                <div className="pt-3 mt-3 border-t border-border/60 flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
-                    <Factory className="size-3.5 text-primary shrink-0" />
+                <div className="pt-3.5 mt-4 border-t border-border/60 flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1.5 font-medium">
+                    <Factory className="size-4 text-primary shrink-0" />
                     <span>
-                      {isRtl ? `${formatLocaleNumber(licensor.licensedPlants.length, true)} واحد در ایران` : `${licensor.licensedPlants.length} units`}
+                      {isRtl
+                        ? `${formatLocaleNumber(licensor.licensedPlants.length, true)} واحد فعال در ایران`
+                        : `${licensor.licensedPlants.length} Plants in Iran`}
                     </span>
                   </span>
 
@@ -502,10 +506,10 @@ export function LicensorsDirectoryView() {
                       e.stopPropagation();
                       handleOpenDetail(licensor);
                     }}
-                    className="h-7 px-2.5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 gap-1"
+                    className="h-7.5 px-3 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 gap-1.5 cursor-pointer"
                   >
-                    <span>{isRtl ? "جزئیات" : "Details"}</span>
-                    <ArrowUpRight className="size-3" />
+                    <span>{isRtl ? "مشاهده جزئیات" : "View Details"}</span>
+                    <ArrowUpRight className="size-3.5" />
                   </Button>
                 </div>
               </div>
