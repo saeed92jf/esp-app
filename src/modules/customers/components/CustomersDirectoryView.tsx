@@ -7,23 +7,17 @@ import { useSearchParams } from "next/navigation";
 import {
   Building2,
   Search,
-  Filter,
   Plus,
   Globe,
   Phone,
   MapPin,
   ExternalLink,
-  ChevronDown,
-  Sparkles,
   LayoutGrid,
   List,
-  CheckCircle2,
   Briefcase,
-  Layers,
   Image as ImageIcon,
   Loader2,
   RefreshCw,
-  Info,
   Pencil,
   Factory,
   BookUser,
@@ -36,7 +30,13 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { customersService } from "../services/customers.service";
-import { isPetrochemicalCustomer } from "../utils/petro-unifier";
+import {
+  getCustomerDisplayName,
+  getCustomerDisplaySubtitle,
+  getCustomerDisplayIndustry,
+  getCustomerDisplayCity,
+  getCustomerDisplayProcessBadge,
+} from "../utils/customer-translations";
 import type { Customer, CustomersListResponse } from "../types/customers.types";
 import { AddCustomerModal } from "./AddCustomerModal";
 import { CustomerDetailModal } from "./CustomerDetailModal";
@@ -297,7 +297,7 @@ export function CustomersDirectoryView({
                 <option value="ALL">{isRtl ? "همه شهرها" : "All Cities"}</option>
                 {citiesList.map((cty) => (
                   <option key={cty} value={cty}>
-                    {cty}
+                    {getCustomerDisplayCity(cty, isRtl) || cty}
                   </option>
                 ))}
               </select>
@@ -359,7 +359,7 @@ export function CustomersDirectoryView({
                 onClick={() => setSelectedIndustry(ind.name)}
                 className="rounded-full text-xs font-medium shrink-0 h-7 px-3 tabular-nums cursor-pointer"
               >
-                {ind.name} ({formatLocaleNumber(ind.count, isRtl)})
+                {getCustomerDisplayIndustry(ind.name, isRtl) || ind.name} ({formatLocaleNumber(ind.count, isRtl)})
               </Button>
             ))}
           </div>
@@ -436,128 +436,134 @@ export function CustomersDirectoryView({
 
         {/* Grid View */}
         {viewMode === "grid" && customers.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {customers.map((c) => (
-              <div
-                key={c.id}
-                onClick={() => setDetailCustomer(c)}
-                className="group relative flex flex-col justify-between p-4 rounded-2xl border border-border/80 bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
-              >
-                <div className="space-y-3">
-                  {/* Top Bar: Logo & Badges */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="relative size-14 rounded-xl border border-border/70 bg-background p-1.5 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                      {c.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={c.logo_url}
-                          alt={c.persian_title_fa || c.company_name_en}
-                          className="object-contain size-full"
-                          loading="lazy"
-                        />
-                      ) : (
-                        <div className="size-full rounded-lg bg-primary/5 text-primary flex items-center justify-center text-xs font-bold font-mono">
-                          {(c.persian_title_fa || c.company_name_en || "C").slice(0, 2)}
-                        </div>
-                      )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            {customers.map((c) => {
+              const displayName = getCustomerDisplayName(c, isRtl);
+              const displaySubtitle = getCustomerDisplaySubtitle(c, isRtl);
+              const badge = getCustomerDisplayProcessBadge(c, isRtl);
+              const displayCity = getCustomerDisplayCity(c.city, isRtl);
+
+              return (
+                <div
+                  key={c.id}
+                  onClick={() => setDetailCustomer(c)}
+                  className="group relative flex flex-col justify-between p-4 sm:p-5 rounded-2xl border border-border/80 bg-card hover:border-primary/50 hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden text-start"
+                >
+                  <div className="space-y-3.5">
+                    {/* Top Bar: Logo & Badges */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="relative size-16 rounded-xl border border-border/70 bg-white dark:bg-zinc-900 p-2 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform overflow-hidden">
+                        {c.logo_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={c.logo_url}
+                            alt={displayName}
+                            className="object-contain size-full select-none"
+                            loading="lazy"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="size-full rounded-lg bg-primary/10 text-primary flex items-center justify-center text-xs font-bold font-mono">
+                            {(displayName || "CL").slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1.5 min-w-0">
+                        {badge && (
+                          <Badge
+                            variant={badge.isPetro ? "outline" : "secondary"}
+                            className={cn(
+                              "text-[10px] sm:text-[10.5px] px-2.5 py-0.5 max-w-[160px] truncate font-medium",
+                              badge.isPetro && "bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
+                            )}
+                            title={badge.label}
+                          >
+                            {badge.isPetro && <Factory className="size-3 shrink-0" />}
+                            <span className="truncate">{badge.label}</span>
+                          </Badge>
+                        )}
+                        {displayCity && (
+                          <span className="text-[11px] text-muted-foreground flex items-center gap-1 font-medium">
+                            <MapPin className="size-3 text-muted-foreground/80 shrink-0" />
+                            <span className="truncate max-w-[150px]">{displayCity}</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-1">
-                      {isPetrochemicalCustomer(c) ? (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-2 py-0.5 max-w-[150px] truncate bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
+                    {/* Company Titles */}
+                    <div className="space-y-1 pt-1">
+                      <h3 className="text-sm sm:text-base font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                        {displayName}
+                      </h3>
+                      {displaySubtitle && (
+                        <p className="text-xs text-muted-foreground font-sans line-clamp-1">
+                          {displaySubtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Card Footer: Quick Info & Action */}
+                  <div className="pt-3.5 mt-4 border-t border-border/60 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      {c.website && (
+                        <a
+                          href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                          title={c.website}
                         >
-                          <Factory className="size-3 shrink-0" />
-                          <span>{c.unit_type_fa || (c.process_type ? `واحد ${c.process_type}` : (isRtl ? "پتروشیمی" : "Petro Plant"))}</span>
-                        </Badge>
-                      ) : c.industry ? (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-2 py-0.5 max-w-[140px] truncate"
-                          title={c.industry}
+                          <Globe className="size-3.5" />
+                        </a>
+                      )}
+                      {c.tel_code1 && (
+                        <a
+                          href={`tel:${c.tel_code1.replace(/[^0-9+]/g, "")}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10 transition-colors"
+                          title={c.tel_code1}
                         >
-                          {c.industry}
-                        </Badge>
-                      ) : null}
-                      {c.city && (
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <MapPin className="size-3 text-muted-foreground/80" />
-                          <span>{c.city}</span>
+                          <Phone className="size-3.5" />
+                        </a>
+                      )}
+                      <Link
+                        href={`/customers?tab=phonebook&company=${encodeURIComponent(displayName)}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                        title={isRtl ? "دفترچه تلفن و مخاطبین شرکت" : "Company Contacts in Phonebook"}
+                      >
+                        <BookUser className="size-3.5 text-primary" />
+                      </Link>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      {isAdmin && (
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCustomer(c);
+                          }}
+                          className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
+                          title={isRtl ? "ویرایش مشخصات کارفرما (ادمین)" : "Edit Client Details (Admin)"}
+                        >
+                          <Pencil className="size-3" />
+                          <span>{isRtl ? "ویرایش" : "Edit"}</span>
                         </span>
                       )}
+                      <span className="text-xs font-semibold text-primary group-hover:underline flex items-center gap-1">
+                        <span>{isRtl ? "مشاهده جزئیات" : "View Details"}</span>
+                      </span>
                     </div>
                   </div>
-
-                  {/* Company Titles */}
-                  <div className="space-y-1">
-                    <h3 className="text-sm font-bold text-foreground line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-                      {c.persian_title_fa || c.company_name_en}
-                    </h3>
-                    {c.company_name_en && c.company_name_en !== c.persian_title_fa && (
-                      <p className="text-[11px] text-muted-foreground font-sans line-clamp-1">
-                        {c.company_name_en}
-                      </p>
-                    )}
-                  </div>
                 </div>
-
-                {/* Card Footer: Quick Info & Action */}
-                <div className="pt-4 mt-3 border-t border-border/60 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5">
-                    {c.website && (
-                      <a
-                        href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                        title={c.website}
-                      >
-                        <Globe className="size-3.5" />
-                      </a>
-                    )}
-                    {c.tel_code1 && (
-                      <a
-                        href={`tel:${c.tel_code1.replace(/[^0-9+]/g, "")}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-1 rounded-md text-muted-foreground hover:text-emerald-600 hover:bg-emerald-500/10 transition-colors"
-                        title={c.tel_code1}
-                      >
-                        <Phone className="size-3.5" />
-                      </a>
-                    )}
-                    <Link
-                      href={`/customers?tab=phonebook&company=${encodeURIComponent(c.persian_title_fa || c.company_name_en)}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                      title={isRtl ? "دفترچه تلفن و مخاطبین شرکت" : "Company Contacts in Phonebook"}
-                    >
-                      <BookUser className="size-3.5 text-primary" />
-                    </Link>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    {isAdmin && (
-                      <span
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingCustomer(c);
-                        }}
-                        className="text-[11px] font-medium text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 cursor-pointer"
-                        title={isRtl ? "ویرایش مشخصات کارفرما (ادمین)" : "Edit Client Details (Admin)"}
-                      >
-                        <Pencil className="size-3" />
-                        <span>{isRtl ? "ویرایش" : "Edit"}</span>
-                      </span>
-                    )}
-                    <span className="text-[11px] font-medium text-primary group-hover:underline flex items-center gap-1">
-                      <span>{isRtl ? "مشاهده جزئیات" : "Details"}</span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -569,8 +575,8 @@ export function CustomersDirectoryView({
                 <thead className="bg-muted/50 border-b border-border text-muted-foreground font-semibold">
                   <tr>
                     <th className="py-3 px-4 text-start">{isRtl ? "لوگو" : "Logo"}</th>
-                    <th className="py-3 px-4 text-start">{isRtl ? "نام شرکت (فارسی)" : "Company Name (Fa)"}</th>
-                    <th className="py-3 px-4 text-start">{isRtl ? "نام انگلیسی" : "English Name"}</th>
+                    <th className="py-3 px-4 text-start">{isRtl ? "نام شرکت" : "Company Name"}</th>
+                    <th className="py-3 px-4 text-start">{isRtl ? "نام تجاری / حوزه" : "Abbrv / Category"}</th>
                     <th className="py-3 px-4 text-start">{isRtl ? "صنعت" : "Industry"}</th>
                     <th className="py-3 px-4 text-start">{isRtl ? "شهر" : "City"}</th>
                     <th className="py-3 px-4 text-start">{isRtl ? "وب‌سایت" : "Website"}</th>
@@ -579,110 +585,116 @@ export function CustomersDirectoryView({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {customers.map((c) => (
-                    <tr
-                      key={c.id}
-                      onClick={() => setDetailCustomer(c)}
-                      className="hover:bg-muted/30 transition-colors cursor-pointer"
-                    >
-                      <td className="py-2.5 px-4">
-                        <div className="size-10 rounded-lg border border-border/80 bg-background p-1 flex items-center justify-center shrink-0">
-                          {c.logo_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={c.logo_url}
-                              alt={c.persian_title_fa || c.company_name_en}
-                              className="object-contain size-full"
-                              loading="lazy"
-                            />
+                  {customers.map((c) => {
+                    const displayName = getCustomerDisplayName(c, isRtl);
+                    const displayCity = getCustomerDisplayCity(c.city, isRtl);
+                    const badge = getCustomerDisplayProcessBadge(c, isRtl);
+                    const displaySubtitle = getCustomerDisplaySubtitle(c, isRtl);
+
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => setDetailCustomer(c)}
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
+                      >
+                        <td className="py-2.5 px-4">
+                          <div className="size-10 rounded-lg border border-border/80 bg-white dark:bg-zinc-900 p-1 flex items-center justify-center shrink-0 shadow-2xs">
+                            {c.logo_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={c.logo_url}
+                                alt={displayName}
+                                className="object-contain size-full"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <Building2 className="size-4 text-muted-foreground/60" />
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 font-bold text-foreground">
+                          {displayName}
+                        </td>
+                        <td className="py-2.5 px-4 font-sans text-muted-foreground">
+                          {displaySubtitle || "—"}
+                        </td>
+                        <td className="py-2.5 px-4">
+                          {badge ? (
+                            <Badge
+                              variant={badge.isPetro ? "outline" : "secondary"}
+                              className={cn(
+                                "text-[10px]",
+                                badge.isPetro && "bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
+                              )}
+                            >
+                              {badge.isPetro && <Factory className="size-3" />}
+                              <span>{badge.label}</span>
+                            </Badge>
                           ) : (
-                            <Building2 className="size-4 text-muted-foreground/60" />
+                            "—"
                           )}
-                        </div>
-                      </td>
-                      <td className="py-2.5 px-4 font-bold text-foreground">
-                        {c.persian_title_fa || c.company_name_en}
-                      </td>
-                      <td className="py-2.5 px-4 font-sans text-muted-foreground">
-                        {c.company_name_en || "—"}
-                      </td>
-                      <td className="py-2.5 px-4">
-                        {isPetrochemicalCustomer(c) ? (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] bg-primary/10 text-primary border-primary/30 font-semibold gap-1"
-                          >
-                            <Factory className="size-3" />
-                            <span>{isRtl ? "پتروشیمی" : "Petro"}</span>
-                          </Badge>
-                        ) : c.industry ? (
-                          <Badge variant="secondary" className="text-[10px]">
-                            {c.industry}
-                          </Badge>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="py-2.5 px-4 text-muted-foreground">{c.city || "—"}</td>
-                      <td className="py-2.5 px-4 text-xs font-sans">
-                        {c.website ? (
-                          <a
-                            href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="text-primary hover:underline flex items-center gap-1"
-                          >
-                            <span className="truncate max-w-[120px] block">{c.website.replace("https://", "").replace("http://", "")}</span>
-                            <ExternalLink className="size-3 shrink-0" />
-                          </a>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                      <td className="py-2.5 px-4 text-xs tabular-nums" dir="ltr">
-                        {c.tel_code1 || "—"}
-                      </td>
-                      <td className="py-2.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <Link
-                            href={`/customers?tab=phonebook&company=${encodeURIComponent(c.persian_title_fa || c.company_name_en)}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="size-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
-                            title={isRtl ? "مخاطبین شرکت در دفترچه تلفن" : "Company Contacts in Phonebook"}
-                          >
-                            <BookUser className="size-3.5" />
-                          </Link>
-                          {isAdmin && (
+                        </td>
+                        <td className="py-2.5 px-4 text-muted-foreground">{displayCity || "—"}</td>
+                        <td className="py-2.5 px-4 text-xs font-sans">
+                          {c.website ? (
+                            <a
+                              href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="text-primary hover:underline flex items-center gap-1"
+                            >
+                              <span className="truncate max-w-[120px] block">{c.website.replace("https://", "").replace("http://", "")}</span>
+                              <ExternalLink className="size-3 shrink-0" />
+                            </a>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td className="py-2.5 px-4 text-xs tabular-nums" dir="ltr">
+                          {c.tel_code1 || "—"}
+                        </td>
+                        <td className="py-2.5 px-4 text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            <Link
+                              href={`/customers?tab=phonebook&company=${encodeURIComponent(displayName)}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="size-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
+                              title={isRtl ? "مخاطبین شرکت در دفترچه تلفن" : "Company Contacts in Phonebook"}
+                            >
+                              <BookUser className="size-3.5" />
+                            </Link>
+                            {isAdmin && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingCustomer(c);
+                                }}
+                                className="h-7 text-xs rounded-lg px-2 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 gap-1"
+                                title={isRtl ? "ویرایش کارفرما (ادمین)" : "Edit Customer (Admin)"}
+                              >
+                                <Pencil className="size-3" />
+                                <span>{isRtl ? "ویرایش" : "Edit"}</span>
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setEditingCustomer(c);
+                                setDetailCustomer(c);
                               }}
-                              className="h-7 text-xs rounded-lg px-2 text-amber-600 hover:bg-amber-500/10 dark:text-amber-400 gap-1"
-                              title={isRtl ? "ویرایش کارفرما (ادمین)" : "Edit Customer (Admin)"}
+                              className="h-7 text-xs rounded-lg px-2 text-primary"
                             >
-                              <Pencil className="size-3" />
-                              <span>{isRtl ? "ویرایش" : "Edit"}</span>
+                              {isRtl ? "جزئیات" : "View"}
                             </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDetailCustomer(c);
-                            }}
-                            className="h-7 text-xs rounded-lg px-2 text-primary"
-                          >
-                            {isRtl ? "جزئیات" : "View"}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

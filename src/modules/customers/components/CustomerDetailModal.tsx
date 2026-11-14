@@ -53,6 +53,17 @@ import { formatLocaleNumber } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import { getUnifiedPlantInfo, getUnifiedHoldingInfo } from "../utils/petro-unifier";
 import { downloadLogo } from "../utils/download-logo";
+import {
+  getCustomerDisplayName,
+  getCustomerDisplayIndustry,
+  getCustomerDisplayCity,
+  UNIT_TYPE_FA_TO_EN,
+} from "../utils/customer-translations";
+import {
+  getPlantDisplayCapacity,
+  getPlantDisplayFeedstock,
+  getPlantDisplayProduct,
+} from "../utils/plant-translations";
 import type { Customer } from "../types/customers.types";
 import type { PlantProcessType } from "../types/plants.types";
 
@@ -142,13 +153,11 @@ export function CustomerDetailModal({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const displayName = isRtl
-    ? customer.persian_title_fa || customer.company_name_en
-    : customer.company_name_en || customer.persian_title_fa;
+  const displayName = getCustomerDisplayName(customer, isRtl);
 
   const subtitleName = isRtl
-    ? customer.company_name_en
-    : customer.persian_title_fa;
+    ? (customer.company_name_en && customer.company_name_en !== customer.persian_title_fa ? customer.company_name_en : null)
+    : (customer.company_abbrv || getCustomerDisplayIndustry(customer.industry, false));
 
   const logoUrl = customer.logo_url || plantInfo?.logoUrl;
   const websiteUrl = customer.website
@@ -200,19 +209,25 @@ export function CustomerDetailModal({
                     className={cn("text-[10.5px] py-0 px-2 h-5 font-semibold border", getProcessBadgeColor(plantInfo.processType))}
                   >
                     <Factory className="size-3 me-1 shrink-0" />
-                    <span>{plantInfo.unitTypeFa || getProcessLabel(plantInfo.processType, isRtl)}</span>
+                    <span>
+                      {isRtl
+                        ? (plantInfo.unitTypeFa || getProcessLabel(plantInfo.processType, true))
+                        : (plantInfo.unitTypeFa && UNIT_TYPE_FA_TO_EN[plantInfo.unitTypeFa]
+                            ? UNIT_TYPE_FA_TO_EN[plantInfo.unitTypeFa]
+                            : getProcessLabel(plantInfo.processType, false))}
+                    </span>
                   </Badge>
                 ) : customer.industry ? (
                   <Badge variant="secondary" className="text-[10.5px] py-0 px-2 h-5 font-medium">
                     <Briefcase className="size-3 me-1 shrink-0" />
-                    <span>{customer.industry}</span>
+                    <span>{getCustomerDisplayIndustry(customer.industry, isRtl)}</span>
                   </Badge>
                 ) : null}
 
                 {(customer.city || plantInfo?.locationFa) && (
                   <Badge variant="outline" className="text-[10px] py-0 px-2 h-5 font-medium border-border/70">
                     <MapPin className="size-3 me-1 shrink-0 text-primary" />
-                    <span>{customer.city || plantInfo?.cityFa || plantInfo?.locationFa}</span>
+                    <span>{getCustomerDisplayCity(customer.city || plantInfo?.cityFa || plantInfo?.locationFa, isRtl)}</span>
                   </Badge>
                 )}
 
@@ -485,7 +500,7 @@ export function CustomerDetailModal({
                           </TableCell>
                           <TableCell className="text-xs font-bold text-foreground py-2.5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                              <span>{customer.persian_title_fa || customer.company_name_en}</span>
+                              <span>{displayName}</span>
                               {customer.company_abbrv && (
                                 <Badge variant="outline" className="text-[10px] w-fit font-mono font-bold">
                                   {customer.company_abbrv}
@@ -511,11 +526,11 @@ export function CustomerDetailModal({
                             {isRtl ? "حوزه فعالیت و صنعت" : "Industry & Sector"}
                           </TableCell>
                           <TableCell className="text-xs py-2.5 font-medium text-foreground">
-                            {customer.industry || (plantInfo ? getProcessLabel(plantInfo.processType, isRtl) : "—")}
+                            {getCustomerDisplayIndustry(customer.industry, isRtl) || (plantInfo ? getProcessLabel(plantInfo.processType, isRtl) : "—")}
                           </TableCell>
                         </TableRow>
 
-                        {customer.office_address_fa && (
+                        {(customer.office_address_fa || customer.office_address_en) && (
                           <TableRow className="border-b border-border/60 hover:bg-transparent">
                             <TableCell className="font-semibold text-xs text-muted-foreground bg-muted/20 py-2.5">
                               {isRtl ? "نشانی دفتر مرکزی" : "Head Office Address"}
@@ -523,13 +538,13 @@ export function CustomerDetailModal({
                             <TableCell className="text-xs py-2.5 text-foreground leading-relaxed">
                               <div className="flex items-start gap-1.5">
                                 <MapPin className="size-3.5 text-primary shrink-0 mt-0.5" />
-                                <span>{customer.office_address_fa}</span>
+                                <span>{(isRtl ? customer.office_address_fa : (customer.office_address_en || customer.office_address_fa)) || "—"}</span>
                               </div>
                             </TableCell>
                           </TableRow>
                         )}
 
-                        {(customer.plant_address_fa || plantInfo?.locationFa) && (
+                        {(customer.plant_address_fa || customer.plant_address_en || plantInfo?.locationFa) && (
                           <TableRow className="border-b border-border/60 hover:bg-transparent">
                             <TableCell className="font-semibold text-xs text-muted-foreground bg-muted/20 py-2.5">
                               {isRtl ? "نشانی مجتمع / کارخانه" : "Plant / Site Address"}
@@ -537,7 +552,7 @@ export function CustomerDetailModal({
                             <TableCell className="text-xs py-2.5 text-foreground leading-relaxed">
                               <div className="flex items-start gap-1.5">
                                 <Building2 className="size-3.5 text-primary shrink-0 mt-0.5" />
-                                <span>{customer.plant_address_fa || plantInfo?.locationFa}</span>
+                                <span>{(isRtl ? (customer.plant_address_fa || plantInfo?.locationFa) : (customer.plant_address_en || customer.plant_address_fa || plantInfo?.locationFa)) || "—"}</span>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -612,14 +627,14 @@ export function CustomerDetailModal({
                         <div className="p-3 rounded-xl bg-card border border-border/80 shadow-2xs space-y-1">
                           <span className="text-[10.5px] text-muted-foreground block">{isRtl ? "ظرفیت نامی سالانه" : "Nominal Capacity"}</span>
                           <span className="font-bold text-foreground block truncate">
-                            {plantInfo.nominalCapacityFa || "—"}
+                            {getPlantDisplayCapacity(plantInfo, isRtl) || plantInfo.nominalCapacityFa || "—"}
                           </span>
                         </div>
 
                         <div className="p-3 rounded-xl bg-card border border-border/80 shadow-2xs space-y-1">
                           <span className="text-[10.5px] text-muted-foreground block">{isRtl ? "خوراک فرآیندی" : "Feedstock"}</span>
                           <span className="font-bold text-foreground block truncate">
-                            {plantInfo.feedstockFa || "—"}
+                            {getPlantDisplayFeedstock(plantInfo, isRtl) || plantInfo.feedstockFa || "—"}
                           </span>
                         </div>
 
@@ -690,7 +705,7 @@ export function CustomerDetailModal({
                               variant="outline"
                               className="text-xs py-0.5 px-2 bg-muted/40 text-foreground border-border"
                             >
-                              {prod}
+                              {getPlantDisplayProduct(prod, isRtl)}
                             </Badge>
                           ))}
                         </div>
