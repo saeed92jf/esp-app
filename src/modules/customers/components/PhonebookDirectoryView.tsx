@@ -30,12 +30,15 @@ import {
   ShieldCheck,
   ArrowUpRight,
   Flame,
+  Award,
+  Landmark,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +56,9 @@ import { toast } from "sonner";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { IRANIAN_HOLDINGS } from "../data/holdings.data";
+import { IRANIAN_PLANTS } from "../data/plants.data";
+import { IRANIAN_LICENSORS } from "../data/licensors.data";
 import { contactsService, inferContactIndustry } from "../services/contacts.service";
 import type { CompanyContact, ContactDepartment, ContactCreateInput, ContactIndustry } from "../types/contacts.types";
 
@@ -121,7 +127,22 @@ const INDUSTRY_FILTERS: {
   { id: "steel", labelFa: "فولاد و فلزات", labelEn: "Steel & Metallurgy", icon: Layers },
   { id: "refinery", labelFa: "پالایشگاه و نفت", labelEn: "Refinery & Oil", icon: Flame },
   { id: "gas", labelFa: "گاز و انرژی", labelEn: "Gas & Energy", icon: Cpu },
-  { id: "other", labelFa: "سایر شرکت‌ها", labelEn: "Other", icon: Briefcase },
+  { id: "licensor", labelFa: "لایسنسورها", labelEn: "Licensors", icon: Award },
+  { id: "other", labelFa: "سایر / بدون شرکت", labelEn: "Other / Independent", icon: Briefcase },
+];
+
+export const INDUSTRY_TAGS: {
+  id: ContactIndustry;
+  labelFa: string;
+  labelEn: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { id: "petrochemical", labelFa: "پتروشیمی و پلیمر", labelEn: "Petrochemical", icon: Factory },
+  { id: "steel", labelFa: "فولاد و فلزات", labelEn: "Steel & Metallurgy", icon: Layers },
+  { id: "refinery", labelFa: "پالایشگاه و نفت", labelEn: "Refinery & Oil", icon: Flame },
+  { id: "gas", labelFa: "گاز و انرژی", labelEn: "Gas & Energy", icon: Cpu },
+  { id: "licensor", labelFa: "لایسنسور و تکنولوژی", labelEn: "Licensor & Tech", icon: Award },
+  { id: "other", labelFa: "سایر / بدون شرکت", labelEn: "Other / Independent", icon: Briefcase },
 ];
 
 const AVATAR_PALETTES = [
@@ -192,6 +213,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
   const [formFirstName, setFormFirstName] = useState("");
   const [formLastName, setFormLastName] = useState("");
   const [formCompanyName, setFormCompanyName] = useState("");
+  const [formIndustry, setFormIndustry] = useState<ContactIndustry>("petrochemical");
   const [formJobTitle, setFormJobTitle] = useState("");
   const [formDept, setFormDept] = useState<ContactDepartment>("commercial");
   const [formPhone, setFormPhone] = useState("");
@@ -204,6 +226,98 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
   const [isSaving, setIsSaving] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Company options for Combobox (including holdings, plants, licensors, and custom/no company)
+  const companyOptions = useMemo<ComboboxOption[]>(() => {
+    const list: ComboboxOption[] = [];
+
+    // Option for independent / without company
+    list.push({
+      value: "NONE",
+      label: isRtl ? "بدون شرکت (مستقل / مشاور)" : "No Company (Independent)",
+      triggerLabel: isRtl ? "بدون شرکت (مستقل)" : "No Company (Independent)",
+      hint: isRtl ? "مستقل" : "Independent",
+      icon: <User className="size-3.5 text-muted-foreground" />,
+    });
+
+    const seenNames = new Set<string>();
+
+    // 1. Iranian Holdings
+    IRANIAN_HOLDINGS.forEach((h) => {
+      if (!seenNames.has(h.nameFa)) {
+        seenNames.add(h.nameFa);
+        list.push({
+          value: h.nameFa,
+          label: h.nameFa,
+          hint: isRtl ? "هلدینگ" : "Holding",
+          icon: <Landmark className="size-3.5 text-primary" />,
+          searchTerms: [h.nameFa, h.nameEn || "", h.companyAbbrv || "", h.tseSymbol || ""].filter(Boolean),
+        });
+      }
+    });
+
+    // 2. Plants / Complexes
+    IRANIAN_PLANTS.forEach((p) => {
+      if (!seenNames.has(p.nameFa)) {
+        seenNames.add(p.nameFa);
+        list.push({
+          value: p.nameFa,
+          label: p.nameFa,
+          hint: isRtl ? "مجتمع" : "Plant",
+          icon: <Factory className="size-3.5 text-emerald-600" />,
+          searchTerms: [p.nameFa, p.nameEn || "", p.code || "", p.tseSymbol || ""].filter(Boolean),
+        });
+      }
+    });
+
+    // 3. Licensors
+    IRANIAN_LICENSORS.forEach((l) => {
+      if (!seenNames.has(l.nameFa)) {
+        seenNames.add(l.nameFa);
+        list.push({
+          value: l.nameFa,
+          label: l.nameFa,
+          hint: isRtl ? "لایسنسور" : "Licensor",
+          icon: <Award className="size-3.5 text-blue-600" />,
+          searchTerms: [l.nameFa, l.nameEn || ""],
+        });
+      }
+    });
+
+    // 4. Other Companies from Contacts list
+    contacts.forEach((c) => {
+      if (
+        c.companyNameFa &&
+        !c.companyNameFa.includes("بدون شرکت") &&
+        !c.companyNameFa.includes("مستقل") &&
+        !seenNames.has(c.companyNameFa)
+      ) {
+        seenNames.add(c.companyNameFa);
+        list.push({
+          value: c.companyNameFa,
+          label: c.companyNameFa,
+          hint: isRtl ? "شرکت" : "Company",
+          icon: <Building2 className="size-3.5 text-muted-foreground" />,
+          searchTerms: [c.companyNameFa, c.companyNameEn || ""],
+        });
+      }
+    });
+
+    return list;
+  }, [contacts, isRtl]);
+
+  const handleCompanyChange = (val: string) => {
+    if (!val || val === "NONE") {
+      setFormCompanyName("");
+      setFormIndustry("other");
+      return;
+    }
+    setFormCompanyName(val);
+    const inferred = inferContactIndustry({ companyNameFa: val } as CompanyContact);
+    if (inferred && inferred !== "other") {
+      setFormIndustry(inferred);
+    }
+  };
 
   // Load contacts based on filters
   const refreshContacts = () => {
@@ -251,6 +365,7 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       steel: 0,
       refinery: 0,
       gas: 0,
+      licensor: 0,
       other: 0,
     };
     const allFiltered = contactsService.getContacts({ search, company: selectedCompany, department: selectedDept });
@@ -319,7 +434,8 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     setSelectedContactId(null);
     setFormFirstName("");
     setFormLastName("");
-    setFormCompanyName(selectedCompany !== "all" ? selectedCompany : "شرکت صنایع پتروشیمی خلیج فارس");
+    setFormCompanyName(selectedCompany !== "all" ? selectedCompany : "");
+    setFormIndustry(selectedIndustry !== "all" ? selectedIndustry : "petrochemical");
     setFormJobTitle("");
     setFormDept("commercial");
     setFormPhone("");
@@ -341,7 +457,12 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     const parts = contact.fullNameFa.split(" ");
     setFormFirstName(parts[0] || "");
     setFormLastName(parts.slice(1).join(" ") || "");
-    setFormCompanyName(contact.companyNameFa);
+    setFormCompanyName(
+      contact.companyNameFa === "بدون شرکت (مستقل)" || contact.companyNameFa === "مستقل"
+        ? ""
+        : contact.companyNameFa
+    );
+    setFormIndustry(contact.industry || inferContactIndustry(contact) || "other");
     setFormJobTitle(contact.jobTitleFa);
     setFormDept(contact.department);
     setFormPhone(contact.phoneDirect || "");
@@ -360,10 +481,12 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
   const handleSaveContact = (e?: React.FormEvent) => {
     e?.preventDefault();
     const fullName = `${formFirstName} ${formLastName}`.trim();
-    if (!fullName || !formCompanyName.trim()) {
-      toast.error(isRtl ? "نام فرد و نام شرکت الزامی هستند." : "Full name and company name are required.");
+    if (!fullName) {
+      toast.error(isRtl ? "لطفاً نام مخاطب را وارد کنید." : "Please enter contact name.");
       return;
     }
+
+    const companyName = formCompanyName.trim() || (isRtl ? "بدون شرکت (مستقل)" : "Independent");
 
     setIsSaving(true);
     try {
@@ -372,7 +495,8 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       if (isEditing && selectedContactId) {
         contactsService.updateContact(selectedContactId, {
           fullNameFa: fullName,
-          companyNameFa: formCompanyName.trim(),
+          companyNameFa: companyName,
+          industry: formIndustry,
           jobTitleFa: formJobTitle.trim() || (isRtl ? "کارشناس" : "Specialist"),
           department: formDept,
           departmentTitleFa: deptConf.labelFa,
@@ -388,7 +512,8 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
       } else {
         const input: ContactCreateInput = {
           fullNameFa: fullName,
-          companyNameFa: formCompanyName.trim(),
+          companyNameFa: companyName,
+          industry: formIndustry,
           jobTitleFa: formJobTitle.trim() || (isRtl ? "کارشناس" : "Specialist"),
           department: formDept,
           departmentTitleFa: deptConf.labelFa,
@@ -535,22 +660,78 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                 </div>
               </div>
 
-              {/* Floating Card 1: Saving to (Company) */}
-              <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 flex items-center gap-2.5 relative z-10">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Building2 className="size-4.5" />
+              {/* Floating Card 1: Company Selector & Industry Tag */}
+              <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 space-y-2.5 relative z-10">
+                <div className="flex items-start gap-2.5">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <Building2 className="size-4.5" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
+                        {isRtl ? "شرکت یا مجتمع صنعتی:" : "Company / Complex:"}
+                      </span>
+                      {formCompanyName && (
+                        <button
+                          type="button"
+                          onClick={() => handleCompanyChange("NONE")}
+                          className="text-[9.5px] text-muted-foreground hover:text-destructive cursor-pointer"
+                        >
+                          {isRtl ? "ثبت بدون شرکت" : "Clear (No Company)"}
+                        </button>
+                      )}
+                    </div>
+
+                    <Combobox
+                      options={companyOptions}
+                      value={formCompanyName || "NONE"}
+                      onChange={handleCompanyChange}
+                      placeholder={isRtl ? "انتخاب یا تایپ شرکت جدید..." : "Select or type new company..."}
+                      searchPlaceholder={isRtl ? "جستجو یا تایپ شرکت جدید..." : "Search or type new..."}
+                      emptyText={isRtl ? "شرکتی یافت نشد. برای ثبت تایپ کنید." : "No company found. Type to create."}
+                      creatable={true}
+                      allowClear={true}
+                      size="sm"
+                      className="w-full text-xs font-semibold rounded-lg bg-background border-border/70 shadow-none focus:border-primary"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
-                    {isRtl ? "ذخیره در شرکت یا واحد صنعتی:" : "saving to"}
-                  </span>
-                  <Input
-                    value={formCompanyName}
-                    onChange={(e) => setFormCompanyName(e.target.value)}
-                    placeholder={isRtl ? "نام شرکت یا مجتمع صنعتی..." : "Company or Complex name..."}
-                    className="w-full text-xs font-semibold text-foreground bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/60 h-auto"
-                    required
-                  />
+
+                {/* Industry Tag Selector */}
+                <div className="pt-2 border-t border-border/40 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9.5px] font-semibold text-muted-foreground">
+                      {isRtl ? "تگ صنعت / دسته‌بندی:" : "Industry Tag:"}
+                    </span>
+                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 border-primary/30 text-primary font-normal">
+                      {INDUSTRY_TAGS.find((t) => t.id === formIndustry)?.labelFa || (isRtl ? "سایر" : "Other")}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {INDUSTRY_TAGS.map((tag) => {
+                      const isSelected = formIndustry === tag.id;
+                      const Icon = tag.icon;
+                      return (
+                        <Button
+                          key={tag.id}
+                          type="button"
+                          variant={isSelected ? "default" : "outline"}
+                          size="xs"
+                          onClick={() => setFormIndustry(tag.id)}
+                          className={cn(
+                            "h-5.5 px-2 rounded-full text-[10px] font-medium transition-all gap-1 cursor-pointer",
+                            isSelected
+                              ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs border-primary"
+                              : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60 hover:text-foreground"
+                          )}
+                        >
+                          <Icon className="size-2.5" />
+                          <span>{isRtl ? tag.labelFa : tag.labelEn}</span>
+                        </Button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
@@ -769,29 +950,43 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
               </p>
             </div>
 
-            {/* Floating Card 1: Company Profile with Link */}
-            <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 flex items-center justify-between gap-2.5 relative z-10">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                  <Building2 className="size-4.5" />
+            {/* Floating Card 1: Company Profile with Link & Industry Tag */}
+            <div className="-mt-5 mx-3 rounded-xl bg-card border border-border/80 shadow-xs p-3 space-y-2 relative z-10">
+              <div className="flex items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="size-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <Building2 className="size-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
+                      {isRtl ? "شرکت و مجتمع تابعه:" : "Company / Complex"}
+                    </span>
+                    <span className="text-xs font-bold text-foreground truncate block">
+                      {selectedContact.companyNameFa || (isRtl ? "بدون شرکت (مستقل)" : "Independent")}
+                    </span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <span className="text-[9.5px] text-muted-foreground font-semibold uppercase tracking-wider block">
-                    {isRtl ? "شرکت و مجتمع تابعه:" : "Company / Complex"}
-                  </span>
-                  <span className="text-xs font-bold text-foreground truncate block">
-                    {selectedContact.companyNameFa}
-                  </span>
-                </div>
+
+                {selectedContact.companyNameFa &&
+                  !selectedContact.companyNameFa.includes("بدون شرکت") &&
+                  !selectedContact.companyNameFa.includes("مستقل") && (
+                    <Link
+                      href={`/customers?search=${encodeURIComponent(selectedContact.companyNameFa)}`}
+                      className="p-1 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/40 transition-colors shrink-0"
+                      title={isRtl ? "مشاهده پرونده شرکت در بخش کارفرمایان" : "View Company"}
+                    >
+                      <ArrowUpRight className="size-3.5" />
+                    </Link>
+                  )}
               </div>
 
-              <Link
-                href={`/customers?search=${encodeURIComponent(selectedContact.companyNameFa)}`}
-                className="p-1 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted/40 transition-colors shrink-0"
-                title={isRtl ? "مشاهده پرونده شرکت در بخش کارفرمایان" : "View Company"}
-              >
-                <ArrowUpRight className="size-3.5" />
-              </Link>
+              {/* Industry Tag in Preview Card */}
+              <div className="pt-1.5 border-t border-border/40 flex items-center justify-between">
+                <span className="text-[9.5px] text-muted-foreground font-medium">{isRtl ? "حوزه و صنعت:" : "Industry:"}</span>
+                <Badge variant="outline" className="text-[9.5px] py-0 px-2 border-primary/30 text-primary">
+                  {INDUSTRY_TAGS.find((t) => t.id === (selectedContact.industry || inferContactIndustry(selectedContact)))?.labelFa || (isRtl ? "سایر" : "Other")}
+                </Badge>
+              </div>
             </div>
 
             {/* Floating Card 2: Contact Information Details */}

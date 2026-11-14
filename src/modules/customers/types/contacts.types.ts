@@ -15,6 +15,7 @@ export type ContactIndustry =
   | "steel"
   | "refinery"
   | "gas"
+  | "licensor"
   | "other";
 
 export interface CompanyContact {

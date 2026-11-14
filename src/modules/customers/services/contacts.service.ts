@@ -44,6 +44,18 @@ export function inferContactIndustry(c: CompanyContact): ContactIndustry {
   ) {
     return "gas";
   }
+  if (
+    name.includes("لایسنسور") ||
+    name.includes("تکنولوژی") ||
+    name.includes("topsoe") ||
+    name.includes("uhde") ||
+    name.includes("basf") ||
+    name.includes("lurgi") ||
+    name.includes("kbr") ||
+    name.includes("linde")
+  ) {
+    return "licensor";
+  }
   return "other";
 }
 
