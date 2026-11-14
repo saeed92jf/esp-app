@@ -12,6 +12,7 @@ import {
   ChevronDown,
   User,
   UserPlus,
+  UserCheck,
   Phone,
   Mail,
   Building2,
@@ -499,6 +500,9 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
     setIsSaving(true);
     try {
       const deptConf = DEPARTMENT_CONFIG[formDept] || DEPARTMENT_CONFIG.other;
+      const currentUserName = user?.fullNameFa || user?.fullName || user?.name || (isRtl ? "کاربر جاری" : "Current User");
+      const currentUserId = user?.id || "usr-current";
+      const currentUserAvatar = user?.avatar || user?.imageUrl;
 
       if (isEditing && selectedContactId) {
         contactsService.updateContact(selectedContactId, {
@@ -535,11 +539,18 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
           email: formEmail.trim() || undefined,
           locationFa: formLocation.trim() || undefined,
           notesFa: formNotes.trim() || undefined,
+          createdByUserId: currentUserId,
+          createdByUserName: currentUserName,
+          createdByUserAvatar: currentUserAvatar,
         };
 
         const created = contactsService.addContact(input);
         setSelectedContactId(created.id);
-        toast.success(isRtl ? "مخاطب جدید با موفقیت ذخیره شد." : "Contact created successfully.");
+        toast.success(
+          isRtl
+            ? `مخاطب به نام شما («${currentUserName}») با موفقیت ذخیره و تأیید شد.`
+            : `Contact saved and approved under your name («${currentUserName}»).`
+        );
       }
 
       setIsCreatingNew(false);
@@ -674,6 +685,23 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
 
               {/* Floating Card 1: Company Selector & Industry Tag */}
               <div className="-mt-6 mx-3.5 sm:mx-4 rounded-2xl bg-card border border-border/80 shadow-xs p-3.5 sm:p-4 space-y-3 relative z-10">
+                {/* Creator Attribution Notice */}
+                {!isEditing && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2.5 text-xs text-emerald-900 dark:text-emerald-300">
+                    <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <span className="font-bold block text-[11px] sm:text-xs">
+                        {isRtl ? "ثبت رسمی به نام شما:" : "Registered under your name:"}
+                      </span>
+                      <span className="text-[10.5px] opacity-90 block mt-0.5 leading-relaxed">
+                        {isRtl
+                          ? `این مخاطب پس از ذخیره، با نام شما («${user?.fullNameFa || user?.fullName || user?.name || "کاربر جاری"}») به عنوان ثبت‌کننده تأیید و برچسب‌گذاری می‌شود.`
+                          : `This contact will be saved, verified, and tagged as created by «${user?.fullNameFa || user?.fullName || user?.name || "Current User"}».`}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-start gap-3">
                   <div className="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
                     <Building2 className="size-5" />
@@ -1078,6 +1106,20 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                   <span>{isRtl ? deptConf.labelFa : deptConf.labelEn}</span>
                 </Badge>
               </div>
+
+              {/* Creator Attribution Tag */}
+              {selectedContact.createdByUserName && (
+                <div className="pt-2.5 border-t border-border/40 flex items-center justify-between text-xs">
+                  <span className="text-[10.5px] text-muted-foreground font-medium flex items-center gap-1.5">
+                    <UserCheck className="size-3.5 text-emerald-500" />
+                    <span>{isRtl ? "ثبت و تأییدکننده اطلاعات:" : "Added & Verified by:"}</span>
+                  </span>
+                  <Badge variant="secondary" className="text-xs py-0.5 px-2.5 font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 gap-1 rounded-full">
+                    <Check className="size-3 text-emerald-600" />
+                    <span>{selectedContact.createdByUserName}</span>
+                  </Badge>
+                </div>
+              )}
             </div>
 
             {/* Floating Card 2: Contact Information Details */}
@@ -1498,9 +1540,20 @@ export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirect
                                   </span>
                                 )}
                               </div>
-                              <p className="text-[10.5px] text-muted-foreground truncate mt-0.5">
-                                {c.companyNameFa} {c.jobTitleFa ? `• ${c.jobTitleFa}` : ""}
-                              </p>
+                              <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                <p className="text-[10.5px] text-muted-foreground truncate">
+                                  {c.companyNameFa} {c.jobTitleFa ? `• ${c.jobTitleFa}` : ""}
+                                </p>
+                                {c.createdByUserName && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[9.5px] py-0 px-1.5 gap-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-medium rounded-md bg-emerald-500/5 shrink-0"
+                                  >
+                                    <UserCheck className="size-2.5" />
+                                    <span>{isRtl ? `ثبت: ${c.createdByUserName}` : `By: ${c.createdByUserName}`}</span>
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
 

@@ -38,6 +38,9 @@ export interface CompanyContact {
   notesFa?: string;
   isKeyContact?: boolean;
   avatarUrl?: string;
+  createdByUserId?: string;
+  createdByUserName?: string;
+  createdByUserAvatar?: string;
   createdAt?: string;
 }
 
@@ -58,5 +61,8 @@ export interface ContactCreateInput {
   locationFa?: string;
   notesFa?: string;
   isKeyContact?: boolean;
+  createdByUserId?: string;
+  createdByUserName?: string;
+  createdByUserAvatar?: string;
 }
 
