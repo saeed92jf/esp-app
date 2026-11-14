@@ -1,16 +1,23 @@
 // src/components/global-quick-actions/quick-actions-registry.ts
 import React from "react";
-import { Bug, Headset, MessageSquare, Lightbulb, ShieldAlert, FileText, Lock } from "lucide-react";
+import { Bug, Headset, MessageSquare, Lightbulb } from "lucide-react";
 import type { User } from "@/types/auth";
 
 export interface QuickActionDef {
   id: string;
   titleEn: string;
   titleFa: string;
-  descriptionEn: string;
-  descriptionFa: string;
-  icon: React.ComponentType<{ className?: string }>;
+  descriptionEn?: string;
+  descriptionFa?: string;
+  icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   accentColor?: string;
+  badge?: {
+    type?: "dot-count" | "text" | "chevron";
+    dotColor?: string;
+    textEn?: string;
+    textFa?: string;
+    count?: number;
+  };
   order: number;
   isAuthorized?: (user: User | null) => boolean;
 }
@@ -19,41 +26,60 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
   {
     id: "bug-report",
     titleEn: "Report a Bug",
-    titleFa: "گزارش خطا یا باگ",
-    descriptionEn: "Report a technical problem or application error.",
-    descriptionFa: "ثبت اشکال فنی، خطا در صفحه یا رفتار نادرست سامانه.",
+    titleFa: "گزارش خطا و اشکال",
+    descriptionEn: "Report a technical problem or error.",
+    descriptionFa: "ثبت اشکال فنی یا خطا در عملکرد سیستم.",
     icon: Bug,
     accentColor: "#EC2527",
+    badge: {
+      type: "dot-count",
+      dotColor: "#EC2527",
+    },
     order: 1,
   },
   {
     id: "support-request",
     titleEn: "Support Request",
     titleFa: "درخواست پشتیبانی",
-    descriptionEn: "Request assistance from the support team.",
-    descriptionFa: "ارسال درخواست راهنمایی یا دریافت پشتیبانی فنی اداری.",
+    descriptionEn: "Request assistance from support team.",
+    descriptionFa: "راهنمایی و پشتیبانی فنی اداری.",
     icon: Headset,
     accentColor: "#0284c7",
+    badge: {
+      type: "text",
+      textEn: "24/7",
+      textFa: "پشتیبانی",
+    },
     order: 2,
   },
   {
     id: "feedback",
     titleEn: "Send Feedback",
     titleFa: "ارسال بازخورد",
-    descriptionEn: "Share your feedback and experience.",
-    descriptionFa: "انتقادات، پیشنهادات و نظرات شما جهت بهبود سامانه.",
+    descriptionEn: "Share your experience.",
+    descriptionFa: "نظرات و پیشنهادات جهت بهبود.",
     icon: MessageSquare,
     accentColor: "#10b981",
+    badge: {
+      type: "text",
+      textEn: "Rate",
+      textFa: "امتیازدهی",
+    },
     order: 3,
   },
   {
     id: "suggest-idea",
     titleEn: "Suggest an Idea",
-    titleFa: "پیشنهاد ایده جدید",
-    descriptionEn: "Suggest a new feature or improvement.",
-    descriptionFa: "ارائه قابلیت جدید، ابزار مهندسی یا بهبود فرآیندها.",
+    titleFa: "پیشنهاد ایده",
+    descriptionEn: "Propose new features.",
+    descriptionFa: "ارائه قابلیت یا بهبود جدید.",
     icon: Lightbulb,
     accentColor: "#f59e0b",
+    badge: {
+      type: "text",
+      textEn: "New",
+      textFa: "نوآوری",
+    },
     order: 4,
   },
 ];
@@ -82,4 +108,3 @@ export function getAuthorizedQuickActions(user: User | null): QuickActionDef[] {
 export function getQuickActionById(id: string): QuickActionDef | undefined {
   return customRegistry.find((a) => a.id === id);
 }
-
