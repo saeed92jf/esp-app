@@ -4,7 +4,7 @@ import { DocumentUploadSection } from "./document-upload-section";
 import { ProfileRequestsSection } from "./profile-requests-section";
 import { DocumentCategory } from "@/types/auth";
 
-import React, { useState, useEffect, useTransition, useRef } from "react";
+import React, { useState, useEffect, useTransition, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations, useLocale } from "next-intl";
 import { useProfile } from "../hooks/use-profile";
@@ -299,15 +299,15 @@ const AVATAR_COLOR_PRESETS = [
 ];
 
 const NAV_ITEMS = [
-  { id: "home", icon: Home, labelKey: "nav.home" },
-  { id: "personal", icon: User, labelKey: "nav.personal" },
-  { id: "documents", icon: FileCheck, labelKey: "nav.documents" },
-  { id: "organizational", icon: Briefcase, labelKey: "nav.organizational" },
-  { id: "skills", icon: Star, labelKey: "nav.skills" },
-  { id: "requests", icon: Send, labelKey: "nav.requests" },
-  { id: "insurance", icon: Shield, labelKey: "nav.insurance" },
-  { id: "education", icon: GraduationCap, labelKey: "nav.education" },
-  { id: "settings", icon: Settings, labelKey: "nav.settings" },
+  { id: "home", icon: Home, labelKey: "nav.home", href: "/profile" },
+  { id: "personal", icon: User, labelKey: "nav.personal", href: "/profile/personal" },
+  { id: "documents", icon: FileCheck, labelKey: "nav.documents", href: "/profile/documents" },
+  { id: "organizational", icon: Briefcase, labelKey: "nav.organizational", href: "/profile/organizational" },
+  { id: "skills", icon: Star, labelKey: "nav.skills", href: "/profile/skills" },
+  { id: "requests", icon: Send, labelKey: "nav.requests", href: "/profile/requests" },
+  { id: "insurance", icon: Shield, labelKey: "nav.insurance", href: "/profile/insurance" },
+  { id: "education", icon: GraduationCap, labelKey: "nav.education", href: "/profile/education" },
+  { id: "settings", icon: Settings, labelKey: "nav.settings", href: "/profile/settings" },
 ];
 
 
@@ -328,19 +328,43 @@ const SUGGESTED_SKILL_TAGS = [
   "عمومی و فردی",
 ];
 
-export function ProfilePage() {
+export interface ProfilePageProps {
+  initialTab?: string;
+  isOnboarding?: boolean;
+}
+
+export function ProfilePage({
+  initialTab: propInitialTab,
+  isOnboarding: propIsOnboarding,
+}: ProfilePageProps = {}) {
   const t = useTranslations("Profile");
   const tAuth = useTranslations("Auth");
   const { profile, isLoading, isError, updateProfile, isUpdating, refetch } = useProfile();
   const [formData, setFormData] = useState<UserProfile | null>(null);
   const searchParams = useSearchParams();
   const { user, updatePrimaryColor, updateAvatarColor, updateUser } = useAuth();
-  const isOnboarding = Boolean(searchParams.get('onboarding') === 'true' || user?.accountStatus === 'pending_profile' || (user && !user.isProfileCompleted));
-  const initialTab = searchParams.get('tab') || (isOnboarding ? "personal" : "home");
+  const isOnboarding = Boolean(propIsOnboarding || searchParams.get('onboarding') === 'true' || user?.accountStatus === 'pending_profile' || (user && !user.isProfileCompleted));
   const initialField = searchParams.get('field') || null;
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
+
+  const currentTabFromPath = useMemo(() => {
+    if (propInitialTab) return propInitialTab;
+    const parts = pathname.split("/").filter(Boolean);
+    const profileIdx = parts.indexOf("profile");
+    if (profileIdx !== -1 && parts[profileIdx + 1]) {
+      const seg = parts[profileIdx + 1];
+      if (NAV_ITEMS.some((n) => n.id === seg)) {
+        return seg;
+      }
+    }
+    const tabParam = searchParams.get("tab");
+    if (tabParam && NAV_ITEMS.some((n) => n.id === tabParam)) {
+      return tabParam;
+    }
+    return isOnboarding ? "personal" : "home";
+  }, [propInitialTab, pathname, searchParams, isOnboarding]);
 
   const { theme, setTheme, resolvedTheme } = useTheme();
   const { colorId, setColor } = usePrimaryColor();
@@ -372,17 +396,27 @@ export function ProfilePage() {
   const isRtl = isFa;
   const isAdmin = Boolean(user?.role && ['superadmin', 'admin', 'dept_admin', 'office_admin'].includes(user.role.toLowerCase()));
 
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, _setActiveTab] = useState(currentTabFromPath);
+
+  useEffect(() => {
+    _setActiveTab(currentTabFromPath);
+  }, [currentTabFromPath]);
+
+  const setActiveTab = useCallback((tab: string) => {
+    _setActiveTab(tab);
+    router.push(tab === "home" ? "/profile" : `/profile/${tab}`);
+  }, [router]);
+
   const [activeDocCategory, setActiveDocCategory] = useState<DocumentCategory | null>(null);
   const handleTabChange = (newTab: string) => {
     setEditingField(null);
     setActiveEducationRecord(null);
     setIsAddingCustomSkill(false);
     setActiveDocCategory(null);
-    setActiveTab(newTab);
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       setSidebarOpen(false);
     }
+    setActiveTab(newTab);
   };
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAccountActive = Boolean(
@@ -6218,10 +6252,18 @@ export function ProfilePage() {
                 const label = t(item.labelKey);
 
                 const buttonElement = (
-                  <button
+                  <Link
                     key={item.id}
-                    type="button"
-                    onClick={() => handleTabChange(item.id)}
+                    href={item.href}
+                    onClick={() => {
+                      setEditingField(null);
+                      setActiveEducationRecord(null);
+                      setIsAddingCustomSkill(false);
+                      setActiveDocCategory(null);
+                      if (typeof window !== "undefined" && window.innerWidth < 768) {
+                        setSidebarOpen(false);
+                      }
+                    }}
                     className={cn(
                       "group relative flex items-center rounded-full outline-none cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
                       sidebarOpen
@@ -6248,7 +6290,7 @@ export function ProfilePage() {
                     )}>
                       {label}
                     </span>
-                  </button>
+                  </Link>
                 );
 
                 if (!sidebarOpen) {
