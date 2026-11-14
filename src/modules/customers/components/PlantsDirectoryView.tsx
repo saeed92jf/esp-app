@@ -60,6 +60,7 @@ const PROCESS_TABS: { id: PlantProcessType | "all"; labelFa: string; labelEn: st
   { id: "urea_ammonia", labelFa: "اوره و آمونیاک", labelEn: "Urea & Ammonia", icon: Sparkles },
   { id: "polymer", labelFa: "پلیمر و PET/PVC", labelEn: "Polymers", icon: Layers },
   { id: "refinery", labelFa: "پالایشگاه‌های نفت و گاز", labelEn: "Refineries", icon: Factory },
+  { id: "chemicals", labelFa: "صنایع شیمیایی و واسطه", labelEn: "Chemicals", icon: Cpu },
   { id: "utility", labelFa: "یوتیلیتی متمرکز", labelEn: "Utilities", icon: Zap },
 ];
 
@@ -149,6 +150,21 @@ export function PlantsDirectoryView() {
     return IRANIAN_PLANTS.filter((p) => p.processType === "olefin").length;
   }, []);
 
+  const totalCapacityMillionTons = useMemo(() => {
+    const sum = IRANIAN_PLANTS.reduce((acc, p) => acc + (p.capacityTonsPerYear ?? 0), 0);
+    return Math.round(sum / 1_000_000);
+  }, []);
+
+  const licensorsCount = useMemo(() => {
+    const set = new Set<string>();
+    IRANIAN_PLANTS.forEach((p) => {
+      p.licensors?.forEach((l) => {
+        if (l && l.trim()) set.add(l.trim());
+      });
+    });
+    return set.size;
+  }, []);
+
   const getProcessBadgeColor = (type: PlantProcessType) => {
     switch (type) {
       case "olefin":
@@ -163,6 +179,8 @@ export function PlantsDirectoryView() {
         return "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30";
       case "refinery":
         return "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30";
+      case "chemicals":
+        return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30";
       case "utility":
         return "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30";
       default:
@@ -184,6 +202,8 @@ export function PlantsDirectoryView() {
         return isRtl ? "واحد پلیمری / PET / PVC" : "Polymer Plant";
       case "refinery":
         return isRtl ? "پالایشگاه نفت و میعانات" : "Refinery Plant";
+      case "chemicals":
+        return isRtl ? "صنایع شیمیایی و واسطه" : "Chemicals & Intermediates";
       case "utility":
         return isRtl ? "یوتیلیتی متمرکز فرآیندی" : "Central Utility";
       default:
@@ -229,10 +249,10 @@ export function PlantsDirectoryView() {
           </div>
           <div>
             <div className="text-[11px] text-muted-foreground font-medium">
-              {isRtl ? "ظرفیت اتیلن کراکرها" : "Total Ethylene Capacity"}
+              {isRtl ? "مجموع ظرفیت اسمی ثبت‌شده" : "Total Nominal Capacity"}
             </div>
             <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              ۱۰.۲+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "میلیون تن" : "Million Tons"}</span>
+              {totalCapacityMillionTons}+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "میلیون تن" : "Million Tons"}</span>
             </div>
           </div>
         </div>
@@ -246,7 +266,7 @@ export function PlantsDirectoryView() {
               {isRtl ? "لایسنسورهای شاخص جهانی" : "Global Licensors"}
             </div>
             <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              ۸ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "شرکت برتر" : "Licensors"}</span>
+              {licensorsCount} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "صاحب دانش فنی" : "Licensors"}</span>
             </div>
           </div>
         </div>
@@ -429,8 +449,13 @@ export function PlantsDirectoryView() {
                     {plant.code}
                   </Badge>
                   <span className="text-[11px] font-medium text-muted-foreground">
-                    {getProcessLabel(plant.processType)}
+                    {plant.unitTypeFa || getProcessLabel(plant.processType)}
                   </span>
+                  {plant.phaseFa && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted/60 text-muted-foreground border border-border/50">
+                      {plant.phaseFa}
+                    </span>
+                  )}
                   {plant.commissionedYear && (
                     <span
                       className={cn(
@@ -706,7 +731,7 @@ export function PlantsDirectoryView() {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-card border border-border space-y-1">
                   <span className="text-[11px] text-muted-foreground block">{isRtl ? "موقعیت جغرافیایی" : "Location"}</span>
                   <span className="font-semibold text-foreground block">{selectedPlant.locationFa}</span>
@@ -715,7 +740,56 @@ export function PlantsDirectoryView() {
                   <span className="text-[11px] text-muted-foreground block">{isRtl ? "سال راه‌اندازی" : "Commission Year"}</span>
                   <span className="font-semibold text-foreground block font-mono">{selectedPlant.commissionedYear || "---"}</span>
                 </div>
+                {selectedPlant.phaseFa && (
+                  <div className="p-3 rounded-xl bg-card border border-border space-y-1">
+                    <span className="text-[11px] text-muted-foreground block">{isRtl ? "فاز / بخش" : "Phase / Stage"}</span>
+                    <span className="font-semibold text-foreground block">{selectedPlant.phaseFa}</span>
+                  </div>
+                )}
               </div>
+
+              {selectedPlant.unitTypeFa && (
+                <div className="p-3 rounded-xl bg-muted/20 border border-border/70 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-muted-foreground">{isRtl ? "نوع واحد فرآیندی تخصصی:" : "Specific Unit Process:"}</span>
+                  <span className="font-bold text-foreground">{selectedPlant.unitTypeFa}</span>
+                </div>
+              )}
+
+              {selectedPlant.feedstockSourceFa && (
+                <div className="p-3 rounded-xl bg-muted/20 border border-border/70 flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-muted-foreground">{isRtl ? "تأمین‌کننده خوراک فرآیندی:" : "Feedstock Supplier:"}</span>
+                  <span className="font-medium text-foreground">{selectedPlant.feedstockSourceFa}</span>
+                </div>
+              )}
+
+              {selectedPlant.engineeringCompanies && selectedPlant.engineeringCompanies.length > 0 && (
+                <div className="p-3.5 rounded-xl bg-muted/30 border border-border/70 space-y-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Boxes className="size-3.5 text-primary" />
+                    <span>{isRtl ? "پیمانکاران مهندسی (EPC / Detail Design):" : "Engineering Contractors:"}</span>
+                  </span>
+                  <div className="flex flex-wrap gap-1.5 pt-0.5">
+                    {selectedPlant.engineeringCompanies.map((eng, eIdx) => (
+                      <Badge key={eIdx} variant="secondary" className="text-[11px] font-mono">
+                        {eng}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(selectedPlant.owner1Fa || selectedPlant.owner2Fa) && (
+                <div className="p-3.5 rounded-xl bg-muted/30 border border-border/70 space-y-1.5">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Landmark className="size-3.5 text-primary" />
+                    <span>{isRtl ? "سهامداران و مالکین:" : "Owners & Shareholders:"}</span>
+                  </span>
+                  <div className="text-xs text-foreground/90 space-y-1">
+                    {selectedPlant.owner1Fa && <div className="flex items-center gap-1.5">• <span>{selectedPlant.owner1Fa}</span></div>}
+                    {selectedPlant.owner2Fa && <div className="flex items-center gap-1.5">• <span>{selectedPlant.owner2Fa}</span></div>}
+                  </div>
+                </div>
+              )}
 
               {/* Cross-Link Actions */}
               <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/60">
