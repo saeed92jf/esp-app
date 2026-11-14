@@ -55,7 +55,7 @@ export function DashboardHeader({
       logoHref="/"
       position="sticky"
       className={cn(
-        "sticky top-0 z-[60] shadow-none",
+        "sticky top-0 z-40 shadow-none",
         isScrolled && "border-b border-border/40"
       )}
       rightActions={

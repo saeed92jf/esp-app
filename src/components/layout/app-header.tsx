@@ -110,7 +110,7 @@ export function AppHeader({
   return (
     <header
       className={cn(
-        "top-0 z-[60] left-0 right-0 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] flex items-center justify-between shrink-0 backdrop-blur-xl border-none transition-colors shadow-none box-border",
+        "top-0 z-40 left-0 right-0 w-full h-[var(--header-height)] min-h-[var(--header-height)] max-h-[var(--header-height)] flex items-center justify-between shrink-0 backdrop-blur-xl border-none transition-colors shadow-none box-border",
         (menuTrigger || showMenuButton) ? "ps-0 pe-2.5 sm:pe-6" : "px-4 sm:px-6",
         position === 'absolute' ? 'absolute' : position === 'fixed' ? 'fixed' : 'sticky',
         isPanelBg
