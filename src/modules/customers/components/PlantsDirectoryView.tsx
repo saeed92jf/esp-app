@@ -28,6 +28,7 @@ import {
   ArrowUpDown,
   Calendar,
   BarChart3,
+  BookUser,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -617,6 +618,15 @@ export function PlantsDirectoryView() {
 
                 <div className="flex items-center gap-1.5">
                   <Link
+                    href={`/customers?tab=phonebook&company=${encodeURIComponent(plant.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-primary rounded-lg border border-border/60 hover:bg-muted/30 inline-flex items-center gap-1 transition-colors"
+                    title={isRtl ? "دفترچه تلفن و اطلاعات تماس" : "Contacts"}
+                  >
+                    <BookUser className="size-3 text-primary" />
+                    <span>{isRtl ? "مخاطبین" : "Contacts"}</span>
+                  </Link>
+
+                  <Link
                     href={`/customers?search=${encodeURIComponent(plant.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
                     className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground rounded-lg border border-border/60 hover:bg-muted/30 inline-flex items-center gap-1 transition-colors"
                     title={isRtl ? "جستجو در بانک مشتریان یورواسلات" : "Search in clients"}
@@ -829,6 +839,16 @@ export function PlantsDirectoryView() {
                 >
                   <Search className="size-3.5" />
                   <span>{isRtl ? "جستجو در فهرست کارفرمایان Euroslot" : "Search in Euroslot Directory"}</span>
+                  <ArrowUpRight className="size-3" />
+                </Link>
+
+                <Link
+                  href={`/customers?tab=phonebook&company=${encodeURIComponent(selectedPlant.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                  onClick={() => setSelectedPlant(null)}
+                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/90 px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors"
+                >
+                  <BookUser className="size-3.5 text-primary" />
+                  <span>{isRtl ? "دفترچه تلفن و مخاطبین مجتمع" : "Phonebook & Contacts"}</span>
                   <ArrowUpRight className="size-3" />
                 </Link>
               </div>

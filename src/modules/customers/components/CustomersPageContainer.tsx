@@ -10,6 +10,7 @@ import {
   Landmark,
   Factory,
   PlusCircle,
+  BookUser,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -20,8 +21,9 @@ import { CustomersDirectoryView } from "./CustomersDirectoryView";
 import { HoldingsDirectoryView } from "./HoldingsDirectoryView";
 import { PlantsDirectoryView } from "./PlantsDirectoryView";
 import { CreateCustomerView } from "./CreateCustomerView";
+import { PhonebookDirectoryView } from "./PhonebookDirectoryView";
 
-type CustomerTab = "directory" | "holdings" | "plants" | "create";
+type CustomerTab = "directory" | "holdings" | "plants" | "phonebook" | "create";
 
 interface NavItem {
   id: CustomerTab;
@@ -52,6 +54,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
     if (isNewRoute) return "create";
     if (tabQuery === "holdings") return "holdings";
     if (tabQuery === "plants") return "plants";
+    if (tabQuery === "phonebook" || tabQuery === "contacts") return "phonebook";
     return "directory";
   }, [initialTab, isNewRoute, tabQuery]);
 
@@ -62,6 +65,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
       { id: "directory", labelFa: "همه", labelEn: "All", icon: Building2, href: "/customers" },
       { id: "holdings", labelFa: "هلدینگ‌ها", labelEn: "Holdings", icon: Landmark, href: "/customers?tab=holdings" },
       { id: "plants", labelFa: "پلنت‌ها", labelEn: "Plants", icon: Factory, href: "/customers?tab=plants" },
+      { id: "phonebook", labelFa: "دفترچه تلفن", labelEn: "Phonebook", icon: BookUser, href: "/customers?tab=phonebook" },
       { id: "create", labelFa: "افزودن کارفرما", labelEn: "New Client", icon: PlusCircle, href: "/customers/new" },
     ];
   }, []);
@@ -185,6 +189,8 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
             <HoldingsDirectoryView />
           ) : activeTab === "plants" ? (
             <PlantsDirectoryView />
+          ) : activeTab === "phonebook" ? (
+            <PhonebookDirectoryView />
           ) : (
             <CustomersDirectoryView
               isAdmin={isAdmin}

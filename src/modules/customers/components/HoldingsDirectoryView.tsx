@@ -25,6 +25,7 @@ import {
   ArrowUpRight,
   ArrowUpDown,
   Phone,
+  BookUser,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -537,7 +538,7 @@ export function HoldingsDirectoryView() {
                               </div>
                             </div>
 
-                            {/* Actions: Link to "All" (قسمت همه) + Plant Specs */}
+                            {/* Actions: Link to "All" (قسمت همه) + Plant Specs + Phonebook */}
                             <div className="pt-2 border-t border-border/50 flex items-center gap-1.5">
                               <Link
                                 href={`/customers?search=${encodeURIComponent(cleanName)}`}
@@ -546,6 +547,15 @@ export function HoldingsDirectoryView() {
                               >
                                 <span>{isRtl ? "اطلاعات کامل در «همه»" : "Full Info in All"}</span>
                                 <ArrowUpRight className="size-3 shrink-0" />
+                              </Link>
+
+                              <Link
+                                href={`/customers?tab=phonebook&company=${encodeURIComponent(cleanName)}`}
+                                className="h-7 px-2 text-[11px] font-medium text-muted-foreground hover:text-primary rounded-lg border border-border/60 hover:bg-muted/30 flex items-center justify-center gap-1 transition-colors shrink-0"
+                                title={isRtl ? "دفترچه تلفن و مخاطبین" : "Contacts"}
+                              >
+                                <BookUser className="size-3 shrink-0" />
+                                <span className="hidden xl:inline">{isRtl ? "تماس" : "Contacts"}</span>
                               </Link>
 
                               {sub.plantId && (

@@ -20,6 +20,7 @@ import {
   Boxes,
   TrendingUp,
   ArrowUpRight,
+  BookUser,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -242,6 +243,25 @@ export function CustomerDetailModal({
                 </div>
               </a>
             ) : null}
+
+            <Link
+              href={`/customers?tab=phonebook&company=${encodeURIComponent(customer.persian_title_fa || customer.company_name_en)}`}
+              onClick={onClose}
+              className="flex items-center gap-3 p-3 rounded-xl border border-border/80 bg-background hover:border-primary/50 hover:bg-primary/5 transition-all text-xs"
+            >
+              <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <BookUser className="size-4" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-muted-foreground font-medium">
+                  {isRtl ? "دفترچه تلفن و ایمیل‌ها" : "Phonebook & Contacts"}
+                </div>
+                <div className="text-primary font-semibold truncate flex items-center gap-1">
+                  <span>{isRtl ? "مشاهده افراد و دپارتمان‌ها" : "View Personnel"}</span>
+                  <ArrowUpRight className="size-3" />
+                </div>
+              </div>
+            </Link>
           </div>
 
           {/* ── Petrochemical Technical Dossier (If Petrochemical) ── */}

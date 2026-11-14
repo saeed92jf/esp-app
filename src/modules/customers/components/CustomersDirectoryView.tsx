@@ -26,7 +26,9 @@ import {
   Info,
   Pencil,
   Factory,
+  BookUser,
 } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -504,7 +506,7 @@ export function CustomersDirectoryView({
 
                 {/* Card Footer: Quick Info & Action */}
                 <div className="pt-4 mt-3 border-t border-border/60 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {c.website && (
                       <a
                         href={c.website.startsWith("http") ? c.website : `https://${c.website}`}
@@ -527,6 +529,14 @@ export function CustomersDirectoryView({
                         <Phone className="size-3.5" />
                       </a>
                     )}
+                    <Link
+                      href={`/customers?tab=phonebook&company=${encodeURIComponent(c.persian_title_fa || c.company_name_en)}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title={isRtl ? "دفترچه تلفن و مخاطبین شرکت" : "Company Contacts in Phonebook"}
+                    >
+                      <BookUser className="size-3.5 text-primary" />
+                    </Link>
                   </div>
 
                   <div className="flex items-center gap-2.5">
@@ -637,6 +647,14 @@ export function CustomersDirectoryView({
                       </td>
                       <td className="py-2.5 px-4 text-center">
                         <div className="flex items-center justify-center gap-1">
+                          <Link
+                            href={`/customers?tab=phonebook&company=${encodeURIComponent(c.persian_title_fa || c.company_name_en)}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="size-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
+                            title={isRtl ? "مخاطبین شرکت در دفترچه تلفن" : "Company Contacts in Phonebook"}
+                          >
+                            <BookUser className="size-3.5" />
+                          </Link>
                           {isAdmin && (
                             <Button
                               variant="ghost"
