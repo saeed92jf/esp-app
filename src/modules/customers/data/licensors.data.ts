@@ -14,7 +14,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Rotterdam, Netherlands & Wesseling, Germany",
     "establishedYear": 2007,
     "website": "https://www.lyondellbasell.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/lyondellbasell.webp",
     "processCategories": [
       "polyolefin",
       "olefin"
@@ -241,7 +241,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Pullach / Munich, Germany",
     "establishedYear": 1879,
     "website": "https://www.linde.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/linde.png",
     "processCategories": [
       "olefin",
       "refining_gas"
@@ -332,7 +332,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Paris, France",
     "establishedYear": 1958,
     "website": "https://www.technipenergies.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/technip.png",
     "processCategories": [
       "olefin",
       "aromatics"
@@ -413,7 +413,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Rueil-Malmaison (Paris), France",
     "establishedYear": 2001,
     "website": "https://www.axens.net",
-    "logoUrl": "",
+    "logoUrl": "/licensors/axens.svg",
     "processCategories": [
       "aromatics",
       "refining_gas"
@@ -483,16 +483,16 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 74,
-    "addressEn": "89 Boulevard Franklin Roosevelt, 92500 Rueil-Malmaison, France",
+    "licenseId": 52,
+    "addressEn": "IFP Energies nouvelles (IFPEN), 1 et 4 Avenue de Bois-Préau, 92852 Rueil-Malmaison Cedex, France",
     "locationEn": "Rueil-Malmaison, France",
-    "postCode": "92500",
-    "telNo": "+33147142100",
-    "email": "contact@axens.net",
-    "linkedIn": "https://www.linkedin.com/company/axens",
+    "postCode": "92852",
+    "telNo": "+33147526000",
+    "email": "contact@ifpen.fr",
+    "linkedIn": "https://www.linkedin.com/company/ifp-energies-nouvelles",
     "currentSituationEn": "Active",
     "currentSituationFa": "فعال و پیشرو در ارائه دانش فنی و لایسنس",
-    "historyEn": "Founded in 2001, Axens was created as a spin-off from the French IFP Group (Institut Français du Pétrole) to commercialize and develop refining, petrochemical, gas processing, and catalyst technologies on a global licensing basis."
+    "historyEn": "Founded in 1944 as the Institut Français du Pétrole (IFP), it became France's national petroleum research institute and one of the world's leading developers of refining, petrochemical, catalyst, and energy technologies. In 2011, it was renamed IFP Energi"
   },
   {
     "id": "uhde",
@@ -505,7 +505,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Dortmund, Germany",
     "establishedYear": 1921,
     "website": "https://www.thyssenkrupp-uhde.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/uhde.webp",
     "processCategories": [
       "chlor_alkali",
       "fertilizer_urea",
@@ -588,7 +588,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Tokyo, Japan",
     "establishedYear": 1997,
     "website": "https://www.mitsui.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/mitsui.svg",
     "processCategories": [
       "polyolefin"
     ],
@@ -666,7 +666,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "London, United Kingdom",
     "establishedYear": 1998,
     "website": "https://www.ineos.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/ineos.webp",
     "processCategories": [
       "polyolefin"
     ],
@@ -726,7 +726,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Frankfurt am Main, Germany",
     "establishedYear": 1897,
     "website": "https://engineering.airliquide.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/lurgi.webp",
     "processCategories": [
       "methanol_syngas",
       "refining_gas"
@@ -793,7 +793,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Des Plaines, Illinois, USA",
     "establishedYear": 1914,
     "website": "https://uop.honeywell.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/uop.webp",
     "processCategories": [
       "aromatics",
       "refining_gas"
@@ -1003,16 +1003,16 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 36,
-    "addressEn": "Via Luigi Russolo, 520138 Milano (Milan), Italy",
-    "locationEn": "Milan, Italy",
-    "postCode": "20138",
+    "licenseId": 25,
+    "addressEn": "Viale De Gasperi / Metanopoli area, San Donato Milanese, Milan, Italy",
+    "locationEn": "San Donato Milanese, Milan, Italy",
+    "postCode": "20097",
     "telNo": "+390244231",
     "email": "media.relations@saipem.com",
     "linkedIn": "https://www.linkedin.com/company/saipem",
-    "currentSituationEn": "Active",
+    "currentSituationEn": "Part of Eni",
     "currentSituationFa": "فعال و پیشرو در ارائه دانش فنی و لایسنس",
-    "historyEn": "Founded in 1957 as Società Anonima Italiana Perforazioni e Montaggi (SAIPEM), originally as an Eni Group company specializing in oilfield services, drilling, and engineering. It later became one of the world's largest EPC contractors for oil, gas, petroch"
+    "historyEn": "Founded in 1956 by Eni as an engineering and contracting company specializing in design and construction of large oil, gas, petrochemical, and pipeline projects; it became one of the world’s leading onshore EPC and process engineering companies before bei"
   },
   {
     "id": "stamicarbon",
@@ -1025,7 +1025,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Sittard, Netherlands",
     "establishedYear": 1947,
     "website": "https://www.stamicarbon.com",
-    "logoUrl": "/customers/logos/licensors/stamicarbon.png",
+    "logoUrl": "/licensors/stamicarbon.webp",
     "processCategories": [
       "fertilizer_urea"
     ],
@@ -1095,7 +1095,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Seoul, South Korea",
     "establishedYear": 1939,
     "website": "https://www.dlenc.co.kr",
-    "logoUrl": "",
+    "logoUrl": "/licensors/daelim.webp",
     "processCategories": [
       "polyolefin",
       "refining_gas"
@@ -1146,7 +1146,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Tokyo, Japan",
     "establishedYear": 1926,
     "website": "https://www.toray.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/toray.webp",
     "processCategories": [
       "aromatics"
     ],
@@ -1205,7 +1205,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Yokohama, Japan",
     "establishedYear": 1948,
     "website": "https://www.chiyodacorp.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/chiyoda.webp",
     "processCategories": [
       "refining_gas"
     ],
@@ -1448,7 +1448,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Zurich, Switzerland",
     "establishedYear": 1988,
     "website": "https://www.abb.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/abb.webp",
     "processCategories": [
       "general_epc",
       "refining_gas"
@@ -1491,7 +1491,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Houston, Texas, USA & The Hague, Netherlands",
     "establishedYear": 1907,
     "website": "https://www.lummustechnology.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/lummus.svg",
     "processCategories": [
       "olefin",
       "refining_gas",
@@ -1537,7 +1537,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Ludwigshafen am Rhein, Germany",
     "establishedYear": 1865,
     "website": "https://www.basf.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/basf.webp",
     "processCategories": [
       "refining_gas",
       "methanol_syngas",
@@ -1583,7 +1583,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "London, United Kingdom",
     "establishedYear": 1909,
     "website": "https://www.bp.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/bp.webp",
     "processCategories": [
       "polyolefin",
       "aromatics",
@@ -1627,7 +1627,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "London, UK & The Hague, Netherlands",
     "establishedYear": 1907,
     "website": "https://www.shell.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/shell.svg",
     "processCategories": [
       "refining_gas",
       "methanol_syngas",
@@ -1651,15 +1651,15 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 66,
-    "addressEn": "Shell Centre, York Road, London SE1 7NA, United Kingdom",
-    "locationEn": "London, UK",
-    "postCode": "SE1 7NA",
-    "telNo": "+442079341234",
+    "licenseId": 54,
+    "addressEn": "Carel van Bylandtlaan 30, 2596 HR The Hague, Netherlands",
+    "locationEn": "The Hague, Netherlands",
+    "postCode": "2596 HR",
+    "telNo": "+31703779111",
     "linkedIn": "https://www.linkedin.com/company/shell",
     "currentSituationEn": "Active",
     "currentSituationFa": "فعال و پیشرو در ارائه دانش فنی و لایسنس",
-    "historyEn": "Founded in its modern form through the 1907 merger of Royal Dutch Petroleum Company and Shell Transport & Trading Company, Shell became one of the world’s largest integrated oil, gas, and energy companies with major operations in refining, LNG, petrochemi"
+    "historyEn": "Shell's Dutch roots date back to 1890 with the founding of Royal Dutch Petroleum Company. Shell Nederland became the principal Dutch operating entity of the Shell Group and has been involved in refining, petrochemicals, gas processing, LNG, and technology"
   },
   {
     "id": "total",
@@ -1672,7 +1672,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Courbevoie (Paris), France",
     "establishedYear": 1924,
     "website": "https://www.totalenergies.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/total.svg",
     "processCategories": [
       "refining_gas",
       "polyolefin",
@@ -1717,7 +1717,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "San Donato Milanese (Milan), Italy",
     "establishedYear": 1953,
     "website": "https://www.versalis.eni.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/versalis.svg",
     "processCategories": [
       "polymers_rubber",
       "olefin",
@@ -1762,7 +1762,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "headquartersEn": "Milan, Italy",
     "establishedYear": 1973,
     "website": "https://www.tecnimont.com",
-    "logoUrl": "",
+    "logoUrl": "/licensors/tecnimont.webp",
     "processCategories": [
       "fertilizer_urea",
       "polyolefin",
@@ -1786,16 +1786,16 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 78,
-    "addressEn": "Via Gaetano De Castillia, 6A, 20124 Milan, Italy",
-    "locationEn": "Milan, Italy",
-    "postCode": "20124",
-    "telNo": "+390263131",
-    "email": "info@tecnimont.it",
-    "linkedIn": "https://www.linkedin.com/company/tecnimont",
-    "currentSituationEn": "Active",
+    "licenseId": 3,
+    "addressEn": "Viale Castello della Magliana 27, 00148 Rome, Italy",
+    "locationEn": "Rome, Italy",
+    "postCode": "148",
+    "telNo": "+3906602161",
+    "email": "info@kt-met.com",
+    "linkedIn": "https://www.linkedin.com/company/kt-kineticstechnology",
+    "currentSituationEn": "Part of MAIRE Group",
     "currentSituationFa": "فعال و پیشرو در ارائه دانش فنی و لایسنس",
-    "historyEn": "Founded as part of Italy’s industrial engineering evolution, Tecnimont traces its roots to the 1970s within Montedison’s engineering division, later becoming a core EPC company under the Italian MAIRE Group after restructuring in the 2000s. It developed i"
+    "historyEn": "Founded in 1971, KT evolved from a process engineering company into a global licensor and EPC contractor specializing in hydrogen, syngas, sulfur recovery, refining, and petrochemical technologies."
   },
   {
     "id": "npc_rt",
@@ -2594,7 +2594,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 39,
+    "licenseId": 48,
     "locationEn": "Paris, France",
     "currentSituationEn": "Integrated into Arkema S.A.",
     "currentSituationFa": "ادغام‌شده در شرکت Arkema S.A.",
@@ -3204,7 +3204,7 @@ export const IRANIAN_LICENSORS: Licensor[] = [
         "isOfficial": true
       }
     ],
-    "licenseId": 59,
+    "licenseId": 60,
     "addressEn": "Eisenhüttenstraße 99, 38239 Salzgitter, Germany",
     "locationEn": "Salzgitter, Germany",
     "postCode": "38239",
@@ -3379,5 +3379,488 @@ export const IRANIAN_LICENSORS: Licensor[] = [
     "currentSituationEn": "Part of Stock Company Research Institute",
     "currentSituationFa": "زیرمجموعه گروه Stock Company Research Institute",
     "historyEn": "Founded as a Soviet-era chemical research institute and later reorganized into a joint-stock company focused on chemical synthesis technologies and industrial materials development."
+  },
+  {
+    "id": "edeleanu",
+    "nameFa": "ادلئانو (Edeleanu GmbH)",
+    "nameEn": "Edeleanu GmbH (thyssenkrupp Uhde)",
+    "countryFa": "آلمان",
+    "countryEn": "Germany",
+    "countryCode": "DE",
+    "headquartersFa": "فرانکفورت / دورتموند، آلمان",
+    "headquartersEn": "Frankfurt am Main / Dortmund, Germany",
+    "establishedYear": 1908,
+    "website": "https://www.thyssenkrupp-uhde.com",
+    "logoUrl": "/licensors/uhde.webp",
+    "processCategories": [
+      "refining_gas",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "Edeleanu SO2 Extraction",
+      "Solvent Dewaxing & Deasphalting",
+      "Lube Oil Hydrofinishing"
+    ],
+    "descriptionFa": "فرآیند ادلئانو در سال ۱۹۰۸ توسط شیمیدان لازار ادلئانو اختراع شد و پایه استخراج حلال برای تصفیه روغن‌های پایه موتور و حذف ترکیبات آروماتیک را بنا نهاد. شرکت ادلئانو بعدها بخشی از تیسن‌کروپ اوده شد و در پالایشگاه‌های نفت ایران جهت واحدهای روغن‌سازی کاربرد دارد.",
+    "descriptionEn": "Developed in 1908 by Romanian chemist Lazăr Edeleanu, the Edeleanu process introduced selective solvent extraction using liquid SO2 to remove aromatics from petroleum fractions, forming the basis of modern lube oil refining technologies. The industrial company became a key part of thyssenkrupp Uhde.",
+    "licensedPlants": [],
+    "espRelevanceFa": "طراحی و ساخت المان‌های فیلتراسیون داخلی، واش کاتریج‌های موم‌زدایی حلال، بسکت‌های اکسترکشن و اینترنال‌های ستون‌های استخراج حلال در پالایشگاه‌های روغن‌سازی.",
+    "sources": [
+      {
+        "titleFa": "Thyssenkrupp Uhde Refining Technologies",
+        "publisherFa": "Uhde Edeleanu",
+        "url": "https://www.thyssenkrupp-uhde.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 71,
+    "currentSituationEn": "Integrated into thyssenkrupp Uhde/Edeleanu Refining Technologies",
+    "historyEn": "Developed in 1908 by Romanian chemist Lazăr Edeleanu, the Edeleanu process introduced selective solvent extraction using liquid SO₂ to remove aromatics from petroleum fractions, forming the basis of modern lube oil refining technologies. The industrial co"
+  },
+  {
+    "id": "himont",
+    "nameFa": "هایمونت (Himont Incorporated)",
+    "nameEn": "Himont Incorporated (now LyondellBasell)",
+    "countryFa": "ایالات متحده / ایتالیا",
+    "countryEn": "USA / Italy",
+    "countryCode": "US",
+    "headquartersFa": "ویلمینگتون، دلاور، ایالات متحده",
+    "headquartersEn": "Wilmington, Delaware, USA",
+    "establishedYear": 1983,
+    "website": "https://www.lyondellbasell.com",
+    "logoUrl": "/licensors/lyondellbasell.webp",
+    "processCategories": [
+      "polyolefin",
+      "polymers_rubber"
+    ],
+    "keyTechnologies": [
+      "Spheripol Polypropylene",
+      "Catalloy Technology",
+      "Hivalloy Resins",
+      "Gas-Phase Polymerization"
+    ],
+    "descriptionFa": "شرکت هایمونت در سال ۱۹۸۳ از سرمایه‌گذاری مشترک ۵۰/۵۰ مونته‌دیسون ایتالیا و هرکولس آمریکا برای تجاری‌سازی فناوری پیشرفته پلی‌پروپیلن (به‌ویژه فرآیند Spheripol) تاسیس شد. این فرآیند پرکاربردترین فناوری پلی‌پروپیلن در پتروشیمی‌های ایران (از جمله مارون و جم) است و شرکت بعدها به مونتل، باسل و لایندل‌باسل تبدیل شد.",
+    "descriptionEn": "Himont was founded in 1983 as a 50/50 joint venture between Montedison (Italy) and Hercules Inc. (USA) to commercialize advanced polypropylene technologies, especially the Spheripol process, which became one of the world's most widely licensed polypropylene technologies, later evolving into Montell, Basell, and LyondellBasell.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ارائه مستقیم سنترپایپ‌ها، مت پکینگ، اسکرین‌های تخلیه راکتورهای لوپ و گازفاز اسفری‌پول (Spheripol).",
+    "sources": [
+      {
+        "titleFa": "LyondellBasell Heritage & Polyolefin Licensing",
+        "publisherFa": "LyondellBasell",
+        "url": "https://www.lyondellbasell.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 23,
+    "addressEn": "Wilmington, Delaware, USA",
+    "locationEn": "Wilmington, Delaware, USA",
+    "currentSituationEn": "Part of Lyondell Basell",
+    "historyEn": "Himont was founded in 1983 as a 50/50 joint venture between Montedison (Italy) and Hercules Inc. (USA) to commercialize advanced polypropylene technologies, especially the Spheripol process, which became one of the world’s most widely licensed polypropyle",
+    "postCode": "19801–19899",
+    "linkedIn": "https://www.linkedin.com/company/lyondellbasell"
+  },
+  {
+    "id": "stone_webster",
+    "nameFa": "استون اند وبستر (Stone & Webster)",
+    "nameEn": "Stone & Webster (Technip Energies)",
+    "countryFa": "ایالات متحده",
+    "countryEn": "United States",
+    "countryCode": "US",
+    "headquartersFa": "بوستون، ماساچوست / هیوستون، ایالات متحده",
+    "headquartersEn": "Boston, Massachusetts / Houston, Texas, USA",
+    "establishedYear": 1889,
+    "website": "https://www.technipenergies.com",
+    "logoUrl": "/licensors/technip.png",
+    "processCategories": [
+      "olefin",
+      "refining_gas",
+      "general_epc"
+    ],
+    "keyTechnologies": [
+      "USC (Ultra Selective Conversion) Cracking Furnaces",
+      "FCC (Fluid Catalytic Cracking)",
+      "Deep Catalytic Cracking (DCC)",
+      "Styrene Process"
+    ],
+    "descriptionFa": "استون اند وبستر در سال ۱۸۸۹ توسط فارغ‌التحصیلان ام‌آی‌تی تاسیس شد و به عنوان یکی از بزرگترین شرکت‌های لایسنسور کوره‌های کراکینگ الفین، الفین‌های سبک و واحدهای پالایشگاهی در جهان شناخته می‌شود. فناوری کوره‌های USC و فرآیندهای شکست کاتالیستی آن در پتروشیمی‌های بزرگ الفینی و پالایشگاه‌های ایران نصب و فعال است و اکنون بخشی از تکنیپ انرژی است.",
+    "descriptionEn": "Founded in 1889 by MIT engineers Charles Stone and Edwin Webster, Stone & Webster evolved into one of the world's leading engineering, petrochemical, refining, and power technology companies before its process technologies were integrated into Technip Energies.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت اینترنال‌ها و فیلترهای گاز داغ کوره‌های کراکینگ الفین، اسکرین‌های راکتورهای کاتالیستی FCC و متورکر پایپ‌های فرآیندی.",
+    "sources": [
+      {
+        "titleFa": "Technip Energies Stone & Webster Technologies",
+        "publisherFa": "Technip Energies",
+        "url": "https://www.technipenergies.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 6,
+    "locationEn": "Boston, Massachusetts, USA (historic headquarters)",
+    "currentSituationEn": "Part ofTechnip",
+    "historyEn": "Founded in 1889 by MIT engineers Charles Stone and Edwin Webster, Stone & Webster evolved from an electrical engineering consultancy into one of the world's leading engineering, petrochemical, refining, and power technology companies before its process te"
+  },
+  {
+    "id": "prosernat_ripi",
+    "nameFa": "پروسرنات / پژوهشگاه صنعت نفت (Prosernat / RIPI)",
+    "nameEn": "Prosernat S.A. (Axens Group) / RIPI",
+    "countryFa": "فرانسه / ایران",
+    "countryEn": "France / Iran",
+    "countryCode": "FR",
+    "headquartersFa": "روئی ملمزون، فرانسه / تهران، ایران",
+    "headquartersEn": "Rueil-Malmaison, France / Tehran, Iran",
+    "establishedYear": 1979,
+    "website": "https://www.axens.net",
+    "logoUrl": "/licensors/axens.svg",
+    "processCategories": [
+      "refining_gas",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "AdvAmine Gas Sweetening",
+      "TEG Gas Dehydration",
+      "Drizo Gas Dehydration",
+      "Sulfur Recovery (Claus Process)",
+      "PARS-PAX Gas Sweetening"
+    ],
+    "descriptionFa": "پروسرنات در سال ۱۹۷۹ تاسیس شد و لایسنسور برجسته فرانسوی در زمینه فرآورش گاز طبیعی، شیرین‌سازی گاز (AdvAmine)، نم‌زدایی با گلایکول و بازیافت گوگرد است که با همکاری پژوهشگاه صنعت نفت (RIPI) در فازهای پارس جنوبی و پالایشگاه‌های گاز ایران پروژه‌های لایسنس متعددی را به اجرا درآورده است. این شرکت اکنون در اکسنس (Axens) ادغام شده است.",
+    "descriptionEn": "Founded in 1979, Prosernat became a key French oil & gas process technology licensor and modular plant supplier specializing in gas treatment, dehydration, and sulfur recovery, operating in partnership with RIPI across Iranian gas refineries before being acquired by Axens.",
+    "licensedPlants": [],
+    "espRelevanceFa": "طراحی و ساخت ساپورت‌گریدها، تری‌های جداسازی گاز، اسکرین‌های بستر کاتالیست کلاوس و دمیسترهای برج‌های جذب و دفع آمین.",
+    "sources": [
+      {
+        "titleFa": "Prosernat Gas Technologies",
+        "publisherFa": "Axens",
+        "url": "https://www.axens.net",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 70,
+    "addressEn": "89 Boulevard Franklin Roosevelt, 92500 Rueil-Malmaison, France",
+    "locationEn": "Rueil-Malmaison, Île-de-France, France",
+    "currentSituationEn": "Integrated into Axens",
+    "historyEn": "Founded in 1979, Prosernat was created from the merger of Proser and NAT and later became a key French oil & gas process technology licensor and modular plant supplier. It developed strongly under IFP Group influence and later Heurtey Petrochem before bei",
+    "linkedIn": "https://www.linkedin.com/company/prosernat"
+  },
+  {
+    "id": "engelhard",
+    "nameFa": "انگل‌هارد (Engelhard Corporation)",
+    "nameEn": "Engelhard Corporation (now BASF Catalysts)",
+    "countryFa": "ایالات متحده",
+    "countryEn": "USA",
+    "countryCode": "US",
+    "headquartersFa": "آیزلین، نیوجرسی، ایالات متحده",
+    "headquartersEn": "Iselin, New Jersey, USA",
+    "establishedYear": 1902,
+    "website": "https://catalysts.basf.com",
+    "logoUrl": "/licensors/basf.webp",
+    "processCategories": [
+      "refining_gas",
+      "specialty_chemicals",
+      "aromatics"
+    ],
+    "keyTechnologies": [
+      "Fluid Catalytic Cracking (FCC) Catalysts",
+      "Precious Metal Chemical Catalysts",
+      "Aromatics Extraction Catalysts",
+      "Hydroprocessing Technologies"
+    ],
+    "descriptionFa": "انگل‌هارد در سال ۱۹۰۲ تاسیس شد و یکی از پیشگامان جهانی در حوزه کاتالیست‌های پالایشگاهی، فرآیندهای خالص‌سازی فلزات گرانبها و فناوری‌های کنترل آلایندگی بوده است. فناوری‌ها و کاتالیست‌های هیدروپراسسینگ آن در پالایشگاه‌های نفت ایران به کار رفته و در سال ۲۰۰۶ توسط شرکت BASF خریداری گردید.",
+    "descriptionEn": "Founded in 1902 in Newark, New Jersey, Engelhard became a global leader in precious metals refining, catalyst technologies, and emissions control systems before being acquired by BASF to form BASF Catalysts.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت بسکت‌های کاتالیست راکتورهای هیدروتریتینگ، اسکرین‌های نگه‌دارنده فلزات گرانبها و سنترپایپ‌های ریفورمینگ.",
+    "sources": [
+      {
+        "titleFa": "Engelhard Catalysts Heritage",
+        "publisherFa": "BASF",
+        "url": "https://catalysts.basf.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 46,
+    "locationEn": "Iselin, New Jersey, USA",
+    "currentSituationEn": "Integrated into BASF Catalysts",
+    "historyEn": "Founded in 1902 in Newark, New Jersey, Engelhard became a global leader in precious metals refining, catalyst technologies, and emissions control systems before being acquired by BASF."
+  },
+  {
+    "id": "sinopec",
+    "nameFa": "سینوپک (SINOPEC)",
+    "nameEn": "China Petroleum & Chemical Corporation (SINOPEC)",
+    "countryFa": "چین",
+    "countryEn": "China",
+    "countryCode": "CN",
+    "headquartersFa": "پکن، چین",
+    "headquartersEn": "Chaoyang District, Beijing, China",
+    "establishedYear": 1998,
+    "website": "http://www.sinopecgroup.com",
+    "logoUrl": "",
+    "processCategories": [
+      "refining_gas",
+      "aromatics",
+      "olefin",
+      "polyolefin",
+      "general_epc"
+    ],
+    "keyTechnologies": [
+      "Aromatics Complex (PX / Benzene)",
+      "S-Zorb Gasoline Desulfurization",
+      "CBL Ethylene Cracking",
+      "MTO (Methanol to Olefins)"
+    ],
+    "descriptionFa": "سینوپک بزرگترین پالایشگر نفت و از برترین تولیدکنندگان پتروشیمی در جهان است. بازوی مهندسی و تحقیقاتی آن (SINOPEC Engineering Group) لایسنسور فرآیندهای آروماتیک، اولفین و سولفورزدایی است که در پروژه‌های توسعه پالایشگاهی و پتروشیمی ایران به عنوان ارائه‌دهنده تکنولوژی و مهندسی حضور داشته است.",
+    "descriptionEn": "SINOPEC is one of the world's largest oil refining, gas, and petrochemical conglomerates. Through its technology and engineering subsidiaries, it licenses aromatics complexes, cracking furnaces, and desulfurization processes internationally.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت اینترنال‌های راکتورهای گوگردزدایی، برج‌های تقطیر آروماتیک و فیلترهای پکینگ متالیک سیمی.",
+    "sources": [
+      {
+        "titleFa": "Sinopec Technology & Engineering",
+        "publisherFa": "Sinopec Group",
+        "url": "http://www.sinopecgroup.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 43,
+    "locationEn": "Rueil-Malmaison, France",
+    "currentSituationEn": "Active",
+    "historyEn": "Founded in 1944 as the Institut Français du Pétrole (IFP), it became France's national petroleum research institute and one of the world's leading developers of refining, petrochemical, catalyst, and energy technologies. In 2011, it was renamed IFP Energi",
+    "addressEn": "IFP Energies nouvelles (IFPEN), 1 et 4 Avenue de Bois-Préau, 92852 Rueil-Malmaison Cedex, France",
+    "telNo": "+33147526000",
+    "email": "contact@ifpen.fr",
+    "linkedIn": "https://www.linkedin.com/company/ifp-energies-nouvelles",
+    "postCode": "92852"
+  },
+  {
+    "id": "krupp_koppers",
+    "nameFa": "کروپ کوپرز (Krupp Koppers GmbH)",
+    "nameEn": "Krupp Koppers GmbH (thyssenkrupp Uhde)",
+    "countryFa": "آلمان",
+    "countryEn": "Germany",
+    "countryCode": "DE",
+    "headquartersFa": "اسن، آلمان",
+    "headquartersEn": "Essen, Germany",
+    "establishedYear": 1901,
+    "website": "https://www.thyssenkrupp-uhde.com",
+    "logoUrl": "/licensors/uhde.webp",
+    "processCategories": [
+      "aromatics",
+      "refining_gas",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "Morphylane (Extractive Distillation for Benzene/Toluene)",
+      "Octenar Process",
+      "Koppers-Totzek Coal Gasification",
+      "PRENFLO Gasification"
+    ],
+    "descriptionFa": "کروپ کوپرز لایسنسور مشهور آلمانی در زمینه فرآیندهای تقطیر استخراجی آروماتیک‌ها (به‌ویژه فرآیند معروف Morphylane) و گازسازی است. فرآیند مورفیلین استاندارد جهانی جداسازی بنزن با خلوص بالا است و در واحدهای آروماتیک پتروشیمی‌های ایران (بوعلی سینا، بندر امام و نوری) استفاده شده است.",
+    "descriptionEn": "Krupp Koppers developed the world-renowned Morphylane extractive distillation process for high-purity aromatics (benzene, toluene, xylenes) recovery and advanced gasification technologies before being integrated into Krupp Uhde / thyssenkrupp Uhde.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت پکینگ‌های ساختاریافته (Structured Packing)، تری‌های تقطیر استخراجی و اسکرین‌های داخلی برج‌های استخراج آروماتیک.",
+    "sources": [
+      {
+        "titleFa": "Morphylane Process & Uhde Aromatics",
+        "publisherFa": "Uhde",
+        "url": "https://www.thyssenkrupp-uhde.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 47,
+    "locationEn": "Essen, Germany",
+    "currentSituationEn": "Integrated into thyssenkrupp Uhde",
+    "historyEn": "Krupp Koppers was a prominent German engineering and chemical process licensing company that pioneered coal gasification and extractive distillation technologies (Morphylane) before being merged into Krupp Uhde."
+  },
+  {
+    "id": "unocal",
+    "nameFa": "یونوکال (Union Oil Company of California - Unocal)",
+    "nameEn": "Unocal Corporation (now Chevron)",
+    "countryFa": "ایالات متحده",
+    "countryEn": "USA",
+    "countryCode": "US",
+    "headquartersFa": "ال سگوندو، کالیفرنیا، ایالات متحده",
+    "headquartersEn": "El Segundo, California, USA",
+    "establishedYear": 1890,
+    "website": "https://www.chevron.com",
+    "logoUrl": "",
+    "processCategories": [
+      "refining_gas",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "Unicracking (Hydrocracking Technology)",
+      "Unifining (Hydrodesulfurization)",
+      "Hydrotreating Catalytic Processes"
+    ],
+    "descriptionFa": "یونوکال (Union Oil Company of California) مخترع و لایسنسور فرآیند معروف هیدروکراکینگ یونیکراکینگ (Unicracking) با همکاری UOP است که در پالایشگاه‌های نفت ایران جهت تبدیل برش‌های سنگین به سوخت‌های سبک و باکیفیت پیاده‌سازی شده است. این شرکت در سال ۲۰۰۵ با شورون (Chevron) ادغام گردید.",
+    "descriptionEn": "Unocal Corporation was a pioneer in oil refining technology, co-developing the widely licensed Unicracking hydrocracking process alongside UOP, before being acquired by Chevron Corporation in 2005.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت ساپورت گریدها و سنترپایپ‌های مقاوم به هیدروژن دما و فشار بالا در راکتورهای هیدروکراکر (Unicracker).",
+    "sources": [
+      {
+        "titleFa": "Unicracking Technology Heritage",
+        "publisherFa": "Chevron / UOP",
+        "url": "https://www.chevron.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 47,
+    "locationEn": "California, USA",
+    "currentSituationEn": "Acquired by Chevron Corporation",
+    "historyEn": "Founded in 1890 in Santa Paula, California as Union Oil Company of California (Unocal), it became an influential energy and process technology company, famous for co-developing Unicracking hydrocracking technologies."
+  },
+  {
+    "id": "hri",
+    "nameFa": "اچ‌آر‌آی (Hydrocarbon Research Inc. - HRI)",
+    "nameEn": "Hydrocarbon Research, Inc. (HRI / Axens)",
+    "countryFa": "ایالات متحده",
+    "countryEn": "USA",
+    "countryCode": "US",
+    "headquartersFa": "پرینستون، نیوجرسی، ایالات متحده",
+    "headquartersEn": "Princeton, New Jersey, USA",
+    "establishedYear": 1943,
+    "website": "https://www.axens.net",
+    "logoUrl": "/licensors/axens.svg",
+    "processCategories": [
+      "refining_gas",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "H-Oil (Ebullated-Bed Residue Hydrocracking)",
+      "H-Coal (Coal Liquefaction)",
+      "HDA (Hydrodealkylation)"
+    ],
+    "descriptionFa": "شرکت تحقیقات هیدروکربوری (HRI) مبدع فرآیند انقلابی H-Oil (هیدروکراکینگ ته‌مانده‌های سنگین نفتی با بستر جوشان) است که یکی از پیشرفته‌ترین روش‌های ارتقای ته‌مانده‌های برج‌های تقطیر در جهان به شمار می‌رود و بعدها حقوق لایسنس آن به گروه اکسنس (Axens) منتقل شد.",
+    "descriptionEn": "Hydrocarbon Research, Inc. (HRI) was a leading technology developer that invented the H-Oil ebullated-bed residue hydrocracking process and syngas/coal conversion technologies, now commercialized by Axens.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ارائه اینترنال‌های فوق‌سنگین راکتورهای بستر جوشان H-Oil، کاپ‌های توزیع‌کننده مایع و اسکرین‌های فیلتر بستر جوشان.",
+    "sources": [
+      {
+        "titleFa": "H-Oil Process Technology",
+        "publisherFa": "Axens",
+        "url": "https://www.axens.net",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 46,
+    "locationEn": "Princeton, New Jersey, USA",
+    "currentSituationEn": "Technologies acquired by IFP / Axens",
+    "historyEn": "Founded in 1943 in New Jersey, HRI developed pioneering hydrocarbon synthesis and residue hydrocracking technologies including the world-famous H-Oil process."
+  },
+  {
+    "id": "ksj",
+    "nameFa": "کی‌اس‌جی چین (KSJ Industrial & Technology)",
+    "nameEn": "KSJ Technology Co., Ltd.",
+    "countryFa": "چین",
+    "countryEn": "China",
+    "countryCode": "CN",
+    "headquartersFa": "جیانگسو / شانگهای، چین",
+    "headquartersEn": "Jiangsu / Shanghai, China",
+    "establishedYear": 2005,
+    "website": "",
+    "logoUrl": "",
+    "processCategories": [
+      "polymers_rubber",
+      "specialty_chemicals"
+    ],
+    "keyTechnologies": [
+      "Synthetic Resins",
+      "Polymer Additives",
+      "Industrial Coatings Formulation",
+      "Chemical Engineering Supply"
+    ],
+    "descriptionFa": "مجموعه شرکت‌های کی‌اس‌جی (KSJ) چین در دهه ۲۰۰۰ در کلاسترهای صنعتی جیانگسو و شانگهای توسعه یافته و در زمینه فناوری مواد شیمیایی، رزین‌های صنعتی، پتروشیمی پایین‌دستی و تأمین خدمات مهندسی فعالیت دارند.",
+    "descriptionEn": "KSJ-related companies in China developed in the 2000s, focusing on chemical materials, industrial resins, and engineering supply services, mainly serving coatings, adhesives, petrochemical downstream industries, and industrial manufacturing sectors.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ارائه پکینگ‌ها و المان‌های تصفیه و فیلتراسیون در فرآیندهای تولید رزین‌ها و مواد شیمیایی خاص.",
+    "sources": [
+      {
+        "titleFa": "KSJ Chemical Materials & Industrial Supply",
+        "publisherFa": "Industrial Registry",
+        "isOfficial": false
+      }
+    ],
+    "licenseId": 69,
+    "locationEn": "China (commonly associated with Jiangsu / Shanghai industrial clusters)",
+    "currentSituationEn": "Active in industrial resin and petrochemical supply",
+    "historyEn": "KSJ-related companies in China developed in the 2000s, focusing on chemical materials, industrial resins, and engineering supply services, mainly serving coatings, adhesives, petrochemical downstream industries, and industrial manufacturing sectors."
+  },
+  {
+    "id": "khlm",
+    "nameFa": "کا‌اچ‌ال‌ام تکنولوژیا (KHLM Technologia)",
+    "nameEn": "KHLM Technologia",
+    "countryFa": "روسیه / اروپای شرقی",
+    "countryEn": "Russia / Eastern Europe",
+    "countryCode": "RU",
+    "headquartersFa": "مسکو، روسیه",
+    "headquartersEn": "Moscow, Russia",
+    "establishedYear": 1995,
+    "website": "",
+    "logoUrl": "",
+    "processCategories": [
+      "specialty_chemicals",
+      "refining_gas"
+    ],
+    "keyTechnologies": [
+      "Petrochemical Synthesis",
+      "Chemical Process Equipment",
+      "Distillation Technology"
+    ],
+    "descriptionFa": "شرکت KHLM Technologia فعال در حوزه مهندسی فرآیندهای شیمیایی، تجهیزات صنعتی و فناوری‌های سنتز پتروشیمی در حوزه اروپای شرقی و روسیه است.",
+    "descriptionEn": "KHLM Technologia is an engineering and technology entity active in chemical process engineering, industrial equipment, and petrochemical synthesis in Eastern Europe and Russia.",
+    "licensedPlants": [],
+    "espRelevanceFa": "تولید سینی‌های برج‌های تقطیر، المان‌های فیلتراسیون و توری‌های اسلات‌دار داخلی راکتور.",
+    "sources": [
+      {
+        "titleFa": "KHLM Technologia Industrial Reference",
+        "publisherFa": "Chemical Directory",
+        "isOfficial": false
+      }
+    ],
+    "licenseId": 76,
+    "currentSituationEn": "Active",
+    "historyEn": "KHLM Technologia operates in chemical process equipment and petrochemical technology consulting."
+  },
+  {
+    "id": "thyssenkrupp",
+    "nameFa": "تیسن‌کروپ اینداستریال (Thyssenkrupp Industrial Solutions)",
+    "nameEn": "Thyssenkrupp Industrial Solutions AG",
+    "countryFa": "آلمان",
+    "countryEn": "Germany",
+    "countryCode": "DE",
+    "headquartersFa": "اسن / دورتموند، آلمان",
+    "headquartersEn": "Essen / Dortmund, Germany",
+    "establishedYear": 2014,
+    "website": "https://www.thyssenkrupp.com",
+    "logoUrl": "/licensors/thyssenkrupp.webp",
+    "processCategories": [
+      "fertilizer_urea",
+      "refining_gas",
+      "chlor_alkali",
+      "general_epc"
+    ],
+    "keyTechnologies": [
+      "Uhde Fertilizer & Ammonia/Urea",
+      "Uhde Chlorine Engineers (Chlor-Alkali)",
+      "Polysius Cement Plants",
+      "Polyester Plants (Inventa-Fischer)"
+    ],
+    "descriptionFa": "تیسن‌کروپ اینداستریال سولوشنز حاصل تجمیع بازوهای مهندسی تیسن‌کروپ (شامل شرکت معظم اوده Uhde و پلیزیوس Polysius) است که از برترین لایسنسورها و پیمانکاران مگاپروژه‌های پتروشیمی، پالایشگاه، کود شیمیایی اوره و آمونیاک و کلرآلکالی در سراسر جهان و ایران بوده است.",
+    "descriptionEn": "Thyssenkrupp Industrial Solutions was formed in 2014 by merging Uhde and Polysius engineering divisions of Thyssenkrupp to create a global EPC and process technology/licensing business, now operating primarily as Thyssenkrupp Uhde GmbH and Thyssenkrupp Polysius GmbH.",
+    "licensedPlants": [],
+    "espRelevanceFa": "ساخت اینترنال‌های راکتورهای آمونیاک و اوره اوده، ساپورت گریدهای بستر کاتالیست و اسکرین‌های محافظ تجهیزات فرآیندی.",
+    "sources": [
+      {
+        "titleFa": "Thyssenkrupp Industrial Solutions Overview",
+        "publisherFa": "Thyssenkrupp",
+        "url": "https://www.thyssenkrupp.com",
+        "isOfficial": true
+      }
+    ],
+    "licenseId": 15,
+    "addressEn": "ThyssenKrupp Allee 1, 45143 Essen, Germany",
+    "locationEn": "Essen, Germany",
+    "currentSituationEn": "Splited into: Thyssenkrupp Uhde GmbH and Thyssenkrupp Polysius GmbH",
+    "telNo": "+492018440",
+    "linkedIn": "https://www.linkedin.com/company/thyssenkrupp",
+    "postCode": "45143",
+    "historyEn": "Thyssenkrupp Industrial Solutions was formed in 2014 by merging Uhde and Polysius engineering divisions of Thyssenkrupp to create a global EPC and process technology/licensing business."
   }
 ];

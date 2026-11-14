@@ -471,3 +471,4 @@ export function getCustomerDisplayProcessBadge(
 
   return null;
 }
+
