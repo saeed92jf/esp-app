@@ -11,7 +11,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     isinCode: "IRO1PKhal001",
     codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=فارس",
     tsetmcUrl: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=65883838195688438",
-    logoUrl: "/images/companies/pgpic.png",
+    logoUrl: "/customers/logos/208.png",
     establishedYear: 1389,
     marketCapFa: "بالغ بر ۷۲۰ هزار میلیارد تومان (رتبه اول ارزش بازار بورس ایران)",
     annualCapacityFa: "۲۸.۵ میلیون تن در سال (بیش از ۴۰٪ ظرفیت پتروشیمی کشور)",
@@ -43,6 +43,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۵.۲ میلیون تن در سال",
         products: ["اتیلن (الفین ۱)", "پروپیلن", "پلی‌اتیلن سبک و سنگین", "بنزن", "پلی‌بوتادین"],
         isCustomerOfEsp: true,
+        plantId: "olefin-bipc",
       },
       {
         id: "nouri",
@@ -57,6 +58,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۴.۵ میلیون تن در سال",
         products: ["پارا زایلین", "بنزن", "ارتو زایلین", "رافینیت", "آروماتیک سنگین"],
         isCustomerOfEsp: true,
+        plantId: "aromatic-nouri",
       },
       {
         id: "bouali",
@@ -71,6 +73,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۷ میلیون تن در سال",
         products: ["بنزن", "پارا زایلین", "رافینیت", "برش‌های سنگین"],
         isCustomerOfEsp: true,
+        plantId: "aromatic-bouali",
       },
       {
         id: "pars",
@@ -99,6 +102,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۵ میلیون تن در سال",
         products: ["PET بطری", "PET نساجی", "PTA خالص"],
         isCustomerOfEsp: true,
+        plantId: "polymer-tondgooyan",
       },
       {
         id: "arvand",
@@ -113,6 +117,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۲.۸ میلیون تن در سال",
         products: ["PVC سوسپانسیون", "PVC امولسیون", "سود پرک", "کلر مایع", "EDC"],
         isCustomerOfEsp: true,
+        plantId: "polymer-arvand",
       },
       {
         id: "mobin",
@@ -127,6 +132,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۲،۲۰۰ مگاوات برق و ۵،۰۰۰ تن در ساعت بخار صنعتی",
         products: ["برق", "بخار صنعتی", "آب بدون املاح DM", "هوای فشرده", "نیتروژن و اکسیژن"],
         isCustomerOfEsp: true,
+        plantId: "utility-mobin",
       },
       {
         id: "fajr",
@@ -141,6 +147,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱،۱۴۰ مگاوات برق و ۱،۶۰۰ تن بخار در ساعت",
         products: ["برق", "بخار صنعتی", "آب صنعتی", "اکسیژن صنعتی"],
         isCustomerOfEsp: true,
+        plantId: "utility-fajr",
       },
       {
         id: "gachsaran",
@@ -155,6 +162,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۰ میلیون تن اتیلن و ۸۴ هزار تن پروپیلن",
         products: ["اتیلن پلیمری", "پروپیلن", "برش C3+"],
         isCustomerOfEsp: true,
+        plantId: "olefin-gachsaran",
       },
       {
         id: "karun",
@@ -192,6 +200,12 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "مالکیت بیش از ۷۰ درصد از ظرفیت‌های تولید آروماتیک و کلرآلکالی کشور",
     ],
     tags: ["هلدینگ مادر", "بورس تهران", "فارس", "عسلویه", "ماهشهر", "کدال"],
+    sources: [
+      { titleFa: "صورت‌های مالی تلفیقی سالانه و گزارش فعالیت هیئت مدیره", publisherFa: "سامانه کدال (Codal)", url: "https://codal.ir/CompanyReports.aspx?symbol=فارس", isOfficial: true },
+      { titleFa: "شناسنامه نماد و آخرین آمار ارزش بازار در بورس تهران", publisherFa: "مدیریت فناوری بورس تهران (TSETMC)", url: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=65883838195688438", isOfficial: true },
+      { titleFa: "کتاب راهنمای صنعت پتروشیمی ایران و زنجیره ارزش", publisherFa: "شرکت ملی صنایع پتروشیمی (NPC)", url: "https://nipc.ir", isOfficial: true },
+      { titleFa: "پرتال رسمی و گزارش پایداری شرکت صنایع پتروشیمی خلیج فارس", publisherFa: "روابط عمومی هلدینگ خلیج فارس", url: "https://pgpic.ir", isOfficial: true },
+    ],
   },
   {
     id: "tappico",
@@ -202,7 +216,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     isinCode: "IRO1TPIC0001",
     codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=تاپیکو",
     tsetmcUrl: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=28332152865415779",
-    logoUrl: "/images/companies/tappico.png",
+    logoUrl: "/customers/logos/207.png",
     establishedYear: 1381,
     marketCapFa: "بیش از ۱۸۰ هزار میلیارد تومان",
     annualCapacityFa: "۱۲.۴ میلیون تن انواع محصولات شیمیایی، پالایشی و پلیمری",
@@ -233,6 +247,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۸ میلیون تن محصول",
         products: ["اتیلن (۳۳۰ هزار تن)", "پروپیلن", "پلی‌اتیلن سنگین و خطی", "اکسید اتیلن", "اتیلن گلایکول‌ها", "پلی‌بوتادین"],
         isCustomerOfEsp: true,
+        plantId: "olefin-shazand",
       },
       {
         id: "fanavaran",
@@ -247,6 +262,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۴ میلیون تن در سال",
         products: ["متانول AA", "اسید استیک", "منواکسید کربن CO"],
         isCustomerOfEsp: true,
+        plantId: "methanol-fanavaran",
       },
       {
         id: "ghadir",
@@ -303,6 +319,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۴۵۰،۰۰۰ بشکه در روز خوراک میعانات گازی",
         products: ["بنزین یورو ۵ (۴۵ میلیون لیتر/روز)", "گازوئیل یورو ۵", "گاز مایع LPG", "سوخت جت"],
         isCustomerOfEsp: true,
+        plantId: "refinery-pgsoc",
       },
       {
         id: "pasargad-oil",
@@ -340,6 +357,12 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "بزرگترین صادرکننده قیر و فرآورده‌های روغنی با نشان‌های تجاری معتبر بین‌المللی",
     ],
     tags: ["تاپیکو", "شستا", "ستاره خلیج فارس", "بورس تهران", "شازند", "ماهشهر"],
+    sources: [
+      { titleFa: "گزارش مالی دوره‌ای و مجمع عمومی عادی سالیانه", publisherFa: "سامانه جامع اطلاع‌رسانی ناشران (کدال)", url: "https://codal.ir/CompanyReports.aspx?symbol=تاپیکو", isOfficial: true },
+      { titleFa: "آمار معاملات نماد تاپیکو و سهامداران عمده", publisherFa: "بورس اوراق بهادار تهران (TSETMC)", url: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=28332152865415779", isOfficial: true },
+      { titleFa: "پرتفوی سرمایه‌گذاری نفت، گاز و پتروشیمی", publisherFa: "سرمایه‌گذاری تامین اجتماعی (شستا)", url: "https://shasta.ir", isOfficial: true },
+      { titleFa: "پرتال رسمی سرمایه‌گذاری تاپیکو", publisherFa: "روابط عمومی تاپیکو", url: "https://tappico.com", isOfficial: true },
+    ],
   },
   {
     id: "parsan",
@@ -350,7 +373,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     isinCode: "IRO1POGC0001",
     codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=پارسان",
     tsetmcUrl: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=45385621379109726",
-    logoUrl: "/images/companies/parsan.png",
+    logoUrl: "/customers/logos/210.png",
     establishedYear: 1386,
     marketCapFa: "بالغ بر ۲۱۰ هزار میلیارد تومان",
     annualCapacityFa: "۲۳.۰ میلیون تن محصولات پتروشیمی و پالایشی",
@@ -381,6 +404,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۳.۲۴ میلیون تن اوره و ۲.۰۴ میلیون تن آمونیاک",
         products: ["کود اوره کشاورزی گرانول", "آمونیاک مایع صنعتی"],
         isCustomerOfEsp: true,
+        plantId: "urea-pardis",
       },
       {
         id: "zagros",
@@ -395,6 +419,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۳.۳ میلیون تن متانول در سال",
         products: ["متانول گرید AA با خلوص ۹۹.۸۵٪"],
         isCustomerOfEsp: true,
+        plantId: "methanol-zagros",
       },
       {
         id: "shiraz-petro",
@@ -409,6 +434,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۳.۴ میلیون تن محصول کل",
         products: ["اوره گرانول و پریل", "آمونیاک", "اسید نیتریک", "نیترات آمونیوم", "سودا اش"],
         isCustomerOfEsp: true,
+        plantId: "urea-shiraz",
       },
       {
         id: "kermanshah-petro",
@@ -423,6 +449,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۱.۰۶ میلیون تن در سال",
         products: ["اوره گرانول", "آمونیاک"],
         isCustomerOfEsp: true,
+        plantId: "urea-kermanshah",
       },
       {
         id: "tabriz-petro",
@@ -437,6 +464,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۸۲۰ هزار تن در سال",
         products: ["پلی‌استایرن انبساطی EPS", "پلی‌استایرن مقاوم HIPS", "ABS", "پلی‌اتیلن سبک و سنگین", "اتیلن"],
         isCustomerOfEsp: true,
+        plantId: "olefin-tabriz",
       },
       {
         id: "tabriz-refinery",
@@ -474,6 +502,11 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "یکپارچگی منحصر‌به‌فرد پالایشگاه و پتروشیمی در تبریز با تنوع بی‌نظیر پلیمرهای مهندسی",
     ],
     tags: ["پارسان", "وغدیر", "ساتا", "پردیس", "زاگرس", "بورس تهران", "اوره", "متانول"],
+    sources: [
+      { titleFa: "گزارش تفسیری مدیریت و صورت‌های مالی حسابرسی‌شده", publisherFa: "سامانه کدال (Codal)", url: "https://codal.ir/CompanyReports.aspx?symbol=پارسان", isOfficial: true },
+      { titleFa: "اطلاعات نماد پارسان و بازدهی سهام", publisherFa: "شرکت مدیریت فناوری بورس تهران", url: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=45385621379109726", isOfficial: true },
+      { titleFa: "پرتال رسمی گروه گسترش نفت و گاز پارسیان", publisherFa: "گروه مالی غدیر / پارسان", url: "https://pogdc.ir", isOfficial: true },
+    ],
   },
   {
     id: "bakhtar",
@@ -481,7 +514,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     nameEn: "Bakhtar Petrochemical Holding",
     companyAbbrv: "BPH",
     tseSymbol: "باختر",
-    logoUrl: "/images/companies/bakhtar.png",
+    logoUrl: "/customers/logos/209.png",
     establishedYear: 1383,
     marketCapFa: "بیش از ۱۲۰ هزار میلیارد تومان (غیربورسی / هلدینگ خصوصی)",
     annualCapacityFa: "۵.۸ میلیون تن انواع محصولات الفینی و پلیمری",
@@ -511,6 +544,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۲.۰ میلیون تن اتیلن در سال",
         products: ["اتیلن گرید پلیمری", "برش‌های مایع C3+"],
         isCustomerOfEsp: true,
+        plantId: "olefin-kavian",
       },
       {
         id: "lorestan",
@@ -585,6 +619,11 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "ظرفیت سالانه بیش از ۲ میلیون تن انواع پلی‌اتیلن استاندارد بین‌المللی",
     ],
     tags: ["باختر", "خط اتیلن غرب", "کاویان", "الفین ۱۱", "پلیمر", "عسلویه"],
+    sources: [
+      { titleFa: "اسناد و صورت‌های مالی شرکت گروه پتروشیمی باختر", publisherFa: "سامانه کدال (Codal)", url: "https://codal.ir", isOfficial: true },
+      { titleFa: "گزارش پیشرفت پروژه خط لوله انتقال اتیلن غرب", publisherFa: "شرکت ملی صنایع پتروشیمی (NPC)", url: "https://nipc.ir", isOfficial: true },
+      { titleFa: "پرتال رسمی شرکت پتروشیمی باختر", publisherFa: "روابط عمومی گروه باختر", url: "https://bakhtarpc.com", isOfficial: true },
+    ],
   },
   {
     id: "saba-energy",
@@ -595,7 +634,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     isinCode: "IRO1SNDG0001",
     codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=وصندوق",
     tsetmcUrl: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=35700344742885862",
-    logoUrl: "/images/companies/cspf.png",
+    logoUrl: "/customers/logos/152.png",
     establishedYear: 1367,
     marketCapFa: "بالغ بر ۶۵ هزار میلیارد تومان",
     annualCapacityFa: "۶.۲ میلیون تن محصولات پلیمری و شیمیایی",
@@ -640,6 +679,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
         capacity: "۳۰۰ هزار تن انواع PP در سال",
         products: ["پلی‌پروپیلن هموپلیمر", "کوپلیمر ضربه‌پذیر", "کوپلیمر تصادفی رندوم", "الیاف و نساجی"],
         isCustomerOfEsp: true,
+        plantId: "polymer-jppc",
       },
       {
         id: "mis-petro",
@@ -675,6 +715,11 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "یکپارچگی منحصر‌به‌فرد از بالادست پتروشیمی تا فولادهای فوق‌سنگین خطوط لوله انرژی",
     ],
     tags: ["وصندوق", "صبا انرژی", "پتروشیمی جم", "جم پیلن", "الفین ۱۰", "عسلویه"],
+    sources: [
+      { titleFa: "صورت‌های مالی تلفیقی و پرتفوی بورسی وصندوق", publisherFa: "سامانه کدال (Codal)", url: "https://codal.ir/CompanyReports.aspx?symbol=وصندوق", isOfficial: true },
+      { titleFa: "اطلاعات نماد وصندوق در بازار بورس تهران", publisherFa: "TSETMC", url: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=35700344742885862", isOfficial: true },
+      { titleFa: "پرتال شرکت سرمایه‌گذاری صندوق بازنشستگی کشوری", publisherFa: "صبا انرژی", url: "https://sabaenergy.ir", isOfficial: true },
+    ],
   },
   {
     id: "mapna",
@@ -685,7 +730,7 @@ export const IRANIAN_HOLDINGS: Holding[] = [
     isinCode: "IRO1MAPN0001",
     codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=رمپنا",
     tsetmcUrl: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=46560944983226343",
-    logoUrl: "/images/companies/mapna.png",
+    logoUrl: "/customers/logos/352.png",
     establishedYear: 1371,
     marketCapFa: "بیش از ۱۱۰ هزار میلیارد تومان",
     annualCapacityFa: "طراحی، مهندسی و اجرای بیش از ۶۵،۰۰۰ مگاوات ظرفیت نیروگاهی و پروژه‌های مگا نفت و گاز",
@@ -749,5 +794,11 @@ export const IRANIAN_HOLDINGS: Holding[] = [
       "توسعه‌دهنده واحدهای فرآیندی در فازهای ۱۳، ۱۴ و پالایشگاه‌های پارس جنوبی",
     ],
     tags: ["مپنا", "رمپنا", "توربین", "توگا", "نیروگاه", "نفت و گاز", "بورس تهران"],
+    sources: [
+      { titleFa: "گزارش مالی و تصمیمات مجمع عمومی رمپنا", publisherFa: "سامانه کدال (Codal)", url: "https://codal.ir/CompanyReports.aspx?symbol=رمپنا", isOfficial: true },
+      { titleFa: "اطلاعات سهام گروه مپنا در بازار بورس تهران", publisherFa: "مدیریت فناوری بورس تهران (TSETMC)", url: "http://tsetmc.com/Loader.aspx?ParTree=151311&i=15904128509895000", isOfficial: true },
+      { titleFa: "پرتال رسمی گروه مپنا", publisherFa: "روابط عمومی و امور بین‌الملل مپنا", url: "https://mapnagroup.com", isOfficial: true },
+    ],
   },
 ];
+

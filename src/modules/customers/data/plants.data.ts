@@ -24,6 +24,29 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن گرید پلیمری", "پروپیلن شیمیایی", "بنزن پیرولیز", "برش‌های ۴ کربنه C4", "نفت کوره پیرولیز"],
     commissionedYear: 1387,
     tseSymbol: "جم",
+    
+    logoUrl: "/customers/logos/34.png",
+    website: "https://jpcomplex.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=جم",
+    sources: [
+          {
+                titleFa: "گزارش تفسیری مدیریت و تولید اتیلن",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=جم",
+                isOfficial: true
+          },
+          {
+                titleFa: "مشخصات فنی واحد الفین ۱۰",
+                publisherFa: "لایسنسور Technip فرانسه",
+                isOfficial: true
+          },
+          {
+                titleFa: "آمار عملکرد پتروشیمی‌های ایران",
+                publisherFa: "شرکت ملی صنایع پتروشیمی (NPC)",
+                url: "https://nipc.ir",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "واحد الفین پتروشیمی جم با عنوان الفین دهم، بزرگترین واحد تولیدکننده الفین دوگانه (خوراک گاز و مایع) در جهان است. این مگاکراکر مجهز به کوره‌های الفین پیشرفته با تکنولوژی تکنیپ است و قلب تپنده صنایع پلیمری فاز یک عسلویه به شمار می‌رود.",
@@ -51,6 +74,29 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن پلیمری گرید ۹۹.۹۵٪", "متان گازی سوخت", "برش‌های هیدروژنه"],
     commissionedYear: 1387,
     tseSymbol: "آریا",
+    
+    logoUrl: "/customers/logos/10.png",
+    website: "https://aryasasol.com",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=آریا",
+    sources: [
+          {
+                titleFa: "گزارش ماهانه تولید و فروش اتیلن",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=آریا",
+                isOfficial: true
+          },
+          {
+                titleFa: "پکیج طراحی فرآیند الفین نهم",
+                publisherFa: "Linde AG آلمان",
+                isOfficial: true
+          },
+          {
+                titleFa: "کتاب جامع پتروشیمی ایران",
+                publisherFa: "شرکت ملی صنایع پتروشیمی",
+                url: "https://nipc.ir",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "الفین نهم آریا ساسول یکی از پایدارترین و باکیفیت‌ترین واحدهای الفین اتان کراکر دنیاست که با لایسنس لینده آلمان احداث شده و خوراک واحدهای پلی‌اتیلن سبک و متوسط و سنگین خود و مجتمع‌های همجوار را تامین می‌کند.",
@@ -77,6 +123,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Technip (فرانسه)"],
     mainProductsFa: ["اتیلن گرید خط لوله غرب و پلیمری", "برش سنگین C3+"],
     commissionedYear: 1391,
+    
+    logoUrl: "/customers/logos/38.png",
+    website: "https://kavianpetro.com",
+    sources: [
+          {
+                titleFa: "آمار تزریق اتیلن به خط لوله غرب",
+                publisherFa: "پتروشیمی باختر / شرکت ملی صنایع پتروشیمی",
+                url: "https://nipc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "مستندات طراحی مگاکراکر ۲ میلیون تنی",
+                publisherFa: "Technip فرانسه",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی کاویان مجری الفین یازدهم و مادر خط لوله ۲۲۰۰ کیلومتری اتیلن غرب است. این مجتمع دو ترین مستقل ۱ میلیون تنی دارد که اتیلن تولیدی را به استان‌های لرستان، کرمانشاه، کردستان، آذربایجان غربی و ایلام پمپاژ می‌کند.",
@@ -104,6 +166,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن", "پروپیلن", "بنزن پیرولیز", "مخلوط C4"],
     commissionedYear: 1385,
     tseSymbol: "مارون",
+    
+    logoUrl: "/customers/logos/52.png",
+    website: "https://marunpetro.com",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=مارون",
+    sources: [
+          {
+                titleFa: "صورت‌های مالی و گزارش عملکرد سالانه",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=مارون",
+                isOfficial: true
+          },
+          {
+                titleFa: "طراحی کوره و فرآیند الفین ۷",
+                publisherFa: "Linde آلمان",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "واحد الفین هفتم پتروشیمی مارون یکی از الفین‌های بزرگ خوراک دوگانه کشور است که زنجیره ارزش تولید اتیلن اکساید، اتیلن گلایکول‌ها و پلی‌پروپیلن را در منطقه ویژه ماهشهر تغذیه می‌کند.",
@@ -131,6 +210,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن", "پروپیلن", "بنزن خام", "سوخت مایع"],
     commissionedYear: 1373,
     tseSymbol: "بندر امام",
+    
+    logoUrl: "/customers/logos/12.png",
+    website: "https://bipc.ir",
+    sources: [
+          {
+                titleFa: "شناسنامه واحدهای فرآیندی پتروشیمی بندر امام",
+                publisherFa: "هلدینگ صنایع پتروشیمی خلیج فارس",
+                url: "https://pgpic.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "مدارک مهندسی الفین یک",
+                publisherFa: "ABB Lummus",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "الفین اول بندر امام نخستین مگاکراکر کشور پس از انقلاب بود که پایه‌گذار توسعه مدرن پتروشیمی در ماهشهر شد و زنجیره تولید پلی‌اتیلن‌های سنگین، سبک و کلرآلکالی بندر امام را تغذیه می‌کند.",
@@ -157,6 +252,21 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Technip (فرانسه)"],
     mainProductsFa: ["اتیلن پلیمری", "مونو اتیلن گلایکول MEG (واحد دوم)"],
     commissionedYear: 1389,
+    
+    logoUrl: "/customers/logos/59.png",
+    website: "https://morvaridpetro.ir",
+    sources: [
+          {
+                titleFa: "گزارش پایش تولید و فروش اتیلن",
+                publisherFa: "سامانه کدال / شرکت پتروشیمی مروارید",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور الفین پنجم عسلویه",
+                publisherFa: "Technip فرانسه",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی مروارید مجری الفین پنجم عسلویه است که علاوه بر عرضه اتیلن به خط لوله اتیلن غرب و بازارهای صادراتی، اتیلن مورد نیاز واحد مگا MEG خود را جهت تولید ضدیخ و الیاف پلی‌استر تامین می‌کند.",
@@ -183,6 +293,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن پلیمری", "پروپیلن", "بنزن پیرولیز", "رافینیت"],
     commissionedYear: 1384,
     tseSymbol: "شکبیر",
+    
+    logoUrl: "/customers/logos/03.png",
+    website: "https://akpc.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=شکبیر",
+    sources: [
+          {
+                titleFa: "گزارش مالی دوره‌ای شکبیر",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=شکبیر",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنس و طراحی واحد الفین ۶",
+                publisherFa: "Linde آلمان",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "الفین ششم امیرکبیر یکی از متنوع‌ترین واحدهای کراکر کشور از حیث امکان پذیرش خوراک مایع و گاز است که انواع گریدهای پلی‌اتیلن سبک، سنگین و خطی لوله PE100 را تغذیه می‌نماید.",
@@ -208,6 +335,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Stone & Webster (آمریکا/انگلستان)"],
     mainProductsFa: ["اتیلن پلیمری", "پروپیلن شیمیایی", "بنزن پیرولیز", "نفت گاز"],
     commissionedYear: 1399,
+    
+    logoUrl: "/customers/logos/32.png",
+    website: "https://ilampetro.com",
+    sources: [
+          {
+                titleFa: "گزارش بهره‌برداری الفین ۱۳",
+                publisherFa: "شرکت ملی صنایع پتروشیمی (NPC)",
+                url: "https://nipc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور کوره و جداسازی",
+                publisherFa: "Stone & Webster",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی ایلام بزرگترین مگاپروژه صنعتی غرب کشور است. واحد الفین سیزدهم با اتکا به پالایشگاه گاز ایلام، نماد پیوند بالادست گاز ترش با پلیمرهای مهندسی در مناطق مرزی محروم کشور است.",
@@ -233,6 +376,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Technip (فرانسه)"],
     mainProductsFa: ["اتیلن گرید خط لوله دنا", "پروپیلن", "برش C3+"],
     commissionedYear: 1402,
+    
+    logoUrl: "/customers/logos/26.png",
+    website: "https://gpc.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=مگچسار",
+    sources: [
+          {
+                titleFa: "اطلاعات مجمع و گزارش افتتاح الفین ایرانیان",
+                publisherFa: "سامانه کدال / هلدینگ خلیج فارس",
+                url: "https://pgpic.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور مهندسی اصولی",
+                publisherFa: "Technip فرانسه",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "الفین گچساران تازه‌ترین مگا الفین راه‌اندازی‌شده در ایران است که به عنوان الفین ایرانیان با تکیه بر ساخت بیش از ۸۰٪ تجهیزات داخلی به بهره‌برداری رسید و خوراک خط اتیلن دنا (پتروشیمی‌های دهدشت، ممسنی، بروجن و کازرون) را تامین می‌کند.",
@@ -258,6 +418,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن", "پروپیلن", "بوتادین", "بنزن پیرولیز", "هیدروکربن‌های C4"],
     commissionedYear: 1372,
     tseSymbol: "شاراک",
+    
+    logoUrl: "/customers/logos/73.png",
+    website: "https://arpc.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=شاراک",
+    sources: [
+          {
+                titleFa: "صورت‌های مالی و آمار تفکیکی محصولات الفینی",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=شاراک",
+                isOfficial: true
+          },
+          {
+                titleFa: "تکنولوژی و لایسنس کراکر مایع",
+                publisherFa: "KBR آمریکا / Technip",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "الفین شازند مهد الفین مایع پایه نفتا در ایران است. این کراکر به دلیل تنوع خوراک هیدروکربوری، گسترده‌ترین سبد محصولات شیمیایی میانی و نهایی کشور را بدون نیاز به خوراک گاز عسلویه تولید می‌کند.",
@@ -283,6 +460,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اتیلن", "پروپیلن", "بنزن خام", "برش‌های C4"],
     commissionedYear: 1375,
     tseSymbol: "تبریز",
+    
+    logoUrl: "/customers/logos/78.png",
+    website: "https://tpco.ir",
+    sources: [
+          {
+                titleFa: "گزارش زنجیره ارزش پلیمر و الفین",
+                publisherFa: "گروه گسترش نفت و گاز پارسیان",
+                url: "https://pogdc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور واحد الفین",
+                publisherFa: "TPL ایتالیا",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "واحد الفین تبریز شاهرگ حیاتی پتروشیمی تبریز برای زنجیره ارزش استایرن منومر، پلی‌استایرن‌ها و ABS است که خوراک الفینی منطقه صنعتی غرب و شمال‌غرب ایران را تامین می‌سازد.",
@@ -309,6 +502,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["پارا زایلین (۷۵۰ هزار تن)", "بنزن (۴۳۰ هزار تن)", "ارتو زایلین (۱۰۰ هزار تن)", "رافینیت", "آروماتیک سنگین"],
     commissionedYear: 1386,
     tseSymbol: "نوری",
+    
+    logoUrl: "/customers/logos/15.png",
+    website: "https://nouric.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=نوری",
+    sources: [
+          {
+                titleFa: "گزارش فعالیت هیئت مدیره و رکوردهای تولید نوری",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=نوری",
+                isOfficial: true
+          },
+          {
+                titleFa: "طراحی و لایسنس بزرگترین آروماتیک جهان",
+                publisherFa: "Axens فرانسه / Krupp Uhde",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی نوری (برزویه) بزرگترین واحد آروماتیک جهان با لایسنسورهای رده‌اول جهانی است که میعانات گازی ترش فازهای پارس جنوبی را به ارزشمندترین حلقه‌های بنزن، پارازایلین و حلال‌های صنعتی بدل می‌کند.",
@@ -333,6 +543,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["بنزن صنعتی", "پارا زایلین", "ارتو زایلین", "رافینیت", "برش‌های هوی اند"],
     commissionedYear: 1383,
     tseSymbol: "بوعلی",
+    
+    logoUrl: "/customers/logos/16.png",
+    website: "https://bspc.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=بوعلی",
+    sources: [
+          {
+                titleFa: "گزارش ماهانه و راه‌اندازی برج تفکیک جدید بوعلی",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=بوعلی",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور واحدهای زایلین و بنزن",
+                publisherFa: "Axens فرانسه",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی بوعلی سینا قطب آروماتیک ماهشهر است که به همراه برج تقطیر بازسازی‌شده ۱۲۱ متری خود، تغذیه‌کننده مجتمع‌های شهید تندگویان (زنجیره PET) و پتروشیمی‌های کلان منطقه خوزستان است.",
@@ -357,6 +584,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["بنزن", "تولوئن", "مخلوط زایلین‌ها", "ارتو زایلین", "پارازایلین", "آنهیدرید فتالیک"],
     commissionedYear: 1371,
     tseSymbol: "شصفها",
+    
+    logoUrl: "/customers/logos/33.png",
+    website: "https://epciran.com",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=شصفها",
+    sources: [
+          {
+                titleFa: "صورت‌های مالی حسابرسی‌شده شصفها",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=شصفها",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور آروماتیک اصفهان",
+                publisherFa: "UOP آمریکا",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی اصفهان نخستین مجتمع تولیدکننده مواد پایه آروماتیک در ایران پس از جنگ تحمیلی است که صنایع شوینده، دارویی، رنگ و رزین مرکز کشور را تامین می‌کند.",
@@ -384,6 +628,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["متانول با خلوص ۹۹.۸۵٪"],
     commissionedYear: 1385,
     tseSymbol: "زاگرس",
+    
+    logoUrl: "/customers/logos/82.png",
+    website: "https://zagros-pc.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=زاگرس",
+    sources: [
+          {
+                titleFa: "گزارش تولید و صادرات متانول زاگرس",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=زاگرس",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنس مگامتانول",
+                publisherFa: "Lurgi Oel-Gas-Chemie آلمان",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی زاگرس بزرگترین مجتمع تولیدکننده متانول در دنیاست که با دو فاز ۱.۶۵ میلیون تنی بر پایه تکنولوژی اتوترمال ریفرمینگ لورگی آلمان، بازیگر تعیین‌کننده قیمت جهانی متانول است.",
@@ -407,6 +668,21 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Casale (سوئیس)"],
     mainProductsFa: ["متانول پتروشیمیایی گرید AA"],
     commissionedYear: 1399,
+    
+    logoUrl: "/customers/logos/55.png",
+    website: "https://kavehmethanol.com",
+    sources: [
+          {
+                titleFa: "مستندات احداث بزرگترین متانول تک خط جهان",
+                publisherFa: "گروه صنعتی شیشه و متانول کاوه",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور راکتور و سنتز متانول",
+                publisherFa: "Casale سوئیس",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "متانول کاوه بزرگترین خط منفرد (Single Train) تولید متانول در گیتی است که دارای اسکله اختصاصی صادراتی متانول در خلیج فارس با قابلیت پهلوگیری کشتی‌های ۱۰۰ هزار تنی می‌باشد.",
@@ -430,6 +706,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Haldor Topsoe (دانمارک)"],
     mainProductsFa: ["متانول گرید AA"],
     commissionedYear: 1397,
+    
+    logoUrl: "/customers/logos/51.png",
+    website: "https://marjanpetro.com",
+    sources: [
+          {
+                titleFa: "شناسنامه طرح‌های پتروشیمی عسلویه فاز ۲",
+                publisherFa: "شرکت ملی صنایع پتروشیمی (NPC)",
+                url: "https://nipc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور فرآیند متانول مرجان",
+                publisherFa: "Haldor Topsoe دانمارک",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی مرجان از مدرن‌ترین واحدهای متانول عسلویه با تکنولوژی تاپسو دانمارک است که بالاترین راندمان مصرف گاز و کمترین انتشار کربن را در میان پلنت‌های متانول منطقه دارد.",
@@ -457,6 +749,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["کود اوره کشاورزی گرانول بدون رطوبت", "آمونیاک مایع صنعتی خلوص بالا"],
     commissionedYear: 1386,
     tseSymbol: "شپردیس",
+    
+    logoUrl: "/customers/logos/62.png",
+    website: "https://paup.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=شپردیس",
+    sources: [
+          {
+                titleFa: "گزارش فعالیت هیئت مدیره و مجمع سالانه شپردیس",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=شپردیس",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور فازهای ۱، ۲ و ۳ اوره و آمونیاک",
+                publisherFa: "Stamicarbon هلند / Kellogg آمریکا",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی پردیس با سه فاز تولیدی مشابه و پیوسته، عظیم‌ترین مجتمع تولید اوره در خاورمیانه و یکی از ۴ قطب اصلی صادرات اوره کشاورزی در سراسر جهان است.",
@@ -481,6 +790,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["اوره گرانول", "آمونیاک مایع", "اسید نیتریک", "نیترات آمونیوم"],
     commissionedYear: 1395,
     tseSymbol: "شیراز",
+    
+    logoUrl: "/customers/logos/75.png",
+    website: "https://spc.co.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=شیراز",
+    sources: [
+          {
+                titleFa: "صورت‌های مالی و آمار تولید کود اوره و نیترات",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=شیراز",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور طرح اوره و آمونیاک سوم شیراز",
+                publisherFa: "Toyo Engineering ژاپن",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "طرح توسعه فاز سوم پتروشیمی شیراز از بزرگترین مجتمع‌های اوره داخل کشور با کوره‌های پرفشار ریفرمینگ متان است که نیاز غلات و کشاورزی استان‌های مرکزی و جنوبی را تامین می‌کند.",
@@ -582,6 +908,22 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["بنزین سوپر و معمولی یورو ۵ (تامین‌کننده ۴۵٪ بنزین کشور)", "سوخت جت و هوایی", "نفت گاز گوگردزدایی‌شده", "گاز مایع"],
     commissionedYear: 1397,
     tseSymbol: "ستاره خلیج فارس",
+    
+    logoUrl: "/customers/logos/158.png",
+    website: "https://pgsoc.ir",
+    sources: [
+          {
+                titleFa: "آمار پالایش ۴۵۰ هزار بشکه‌ای و تولید بنزین کشور",
+                publisherFa: "شرکت ملی پالایش و پخش فرآورده‌های نفتی ایران",
+                url: "https://niordc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "لایسنسور و کنسرسیوم مهندسی",
+                publisherFa: "Snamprogetti / Foster Wheeler / فرآب",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "نفت ستاره خلیج فارس بزرگترین پالایشگاه میعانات گازی جهان و استراتژیک‌ترین تاسیسات انرژی ایران است که کشور را از واردات ده‌ها میلیون لیتر بنزین در روز نجات داد و ضامن استقلال انرژی ملی است.",
@@ -603,6 +945,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     licensors: ["Total (فرانسه)", "ENI (ایتالیا)", "Statoil (نروژ)", "شرکت‌های EPC ایرانی"],
     mainProductsFa: ["گاز طبیعی خط لوله سراسری IGAT", "میعانات گازی", "گاز اتان خوراک پتروشیمی‌ها", "LPG صادراتی", "گوگرد دانه‌بندی"],
     commissionedYear: 1381,
+    
+    logoUrl: "/customers/logos/225.png",
+    website: "https://spgc.ir",
+    sources: [
+          {
+                titleFa: "آمار فرآورش گاز و میعانات پالایشگاه‌های پارس جنوبی",
+                publisherFa: "شرکت مجتمع گاز پارس جنوبی / شرکت ملی گاز ایران",
+                url: "https://spgc.ir",
+                isOfficial: true
+          },
+          {
+                titleFa: "توسعه فازهای دریایی و خشکی پارس جنوبی",
+                publisherFa: "شرکت نفت و گاز پارس (POGC)",
+                url: "https://pogc.ir",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "مجتمع گاز پارس جنوبی (SPGC) بزرگترین پالایشگاه گاز طبیعی جهان است که از طریق ۱۳ پالایشگاه عظیم در دو سایت عسلویه و کنگان، شریان حیات گرمایشی، نیروگاهی و صنعتی اقتصاد ایران را زنده نگه داشته است.",
@@ -629,6 +988,23 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["برق فشارقوی", "بخار آب پرفشار و کم‌فشار", "آب خنک‌کننده دریا (Cooling Water)", "آب بدون املاح DM", "هوای ابزاردقیق", "نیتروژن و اکسیژن مایع"],
     commissionedYear: 1385,
     tseSymbol: "مبین",
+    
+    logoUrl: "/customers/logos/58.png",
+    website: "https://mobin-energy.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=مبین",
+    sources: [
+          {
+                titleFa: "صورت‌های مالی و نرخ‌نامه یوتیلیتی فاز ۱ عسلویه",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=مبین",
+                isOfficial: true
+          },
+          {
+                titleFa: "توربین‌ها و بویلرهای متمرکز نیروگاهی",
+                publisherFa: "Alstom / Siemens / گروه مپنا",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "پتروشیمی مبین شاهکار زیرساختی یوتیلیتی در خاورمیانه است که بدون حتی یک دقیقه وقفه، برق، بخار، آب خنک‌کننده و گازهای صنعتی را برای ۱۶ مگاپتروشیمی فاز یک عسلویه تامین و توزیع می‌کند.",
@@ -653,8 +1029,26 @@ export const IRANIAN_PLANTS: PlantFacility[] = [
     mainProductsFa: ["برق", "بخار صنعتی HP/MP/LP", "آب صنعتی تصفیه‌شده", "هوای ابزاردقیق", "اکسیژن و نیتروژن"],
     commissionedYear: 1381,
     tseSymbol: "بفجر",
+    
+    logoUrl: "/customers/logos/22.png",
+    website: "https://fajrenergy.ir",
+    codalUrl: "https://codal.ir/CompanyReports.aspx?symbol=بفجر",
+    sources: [
+          {
+                titleFa: "گزارش مالی و پایداری تولید یوتیلیتی ماهشهر",
+                publisherFa: "سامانه کدال",
+                url: "https://codal.ir/CompanyReports.aspx?symbol=بفجر",
+                isOfficial: true
+          },
+          {
+                titleFa: "واحدهای تصفیه آب و تولید هوای ابزاردقیق و برق",
+                publisherFa: "General Electric / Alstom / مپنا",
+                isOfficial: true
+          }
+    ],
     status: "operational",
     descriptionFa:
       "فجر انرژی بزرگترین مجتمع متمرکز زیربنایی در استان خوزستان است که جریان مداوم انرژی الکتریکی، بخار و آب صنعتی بیش از ۲۰ شرکت بزرگ پتروشیمی ماهشهر را پایدار نگه می‌دارد.",
   },
 ];
+

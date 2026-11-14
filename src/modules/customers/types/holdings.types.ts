@@ -20,6 +20,14 @@ export interface HoldingSubsidiary {
   capacity?: string;
   products?: string[];
   isCustomerOfEsp?: boolean;
+  plantId?: string; // Links to PlantFacility in plants catalog
+}
+
+export interface InformationSource {
+  titleFa: string;
+  publisherFa: string;
+  url?: string;
+  isOfficial?: boolean;
 }
 
 export interface Holding {
@@ -45,4 +53,6 @@ export interface Holding {
   keyProducts: string[];
   strategicHighlightsFa: string[];
   tags: string[];
+  sources?: InformationSource[];
 }
+

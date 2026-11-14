@@ -20,6 +20,7 @@ export interface PlantFacility {
   complexNameEn?: string;
   holdingId?: string;
   holdingNameFa?: string;
+  logoUrl?: string;
   locationZone: "assaluyeh" | "mahshahr" | "other_provinces";
   locationFa: string;
   cityFa: string;
@@ -35,4 +36,14 @@ export interface PlantFacility {
   descriptionFa: string;
   reactorOrFurnaceInfoFa?: string;
   espInstalledBase?: string;
+  website?: string;
+  codalUrl?: string;
+  customerDirectoryId?: string; // Links to customer ID in Euroslot directory
+  sources?: {
+    titleFa: string;
+    publisherFa: string;
+    url?: string;
+    isOfficial?: boolean;
+  }[];
 }
+

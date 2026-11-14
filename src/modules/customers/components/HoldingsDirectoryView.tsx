@@ -1,8 +1,10 @@
 // src/modules/customers/components/HoldingsDirectoryView.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import {
   Building2,
   Search,
@@ -20,6 +22,7 @@ import {
   Sparkles,
   Info,
   ShieldCheck,
+  ArrowUpRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,10 +41,22 @@ import {
 export function HoldingsDirectoryView() {
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const searchParams = useSearchParams();
+  const urlHoldingId = searchParams.get("id");
 
   const [search, setSearch] = useState("");
   const [expandedHoldingId, setExpandedHoldingId] = useState<string | null>("pgpic");
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
+
+  useEffect(() => {
+    if (urlHoldingId) {
+      setExpandedHoldingId(urlHoldingId);
+      const found = IRANIAN_HOLDINGS.find((h) => h.id === urlHoldingId);
+      if (found) {
+        setSelectedHolding(found);
+      }
+    }
+  }, [urlHoldingId]);
 
   const filteredHoldings = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -176,8 +191,22 @@ export function HoldingsDirectoryView() {
               <div className="p-5 sm:p-6 space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                    <div className="size-13 rounded-2xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/20 text-primary font-bold font-mono text-lg flex items-center justify-center shrink-0 shadow-inner">
-                      {holding.companyAbbrv.slice(0, 3)}
+                    <div className="relative size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                      {holding.logoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={holding.logoUrl}
+                          alt={holding.nameFa}
+                          className="size-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="size-full rounded-xl bg-primary/10 text-primary font-bold font-mono text-sm flex items-center justify-center">
+                          {holding.companyAbbrv.slice(0, 3)}
+                        </div>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
@@ -371,17 +400,99 @@ export function HoldingsDirectoryView() {
                           </div>
                         )}
 
-                        {sub.plantLocation && (
-                          <div className="text-[10px] text-muted-foreground flex items-center gap-1">
-                            <MapPin className="size-3 shrink-0" />
-                            <span className="truncate">{sub.plantLocation}</span>
+                        {/* Cross-Link Actions */}
+                        <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/40 text-[11px]">
+                          {sub.plantLocation ? (
+                            <div className="text-[10px] text-muted-foreground flex items-center gap-1 truncate max-w-[170px]">
+                              <MapPin className="size-3 shrink-0" />
+                              <span className="truncate">{sub.plantLocation}</span>
+                            </div>
+                          ) : (
+                            <div />
+                          )}
+
+                          <div className="flex items-center gap-1.5 ms-auto">
+                            {sub.plantId && (
+                              <Link
+                                href={`/customers?tab=plants&id=${sub.plantId}`}
+                                className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline px-2 py-0.5 rounded-lg bg-primary/10 hover:bg-primary/15 transition-colors"
+                              >
+                                <Factory className="size-3" />
+                                <span>{isRtl ? "مشاهده پلنت" : "View Plant"}</span>
+                              </Link>
+                            )}
+                            {sub.isCustomerOfEsp && (
+                              <Link
+                                href={`/customers?search=${encodeURIComponent(sub.nameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                                className="inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground px-2 py-0.5 rounded-lg border border-border/60 hover:bg-muted/40 transition-colors"
+                                title={isRtl ? "جستجو در بانک مشتریان Euroslot" : "Search in Euroslot clients"}
+                              >
+                                <CheckCircle2 className="size-3 text-emerald-500" />
+                                <span>{isRtl ? "کارفرمای ESP" : "ESP Client"}</span>
+                              </Link>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* ── Card Sources & Information Footer ── */}
+              <div className="p-4 sm:px-6 bg-muted/20 border-t border-border/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1.5 font-semibold text-foreground/90 shrink-0">
+                    <ShieldCheck className="size-3.5 text-emerald-500" />
+                    <span>{isRtl ? "منابع و مراجع داده:" : "Data Sources:"}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                    {holding.sources && holding.sources.length > 0 ? (
+                      holding.sources.map((src, sIdx) => (
+                        <span key={sIdx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-background border border-border/70 text-foreground/80">
+                          {src.url ? (
+                            <a href={src.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary hover:underline flex items-center gap-1">
+                              <span>{src.publisherFa}</span>
+                              <ExternalLink className="size-2.5 opacity-60" />
+                            </a>
+                          ) : (
+                            <span>{src.publisherFa}</span>
+                          )}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-muted-foreground text-[11px]">
+                        {isRtl ? "سازمان بورس و اوراق بهادار تهران • سامانه کدال • شرکت ملی صنایع پتروشیمی (NPC)" : "TSE • Codal • NPC"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 ms-auto shrink-0">
+                  {holding.codalUrl && (
+                    <a
+                      href={holding.codalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-medium text-primary hover:underline inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
+                    >
+                      <span>{isRtl ? "صورت‌های مالی کدال" : "Codal Reports"}</span>
+                      <ExternalLink className="size-3" />
+                    </a>
+                  )}
+                  {holding.tsetmcUrl && (
+                    <a
+                      href={holding.tsetmcUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-border/70 bg-background hover:bg-muted/40 transition-colors"
+                    >
+                      <span>{isRtl ? "دیده‌بان بورس TSETMC" : "TSETMC"}</span>
+                      <ExternalLink className="size-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           );
         })}
@@ -398,9 +509,23 @@ export function HoldingsDirectoryView() {
         <Dialog open={Boolean(selectedHolding)} onOpenChange={() => setSelectedHolding(null)}>
           <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[24px]">
             <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
-              <div className="flex items-center gap-3">
-                <div className="size-12 rounded-xl bg-primary/10 text-primary font-bold font-mono text-lg flex items-center justify-center shrink-0">
-                  {selectedHolding.companyAbbrv}
+              <div className="flex items-center gap-3.5">
+                <div className="relative size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                  {selectedHolding.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={selectedHolding.logoUrl}
+                      alt={selectedHolding.nameFa}
+                      className="size-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <div className="size-full rounded-xl bg-primary/10 text-primary font-bold font-mono text-base flex items-center justify-center">
+                      {selectedHolding.companyAbbrv}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold text-foreground">
@@ -468,6 +593,37 @@ export function HoldingsDirectoryView() {
                   )}
                 </div>
               </div>
+
+              {/* Verified Sources List */}
+              {selectedHolding.sources && selectedHolding.sources.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/60">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-emerald-500" />
+                    <span>{isRtl ? "اسناد و مراجع اطلاعات حسابرسی‌شده:" : "Verified Data References:"}</span>
+                  </h4>
+                  <div className="space-y-1.5">
+                    {selectedHolding.sources.map((src, sIdx) => (
+                      <div key={sIdx} className="p-2.5 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-between text-xs">
+                        <div className="space-y-0.5">
+                          <div className="font-medium text-foreground">{src.titleFa}</div>
+                          <div className="text-[11px] text-muted-foreground">{src.publisherFa}</div>
+                        </div>
+                        {src.url && (
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline inline-flex items-center gap-1 text-[11px] font-medium shrink-0 ps-2"
+                          >
+                            <span>{isRtl ? "مشاهده مرجع" : "View"}</span>
+                            <ExternalLink className="size-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -475,3 +631,4 @@ export function HoldingsDirectoryView() {
     </div>
   );
 }
+

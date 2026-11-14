@@ -1,8 +1,10 @@
 // src/modules/customers/components/PlantsDirectoryView.tsx
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { Link } from "@/i18n/navigation";
 import {
   Factory,
   Flame,
@@ -19,6 +21,10 @@ import {
   Droplets,
   Boxes,
   Zap,
+  Landmark,
+  ShieldCheck,
+  CheckCircle2,
+  ArrowUpRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -48,11 +54,22 @@ const PROCESS_TABS: { id: PlantProcessType | "all"; labelFa: string; labelEn: st
 export function PlantsDirectoryView() {
   const locale = useLocale();
   const isRtl = locale === "fa";
+  const searchParams = useSearchParams();
+  const urlPlantId = searchParams.get("id");
 
   const [selectedProcess, setSelectedProcess] = useState<PlantProcessType | "all">("all");
   const [selectedZone, setSelectedZone] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [selectedPlant, setSelectedPlant] = useState<PlantFacility | null>(null);
+
+  useEffect(() => {
+    if (urlPlantId) {
+      const found = IRANIAN_PLANTS.find((p) => p.id === urlPlantId);
+      if (found) {
+        setSelectedPlant(found);
+      }
+    }
+  }, [urlPlantId]);
 
   // Filtered dataset
   const filteredPlants = useMemo(() => {
@@ -310,20 +327,50 @@ export function PlantsDirectoryView() {
                 )}
               </div>
 
-              {/* Plant Name & Complex */}
-              <div>
-                <h3 className="text-base font-bold text-foreground leading-snug">
-                  {plant.nameFa}
-                </h3>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                  <Building2 className="size-3.5 text-primary shrink-0" />
-                  <span className="font-semibold text-foreground/90">{plant.complexNameFa}</span>
-                  {plant.holdingNameFa && (
-                    <>
-                      <span>•</span>
-                      <span className="text-[11px]">{plant.holdingNameFa}</span>
-                    </>
+              {/* Plant Logo & Name & Complex */}
+              <div className="flex items-start gap-3.5">
+                <div className="relative size-13 sm:size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                  {plant.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={plant.logoUrl}
+                      alt={plant.nameFa}
+                      className="size-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <Factory className="size-6 text-muted-foreground/60" />
                   )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base font-bold text-foreground leading-snug">
+                    {plant.nameFa}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 font-semibold text-foreground/90">
+                      <Building2 className="size-3.5 text-primary shrink-0" />
+                      <span>{plant.complexNameFa}</span>
+                    </div>
+                    {plant.holdingNameFa && (
+                      <>
+                        <span>•</span>
+                        {plant.holdingId && plant.holdingId !== "private" && plant.holdingId !== "governmental" ? (
+                          <Link
+                            href={`/customers?tab=holdings&id=${plant.holdingId}`}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline px-1.5 py-0.5 rounded bg-primary/10 transition-colors"
+                            title={isRtl ? "مشاهده هلدینگ در تب هلدینگ‌ها" : "View holding"}
+                          >
+                            <Landmark className="size-3" />
+                            <span>{plant.holdingNameFa}</span>
+                          </Link>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground">{plant.holdingNameFa}</span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -381,22 +428,70 @@ export function PlantsDirectoryView() {
               )}
             </div>
 
-            {/* Card Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-border/60 text-xs">
-              <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] truncate max-w-[240px]">
-                <MapPin className="size-3.5 text-muted-foreground/70 shrink-0" />
-                <span className="truncate">{plant.locationFa}</span>
+            {/* Card Actions & Cross Links */}
+            <div className="space-y-2 pt-3 border-t border-border/60">
+              <div className="flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground text-[11px] truncate max-w-[200px]">
+                  <MapPin className="size-3.5 text-muted-foreground/70 shrink-0" />
+                  <span className="truncate">{plant.locationFa}</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href={`/customers?search=${encodeURIComponent(plant.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                    className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground rounded-lg border border-border/60 hover:bg-muted/30 inline-flex items-center gap-1 transition-colors"
+                    title={isRtl ? "جستجو در بانک مشتریان یورواسلات" : "Search in clients"}
+                  >
+                    <Search className="size-3" />
+                    <span>{isRtl ? "کارفرمایان ESP" : "ESP Clients"}</span>
+                  </Link>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedPlant(plant)}
+                    className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-lg gap-1 cursor-pointer font-bold px-2.5"
+                  >
+                    <span>{isRtl ? "مشخصات فنی" : "Specs"}</span>
+                    <Info className="size-3.5" />
+                  </Button>
+                </div>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSelectedPlant(plant)}
-                className="h-7 text-xs text-primary hover:text-primary hover:bg-primary/10 rounded-lg gap-1 cursor-pointer font-bold"
-              >
-                <span>{isRtl ? "مشخصات فنی" : "Technical Specs"}</span>
-                <Info className="size-3.5" />
-              </Button>
+              {/* Sources Footer */}
+              <div className="pt-2 border-t border-border/40 flex flex-wrap items-center justify-between gap-2 text-[10.5px]">
+                <div className="flex items-center gap-1.5 text-muted-foreground flex-wrap">
+                  <ShieldCheck className="size-3 text-emerald-500 shrink-0" />
+                  <span className="font-semibold text-foreground/80">{isRtl ? "مراجع داده:" : "Sources:"}</span>
+                  <span className="text-foreground/70">
+                    {plant.sources ? plant.sources.map((s) => s.publisherFa).join(" • ") : (isRtl ? "شرکت ملی صنایع پتروشیمی (NPC) • کدال • لایسنسور رسمی" : "NPC • Codal • Licensors")}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 ms-auto">
+                  {plant.codalUrl && (
+                    <a
+                      href={plant.codalUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1 text-[10.5px] font-mono"
+                    >
+                      <span>{isRtl ? "کدال" : "Codal"}</span>
+                      <ExternalLink className="size-2.5" />
+                    </a>
+                  )}
+                  {plant.website && (
+                    <a
+                      href={plant.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-muted-foreground hover:text-foreground hover:underline inline-flex items-center gap-1 text-[10.5px]"
+                    >
+                      <span>{isRtl ? "سایت" : "Web"}</span>
+                      <ExternalLink className="size-2.5" />
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -413,9 +508,21 @@ export function PlantsDirectoryView() {
         <Dialog open={Boolean(selectedPlant)} onOpenChange={() => setSelectedPlant(null)}>
           <DialogContent className="sm:max-w-[650px] max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[24px]">
             <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
-              <div className="flex items-center gap-3">
-                <div className="size-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
-                  <Flame className="size-6" />
+              <div className="flex items-center gap-3.5">
+                <div className="relative size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                  {selectedPlant.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={selectedPlant.logoUrl}
+                      alt={selectedPlant.nameFa}
+                      className="size-full object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <Flame className="size-6 text-amber-600" />
+                  )}
                 </div>
                 <div>
                   <DialogTitle className="text-lg font-bold text-foreground">
@@ -470,6 +577,62 @@ export function PlantsDirectoryView() {
                   <span className="font-semibold text-foreground block font-mono">{selectedPlant.commissionedYear || "---"}</span>
                 </div>
               </div>
+
+              {/* Cross-Link Actions */}
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/60">
+                {selectedPlant.holdingId && selectedPlant.holdingId !== "private" && selectedPlant.holdingId !== "governmental" && (
+                  <Link
+                    href={`/customers?tab=holdings&id=${selectedPlant.holdingId}`}
+                    onClick={() => setSelectedPlant(null)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary px-3 py-1.5 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 transition-colors"
+                  >
+                    <Landmark className="size-3.5" />
+                    <span>{isRtl ? `مشاهده هلدینگ مادر (${selectedPlant.holdingNameFa || "هلدینگ"})` : `View Holding (${selectedPlant.holdingNameFa})`}</span>
+                    <ArrowUpRight className="size-3" />
+                  </Link>
+                )}
+
+                <Link
+                  href={`/customers?search=${encodeURIComponent(selectedPlant.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                  onClick={() => setSelectedPlant(null)}
+                  className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-xl border border-border/70 hover:bg-muted/30 transition-colors"
+                >
+                  <Search className="size-3.5" />
+                  <span>{isRtl ? "جستجو در فهرست کارفرمایان Euroslot" : "Search in Euroslot Directory"}</span>
+                  <ArrowUpRight className="size-3" />
+                </Link>
+              </div>
+
+              {/* Verified Sources */}
+              {selectedPlant.sources && selectedPlant.sources.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-border/60">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-emerald-500" />
+                    <span>{isRtl ? "اسناد و مراجع اطلاعات این پلنت:" : "Verified Sources:"}</span>
+                  </h4>
+                  <div className="space-y-1.5">
+                    {selectedPlant.sources.map((src, sIdx) => (
+                      <div key={sIdx} className="p-2.5 rounded-lg bg-muted/20 border border-border/50 flex items-center justify-between text-xs">
+                        <div className="space-y-0.5">
+                          <div className="font-medium text-foreground">{src.titleFa}</div>
+                          <div className="text-[11px] text-muted-foreground">{src.publisherFa}</div>
+                        </div>
+                        {src.url && (
+                          <a
+                            href={src.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline inline-flex items-center gap-1 text-[11px] font-medium shrink-0 ps-2"
+                          >
+                            <span>{isRtl ? "مشاهده مرجع" : "View"}</span>
+                            <ExternalLink className="size-3" />
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
@@ -477,3 +640,4 @@ export function PlantsDirectoryView() {
     </div>
   );
 }
+
