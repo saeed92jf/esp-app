@@ -65,7 +65,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
 
   const navItems: NavItem[] = useMemo(() => {
     return [
-      { id: "directory", labelFa: "همه", labelEn: "All", icon: Building2, href: "/customers" },
+      { id: "directory", labelFa: "مشتریان و مجتمع‌های صنعتی", labelEn: "Clients & Industrial Customers", icon: Building2, href: "/customers" },
       { id: "holdings", labelFa: "هلدینگ‌ها", labelEn: "Holdings", icon: Landmark, href: "/customers?tab=holdings" },
       { id: "plants", labelFa: "پلنت‌ها", labelEn: "Plants", icon: Factory, href: "/customers?tab=plants" },
       { id: "licensors", labelFa: "لایسنسورها", labelEn: "Licensors", icon: Award, href: "/customers?tab=licensors" },
