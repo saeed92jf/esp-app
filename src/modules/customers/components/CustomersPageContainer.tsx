@@ -196,7 +196,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
           ) : activeTab === "licensors" ? (
             <LicensorsDirectoryView />
           ) : activeTab === "phonebook" ? (
-            <PhonebookDirectoryView />
+            <PhonebookDirectoryView isAdmin={isAdmin} />
           ) : (
             <CustomersDirectoryView
               isAdmin={isAdmin}

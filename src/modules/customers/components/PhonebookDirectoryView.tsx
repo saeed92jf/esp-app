@@ -16,7 +16,6 @@ import {
   Mail,
   Building2,
   Camera,
-  Star,
   Copy,
   Check,
   Trash2,
@@ -37,7 +36,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -54,6 +52,7 @@ import {
 import { toast } from "sonner";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { contactsService, inferContactIndustry } from "../services/contacts.service";
 import type { CompanyContact, ContactDepartment, ContactCreateInput, ContactIndustry } from "../types/contacts.types";
 
@@ -64,7 +63,7 @@ const DEPARTMENT_CONFIG: Record<
   management: {
     labelFa: "مدیریت ارشد",
     labelEn: "Management",
-    icon: Star,
+    icon: ShieldCheck,
     color: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
   },
   commercial: {
@@ -145,7 +144,14 @@ function getAvatarPalette(str: string) {
   return AVATAR_PALETTES[idx];
 }
 
-export function PhonebookDirectoryView() {
+export interface PhonebookDirectoryViewProps {
+  isAdmin?: boolean;
+}
+
+export function PhonebookDirectoryView({ isAdmin: propIsAdmin }: PhonebookDirectoryViewProps = {}) {
+  const { user } = useAuth();
+  const isAdmin = propIsAdmin ?? (user?.role === "superadmin" || user?.role === "admin");
+
   const locale = useLocale();
   const isRtl = locale === "fa";
   const searchParams = useSearchParams();
@@ -159,6 +165,9 @@ export function PhonebookDirectoryView() {
   const [selectedDept, setSelectedDept] = useState<string>("all");
   const [contacts, setContacts] = useState<CompanyContact[]>([]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Admin Delete Confirmation State
+  const [contactToDelete, setContactToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Responsive device check: True only for screen width < 1024px
   const [isMobile, setIsMobile] = useState(false);
@@ -191,7 +200,6 @@ export function PhonebookDirectoryView() {
   const [formEmail, setFormEmail] = useState("");
   const [formLocation, setFormLocation] = useState("");
   const [formNotes, setFormNotes] = useState("");
-  const [formIsKey, setFormIsKey] = useState(false);
   const [formAvatarUrl, setFormAvatarUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -296,21 +304,6 @@ export function PhonebookDirectoryView() {
     }, 2000);
   };
 
-  const handleToggleKey = (id: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    const updatedState = contactsService.toggleKeyContact(id);
-    refreshContacts();
-    toast.success(
-      updatedState
-        ? isRtl
-          ? "به مخاطبین برگزیده اضافه شد."
-          : "Added to favourites."
-        : isRtl
-        ? "از مخاطبین برگزیده حذف شد."
-        : "Removed from favourites."
-    );
-  };
-
   const handleSelectContact = (id: string) => {
     setSelectedContactId(id);
     setIsCreatingNew(false);
@@ -335,7 +328,6 @@ export function PhonebookDirectoryView() {
     setFormEmail("");
     setFormLocation("");
     setFormNotes("");
-    setFormIsKey(false);
     setFormAvatarUrl("");
     setIsMoreFieldsOpen(false);
     if (isMobile) {
@@ -358,7 +350,6 @@ export function PhonebookDirectoryView() {
     setFormEmail(contact.email || "");
     setFormLocation(contact.locationFa || "");
     setFormNotes(contact.notesFa || "");
-    setFormIsKey(Boolean(contact.isKeyContact));
     setFormAvatarUrl(contact.avatarUrl || "");
     setIsMoreFieldsOpen(true);
     if (isMobile) {
@@ -391,7 +382,6 @@ export function PhonebookDirectoryView() {
           email: formEmail.trim() || undefined,
           locationFa: formLocation.trim() || undefined,
           notesFa: formNotes.trim() || undefined,
-          isKeyContact: formIsKey,
           avatarUrl: formAvatarUrl || undefined,
         });
         toast.success(isRtl ? "اطلاعات مخاطب به‌روزرسانی شد." : "Contact updated successfully.");
@@ -408,7 +398,6 @@ export function PhonebookDirectoryView() {
           email: formEmail.trim() || undefined,
           locationFa: formLocation.trim() || undefined,
           notesFa: formNotes.trim() || undefined,
-          isKeyContact: formIsKey,
         };
 
         const created = contactsService.addContact(input);
@@ -427,16 +416,25 @@ export function PhonebookDirectoryView() {
     }
   };
 
-  const handleDeleteContact = (id: string, name: string) => {
-    if (confirm(isRtl ? `آیا از حذف مخاطب «${name}» اطمینان دارید؟` : `Delete contact "${name}"?`)) {
-      contactsService.deleteContact(id);
-      toast.success(isRtl ? "مخاطب با موفقیت حذف شد." : "Contact deleted.");
-      if (selectedContactId === id) {
-        setSelectedContactId(null);
-      }
-      setIsMobileModalOpen(false);
-      refreshContacts();
+  const handlePromptDelete = (id: string, name: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!isAdmin) {
+      toast.error(isRtl ? "تنها مدیران سیستم مجاز به حذف مخاطب هستند." : "Only administrators can delete contacts.");
+      return;
     }
+    setContactToDelete({ id, name });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!contactToDelete) return;
+    contactsService.deleteContact(contactToDelete.id);
+    toast.success(isRtl ? "مخاطب با موفقیت حذف شد." : "Contact deleted.");
+    if (selectedContactId === contactToDelete.id) {
+      setSelectedContactId(null);
+    }
+    setIsMobileModalOpen(false);
+    setContactToDelete(null);
+    refreshContacts();
   };
 
   const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -686,14 +684,6 @@ export function PhonebookDirectoryView() {
                           className="text-xs min-h-[60px] rounded-lg"
                         />
                       </div>
-
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="space-y-0.5">
-                          <Label className="text-[11px] font-semibold">{isRtl ? "مخاطب کلیدی و برگزیده" : "Add to Favourites"}</Label>
-                          <p className="text-[9.5px] text-muted-foreground">{isRtl ? "علامت‌گذاری به‌عنوان فرد کلیدی" : "Mark as key executive"}</p>
-                        </div>
-                        <Switch checked={formIsKey} onCheckedChange={setFormIsKey} />
-                      </div>
                     </div>
                   )}
                 </div>
@@ -719,16 +709,18 @@ export function PhonebookDirectoryView() {
             </div>
 
             <div className="flex items-center gap-1 shrink-0">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={(e) => handleToggleKey(selectedContact.id, e)}
-                className="text-muted-foreground hover:text-amber-500 rounded-lg cursor-pointer"
-                title={selectedContact.isKeyContact ? (isRtl ? "حذف نشان کلیدی" : "Remove key flag") : (isRtl ? "نشان‌گذاری به‌عنوان فرد کلیدی" : "Mark as key")}
-              >
-                <Star className={cn("size-4", selectedContact.isKeyContact ? "fill-amber-500 text-amber-500" : "")} />
-              </Button>
+              {isAdmin && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => handlePromptDelete(selectedContact.id, selectedContact.fullNameFa)}
+                  className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg cursor-pointer"
+                  title={isRtl ? "حذف مخاطب (مخصوص ادمین)" : "Delete contact (Admin only)"}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
 
               <Button
                 type="button"
@@ -988,16 +980,18 @@ export function PhonebookDirectoryView() {
                 <span>{isRtl ? "ویرایش" : "Edit"}</span>
               </Button>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => handleDeleteContact(selectedContact.id, selectedContact.fullNameFa)}
-                className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-7"
-                title={isRtl ? "حذف مخاطب" : "Delete"}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
+              {isAdmin && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => handlePromptDelete(selectedContact.id, selectedContact.fullNameFa)}
+                  className="rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 size-7 cursor-pointer"
+                  title={isRtl ? "حذف مخاطب (مخصوص ادمین)" : "Delete contact (Admin only)"}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -1213,16 +1207,18 @@ export function PhonebookDirectoryView() {
                               </Button>
                             )}
 
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-xs"
-                              onClick={(e) => handleToggleKey(c.id, e)}
-                              className="size-7 text-muted-foreground hover:text-amber-500 rounded-full"
-                              title={c.isKeyContact ? (isRtl ? "حذف نشان کلیدی" : "Remove key flag") : (isRtl ? "نشان‌گذاری به‌عنوان فرد کلیدی" : "Mark as key")}
-                            >
-                              <Star className={cn("size-3.5", c.isKeyContact ? "fill-amber-500 text-amber-500" : "")} />
-                            </Button>
+                            {isAdmin && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                onClick={(e) => handlePromptDelete(c.id, c.fullNameFa, e)}
+                                className="size-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full cursor-pointer transition-colors"
+                                title={isRtl ? "حذف مخاطب (مخصوص ادمین)" : "Delete contact (Admin only)"}
+                              >
+                                <Trash2 className="size-3.5" />
+                              </Button>
+                            )}
                           </div>
                         </div>
                       );
@@ -1265,6 +1261,46 @@ export function PhonebookDirectoryView() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* ── Admin Delete Confirmation Dialog ── */}
+      <Dialog open={Boolean(contactToDelete)} onOpenChange={(open) => !open && setContactToDelete(null)}>
+        <DialogContent className="max-w-md rounded-2xl p-5 border border-border/80 shadow-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <div className="size-8 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                <Trash2 className="size-4" />
+              </div>
+              <span>{isRtl ? "تأیید حذف مخاطب" : "Confirm Contact Deletion"}</span>
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mt-2">
+            {isRtl
+              ? `آیا از حذف مخاطب «${contactToDelete?.name}» از دفترچه تلفن اطمینان دارید؟ این عملیات قابل بازگشت نیست.`
+              : `Are you sure you want to delete "${contactToDelete?.name}" from the phonebook? This action cannot be undone.`}
+          </p>
+          <div className="flex items-center justify-end gap-2.5 mt-5">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setContactToDelete(null)}
+              className="rounded-xl text-xs cursor-pointer"
+            >
+              {isRtl ? "انصراف" : "Cancel"}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleConfirmDelete}
+              className="rounded-xl text-xs gap-1.5 cursor-pointer shadow-xs"
+            >
+              <Trash2 className="size-3.5" />
+              <span>{isRtl ? "حذف مخاطب" : "Delete"}</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
