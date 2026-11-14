@@ -25,6 +25,9 @@ import {
   ShieldCheck,
   CheckCircle2,
   ArrowUpRight,
+  ArrowUpDown,
+  Calendar,
+  BarChart3,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,6 +42,15 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+
+export type PlantSortOption =
+  | "default"
+  | "capacity_desc"
+  | "capacity_asc"
+  | "year_desc"
+  | "year_asc"
+  | "code_asc"
+  | "name_asc";
 
 const PROCESS_TABS: { id: PlantProcessType | "all"; labelFa: string; labelEn: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean }[] = [
   { id: "all", labelFa: "همه پلنت‌ها", labelEn: "All Plants", icon: Factory },
@@ -60,6 +72,7 @@ export function PlantsDirectoryView() {
   const [selectedProcess, setSelectedProcess] = useState<PlantProcessType | "all">("all");
   const [selectedZone, setSelectedZone] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<PlantSortOption>("default");
   const [selectedPlant, setSelectedPlant] = useState<PlantFacility | null>(null);
 
   useEffect(() => {
@@ -71,9 +84,9 @@ export function PlantsDirectoryView() {
     }
   }, [urlPlantId]);
 
-  // Filtered dataset
+  // Filtered and Sorted dataset
   const filteredPlants = useMemo(() => {
-    return IRANIAN_PLANTS.filter((plant) => {
+    const list = IRANIAN_PLANTS.filter((plant) => {
       // Process filter
       if (selectedProcess !== "all" && plant.processType !== selectedProcess) {
         return false;
@@ -94,7 +107,8 @@ export function PlantsDirectoryView() {
           plant.code.toLowerCase().includes(q) ||
           plant.cityFa.toLowerCase().includes(q) ||
           plant.provinceFa.toLowerCase().includes(q) ||
-          plant.feedstockFa.toLowerCase().includes(q);
+          plant.feedstockFa.toLowerCase().includes(q) ||
+          (plant.holdingNameFa && plant.holdingNameFa.toLowerCase().includes(q));
 
         const matchLicensor = plant.licensors.some((l) => l.toLowerCase().includes(q));
         const matchProducts = plant.mainProductsFa.some((p) => p.toLowerCase().includes(q));
@@ -104,7 +118,31 @@ export function PlantsDirectoryView() {
 
       return true;
     });
-  }, [selectedProcess, selectedZone, search]);
+
+    return [...list].sort((a, b) => {
+      switch (sortBy) {
+        case "capacity_desc":
+          return (b.capacityTonsPerYear ?? 0) - (a.capacityTonsPerYear ?? 0);
+        case "capacity_asc":
+          return (a.capacityTonsPerYear ?? 0) - (b.capacityTonsPerYear ?? 0);
+        case "year_desc":
+          return (b.commissionedYear ?? 0) - (a.commissionedYear ?? 0);
+        case "year_asc":
+          return (a.commissionedYear ?? 9999) - (b.commissionedYear ?? 9999);
+        case "code_asc": {
+          const numA = parseInt(a.code.replace(/\D/g, "") || "0", 10);
+          const numB = parseInt(b.code.replace(/\D/g, "") || "0", 10);
+          if (numA && numB && numA !== numB) return numA - numB;
+          return a.code.localeCompare(b.code);
+        }
+        case "name_asc":
+          return a.nameFa.localeCompare(b.nameFa, "fa");
+        case "default":
+        default:
+          return 0; // Natural curated order
+      }
+    });
+  }, [selectedProcess, selectedZone, search, sortBy]);
 
   // Specific Olefin plants count
   const olefinCount = useMemo(() => {
@@ -255,45 +293,120 @@ export function PlantsDirectoryView() {
           })}
         </div>
 
-        {/* Sub-bar: Region Filter & Search */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-border/60">
-          <div className="relative flex-1 max-w-md">
-            <Search className="size-4 absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={
-                isRtl
-                  ? "جستجو در نام پلنت، مجتمع (جم، آریا ساسول، نوری...)، لایسنسور (Linde, Technip...)"
-                  : "Search plant, complex, licensor (Linde, Technip...), products..."
-              }
-              className="ps-9 h-9 text-xs rounded-xl bg-background border-border/70"
-            />
+        {/* Sub-bar: Search, Sorting & Region Filters */}
+        <div className="flex flex-col gap-3 pt-2.5 border-t border-border/60">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            {/* Search Input */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="size-4 absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={
+                  isRtl
+                    ? "جستجو در نام پلنت، مجتمع (جم، آریا ساسول، نوری...)، لایسنسور، محصولات..."
+                    : "Search plant, complex, licensor (Linde, Technip...), products..."
+                }
+                className="ps-9 pe-8 h-9 text-xs rounded-xl bg-background border-border/70"
+              />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Sort Selector Dropdown */}
+            <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+              <span className="text-muted-foreground text-[11px] flex items-center gap-1 shrink-0 font-medium">
+                <ArrowUpDown className="size-3.5 text-primary" />
+                <span>{isRtl ? "مرتب‌سازی:" : "Sort By:"}</span>
+              </span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as PlantSortOption)}
+                className="h-8 px-2.5 text-xs rounded-xl border border-border/80 bg-background text-foreground font-medium focus:outline-hidden focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
+              >
+                <option value="default">{isRtl ? "پیش‌فرض فرآیندی" : "Default Process Order"}</option>
+                <option value="capacity_desc">{isRtl ? "بیشترین ظرفیت اسمی (نزولی)" : "Highest Capacity"}</option>
+                <option value="capacity_asc">{isRtl ? "کمترین ظرفیت اسمی (صعودی)" : "Lowest Capacity"}</option>
+                <option value="year_desc">{isRtl ? "جدیدترین سال احداث / راه‌اندازی" : "Newest Commissioned"}</option>
+                <option value="year_asc">{isRtl ? "قدیمی‌ترین واحد / پیشگامان تاریخی" : "Oldest / Historical"}</option>
+                <option value="code_asc">{isRtl ? "شماره واحد (الفین ۱ تا ۱۳ و...)" : "Unit Code"}</option>
+                <option value="name_asc">{isRtl ? "نام واحد (الفبایی)" : "Alphabetical (A-Z)"}</option>
+              </select>
+            </div>
           </div>
 
-          {/* Region zone pills */}
-          <div className="flex items-center gap-1.5 text-xs self-start sm:self-center overflow-x-auto">
-            <span className="text-muted-foreground text-[11px] me-1 shrink-0">{isRtl ? "منطقه:" : "Zone:"}</span>
-            {[
-              { id: "all", labelFa: "همه مناطق", labelEn: "All Zones" },
-              { id: "assaluyeh", labelFa: "عسلویه (PSEEZ)", labelEn: "Assaluyeh" },
-              { id: "mahshahr", labelFa: "ماهشهر (PETZONE)", labelEn: "Mahshahr" },
-              { id: "other_provinces", labelFa: "سایر استان‌ها", labelEn: "Other" },
-            ].map((zone) => (
+          {/* Quick Filter & Sort Pills Bar */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border/40 text-xs">
+            {/* Region zone pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto">
+              <span className="text-muted-foreground text-[11px] me-1 shrink-0">{isRtl ? "منطقه:" : "Zone:"}</span>
+              {[
+                { id: "all", labelFa: "همه مناطق", labelEn: "All Zones" },
+                { id: "assaluyeh", labelFa: "عسلویه (PSEEZ)", labelEn: "Assaluyeh" },
+                { id: "mahshahr", labelFa: "ماهشهر (PETZONE)", labelEn: "Mahshahr" },
+                { id: "other_provinces", labelFa: "سایر استان‌ها", labelEn: "Other" },
+              ].map((zone) => (
+                <button
+                  key={zone.id}
+                  type="button"
+                  onClick={() => setSelectedZone(zone.id)}
+                  className={cn(
+                    "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border",
+                    selectedZone === zone.id
+                      ? "bg-foreground text-background border-foreground font-semibold"
+                      : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
+                  )}
+                >
+                  {isRtl ? zone.labelFa : zone.labelEn}
+                </button>
+              ))}
+            </div>
+
+            {/* Quick Sort Shortcuts */}
+            <div className="flex items-center gap-1.5 ms-auto">
               <button
-                key={zone.id}
                 type="button"
-                onClick={() => setSelectedZone(zone.id)}
+                onClick={() => setSortBy(sortBy === "capacity_desc" ? "default" : "capacity_desc")}
                 className={cn(
-                  "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border",
-                  selectedZone === zone.id
-                    ? "bg-foreground text-background border-foreground font-semibold"
+                  "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border flex items-center gap-1",
+                  sortBy === "capacity_desc"
+                    ? "bg-primary text-white border-primary font-semibold shadow-xs"
                     : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
                 )}
+                title={isRtl ? "مرتب‌سازی بر اساس بیشترین ظرفیت تولید" : "Sort by highest capacity"}
               >
-                {isRtl ? zone.labelFa : zone.labelEn}
+                <BarChart3 className="size-3" />
+                <span>{isRtl ? "بیشترین ظرفیت" : "Highest Capacity"}</span>
               </button>
-            ))}
+
+              <button
+                type="button"
+                onClick={() => setSortBy(sortBy === "year_desc" ? "year_asc" : sortBy === "year_asc" ? "default" : "year_desc")}
+                className={cn(
+                  "h-7 px-2.5 rounded-lg text-[11px] font-medium transition-colors cursor-pointer border flex items-center gap-1",
+                  sortBy === "year_desc" || sortBy === "year_asc"
+                    ? "bg-primary text-white border-primary font-semibold shadow-xs"
+                    : "bg-muted/40 text-muted-foreground border-transparent hover:border-border/60"
+                )}
+                title={isRtl ? "مرتب‌سازی بر اساس سال احداث و بهره‌برداری" : "Sort by commissioning year"}
+              >
+                <Calendar className="size-3" />
+                <span>
+                  {sortBy === "year_desc"
+                    ? isRtl ? "جدیدترین احداث" : "Newest"
+                    : sortBy === "year_asc"
+                    ? isRtl ? "قدیمی‌ترین احداث" : "Oldest"
+                    : isRtl ? "سال احداث" : "Commission Year"}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -306,7 +419,7 @@ export function PlantsDirectoryView() {
             className="rounded-2xl border border-border/80 bg-card p-5 sm:p-6 shadow-xs flex flex-col justify-between gap-4 hover:border-primary/40 transition-all duration-200"
           >
             <div className="space-y-3">
-              {/* Top Row: Code, Badge & TSE Symbol */}
+              {/* Top Row: Code, Badge, TSE Symbol & Commissioned Year */}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge
@@ -318,6 +431,18 @@ export function PlantsDirectoryView() {
                   <span className="text-[11px] font-medium text-muted-foreground">
                     {getProcessLabel(plant.processType)}
                   </span>
+                  {plant.commissionedYear && (
+                    <span
+                      className={cn(
+                        "text-[10.5px] px-2 py-0.5 rounded-md font-mono border transition-colors",
+                        sortBy === "year_desc" || sortBy === "year_asc"
+                          ? "bg-primary/10 text-primary border-primary/30 font-bold"
+                          : "bg-muted/40 text-muted-foreground border-border/50"
+                      )}
+                    >
+                      {isRtl ? `احداث: ${plant.commissionedYear}` : `Est. ${plant.commissionedYear}`}
+                    </span>
+                  )}
                 </div>
 
                 {plant.tseSymbol && (
@@ -381,8 +506,22 @@ export function PlantsDirectoryView() {
 
               {/* Specs Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
-                <div className="p-2.5 rounded-xl bg-muted/30 border border-border/60">
-                  <span className="text-[10px] text-muted-foreground block">{isRtl ? "ظرفیت اسمی سالانه" : "Nominal Capacity"}</span>
+                <div
+                  className={cn(
+                    "p-2.5 rounded-xl border transition-colors",
+                    sortBy === "capacity_desc" || sortBy === "capacity_asc"
+                      ? "bg-primary/5 border-primary/40 ring-1 ring-primary/20"
+                      : "bg-muted/30 border border-border/60"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-muted-foreground block">{isRtl ? "ظرفیت اسمی سالانه" : "Nominal Capacity"}</span>
+                    {(sortBy === "capacity_desc" || sortBy === "capacity_asc") && (
+                      <span className="text-[9.5px] font-bold text-primary px-1.5 py-0.2 rounded bg-primary/10">
+                        {sortBy === "capacity_desc" ? (isRtl ? "بیشترین" : "Max") : (isRtl ? "کمترین" : "Min")}
+                      </span>
+                    )}
+                  </div>
                   <span className="font-bold text-foreground block mt-0.5 text-xs truncate">
                     {plant.nominalCapacityFa}
                   </span>

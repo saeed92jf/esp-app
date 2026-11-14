@@ -23,6 +23,7 @@ import {
   Info,
   ShieldCheck,
   ArrowUpRight,
+  ArrowUpDown,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+export type HoldingSortOption = "default" | "subs_desc" | "year_desc" | "year_asc" | "name_asc";
+
 export function HoldingsDirectoryView() {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -45,6 +48,7 @@ export function HoldingsDirectoryView() {
   const urlHoldingId = searchParams.get("id");
 
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<HoldingSortOption>("default");
   const [expandedHoldingId, setExpandedHoldingId] = useState<string | null>("pgpic");
   const [selectedHolding, setSelectedHolding] = useState<Holding | null>(null);
 
@@ -60,9 +64,9 @@ export function HoldingsDirectoryView() {
 
   const filteredHoldings = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return IRANIAN_HOLDINGS;
+    const list = IRANIAN_HOLDINGS.filter((h) => {
+      if (!q) return true;
 
-    return IRANIAN_HOLDINGS.filter((h) => {
       const matchName =
         h.nameFa.toLowerCase().includes(q) ||
         h.nameEn.toLowerCase().includes(q) ||
@@ -83,7 +87,23 @@ export function HoldingsDirectoryView() {
 
       return matchName || matchSubs || matchTags;
     });
-  }, [search]);
+
+    return [...list].sort((a, b) => {
+      switch (sortBy) {
+        case "subs_desc":
+          return b.subsidiaries.length - a.subsidiaries.length;
+        case "year_desc":
+          return b.establishedYear - a.establishedYear;
+        case "year_asc":
+          return a.establishedYear - b.establishedYear;
+        case "name_asc":
+          return a.nameFa.localeCompare(b.nameFa, "fa");
+        case "default":
+        default:
+          return 0;
+      }
+    });
+  }, [search, sortBy]);
 
   // Aggregate Metrics
   const totalSubsidiaries = useMemo(() => {
@@ -167,13 +187,23 @@ export function HoldingsDirectoryView() {
           />
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Sparkles className="size-4 text-primary shrink-0" />
-          <span>
-            {isRtl
-              ? "داده‌های مستند رسمی کدال (Codal) و سازمان بورس اوراق بهادار تهران"
-              : "Official Codal and Tehran Stock Exchange (TSE) verified data"}
+        {/* Sort selector for holdings */}
+        <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+          <span className="text-muted-foreground text-[11px] flex items-center gap-1 shrink-0 font-medium">
+            <ArrowUpDown className="size-3.5 text-primary" />
+            <span>{isRtl ? "مرتب‌سازی:" : "Sort:"}</span>
           </span>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as HoldingSortOption)}
+            className="h-9 px-3 text-xs rounded-xl border border-border/80 bg-background text-foreground font-medium focus:outline-hidden focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
+          >
+            <option value="default">{isRtl ? "ارزش بازار و اهمیت صنعتی" : "Market Importance"}</option>
+            <option value="subs_desc">{isRtl ? "بیشترین شرکت‌های زیرمجموعه" : "Most Subsidiaries"}</option>
+            <option value="year_desc">{isRtl ? "جدیدترین سال تاسیس" : "Newest Est."}</option>
+            <option value="year_asc">{isRtl ? "با سابقه‌ترین و قدیمی‌ترین" : "Oldest Est."}</option>
+            <option value="name_asc">{isRtl ? "نام هلدینگ (الفبایی)" : "Alphabetical (A-Z)"}</option>
+          </select>
         </div>
       </div>
 

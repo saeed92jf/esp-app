@@ -28,6 +28,7 @@ export interface PlantFacility {
   feedstockFa: string;
   feedstockSourceFa?: string;
   nominalCapacityFa: string;
+  capacityTonsPerYear?: number; // Numeric capacity in metric tons per year for precise sorting
   licensors: string[];
   mainProductsFa: string[];
   commissionedYear?: number;
