@@ -24,6 +24,7 @@ export const PANEL_BACKGROUND_PREFIXES = [
   '/dictionary',
   '/cafe',
   '/restaurant',
+  '/zheen-erp',
 ];
 
 export function isPanelBackgroundRoute(pathname: string | null | undefined): boolean {
