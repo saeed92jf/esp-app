@@ -329,7 +329,7 @@ export function HoldingsDirectoryView() {
                       {holding.tseSymbol && (
                         <Badge
                           variant="secondary"
-                          className="bg-primary/10 text-primary border-primary/20 font-bold font-mono text-xs px-2 py-0.5"
+                          className="bg-primary/10 text-primary border-primary/20 font-bold text-xs px-2 py-0.5"
                         >
                           {isRtl ? `نماد: ${holding.tseSymbol}` : `TSE: ${holding.tseSymbol}`}
                         </Badge>
@@ -669,7 +669,9 @@ export function HoldingsDirectoryView() {
                   {selectedHolding.shareholders.map((sh, idx) => (
                     <div key={idx} className="p-3 flex items-center justify-between bg-card">
                       <span className="font-semibold text-foreground">{sh.nameFa}</span>
-                      <span className="font-mono font-bold text-primary text-sm">{sh.percentage}%</span>
+                      <span className={cn("font-bold text-primary text-sm tabular-nums", isRtl && "fa-num")}>
+                        {formatLocaleNumber(sh.percentage, isRtl)}%
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -681,8 +683,8 @@ export function HoldingsDirectoryView() {
                   <span className="text-[11px] text-muted-foreground block">{isRtl ? "نشانی کامل دفتر مرکزی" : "HQ Address"}</span>
                   <span className="font-medium text-foreground block leading-relaxed">{selectedHolding.officeAddressFa || selectedHolding.headquartersFa}</span>
                   {selectedHolding.postalCode && (
-                    <span className="text-[11px] text-muted-foreground block mt-1">
-                      {isRtl ? `کد پستی: ${selectedHolding.postalCode}` : `Postal Code: ${selectedHolding.postalCode}`}
+                    <span className="text-[11px] text-muted-foreground block mt-1 tabular-nums">
+                      {isRtl ? `کد پستی: ${formatLocaleNumber(selectedHolding.postalCode, true)}` : `Postal Code: ${selectedHolding.postalCode}`}
                     </span>
                   )}
                 </div>
@@ -709,9 +711,15 @@ export function HoldingsDirectoryView() {
                     <span>---</span>
                   )}
                   {selectedHolding.nationalIdNumber && (
-                    <div className="text-[10.5px] text-muted-foreground pt-1 border-t border-border/40">
-                      {isRtl ? `شناسه ملی: ${selectedHolding.nationalIdNumber}` : `National ID: ${selectedHolding.nationalIdNumber}`}
-                      {selectedHolding.registrationNumber ? ` • شماره ثبت: ${selectedHolding.registrationNumber}` : ""}
+                    <div className="text-[10.5px] text-muted-foreground pt-1 border-t border-border/40 tabular-nums">
+                      {isRtl
+                        ? `شناسه ملی: ${formatLocaleNumber(selectedHolding.nationalIdNumber, true)}`
+                        : `National ID: ${selectedHolding.nationalIdNumber}`}
+                      {selectedHolding.registrationNumber
+                        ? isRtl
+                          ? ` • شماره ثبت: ${formatLocaleNumber(selectedHolding.registrationNumber, true)}`
+                          : ` • Reg. No: ${selectedHolding.registrationNumber}`
+                        : ""}
                     </div>
                   )}
                 </div>

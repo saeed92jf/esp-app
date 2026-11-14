@@ -476,7 +476,7 @@ export function PlantsDirectoryView() {
                 </div>
 
                 {plant.tseSymbol && (
-                  <Badge variant="secondary" className="text-xs font-mono px-2 py-0.5">
+                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
                     {isRtl ? `نماد: ${plant.tseSymbol}` : plant.tseSymbol}
                   </Badge>
                 )}
@@ -718,7 +718,7 @@ export function PlantsDirectoryView() {
                     <Flame className="size-3.5" />
                     <span>{isRtl ? "مشخصات کوره‌ها و راکتورهای پیرولیز / کاتالیستی:" : "Furnaces & Reactors:"}</span>
                   </span>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-mono">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {selectedPlant.reactorOrFurnaceInfoFa}
                   </p>
                 </div>
@@ -743,7 +743,9 @@ export function PlantsDirectoryView() {
                 </div>
                 <div className="p-3 rounded-xl bg-card border border-border space-y-1">
                   <span className="text-[11px] text-muted-foreground block">{isRtl ? "سال راه‌اندازی" : "Commission Year"}</span>
-                  <span className="font-semibold text-foreground block font-mono">{selectedPlant.commissionedYear || "---"}</span>
+                  <span className={cn("font-semibold text-foreground block tabular-nums", isRtl && "fa-num")}>
+                    {selectedPlant.commissionedYear ? formatLocaleNumber(selectedPlant.commissionedYear, isRtl) : "---"}
+                  </span>
                 </div>
                 {selectedPlant.phaseFa && (
                   <div className="p-3 rounded-xl bg-card border border-border space-y-1">
@@ -775,7 +777,7 @@ export function PlantsDirectoryView() {
                   </span>
                   <div className="flex flex-wrap gap-1.5 pt-0.5">
                     {selectedPlant.engineeringCompanies.map((eng, eIdx) => (
-                      <Badge key={eIdx} variant="secondary" className="text-[11px] font-mono">
+                      <Badge key={eIdx} variant="secondary" className="text-[11px]">
                         {eng}
                       </Badge>
                     ))}
