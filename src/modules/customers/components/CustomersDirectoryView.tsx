@@ -37,6 +37,7 @@ import { AddCustomerModal } from "./AddCustomerModal";
 import { CustomerDetailModal } from "./CustomerDetailModal";
 import { EditCustomerModal } from "./EditCustomerModal";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { formatLocaleNumber } from "@/lib/format-number";
 
 const PAGE_SIZE = 48;
 
@@ -216,8 +217,8 @@ export function CustomersDirectoryView({
                 <Building2 className="size-3.5 text-primary" />
                 <span>{isRtl ? "کل کارفرمایان ثبت‌شده" : "Total Clients"}</span>
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
-                {totalCount.toLocaleString(isRtl ? "fa-IR" : "en-US")}
+              <div className={cn("text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+                {formatLocaleNumber(totalCount, isRtl)}
               </div>
             </div>
 
@@ -226,8 +227,8 @@ export function CustomersDirectoryView({
                 <Briefcase className="size-3.5 text-amber-500" />
                 <span>{isRtl ? "تعداد صنایع" : "Industries"}</span>
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
-                {industriesList.length.toLocaleString(isRtl ? "fa-IR" : "en-US")}
+              <div className={cn("text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+                {formatLocaleNumber(industriesList.length, isRtl)}
               </div>
             </div>
 
@@ -236,8 +237,8 @@ export function CustomersDirectoryView({
                 <MapPin className="size-3.5 text-emerald-500" />
                 <span>{isRtl ? "شهرهای تحت پوشش" : "Covered Cities"}</span>
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
-                {citiesList.length.toLocaleString(isRtl ? "fa-IR" : "en-US")}
+              <div className={cn("text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+                {formatLocaleNumber(citiesList.length, isRtl)}
               </div>
             </div>
 
@@ -246,8 +247,8 @@ export function CustomersDirectoryView({
                 <ImageIcon className="size-3.5 text-sky-500" />
                 <span>{isRtl ? "دارای نشان / لوگو" : "With Logo"}</span>
               </div>
-              <div className="text-xl font-bold font-mono text-foreground">
-                440+
+              <div className={cn("text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+                {formatLocaleNumber(440, isRtl)}+
               </div>
             </div>
           </div>

@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
 import { IRANIAN_PLANTS } from "../data/plants.data";
+import { formatLocaleNumber } from "@/lib/format-number";
 import type { Holding, HoldingSubsidiary } from "../types/holdings.types";
 import {
   Dialog,
@@ -157,8 +158,9 @@ export function HoldingsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "هلدینگ‌های پیشرو کشور" : "Major Holdings"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {IRANIAN_HOLDINGS.length} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "هلدینگ مگا" : "Holdings"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(IRANIAN_HOLDINGS.length, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "هلدینگ مگا" : "Holdings"}</span>
             </div>
           </div>
         </div>
@@ -171,8 +173,9 @@ export function HoldingsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "شرکت‌ها و پتروشیمی‌های تابعه" : "Subsidiary Companies"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {totalSubsidiaries}+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "مجتمع صنعتی" : "Complexes"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(totalSubsidiaries, isRtl)}+{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "مجتمع صنعتی" : "Complexes"}</span>
             </div>
           </div>
         </div>
@@ -185,8 +188,9 @@ export function HoldingsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "ظرفیت سالانه کل هلدینگ‌ها" : "Total Annual Capacity"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              ۷۵+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "میلیون تن" : "Million Tons"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(75, isRtl)}+{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "میلیون تن" : "Million Tons"}</span>
             </div>
           </div>
         </div>
@@ -199,8 +203,9 @@ export function HoldingsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "ارزش بازار در بورس تهران" : "Combined Market Cap"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              ۱،۳۰۰+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "هزار میلیارد ت" : "T Tomans"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(1300, isRtl)}+{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "هزار میلیارد ت" : "T Tomans"}</span>
             </div>
           </div>
         </div>
@@ -342,20 +347,20 @@ export function HoldingsDirectoryView() {
                 {/* Right / Middle: Segment Pills & Accordion Controls */}
                 <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap md:flex-nowrap justify-between md:justify-end shrink-0 pt-2 md:pt-0 border-t md:border-t-0 border-border/40">
                   {/* Subsidiaries Count Chip */}
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-xl bg-muted/40 border border-border/60 text-foreground">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-xl bg-muted/40 border border-border/60 text-foreground tabular-nums">
                     <Factory className="size-3.5 text-primary shrink-0" />
-                    <span>{holding.subsidiaries.length} {isRtl ? "پتروشیمی تابعه" : "Subsidiaries"}</span>
+                    <span>{formatLocaleNumber(holding.subsidiaries.length, isRtl)} {isRtl ? "پتروشیمی تابعه" : "Subsidiaries"}</span>
                   </span>
 
                   {/* Annual Capacity Chip */}
-                  <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl bg-muted/30 border border-border/50 text-muted-foreground">
+                  <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-xl bg-muted/30 border border-border/50 text-muted-foreground tabular-nums">
                     <TrendingUp className="size-3.5 text-emerald-500 shrink-0" />
-                    <span className="truncate max-w-[160px]">{holding.annualCapacityFa.split(" ")[0]} م تن/سال</span>
+                    <span className="truncate max-w-[160px]">{formatLocaleNumber(holding.annualCapacityFa.split(" ")[0], isRtl)} {isRtl ? "م تن/سال" : "M Tons/Yr"}</span>
                   </span>
 
                   {/* Established Year Chip */}
-                  <span className="hidden sm:inline-flex text-[11px] font-mono px-2 py-1 rounded-xl bg-muted/20 border border-border/40 text-muted-foreground">
-                    {isRtl ? `تاسیس ${holding.establishedYear}` : `Est. ${holding.establishedYear}`}
+                  <span className="hidden sm:inline-flex text-[11px] px-2 py-1 rounded-xl bg-muted/20 border border-border/40 text-muted-foreground tabular-nums">
+                    {isRtl ? `تاسیس ${formatLocaleNumber(holding.establishedYear, true)}` : `Est. ${holding.establishedYear}`}
                   </span>
 
                   {/* Full Profile Trigger Button */}
@@ -498,19 +503,19 @@ export function HoldingsDirectoryView() {
                                   </h4>
                                   <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                                     {sub.tseSymbol && (
-                                      <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 font-bold">
+                                      <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-bold">
                                         {sub.tseSymbol}
                                       </Badge>
                                     )}
                                     <Badge
                                       className={cn(
-                                        "text-[9.5px] font-mono px-1.5 py-0 border",
+                                        "text-[9.5px] px-1.5 py-0 border font-semibold tabular-nums",
                                         sub.ownershipPercentage >= 70
                                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                                           : "bg-primary/10 text-primary border-primary/20"
                                       )}
                                     >
-                                      {sub.ownershipPercentage}% {isRtl ? "مالکیت" : "Own"}
+                                      {formatLocaleNumber(sub.ownershipPercentage, isRtl)}% {isRtl ? "مالکیت" : "Own"}
                                     </Badge>
                                   </div>
                                 </div>

@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { IRANIAN_PLANTS } from "../data/plants.data";
+import { formatLocaleNumber } from "@/lib/format-number";
 import type { PlantFacility, PlantProcessType } from "../types/plants.types";
 import {
   Dialog,
@@ -223,8 +224,9 @@ export function PlantsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "کل پلنت‌ها و واحدهای شاخص" : "Process Plants"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {IRANIAN_PLANTS.length} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "واحد اصلی" : "Units"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(IRANIAN_PLANTS.length, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "واحد اصلی" : "Units"}</span>
             </div>
           </div>
         </div>
@@ -237,8 +239,9 @@ export function PlantsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "پتروشیمی‌های الفینی ایران" : "Olefin Steam Crackers"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {olefinCount} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "الفین فعال" : "Crackers"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(olefinCount, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "الفین فعال" : "Crackers"}</span>
             </div>
           </div>
         </div>
@@ -251,8 +254,9 @@ export function PlantsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "مجموع ظرفیت اسمی ثبت‌شده" : "Total Nominal Capacity"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {totalCapacityMillionTons}+ <span className="text-xs font-normal text-muted-foreground">{isRtl ? "میلیون تن" : "Million Tons"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(totalCapacityMillionTons, isRtl)}+{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "میلیون تن" : "Million Tons"}</span>
             </div>
           </div>
         </div>
@@ -265,8 +269,9 @@ export function PlantsDirectoryView() {
             <div className="text-[11px] text-muted-foreground font-medium">
               {isRtl ? "لایسنسورهای شاخص جهانی" : "Global Licensors"}
             </div>
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground">
-              {licensorsCount} <span className="text-xs font-normal text-muted-foreground">{isRtl ? "صاحب دانش فنی" : "Licensors"}</span>
+            <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
+              {formatLocaleNumber(licensorsCount, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "صاحب دانش فنی" : "Licensors"}</span>
             </div>
           </div>
         </div>
@@ -459,13 +464,13 @@ export function PlantsDirectoryView() {
                   {plant.commissionedYear && (
                     <span
                       className={cn(
-                        "text-[10.5px] px-2 py-0.5 rounded-md font-mono border transition-colors",
+                        "text-[10.5px] px-2 py-0.5 rounded-md tabular-nums border transition-colors",
                         sortBy === "year_desc" || sortBy === "year_asc"
                           ? "bg-primary/10 text-primary border-primary/30 font-bold"
                           : "bg-muted/40 text-muted-foreground border-border/50"
                       )}
                     >
-                      {isRtl ? `احداث: ${plant.commissionedYear}` : `Est. ${plant.commissionedYear}`}
+                      {isRtl ? `احداث: ${formatLocaleNumber(plant.commissionedYear, true)}` : `Est. ${plant.commissionedYear}`}
                     </span>
                   )}
                 </div>

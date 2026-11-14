@@ -423,4 +423,17 @@
 
 .font-math-noto {
   font-family: 'NotoSansMath', 'LatinModernMath', sans-serif;
-}
+}
+
+/* ============================================
+   Persian & Bilingual Number Typography (.fa-num)
+   Ensures numbers always use the native Persian
+   Shabnam font with tabular spacing and prevents
+   ugly monospace/system-font fallback.
+   ============================================ */
+.fa-num {
+  font-family: var(--font-base), 'Shabnam', system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
