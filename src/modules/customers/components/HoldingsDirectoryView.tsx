@@ -26,15 +26,18 @@ import {
   ArrowUpDown,
   Phone,
   BookUser,
+  Download,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { IRANIAN_HOLDINGS } from "../data/holdings.data";
 import { IRANIAN_PLANTS } from "../data/plants.data";
 import { getAllUnifiedPlants } from "../utils/petro-unifier";
 import { formatLocaleNumber } from "@/lib/format-number";
+import { downloadLogo } from "../utils/download-logo";
 import type { Holding, HoldingSubsidiary } from "../types/holdings.types";
 import {
   Dialog,
@@ -626,24 +629,44 @@ export function HoldingsDirectoryView() {
         <Dialog open={Boolean(selectedHolding)} onOpenChange={() => setSelectedHolding(null)}>
           <DialogContent className="sm:max-w-[700px] max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[24px]">
             <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
-              <div className="flex items-center gap-3.5">
-                <div className="relative size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
-                  {selectedHolding.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={selectedHolding.logoUrl}
-                      alt={selectedHolding.nameFa}
-                      className="size-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = "none";
+              <div className="flex items-center gap-4">
+                <div className="relative group shrink-0 flex flex-col items-center gap-1.5">
+                  <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-card border border-border/80 p-2 sm:p-2.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:border-primary/40">
+                    {selectedHolding.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={selectedHolding.logoUrl}
+                        alt={selectedHolding.nameFa}
+                        className="size-full object-contain transition-transform duration-200 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="size-full rounded-xl bg-primary/10 text-primary font-bold font-mono text-base flex items-center justify-center">
+                        {selectedHolding.companyAbbrv}
+                      </div>
+                    )}
+                  </div>
+                  {selectedHolding.logoUrl && (
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const ok = await downloadLogo(selectedHolding.logoUrl, selectedHolding.nameFa);
+                        if (ok) {
+                          toast.success(isRtl ? "لوگوی هلدینگ با موفقیت دانلود شد." : "Holding logo downloaded successfully.");
+                        }
                       }}
-                    />
-                  ) : (
-                    <div className="size-full rounded-xl bg-primary/10 text-primary font-bold font-mono text-base flex items-center justify-center">
-                      {selectedHolding.companyAbbrv}
-                    </div>
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                      title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
+                    >
+                      <Download className="size-3" />
+                      <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
+                    </button>
                   )}
                 </div>
+
                 <div>
                   <DialogTitle className="text-lg font-bold text-foreground">
                     {selectedHolding.nameFa}

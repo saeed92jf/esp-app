@@ -21,12 +21,15 @@ import {
   TrendingUp,
   ArrowUpRight,
   BookUser,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import { getUnifiedPlantInfo, getUnifiedHoldingInfo, isPetrochemicalCustomer } from "../utils/petro-unifier";
+import { downloadLogo } from "../utils/download-logo";
 import type { Customer } from "../types/customers.types";
 import type { PlantProcessType } from "../types/plants.types";
 
@@ -123,16 +126,37 @@ export function CustomerDetailModal({
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-border/80 bg-muted/30">
           <div className="flex items-center gap-4">
-            <div className="size-16 rounded-2xl border border-border bg-background p-2 flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
-              {customer.logo_url || plantInfo?.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={customer.logo_url || plantInfo?.logoUrl || ""}
-                  alt={customer.persian_title_fa || customer.company_name_en}
-                  className="object-contain size-full"
-                />
-              ) : (
-                <Building2 className="size-8 text-primary/70" />
+            {/* Logo Showcase with Download Action */}
+            <div className="relative group shrink-0 flex flex-col items-center gap-1.5">
+              <div className="size-20 sm:size-24 rounded-2xl sm:rounded-3xl border border-border/80 bg-white dark:bg-card p-2 sm:p-2.5 flex items-center justify-center shadow-sm overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:border-primary/40">
+                {customer.logo_url || plantInfo?.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={customer.logo_url || plantInfo?.logoUrl || ""}
+                    alt={customer.persian_title_fa || customer.company_name_en}
+                    className="object-contain size-full transition-transform duration-200 group-hover:scale-105"
+                  />
+                ) : (
+                  <Building2 className="size-10 sm:size-12 text-primary/60" />
+                )}
+              </div>
+              {(customer.logo_url || plantInfo?.logoUrl) && (
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const url = customer.logo_url || plantInfo?.logoUrl;
+                    const ok = await downloadLogo(url, customer.persian_title_fa || customer.company_name_en);
+                    if (ok) {
+                      toast.success(isRtl ? "لوگوی شرکت با موفقیت دانلود شد." : "Company logo downloaded successfully.");
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 text-[10.5px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                  title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
+                >
+                  <Download className="size-3" />
+                  <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
+                </button>
               )}
             </div>
 

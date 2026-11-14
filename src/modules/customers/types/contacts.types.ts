@@ -49,3 +49,4 @@ export interface ContactCreateInput {
   notesFa?: string;
   isKeyContact?: boolean;
 }
+

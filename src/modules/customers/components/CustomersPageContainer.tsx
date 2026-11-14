@@ -11,6 +11,7 @@ import {
   Factory,
   PlusCircle,
   BookUser,
+  Award,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -22,8 +23,9 @@ import { HoldingsDirectoryView } from "./HoldingsDirectoryView";
 import { PlantsDirectoryView } from "./PlantsDirectoryView";
 import { CreateCustomerView } from "./CreateCustomerView";
 import { PhonebookDirectoryView } from "./PhonebookDirectoryView";
+import { LicensorsDirectoryView } from "./LicensorsDirectoryView";
 
-type CustomerTab = "directory" | "holdings" | "plants" | "phonebook" | "create";
+type CustomerTab = "directory" | "holdings" | "plants" | "licensors" | "phonebook" | "create";
 
 interface NavItem {
   id: CustomerTab;
@@ -54,6 +56,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
     if (isNewRoute) return "create";
     if (tabQuery === "holdings") return "holdings";
     if (tabQuery === "plants") return "plants";
+    if (tabQuery === "licensors") return "licensors";
     if (tabQuery === "phonebook" || tabQuery === "contacts") return "phonebook";
     return "directory";
   }, [initialTab, isNewRoute, tabQuery]);
@@ -65,6 +68,7 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
       { id: "directory", labelFa: "همه", labelEn: "All", icon: Building2, href: "/customers" },
       { id: "holdings", labelFa: "هلدینگ‌ها", labelEn: "Holdings", icon: Landmark, href: "/customers?tab=holdings" },
       { id: "plants", labelFa: "پلنت‌ها", labelEn: "Plants", icon: Factory, href: "/customers?tab=plants" },
+      { id: "licensors", labelFa: "لایسنسورها", labelEn: "Licensors", icon: Award, href: "/customers?tab=licensors" },
       { id: "phonebook", labelFa: "دفترچه تلفن", labelEn: "Phonebook", icon: BookUser, href: "/customers?tab=phonebook" },
       { id: "create", labelFa: "افزودن کارفرما", labelEn: "New Client", icon: PlusCircle, href: "/customers/new" },
     ];
@@ -76,9 +80,9 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
 
   return (
     <div className="flex flex-col flex-1 min-h-full bg-panel dark:bg-background font-sans w-full relative">
-      {/* ── 1. Top Unified Header (Stable Title: Clients) ── */}
+      {/* ── 1. Top Unified Header (Stable Title: Industries & Clients) ── */}
       <AppHeader
-        tag={isRtl ? "اطلاعات کارفرماها" : "Clients & Industrial Customers"}
+        tag={isRtl ? "صنایع و کارفرمایان" : "Industries & Clients"}
         onToggleMenu={() => setSidebarOpen(!sidebarOpen)}
         isMenuOpen={sidebarOpen}
         logoHref="/"
@@ -189,6 +193,8 @@ export function CustomersPageContainer({ initialTab }: { initialTab?: CustomerTa
             <HoldingsDirectoryView />
           ) : activeTab === "plants" ? (
             <PlantsDirectoryView />
+          ) : activeTab === "licensors" ? (
+            <LicensorsDirectoryView />
           ) : activeTab === "phonebook" ? (
             <PhonebookDirectoryView />
           ) : (

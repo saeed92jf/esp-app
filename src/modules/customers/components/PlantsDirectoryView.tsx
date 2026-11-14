@@ -29,14 +29,18 @@ import {
   Calendar,
   BarChart3,
   BookUser,
+  Download,
+  Award,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { IRANIAN_PLANTS } from "../data/plants.data";
 import { getAllUnifiedPlants } from "../utils/petro-unifier";
 import { formatLocaleNumber } from "@/lib/format-number";
+import { downloadLogo } from "../utils/download-logo";
 import type { PlantFacility, PlantProcessType } from "../types/plants.types";
 import {
   Dialog,
@@ -581,13 +585,15 @@ export function PlantsDirectoryView() {
                 <div className="flex items-center gap-1.5 flex-wrap text-xs pt-1">
                   <span className="text-[10.5px] text-muted-foreground">{isRtl ? "لایسنسور:" : "Licensors:"}</span>
                   {plant.licensors.map((lic, lIdx) => (
-                    <Badge
+                    <Link
                       key={lIdx}
-                      variant="outline"
-                      className="text-[10.5px] bg-background font-medium py-0 px-2 border-border/80"
+                      href={`/customers?tab=licensors&q=${encodeURIComponent(lic)}`}
+                      className="text-[10.5px] bg-background hover:bg-primary/10 text-foreground hover:text-primary font-medium py-0.5 px-2 rounded-md border border-border/80 hover:border-primary/40 transition-colors inline-flex items-center gap-1"
+                      title={isRtl ? "مشاهده پرونده لایسنسور در تب لایسنسورها" : "View Licensor in Directory"}
                     >
-                      {lic}
-                    </Badge>
+                      <span>{lic}</span>
+                      <ArrowUpRight className="size-2.5 text-muted-foreground" />
+                    </Link>
                   ))}
                 </div>
               )}
@@ -697,22 +703,42 @@ export function PlantsDirectoryView() {
         <Dialog open={Boolean(selectedPlant)} onOpenChange={() => setSelectedPlant(null)}>
           <DialogContent className="sm:max-w-[650px] max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[24px]">
             <DialogHeader className="p-6 pb-4 border-b border-border/60 bg-muted/20">
-              <div className="flex items-center gap-3.5">
-                <div className="relative size-14 rounded-2xl bg-white dark:bg-card border border-border/80 p-1.5 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
-                  {selectedPlant.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={selectedPlant.logoUrl}
-                      alt={selectedPlant.nameFa}
-                      className="size-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = "none";
+              <div className="flex items-center gap-4">
+                <div className="relative group shrink-0 flex flex-col items-center gap-1.5">
+                  <div className="size-20 sm:size-24 rounded-2xl bg-white dark:bg-card border border-border/80 p-2 sm:p-2.5 flex items-center justify-center shrink-0 shadow-sm overflow-hidden transition-all duration-200 group-hover:shadow-md group-hover:border-primary/40">
+                    {selectedPlant.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={selectedPlant.logoUrl}
+                        alt={selectedPlant.nameFa}
+                        className="size-full object-contain transition-transform duration-200 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <Flame className="size-8 text-amber-600" />
+                    )}
+                  </div>
+                  {selectedPlant.logoUrl && (
+                    <button
+                      type="button"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        const ok = await downloadLogo(selectedPlant.logoUrl, selectedPlant.nameFa);
+                        if (ok) {
+                          toast.success(isRtl ? "لوگوی مجتمع با موفقیت دانلود شد." : "Plant logo downloaded successfully.");
+                        }
                       }}
-                    />
-                  ) : (
-                    <Flame className="size-6 text-amber-600" />
+                      className="inline-flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-primary transition-colors bg-muted/50 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-border/60"
+                      title={isRtl ? "دانلود فایل لوگوی باکیفیت" : "Download Logo"}
+                    >
+                      <Download className="size-3" />
+                      <span>{isRtl ? "دانلود لوگو" : "Download"}</span>
+                    </button>
                   )}
                 </div>
+
                 <div>
                   <DialogTitle className="text-lg font-bold text-foreground">
                     {selectedPlant.nameFa}
@@ -851,6 +877,18 @@ export function PlantsDirectoryView() {
                   <span>{isRtl ? "دفترچه تلفن و مخاطبین مجتمع" : "Phonebook & Contacts"}</span>
                   <ArrowUpRight className="size-3" />
                 </Link>
+
+                {selectedPlant.licensors && selectedPlant.licensors.length > 0 && (
+                  <Link
+                    href={`/customers?tab=licensors&q=${encodeURIComponent(selectedPlant.licensors[0])}`}
+                    onClick={() => setSelectedPlant(null)}
+                    className="inline-flex items-center gap-1.5 text-xs text-foreground hover:text-primary px-3 py-1.5 rounded-xl border border-border/70 hover:bg-muted/30 transition-colors"
+                  >
+                    <Award className="size-3.5 text-primary" />
+                    <span>{isRtl ? `لایسنسور: ${selectedPlant.licensors[0]}` : `Licensor: ${selectedPlant.licensors[0]}`}</span>
+                    <ArrowUpRight className="size-3" />
+                  </Link>
+                )}
               </div>
 
               {/* Verified Sources */}

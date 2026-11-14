@@ -126,7 +126,7 @@
       "reports": "Reports",
       "sitemap": "Sitemap",
       "community": "Community",
-      "customers": "Customers",
+      "customers": "Industries & Clients",
       "directory": "Directory",
       "همکاران": "Directory",
       "راهنمای سازمانی": "Personnel Directory"
@@ -669,7 +669,7 @@
       "multimedia": "Multimedia",
       "settings": "Settings",
       "language": "Language",
-      "customers": "Clients & Customers",
+      "customers": "Industries & Clients",
       "organization": "Organization & Team"
     },
     "items": {
@@ -704,7 +704,7 @@
       "mediaLibrary": "Media Library",
       "standards": "Standards",
       "Claud-Flow": "Claude Flow",
-      "customers": "Clients & Customers Information",
+      "customers": "Industries & Clients",
       "directory": "Personnel Directory"
     },
     "descriptions": {
