@@ -2,9 +2,50 @@
 
 import { INITIAL_COMPANY_CONTACTS } from "../data/contacts.data";
 import { normalizeTitle } from "../utils/petro-unifier";
-import type { CompanyContact, ContactCreateInput } from "../types/contacts.types";
+import type { CompanyContact, ContactCreateInput, ContactIndustry } from "../types/contacts.types";
 
 const CONTACTS_STORAGE_KEY = "esp_petro_company_contacts_v1";
+
+export function inferContactIndustry(c: CompanyContact): ContactIndustry {
+  if (c.industry) return c.industry;
+  const name = (c.companyNameFa || "").toLowerCase();
+  if (
+    name.includes("پتروشیمی") ||
+    name.includes("پلیمر") ||
+    name.includes("pgpic") ||
+    name.includes("تاپیکو") ||
+    name.includes("آریاساسول")
+  ) {
+    return "petrochemical";
+  }
+  if (
+    name.includes("فولاد") ||
+    name.includes("ذوب") ||
+    name.includes("مس") ||
+    name.includes("آلیاژ") ||
+    name.includes("نورد")
+  ) {
+    return "steel";
+  }
+  if (
+    name.includes("پالایشگاه نفت") ||
+    name.includes("پالایش نفت") ||
+    name.includes("نفت") ||
+    name.includes("ستاره خلیج فارس")
+  ) {
+    return "refinery";
+  }
+  if (
+    name.includes("گاز") ||
+    name.includes("بیدبلند") ||
+    name.includes("انرژی") ||
+    name.includes("پارس جنوبی") ||
+    name.includes("spgc")
+  ) {
+    return "gas";
+  }
+  return "other";
+}
 
 class ContactsService {
   private contacts: CompanyContact[] = [];
@@ -53,9 +94,14 @@ class ContactsService {
     search?: string;
     company?: string;
     department?: string;
+    industry?: string;
   }): CompanyContact[] {
     this.load();
     let list = [...this.contacts];
+
+    if (filters?.industry && filters.industry !== "all") {
+      list = list.filter((c) => inferContactIndustry(c) === filters.industry);
+    }
 
     if (filters?.company && filters.company !== "all") {
       const targetNorm = normalizeTitle(filters.company);

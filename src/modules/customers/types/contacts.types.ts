@@ -10,6 +10,13 @@ export type ContactDepartment =
   | "engineering"
   | "other";
 
+export type ContactIndustry =
+  | "petrochemical"
+  | "steel"
+  | "refinery"
+  | "gas"
+  | "other";
+
 export interface CompanyContact {
   id: string;
   fullNameFa: string;
@@ -17,6 +24,7 @@ export interface CompanyContact {
   companyId?: string;
   companyNameFa: string;
   companyNameEn?: string;
+  industry?: ContactIndustry;
   department: ContactDepartment;
   departmentTitleFa: string; // e.g. "مدیریت بازرگانی و قراردادها"
   jobTitleFa: string; // e.g. "مدیر بازرگانی و فروش", "رئیس تعمیرات و نگهداری"
@@ -37,6 +45,7 @@ export interface ContactCreateInput {
   fullNameEn?: string;
   companyNameFa: string;
   companyNameEn?: string;
+  industry?: ContactIndustry;
   department: ContactDepartment;
   departmentTitleFa: string;
   jobTitleFa: string;

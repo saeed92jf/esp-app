@@ -9,7 +9,6 @@ import {
   Search,
   Mic,
   MoreVertical,
-  ChevronRight,
   ChevronLeft,
   ChevronDown,
   User,
@@ -24,7 +23,6 @@ import {
   Trash2,
   Pencil,
   X,
-  ExternalLink,
   MessageCircle,
   Briefcase,
   Layers,
@@ -33,13 +31,13 @@ import {
   Factory,
   ShieldCheck,
   ArrowUpRight,
+  Flame,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Combobox } from "@/components/ui/combobox";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -57,8 +55,8 @@ import {
 import { toast } from "sonner";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
-import { contactsService } from "../services/contacts.service";
-import type { CompanyContact, ContactDepartment, ContactCreateInput } from "../types/contacts.types";
+import { contactsService, inferContactIndustry } from "../services/contacts.service";
+import type { CompanyContact, ContactDepartment, ContactCreateInput, ContactIndustry } from "../types/contacts.types";
 
 const DEPARTMENT_CONFIG: Record<
   ContactDepartment,
@@ -114,6 +112,20 @@ const DEPARTMENT_CONFIG: Record<
   },
 };
 
+const INDUSTRY_FILTERS: {
+  id: "all" | ContactIndustry;
+  labelFa: string;
+  labelEn: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { id: "all", labelFa: "همه صنایع", labelEn: "All Industries", icon: Building2 },
+  { id: "petrochemical", labelFa: "پتروشیمی و پلیمر", labelEn: "Petrochemical", icon: Factory },
+  { id: "steel", labelFa: "فولاد و فلزات", labelEn: "Steel & Metallurgy", icon: Layers },
+  { id: "refinery", labelFa: "پالایشگاه و نفت", labelEn: "Refinery & Oil", icon: Flame },
+  { id: "gas", labelFa: "گاز و انرژی", labelEn: "Gas & Energy", icon: Cpu },
+  { id: "other", labelFa: "سایر شرکت‌ها", labelEn: "Other", icon: Briefcase },
+];
+
 const AVATAR_PALETTES = [
   "from-emerald-500/20 to-emerald-600/30 text-emerald-800 dark:text-emerald-200 border-emerald-500/30",
   "from-amber-500/20 to-amber-600/30 text-amber-800 dark:text-amber-200 border-amber-500/30",
@@ -143,9 +155,9 @@ export function PhonebookDirectoryView() {
   const initialSearch = searchParams.get("q") || "";
 
   const [search, setSearch] = useState(initialSearch);
+  const [selectedIndustry, setSelectedIndustry] = useState<"all" | ContactIndustry>("all");
   const [selectedCompany, setSelectedCompany] = useState<string>(initialCompany);
   const [selectedDept, setSelectedDept] = useState<string>("all");
-  const [onlyFavourites, setOnlyFavourites] = useState(false);
   const [contacts, setContacts] = useState<CompanyContact[]>([]);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -186,22 +198,20 @@ export function PhonebookDirectoryView() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load contacts
+  // Load contacts based on filters
   const refreshContacts = () => {
-    let list = contactsService.getContacts({
+    const list = contactsService.getContacts({
       search,
       company: selectedCompany,
       department: selectedDept,
+      industry: selectedIndustry,
     });
-    if (onlyFavourites) {
-      list = list.filter((c) => c.isKeyContact);
-    }
     setContacts(list);
   };
 
   useEffect(() => {
     refreshContacts();
-  }, [search, selectedCompany, selectedDept, onlyFavourites]);
+  }, [search, selectedCompany, selectedDept, selectedIndustry]);
 
   useEffect(() => {
     const companyParam = searchParams.get("company");
@@ -210,24 +220,40 @@ export function PhonebookDirectoryView() {
     }
   }, [searchParams]);
 
+  // Ensure preview always has an active contact on desktop
+  useEffect(() => {
+    if (!selectedContactId && !isCreatingNew && contacts.length > 0) {
+      setSelectedContactId(contacts[0].id);
+    } else if (selectedContactId && !isCreatingNew) {
+      const exists = contacts.some((c) => c.id === selectedContactId);
+      if (!exists && contacts.length > 0) {
+        setSelectedContactId(contacts[0].id);
+      }
+    }
+  }, [contacts, selectedContactId, isCreatingNew]);
+
   const selectedContact = useMemo(() => {
     return contacts.find((c) => c.id === selectedContactId) || null;
   }, [contacts, selectedContactId]);
 
-  const companiesList = useMemo(() => {
-    const list = contactsService.getCompaniesWithContacts();
-    return [
-      { value: "all", label: isRtl ? "همه شرکت‌ها و پتروشیمی‌ها" : "All Companies" },
-      ...list.map((c) => ({
-        value: c.nameFa,
-        label: `${c.nameFa} (${formatLocaleNumber(c.count, isRtl)})`,
-      })),
-    ];
-  }, [isRtl, contacts]);
-
-  const favouriteContacts = useMemo(() => {
-    return contacts.filter((c) => c.isKeyContact);
-  }, [contacts]);
+  // Calculate counts per industry
+  const industryCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      all: 0,
+      petrochemical: 0,
+      steel: 0,
+      refinery: 0,
+      gas: 0,
+      other: 0,
+    };
+    const allFiltered = contactsService.getContacts({ search, company: selectedCompany, department: selectedDept });
+    counts.all = allFiltered.length;
+    for (const c of allFiltered) {
+      const ind = inferContactIndustry(c);
+      counts[ind] = (counts[ind] || 0) + 1;
+    }
+    return counts;
+  }, [search, selectedCompany, selectedDept, contacts]);
 
   // Alphabetical Grouping
   const alphabeticalGroups = useMemo(() => {
@@ -339,13 +365,6 @@ export function PhonebookDirectoryView() {
     if (isMobile) {
       setIsMobileModalOpen(true);
     }
-  };
-
-  const handleClosePanel = () => {
-    setSelectedContactId(null);
-    setIsCreatingNew(false);
-    setIsEditing(false);
-    setIsMobileModalOpen(false);
   };
 
   const handleSaveContact = (e?: React.FormEvent) => {
@@ -470,11 +489,11 @@ export function PhonebookDirectoryView() {
     }
   };
 
-  // ── Render Right Panel (New or Selected Contact) ──
+  // ── Render Right Panel Content (Form or Selected Contact) ──
   const renderRightPanelContent = () => {
     if (isCreatingNew) {
       return (
-        <div className="w-full flex flex-col max-h-[calc(100vh-6rem)] bg-card rounded-[24px] border border-border/80 shadow-md overflow-hidden animate-in fade-in duration-150">
+        <div className="w-full flex flex-col max-h-[calc(100vh-var(--header-height,64px)-2rem)] bg-card rounded-[24px] border border-border/80 shadow-md overflow-hidden animate-in fade-in duration-150">
           {/* Top Bar - pinned */}
           <div className="px-4 py-3 bg-background/95 backdrop-blur-sm border-b border-border/60 flex items-center justify-between gap-2 shrink-0">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -482,7 +501,14 @@ export function PhonebookDirectoryView() {
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={handleClosePanel}
+                onClick={() => {
+                  setIsCreatingNew(false);
+                  setIsEditing(false);
+                  setIsMobileModalOpen(false);
+                  if (contacts.length > 0) {
+                    setSelectedContactId(contacts[0].id);
+                  }
+                }}
                 className="text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
                 title={isRtl ? "بازگشت" : "Back"}
               >
@@ -500,28 +526,15 @@ export function PhonebookDirectoryView() {
               </span>
             </div>
 
-            <div className="flex items-center gap-1 shrink-0">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleSaveContact}
-                disabled={isSaving}
-                className="text-[#65874f] dark:text-[#8ea979] hover:text-[#4d693c] dark:hover:text-[#a5c090] font-bold text-xs sm:text-sm h-8 px-2 cursor-pointer hover:bg-transparent"
-              >
-                {isSaving ? isRtl ? "در حال ذخیره..." : "saving..." : isRtl ? "ذخیره" : "save"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={handleClosePanel}
-                className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                title={isRtl ? "بستن فرم" : "Close"}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleSaveContact}
+              disabled={isSaving}
+              className="text-[#65874f] dark:text-[#8ea979] hover:text-[#4d693c] dark:hover:text-[#a5c090] font-bold text-xs sm:text-sm h-8 px-2 cursor-pointer hover:bg-transparent"
+            >
+              {isSaving ? (isRtl ? "در حال ذخیره..." : "saving...") : isRtl ? "ذخیره" : "save"}
+            </Button>
           </div>
 
           {/* Scrollable Content Body */}
@@ -572,7 +585,7 @@ export function PhonebookDirectoryView() {
                   <Input
                     value={formCompanyName}
                     onChange={(e) => setFormCompanyName(e.target.value)}
-                    placeholder={isRtl ? "نام شرکت یا پتروشیمی..." : "Company / Complex name..."}
+                    placeholder={isRtl ? "نام شرکت یا مجتمع صنعتی..." : "Company or Complex name..."}
                     className="w-full text-xs font-semibold text-foreground bg-transparent border-0 p-0 shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/60 h-auto"
                     required
                   />
@@ -713,7 +726,7 @@ export function PhonebookDirectoryView() {
                       <div className="flex items-center justify-between pt-1">
                         <div className="space-y-0.5">
                           <Label className="text-[11px] font-semibold">{isRtl ? "مخاطب کلیدی و برگزیده" : "Add to Favourites"}</Label>
-                          <p className="text-[9.5px] text-muted-foreground">{isRtl ? "نمایش در بخش افراد برگزیده" : "Show in top favourites"}</p>
+                          <p className="text-[9.5px] text-muted-foreground">{isRtl ? "علامت‌گذاری به‌عنوان فرد کلیدی" : "Mark as key executive"}</p>
                         </div>
                         <Switch checked={formIsKey} onCheckedChange={setFormIsKey} />
                       </div>
@@ -732,22 +745,11 @@ export function PhonebookDirectoryView() {
       const DeptIcon = deptConf.icon;
 
       return (
-        <div className="w-full flex flex-col max-h-[calc(100vh-6rem)] bg-card rounded-[24px] border border-border/80 shadow-md overflow-hidden animate-in fade-in duration-150">
+        <div className="w-full flex flex-col max-h-[calc(100vh-var(--header-height,64px)-2rem)] bg-card rounded-[24px] border border-border/80 shadow-md overflow-hidden animate-in fade-in duration-150">
           {/* Top Bar - pinned */}
           <div className="px-4 py-3 bg-background/95 backdrop-blur-sm border-b border-border/60 flex items-center justify-between gap-2 shrink-0">
             <div className="flex items-center gap-1.5 min-w-0">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={handleClosePanel}
-                className="text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
-                title={isRtl ? "بازگشت" : "Back"}
-              >
-                <ChevronLeft className={cn("size-4", isRtl && "rotate-180")} />
-              </Button>
-
-              <span className="font-bold text-xs sm:text-sm text-foreground truncate max-w-[160px]">
+              <span className="font-bold text-xs sm:text-sm text-foreground truncate max-w-[170px]">
                 {selectedContact.fullNameFa}
               </span>
             </div>
@@ -759,7 +761,7 @@ export function PhonebookDirectoryView() {
                 size="icon-xs"
                 onClick={(e) => handleToggleKey(selectedContact.id, e)}
                 className="text-muted-foreground hover:text-amber-500 rounded-lg cursor-pointer"
-                title={selectedContact.isKeyContact ? (isRtl ? "حذف از برگزیده‌ها" : "Remove favourite") : (isRtl ? "افزودن به برگزیده‌ها" : "Add to favourites")}
+                title={selectedContact.isKeyContact ? (isRtl ? "حذف نشان کلیدی" : "Remove key flag") : (isRtl ? "نشان‌گذاری به‌عنوان فرد کلیدی" : "Mark as key")}
               >
                 <Star className={cn("size-4", selectedContact.isKeyContact ? "fill-amber-500 text-amber-500" : "")} />
               </Button>
@@ -779,11 +781,11 @@ export function PhonebookDirectoryView() {
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                onClick={handleClosePanel}
-                className="size-7 rounded-lg text-muted-foreground hover:text-foreground cursor-pointer"
-                title={isRtl ? "بستن پیش‌نمایش" : "Close preview"}
+                onClick={handleStartCreateNew}
+                className="size-7 rounded-lg text-[#65874f] dark:text-[#8ea979] hover:bg-[#8fa878]/15 cursor-pointer"
+                title={isRtl ? "ثبت مخاطب جدید" : "Create new"}
               >
-                <X className="size-4" />
+                <UserPlus className="size-4" />
               </Button>
             </div>
           </div>
@@ -1043,17 +1045,17 @@ export function PhonebookDirectoryView() {
 
   return (
     <div className="w-full max-w-full overflow-hidden space-y-4">
-      {/* ── Main Two-Column Layout (Master-Detail) ── */}
+      {/* ── Main Two-Column Layout (Master-Detail with Persistent Sticky Preview) ── */}
       <div className="flex flex-col lg:flex-row items-start gap-4 xl:gap-6 w-full min-w-0">
         {/* ── LEFT COLUMN: Contact List ── */}
-        <div className="flex-1 min-w-0 w-full space-y-4">
-          {/* Top Search Bar with Mic & 3-Dots */}
+        <div className="flex-1 min-w-0 w-full space-y-3.5">
+          {/* 1. Top Search Bar with Mic & 3-Dots */}
           <div className="flex items-center gap-2 p-1.5 ps-3 pe-2 rounded-2xl bg-muted/30 dark:bg-muted/20 border border-border/80 shadow-2xs">
             <Search className="size-4 text-muted-foreground shrink-0" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder={isRtl ? "جستجوی مخاطبین (نام، شرکت، سمت، تلفن)..." : "Search contacts"}
+              placeholder={isRtl ? "جستجوی مخاطبین (نام، شرکت، سمت، تلفن، ایمیل)..." : "Search contacts"}
               className="flex-1 bg-transparent border-0 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus-visible:ring-0 shadow-none h-8 px-1"
             />
             {search && (
@@ -1086,26 +1088,16 @@ export function PhonebookDirectoryView() {
                   variant="ghost"
                   size="icon-xs"
                   className="size-8 text-muted-foreground hover:text-foreground rounded-full cursor-pointer"
-                  title={isRtl ? "گزینه‌ها و فیلترها" : "More options"}
+                  title={isRtl ? "فیلتر واحد سازمانی" : "Filter by department"}
                 >
                   <MoreVertical className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5">
-                <DropdownMenuItem
-                  onClick={() => setOnlyFavourites(!onlyFavourites)}
-                  className="text-xs cursor-pointer gap-2"
-                >
-                  <Star className={cn("size-3.5", onlyFavourites ? "fill-amber-500 text-amber-500" : "")} />
-                  <span>{onlyFavourites ? (isRtl ? "نمایش همه مخاطبین" : "Show all contacts") : (isRtl ? "فقط مخاطبین برگزیده" : "Show favourites only")}</span>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
                 <div className="px-2 py-1.5 text-[11px] font-semibold text-muted-foreground">
                   {isRtl ? "فیلتر بر اساس دپارتمان:" : "Filter by department:"}
                 </div>
-                {(Object.keys(DEPARTMENT_CONFIG) as ContactDepartment[]).slice(0, 5).map((dKey) => {
+                {(Object.keys(DEPARTMENT_CONFIG) as ContactDepartment[]).map((dKey) => {
                   const conf = DEPARTMENT_CONFIG[dKey];
                   return (
                     <DropdownMenuItem
@@ -1125,7 +1117,7 @@ export function PhonebookDirectoryView() {
                     setSearch("");
                     setSelectedCompany("all");
                     setSelectedDept("all");
-                    setOnlyFavourites(false);
+                    setSelectedIndustry("all");
                   }}
                   className="text-xs cursor-pointer text-muted-foreground"
                 >
@@ -1135,94 +1127,48 @@ export function PhonebookDirectoryView() {
             </DropdownMenu>
           </div>
 
-          {/* "My Profile" Row (Euroslot Pars Official Contact) */}
-          <div
-            onClick={() => {
-              toast.info(isRtl ? "اطلاعات تماس دفتر مرکزی یوروسلات پارس" : "Euroslot Pars HQ Contact");
-            }}
-            className="p-3 rounded-2xl bg-card border border-border/80 shadow-2xs hover:border-[#8fa878]/50 hover:bg-[#8fa878]/5 transition-all flex items-center justify-between gap-3 cursor-pointer group"
-          >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="size-10 rounded-full bg-[#8fa878]/15 text-[#65874f] dark:text-[#8ea979] border border-[#8fa878]/30 flex items-center justify-center shrink-0 font-bold text-xs">
-                ESP
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs sm:text-sm font-bold text-foreground group-hover:text-[#65874f] transition-colors truncate">
-                  {isRtl ? "پروفایل من (یوروسلات پارس - دفتر مرکزی)" : "My profile"}
-                </h4>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  {isRtl ? "واحد مهندسی و فروش • ۰۲۱-۸۸۸۸۰۰۰۰" : "Engineering & Sales • Euroslot Pars"}
-                </p>
-              </div>
-            </div>
+          {/* 2. Top Industry Filter Pills (پتروشیمی، فولاد، پالایشگاه، گاز، ...) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+            {INDUSTRY_FILTERS.map((ind) => {
+              const isSelected = selectedIndustry === ind.id;
+              const Icon = ind.icon;
+              const count = industryCounts[ind.id] || 0;
 
-            <ChevronRight className={cn("size-4 text-muted-foreground group-hover:text-foreground transition-transform shrink-0", isRtl && "rotate-180")} />
+              return (
+                <Button
+                  key={ind.id}
+                  type="button"
+                  variant={isSelected ? "default" : "outline"}
+                  size="xs"
+                  onClick={() => setSelectedIndustry(ind.id)}
+                  className={cn(
+                    "h-7 px-2.5 rounded-full text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 tabular-nums cursor-pointer",
+                    isSelected
+                      ? "bg-[#65874f] hover:bg-[#547340] text-white border-transparent shadow-xs"
+                      : "bg-muted/30 text-muted-foreground border-border hover:bg-muted/60 hover:text-foreground"
+                  )}
+                >
+                  <Icon className="size-3 shrink-0" />
+                  <span>{isRtl ? ind.labelFa : ind.labelEn}</span>
+                  <span className={cn("text-[10px] font-normal px-1 rounded-full", isSelected ? "bg-white/20 text-white" : "bg-muted/80 text-muted-foreground")}>
+                    {formatLocaleNumber(count, isRtl)}
+                  </span>
+                </Button>
+              );
+            })}
           </div>
 
-          {/* "My Favourites" Section */}
-          {favouriteContacts.length > 0 && (
-            <div className="space-y-2 pt-1">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                  <Star className="size-3.5 fill-amber-500 text-amber-500" />
-                  <span>{isRtl ? "مخاطبین برگزیده" : "My favourites"}</span>
-                  <span className="text-[10.5px] font-normal text-muted-foreground tabular-nums">
-                    ({formatLocaleNumber(favouriteContacts.length, isRtl)})
-                  </span>
-                </div>
-              </div>
-
-              {/* Horizontal Scroll / Chips of Favourites */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {favouriteContacts.map((fav) => {
-                  const palette = getAvatarPalette(fav.id);
-                  const isSelected = selectedContactId === fav.id;
-
-                  return (
-                    <div
-                      key={fav.id}
-                      onClick={() => handleSelectContact(fav.id)}
-                      className={cn(
-                        "flex items-center gap-2 p-1.5 pe-2.5 rounded-xl border transition-all cursor-pointer shrink-0 bg-card hover:shadow-xs",
-                        isSelected
-                          ? "border-[#65874f] ring-2 ring-[#8fa878]/30 bg-[#8fa878]/5"
-                          : "border-border/80 hover:border-border"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "size-8 rounded-full bg-gradient-to-br flex items-center justify-center font-bold text-xs border shrink-0",
-                          palette
-                        )}
-                      >
-                        {fav.fullNameFa.slice(0, 1)}
-                      </div>
-                      <div className="text-start min-w-0">
-                        <div className="text-xs font-bold text-foreground truncate max-w-[110px]">
-                          {fav.fullNameFa}
-                        </div>
-                        <div className="text-[9.5px] text-muted-foreground truncate max-w-[110px]">
-                          {fav.companyNameFa.split(" ")[0]}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* ── Alphabetical Contact List ── */}
+          {/* 3. Alphabetical Contact List */}
           {contacts.length === 0 ? (
             <div className="p-10 text-center rounded-2xl border border-dashed border-border bg-card space-y-3">
               <User className="size-10 mx-auto text-muted-foreground/40" />
               <h3 className="text-xs sm:text-sm font-bold text-foreground">
-                {isRtl ? "مخاطبی یافت نشد" : "No contacts found"}
+                {isRtl ? "مخاطبی در این حوزه یافت نشد" : "No contacts found"}
               </h3>
               <p className="text-xs text-muted-foreground max-w-xs mx-auto">
                 {isRtl
-                  ? "عبارت دیگری را جستجو کنید یا مخاطب جدید اضافه نمایید."
-                  : "Try a different search term or create a new contact."}
+                  ? "فیلتر صنعت دیگری را انتخاب کنید یا از دکمه زیر برای ایجاد مخاطب جدید استفاده فرمایید."
+                  : "Select a different industry filter or click below to create a contact."}
               </p>
               <Button
                 type="button"
@@ -1313,7 +1259,7 @@ export function PhonebookDirectoryView() {
                               size="icon-xs"
                               onClick={(e) => handleToggleKey(c.id, e)}
                               className="size-7 text-muted-foreground hover:text-amber-500 rounded-full"
-                              title={c.isKeyContact ? (isRtl ? "حذف از برگزیده‌ها" : "Remove favourite") : (isRtl ? "افزودن به برگزیده‌ها" : "Add to favourites")}
+                              title={c.isKeyContact ? (isRtl ? "حذف نشان کلیدی" : "Remove key flag") : (isRtl ? "نشان‌گذاری به‌عنوان فرد کلیدی" : "Mark as key")}
                             >
                               <Star className={cn("size-3.5", c.isKeyContact ? "fill-amber-500 text-amber-500" : "")} />
                             </Button>
@@ -1340,12 +1286,10 @@ export function PhonebookDirectoryView() {
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN (Desktop): Contact Detail / Create Form Card ── */}
-        {(selectedContact || isCreatingNew) && (
-          <div className="hidden lg:block w-[320px] xl:w-[350px] 2xl:w-[380px] shrink-0 sticky top-4 max-w-full">
-            {renderRightPanelContent()}
-          </div>
-        )}
+        {/* ── RIGHT COLUMN (Desktop): Contact Detail / Create Form Card (ALWAYS PRESENT & STICKY BELOW HEADER) ── */}
+        <div className="hidden lg:block w-[320px] xl:w-[350px] 2xl:w-[380px] shrink-0 sticky top-[calc(var(--header-height,64px)+1rem)] self-start max-w-full z-10">
+          {renderRightPanelContent()}
+        </div>
       </div>
 
       {/* ── Mobile Modal Dialog (ONLY rendered and mounted on small screens < 1024px) ── */}
