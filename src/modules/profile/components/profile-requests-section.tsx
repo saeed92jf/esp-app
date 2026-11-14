@@ -333,7 +333,7 @@ export function ProfileRequestsSection({ user, isRtl }: ProfileRequestsSectionPr
   // ─────────────────────────────────────────────────────────────
   if (isCreating) {
     return (
-      <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in slide-in-from-bottom-4 duration-300" dir={isRtl ? "rtl" : "ltr"}>
+      <div className="max-w-4xl mx-auto w-full py-8 px-4 sm:px-8 animate-in fade-in duration-150" dir={isRtl ? "rtl" : "ltr"}>
         <div className="flex items-center gap-4 mb-8">
           <Button
             type="button"

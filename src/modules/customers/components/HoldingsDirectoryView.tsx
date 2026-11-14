@@ -24,6 +24,7 @@ import {
   ShieldCheck,
   ArrowUpRight,
   ArrowUpDown,
+  Phone,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,10 @@ export function HoldingsDirectoryView() {
         h.companyAbbrv.toLowerCase().includes(q) ||
         (h.tseSymbol && h.tseSymbol.toLowerCase().includes(q)) ||
         h.headquartersFa.toLowerCase().includes(q) ||
+        (h.officeAddressFa && h.officeAddressFa.toLowerCase().includes(q)) ||
+        (h.officePhone && h.officePhone.toLowerCase().includes(q)) ||
+        (h.postalCode && h.postalCode.toLowerCase().includes(q)) ||
+        (h.nationalIdNumber && h.nationalIdNumber.toLowerCase().includes(q)) ||
         h.ceoNameFa.toLowerCase().includes(q);
 
       const matchSubs = h.subsidiaries.some(
@@ -308,7 +313,9 @@ export function HoldingsDirectoryView() {
                   </div>
                   <div className="p-2.5 rounded-xl bg-muted/30 border border-border/60">
                     <span className="text-[10.5px] text-muted-foreground block">{isRtl ? "دفتر مرکزی" : "Headquarters"}</span>
-                    <span className="font-semibold text-foreground truncate block mt-0.5">{holding.headquartersFa.split("،")[0]}</span>
+                    <span className="font-semibold text-foreground truncate block mt-0.5" title={holding.officeAddressFa || holding.headquartersFa}>
+                      {holding.officePhone ? `${holding.headquartersFa.split("،")[0]} (${holding.officePhone.replace('+98-', '۰')})` : holding.headquartersFa.split("،")[0]}
+                    </span>
                   </div>
                 </div>
 
@@ -601,25 +608,43 @@ export function HoldingsDirectoryView() {
               </div>
 
               {/* Corporate Info */}
-              <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-1">
-                  <span className="text-[11px] text-muted-foreground block">{isRtl ? "نشانی دفتر مرکزی" : "HQ Address"}</span>
-                  <span className="font-medium text-foreground block">{selectedHolding.headquartersFa}</span>
+                  <span className="text-[11px] text-muted-foreground block">{isRtl ? "نشانی کامل دفتر مرکزی" : "HQ Address"}</span>
+                  <span className="font-medium text-foreground block leading-relaxed">{selectedHolding.officeAddressFa || selectedHolding.headquartersFa}</span>
+                  {selectedHolding.postalCode && (
+                    <span className="text-[11px] text-muted-foreground block mt-1">
+                      {isRtl ? `کد پستی: ${selectedHolding.postalCode}` : `Postal Code: ${selectedHolding.postalCode}`}
+                    </span>
+                  )}
                 </div>
+
                 <div className="p-3 rounded-xl bg-muted/30 border border-border/60 space-y-1">
-                  <span className="text-[11px] text-muted-foreground block">{isRtl ? "وب‌سایت رسمی" : "Website"}</span>
+                  <span className="text-[11px] text-muted-foreground block">{isRtl ? "اطلاعات تماس و وب‌سایت" : "Contact & Web"}</span>
+                  {selectedHolding.officePhone && (
+                    <div className="flex items-center gap-1.5 text-foreground font-mono text-[11px]">
+                      <Phone className="size-3 text-primary shrink-0" />
+                      <span dir="ltr">{selectedHolding.officePhone}</span>
+                    </div>
+                  )}
                   {selectedHolding.website ? (
                     <a
                       href={selectedHolding.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-primary hover:underline font-mono font-medium flex items-center gap-1"
+                      className="text-primary hover:underline font-mono font-medium flex items-center gap-1 pt-0.5"
                     >
-                      <span>{selectedHolding.website.replace("https://", "")}</span>
-                      <ExternalLink className="size-3" />
+                      <span className="truncate">{selectedHolding.website.replace("https://", "").replace("http://", "")}</span>
+                      <ExternalLink className="size-3 shrink-0" />
                     </a>
                   ) : (
                     <span>---</span>
+                  )}
+                  {selectedHolding.nationalIdNumber && (
+                    <div className="text-[10.5px] text-muted-foreground pt-1 border-t border-border/40">
+                      {isRtl ? `شناسه ملی: ${selectedHolding.nationalIdNumber}` : `National ID: ${selectedHolding.nationalIdNumber}`}
+                      {selectedHolding.registrationNumber ? ` • شماره ثبت: ${selectedHolding.registrationNumber}` : ""}
+                    </div>
                   )}
                 </div>
               </div>

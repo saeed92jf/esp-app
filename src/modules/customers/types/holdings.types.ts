@@ -32,6 +32,7 @@ export interface InformationSource {
 
 export interface Holding {
   id: string;
+  excelId?: number;
   nameFa: string;
   nameEn: string;
   companyAbbrv: string;
@@ -44,6 +45,12 @@ export interface Holding {
   marketCapFa?: string;
   annualCapacityFa: string;
   headquartersFa: string;
+  officeAddressFa?: string;
+  officePhone?: string;
+  postalCode?: string;
+  nationalIdNumber?: string;
+  economicCode?: string;
+  registrationNumber?: string;
   ceoNameFa: string;
   website?: string;
   descriptionFa: string;

@@ -224,9 +224,9 @@ function TableAccordionPanel({ activeType, isRtl, children }: TableAccordionPane
         <div className="w-full max-w-5xl mx-auto">
           <motion.div
             key={activeType}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
           >
             {children}
           </motion.div>

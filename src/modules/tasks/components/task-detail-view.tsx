@@ -723,7 +723,7 @@ export function TaskDetailView({
     }
 
     return (
-      <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300 fa-num">
+      <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150 fa-num">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"

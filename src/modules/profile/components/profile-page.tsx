@@ -1338,7 +1338,7 @@ export function ProfilePage({
   };
 
   const renderHomeView = () => (
-    <div className="flex flex-col items-center justify-center max-w-3xl mx-auto w-full pt-16 pb-10 sm:pt-24 sm:pb-16 px-4 animate-in fade-in slide-in-from-bottom-4 duration-500" dir="ltr">
+    <div className="flex flex-col items-center justify-center max-w-3xl mx-auto w-full pt-16 pb-10 sm:pt-24 sm:pb-16 px-4 animate-in fade-in duration-150" dir="ltr">
       
       {/* Avatar Section */}
       <motion.div 
@@ -2434,7 +2434,7 @@ export function ProfilePage({
       }
 
       return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -2725,7 +2725,7 @@ export function ProfilePage({
       };
 
       return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -3361,7 +3361,7 @@ export function ProfilePage({
         };
 
         return (
-          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
             <div className="flex items-center gap-4 mb-8">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelSkill(skillId)}>
                  <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -3601,7 +3601,7 @@ export function ProfilePage({
         };
 
         return (
-          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
             <div className="flex items-center gap-4 mb-8">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelProject(projId)}>
                  <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -3835,7 +3835,7 @@ export function ProfilePage({
         };
 
         return (
-          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
             <div className="flex items-center gap-4 mb-8">
               <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => handleCancelExperience(expId)}>
                  <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -4885,7 +4885,7 @@ export function ProfilePage({
       };
 
       return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -5631,7 +5631,7 @@ export function ProfilePage({
       };
 
       return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
           <div className="flex items-center gap-4 mb-8">
             <Button
               variant="ghost"
@@ -5907,7 +5907,7 @@ export function ProfilePage({
       }
 
       return (
-        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in slide-in-from-bottom-4 duration-300">
+        <div className="max-w-4xl mx-auto w-full py-8 px-4 animate-in fade-in duration-150">
           <div className="flex items-center gap-4 mb-8">
             <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted/60" onClick={() => setEditingField(null)}>
                <ArrowLeft className="size-6 text-foreground rtl:rotate-180" />
@@ -6158,8 +6158,8 @@ export function ProfilePage({
         className={cn(
           "max-w-4xl mx-auto w-full py-8",
           activeDocCategory
-            ? "px-4 animate-in slide-in-from-bottom-4 duration-300"
-            : "px-4 sm:px-8 animate-in fade-in duration-300"
+            ? "px-4 animate-in fade-in duration-150"
+            : "px-4 sm:px-8 animate-in fade-in duration-150"
         )}
       >
         {!activeDocCategory && (

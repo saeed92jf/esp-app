@@ -163,7 +163,7 @@ export function CustomersDirectoryView({
   };
 
   return (
-    <div className="space-y-6 w-full" dir={isRtl ? "rtl" : "ltr"}>
+    <div className="space-y-6 w-full animate-in fade-in duration-150" dir={isRtl ? "rtl" : "ltr"}>
       {/* Top Banner / Hero Card */}
       <div className="relative overflow-hidden rounded-3xl border border-border/70 bg-card/60 backdrop-blur-sm p-6 sm:p-8 space-y-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
