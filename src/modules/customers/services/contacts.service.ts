@@ -131,6 +131,31 @@ class ContactsService {
     return false;
   }
 
+  public toggleKeyContact(id: string): boolean {
+    this.load();
+    const contact = this.contacts.find((c) => c.id === id);
+    if (contact) {
+      contact.isKeyContact = !contact.isKeyContact;
+      this.save();
+      return contact.isKeyContact;
+    }
+    return false;
+  }
+
+  public updateContact(id: string, updates: Partial<CompanyContact>): CompanyContact | null {
+    this.load();
+    const index = this.contacts.findIndex((c) => c.id === id);
+    if (index !== -1) {
+      this.contacts[index] = {
+        ...this.contacts[index],
+        ...updates,
+      };
+      this.save();
+      return this.contacts[index];
+    }
+    return null;
+  }
+
   public getCompaniesWithContacts(): { nameFa: string; count: number }[] {
     this.load();
     const map = new Map<string, number>();
