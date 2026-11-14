@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import {
   Building2,
   Search,
@@ -64,12 +65,21 @@ export function CustomersDirectoryView({
   const [isLoading, setIsLoading] = useState(() => !cachedInitial);
   const [isPending, startTransition] = useTransition();
 
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams.get("search");
+
   // Filters
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => urlSearch || "");
   const [selectedIndustry, setSelectedIndustry] = useState<string>("ALL");
   const [selectedCity, setSelectedCity] = useState<string>("ALL");
   const [onlyWithLogo, setOnlyWithLogo] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
+
+  useEffect(() => {
+    if (urlSearch !== null && urlSearch !== undefined && urlSearch !== search) {
+      setSearch(urlSearch);
+    }
+  }, [urlSearch]);
 
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);

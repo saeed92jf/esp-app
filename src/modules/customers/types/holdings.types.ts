@@ -21,6 +21,8 @@ export interface HoldingSubsidiary {
   products?: string[];
   isCustomerOfEsp?: boolean;
   plantId?: string; // Links to PlantFacility in plants catalog
+  logoUrl?: string;
+  customerDirectoryId?: string;
 }
 
 export interface InformationSource {
