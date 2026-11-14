@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AppHeader } from "@/components/layout/app-header";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { useLocale, useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { PersonnelCard } from "./PersonnelCard";
 import { PersonnelDetailModal } from "./PersonnelDetailModal";
 import { DirectorySidebar } from "./DirectorySidebar";
@@ -35,10 +36,13 @@ interface DepartmentInfo {
   count: number;
 }
 
-export function PersonnelDirectory() {
+export function PersonnelDirectory({ initialTab }: { initialTab?: "directory" | "settings" } = {}) {
   const locale = useLocale();
   const isFa = locale === "fa";
   const t = useTranslations("Directory");
+  const pathname = usePathname();
+
+  const isSettingsRoute = pathname.endsWith("/directory/settings") || pathname.endsWith("/settings");
 
   const [personnel, setPersonnel] = useState<PersonnelItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +57,7 @@ export function PersonnelDirectory() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"directory" | "settings">("directory");
+  const activeTab: "directory" | "settings" = initialTab || (isSettingsRoute ? "settings" : "directory");
 
   // Fetch personnel directory from API
   const fetchDirectory = async () => {
@@ -213,7 +217,6 @@ export function PersonnelDirectory() {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
           activeTab={activeTab}
-          onTabChange={setActiveTab}
         />
 
         {/* Main Content Area: Centered with compact, elegant width (max-w-5xl) */}
@@ -282,10 +285,12 @@ export function PersonnelDirectory() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setActiveTab("directory")}
-                  className="rounded-xl text-xs"
+                  asChild
+                  className="rounded-xl text-xs cursor-pointer"
                 >
-                  {t("settings.backToDirectory")}
+                  <Link href="/directory">
+                    {t("settings.backToDirectory")}
+                  </Link>
                 </Button>
               </div>
             ) : (

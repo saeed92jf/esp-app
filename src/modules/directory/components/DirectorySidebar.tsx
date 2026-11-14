@@ -3,6 +3,7 @@
 import React from "react";
 import { Users, Settings } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -15,7 +16,7 @@ export interface DirectorySidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   activeTab: "directory" | "settings";
-  onTabChange: (tab: "directory" | "settings") => void;
+  onTabChange?: (tab: "directory" | "settings") => void;
 }
 
 export function DirectorySidebar({
@@ -34,12 +35,14 @@ export function DirectorySidebar({
       id: "directory" as const,
       label: t("sidebar.directory"),
       icon: Users,
+      href: "/directory",
       isActive: activeTab === "directory",
     },
     {
       id: "settings" as const,
       label: t("sidebar.settings"),
       icon: Settings,
+      href: "/directory/settings",
       isActive: activeTab === "settings",
     },
   ];
@@ -77,11 +80,11 @@ export function DirectorySidebar({
               const isActive = item.isActive;
 
               const buttonContent = (
-                <button
+                <Link
                   key={item.id}
-                  type="button"
+                  href={item.href}
                   onClick={() => {
-                    onTabChange(item.id);
+                    onTabChange?.(item.id);
                     if (
                       typeof window !== "undefined" &&
                       window.innerWidth < 768
@@ -124,7 +127,7 @@ export function DirectorySidebar({
                   >
                     {item.label}
                   </span>
-                </button>
+                </Link>
               );
 
               if (!sidebarOpen) {
