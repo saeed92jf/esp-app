@@ -79,6 +79,7 @@ export interface BugReportItem {
   screenshotDataUrl?: string | null;
   attachments: AttachmentItem[];
   environment?: SmartEnvironment;
+  inspectedElement?: any;
   comments: CommentItem[];
   activityLogs: ActivityLogItem[];
   createdAt: string;

@@ -1,6 +1,6 @@
 // src/components/global-quick-actions/quick-actions-registry.ts
 import React from "react";
-import { Bug, Headset, MessageSquare, Lightbulb } from "lucide-react";
+import { Bug, Headset, MessageSquare, Lightbulb, Target } from "lucide-react";
 import type { User } from "@/types/auth";
 
 export interface QuickActionDef {
@@ -38,6 +38,21 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
     order: 1,
   },
   {
+    id: "bug-hunter",
+    titleEn: "Element Hunter",
+    titleFa: "نشانه‌گیر خطا (Hunter)",
+    descriptionEn: "Point and inspect any element on the page.",
+    descriptionFa: "نشانه‌گیری مستقیم المان یا بخش مشکل‌دار در صفحه.",
+    icon: Target,
+    accentColor: "#EC2527",
+    badge: {
+      type: "text",
+      textEn: "Inspect",
+      textFa: "اشاره",
+    },
+    order: 2,
+  },
+  {
     id: "support-request",
     titleEn: "Support Request",
     titleFa: "درخواست پشتیبانی",
@@ -50,7 +65,7 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
       textEn: "24/7",
       textFa: "پشتیبانی",
     },
-    order: 2,
+    order: 3,
   },
   {
     id: "feedback",
@@ -65,7 +80,7 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
       textEn: "Rate",
       textFa: "امتیازدهی",
     },
-    order: 3,
+    order: 4,
   },
   {
     id: "suggest-idea",
@@ -80,7 +95,7 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
       textEn: "New",
       textFa: "نوآوری",
     },
-    order: 4,
+    order: 5,
   },
 ];
 

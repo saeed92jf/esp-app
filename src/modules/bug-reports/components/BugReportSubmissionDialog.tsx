@@ -17,6 +17,8 @@ import {
   Info,
   Monitor,
   Sparkles,
+  Target,
+  Crosshair,
 } from "lucide-react";
 import {
   Dialog,
@@ -38,7 +40,8 @@ import {
   APP_MODULE_NAMES,
   detectActiveModule,
 } from "../utils/smart-capture";
-import type { BugCategory, BugSeverity, BugAttachment } from "../types";
+import type { BugCategory, BugSeverity, BugAttachment, InspectedElementData } from "../types";
+import { ElementHunterOverlay } from "./ElementHunterOverlay";
 
 const CATEGORIES: BugCategory[] = [
   "Functionality",
@@ -62,12 +65,14 @@ interface BugReportSubmissionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmitted?: (ticketNumber: string) => void;
+  startWithHunter?: boolean;
 }
 
 export function BugReportSubmissionDialog({
   open,
   onOpenChange,
   onSubmitted,
+  startWithHunter = false,
 }: BugReportSubmissionDialogProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -82,6 +87,8 @@ export function BugReportSubmissionDialog({
 
   const [isCapturingScreen, setIsCapturingScreen] = useState(false);
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
+  const [inspectedElement, setInspectedElement] = useState<InspectedElementData | null>(null);
+  const [isHunting, setIsHunting] = useState(false);
   const [attachments, setAttachments] = useState<BugAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -89,15 +96,35 @@ export function BugReportSubmissionDialog({
   const [error, setError] = useState<string | null>(null);
   const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
 
-  // Initialize auto-detected module
+  // Initialize auto-detected module & hunter mode if requested
   useEffect(() => {
     if (open) {
       const mod = detectActiveModule(pathname);
       setSelectedModule(mod.id);
       setError(null);
       setSubmittedTicket(null);
+      if (startWithHunter) {
+        setIsHunting(true);
+      }
+    } else {
+      setIsHunting(false);
     }
-  }, [open, pathname]);
+  }, [open, pathname, startWithHunter]);
+
+  const handleElementSelected = (data: InspectedElementData) => {
+    setInspectedElement(data);
+    setIsHunting(false);
+
+    // If title is not set yet, provide helpful pre-filled title
+    if (!title.trim()) {
+      const tagLabel = `<${data.tagName}${data.id ? `#${data.id}` : ""}>`;
+      setTitle(
+        isRtl
+          ? `اشکال در المان ${tagLabel}`
+          : `Issue with element ${tagLabel}`
+      );
+    }
+  };
 
   const handleCaptureScreen = async () => {
     setIsCapturingScreen(true);
@@ -162,6 +189,7 @@ export function BugReportSubmissionDialog({
         screenshotDataUrl: screenshotDataUrl || undefined,
         attachments,
         environment: env,
+        inspectedElement: inspectedElement || undefined,
         reporterId: user?.id || "u-guest",
         reporterName: user?.fullName || user?.name || "Anonymous User",
         reporterEmail: user?.email || "",
@@ -183,6 +211,8 @@ export function BugReportSubmissionDialog({
     setCategory("Functionality");
     setSeverity("Medium");
     setScreenshotDataUrl(null);
+    setInspectedElement(null);
+    setIsHunting(false);
     setAttachments([]);
     setError(null);
     setSubmittedTicket(null);
@@ -190,7 +220,15 @@ export function BugReportSubmissionDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      {/* Precision Element Hunter Active Overlay */}
+      <ElementHunterOverlay
+        active={isHunting}
+        onSelectElement={handleElementSelected}
+        onCancel={() => setIsHunting(false)}
+      />
+
+      <Dialog open={open && !isHunting} onOpenChange={onOpenChange}>
       <DialogContent
         data-quick-actions-modal="true"
         className="sm:max-w-[620px] max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-[20px] border-border/80 shadow-2xl"
@@ -275,6 +313,110 @@ export function BugReportSubmissionDialog({
                   : "Browser, screen viewport, and current page context will be attached automatically."}
               </div>
             </div>
+
+            {/* Precision Element Hunter Section */}
+            {inspectedElement ? (
+              <div className="p-3.5 rounded-xl border border-red-500/50 bg-red-500/[0.04] space-y-2.5 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-red-600 dark:text-red-400">
+                    <Target className="size-4 shrink-0" />
+                    <span>
+                      {isRtl
+                        ? "المان نشانه‌گیری‌شده در صفحه (Inspected Element)"
+                        : "Inspected DOM Element Target"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsHunting(true)}
+                      className="h-7 px-2.5 text-[11px] text-red-600 hover:text-red-700 hover:bg-red-500/10 rounded-lg gap-1.5 cursor-pointer"
+                    >
+                      <Crosshair className="size-3.5" />
+                      <span>{isRtl ? "نشانه‌گیری مجدد" : "Re-target"}</span>
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setInspectedElement(null)}
+                      className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                      title={isRtl ? "حذف المان" : "Remove element"}
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tag & Selector Badge */}
+                <div className="p-2 px-2.5 rounded-lg bg-background border border-border/80 font-mono text-[11px] text-foreground flex items-center justify-between gap-2 overflow-x-auto shadow-2xs">
+                  <span className="font-bold text-red-600 dark:text-red-400 shrink-0">
+                    &lt;{inspectedElement.tagName}
+                    {inspectedElement.id ? `#${inspectedElement.id}` : ""}
+                    &gt;
+                  </span>
+                  <span className="text-muted-foreground truncate text-[10.5px]">
+                    {inspectedElement.selector}
+                  </span>
+                </div>
+
+                {/* Geometry & Text Info */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+                  <div className="p-2 rounded-lg bg-background/70 border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">
+                      {isRtl ? "موقعیت در صفحه" : "Coordinates"}
+                    </span>
+                    <span className="font-mono font-bold text-foreground">
+                      X: {inspectedElement.rect.left}px, Y: {inspectedElement.rect.top}px
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-background/70 border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">
+                      {isRtl ? "ابعاد المان" : "Dimensions"}
+                    </span>
+                    <span className="font-mono font-bold text-foreground">
+                      {inspectedElement.rect.width} × {inspectedElement.rect.height} px
+                    </span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1 p-2 rounded-lg bg-background/70 border border-border/60">
+                    <span className="text-muted-foreground block text-[10px]">
+                      {isRtl ? "متن / محتوای المان" : "Content Text"}
+                    </span>
+                    <span className="font-medium text-foreground truncate block">
+                      {inspectedElement.textSnippet || (isRtl ? "فاقد متن" : "No text")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 rounded-xl border border-dashed border-red-500/40 bg-red-500/[0.02] hover:bg-red-500/[0.04] transition-colors flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="size-8 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+                    <Target className="size-4" />
+                  </div>
+                  <div className="text-start min-w-0">
+                    <div className="text-xs font-bold text-foreground">
+                      {isRtl ? "نشانه‌گیری مستقیم المان در صفحه" : "Inspect Element on Page"}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      {isRtl
+                        ? "با نشانه‌گیر روی دکمه، جدول یا بخش خطادار کلیک کنید تا مشخصات آن ثبت شود."
+                        : "Click on any button, table, or section to automatically capture its metadata."}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsHunting(true)}
+                  className="rounded-lg h-8 px-3 text-xs font-semibold gap-1.5 border-red-500/30 text-red-600 hover:bg-red-500 hover:text-white shrink-0 cursor-pointer transition-all"
+                >
+                  <Crosshair className="size-3.5" />
+                  <span>{isRtl ? "فعال‌سازی نشانه‌گیر" : "Start Hunter"}</span>
+                </Button>
+              </div>
+            )}
 
             {/* Title */}
             <div className="space-y-1.5">
@@ -505,6 +647,7 @@ export function BugReportSubmissionDialog({
         )}
       </DialogContent>
     </Dialog>
+    </>
   );
 }
 

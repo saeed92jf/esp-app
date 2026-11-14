@@ -24,6 +24,32 @@ export type BugCategory =
   | "Security"
   | "Other";
 
+export interface InspectedElementData {
+  tagName: string;
+  id?: string;
+  className?: string;
+  selector: string;
+  xpath?: string;
+  textSnippet?: string;
+  role?: string;
+  ariaLabel?: string;
+  rect: {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    bottom: number;
+    right: number;
+  };
+  viewport: {
+    width: number;
+    height: number;
+    scrollX: number;
+    scrollY: number;
+  };
+  htmlSnippet?: string;
+}
+
 export interface SmartEnvironmentData {
   pageUrl?: string;
   moduleId?: string;
@@ -91,6 +117,7 @@ export interface BugReport {
   screenshotDataUrl?: string | null;
   attachments: BugAttachment[];
   environment?: SmartEnvironmentData;
+  inspectedElement?: InspectedElementData;
   comments: BugComment[];
   activityLogs: BugActivityLog[];
   createdAt: string;

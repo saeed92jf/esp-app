@@ -22,6 +22,10 @@ import {
   FileText,
   Activity,
   Layers,
+  Target,
+  Crosshair,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +74,15 @@ export function BugReportDetailView({
   const [isUpdatingAssignee, setIsUpdatingAssignee] = useState(false);
 
   const [screenshotModalOpen, setScreenshotModalOpen] = useState(false);
+  const [copiedSelector, setCopiedSelector] = useState(false);
+
+  const handleCopySelector = (selector: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(selector);
+      setCopiedSelector(true);
+      setTimeout(() => setCopiedSelector(false), 2000);
+    }
+  };
 
   const isStaff =
     user?.role === "superadmin" ||
@@ -454,6 +467,81 @@ export function BugReportDetailView({
                     ? isRtl ? "ارجاع‌شده به شما" : "Assigned to You"
                     : isRtl ? "ارجاع تیکت به من" : "Assign to Me"}
                 </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Inspected DOM Element Card (Bug Hunter) */}
+          {report.inspectedElement && (
+            <div className="p-5 rounded-2xl border border-red-500/40 bg-red-500/[0.03] shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                  <Target className="size-4 shrink-0" />
+                  <span>{isRtl ? "المان هدف در صفحه (Bug Hunter)" : "Inspected Target Element"}</span>
+                </h3>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopySelector(report.inspectedElement!.selector)}
+                  className="h-6 px-2 text-[10.5px] rounded-md gap-1 border-border/80 cursor-pointer"
+                >
+                  {copiedSelector ? (
+                    <>
+                      <Check className="size-3 text-emerald-500" />
+                      <span className="text-emerald-600">{isRtl ? "کپی شد" : "Copied"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-3" />
+                      <span>{isRtl ? "کپی Selector" : "Copy Selector"}</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {/* Tag & Selector */}
+              <div className="p-2.5 rounded-xl bg-background border border-border font-mono text-xs overflow-x-auto shadow-2xs">
+                <span className="font-bold text-red-600 dark:text-red-400 me-2">
+                  &lt;{report.inspectedElement.tagName}
+                  {report.inspectedElement.id ? `#${report.inspectedElement.id}` : ""}
+                  &gt;
+                </span>
+                <span className="text-muted-foreground text-[11px]">
+                  {report.inspectedElement.selector}
+                </span>
+              </div>
+
+              {/* Coordinates, Dimensions, XPath */}
+              <div className="divide-y divide-border/40 text-xs">
+                <div className="py-2 flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "موقعیت در صفحه:" : "Coordinates:"}</span>
+                  <span className="font-mono font-semibold text-foreground">
+                    X: {report.inspectedElement.rect.left}px, Y: {report.inspectedElement.rect.top}px
+                  </span>
+                </div>
+                <div className="py-2 flex items-center justify-between">
+                  <span className="text-muted-foreground">{isRtl ? "ابعاد فیزیکی:" : "Dimensions:"}</span>
+                  <span className="font-mono font-semibold text-foreground">
+                    {report.inspectedElement.rect.width} × {report.inspectedElement.rect.height} px
+                  </span>
+                </div>
+                {report.inspectedElement.textSnippet && (
+                  <div className="py-2 flex flex-col gap-1">
+                    <span className="text-muted-foreground">{isRtl ? "متن / محتوا:" : "Content Text:"}</span>
+                    <span className="p-2 rounded-lg bg-muted/40 font-mono text-[11px] text-foreground break-all">
+                      {report.inspectedElement.textSnippet}
+                    </span>
+                  </div>
+                )}
+                {report.inspectedElement.xpath && (
+                  <div className="py-2 flex flex-col gap-1">
+                    <span className="text-muted-foreground">XPath:</span>
+                    <span className="p-1.5 rounded-lg bg-muted/40 font-mono text-[10px] text-muted-foreground break-all">
+                      {report.inspectedElement.xpath}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
