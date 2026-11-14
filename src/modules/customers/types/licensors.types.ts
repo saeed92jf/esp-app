@@ -8,7 +8,10 @@ export type LicensorCategory =
   | "aromatics"
   | "fertilizer_urea"
   | "chlor_alkali"
-  | "refining_gas";
+  | "refining_gas"
+  | "general_epc"
+  | "polymers_rubber"
+  | "specialty_chemicals";
 
 export interface LicensorPlantRef {
   plantId: string;
@@ -47,5 +50,23 @@ export interface Licensor {
   licensedPlants: LicensorPlantRef[];
   espRelevanceFa: string;
   sources: LicensorSource[];
+
+  // Extended Corporate, Contact & Operational Attributes
+  licenseId?: number;
+  addressEn?: string;
+  addressFa?: string;
+  locationEn?: string;
+  locationFa?: string;
+  postCode?: string;
+  telNo?: string;
+  email?: string;
+  linkedIn?: string;
+  currentSituationEn?: string;
+  currentSituationFa?: string;
+  historyEn?: string;
+  historyFa?: string;
+  contactPerson?: string;
+  contactPersonEmail?: string;
+  mobileContactPerson?: string;
 }
 

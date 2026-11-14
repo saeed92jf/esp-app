@@ -26,11 +26,24 @@ import {
   Trash2,
   UploadCloud,
   Wrench,
+  Phone,
+  Mail,
+  Copy,
+  BookOpen,
+  FileText,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +69,18 @@ const CATEGORY_TABS: { id: LicensorCategory; labelFa: string; labelEn: string }[
   { id: "fertilizer_urea", labelFa: "اوره و آمونیاک", labelEn: "Urea & Fertilizer" },
   { id: "chlor_alkali", labelFa: "کلرآلکالی و PVC", labelEn: "Chlor-Alkali & PVC" },
   { id: "refining_gas", labelFa: "پالایش و فرآورش گاز", labelEn: "Refining & Gas" },
+  { id: "polymers_rubber", labelFa: "لاستیک و الاستومرها", labelEn: "Rubber & Polymers" },
+  { id: "specialty_chemicals", labelFa: "مواد شیمیایی تخصصی", labelEn: "Specialty Chemicals" },
+  { id: "general_epc", labelFa: "پیمانکاری عمومی EPC", labelEn: "General EPC" },
 ];
+
+function LinkedInIcon({ className }: { className?: string }) {
+  return (
+    <svg className={cn("size-3 fill-current", className)} viewBox="0 0 24 24">
+      <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+    </svg>
+  );
+}
 
 function getLicensorDisplayName(licensor: Licensor, isRtl: boolean): string {
   if (isRtl) {
@@ -88,8 +112,19 @@ export function LicensorsDirectoryView() {
   const [editingLogoLicensor, setEditingLogoLicensor] = useState<Licensor | null>(null);
   const [logoInputValue, setLogoInputValue] = useState("");
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [historyLang, setHistoryLang] = useState<"fa" | "en">(isRtl ? "fa" : "en");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const detailsRef = useRef<HTMLDivElement>(null);
+
+  const handleCopy = (text: string, fieldId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!text) return;
+    navigator.clipboard.writeText(text);
+    setCopiedField(fieldId);
+    toast.success(isRtl ? "کپی شد" : "Copied to clipboard");
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const handleSelectLicensor = (licensor: Licensor) => {
     setSelectedLicensor(licensor);
@@ -206,7 +241,11 @@ export function LicensorsDirectoryView() {
         licensor.nameEn.toLowerCase().includes(q) ||
         licensor.countryFa.toLowerCase().includes(q) ||
         licensor.countryEn.toLowerCase().includes(q) ||
-        licensor.headquartersFa.toLowerCase().includes(q);
+        licensor.headquartersFa.toLowerCase().includes(q) ||
+        (licensor.headquartersEn && licensor.headquartersEn.toLowerCase().includes(q)) ||
+        (licensor.addressEn && licensor.addressEn.toLowerCase().includes(q)) ||
+        (licensor.locationEn && licensor.locationEn.toLowerCase().includes(q)) ||
+        (licensor.licenseId && String(licensor.licenseId).includes(q));
 
       const matchTech = licensor.keyTechnologies.some((t) => t.toLowerCase().includes(q));
 
@@ -621,6 +660,7 @@ export function LicensorsDirectoryView() {
                     <Badge variant="secondary" className="text-[11px] px-2.5 py-0.5 font-semibold gap-1.5">
                       <Globe className="size-3 text-primary" />
                       <span>{selectedLicensor.countryFa}</span>
+                      <span className="text-[10px] text-muted-foreground font-sans">({selectedLicensor.countryEn})</span>
                     </Badge>
 
                     <Badge variant="outline" className="text-[11px] px-2.5 py-0.5 font-medium tabular-nums">
@@ -628,24 +668,289 @@ export function LicensorsDirectoryView() {
                       <span>{isRtl ? `تأسیس: ${formatLocaleNumber(selectedLicensor.establishedYear, true)}` : `Est. ${selectedLicensor.establishedYear}`}</span>
                     </Badge>
 
-                    <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                      <MapPin className="size-3 shrink-0" />
-                      <span className="truncate max-w-[200px]">{selectedLicensor.headquartersFa}</span>
-                    </span>
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        "text-[10.5px] py-0.5 px-2 font-bold gap-1 rounded-md",
+                        (!selectedLicensor.currentSituationEn || selectedLicensor.currentSituationEn.toLowerCase() === "active")
+                          ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25"
+                          : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25"
+                      )}
+                    >
+                      <span className="size-1.5 rounded-full bg-current" />
+                      <span>{selectedLicensor.currentSituationFa || (isRtl ? "فعال و معتبر" : "Active")}</span>
+                    </Badge>
                   </div>
                 </div>
 
-                {/* 3. Process Description */}
-                <div className="space-y-1.5 pt-2 border-t border-border/50">
-                  <span className="text-[11px] font-bold text-foreground block">
-                    {isRtl ? "معرفی و سوابق تخصصی فرآیند:" : "Process Overview:"}
-                  </span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {selectedLicensor.descriptionFa}
-                  </p>
+                {/* 3. Bilingual Specifications Table (جدول مشخصات شرکتی و تماس دو زبانه) */}
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                      <FileText className="size-3.5 text-primary" />
+                      <span>{isRtl ? "جدول مشخصات شرکتی و ارتباطی:" : "Corporate & Contact Specs:"}</span>
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-sans">Bilingual / دو زبانه</span>
+                  </div>
+
+                  <div className="rounded-xl border border-border/70 overflow-hidden bg-background/50">
+                    <Table className="text-xs">
+                      <TableBody>
+                        {/* Row: Official Name */}
+                        <TableRow className="border-border/50 hover:bg-muted/40">
+                          <TableCell className="w-[38%] font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                            <span className="block text-[11px] text-foreground font-bold">{isRtl ? "نام رسمی" : "Official Name"}</span>
+                            <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Official Name" : "نام رسمی"}</span>
+                          </TableCell>
+                          <TableCell className="py-2 px-3 align-top font-sans">
+                            <div className="font-bold text-foreground text-xs leading-snug">
+                              {selectedLicensor.nameEn}
+                            </div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 font-sans">
+                              {selectedLicensor.nameFa}
+                            </div>
+                            {selectedLicensor.licenseId && (
+                              <span className="inline-block mt-1 text-[9.5px] font-mono font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border/60">
+                                License #{selectedLicensor.licenseId}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Row: Country & Origin */}
+                        <TableRow className="border-border/50 hover:bg-muted/40">
+                          <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                            <span className="block text-[11px] text-foreground font-bold">{isRtl ? "کشور مبدأ" : "Country / Origin"}</span>
+                            <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Country of Origin" : "کشور مبدأ"}</span>
+                          </TableCell>
+                          <TableCell className="py-2 px-3 align-top">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <Badge variant="outline" className="text-[10.5px] py-0 px-2 font-semibold border-primary/30 text-primary">
+                                {selectedLicensor.countryCode}
+                              </Badge>
+                              <span className="font-semibold text-foreground text-xs">{selectedLicensor.countryFa}</span>
+                              <span className="text-[11px] text-muted-foreground font-sans">({selectedLicensor.countryEn})</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Row: Headquarters / Location */}
+                        <TableRow className="border-border/50 hover:bg-muted/40">
+                          <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                            <span className="block text-[11px] text-foreground font-bold">{isRtl ? "مقر مرکزی" : "Headquarters"}</span>
+                            <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Headquarters" : "مرکز اصلی"}</span>
+                          </TableCell>
+                          <TableCell className="py-2 px-3 align-top">
+                            <span className="text-foreground font-medium text-xs flex items-center gap-1.5">
+                              <MapPin className="size-3 text-muted-foreground shrink-0" />
+                              <span>{selectedLicensor.headquartersFa || selectedLicensor.locationEn}</span>
+                            </span>
+                            {selectedLicensor.headquartersEn && selectedLicensor.headquartersEn !== selectedLicensor.headquartersFa && (
+                              <span className="text-[11px] text-muted-foreground font-sans block mt-0.5 ps-4.5">
+                                {selectedLicensor.headquartersEn}
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Row: Address & Postal Code */}
+                        {(selectedLicensor.addressEn || selectedLicensor.locationEn) && (
+                          <TableRow className="border-border/50 hover:bg-muted/40">
+                            <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                              <span className="block text-[11px] text-foreground font-bold">{isRtl ? "نشانی پستی" : "Address & Postal"}</span>
+                              <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Postal Address" : "آدرس رسمی"}</span>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 align-top">
+                              <span className="text-foreground text-xs font-sans block leading-relaxed" dir="ltr">
+                                {selectedLicensor.addressEn || selectedLicensor.locationEn}
+                              </span>
+                              {selectedLicensor.postCode && (
+                                <span className="text-[10.5px] text-muted-foreground font-mono block mt-0.5">
+                                  Postal Code: {selectedLicensor.postCode}
+                                </span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )}
+
+                        {/* Row: Operating Status / Situation */}
+                        <TableRow className="border-border/50 hover:bg-muted/40">
+                          <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                            <span className="block text-[11px] text-foreground font-bold">{isRtl ? "وضعیت فعالیت" : "Current Status"}</span>
+                            <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Operating Situation" : "وضعیت کنونی"}</span>
+                          </TableCell>
+                          <TableCell className="py-2 px-3 align-top">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "text-[10.5px] py-0.5 px-2 font-bold gap-1 rounded-md",
+                                  (!selectedLicensor.currentSituationEn || selectedLicensor.currentSituationEn.toLowerCase() === "active")
+                                    ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25"
+                                    : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25"
+                                )}
+                              >
+                                <span className="size-1.5 rounded-full bg-current" />
+                                <span>{selectedLicensor.currentSituationFa || (isRtl ? "فعال و معتبر" : "Active")}</span>
+                              </Badge>
+                              {selectedLicensor.currentSituationEn && selectedLicensor.currentSituationEn.toLowerCase() !== "active" && (
+                                <span className="text-[10.5px] text-muted-foreground font-sans block">
+                                  ({selectedLicensor.currentSituationEn})
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Row: Direct Telephone */}
+                        {selectedLicensor.telNo && (
+                          <TableRow className="border-border/50 hover:bg-muted/40">
+                            <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                              <span className="block text-[11px] text-foreground font-bold">{isRtl ? "تلفن تماس" : "Telephone"}</span>
+                              <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Direct Phone" : "تماس مستقیم"}</span>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 align-top">
+                              <div className="flex items-center justify-between gap-2">
+                                <a
+                                  href={`tel:${selectedLicensor.telNo}`}
+                                  dir="ltr"
+                                  className="text-xs font-bold text-foreground hover:text-primary font-mono inline-flex items-center gap-1.5"
+                                >
+                                  <Phone className="size-3 text-muted-foreground" />
+                                  <span>{selectedLicensor.telNo}</span>
+                                </a>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  onClick={(e) => handleCopy(selectedLicensor.telNo || "", "tel", e)}
+                                  className="size-6 text-muted-foreground hover:text-foreground rounded cursor-pointer"
+                                  title={isRtl ? "کپی تلفن" : "Copy"}
+                                >
+                                  {copiedField === "tel" ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+
+                        {/* Row: Email */}
+                        {selectedLicensor.email && (
+                          <TableRow className="border-border/50 hover:bg-muted/40">
+                            <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                              <span className="block text-[11px] text-foreground font-bold">{isRtl ? "پست الکترونیک" : "Official Email"}</span>
+                              <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "E-Mail" : "ایمیل رسمی"}</span>
+                            </TableCell>
+                            <TableCell className="py-2 px-3 align-top">
+                              <div className="flex items-center justify-between gap-2">
+                                <a
+                                  href={`mailto:${selectedLicensor.email}`}
+                                  dir="ltr"
+                                  className="text-xs font-semibold text-primary hover:underline font-sans truncate max-w-[200px] inline-flex items-center gap-1.5"
+                                >
+                                  <Mail className="size-3 text-muted-foreground shrink-0" />
+                                  <span>{selectedLicensor.email}</span>
+                                </a>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  onClick={(e) => handleCopy(selectedLicensor.email || "", "mail", e)}
+                                  className="size-6 text-muted-foreground hover:text-foreground rounded cursor-pointer"
+                                  title={isRtl ? "کپی ایمیل" : "Copy"}
+                                >
+                                  {copiedField === "mail" ? <Check className="size-3 text-emerald-500" /> : <Copy className="size-3" />}
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+
+                        {/* Row: Official Web & Social */}
+                        <TableRow className="hover:bg-muted/40">
+                          <TableCell className="font-semibold text-muted-foreground bg-muted/20 py-2 px-3 align-top">
+                            <span className="block text-[11px] text-foreground font-bold">{isRtl ? "پایگاه و شبکه‌ها" : "Web & Links"}</span>
+                            <span className="block text-[9.5px] text-muted-foreground font-sans">{isRtl ? "Website / Links" : "وبگاه رسمی"}</span>
+                          </TableCell>
+                          <TableCell className="py-2 px-3 align-top">
+                            <div className="flex items-center gap-2.5 flex-wrap">
+                              {selectedLicensor.website && (
+                                <a
+                                  href={selectedLicensor.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+                                >
+                                  <Globe className="size-3" />
+                                  <span>{isRtl ? "وب‌سایت رسمی" : "Website"}</span>
+                                  <ExternalLink className="size-2.5" />
+                                </a>
+                              )}
+                              {selectedLicensor.linkedIn && (
+                                <a
+                                  href={selectedLicensor.linkedIn}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                  <LinkedInIcon className="size-3" />
+                                  <span>LinkedIn</span>
+                                  <ExternalLink className="size-2.5" />
+                                </a>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
 
-                {/* 4. Euroslot Pars Equipment Relevance Box */}
+                {/* 4. Bilingual History & Process Overview (تاریخچه و معرفی دو زبانه) */}
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
+                      <BookOpen className="size-3.5 text-primary" />
+                      <span>{isRtl ? "تاریخچه و معرفی فرآیندی:" : "History & Process Overview:"}</span>
+                    </span>
+                    <div className="flex items-center gap-1 bg-muted/50 p-0.5 rounded-lg border border-border/60">
+                      <button
+                        type="button"
+                        onClick={() => setHistoryLang("fa")}
+                        className={cn(
+                          "px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer",
+                          historyLang === "fa" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        فارسی
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHistoryLang("en")}
+                        className={cn(
+                          "px-2 py-0.5 text-[10px] font-bold rounded transition-all cursor-pointer font-sans",
+                          historyLang === "en" ? "bg-background text-foreground shadow-2xs" : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        English
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/60 text-xs leading-relaxed">
+                    {historyLang === "fa" ? (
+                      <p className="text-foreground/90 leading-relaxed text-justify">
+                        {selectedLicensor.descriptionFa}
+                      </p>
+                    ) : (
+                      <p className="text-foreground/90 font-sans leading-relaxed text-justify" dir="ltr">
+                        {selectedLicensor.historyEn || selectedLicensor.descriptionEn || selectedLicensor.descriptionFa}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 5. Euroslot Pars Equipment Relevance Box */}
                 <div className="rounded-2xl bg-primary/[0.05] border border-primary/25 p-3.5 space-y-1.5">
                   <div className="flex items-center gap-2 text-xs font-bold text-primary">
                     <Wrench className="size-4 shrink-0" />
@@ -656,7 +961,7 @@ export function LicensorsDirectoryView() {
                   </p>
                 </div>
 
-                {/* 5. Key Technologies */}
+                {/* 6. Key Technologies */}
                 <div className="space-y-2 pt-2 border-t border-border/50">
                   <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
                     <Cpu className="size-3.5 text-primary" />
@@ -675,7 +980,7 @@ export function LicensorsDirectoryView() {
                   </div>
                 </div>
 
-                {/* 6. Licensed Plants in Iran */}
+                {/* 7. Licensed Plants Table (جدول پلنت‌های لایسنس‌شده) */}
                 <div className="space-y-2.5 pt-2 border-t border-border/50">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
@@ -687,53 +992,62 @@ export function LicensorsDirectoryView() {
                     </Badge>
                   </div>
 
-                  <div className="space-y-2">
-                    {selectedLicensor.licensedPlants.map((p, pIdx) => (
-                      <div
-                        key={pIdx}
-                        className="p-2.5 rounded-xl border border-border/70 bg-muted/20 hover:border-primary/40 hover:bg-muted/40 transition-all space-y-1"
-                      >
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-foreground truncate">
-                            {p.plantNameFa}
-                          </span>
-                          {p.year && (
-                            <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-                              {p.year}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between gap-2 text-[10.5px] text-muted-foreground">
-                          <span className="truncate">{p.unitTypeFa}</span>
-                          {p.nominalCapacityFa && (
-                            <span className="text-foreground/90 font-medium shrink-0 font-sans">
-                              {p.nominalCapacityFa}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="pt-1 flex items-center justify-between border-t border-border/40 text-[10.5px]">
-                          <Link
-                            href={`/customers?search=${encodeURIComponent(p.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
-                            className="text-primary hover:underline inline-flex items-center gap-1 font-semibold truncate"
-                          >
-                            <span>{p.complexNameFa}</span>
-                            <ArrowUpRight className="size-3 shrink-0" />
-                          </Link>
-
-                          {p.holdingNameFa && (
-                            <span className="text-muted-foreground/80 truncate max-w-[140px]" title={p.holdingNameFa}>
-                              {p.holdingNameFa}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  {selectedLicensor.licensedPlants.length > 0 ? (
+                    <div className="rounded-xl border border-border/70 overflow-hidden bg-background/50">
+                      <Table className="text-xs">
+                        <TableHeader className="bg-muted/40">
+                          <TableRow className="border-border/60">
+                            <TableHead className="text-[10.5px] font-bold py-2 px-2.5">{isRtl ? "مجتمع و واحد" : "Complex & Unit"}</TableHead>
+                            <TableHead className="text-[10.5px] font-bold py-2 px-2.5">{isRtl ? "فناوری و ظرفیت" : "Process & Cap."}</TableHead>
+                            <TableHead className="text-[10.5px] font-bold py-2 px-2.5 text-end">{isRtl ? "سال" : "Year"}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {selectedLicensor.licensedPlants.map((p, pIdx) => (
+                            <TableRow key={pIdx} className="border-border/50 hover:bg-muted/30">
+                              <TableCell className="py-2 px-2.5 align-top">
+                                <Link
+                                  href={`/customers?search=${encodeURIComponent(p.complexNameFa.replace('شرکت ', '').replace('پتروشیمی ', ''))}`}
+                                  className="font-bold text-primary hover:underline text-xs inline-flex items-center gap-1 truncate max-w-[170px]"
+                                  title={p.complexNameFa}
+                                >
+                                  <span>{p.complexNameFa}</span>
+                                  <ArrowUpRight className="size-2.5 shrink-0 opacity-70" />
+                                </Link>
+                                <span className="text-[10.5px] text-muted-foreground block truncate max-w-[170px]">
+                                  {p.plantNameFa}
+                                </span>
+                              </TableCell>
+                              <TableCell className="py-2 px-2.5 align-top">
+                                <span className="font-medium text-foreground text-[11px] block truncate max-w-[150px]">
+                                  {p.unitTypeFa}
+                                </span>
+                                {p.nominalCapacityFa && (
+                                  <span className="text-[10px] text-muted-foreground font-sans block">
+                                    {p.nominalCapacityFa}
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell className="py-2 px-2.5 align-top text-end font-mono text-[10.5px] text-muted-foreground">
+                                {p.year || "—"}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl border border-dashed border-border/80 bg-muted/10 text-center">
+                      <span className="text-[11px] text-muted-foreground">
+                        {isRtl
+                          ? "اطلاعات پروژه‌ها و پلنت‌های تحت لایسنس این شرکت در مراجع ایران در حال بروزرسانی و اعتبارسنجی است."
+                          : "Project references and licensed facilities for this company are currently being updated."}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* 7. Verified Sources */}
+                {/* 8. Verified Sources */}
                 {selectedLicensor.sources && selectedLicensor.sources.length > 0 && (
                   <div className="space-y-2 pt-2 border-t border-border/50">
                     <span className="text-[11px] font-bold text-foreground flex items-center gap-1.5">
