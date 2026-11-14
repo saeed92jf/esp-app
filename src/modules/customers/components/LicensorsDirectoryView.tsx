@@ -523,7 +523,7 @@ export function LicensorsDirectoryView() {
                         )}
                       </div>
 
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                      <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-1">
                         {displayDescription}
                       </p>
                     </div>
@@ -537,7 +537,7 @@ export function LicensorsDirectoryView() {
         {/* ── COLUMN 2: Sticky Details Column (Like Phonebook Preview Card) ── */}
         <div
           ref={detailsRef}
-          className="w-full lg:w-[460px] xl:w-[500px] shrink-0 lg:sticky lg:top-[calc(var(--header-height,64px)+0.75rem)] self-start transition-all z-20"
+          className="w-full lg:w-[560px] xl:w-[640px] 2xl:w-[720px] shrink-0 lg:sticky lg:top-[calc(var(--header-height,64px)+0.75rem)] self-start transition-all z-20"
         >
           {selectedLicensor ? (
             <div className="w-full flex flex-col max-h-[calc(100vh-var(--header-height,64px)-2rem)] bg-card rounded-[24px] border border-border/80 shadow-md overflow-hidden animate-in fade-in duration-150">
