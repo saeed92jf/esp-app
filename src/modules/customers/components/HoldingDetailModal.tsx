@@ -38,8 +38,10 @@ import {
 } from "@/components/ui/tabs";
 import {
   Table,
+  TableHeader,
   TableBody,
   TableRow,
+  TableHead,
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -50,18 +52,6 @@ import { formatLocaleNumber } from "@/lib/format-number";
 import { downloadLogo } from "../utils/download-logo";
 import type { Holding, HoldingSubsidiary } from "../types/holdings.types";
 import { getAllUnifiedPlants } from "../utils/petro-unifier";
-import {
-  getHoldingDisplayName,
-  getHoldingDisplayDescription,
-  getHoldingDisplayCapacity,
-  getHoldingDisplayMarketCap,
-  getHoldingDisplayHeadquarters,
-  getHoldingDisplayCeo,
-  getHoldingDisplayHighlights,
-  getShareholderDisplayName,
-  getSubsidiaryDisplayName,
-  getSubsidiaryDisplayIndustry,
-} from "../utils/holding-translations";
 
 interface HoldingDetailModalProps {
   holding: Holding | null;
@@ -107,8 +97,10 @@ export function HoldingDetailModal({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const displayName = getHoldingDisplayName(holding, isRtl);
-  const displayDescription = getHoldingDisplayDescription(holding, isRtl);
+  const displayName = isRtl ? holding.nameFa : holding.nameEn;
+  const displayDescription = isRtl
+    ? holding.descriptionFa
+    : (holding.descriptionEn || "Major industrial and petrochemical conglomerate managing strategic production assets in Iran.");
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -117,7 +109,7 @@ export function HoldingDetailModal({
         showCloseButton={false}
       >
         <DialogHeader className="sr-only">
-          <DialogTitle>{displayName}</DialogTitle>
+          <DialogTitle>{holding.nameFa}</DialogTitle>
         </DialogHeader>
 
         {/* ── 1. Modal Top Banner / Header (Sticky) ── */}
@@ -155,7 +147,7 @@ export function HoldingDetailModal({
 
                 {holding.tseSymbol && (
                   <Badge variant="secondary" className="text-[10px] py-0 px-2 h-5 font-bold bg-primary/10 text-primary border-primary/20">
-                    {isRtl ? `نماد بورس: ${holding.tseSymbol}` : `TSE: ${holding.companyAbbrv}`}
+                    {isRtl ? `نماد بورس: ${holding.tseSymbol}` : `TSE: ${holding.tseSymbol}`}
                   </Badge>
                 )}
 
@@ -168,7 +160,7 @@ export function HoldingDetailModal({
                 {displayName}
               </h2>
               <p className="text-xs text-muted-foreground truncate font-sans">
-                {isRtl ? holding.nameEn : holding.companyAbbrv}
+                {isRtl ? holding.nameEn : holding.nameFa}
               </p>
             </div>
           </div>
@@ -326,7 +318,7 @@ export function HoldingDetailModal({
                             <TableCell className="text-xs py-2.5 font-bold text-foreground">
                               <div className="flex items-center gap-1.5">
                                 <User className="size-3.5 text-primary" />
-                                <span>{getHoldingDisplayCeo(holding, isRtl)}</span>
+                                <span>{holding.ceoNameFa}</span>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -339,7 +331,7 @@ export function HoldingDetailModal({
                           <TableCell className="text-xs py-2.5 text-foreground font-medium">
                             <div className="flex items-center gap-1.5">
                               <MapPin className="size-3.5 text-primary shrink-0" />
-                              <span>{getHoldingDisplayHeadquarters(holding, isRtl)}</span>
+                              <span>{holding.headquartersFa}</span>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -350,7 +342,7 @@ export function HoldingDetailModal({
                               {isRtl ? "نشانی پستی دقیق" : "Postal Address"}
                             </TableCell>
                             <TableCell className="text-xs py-2.5 text-foreground leading-relaxed">
-                              {isRtl ? holding.officeAddressFa : getHoldingDisplayHeadquarters(holding, false)}
+                              {holding.officeAddressFa}
                             </TableCell>
                           </TableRow>
                         )}
@@ -469,7 +461,7 @@ export function HoldingDetailModal({
                     {holding.shareholders.map((sh, idx) => (
                       <div key={idx} className="p-3 sm:p-3.5 flex items-center justify-between gap-3 hover:bg-muted/20 transition-colors">
                         <span className="font-semibold text-foreground flex-1 min-w-0 truncate">
-                          {getShareholderDisplayName(sh, isRtl)}
+                          {isRtl ? sh.nameFa : (sh.nameEn || sh.nameFa)}
                         </span>
                         <div className="flex items-center gap-2.5 shrink-0">
                           <div className="w-24 sm:w-32 h-2 rounded-full bg-muted/60 overflow-hidden hidden sm:block">
@@ -507,8 +499,7 @@ export function HoldingDetailModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {holding.subsidiaries.map((sub) => {
                     const subLogo = getSubsidiaryLogo(sub);
-                    const subName = getSubsidiaryDisplayName(sub, isRtl);
-                    const subIndustry = getSubsidiaryDisplayIndustry(sub, isRtl);
+                    const subName = isRtl ? sub.nameFa : (sub.nameEn || sub.nameFa);
 
                     return (
                       <div
@@ -535,7 +526,7 @@ export function HoldingDetailModal({
                                   {subName}
                                 </h4>
                                 <div className="text-[11px] text-muted-foreground truncate font-sans">
-                                  {subIndustry}
+                                  {sub.industry}
                                 </div>
                               </div>
                             </div>
@@ -548,16 +539,12 @@ export function HoldingDetailModal({
                           <div className="space-y-1 text-xs">
                             <div className="flex items-center justify-between text-muted-foreground text-[11px]">
                               <span>{isRtl ? "موقعیت مجتمع:" : "Location:"}</span>
-                              <span className="font-medium text-foreground">
-                                {sub.plantLocation ? (isRtl ? sub.plantLocation : (sub.plantLocation.includes("عسلویه") ? "Assaluyeh Energy Zone" : sub.plantLocation.includes("ماهشهر") ? "Mahshahr Petrochemical Zone" : "Iran")) : "—"}
-                              </span>
+                              <span className="font-medium text-foreground">{sub.plantLocation || "—"}</span>
                             </div>
                             {sub.capacity && (
                               <div className="flex items-center justify-between text-muted-foreground text-[11px]">
                                 <span>{isRtl ? "ظرفیت سالانه:" : "Capacity:"}</span>
-                                <span className="font-semibold text-foreground">
-                                  {isRtl ? sub.capacity : sub.capacity.replace(/میلیون تن در سال/g, "M Tons/Yr").replace(/هزار تن در سال/g, "K Tons/Yr").replace(/تن در سال/g, "Tons/Yr")}
-                                </span>
+                                <span className="font-semibold text-foreground">{sub.capacity}</span>
                               </div>
                             )}
                           </div>
@@ -608,7 +595,7 @@ export function HoldingDetailModal({
                       <span>{isRtl ? "ظرفیت اسمی سالانه تولید" : "Total Annual Capacity"}</span>
                     </span>
                     <div className="text-base sm:text-lg font-bold text-foreground">
-                      {getHoldingDisplayCapacity(holding, isRtl)}
+                      {holding.annualCapacityFa}
                     </div>
                   </div>
 
@@ -618,7 +605,7 @@ export function HoldingDetailModal({
                       <span>{isRtl ? "ارزش بازار و سهم در بورس" : "Market Valuation"}</span>
                     </span>
                     <div className="text-base sm:text-lg font-bold text-foreground">
-                      {getHoldingDisplayMarketCap(holding, isRtl)}
+                      {holding.marketCapFa || (isRtl ? "پیشرو در تالار بورس اوراق بهادار تهران" : "Top Listed Conglomerate on TSE")}
                     </div>
                   </div>
                 </div>
@@ -630,7 +617,7 @@ export function HoldingDetailModal({
                     <span>{isRtl ? "مزیت‌های استراتژیک و اهمیت کلان هلدینگ" : "Strategic Advantages & Economic Impact"}</span>
                   </div>
                   <ul className="space-y-2 text-xs sm:text-sm text-foreground/90 list-disc list-inside leading-relaxed">
-                    {getHoldingDisplayHighlights(holding, isRtl).map((h, idx) => (
+                    {holding.strategicHighlightsFa.map((h, idx) => (
                       <li key={idx} className="leading-relaxed">
                         {h}
                       </li>
@@ -673,12 +660,8 @@ export function HoldingDetailModal({
                         className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 shadow-2xs flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="space-y-0.5">
-                          <div className="font-semibold text-foreground">
-                            {isRtl ? src.titleFa : "Official Audited Report & Disclosure (Codal/NPC)"}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">
-                            {isRtl ? src.publisherFa : "Codal / TSE / National Petrochemical Company"}
-                          </div>
+                          <div className="font-semibold text-foreground">{src.titleFa}</div>
+                          <div className="text-[11px] text-muted-foreground">{src.publisherFa}</div>
                         </div>
                         {src.url && (
                           <a
@@ -728,3 +711,4 @@ export function HoldingDetailModal({
     </Dialog>
   );
 }
+
