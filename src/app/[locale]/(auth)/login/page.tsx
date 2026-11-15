@@ -134,8 +134,10 @@ export default function LoginPage() {
 
         // Fast & seamless navigation to destination
         router.replace(destination as any);
+        router.refresh();
       } else {
         router.replace("/");
+        router.refresh();
       }
     } catch (error: any) {
       console.log("Login failed:", error?.message);

@@ -46,8 +46,6 @@ export function setAuthToken(token: string, refreshToken?: string): void {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(AUTH_TOKEN_KEY, cleanToken);
-      localStorage.setItem("esp_auth_token", cleanToken);
-      localStorage.setItem("token", cleanToken);
       if (refreshToken) {
         localStorage.setItem("esp-refresh-token", refreshToken.trim());
       }
@@ -56,8 +54,6 @@ export function setAuthToken(token: string, refreshToken?: string): void {
 
   // 2. Cookie for SSR and Edge Middleware
   setCookie(AUTH_TOKEN_KEY, cleanToken);
-  setCookie("esp_auth_token", cleanToken);
-  setCookie("token", cleanToken);
 }
 
 /**
@@ -107,21 +103,15 @@ export function syncAuthToken(): void {
   if (typeof window === "undefined") return;
 
   const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
-  const cookieToken = getCookie(AUTH_TOKEN_KEY) || getCookie("esp_auth_token") || getCookie("token");
+  const cookieToken = getCookie(AUTH_TOKEN_KEY);
 
   if (localToken && localToken.trim() && localToken !== "undefined" && localToken !== "null") {
-    const clean = localToken.trim();
-    if (!cookieToken || cookieToken !== clean) {
-      setCookie(AUTH_TOKEN_KEY, clean);
-      setCookie("esp_auth_token", clean);
-      setCookie("token", clean);
+    if (!cookieToken || cookieToken !== localToken) {
+      setCookie(AUTH_TOKEN_KEY, localToken.trim());
     }
   } else if (cookieToken && cookieToken.trim() && cookieToken !== "undefined" && cookieToken !== "null") {
-    const clean = cookieToken.trim();
     try {
-      localStorage.setItem(AUTH_TOKEN_KEY, clean);
-      localStorage.setItem("esp_auth_token", clean);
-      localStorage.setItem("token", clean);
+      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken.trim());
     } catch {}
   }
 }
@@ -130,20 +120,6 @@ export function syncAuthToken(): void {
  * Checks whether a valid non-empty auth token is currently present.
  */
 export function hasValidAuthToken(): boolean {
-  if (typeof window === "undefined") return false;
-  syncAuthToken();
   const token = getAuthToken();
-  const cookie = getCookie(AUTH_TOKEN_KEY) || getCookie("esp_auth_token");
-  return Boolean(
-    token && token.trim().length > 0 && token !== "undefined" && token !== "null" &&
-    cookie && cookie.trim().length > 0 && cookie !== "undefined" && cookie !== "null"
-  );
+  return Boolean(token && token.trim().length > 0 && token !== "undefined" && token !== "null");
 }
-
-// Automatically synchronize on module load in client environment
-if (typeof window !== "undefined") {
-  try {
-    syncAuthToken();
-  } catch {}
-}
-
