@@ -62,6 +62,11 @@ const useAuthStore = create<AuthState>((set) => ({
       try {
         localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
         localStorage.setItem('esp_auth_user', JSON.stringify(user));
+        window.dispatchEvent(new CustomEvent('esp:auth-user-changed', { detail: user }));
+      } catch {}
+    } else if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('esp:auth-user-changed', { detail: null }));
       } catch {}
     }
     set({ user });

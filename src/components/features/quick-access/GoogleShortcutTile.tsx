@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations, useLocale } from "next-intl";
-import { MoreVertical, type LucideIcon } from "lucide-react";
+import { MoreVertical, ArrowRight, ArrowLeft, SlidersHorizontal, Trash2, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -23,6 +23,10 @@ interface GoogleShortcutTileProps {
   title: string;
   onEdit?: () => void;
   onRemove?: (href: string) => void;
+  onMoveEarlier?: () => void;
+  onMoveLater?: () => void;
+  canMoveEarlier?: boolean;
+  canMoveLater?: boolean;
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
   className?: string;
 }
@@ -34,6 +38,10 @@ export function GoogleShortcutTile({
   title,
   onEdit,
   onRemove,
+  onMoveEarlier,
+  onMoveLater,
+  canMoveEarlier,
+  canMoveLater,
   onClick,
   className,
 }: GoogleShortcutTileProps) {
@@ -102,9 +110,37 @@ export function GoogleShortcutTile({
               align={isRtl ? "start" : "end"} 
               side="bottom" 
               sideOffset={4}
-              className="w-32 p-1 rounded-xl shadow-lg border border-border/50 bg-popover z-50 text-xs duration-200 ease-out data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-95 data-closed:duration-150"
+              className="w-40 p-1 rounded-xl shadow-lg border border-border/50 bg-popover z-50 text-xs duration-200 ease-out data-open:duration-200 data-open:fade-in-0 data-open:zoom-in-95 data-closed:duration-150"
               onClick={(e) => e.stopPropagation()}
             >
+              {onMoveEarlier && canMoveEarlier && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                    onMoveEarlier();
+                  }}
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors gap-2 w-full justify-start"
+                >
+                  {isRtl ? <ArrowRight className="size-3.5 text-primary" /> : <ArrowLeft className="size-3.5 text-primary" />}
+                  <span>{isRtl ? "انتقال به راست (جلو)" : "Move earlier"}</span>
+                </DropdownMenuItem>
+              )}
+
+              {onMoveLater && canMoveLater && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMenuOpen(false);
+                    onMoveLater();
+                  }}
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors gap-2 w-full justify-start"
+                >
+                  {isRtl ? <ArrowLeft className="size-3.5 text-primary" /> : <ArrowRight className="size-3.5 text-primary" />}
+                  <span>{isRtl ? "انتقال به چپ (عقب)" : "Move later"}</span>
+                </DropdownMenuItem>
+              )}
+
               {onEdit && (
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -112,11 +148,13 @@ export function GoogleShortcutTile({
                     setIsMenuOpen(false);
                     onEdit();
                   }}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors rtl:text-end ltr:text-start w-full justify-start"
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer transition-colors gap-2 w-full justify-start"
                 >
-                  <span>{t("quickAccess.editCards")}</span>
+                  <SlidersHorizontal className="size-3.5 text-muted-foreground" />
+                  <span>{isRtl ? "ویرایش و چیدمان" : t("quickAccess.editCards")}</span>
                 </DropdownMenuItem>
               )}
+
               {onRemove && (
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -124,8 +162,9 @@ export function GoogleShortcutTile({
                     setIsMenuOpen(false);
                     onRemove(href);
                   }}
-                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors rtl:text-end ltr:text-start w-full justify-start"
+                  className="px-2.5 py-1.5 text-xs font-medium rounded-lg cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors gap-2 w-full justify-start"
                 >
+                  <Trash2 className="size-3.5" />
                   <span>{t("quickAccess.delete")}</span>
                 </DropdownMenuItem>
               )}
