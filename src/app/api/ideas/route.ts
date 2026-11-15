@@ -65,7 +65,6 @@ export async function POST(req: NextRequest) {
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        createServerIdea(body);
         return NextResponse.json(data, { status: 201 });
       }
     } catch {}

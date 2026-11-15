@@ -25,10 +25,6 @@ export async function PATCH(
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        changeServerBugReportPriority(id, body.priority, {
-          id: body.userId,
-          name: body.userName,
-        });
         return NextResponse.json(data);
       }
     } catch {}

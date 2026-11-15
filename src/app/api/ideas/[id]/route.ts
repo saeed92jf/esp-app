@@ -28,7 +28,6 @@ export async function PATCH(
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        updateServerIdeaStatus(id, body.status);
         return NextResponse.json(data);
       }
     } catch {}

@@ -29,7 +29,6 @@ export async function POST(
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        addServerBugReportComment(id, body);
         return NextResponse.json(data);
       }
     } catch {}

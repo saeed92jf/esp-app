@@ -100,8 +100,6 @@ export async function POST(req: NextRequest) {
 
       if (remoteRes.ok) {
         const created = await remoteRes.json();
-        // Also sync local store
-        createServerBugReport(body);
         return NextResponse.json(created, { status: 201 });
       }
     } catch {}

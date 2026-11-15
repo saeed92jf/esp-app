@@ -25,15 +25,6 @@ export async function PATCH(
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        assignServerBugReport(
-          id,
-          {
-            id: body.assigneeId,
-            name: body.assigneeName,
-            email: body.assigneeEmail,
-          },
-          { id: body.userId, name: body.userName }
-        );
         return NextResponse.json(data);
       }
     } catch {}

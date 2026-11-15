@@ -227,6 +227,13 @@ export function getServerBugReports(filters?: {
   search?: string;
 }): BugReportItem[] {
   let list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  const seen = new Set<string>();
+  list = list.filter((r) => {
+    const key = r.id || r.ticketNumber;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   globalThis.__espServerBugReports = list;
 
   if (filters?.status && filters.status !== "all") {
@@ -480,7 +487,14 @@ export function addServerBugReportComment(
 }
 
 export function getServerBugReportsAnalytics() {
-  const reports = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  let reports = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  const seen = new Set<string>();
+  reports = reports.filter((r) => {
+    const key = r.id || r.ticketNumber;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   globalThis.__espServerBugReports = reports;
   const total = reports.length;
 

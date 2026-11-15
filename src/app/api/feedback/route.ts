@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        createServerFeedback(body);
         return NextResponse.json(data, { status: 201 });
       }
     } catch {}

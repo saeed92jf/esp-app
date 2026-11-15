@@ -101,11 +101,24 @@ export function BugReportsModule({
         bugReportsService.getFeedback().catch(() => []),
         bugReportsService.getIdeas().catch(() => []),
       ]);
-      setReports(allData);
+      const uniqueReports = Array.from(
+        new Map(allData.map((r) => [r.id || r.ticketNumber, r])).values()
+      );
+      const uniqueSupport = Array.from(
+        new Map(supData.map((s) => [s.id || s.ticketNumber, s])).values()
+      );
+      const uniqueFeedback = Array.from(
+        new Map(fbData.map((f) => [f.id, f])).values()
+      );
+      const uniqueIdeas = Array.from(
+        new Map(ideaData.map((i) => [i.id, i])).values()
+      );
+
+      setReports(uniqueReports);
       setAnalytics(stats);
-      setSupportRequests(supData);
-      setFeedbackList(fbData);
-      setIdeasList(ideaData);
+      setSupportRequests(uniqueSupport);
+      setFeedbackList(uniqueFeedback);
+      setIdeasList(uniqueIdeas);
 
       // If initialReportId provided, select it
       if (initialReportId) {
@@ -578,7 +591,11 @@ export function BugReportsModule({
                       onUpdated={(updated) => {
                         setSelectedReport(updated);
                         setReports((prev) =>
-                          prev.map((r) => (r.id === updated.id ? updated : r))
+                          prev.map((r) =>
+                            r.id === updated.id || (r.ticketNumber && r.ticketNumber === updated.ticketNumber)
+                              ? updated
+                              : r
+                          )
                         );
                         bugReportsService.getAnalytics().then(setAnalytics).catch(() => {});
                         if (typeof window !== "undefined") {
