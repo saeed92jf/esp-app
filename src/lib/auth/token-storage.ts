@@ -107,15 +107,21 @@ export function syncAuthToken(): void {
   if (typeof window === "undefined") return;
 
   const localToken = localStorage.getItem(AUTH_TOKEN_KEY);
-  const cookieToken = getCookie(AUTH_TOKEN_KEY);
+  const cookieToken = getCookie(AUTH_TOKEN_KEY) || getCookie("esp_auth_token") || getCookie("token");
 
   if (localToken && localToken.trim() && localToken !== "undefined" && localToken !== "null") {
-    if (!cookieToken || cookieToken !== localToken) {
-      setCookie(AUTH_TOKEN_KEY, localToken.trim());
+    const clean = localToken.trim();
+    if (!cookieToken || cookieToken !== clean) {
+      setCookie(AUTH_TOKEN_KEY, clean);
+      setCookie("esp_auth_token", clean);
+      setCookie("token", clean);
     }
   } else if (cookieToken && cookieToken.trim() && cookieToken !== "undefined" && cookieToken !== "null") {
+    const clean = cookieToken.trim();
     try {
-      localStorage.setItem(AUTH_TOKEN_KEY, cookieToken.trim());
+      localStorage.setItem(AUTH_TOKEN_KEY, clean);
+      localStorage.setItem("esp_auth_token", clean);
+      localStorage.setItem("token", clean);
     } catch {}
   }
 }
@@ -124,7 +130,20 @@ export function syncAuthToken(): void {
  * Checks whether a valid non-empty auth token is currently present.
  */
 export function hasValidAuthToken(): boolean {
+  if (typeof window === "undefined") return false;
+  syncAuthToken();
   const token = getAuthToken();
-  return Boolean(token && token.trim().length > 0 && token !== "undefined" && token !== "null");
+  const cookie = getCookie(AUTH_TOKEN_KEY) || getCookie("esp_auth_token");
+  return Boolean(
+    token && token.trim().length > 0 && token !== "undefined" && token !== "null" &&
+    cookie && cookie.trim().length > 0 && cookie !== "undefined" && cookie !== "null"
+  );
+}
+
+// Automatically synchronize on module load in client environment
+if (typeof window !== "undefined") {
+  try {
+    syncAuthToken();
+  } catch {}
 }
 

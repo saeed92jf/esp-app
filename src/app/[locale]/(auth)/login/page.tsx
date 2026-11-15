@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter, Link } from "@/i18n/navigation";
 import { getLoginSchema, type LoginInput } from "@/lib/validations/auth";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
+import { hasValidAuthToken, syncAuthToken } from "@/lib/auth/token-storage";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,16 +64,18 @@ export default function LoginPage() {
     return target.startsWith("/") && !target.startsWith("//") ? target : null;
   };
 
-  // If user is already authenticated (and not submitting), redirect them directly to intended page or dashboard
+  // Only redirect away from /login if user is legitimately already authenticated AND navigated to /login directly.
+  // If the user was redirected here by middleware with a redirect param, NEVER auto-redirect back to avoid infinite loops!
   useEffect(() => {
-    if (user && !authLoading && !isLoading) {
-      const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
-      const target = getCleanRedirectTarget(redirectParam);
-      if (target) {
-        router.replace(target as any);
-      } else {
-        router.replace("/dashboard");
-      }
+    const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
+    if (redirectParam) {
+      // User was explicitly directed to login by middleware (cookie missing or invalid on server).
+      // Keep user on login form so they can sign in cleanly.
+      return;
+    }
+
+    if (user && !authLoading && !isLoading && hasValidAuthToken()) {
+      router.replace("/dashboard");
     }
   }, [user, authLoading, isLoading, searchParams, router]);
 
@@ -126,22 +129,11 @@ export default function LoginPage() {
           }
         }
 
+        // Guarantee cookies are written before navigating
+        syncAuthToken();
+
         // Fast & seamless navigation to destination
         router.replace(destination as any);
-
-        // Fallback guarantee: if client-side router transition doesn't complete within 400ms,
-        // force immediate direct browser navigation so user NEVER stays stuck on "Signing in..."
-        setTimeout(() => {
-          if (typeof window !== "undefined") {
-            const prefix = locale === "fa" ? "/fa" : "/en";
-            const fullTarget = destination.startsWith("/")
-              ? `${prefix}${destination}`
-              : `${prefix}/${destination}`;
-            if (window.location.pathname !== fullTarget) {
-              window.location.href = fullTarget;
-            }
-          }
-        }, 400);
       } else {
         router.replace("/dashboard");
       }
