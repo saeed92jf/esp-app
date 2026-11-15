@@ -246,10 +246,9 @@ export function useQuickAccess() {
       saveHrefs(selectedHrefs.filter((h) => normalizeHref(h) !== norm));
     } else {
       if (selectedHrefs.length >= QUICK_ACCESS_MAX) {
-        saveHrefs([...selectedHrefs.slice(1), href]);
-      } else {
-        saveHrefs([...selectedHrefs, href]);
+        return;
       }
+      saveHrefs([...selectedHrefs, href]);
     }
   }, [selectedHrefs, saveHrefs]);
 

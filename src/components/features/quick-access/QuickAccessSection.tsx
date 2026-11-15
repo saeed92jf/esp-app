@@ -3,11 +3,11 @@
 import React, { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
-import { useQuickAccess, QUICK_ACCESS_MAX, ALL_SELECTABLE_ITEMS } from "@/hooks/use-quick-access";
+import { useQuickAccess, QUICK_ACCESS_MAX, ALL_SELECTABLE_ITEMS, normalizeHref } from "@/hooks/use-quick-access";
 import { NAVIGATION, type NavColor, resolveNavIconGradient } from "@/config/navigation";
 import { GoogleShortcutTile } from "./GoogleShortcutTile";
 import { AppIcon } from "@/components/ui/app-icon";
-import { Check, Plus, RotateCcw, Expand, ArrowLeft, ArrowRight, X, SlidersHorizontal } from "lucide-react";
+import { Check, Plus, RotateCcw, Expand } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { IconGradients } from "@/components/ui/icon-gradients";
@@ -128,7 +128,6 @@ export function QuickAccessSection({
   const {
     items,
     hydrated,
-    isSelected,
     isFull,
     toggle,
     removeShortcut,
@@ -225,7 +224,7 @@ export function QuickAccessSection({
         ) : (
           <AnimatePresence mode="wait" initial={false}>
             {editMode ? (
-              /* EDIT MODE: Active arrangement dock + All selectable items catalog */
+              /* EDIT MODE: All selectable items catalog with sequential numbering */
               <motion.div
                 key="edit-grid"
                 variants={editGridVariants}
@@ -234,95 +233,6 @@ export function QuickAccessSection({
                 exit="exit"
                 className="w-full flex flex-col items-center gap-4"
               >
-                {/* Active Shortcuts Order & Arrangement Dock */}
-                {items.length > 0 && (
-                  <div className="w-full p-3 sm:p-4 rounded-2xl bg-card/95 border border-primary/20 shadow-xs animate-in fade-in duration-150">
-                    <div className="flex items-center justify-between gap-2 mb-2.5 px-1">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
-                        <SlidersHorizontal className="size-3.5 text-primary" />
-                        <span>{isRtl ? "ترتیب و چیدمان کارت‌های انتخابی شما:" : "Shortcuts Arrangement & Order:"}</span>
-                        <span className="text-[11px] font-normal text-muted-foreground hidden sm:inline">
-                          {isRtl ? "(با فلش‌ها جایگاه کارت را تغییر دهید)" : "(Use arrows to change sequence)"}
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-primary font-bold font-mono">
-                        {items.length} / {maxItems}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-wrap items-center justify-center gap-2">
-                      {items.map((item, idx) => {
-                        let title = item.labelKey;
-                        try {
-                          title = tItems(item.labelKey);
-                        } catch {}
-
-                        const group = NAVIGATION.find((g) =>
-                          g.items.some((i) => i.href === item.href)
-                        );
-                        const effectiveColor = (item.color ?? group?.color ?? "sky") as NavColor;
-                        const navGradientClass = resolveNavIconGradient(effectiveColor);
-
-                        return (
-                          <div
-                            key={item.href}
-                            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-border/80 bg-background shadow-2xs text-xs"
-                          >
-                            <span className="size-4.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold font-mono flex items-center justify-center">
-                              {idx + 1}
-                            </span>
-
-                            {item.icon && (
-                              <AppIcon icon={item.icon} className={cn("size-3.5", navGradientClass)} aria-hidden="true" />
-                            )}
-
-                            <span className="font-semibold text-foreground max-w-[85px] truncate" title={title}>
-                              {title}
-                            </span>
-
-                            <div className="flex items-center gap-0.5 ms-1 border-s border-border/60 ps-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                disabled={idx === 0}
-                                onClick={() => moveEarlier(item.href)}
-                                className="size-5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed"
-                                title={isRtl ? "انتقال به راست (جلوتر)" : "Move earlier"}
-                              >
-                                {isRtl ? <ArrowRight className="size-3" /> : <ArrowLeft className="size-3" />}
-                              </Button>
-
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                disabled={idx === items.length - 1}
-                                onClick={() => moveLater(item.href)}
-                                className="size-5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed"
-                                title={isRtl ? "انتقال به چپ (عقب‌تر)" : "Move later"}
-                              >
-                                {isRtl ? <ArrowLeft className="size-3" /> : <ArrowRight className="size-3" />}
-                              </Button>
-
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeShortcut(item.href)}
-                                className="size-5 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer"
-                                title={isRtl ? "حذف از چیدمان" : "Remove"}
-                              >
-                                <X className="size-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
                 {/* Catalog Grid */}
                 <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 w-full">
                 {ALL_SELECTABLE_ITEMS.map((item, index) => {
@@ -336,7 +246,11 @@ export function QuickAccessSection({
                   );
                   const effectiveColor = (item.color ?? group?.color ?? "sky") as NavColor;
                   const navGradientClass = resolveNavIconGradient(effectiveColor);
-                  const isItemSelected = isSelected(item.href);
+                  const selectedIndex = selectedHrefs.findIndex(
+                    (h) => normalizeHref(h) === normalizeHref(item.href)
+                  );
+                  const isItemSelected = selectedIndex !== -1;
+                  const orderNumber = selectedIndex !== -1 ? selectedIndex + 1 : null;
 
                   return (
                     <motion.div
@@ -373,18 +287,21 @@ export function QuickAccessSection({
                           aria-hidden="true" 
                         />
 
-                        {/* Selection Indicator Badge with Micro-Pop Transition */}
+                        {/* Selection Indicator Badge with Sequence Number and Checkmark */}
                         <AnimatePresence mode="wait" initial={false}>
                           {isItemSelected ? (
                             <motion.div
-                              key="badge-check"
+                              key="badge-checked-numbered"
                               initial={{ scale: 0.5, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               exit={{ scale: 0.5, opacity: 0 }}
                               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
-                              className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 size-5 sm:size-5.5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-xs z-20 pointer-events-none"
+                              className="absolute top-1 end-1 sm:top-1.5 sm:end-1.5 h-5 sm:h-5.5 px-1.5 min-w-5 sm:min-w-5.5 rounded-full bg-primary text-primary-foreground flex items-center justify-center gap-1 shadow-xs z-20 pointer-events-none select-none"
                             >
-                              <Check className="size-3 stroke-[2.5]" />
+                              <Check className="size-2.5 sm:size-3 stroke-[2.8] shrink-0" />
+                              <span className="text-[10px] sm:text-[11px] font-bold font-mono leading-none pt-px">
+                                {orderNumber}
+                              </span>
                             </motion.div>
                           ) : (
                             <motion.div
