@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { AnimatedSuccessCheck } from "@/components/ui/animated-success-check";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,9 +143,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
 
         {isSuccess ? (
           <div className="p-8 flex flex-col items-center justify-center text-center space-y-4 my-auto">
-            <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">
-              <CheckCircle2 className="size-10" />
-            </div>
+            <AnimatedSuccessCheck size={76} />
             <h3 className="text-xl font-bold text-foreground">
               {isRtl ? "از ثبت امتیاز و بازخورد شما صمیمانه سپاسگزاریم" : "Thank you for your rating & feedback!"}
             </h3>

@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { AnimatedSuccessCheck } from "@/components/ui/animated-success-check";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
@@ -131,9 +132,7 @@ export function IdeaDialog({ open, onOpenChange }: IdeaDialogProps) {
 
         {isSuccess ? (
           <div className="p-8 flex flex-col items-center justify-center text-center space-y-4 my-auto">
-            <div className="size-16 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-inner">
-              <CheckCircle2 className="size-10" />
-            </div>
+            <AnimatedSuccessCheck size={76} />
             <h3 className="text-xl font-bold text-foreground">
               {isRtl ? "ایده شما با موفقیت ثبت شد" : "Idea Submitted Successfully"}
             </h3>
