@@ -151,6 +151,9 @@ export interface SupportRequest {
   userId: string;
   userName: string;
   userEmail?: string;
+  adminResponse?: string;
+  respondedAt?: string;
+  respondedBy?: string;
   createdAt: string;
   updatedAt: string;
 }

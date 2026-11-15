@@ -27,6 +27,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { bugReportsService } from "../services/bug-reports.service";
 import type { SupportRequest } from "../types";
 
@@ -42,11 +44,15 @@ export function SupportRequestsList({
   const locale = useLocale();
   const isRtl = locale === "fa";
 
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState<SupportRequest | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [adminReplyText, setAdminReplyText] = useState("");
+  const [targetRequest, setTargetRequest] = useState<SupportRequest | null>(null);
 
   const statusOptions = useMemo<ComboboxOption[]>(() => [
     { value: "all", label: isRtl ? "همه وضعیت‌ها" : "All Statuses" },
@@ -85,6 +91,40 @@ export function SupportRequestsList({
     }
     return list;
   }, [requests, statusFilter, priorityFilter, search]);
+
+  const handleOpenReplyDialog = (req: SupportRequest) => {
+    setTargetRequest(req);
+    setAdminReplyText(req.adminResponse || "");
+    setReplyModalOpen(true);
+  };
+
+  const handleConfirmReplyAndResolve = async () => {
+    if (!targetRequest) return;
+    setIsUpdating(true);
+    try {
+      await bugReportsService.updateSupportRequestStatus(
+        targetRequest.id,
+        "Resolved",
+        adminReplyText.trim() || undefined,
+        user?.fullName || user?.name || "کارشناس پشتیبانی"
+      );
+      if (selectedRequest && selectedRequest.id === targetRequest.id) {
+        setSelectedRequest({
+          ...selectedRequest,
+          status: "Resolved",
+          adminResponse: adminReplyText.trim() || selectedRequest.adminResponse,
+        });
+      }
+      setReplyModalOpen(false);
+      setAdminReplyText("");
+      setTargetRequest(null);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to resolve support request", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     setIsUpdating(true);
@@ -379,10 +419,30 @@ export function SupportRequestsList({
                 </div>
               </div>
 
+              {/* Admin Support Response (if already replied) */}
+              {selectedRequest.adminResponse && (
+                <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/25 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between font-bold text-sky-700 dark:text-sky-300">
+                    <span className="flex items-center gap-1.5">
+                      <Mail className="size-3.5" />
+                      <span>{isRtl ? "جوابیه کارشناس پشتیبانی (ارسال‌شده به ایمیل کاربر):" : "Admin Support Response (Emailed):"}</span>
+                    </span>
+                    {selectedRequest.respondedBy && (
+                      <span className="text-[11px] font-normal text-muted-foreground">
+                        {selectedRequest.respondedBy}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-foreground whitespace-pre-wrap leading-relaxed bg-background/60 p-2.5 rounded-lg border border-sky-500/15">
+                    {selectedRequest.adminResponse}
+                  </div>
+                </div>
+              )}
+
               {/* Status Update Quick Buttons */}
               <div className="border-t border-border/60 pt-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="text-xs text-muted-foreground">
-                  {isRtl ? "تغییر وضعیت تیکت:" : "Change Status:"}
+                  {isRtl ? "تغییر وضعیت و جوابیه:" : "Status & Reply:"}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -405,13 +465,12 @@ export function SupportRequestsList({
                   </Button>
                   <Button
                     size="sm"
-                    variant={selectedRequest.status === "Resolved" ? "secondary" : "outline"}
-                    onClick={() => handleUpdateStatus(selectedRequest.id, "Resolved")}
+                    onClick={() => handleOpenReplyDialog(selectedRequest)}
                     disabled={isUpdating}
-                    className="h-8 text-xs rounded-lg text-emerald-600 cursor-pointer"
+                    className="h-8 text-xs rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer gap-1.5"
                   >
-                    <CheckCircle2 className="size-3.5 me-1" />
-                    {isRtl ? "برطرف شد / پاسخ داده شد" : "Resolved"}
+                    <CheckCircle2 className="size-3.5" />
+                    <span>{isRtl ? "پاسخ و رفع تیکت" : "Reply & Resolve"}</span>
                   </Button>
                   <Button
                     size="sm"
@@ -420,12 +479,92 @@ export function SupportRequestsList({
                     disabled={isUpdating}
                     className="h-8 text-xs rounded-lg cursor-pointer"
                   >
-                    {isRtl ? "بستن تیکت" : "Close"}
+                    {isRtl ? "بستن" : "Close"}
                   </Button>
                 </div>
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin Reply & Resolution Dialog */}
+      <Dialog open={replyModalOpen} onOpenChange={setReplyModalOpen}>
+        <DialogContent className="max-w-lg p-6 rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground">
+              {isRtl ? "پاسخ به درخواست پشتیبانی و ثبت وضعیت رفع‌شده" : "Reply & Resolve Support Request"}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {isRtl
+                ? `جوابیه شما به صورت رسمی با قالب استاندارد Euroslot Pars به ایمیل کاربر (${targetRequest?.userEmail || "کاربر"}) ارسال می‌گردد.`
+                : `Your response will be officially emailed to ${targetRequest?.userEmail || "the user"}.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-2">
+            <Textarea
+              value={adminReplyText}
+              onChange={(e) => setAdminReplyText(e.target.value)}
+              placeholder={
+                isRtl
+                  ? "متن جوابیه و راهنمایی کارشناس پشتیبانی برای کاربر..."
+                  : "Enter support response for the user..."
+              }
+              rows={4}
+              className="text-xs rounded-xl"
+            />
+
+            {/* Quick response chips */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() =>
+                  setAdminReplyText(
+                    isRtl
+                      ? "درخواست شما بررسی شد و اقدامات لازم با موفقیت انجام گردید."
+                      : "Your request has been reviewed and resolved successfully."
+                  )
+                }
+                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
+                {isRtl ? "بررسی شد و اقدامات لازم انجام گرفت" : "Resolved successfully"}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setAdminReplyText(
+                    isRtl
+                      ? "راهنمایی لازم جهت رفع مشکل انجام شد و تنظیمات مربوطه اصلاح گردید."
+                      : "Instructions provided and configuration updated."
+                  )
+                }
+                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
+                {isRtl ? "راهنمایی و اصلاح تنظیمات" : "Configuration updated"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setReplyModalOpen(false)}
+                className="rounded-xl h-9 px-4 text-xs"
+              >
+                {isRtl ? "انصراف" : "Cancel"}
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleConfirmReplyAndResolve}
+                disabled={isUpdating}
+                className="rounded-xl h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              >
+                <Mail className="size-3.5" />
+                <span>{isRtl ? "ثبت رفع مشکل و ارسال ایمیل" : "Resolve & Send Email"}</span>
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

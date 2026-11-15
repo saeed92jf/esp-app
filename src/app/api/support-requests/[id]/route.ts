@@ -28,12 +28,12 @@ export async function PATCH(
 
       if (remoteRes.ok) {
         const data = await remoteRes.json();
-        updateServerSupportRequestStatus(id, body.status);
+        updateServerSupportRequestStatus(id, body.status, body.adminResponse || body.adminReply, body.adminName);
         return NextResponse.json(data);
       }
     } catch {}
 
-    const updated = updateServerSupportRequestStatus(id, body.status);
+    const updated = updateServerSupportRequestStatus(id, body.status, body.adminResponse || body.adminReply, body.adminName);
     if (!updated) {
       return NextResponse.json(
         { error: "Support request not found" },

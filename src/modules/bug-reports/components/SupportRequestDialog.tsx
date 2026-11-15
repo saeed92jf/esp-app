@@ -133,6 +133,10 @@ export function SupportRequestDialog({
         userEmail: user?.email || "",
       });
       setSubmittedTicket(res.ticketNumber);
+      if (typeof window !== "undefined") {
+        bugReportsService.invalidateCache();
+        window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to submit support request");
     } finally {
@@ -196,13 +200,22 @@ export function SupportRequestDialog({
               <Mail className="size-4 shrink-0 text-sky-600 dark:text-sky-400" />
               <span>
                 {isRtl
-                  ? "نتیجه بررسی و پاسخ پشتیبانی از طریق ایمیل به اطلاع شما خواهد رسید."
-                  : "Updates and support resolution will be sent to your email."}
+                  ? "ایمیل تاییدیه ثبت درخواست ارسال شد. نتیجه بررسی و پاسخ کارشناس به ایمیل شما فرستاده خواهد شد."
+                  : "Confirmation email sent. Support answer and updates will be sent to your email."}
               </span>
             </div>
-            <Button onClick={handleReset} className="rounded-xl px-6 mt-2">
-              {isRtl ? "بستن" : "Close"}
-            </Button>
+            <div className="flex items-center gap-2.5 mt-2">
+              <Button onClick={handleReset} variant={user?.role === "superadmin" ? "outline" : "default"} className="rounded-xl px-6">
+                {isRtl ? "بستن" : "Close"}
+              </Button>
+              {user?.role === "superadmin" && (
+                <Button asChild className="rounded-xl px-5 bg-sky-600 hover:bg-sky-700 text-white">
+                  <a href={`/${locale}/bug-reports`}>
+                    <span>{isRtl ? "مشاهده در پنل مدیریت" : "View in Panel"}</span>
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-start">

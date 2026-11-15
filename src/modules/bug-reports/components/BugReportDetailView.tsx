@@ -28,11 +28,19 @@ import {
   Check,
   RotateCcw,
   Trash2,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { bugReportsService } from "../services/bug-reports.service";
@@ -111,26 +119,39 @@ export function BugReportDetailView({
 
   const canManageStatus = isStaff || (user?.id && user.id === report.reporterId);
 
-  const handleStatusChange = async (newStatus: BugStatus) => {
-    if (newStatus === report.status) return;
+  const [resolveModalOpen, setResolveModalOpen] = useState(false);
+  const [resolutionExplanation, setResolutionExplanation] = useState("");
+
+  const executeStatusChange = async (newStatus: BugStatus, explanation?: string) => {
     setIsUpdatingStatus(true);
     try {
       const updated = await bugReportsService.updateStatus(
         report.id,
         newStatus,
-        undefined,
+        explanation,
         {
           id: user?.id || "u-staff",
           name: user?.fullName || user?.name || "Staff",
         }
       );
       onUpdated(updated);
+      setResolveModalOpen(false);
+      setResolutionExplanation("");
       if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
       }
     } finally {
       setIsUpdatingStatus(false);
     }
+  };
+
+  const handleStatusChange = async (newStatus: BugStatus) => {
+    if (newStatus === report.status) return;
+    if (newStatus === "Resolved") {
+      setResolveModalOpen(true);
+      return;
+    }
+    await executeStatusChange(newStatus);
   };
 
   const handlePriorityChange = async (newPriority: BugPriority) => {
@@ -689,6 +710,87 @@ export function BugReportDetailView({
           </div>
         </div>
       </div>
+
+      {/* Admin Resolution & Reply Dialog */}
+      <Dialog open={resolveModalOpen} onOpenChange={setResolveModalOpen}>
+        <DialogContent className="max-w-lg p-6 rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-emerald-600" />
+              <span>{isRtl ? "ثبت رفع اشکال و ارسال جوابیه به کاربر" : "Resolve Bug Report & Send Reply"}</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              {isRtl
+                ? `توضیحات و جوابیه مدیر سیستم درباره نحوه رفع این باگ را وارد کنید. این متن به همراه تاییدیه رفع مشکل به ایمیل ثبت‌کننده (${report.reporterEmail || "کاربر"}) ارسال می‌گردد.`
+                : `Enter the resolution explanation. This will be officially emailed to ${report.reporterEmail || "the reporter"}.`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-2">
+            <Textarea
+              value={resolutionExplanation}
+              onChange={(e) => setResolutionExplanation(e.target.value)}
+              placeholder={
+                isRtl
+                  ? "توضیح دهید مشکل چگونه رفع شد (این جوابیه به ایمیل فرستنده گزارش ارسال می‌شود)..."
+                  : "Explain how the issue was resolved..."
+              }
+              rows={4}
+              className="text-xs rounded-xl"
+            />
+
+            {/* Quick response chips */}
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <button
+                type="button"
+                onClick={() =>
+                  setResolutionExplanation(
+                    isRtl
+                      ? "اشکال گزارش‌شده بررسی و در نگارش جدید سامانه برطرف گردید."
+                      : "The reported issue has been verified and fixed in the latest platform build."
+                  )
+                }
+                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
+                {isRtl ? "برطرف شد در نگارش جدید" : "Fixed in latest build"}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setResolutionExplanation(
+                    isRtl
+                      ? "تنظیمات و دسترسی‌های مربوطه اصلاح شد و صحت عملکرد مجدداً تست و تایید گردید."
+                      : "Settings and permissions were updated and tested successfully."
+                  )
+                }
+                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+              >
+                {isRtl ? "اصلاح تنظیمات و دسترسی" : "Permissions/settings fixed"}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setResolveModalOpen(false)}
+                className="rounded-xl h-9 px-4 text-xs"
+              >
+                {isRtl ? "انصراف" : "Cancel"}
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => executeStatusChange("Resolved", resolutionExplanation)}
+                disabled={isUpdatingStatus}
+                className="rounded-xl h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+              >
+                <Mail className="size-3.5" />
+                <span>{isRtl ? "تایید رفع مشکل و ارسال ایمیل" : "Resolve & Send Email"}</span>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

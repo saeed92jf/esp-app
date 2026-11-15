@@ -98,6 +98,10 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
         userEmail: user?.email || "",
       });
       setIsSuccess(true);
+      if (typeof window !== "undefined") {
+        bugReportsService.invalidateCache();
+        window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to submit feedback");
     } finally {
@@ -142,16 +146,25 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
               <CheckCircle2 className="size-10" />
             </div>
             <h3 className="text-xl font-bold text-foreground">
-              {isRtl ? "با سپاس از بازخورد ارزشمند شما" : "Thank you for your feedback!"}
+              {isRtl ? "از ثبت امتیاز و بازخورد شما صمیمانه سپاسگزاریم" : "Thank you for your rating & feedback!"}
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm">
               {isRtl
-                ? "پیام شما دریافت شد و در جلسات ارتقای سامانه بررسی خواهد گردید."
-                : "Your feedback has been received and will be reviewed by our team."}
+                ? "دیدگاه و امتیاز شما با موفقیت ثبت شد و ایمیل تشکر و قدردانی نیز برای شما ارسال گردید."
+                : "Your rating & feedback have been recorded, and an appreciation email was sent to you."}
             </p>
-            <Button onClick={handleReset} className="rounded-xl px-6 mt-4">
-              {isRtl ? "بستن" : "Close"}
-            </Button>
+            <div className="flex items-center gap-2.5 mt-4">
+              <Button onClick={handleReset} variant={user?.role === "superadmin" ? "outline" : "default"} className="rounded-xl px-6">
+                {isRtl ? "بستن" : "Close"}
+              </Button>
+              {user?.role === "superadmin" && (
+                <Button asChild className="rounded-xl px-5 bg-emerald-600 hover:bg-emerald-700 text-white">
+                  <a href={`/${locale}/bug-reports`}>
+                    <span>{isRtl ? "مشاهده در پنل مدیریت" : "View in Panel"}</span>
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 text-start">

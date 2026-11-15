@@ -214,6 +214,10 @@ export function BugReportSubmissionDialog({
 
       setSubmittedTicket(created.ticketNumber);
       onSubmitted?.(created.ticketNumber);
+      if (typeof window !== "undefined") {
+        bugReportsService.invalidateCache();
+        window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+      }
     } catch (err: any) {
       setError(err?.message || (isRtl ? "خطا در ارسال تیکت" : "Failed to submit bug report"));
     } finally {

@@ -101,6 +101,9 @@ export interface SupportRequestItem {
   userId: string;
   userName: string;
   userEmail?: string;
+  adminResponse?: string;
+  respondedAt?: string;
+  respondedBy?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -560,15 +563,21 @@ export function createServerSupportRequest(
 
 export function updateServerSupportRequestStatus(
   id: string,
-  status: string
+  status: string,
+  adminResponse?: string,
+  adminName?: string
 ): SupportRequestItem | null {
   const list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
   const idx = list.findIndex((r) => r.id === id || r.ticketNumber === id);
   if (idx === -1) return null;
+  const now = new Date().toISOString();
   list[idx] = {
     ...list[idx],
     status,
-    updatedAt: new Date().toISOString(),
+    adminResponse: adminResponse !== undefined ? adminResponse : list[idx].adminResponse,
+    respondedAt: adminResponse ? now : list[idx].respondedAt,
+    respondedBy: adminName || list[idx].respondedBy,
+    updatedAt: now,
   };
   globalThis.__espServerSupportRequests = list;
   trySaveJson("support_requests.json", list);

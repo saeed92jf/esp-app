@@ -365,12 +365,12 @@ export function GlobalQuickActions() {
                       ],
                 ]
               : [
-                  /* Regular User: Clean neutral circular button (no red/green alert) */
+                  /* Regular User: Primary theme colored circular button */
                   "size-12 rounded-full p-0",
-                  "bg-background/95 dark:bg-card/95 hover:bg-muted/90 text-foreground",
-                  "border border-border/60 hover:border-border/80",
-                  "shadow-[0_4px_16px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-lg",
-                  "backdrop-blur-xl",
+                  "bg-primary hover:bg-primary/90 text-primary-foreground",
+                  "border-0 ring-1 ring-white/20 ring-inset",
+                  "shadow-[0_8px_24px_-4px_rgba(2,132,199,0.45),0_2px_8px_rgba(0,0,0,0.12)]",
+                  "hover:brightness-105 active:scale-95",
                 ]
           )}
         >
@@ -416,17 +416,17 @@ export function GlobalQuickActions() {
               )}
             </div>
           ) : (
-            /* Regular User: Clean neutral mode with large brand icon */
+            /* Regular User: Primary theme mode with prominent crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
                 className={cn(
-                  "size-7 text-[#9C0002] dark:text-[#E30613] transition-transform duration-200 select-none pointer-events-none",
+                  "size-7.5 text-primary-foreground drop-shadow-xs transition-transform duration-200 select-none pointer-events-none",
                   isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-110"
                 )}
               />
               {isOpen && (
-                <div className="absolute inset-0 flex items-center justify-center bg-card/70 backdrop-blur-xs rounded-full">
-                  <X className="size-5 text-foreground stroke-[2]" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-xs rounded-full">
+                  <X className="size-5 text-primary-foreground stroke-[2.5]" />
                 </div>
               )}
             </div>

@@ -35,6 +35,10 @@ export const bugReportsService = {
     cacheTimestamp = 0;
   },
 
+  invalidateCache() {
+    this.clearCache();
+  },
+
   async getBugReports(
     filters?: {
       status?: string;
@@ -228,11 +232,16 @@ export const bugReportsService = {
     return res.json();
   },
 
-  async updateSupportRequestStatus(id: string, status: string): Promise<SupportRequest> {
+  async updateSupportRequestStatus(
+    id: string,
+    status: string,
+    adminResponse?: string,
+    adminName?: string
+  ): Promise<SupportRequest> {
     const res = await fetch(`/api/support-requests/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, adminResponse, adminName }),
     });
     if (!res.ok) throw new Error("Failed to update support request status");
     notifyBugReportsUpdated();
