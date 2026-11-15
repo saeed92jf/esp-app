@@ -52,8 +52,8 @@ export default function LoginPage() {
     if (!rawRedirect || rawRedirect.includes("/login")) return null;
     let target = rawRedirect;
     for (const loc of ["fa", "en"]) {
-      if (target === `/${loc}`) {
-        target = "/";
+      if (target === `/${loc}` || target === `/${loc}/`) {
+        target = "/dashboard";
         break;
       } else if (target.startsWith(`/${loc}/`)) {
         target = target.slice(loc.length + 1);
@@ -63,9 +63,9 @@ export default function LoginPage() {
     return target.startsWith("/") && !target.startsWith("//") ? target : null;
   };
 
-  // If user is already authenticated, redirect them directly to intended page or dashboard
+  // If user is already authenticated (and not submitting), redirect them directly to intended page or dashboard
   useEffect(() => {
-    if (user && !authLoading) {
+    if (user && !authLoading && !isLoading) {
       const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
       const target = getCleanRedirectTarget(redirectParam);
       if (target) {
@@ -74,7 +74,7 @@ export default function LoginPage() {
         router.replace("/dashboard");
       }
     }
-  }, [user, authLoading, searchParams, router]);
+  }, [user, authLoading, isLoading, searchParams, router]);
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(getLoginSchema(t)),
@@ -98,36 +98,52 @@ export default function LoginPage() {
     try {
       if (login) {
         const loggedUser = await login(data.identifier, data.password);
-        if (loggedUser) {
-          // Admins and superadmins bypass profile onboarding and pending checks
-          const isPrivileged = loggedUser.role === "admin" || loggedUser.role === "superadmin";
-
-          // Non-privileged users who are not active go directly to /account-pending
-          if (!isPrivileged) {
-            const isFullyApproved = Boolean(
-              loggedUser.accountStatus === "active" || (loggedUser.hrApproved && loggedUser.managerApproved)
-            );
-            if (!isFullyApproved) {
-              router.push("/account-pending");
-              router.refresh();
-              return;
-            }
-          }
-        }
-
-        const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
-        const target = getCleanRedirectTarget(redirectParam);
-        if (target) {
-          router.push(target as any);
-          router.refresh();
+        if (!loggedUser) {
+          setIsLoading(false);
           return;
         }
 
-        router.push("/");
-        router.refresh();
+        let destination = "/dashboard";
+
+        // Admins and superadmins bypass profile onboarding and pending checks
+        const isPrivileged = loggedUser.role === "admin" || loggedUser.role === "superadmin";
+
+        // Non-privileged users who are not active go directly to /account-pending
+        if (!isPrivileged) {
+          const isFullyApproved = Boolean(
+            loggedUser.accountStatus === "active" || (loggedUser.hrApproved && loggedUser.managerApproved)
+          );
+          if (!isFullyApproved) {
+            destination = "/account-pending";
+          }
+        }
+
+        if (destination !== "/account-pending") {
+          const redirectParam = searchParams.get("redirect") || searchParams.get("returnUrl");
+          const target = getCleanRedirectTarget(redirectParam);
+          if (target) {
+            destination = target;
+          }
+        }
+
+        // Fast & seamless navigation to destination
+        router.replace(destination as any);
+
+        // Fallback guarantee: if client-side router transition doesn't complete within 400ms,
+        // force immediate direct browser navigation so user NEVER stays stuck on "Signing in..."
+        setTimeout(() => {
+          if (typeof window !== "undefined") {
+            const prefix = locale === "fa" ? "/fa" : "/en";
+            const fullTarget = destination.startsWith("/")
+              ? `${prefix}${destination}`
+              : `${prefix}/${destination}`;
+            if (window.location.pathname !== fullTarget) {
+              window.location.href = fullTarget;
+            }
+          }
+        }, 400);
       } else {
-        router.push("/");
-        router.refresh();
+        router.replace("/dashboard");
       }
     } catch (error: any) {
       console.log("Login failed:", error?.message);

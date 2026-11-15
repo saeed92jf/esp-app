@@ -497,27 +497,33 @@ export class RealAuthService implements IAuthService {
         setAuthToken(token, raw.tokens?.refresh_token);
       }
 
-      // Attempt to fetch full user info from /users/me
-      let meUser: any = null;
-      try {
-        const meRes = await this.client.get<any>(`/users/me`, { auth: true });
-        meUser = meRes?.data ?? meRes;
-      } catch {
-        // Fallback to basic info if /users/me fails or is still onboarding
-      }
-
       let user: User;
-      if (meUser) {
-        user = normalizeUserFromApi(meUser);
+      // If backend already returned full user object in raw.user, normalize immediately without extra network delay
+      if (raw.user) {
+        user = normalizeUserFromApi(raw.user);
         if (!user.email) user.email = email;
       } else {
-        user = normalizeUserFromApi({
-          id: raw.user_id || "u-real",
-          email,
-          role: raw.role,
-          status: raw.account_status,
-          requires_onboarding: raw.requires_onboarding,
-        });
+        // Fallback: Attempt to fetch user info from /users/me only if raw.user is absent
+        let meUser: any = null;
+        try {
+          const meRes = await this.client.get<any>(`/users/me`, { auth: true });
+          meUser = meRes?.data ?? meRes;
+        } catch {
+          // Fallback to basic info if /users/me fails or is still onboarding
+        }
+
+        if (meUser) {
+          user = normalizeUserFromApi(meUser);
+          if (!user.email) user.email = email;
+        } else {
+          user = normalizeUserFromApi({
+            id: raw.user_id || "u-real",
+            email,
+            role: raw.role,
+            status: raw.account_status,
+            requires_onboarding: raw.requires_onboarding,
+          });
+        }
       }
 
       return { user, token };

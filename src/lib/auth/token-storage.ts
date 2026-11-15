@@ -46,6 +46,8 @@ export function setAuthToken(token: string, refreshToken?: string): void {
   if (typeof window !== "undefined") {
     try {
       localStorage.setItem(AUTH_TOKEN_KEY, cleanToken);
+      localStorage.setItem("esp_auth_token", cleanToken);
+      localStorage.setItem("token", cleanToken);
       if (refreshToken) {
         localStorage.setItem("esp-refresh-token", refreshToken.trim());
       }
@@ -54,6 +56,8 @@ export function setAuthToken(token: string, refreshToken?: string): void {
 
   // 2. Cookie for SSR and Edge Middleware
   setCookie(AUTH_TOKEN_KEY, cleanToken);
+  setCookie("esp_auth_token", cleanToken);
+  setCookie("token", cleanToken);
 }
 
 /**
