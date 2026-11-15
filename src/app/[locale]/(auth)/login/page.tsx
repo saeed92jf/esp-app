@@ -54,7 +54,7 @@ export default function LoginPage() {
     let target = rawRedirect;
     for (const loc of ["fa", "en"]) {
       if (target === `/${loc}` || target === `/${loc}/`) {
-        target = "/dashboard";
+        target = "/";
         break;
       } else if (target.startsWith(`/${loc}/`)) {
         target = target.slice(loc.length + 1);
@@ -75,7 +75,7 @@ export default function LoginPage() {
     }
 
     if (user && !authLoading && !isLoading && hasValidAuthToken()) {
-      router.replace("/dashboard");
+      router.replace("/");
     }
   }, [user, authLoading, isLoading, searchParams, router]);
 
@@ -106,7 +106,7 @@ export default function LoginPage() {
           return;
         }
 
-        let destination = "/dashboard";
+        let destination = "/";
 
         // Admins and superadmins bypass profile onboarding and pending checks
         const isPrivileged = loggedUser.role === "admin" || loggedUser.role === "superadmin";
@@ -135,7 +135,7 @@ export default function LoginPage() {
         // Fast & seamless navigation to destination
         router.replace(destination as any);
       } else {
-        router.replace("/dashboard");
+        router.replace("/");
       }
     } catch (error: any) {
       console.log("Login failed:", error?.message);
