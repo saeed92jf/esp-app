@@ -71,12 +71,11 @@ export function HoldingsDirectoryView() {
         h.nameEn.toLowerCase().includes(q) ||
         h.companyAbbrv.toLowerCase().includes(q) ||
         (h.tseSymbol && h.tseSymbol.toLowerCase().includes(q)) ||
-        h.headquartersFa.toLowerCase().includes(q) ||
+        (h.headquartersFa && h.headquartersFa.toLowerCase().includes(q)) ||
         (h.officeAddressFa && h.officeAddressFa.toLowerCase().includes(q)) ||
         (h.officePhone && h.officePhone.toLowerCase().includes(q)) ||
         (h.postalCode && h.postalCode.toLowerCase().includes(q)) ||
-        (h.nationalIdNumber && h.nationalIdNumber.toLowerCase().includes(q)) ||
-        h.ceoNameFa.toLowerCase().includes(q);
+        (h.nationalIdNumber && h.nationalIdNumber.toLowerCase().includes(q));
 
       const matchSubs = h.subsidiaries.some(
         (s) =>
@@ -96,9 +95,9 @@ export function HoldingsDirectoryView() {
         case "subs_desc":
           return b.subsidiaries.length - a.subsidiaries.length;
         case "year_desc":
-          return b.establishedYear - a.establishedYear;
+          return (b.establishedYear ?? 0) - (a.establishedYear ?? 0);
         case "year_asc":
-          return a.establishedYear - b.establishedYear;
+          return (a.establishedYear ?? 0) - (b.establishedYear ?? 0);
         case "name_asc":
           return isRtl
             ? a.nameFa.localeCompare(b.nameFa, "fa")
@@ -114,6 +113,15 @@ export function HoldingsDirectoryView() {
   const totalHoldings = IRANIAN_HOLDINGS.length;
   const totalSubsidiaries = useMemo(() => {
     return IRANIAN_HOLDINGS.reduce((sum, h) => sum + h.subsidiaries.length, 0);
+  }, []);
+  const listedHoldingsCount = useMemo(() => {
+    return IRANIAN_HOLDINGS.filter((h) => !!h.tseSymbol).length;
+  }, []);
+  const totalLinkedPlants = useMemo(() => {
+    return IRANIAN_HOLDINGS.reduce(
+      (sum, h) => sum + h.subsidiaries.filter((s) => !!s.plantId).length,
+      0
+    );
   }, []);
 
   return (
@@ -156,11 +164,11 @@ export function HoldingsDirectoryView() {
           </div>
           <div>
             <div className="text-[11px] text-muted-foreground font-medium">
-              {isRtl ? "ظرفیت سالانه کل هلدینگ‌ها" : "Combined Capacity"}
+              {isRtl ? "هلدینگ‌های شفاف بورسی" : "Listed on Stock Exchange"}
             </div>
             <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
-              {formatLocaleNumber(75, isRtl)}+{" "}
-              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "میلیون تن" : "Million Tons"}</span>
+              {formatLocaleNumber(listedHoldingsCount, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "نماد بورسی TSE" : "TSE Listed"}</span>
             </div>
           </div>
         </div>
@@ -171,11 +179,11 @@ export function HoldingsDirectoryView() {
           </div>
           <div>
             <div className="text-[11px] text-muted-foreground font-medium">
-              {isRtl ? "ارزش بازار در بورس تهران" : "Combined Market Cap"}
+              {isRtl ? "مجتمع‌های متصل به دایرکتوری" : "Plant-Linked Complexes"}
             </div>
             <div className={cn("text-lg sm:text-xl font-bold tracking-tight tabular-nums text-foreground", isRtl && "fa-num")}>
-              {formatLocaleNumber(1300, isRtl)}+{" "}
-              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "هزار میلیارد ت" : "T Tomans"}</span>
+              {formatLocaleNumber(totalLinkedPlants, isRtl)}{" "}
+              <span className="text-xs font-normal text-muted-foreground font-sans">{isRtl ? "پلنت صنعتی" : "Verified Plants"}</span>
             </div>
           </div>
         </div>
@@ -228,7 +236,7 @@ export function HoldingsDirectoryView() {
               onChange={(e) => setSortBy(e.target.value as HoldingSortOption)}
               className="h-9 px-3 text-xs rounded-xl border border-border/80 bg-background text-foreground font-medium focus:outline-hidden focus:ring-2 focus:ring-primary/20 cursor-pointer shadow-2xs"
             >
-              <option value="default">{isRtl ? "ارزش بازار و اهمیت صنعتی" : "Market Importance"}</option>
+              <option value="default">{isRtl ? "اهمیت صنعتی و پیش‌فرض" : "Industrial Importance"}</option>
               <option value="subs_desc">{isRtl ? "بیشترین شرکت‌های زیرمجموعه" : "Most Subsidiaries"}</option>
               <option value="year_desc">{isRtl ? "جدیدترین سال تاسیس" : "Newest Est."}</option>
               <option value="year_asc">{isRtl ? "با سابقه‌ترین و قدیمی‌ترین" : "Oldest Est."}</option>
@@ -375,10 +383,12 @@ export function HoldingsDirectoryView() {
                     </span>
 
                     {/* Est. Year */}
-                    <span className="inline-flex items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
-                      <Calendar className="size-3 text-muted-foreground/70 shrink-0" />
-                      <span>{isRtl ? `تاسیس ${formatLocaleNumber(holding.establishedYear, true)}` : `Est. ${holding.establishedYear}`}</span>
-                    </span>
+                    {holding.establishedYear ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] tabular-nums text-muted-foreground">
+                        <Calendar className="size-3 text-muted-foreground/70 shrink-0" />
+                        <span>{isRtl ? `تاسیس ${formatLocaleNumber(holding.establishedYear, true)}` : `Est. ${holding.establishedYear}`}</span>
+                      </span>
+                    ) : null}
                   </div>
 
                   {/* View Details Action Button */}
