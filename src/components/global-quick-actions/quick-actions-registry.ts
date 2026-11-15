@@ -32,8 +32,7 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
     icon: Bug,
     accentColor: "#64748b",
     badge: {
-      type: "dot-count",
-      dotColor: "#94a3b8",
+      type: "chevron",
     },
     order: 1,
   },

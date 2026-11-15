@@ -5,10 +5,9 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocale } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { Plus, X, ChevronRight, Settings } from "lucide-react";
+import { X, ChevronRight, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { EspCoreIcon } from "@/components/brand/esp-core-icon";
 import { formatLocaleNumber } from "@/lib/format-number";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
@@ -260,17 +259,9 @@ export function GlobalQuickActions() {
                         </span>
                       </div>
 
-                      {/* Right: Neutral Pill Badge (Only for superadmin if issues exist) */}
+                      {/* Right: Neutral Pill Badge (Only for text badges, no count number on bug-report) */}
                       <div className="shrink-0 ps-2">
-                        {action.badge?.type === "dot-count" && isSuperAdmin && activeCount > 0 ? (
-                          <Badge
-                            variant="secondary"
-                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium"
-                          >
-                            <span className="size-1.5 rounded-full shrink-0 bg-red-500" />
-                            <span>{formatLocaleNumber(activeCount, isRtl)}</span>
-                          </Badge>
-                        ) : action.badge?.type === "text" ? (
+                        {action.badge?.type === "text" ? (
                           <span className="text-[11px] font-medium text-muted-foreground/80">
                             {isRtl ? action.badge.textFa : action.badge.textEn}
                           </span>
@@ -337,7 +328,7 @@ export function GlobalQuickActions() {
               ? {
                   background: hasIssues
                     ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
-                    : "radial-gradient(circle at center, #34D399 0%, #10B981 28%, #059669 58%, #047857 85%, #022C22 100%)",
+                    : "radial-gradient(circle at center, #4EFA8A 0%, #22EA6B 25%, #15CA53 55%, #10A343 85%, #0A732E 100%)",
                 }
               : undefined
           }
@@ -351,17 +342,17 @@ export function GlobalQuickActions() {
                   hasIssues
                     ? [
                         /* Superadmin Oval/Pill shape with radial red gradient */
-                        "h-12 rounded-full px-3.5 gap-2.5 min-w-[104px]",
+                        "h-12 rounded-full px-4 gap-2.5 min-w-[92px]",
                         "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)]",
                         "hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]",
                         "hover:brightness-105",
                       ]
                     : [
-                        /* Superadmin Circular shape with epic radial green gradient */
+                        /* Superadmin Circular shape with attractive luminous phosphor lime green */
                         "size-12 rounded-full p-0",
-                        "shadow-[0_8px_24px_-4px_rgba(16,185,129,0.5),0_3px_10px_-2px_rgba(5,150,105,0.4)]",
-                        "hover:shadow-[0_12px_30px_-4px_rgba(16,185,129,0.65),0_4px_14px_-2px_rgba(5,150,105,0.5)]",
-                        "hover:brightness-105",
+                        "shadow-[0_8px_24px_-2px_rgba(34,197,94,0.65),0_0_22px_rgba(78,250,138,0.45)]",
+                        "hover:shadow-[0_12px_32px_-2px_rgba(34,197,94,0.8),0_0_30px_rgba(78,250,138,0.6)]",
+                        "hover:brightness-110",
                       ],
                 ]
               : [
@@ -375,31 +366,19 @@ export function GlobalQuickActions() {
           )}
         >
           {isSuperAdmin && hasIssues ? (
-            /* Superadmin Oval / Pill mode with count and red radial gradient styling */
-            <>
-              {/* ESP CORE Icon framed in a crisp white circular backing so the red emblem pops and never fades */}
-              <div className="size-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md ring-1 ring-black/10">
-                <EspCoreIcon className="size-5.5 text-[#B91C1C] drop-shadow-xs" />
+            /* Superadmin Oval / Pill mode: ESP CORE icon and filled pill badge centered side-by-side */
+            isOpen ? (
+              <div className="flex items-center justify-center size-full">
+                <X className="size-5.5 text-white stroke-[2.5]" />
               </div>
-
-              {/* Issues Count Badge with authentic Shabnam/Inter typography */}
-              <span className="text-[13px] font-bold whitespace-nowrap leading-none text-white drop-shadow-xs">
-                {formatLocaleNumber(activeCount, isRtl)}{" "}
-                {isRtl
-                  ? activeCount === 1 ? "ایشو" : "ایشو"
-                  : activeCount === 1 ? "Issue" : "Issues"}
-              </span>
-
-              {/* Indicator / Close toggle */}
-              <div
-                className={cn(
-                  "transition-transform duration-200 flex items-center justify-center shrink-0 opacity-95 group-hover:opacity-100",
-                  isOpen ? "rotate-90" : "rotate-0"
-                )}
-              >
-                {isOpen ? <X className="size-4 text-white" /> : <Plus className="size-4 text-white" />}
+            ) : (
+              <div className="flex items-center justify-center gap-2 px-0.5">
+                <EspCoreIcon className="size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] shrink-0" />
+                <span className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-white text-[#B91C1C] font-bold text-xs font-mono shadow-xs shrink-0 leading-none">
+                  {formatLocaleNumber(activeCount, isRtl)}
+                </span>
               </div>
-            </>
+            )
           ) : isSuperAdmin ? (
             /* Superadmin Circular mode with epic radial green gradient from center and large crisp icon */
             <div className="relative flex items-center justify-center size-full">
