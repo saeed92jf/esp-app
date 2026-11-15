@@ -21,7 +21,9 @@
     "guardian:scan": "tsx scripts/quality-guardian.ts --scan",
     "guardian:scan:full": "tsx scripts/quality-guardian.ts --full",
     "guardian:fix": "tsx scripts/quality-guardian.ts --fix",
-    "guardian:check": "tsx scripts/quality-guardian.ts --strict"
+    "guardian:check": "tsx scripts/quality-guardian.ts --strict",
+    "guardian:overnight": "tsx scripts/quality-guardian.ts --overnight --interval=30 --fix",
+    "guardian:daemon": "tsx scripts/quality-guardian.ts --daemon --interval=30 --fix"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
