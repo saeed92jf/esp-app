@@ -43,6 +43,7 @@ export function ZheenExpensesMaintenanceView() {
     addMaintenanceRecord,
     completeMaintenance,
     payInstallment,
+    setActiveTab: setGlobalErpTab,
   } = useZheenStore();
 
   const [activeTab, setActiveTab] = useState<"expenses" | "maintenance" | "installments">("expenses");
@@ -157,6 +158,24 @@ export function ZheenExpensesMaintenanceView() {
               );
             })}
           </div>
+        </div>
+
+        {/* Accounting Standard Distinction Alert */}
+        <div className="mt-3 pt-3 border-t border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-md bg-muted/40 text-xs">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="size-2 rounded-full bg-amber-500 shrink-0" />
+            <span>
+              <strong className="text-foreground">تمایز استاندارد حسابداری:</strong> هزینه‌های این بخش مربوط به مخارج جاری دوره (OPEX نظیر قبوض و اجاره) و استهلاک تجهیزات است. هزینه‌های جانبی مستقیم خرید مواد اولیه (کرایه باربری، انعام و تخلیه) در بخش مجزای «هزینه‌های جانبی انبار (Landed Costs)» بر بهای تمام‌شده کالاها سرشکن می‌شوند.
+            </span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setGlobalErpTab("inventory")}
+            className="h-7 px-2.5 rounded-md text-[11px] font-bold text-amber-700 dark:text-amber-300 border-amber-500/40 hover:bg-amber-500/10 shrink-0 cursor-pointer"
+          >
+            مشاهده هزینه‌های جانبی خرید (Landed Costs) ←
+          </Button>
         </div>
       </Card>
 

@@ -73,11 +73,79 @@ export interface StockTransaction {
   unit: UnitType;
   unitCost: number; // in Tomans
   totalCost: number;
+  landedCostPerUnit?: number; // بهای تمام‌شده نهایی هر واحد با احتساب هزینه جانبی
   batchNumber?: string;
   referenceNumber?: string;
   reason: string;
   registeredBy: string;
   createdAt: string;
+}
+
+// ==========================================
+// 2.1 PURCHASE INVOICES & LANDED COSTS (هزینه‌های جانبی خرید)
+// ==========================================
+export type LandedCostType =
+  | 'Freight' // کرایه حمل و باربری
+  | 'Handling' // تخلیه، بارگیری و انعام
+  | 'Packaging' // بسته‌بندی ویژه و کارتن
+  | 'Insurance' // بیمه باربری
+  | 'CustomsToll' // عوارض و بارنامه
+  | 'Other'; // سایر هزینه‌های مستقیم خرید
+
+export type AllocationMethod = 'ByValue' | 'ByQuantity' | 'Equal';
+
+export interface LandedCostEntry {
+  id: string;
+  costType: LandedCostType;
+  titleFa: string;
+  amount: number; // in Tomans
+  paidTo?: string; // نام شرکت باربری یا راننده / کارگر
+  receiptNumber?: string;
+  paymentMethod: 'Cash' | 'Card' | 'Credit';
+  notes?: string;
+}
+
+export interface PurchaseInvoiceItem {
+  id: string;
+  itemId: string; // references InventoryItem
+  itemCode: string;
+  itemName: string;
+  categoryType: InventoryCategoryType;
+  quantity: number; // in purchaseUnit (e.g. 10 kg)
+  purchaseUnit: UnitType;
+  unitPrice: number; // price per purchaseUnit in Tomans
+  discountAmount: number; // line discount
+  taxAmount: number; // line tax/vat
+  totalNetPrice: number; // (quantity * unitPrice) - discount + tax
+  baseUnit: UnitType; // unit for stock & consumption (e.g. g, ml)
+  baseUnitQuantity: number; // quantity * conversionFactor (e.g. 10,000 g)
+  baseUnitPrice: number; // price per baseUnit before landed costs
+  allocatedLandedCost: number; // share of landed costs in Tomans
+  finalLandedUnitPrice: number; // final landed cost per baseUnit including allocated costs (بهای تمام‌شده واقعی هر واحد)
+  expiryDate?: string;
+  batchNumber?: string;
+}
+
+export interface PurchaseInvoice {
+  id: string;
+  invoiceNumber: string; // e.g. PUR-1404-015
+  supplierName: string;
+  invoiceDate: string; // Jalali e.g. 1404/08/25
+  destinationStorage: string; // e.g. سردخانه مرکزی، انبار خشک
+  paymentStatus: 'Paid' | 'Credit' | 'Partial';
+  paymentMethod: 'Cash' | 'Card' | 'BankTransfer' | 'Credit';
+  items: PurchaseInvoiceItem[];
+  itemsTotalAmount: number;
+  totalDiscount: number;
+  totalTax: number;
+  netItemsAmount: number;
+  landedCosts: LandedCostEntry[]; // بخش تفکیک‌شده هزینه‌های جانبی
+  totalLandedCost: number;
+  allocationMethod: AllocationMethod;
+  grandTotal: number; // خالص کالاها + هزینه‌های جانبی
+  registeredBy: string;
+  createdAt: string;
+  notes?: string;
 }
 
 export interface UnitConversionRule {

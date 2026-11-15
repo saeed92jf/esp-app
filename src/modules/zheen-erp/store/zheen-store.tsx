@@ -21,11 +21,16 @@ import {
   PlantWateringLog,
   AppNotification,
   StockTransactionType,
+  PurchaseInvoice,
+  PurchaseInvoiceItem,
+  LandedCostEntry,
+  AllocationMethod,
 } from "../types/zheen-types";
 
 import {
   INITIAL_USER_PROFILES,
   INITIAL_INVENTORY_ITEMS,
+  INITIAL_PURCHASE_INVOICES,
   INITIAL_RECIPES,
   INITIAL_PACKAGING_CONFIGS,
   INITIAL_PRODUCTION_ORDERS,
@@ -48,9 +53,10 @@ interface ZheenStoreContextType {
   activeTab: string;
   setActiveTab: (tab: string) => void;
 
-  // Inventory
+  // Inventory & Purchasing
   inventoryItems: InventoryItem[];
   stockTransactions: StockTransaction[];
+  purchaseInvoices: PurchaseInvoice[];
   addInventoryItem: (item: Omit<InventoryItem, "id">) => void;
   updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void;
   deleteInventoryItem: (id: string) => void;
@@ -61,6 +67,13 @@ interface ZheenStoreContextType {
     reason: string,
     unitCost?: number
   ) => boolean;
+  createPurchaseInvoice: (
+    invoice: Omit<PurchaseInvoice, "id" | "createdAt">
+  ) => { success: boolean; invoiceId: string };
+  addLandedCostToInvoice: (
+    invoiceId: string,
+    cost: Omit<LandedCostEntry, "id">
+  ) => { success: boolean };
 
   // Recipes & Production
   recipes: Recipe[];
@@ -128,6 +141,7 @@ export function ZheenStoreProvider({ children }: { children: React.ReactNode }) 
 
   // 2. Inventory State
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>(INITIAL_INVENTORY_ITEMS);
+  const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>(INITIAL_PURCHASE_INVOICES);
   const [stockTransactions, setStockTransactions] = useState<StockTransaction[]>([
     {
       id: "tx-init-1",
@@ -274,6 +288,171 @@ export function ZheenStoreProvider({ children }: { children: React.ReactNode }) 
     );
     setStockTransactions((prev) => [tx, ...prev]);
     return true;
+  };
+
+  // ==========================================
+  // ACTIONS: PURCHASING & LANDED COSTS
+  // ==========================================
+  const createPurchaseInvoice = (
+    invoiceData: Omit<PurchaseInvoice, "id" | "createdAt">
+  ): { success: boolean; invoiceId: string } => {
+    const invoiceId = `pur-${Date.now()}`;
+    const nowJalali =
+      new Date().toLocaleDateString("fa-IR") + " " + new Date().toLocaleTimeString("fa-IR");
+
+    const totalLandedCost = invoiceData.landedCosts.reduce((acc, c) => acc + c.amount, 0);
+    const totalNetItems = invoiceData.items.reduce((acc, item) => acc + item.totalNetPrice, 0);
+    const totalBaseQty = invoiceData.items.reduce((acc, item) => acc + item.baseUnitQuantity, 0);
+
+    const calculatedItems: PurchaseInvoiceItem[] = invoiceData.items.map((item) => {
+      let allocatedCost = 0;
+      if (totalLandedCost > 0) {
+        if (invoiceData.allocationMethod === "ByValue") {
+          const ratio = totalNetItems > 0 ? item.totalNetPrice / totalNetItems : 1 / invoiceData.items.length;
+          allocatedCost = Math.round(totalLandedCost * ratio);
+        } else if (invoiceData.allocationMethod === "ByQuantity") {
+          const ratio = totalBaseQty > 0 ? item.baseUnitQuantity / totalBaseQty : 1 / invoiceData.items.length;
+          allocatedCost = Math.round(totalLandedCost * ratio);
+        } else {
+          allocatedCost = Math.round(totalLandedCost / invoiceData.items.length);
+        }
+      }
+
+      const totalItemWithLanded = item.totalNetPrice + allocatedCost;
+      const finalLandedUnitCost =
+        item.baseUnitQuantity > 0
+          ? Math.round((totalItemWithLanded / item.baseUnitQuantity) * 100) / 100
+          : item.baseUnitPrice;
+
+      return {
+        ...item,
+        allocatedLandedCost: allocatedCost,
+        finalLandedUnitPrice: finalLandedUnitCost,
+      };
+    });
+
+    const newInvoice: PurchaseInvoice = {
+      ...invoiceData,
+      id: invoiceId,
+      items: calculatedItems,
+      totalLandedCost,
+      grandTotal: invoiceData.netItemsAmount + totalLandedCost,
+      createdAt: nowJalali,
+    };
+
+    // Update stock levels and latest purchase price in inventory
+    setInventoryItems((prevItems) => {
+      const updated = [...prevItems];
+      calculatedItems.forEach((cItem) => {
+        const idx = updated.findIndex((i) => i.id === cItem.itemId || i.itemCode === cItem.itemCode);
+        if (idx !== -1) {
+          const existing = updated[idx];
+          updated[idx] = {
+            ...existing,
+            currentStock: existing.currentStock + cItem.baseUnitQuantity,
+            purchasePrice: cItem.unitPrice,
+            purchaseDate: invoiceData.invoiceDate,
+            batchNumber: cItem.batchNumber || invoiceData.invoiceNumber,
+            expiryDate: cItem.expiryDate || existing.expiryDate,
+          };
+        }
+      });
+      return updated;
+    });
+
+    // Record Stock Transactions for Cardex
+    const newTransactions: StockTransaction[] = calculatedItems.map((cItem, i) => {
+      const landedNote =
+        cItem.allocatedLandedCost > 0
+          ? ` (سربار هزینه جانبی: ${cItem.allocatedLandedCost.toLocaleString("fa-IR")} ت)`
+          : "";
+      return {
+        id: `tx-pur-${Date.now()}-${i}`,
+        itemId: cItem.itemId,
+        itemName: cItem.itemName,
+        transactionType: "Purchase",
+        quantity: cItem.baseUnitQuantity,
+        unit: cItem.baseUnit,
+        unitCost: cItem.baseUnitPrice,
+        landedCostPerUnit: cItem.finalLandedUnitPrice,
+        totalCost: cItem.totalNetPrice + cItem.allocatedLandedCost,
+        referenceNumber: invoiceData.invoiceNumber,
+        batchNumber: cItem.batchNumber || invoiceData.invoiceNumber,
+        reason: `رسید فاکتور خرید ${invoiceData.invoiceNumber} از ${invoiceData.supplierName}${landedNote}`,
+        registeredBy: invoiceData.registeredBy || currentUser.name,
+        createdAt: nowJalali,
+      };
+    });
+
+    setStockTransactions((prev) => [...newTransactions, ...prev]);
+    setPurchaseInvoices((prev) => [newInvoice, ...prev]);
+
+    toast.success(
+      `فاکتور خرید ${invoiceData.invoiceNumber} با ${calculatedItems.length} قلم کالا و ${totalLandedCost.toLocaleString("fa-IR")} تومان هزینه جانبی ثبت و به موجودی انبار افزوده شد.`
+    );
+
+    return { success: true, invoiceId };
+  };
+
+  const addLandedCostToInvoice = (
+    invoiceId: string,
+    costData: Omit<LandedCostEntry, "id">
+  ): { success: boolean } => {
+    const invoice = purchaseInvoices.find((inv) => inv.id === invoiceId);
+    if (!invoice) {
+      toast.error("فاکتور خرید یافت نشد.");
+      return { success: false };
+    }
+
+    const newCost: LandedCostEntry = {
+      ...costData,
+      id: `lc-${Date.now()}`,
+    };
+
+    const updatedLandedCosts = [...invoice.landedCosts, newCost];
+    const newTotalLanded = updatedLandedCosts.reduce((a, b) => a + b.amount, 0);
+    const totalNetItems = invoice.items.reduce((acc, item) => acc + item.totalNetPrice, 0);
+    const totalBaseQty = invoice.items.reduce((acc, item) => acc + item.baseUnitQuantity, 0);
+
+    const reCalculatedItems: PurchaseInvoiceItem[] = invoice.items.map((item) => {
+      let allocatedCost = 0;
+      if (invoice.allocationMethod === "ByValue") {
+        const ratio = totalNetItems > 0 ? item.totalNetPrice / totalNetItems : 1 / invoice.items.length;
+        allocatedCost = Math.round(newTotalLanded * ratio);
+      } else if (invoice.allocationMethod === "ByQuantity") {
+        const ratio = totalBaseQty > 0 ? item.baseUnitQuantity / totalBaseQty : 1 / invoice.items.length;
+        allocatedCost = Math.round(newTotalLanded * ratio);
+      } else {
+        allocatedCost = Math.round(newTotalLanded / invoice.items.length);
+      }
+
+      const totalItemWithLanded = item.totalNetPrice + allocatedCost;
+      const finalLandedUnitCost =
+        item.baseUnitQuantity > 0
+          ? Math.round((totalItemWithLanded / item.baseUnitQuantity) * 100) / 100
+          : item.baseUnitPrice;
+
+      return {
+        ...item,
+        allocatedLandedCost: allocatedCost,
+        finalLandedUnitPrice: finalLandedUnitCost,
+      };
+    });
+
+    const updatedInvoice: PurchaseInvoice = {
+      ...invoice,
+      landedCosts: updatedLandedCosts,
+      totalLandedCost: newTotalLanded,
+      items: reCalculatedItems,
+      grandTotal: invoice.netItemsAmount + newTotalLanded,
+    };
+
+    setPurchaseInvoices((prev) =>
+      prev.map((inv) => (inv.id === invoiceId ? updatedInvoice : inv))
+    );
+
+    toast.success(`هزینه جانبی «${costData.titleFa}» به مبلغ ${costData.amount.toLocaleString("fa-IR")} تومان بر فاکتور ${invoice.invoiceNumber} سرشکن شد.`);
+    return { success: true };
   };
 
   // ==========================================
@@ -737,10 +916,13 @@ export function ZheenStoreProvider({ children }: { children: React.ReactNode }) 
     setActiveTab,
     inventoryItems,
     stockTransactions,
+    purchaseInvoices,
     addInventoryItem,
     updateInventoryItem,
     deleteInventoryItem,
     adjustStock,
+    createPurchaseInvoice,
+    addLandedCostToInvoice,
     recipes,
     productionOrders,
     addRecipe,
