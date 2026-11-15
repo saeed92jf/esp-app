@@ -246,6 +246,7 @@ export function GlobalQuickActions() {
       <div
         id="esp-quick-actions-fab"
         ref={containerRef}
+        dir="ltr"
         style={{
           bottom: baseBottom,
           transform: footerPushUp > 0 ? `translate3d(0, -${footerPushUp}px, 0)` : undefined,
@@ -265,6 +266,7 @@ export function GlobalQuickActions() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 4, scale: 0.96 }}
               transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
+              dir={isRtl ? "rtl" : "ltr"}
               className={cn(
                 isSuperAdmin ? "mb-2" : "mb-1.5",
                 isRtl ? "origin-bottom-left" : "origin-bottom-right",
@@ -310,7 +312,12 @@ export function GlobalQuickActions() {
                             {isRtl ? action.badge.textFa : action.badge.textEn}
                           </span>
                         ) : (
-                          <ChevronRight className="size-4 text-muted-foreground/50 group-hover:text-foreground/80 transition-colors" />
+                          <ChevronRight
+                            className={cn(
+                              "size-4 text-muted-foreground/50 group-hover:text-foreground/80 transition-colors",
+                              isRtl && "rotate-180"
+                            )}
+                          />
                         )}
                       </div>
                     </Button>
