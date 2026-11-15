@@ -211,11 +211,6 @@ export function GlobalQuickActions() {
     setActiveModalId(actionId);
   }, []);
 
-  // Do not render if excluded route or user not logged in
-  if (isExcludedRoute || !user) {
-    return null;
-  }
-
   const isSuperAdmin = user?.role === "superadmin";
 
   // Priority Rule: Technical issues/bugs take strict precedence over support requests!
@@ -228,25 +223,29 @@ export function GlobalQuickActions() {
     ? "support"
     : null;
 
-  const badgeText = React.useMemo(() => {
-    if (alertType === "issue") {
-      if (isRtl) {
-        return openIssuesCount > 1
-          ? `${formatLocaleNumber(openIssuesCount, true)} ایشو`
-          : "۱ ایشو";
-      }
-      return openIssuesCount > 1 ? `${openIssuesCount} issues` : "1 issue";
+  let badgeText = "";
+  if (alertType === "issue") {
+    if (isRtl) {
+      badgeText = openIssuesCount > 1
+        ? `${formatLocaleNumber(openIssuesCount, true)} ایشو`
+        : "۱ ایشو";
+    } else {
+      badgeText = openIssuesCount > 1 ? `${openIssuesCount} issues` : "1 issue";
     }
-    if (alertType === "support") {
-      if (isRtl) {
-        return openSupportCount > 1
-          ? `${formatLocaleNumber(openSupportCount, true)} پشتیبانی`
-          : "پشتیبانی";
-      }
-      return openSupportCount > 1 ? `${openSupportCount} support` : "support";
+  } else if (alertType === "support") {
+    if (isRtl) {
+      badgeText = openSupportCount > 1
+        ? `${formatLocaleNumber(openSupportCount, true)} پشتیبانی`
+        : "پشتیبانی";
+    } else {
+      badgeText = openSupportCount > 1 ? `${openSupportCount} support` : "support";
     }
-    return "";
-  }, [alertType, openIssuesCount, openSupportCount, isRtl]);
+  }
+
+  // Do not render if excluded route or user not logged in (placed strictly AFTER all hooks)
+  if (isExcludedRoute || !user) {
+    return null;
+  }
 
   // When ScrollToTop is visible, push Issue Center up by 60px (48px size + 12px gap)
   const baseBottom = isScrollToTopVisible ? "84px" : "24px";
