@@ -124,6 +124,7 @@ export interface BugReport {
   updatedAt: string;
   resolvedAt?: string | null;
   closedAt?: string | null;
+  resolutionExplanation?: string | null;
 }
 
 export interface BugReportsAnalytics {

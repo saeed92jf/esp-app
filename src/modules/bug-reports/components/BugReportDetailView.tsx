@@ -6,29 +6,23 @@ import { useLocale } from "next-intl";
 import {
   ArrowLeft,
   ArrowRight,
-  Bug,
-  AlertCircle,
-  Clock,
   CheckCircle2,
   User,
-  Shield,
   Monitor,
   Camera,
   Download,
-  MessageSquare,
-  Lock,
-  Send,
   Loader2,
   FileText,
-  Activity,
-  Layers,
   Target,
-  Crosshair,
   Copy,
   Check,
   RotateCcw,
   Trash2,
   Mail,
+  Calendar,
+  Sparkles,
+  ExternalLink,
+  Maximize2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
@@ -76,13 +70,8 @@ export function BugReportDetailView({
   const isRtl = locale === "fa";
   const { user } = useAuth();
 
-  const [commentText, setCommentText] = useState("");
-  const [isInternal, setIsInternal] = useState(false);
-  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isUpdatingPriority, setIsUpdatingPriority] = useState(false);
-  const [isUpdatingAssignee, setIsUpdatingAssignee] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteReport = async () => {
@@ -169,54 +158,6 @@ export function BugReportDetailView({
       onUpdated(updated);
     } finally {
       setIsUpdatingPriority(false);
-    }
-  };
-
-  const handleAssignSelf = async () => {
-    setIsUpdatingAssignee(true);
-    try {
-      const updated = await bugReportsService.assignReport(
-        report.id,
-        {
-          id: user?.id,
-          name: user?.fullName || user?.name,
-          email: user?.email,
-        },
-        {
-          id: user?.id || "u-staff",
-          name: user?.fullName || user?.name || "Staff",
-        }
-      );
-      onUpdated(updated);
-    } finally {
-      setIsUpdatingAssignee(false);
-    }
-  };
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!commentText.trim()) return;
-
-    setIsSubmittingComment(true);
-    try {
-      await bugReportsService.addComment(
-        report.id,
-        commentText.trim(),
-        isInternal,
-        {
-          id: user?.id || "u-guest",
-          name: user?.fullName || user?.name || "User",
-          role: user?.role,
-          avatar: user?.avatar,
-        }
-      );
-      // Refresh report
-      const fresh = await bugReportsService.getBugReportById(report.id);
-      onUpdated(fresh);
-      setCommentText("");
-      setIsInternal(false);
-    } finally {
-      setIsSubmittingComment(false);
     }
   };
 
@@ -344,6 +285,34 @@ export function BugReportDetailView({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left / Main Column */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Resolution Banner if Resolved */}
+          {(report.status === "Resolved" || report.status === "Closed" || report.resolutionExplanation) && (
+            <div className="p-4 sm:p-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] shadow-xs space-y-2.5 animate-in fade-in duration-150">
+              <div className="flex items-center justify-between gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-xs sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="size-5 shrink-0" />
+                  <span>
+                    {isRtl ? "این گزارش با موفقیت برطرف شد و پاسخ برای کاربر ارسال گردید" : "This issue has been resolved and replied to"}
+                  </span>
+                </div>
+                {report.resolvedAt && (
+                  <span className="text-[11px] font-mono font-normal text-muted-foreground shrink-0">
+                    {new Date(report.resolvedAt).toLocaleString(isRtl ? "fa-IR" : "en-US")}
+                  </span>
+                )}
+              </div>
+              {report.resolutionExplanation && (
+                <div className="text-xs text-foreground/90 whitespace-pre-wrap leading-relaxed p-3.5 rounded-xl bg-card border border-emerald-500/20 shadow-2xs">
+                  <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1.5">
+                    <Sparkles className="size-3.5" />
+                    <span>{isRtl ? "توضیحات و جوابیه مدیر سیستم:" : "Admin Resolution Note:"}</span>
+                  </div>
+                  {report.resolutionExplanation}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Description Section */}
           <div className="p-5 rounded-2xl border border-border bg-card shadow-xs space-y-3">
             <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
@@ -409,119 +378,6 @@ export function BugReportDetailView({
               </div>
             </div>
           )}
-
-          {/* Comments & Discussion */}
-          <div className="p-5 rounded-2xl border border-border bg-card shadow-xs space-y-4">
-            <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-              <MessageSquare className="size-4 text-primary" />
-              <span>{isRtl ? "گفتگو و پیگیری‌های تیکت" : "Discussion & Updates"}</span>
-            </h3>
-
-            {/* Comment List */}
-            <div className="space-y-3">
-              {(!report.comments || report.comments.length === 0) ? (
-                <div className="text-center py-6 text-xs text-muted-foreground">
-                  {isRtl ? "تاکنون پیامی برای این تیکت ثبت نشده است." : "No comments yet."}
-                </div>
-              ) : (
-                report.comments
-                  .filter((c) => !c.isInternal || isStaff)
-                  .map((c) => (
-                    <div
-                      key={c.id}
-                      className={cn(
-                        "p-3.5 rounded-xl border text-xs space-y-1.5",
-                        c.isInternal
-                          ? "bg-amber-500/[0.06] border-amber-500/20"
-                          : "bg-muted/30 border-border/60"
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-foreground">{c.userName}</span>
-                          {c.userRole && (
-                            <span className="text-[10px] text-muted-foreground">({c.userRole})</span>
-                          )}
-                          {c.isInternal && (
-                            <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1">
-                              <Lock className="size-2.5" />
-                              <span>{isRtl ? "یادداشت داخلی" : "Internal Note"}</span>
-                            </Badge>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-muted-foreground font-mono">
-                          {new Date(c.createdAt).toLocaleString(isRtl ? "fa-IR" : "en-US")}
-                        </span>
-                      </div>
-                      <p className="text-foreground/90 whitespace-pre-wrap leading-relaxed">{c.comment}</p>
-                    </div>
-                  ))
-              )}
-            </div>
-
-            {/* Add Comment Form */}
-            <form onSubmit={handleAddComment} className="space-y-3 pt-2 border-t border-border/60">
-              <Textarea
-                placeholder={isRtl ? "پاسخ یا نظر خود را بنویسید..." : "Write a comment or note..."}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                rows={3}
-                required
-                className="rounded-xl text-xs resize-none"
-              />
-
-              <div className="flex items-center justify-between">
-                {isStaff ? (
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={isInternal}
-                      onChange={(e) => setIsInternal(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="flex items-center gap-1 font-semibold text-foreground">
-                      <Lock className="size-3 text-amber-500" />
-                      <span>{isRtl ? "یادداشت داخلی (فقط مدیران و کارشناسان)" : "Internal note (Staff only)"}</span>
-                    </span>
-                  </label>
-                ) : <div />}
-
-                <Button
-                  type="submit"
-                  disabled={isSubmittingComment}
-                  size="sm"
-                  className="rounded-xl px-5 text-xs font-bold gap-1.5 bg-primary text-white cursor-pointer"
-                >
-                  {isSubmittingComment ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
-                  <span>{isRtl ? "ارسال پیام" : "Post Comment"}</span>
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          {/* Activity Logs Timeline */}
-          {report.activityLogs && report.activityLogs.length > 0 && (
-            <div className="p-5 rounded-2xl border border-border bg-card shadow-xs space-y-3">
-              <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-                <Activity className="size-4 text-primary" />
-                <span>{isRtl ? "تاریخچه و ممیزی رویدادها (Audit Trail)" : "Activity Timeline"}</span>
-              </h3>
-              <div className="space-y-2.5">
-                {report.activityLogs.map((log) => (
-                  <div key={log.id} className="flex items-start gap-3 text-xs">
-                    <div className="size-2 rounded-full bg-primary mt-1.5 shrink-0" />
-                    <div className="flex-1">
-                      <span className="font-bold text-foreground me-1.5">{log.userName}</span>
-                      <span className="text-muted-foreground">{log.description}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-mono shrink-0">
-                      {new Date(log.createdAt).toLocaleDateString(isRtl ? "fa-IR" : "en-US")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Right / Sidebar Column */}
@@ -558,20 +414,6 @@ export function BugReportDetailView({
                   placeholder={isRtl ? "انتخاب اولویت..." : "Select priority..."}
                   className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
                 />
-              </div>
-
-              <div className="pt-2 border-t border-border/50">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAssignSelf}
-                  disabled={isUpdatingAssignee || report.assigneeId === user?.id}
-                  className="w-full rounded-xl text-xs h-9 cursor-pointer"
-                >
-                  {report.assigneeId === user?.id
-                    ? isRtl ? "ارجاع‌شده به شما" : "Assigned to You"
-                    : isRtl ? "ارجاع تیکت به من" : "Assign to Me"}
-                </Button>
               </div>
             </div>
           )}
@@ -741,8 +583,10 @@ export function BugReportDetailView({
 
             {/* Quick response chips */}
             <div className="flex flex-wrap gap-1.5 pt-1">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() =>
                   setResolutionExplanation(
                     isRtl
@@ -750,12 +594,14 @@ export function BugReportDetailView({
                       : "The reported issue has been verified and fixed in the latest platform build."
                   )
                 }
-                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
                 {isRtl ? "برطرف شد در نگارش جدید" : "Fixed in latest build"}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={() =>
                   setResolutionExplanation(
                     isRtl
@@ -763,10 +609,10 @@ export function BugReportDetailView({
                       : "Settings and permissions were updated and tested successfully."
                   )
                 }
-                className="text-[10px] px-2.5 py-1 rounded-md bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                className="text-[11px] h-7 px-2.5 rounded-lg border-border/80 text-muted-foreground hover:text-foreground cursor-pointer font-normal"
               >
                 {isRtl ? "اصلاح تنظیمات و دسترسی" : "Permissions/settings fixed"}
-              </button>
+              </Button>
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-border/60">
@@ -774,7 +620,7 @@ export function BugReportDetailView({
                 variant="outline"
                 size="sm"
                 onClick={() => setResolveModalOpen(false)}
-                className="rounded-xl h-9 px-4 text-xs"
+                className="rounded-xl h-9 px-4 text-xs cursor-pointer"
               >
                 {isRtl ? "انصراف" : "Cancel"}
               </Button>
@@ -782,7 +628,7 @@ export function BugReportDetailView({
                 size="sm"
                 onClick={() => executeStatusChange("Resolved", resolutionExplanation)}
                 disabled={isUpdatingStatus}
-                className="rounded-xl h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
+                className="rounded-xl h-9 px-4 text-xs bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 cursor-pointer"
               >
                 <Mail className="size-3.5" />
                 <span>{isRtl ? "تایید رفع مشکل و ارسال ایمیل" : "Resolve & Send Email"}</span>
@@ -791,6 +637,42 @@ export function BugReportDetailView({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Screenshot Zoom Modal */}
+      {report.screenshotDataUrl && (
+        <Dialog open={screenshotModalOpen} onOpenChange={setScreenshotModalOpen}>
+          <DialogContent className="max-w-4xl p-4 sm:p-6 rounded-2xl">
+            <DialogHeader>
+              <div className="flex items-center justify-between gap-4">
+                <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Camera className="size-5 text-primary" />
+                  <span>{isRtl ? "تصویر پیوست صفحه (Screenshot)" : "Page Screenshot"}</span>
+                </DialogTitle>
+                <a
+                  href={report.screenshotDataUrl}
+                  download={`screenshot-${report.ticketNumber}.png`}
+                  className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline font-normal me-6"
+                >
+                  <Download className="size-3.5" />
+                  <span>{isRtl ? "دانلود تصویر" : "Download"}</span>
+                </a>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground">
+                {isRtl
+                  ? `تصویر ثبت‌شده از صفحه در لحظه بروز اشکال برای تیکت ${report.ticketNumber}`
+                  : `Captured screenshot for ticket ${report.ticketNumber}`}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-3 rounded-xl overflow-hidden border border-border bg-black/5 dark:bg-black/40 flex items-center justify-center max-h-[75vh] overflow-y-auto">
+              <img
+                src={report.screenshotDataUrl}
+                alt={`Screenshot for ${report.ticketNumber}`}
+                className="w-full h-auto object-contain rounded-lg"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
