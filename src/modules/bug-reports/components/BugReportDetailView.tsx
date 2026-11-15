@@ -1,7 +1,7 @@
 // src/modules/bug-reports/components/BugReportDetailView.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocale } from "next-intl";
 import {
   ArrowLeft,
@@ -29,6 +29,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
@@ -182,6 +183,20 @@ export function BugReportDetailView({
   };
 
   const BackIcon = isRtl ? ArrowRight : ArrowLeft;
+
+  const statusOptions = useMemo<ComboboxOption[]>(() => {
+    return ALL_STATUSES.map((st) => ({
+      value: st,
+      label: st,
+    }));
+  }, []);
+
+  const priorityOptions = useMemo<ComboboxOption[]>(() => {
+    return ALL_PRIORITIES.map((pr) => ({
+      value: pr,
+      label: pr,
+    }));
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -466,32 +481,28 @@ export function BugReportDetailView({
                 <label className="text-[11px] text-muted-foreground block">
                   {isRtl ? "تغییر مرحله کار:" : "Change State:"}
                 </label>
-                <select
+                <Combobox
+                  options={statusOptions}
                   value={report.status}
-                  onChange={(e) => handleStatusChange(e.target.value as BugStatus)}
+                  onChange={(val) => val && handleStatusChange(val as BugStatus)}
                   disabled={isUpdatingStatus}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-bold text-primary focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {ALL_STATUSES.map((st) => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
+                  placeholder={isRtl ? "انتخاب وضعیت..." : "Select status..."}
+                  className="rounded-xl h-10 text-xs font-bold text-primary bg-background border-border/80"
+                />
               </div>
 
               <div className="space-y-2 pt-2 border-t border-border/50">
                 <label className="text-[11px] text-muted-foreground block">
                   {isRtl ? "اولویت رسیدگی:" : "Priority:"}
                 </label>
-                <select
+                <Combobox
+                  options={priorityOptions}
                   value={report.priority}
-                  onChange={(e) => handlePriorityChange(e.target.value as BugPriority)}
+                  onChange={(val) => val && handlePriorityChange(val as BugPriority)}
                   disabled={isUpdatingPriority}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {ALL_PRIORITIES.map((pr) => (
-                    <option key={pr} value={pr}>{pr}</option>
-                  ))}
-                </select>
+                  placeholder={isRtl ? "انتخاب اولویت..." : "Select priority..."}
+                  className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
+                />
               </div>
 
               <div className="pt-2 border-t border-border/50">

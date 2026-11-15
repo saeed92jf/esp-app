@@ -1,7 +1,7 @@
 // src/modules/bug-reports/components/FeedbackDialog.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import {
@@ -19,6 +19,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
@@ -52,6 +53,20 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const feedbackTypeOptions = useMemo<ComboboxOption[]>(() => {
+    return FEEDBACK_TYPES.map((t) => ({
+      value: t,
+      label: t,
+    }));
+  }, []);
+
+  const moduleOptions = useMemo<ComboboxOption[]>(() => {
+    return Object.entries(APP_MODULE_NAMES).map(([id, names]) => ({
+      value: id,
+      label: isRtl ? names.fa : names.en,
+    }));
+  }, [isRtl]);
 
   React.useEffect(() => {
     if (open) {
@@ -180,32 +195,26 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                 <label className="text-xs font-semibold text-foreground">
                   {isRtl ? "نوع بازخورد" : "Type"}
                 </label>
-                <select
+                <Combobox
+                  options={feedbackTypeOptions}
                   value={feedbackType}
-                  onChange={(e) => setFeedbackType(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {FEEDBACK_TYPES.map((t) => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
+                  onChange={(val) => val && setFeedbackType(val)}
+                  placeholder={isRtl ? "انتخاب نوع بازخورد..." : "Select type..."}
+                  className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">
                   {isRtl ? "ماژول مربوطه" : "Related Module"}
                 </label>
-                <select
+                <Combobox
+                  options={moduleOptions}
                   value={selectedModule}
-                  onChange={(e) => setSelectedModule(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {Object.entries(APP_MODULE_NAMES).map(([id, names]) => (
-                    <option key={id} value={id}>
-                      {isRtl ? names.fa : names.en}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => val && setSelectedModule(val)}
+                  placeholder={isRtl ? "انتخاب ماژول..." : "Select module..."}
+                  className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
+                />
               </div>
             </div>
 

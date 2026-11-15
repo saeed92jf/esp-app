@@ -1,7 +1,7 @@
 // src/modules/bug-reports/components/BugReportSubmissionDialog.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLocale } from "next-intl";
 import { usePathname } from "@/i18n/navigation";
 import {
@@ -29,6 +29,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -96,6 +97,20 @@ export function BugReportSubmissionDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submittedTicket, setSubmittedTicket] = useState<string | null>(null);
+
+  const categoryOptions = useMemo<ComboboxOption[]>(() => {
+    return CATEGORIES.map((cat) => ({
+      value: cat,
+      label: cat,
+    }));
+  }, []);
+
+  const moduleOptions = useMemo<ComboboxOption[]>(() => {
+    return Object.entries(APP_MODULE_NAMES).map(([id, names]) => ({
+      value: id,
+      label: isRtl ? names.fa : names.en,
+    }));
+  }, [isRtl]);
 
   // Initialize auto-detected module & hunter mode if requested
   useEffect(() => {
@@ -457,34 +472,26 @@ export function BugReportSubmissionDialog({
                 <label className="text-xs font-semibold text-foreground">
                   {isRtl ? "دسته‌بندی خطا" : "Category"}
                 </label>
-                <select
+                <Combobox
+                  options={categoryOptions}
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as BugCategory)}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => val && setCategory(val as BugCategory)}
+                  placeholder={isRtl ? "انتخاب دسته‌بندی..." : "Select category..."}
+                  className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground">
                   {isRtl ? "ماژول مربوطه" : "Related Module"}
                 </label>
-                <select
+                <Combobox
+                  options={moduleOptions}
                   value={selectedModule}
-                  onChange={(e) => setSelectedModule(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-background border border-border text-xs font-medium focus:ring-2 focus:ring-primary/20 outline-none"
-                >
-                  {Object.entries(APP_MODULE_NAMES).map(([id, names]) => (
-                    <option key={id} value={id}>
-                      {isRtl ? names.fa : names.en}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => val && setSelectedModule(val)}
+                  placeholder={isRtl ? "انتخاب ماژول..." : "Select module..."}
+                  className="rounded-xl h-10 text-xs font-medium bg-background border-border/80"
+                />
               </div>
             </div>
 

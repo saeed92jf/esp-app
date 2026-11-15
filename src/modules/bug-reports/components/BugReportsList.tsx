@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { BugReport, BugStatus, BugSeverity, BugPriority } from "../types";
@@ -43,6 +44,38 @@ export function BugReportsList({
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedSeverity, setSelectedSeverity] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  const statusFilterOptions = useMemo<ComboboxOption[]>(() => [
+    { value: "all", label: isRtl ? "همه وضعیت‌ها" : "All Statuses" },
+    { value: "New", label: "New" },
+    { value: "Under Review", label: "Under Review" },
+    { value: "Confirmed", label: "Confirmed" },
+    { value: "Assigned", label: "Assigned" },
+    { value: "In Progress", label: "In Progress" },
+    { value: "Testing", label: "Testing" },
+    { value: "Resolved", label: "Resolved" },
+    { value: "Closed", label: "Closed" },
+    { value: "Rejected", label: "Rejected" },
+  ], [isRtl]);
+
+  const severityFilterOptions = useMemo<ComboboxOption[]>(() => [
+    { value: "all", label: isRtl ? "همه شدت‌ها" : "All Severities" },
+    { value: "Critical", label: "Critical" },
+    { value: "High", label: "High" },
+    { value: "Medium", label: "Medium" },
+    { value: "Low", label: "Low" },
+  ], [isRtl]);
+
+  const categoryFilterOptions = useMemo<ComboboxOption[]>(() => [
+    { value: "all", label: isRtl ? "همه دسته‌بندی‌ها" : "All Categories" },
+    { value: "Functionality", label: "Functionality" },
+    { value: "UI / UX", label: "UI / UX" },
+    { value: "Performance", label: "Performance" },
+    { value: "Authentication", label: "Authentication" },
+    { value: "Data / Database", label: "Data / Database" },
+    { value: "Security", label: "Security" },
+    { value: "Other", label: "Other" },
+  ], [isRtl]);
 
   const filteredReports = useMemo(() => {
     let result = reports;
@@ -145,49 +178,31 @@ export function BugReportsList({
 
         {/* Filter Dropdowns */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
-          <select
+          <Combobox
+            options={statusFilterOptions}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-background border border-border/80 text-xs font-medium focus:ring-1 focus:ring-primary outline-none"
-          >
-            <option value="all">{isRtl ? "همه وضعیت‌ها" : "All Statuses"}</option>
-            <option value="New">New</option>
-            <option value="Under Review">Under Review</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Assigned">Assigned</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Testing">Testing</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+            onChange={(val) => setSelectedStatus(val || "all")}
+            size="sm"
+            className="h-9 rounded-xl bg-background border-border/80 text-xs font-medium"
+          />
 
-          <select
+          <Combobox
+            options={severityFilterOptions}
             value={selectedSeverity}
-            onChange={(e) => setSelectedSeverity(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-background border border-border/80 text-xs font-medium focus:ring-1 focus:ring-primary outline-none"
-          >
-            <option value="all">{isRtl ? "همه شدت‌ها" : "All Severities"}</option>
-            <option value="Critical">Critical</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </select>
+            onChange={(val) => setSelectedSeverity(val || "all")}
+            size="sm"
+            className="h-9 rounded-xl bg-background border-border/80 text-xs font-medium"
+          />
 
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-background border border-border/80 text-xs font-medium focus:ring-1 focus:ring-primary outline-none col-span-2 sm:col-span-1"
-          >
-            <option value="all">{isRtl ? "همه دسته‌بندی‌ها" : "All Categories"}</option>
-            <option value="Functionality">Functionality</option>
-            <option value="UI / UX">UI / UX</option>
-            <option value="Performance">Performance</option>
-            <option value="Authentication">Authentication</option>
-            <option value="Data / Database">Data / Database</option>
-            <option value="Security">Security</option>
-            <option value="Other">Other</option>
-          </select>
+          <div className="col-span-2 sm:col-span-1">
+            <Combobox
+              options={categoryFilterOptions}
+              value={selectedCategory}
+              onChange={(val) => setSelectedCategory(val || "all")}
+              size="sm"
+              className="h-9 rounded-xl bg-background border-border/80 text-xs font-medium w-full"
+            />
+          </div>
         </div>
       </div>
 

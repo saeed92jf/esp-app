@@ -66,6 +66,11 @@ export interface ComboboxProps {
    */
   creatable?: boolean;
   /**
+   * Whether the popover behaves as a modal (default: true).
+   * Ensures seamless interaction when nested inside Dialogs or Modals.
+   */
+  modal?: boolean;
+  /**
    * Custom render function for trigger content
    */
   renderTrigger?: (selected: ComboboxOption | undefined, open: boolean) => React.ReactNode;
@@ -96,9 +101,10 @@ export function Combobox({
   size = "default",
   align = "start",
   sideOffset,
-  allowClear = true,
+  allowClear = false,
   id,
   creatable = false,
+  modal = true,
   renderTrigger,
 }: ComboboxProps) {
   const t = useTranslations("Combobox");
@@ -140,7 +146,7 @@ export function Combobox({
         setOpen(next);
         if (!next) setSearchValue("");
       }}
-      modal={false}
+      modal={modal}
     >
       <PopoverTrigger asChild>
         <button
@@ -205,11 +211,11 @@ export function Combobox({
       </PopoverTrigger>
       <PopoverContent 
         className={cn(
-          "w-[--radix-popover-trigger-width] min-w-[140px] p-0 z-[100] rounded-xl border border-border/50 shadow-md data-open:zoom-in-100 data-closed:zoom-out-100",
+          "w-[--radix-popover-trigger-width] min-w-[200px] p-0 z-[200] rounded-xl border border-border/60 bg-popover text-popover-foreground shadow-xl data-open:zoom-in-100 data-closed:zoom-out-100 overflow-hidden",
           popoverClassName
         )} 
         align={align}
-        sideOffset={sideOffset}
+        sideOffset={sideOffset ?? 4}
         dir={isRtl ? "rtl" : "ltr"}
       >
         <Command>
@@ -244,11 +250,11 @@ export function Combobox({
               {options.map((opt, idx) => (
                 <CommandItem 
                   key={`${opt.value}-${idx}`} 
-                  value={opt.value} 
-                  keywords={opt.searchTerms || [opt.label]} 
-                  onSelect={(currentValue) => { 
+                  value={opt.label || opt.value} 
+                  keywords={opt.searchTerms || [opt.label, opt.value]} 
+                  onSelect={() => { 
                     if (opt.disabled) return;
-                    if (allowClear && (currentValue === value || opt.value === value)) {
+                    if (allowClear && opt.value === value) {
                       onChange?.("");
                     } else {
                       onChange?.(opt.value);
