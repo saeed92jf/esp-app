@@ -23,8 +23,8 @@ export function QuickActionModalHost({
   return (
     <>
       <BugReportSubmissionDialog
-        open={activeActionId === "bug-report" || activeActionId === "bug-hunter"}
-        startWithHunter={activeActionId === "bug-hunter"}
+        open={activeActionId === "bug-report"}
+        startWithHunter={false}
         onOpenChange={(open) => {
           if (!open) onClose();
         }}

@@ -25,32 +25,17 @@ export interface QuickActionDef {
 const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
   {
     id: "bug-report",
-    titleEn: "Report a Bug",
-    titleFa: "گزارش خطا و اشکال",
-    descriptionEn: "Report a technical problem or error.",
-    descriptionFa: "ثبت اشکال فنی یا خطا در عملکرد سیستم.",
+    titleEn: "Report Bug & Hunter",
+    titleFa: "گزارش و نشانه‌گیری خطا",
+    descriptionEn: "Report technical problem or inspect element directly.",
+    descriptionFa: "ثبت اشکال فنی یا نشانه‌گیری مستقیم المان در صفحه.",
     icon: Bug,
-    accentColor: "#EC2527",
+    accentColor: "#64748b",
     badge: {
       type: "dot-count",
-      dotColor: "#EC2527",
+      dotColor: "#94a3b8",
     },
     order: 1,
-  },
-  {
-    id: "bug-hunter",
-    titleEn: "Element Hunter",
-    titleFa: "نشانه‌گیر خطا (Hunter)",
-    descriptionEn: "Point and inspect any element on the page.",
-    descriptionFa: "نشانه‌گیری مستقیم المان یا بخش مشکل‌دار در صفحه.",
-    icon: Target,
-    accentColor: "#EC2527",
-    badge: {
-      type: "text",
-      textEn: "Inspect",
-      textFa: "اشاره",
-    },
-    order: 2,
   },
   {
     id: "support-request",
@@ -59,13 +44,13 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
     descriptionEn: "Request assistance from support team.",
     descriptionFa: "راهنمایی و پشتیبانی فنی اداری.",
     icon: Headset,
-    accentColor: "#0284c7",
+    accentColor: "#64748b",
     badge: {
       type: "text",
       textEn: "24/7",
       textFa: "پشتیبانی",
     },
-    order: 3,
+    order: 2,
   },
   {
     id: "feedback",
@@ -74,13 +59,13 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
     descriptionEn: "Share your experience.",
     descriptionFa: "نظرات و پیشنهادات جهت بهبود.",
     icon: MessageSquare,
-    accentColor: "#10b981",
+    accentColor: "#64748b",
     badge: {
       type: "text",
       textEn: "Rate",
       textFa: "امتیازدهی",
     },
-    order: 4,
+    order: 3,
   },
   {
     id: "suggest-idea",
@@ -89,13 +74,13 @@ const DEFAULT_QUICK_ACTIONS: QuickActionDef[] = [
     descriptionEn: "Propose new features.",
     descriptionFa: "ارائه قابلیت یا بهبود جدید.",
     icon: Lightbulb,
-    accentColor: "#f59e0b",
+    accentColor: "#64748b",
     badge: {
       type: "text",
       textEn: "New",
       textFa: "نوآوری",
     },
-    order: 5,
+    order: 4,
   },
 ];
 
