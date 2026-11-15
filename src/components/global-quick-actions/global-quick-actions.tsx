@@ -309,8 +309,9 @@ export function GlobalQuickActions() {
 
         {/* Floating Action Button (FAB) */}
         {/*
-          - When no issues: circular (دایره) with raw neutral background (پس زمینه خام)
-          - When issues exist: oval/pill shape (بیضی), red background (قرمز), and displays count (تعداد بزنه)
+          - When no issues: circular (دایره) with epic radial green gradient from center (گردینت سبز خفن از مرکز)
+          - When issues exist: oval/pill shape (بیضی) with radial red gradient from center (قرمز گرادینت از مرکز) and count
+          - Large, prominent icon in both states
         */}
         <Button
           ref={triggerButtonRef}
@@ -328,37 +329,43 @@ export function GlobalQuickActions() {
               ? "مرکز اشکالات و گزارش‌ها"
               : "Issue Center"
           }
+          style={{
+            background: hasIssues
+              ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
+              : "radial-gradient(circle at center, #34D399 0%, #10B981 28%, #059669 58%, #047857 85%, #022C22 100%)",
+          }}
           className={cn(
             "group relative flex items-center justify-center cursor-pointer select-none outline-none",
             "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-95",
-            "focus-visible:ring-2 focus-visible:ring-primary/40",
+            "focus-visible:ring-2 focus-visible:ring-primary/40 text-white border-0",
+            "ring-1 ring-white/25 ring-inset",
             hasIssues
               ? [
-                  /* Oval/Pill shape, Red background when issues exist */
-                  "h-12 rounded-full px-3.5 gap-2.5 min-w-[96px]",
-                  "bg-[#9C0002] hover:bg-[#B30002] text-white border-0",
-                  "shadow-lg shadow-red-950/25 hover:shadow-xl hover:shadow-red-950/30",
+                  /* Oval/Pill shape with radial red gradient from center */
+                  "h-12 rounded-full px-3.5 gap-2.5 min-w-[104px]",
+                  "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)]",
+                  "hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]",
+                  "hover:brightness-105",
                 ]
               : [
-                  /* Circular shape, Raw neutral background when clean */
+                  /* Circular shape with epic radial green gradient from center */
                   "size-12 rounded-full p-0",
-                  "bg-background/95 dark:bg-card/95 hover:bg-muted/90 text-foreground",
-                  "border border-border/40 hover:border-border/60",
-                  "shadow-[0_4px_16px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-lg",
-                  "backdrop-blur-xl",
+                  "shadow-[0_8px_24px_-4px_rgba(16,185,129,0.5),0_3px_10px_-2px_rgba(5,150,105,0.4)]",
+                  "hover:shadow-[0_12px_30px_-4px_rgba(16,185,129,0.65),0_4px_14px_-2px_rgba(5,150,105,0.5)]",
+                  "hover:brightness-105",
                 ]
           )}
         >
           {hasIssues ? (
-            /* Oval / Pill mode with count and red styling */
+            /* Oval / Pill mode with count and red radial gradient styling */
             <>
               {/* ESP CORE Icon framed in a crisp white circular backing so the red emblem pops and never fades */}
-              <div className="size-7 rounded-full bg-white dark:bg-white flex items-center justify-center shrink-0 shadow-xs ring-1 ring-black/5">
-                <EspCoreIcon className="size-4.5 text-[#9C0002]" />
+              <div className="size-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md ring-1 ring-black/10">
+                <EspCoreIcon className="size-5.5 text-[#B91C1C] drop-shadow-xs" />
               </div>
 
               {/* Issues Count Badge with authentic Shabnam/Inter typography */}
-              <span className="text-xs font-semibold whitespace-nowrap leading-none">
+              <span className="text-[13px] font-bold whitespace-nowrap leading-none text-white drop-shadow-xs">
                 {formatLocaleNumber(activeCount, isRtl)}{" "}
                 {isRtl
                   ? activeCount === 1 ? "ایشو" : "ایشو"
@@ -368,25 +375,25 @@ export function GlobalQuickActions() {
               {/* Indicator / Close toggle */}
               <div
                 className={cn(
-                  "transition-transform duration-200 flex items-center justify-center shrink-0 opacity-90 group-hover:opacity-100",
+                  "transition-transform duration-200 flex items-center justify-center shrink-0 opacity-95 group-hover:opacity-100",
                   isOpen ? "rotate-90" : "rotate-0"
                 )}
               >
-                {isOpen ? <X className="size-3.5" /> : <Plus className="size-3.5" />}
+                {isOpen ? <X className="size-4 text-white" /> : <Plus className="size-4 text-white" />}
               </div>
             </>
           ) : (
-            /* Circular raw neutral mode with centered red SVG icon */
+            /* Circular mode with epic radial green gradient from center and large crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
                 className={cn(
-                  "size-6.5 text-[#9C0002] dark:text-[#E30613] transition-transform duration-200 select-none pointer-events-none",
-                  isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-105"
+                  "size-7.5 sm:size-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 select-none pointer-events-none",
+                  isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-110"
                 )}
               />
               {isOpen && (
-                <div className="absolute inset-0 flex items-center justify-center bg-card/60 backdrop-blur-xs rounded-full">
-                  <X className="size-5 text-foreground stroke-[2]" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/25 backdrop-blur-xs rounded-full">
+                  <X className="size-5.5 text-white stroke-[2.5]" />
                 </div>
               )}
             </div>
