@@ -206,6 +206,14 @@ export const bugReportsService = {
   },
 
   // ── Support Request ──────────────────────────────────────────────────────────
+  async getSupportRequests(userId?: string): Promise<SupportRequest[]> {
+    const params = new URLSearchParams();
+    if (userId) params.set("userId", userId);
+    const res = await fetch(`/api/support-requests?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch support requests");
+    return res.json();
+  },
+
   async createSupportRequest(payload: Partial<SupportRequest>): Promise<SupportRequest> {
     const res = await fetch("/api/support-requests", {
       method: "POST",
@@ -216,10 +224,38 @@ export const bugReportsService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to submit support request");
     }
+    notifyBugReportsUpdated();
     return res.json();
   },
 
+  async updateSupportRequestStatus(id: string, status: string): Promise<SupportRequest> {
+    const res = await fetch(`/api/support-requests/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error("Failed to update support request status");
+    notifyBugReportsUpdated();
+    return res.json();
+  },
+
+  async deleteSupportRequest(id: string): Promise<boolean> {
+    const res = await fetch(`/api/support-requests/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
   // ── Feedback ─────────────────────────────────────────────────────────────────
+  async getFeedback(userId?: string): Promise<FeedbackSubmission[]> {
+    const params = new URLSearchParams();
+    if (userId) params.set("userId", userId);
+    const res = await fetch(`/api/feedback?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch feedback");
+    return res.json();
+  },
+
   async createFeedback(payload: Partial<FeedbackSubmission>): Promise<FeedbackSubmission> {
     const res = await fetch("/api/feedback", {
       method: "POST",
@@ -230,10 +266,27 @@ export const bugReportsService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to submit feedback");
     }
+    notifyBugReportsUpdated();
     return res.json();
   },
 
+  async deleteFeedback(id: string): Promise<boolean> {
+    const res = await fetch(`/api/feedback/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
+  },
+
   // ── Ideas ────────────────────────────────────────────────────────────────────
+  async getIdeas(userId?: string): Promise<IdeaSubmission[]> {
+    const params = new URLSearchParams();
+    if (userId) params.set("userId", userId);
+    const res = await fetch(`/api/ideas?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch ideas");
+    return res.json();
+  },
+
   async createIdea(payload: Partial<IdeaSubmission>): Promise<IdeaSubmission> {
     const res = await fetch("/api/ideas", {
       method: "POST",
@@ -244,7 +297,27 @@ export const bugReportsService = {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || "Failed to submit idea");
     }
+    notifyBugReportsUpdated();
     return res.json();
+  },
+
+  async updateIdeaStatus(id: string, status: string): Promise<IdeaSubmission> {
+    const res = await fetch(`/api/ideas/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error("Failed to update idea status");
+    notifyBugReportsUpdated();
+    return res.json();
+  },
+
+  async deleteIdea(id: string): Promise<boolean> {
+    const res = await fetch(`/api/ideas/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    notifyBugReportsUpdated();
+    return res.ok;
   },
 };
 

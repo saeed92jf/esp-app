@@ -38,9 +38,19 @@ import { BugReportSubmissionDialog } from "./BugReportSubmissionDialog";
 import { FeedbackDialog } from "./FeedbackDialog";
 import { IdeaDialog } from "./IdeaDialog";
 import { SupportRequestDialog } from "./SupportRequestDialog";
-import type { BugReport, BugReportsAnalytics } from "../types";
+import { SupportRequestsList } from "./SupportRequestsList";
+import { FeedbackList } from "./FeedbackList";
+import { IdeasList } from "./IdeasList";
+import { AllRequestsList } from "./AllRequestsList";
+import type {
+  BugReport,
+  BugReportsAnalytics,
+  SupportRequest,
+  FeedbackSubmission,
+  IdeaSubmission,
+} from "../types";
 
-type ModuleTab = "dashboard" | "reports" | "my";
+type ModuleTab = "dashboard" | "all" | "support" | "feedback" | "ideas" | "bugs";
 
 interface BugReportsModuleProps {
   initialReportId?: string;
@@ -63,6 +73,9 @@ export function BugReportsModule({
   const [reports, setReports] = useState<BugReport[]>(
     () => bugReportsService.getCachedReports() || []
   );
+  const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
+  const [feedbackList, setFeedbackList] = useState<FeedbackSubmission[]>([]);
+  const [ideasList, setIdeasList] = useState<IdeaSubmission[]>([]);
   const [analytics, setAnalytics] = useState<BugReportsAnalytics | null>(
     () => bugReportsService.getCachedAnalytics()
   );
@@ -82,12 +95,18 @@ export function BugReportsModule({
     if (!isSilent) setIsLoading(true);
     setError(null);
     try {
-      const [allData, stats] = await Promise.all([
-        bugReportsService.getBugReports(undefined, isSilent),
-        bugReportsService.getAnalytics(),
+      const [allData, stats, supData, fbData, ideaData] = await Promise.all([
+        bugReportsService.getBugReports(undefined, isSilent).catch(() => []),
+        bugReportsService.getAnalytics().catch(() => null),
+        bugReportsService.getSupportRequests().catch(() => []),
+        bugReportsService.getFeedback().catch(() => []),
+        bugReportsService.getIdeas().catch(() => []),
       ]);
       setReports(allData);
       setAnalytics(stats);
+      setSupportRequests(supData);
+      setFeedbackList(fbData);
+      setIdeasList(ideaData);
 
       // If initialReportId provided, select it
       if (initialReportId) {
@@ -97,7 +116,7 @@ export function BugReportsModule({
         if (found) setSelectedReport(found);
       }
     } catch (err: any) {
-      setError(err?.message || "Failed to load bug reports");
+      setError(err?.message || "Failed to load requests");
     } finally {
       setIsLoading(false);
     }
@@ -130,40 +149,34 @@ export function BugReportsModule({
       icon: LayoutDashboard,
     },
     {
-      id: "reports" as const,
-      labelFa: "همه گزارش‌ها",
-      labelEn: "All Reports",
+      id: "all" as const,
+      labelFa: "همه درخواست‌ها",
+      labelEn: "All Requests",
       icon: ListOrdered,
     },
     {
-      id: "my" as const,
-      labelFa: "گزارش‌های من",
-      labelEn: "My Reports",
-      icon: User,
-    },
-  ];
-
-  const quickActionItems = [
-    {
-      id: "feedback",
-      labelFa: "ارسال بازخورد",
-      labelEn: "Send Feedback",
-      icon: MessageSquare,
-      onClick: () => setFeedbackDialogOpen(true),
-    },
-    {
-      id: "idea",
-      labelFa: "ثبت ایده و پیشنهاد",
-      labelEn: "Feature Idea",
-      icon: Lightbulb,
-      onClick: () => setIdeaDialogOpen(true),
-    },
-    {
-      id: "support",
-      labelFa: "درخواست پشتیبانی",
-      labelEn: "Support Request",
+      id: "support" as const,
+      labelFa: "درخواست‌های پشتیبانی",
+      labelEn: "Support Requests",
       icon: Headset,
-      onClick: () => setSupportDialogOpen(true),
+    },
+    {
+      id: "feedback" as const,
+      labelFa: "بازخورد کاربران",
+      labelEn: "User Feedback",
+      icon: MessageSquare,
+    },
+    {
+      id: "ideas" as const,
+      labelFa: "پیشنهادات و ایده‌ها",
+      labelEn: "Feature Ideas",
+      icon: Lightbulb,
+    },
+    {
+      id: "bugs" as const,
+      labelFa: "اشکالات فنی و باگ‌ها",
+      labelEn: "Bug Reports",
+      icon: AlertCircle,
     },
   ];
 
@@ -183,7 +196,7 @@ export function BugReportsModule({
               variant="outline"
               onClick={() => {
                 setSelectedReport(null);
-                setActiveTab("reports");
+                setActiveTab("all");
               }}
               className="w-full h-8.5 rounded-full bg-background/80 hover:bg-muted/70 border border-border/60 hover:border-primary/40 px-3 flex items-center justify-between text-xs text-muted-foreground hover:text-foreground shadow-xs transition-colors duration-150 cursor-pointer font-normal"
             >
@@ -304,131 +317,6 @@ export function BugReportsModule({
 
                   return buttonElement;
                 })}
-
-              {/* Divider (Superadmin only) */}
-              {isSuperAdmin && (
-                <div
-                  className={cn(
-                    "h-px bg-border/40 my-1 transition-all duration-300",
-                    sidebarOpen ? "w-[calc(100%-16px)]" : "w-[32px] mx-auto"
-                  )}
-                />
-              )}
-
-              {/* Quick Actions (Feedback, Idea, Support) */}
-              {quickActionItems.map((action) => {
-                const Icon = action.icon;
-                const label = isRtl ? action.labelFa : action.labelEn;
-
-                const actionButton = (
-                  <Button
-                    key={action.id}
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      action.onClick();
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                    className={cn(
-                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60 p-0 justify-start h-[42px]",
-                      sidebarOpen ? "w-full" : "w-[42px]"
-                    )}
-                    aria-label={label}
-                  >
-                    <div className="size-[42px] shrink-0 flex items-center justify-center">
-                      <Icon className="size-5 shrink-0 text-foreground/60 group-hover:text-foreground transition-colors duration-150" />
-                    </div>
-                    <span
-                      className={cn(
-                        "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none font-medium text-foreground/75 group-hover:text-foreground",
-                        sidebarOpen
-                          ? "opacity-100 max-w-[170px] pe-3 ps-1"
-                          : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </Button>
-                );
-
-                if (!sidebarOpen) {
-                  return (
-                    <Tooltip key={action.id}>
-                      <TooltipTrigger asChild>{actionButton}</TooltipTrigger>
-                      <TooltipContent
-                        side={isRtl ? "left" : "right"}
-                        className="text-xs font-medium"
-                      >
-                        {label}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
-
-                return actionButton;
-              })}
-
-              {/* Divider */}
-              <div
-                className={cn(
-                  "h-px bg-border/40 my-1 transition-all duration-300",
-                  sidebarOpen ? "w-[calc(100%-16px)]" : "w-[32px] mx-auto"
-                )}
-              />
-
-              {/* Primary Action: New Bug Report */}
-              {(() => {
-                const label = isRtl ? "ثبت گزارش باگ" : "Report Bug";
-                const plusButton = (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setSubmissionDialogOpen(true);
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                    className={cn(
-                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/25 hover:border-primary shadow-xs p-0 justify-start h-[42px]",
-                      sidebarOpen ? "w-full" : "w-[42px]"
-                    )}
-                    aria-label={label}
-                  >
-                    <div className="size-[42px] shrink-0 flex items-center justify-center">
-                      <PlusCircle className="size-5 shrink-0 transition-colors duration-150" />
-                    </div>
-                    <span
-                      className={cn(
-                        "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none font-semibold",
-                        sidebarOpen
-                          ? "opacity-100 max-w-[170px] pe-3 ps-1"
-                          : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
-                      )}
-                    >
-                      {label}
-                    </span>
-                  </Button>
-                );
-
-                if (!sidebarOpen) {
-                  return (
-                    <Tooltip key="report-bug">
-                      <TooltipTrigger asChild>{plusButton}</TooltipTrigger>
-                      <TooltipContent
-                        side={isRtl ? "left" : "right"}
-                        className="text-xs font-medium"
-                      >
-                        {label}
-                      </TooltipContent>
-                    </Tooltip>
-                  );
-                }
-
-                return plusButton;
-              })()}
 
               {/* Non-superadmin: Return to Dashboard button in sidebar */}
               {!isSuperAdmin && (
@@ -561,14 +449,34 @@ export function BugReportsModule({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                        {isRtl
-                          ? "مرکز گزارش و مدیریت باگ‌ها"
-                          : "Issue Center & Bug Tracking"}
+                        {activeTab === "dashboard"
+                          ? isRtl
+                            ? "داشبورد تحلیلی و آمار تیکت‌ها"
+                            : "Analytics Dashboard"
+                          : activeTab === "all"
+                          ? isRtl
+                            ? "همه درخواست‌ها و تیکت‌های دریافتی"
+                            : "All Incoming Requests"
+                          : activeTab === "support"
+                          ? isRtl
+                            ? "درخواست‌های پشتیبانی کاربران"
+                            : "Support Requests"
+                          : activeTab === "feedback"
+                          ? isRtl
+                            ? "بازخوردها و رضایت‌سنجی کاربران"
+                            : "User Feedback"
+                          : activeTab === "ideas"
+                          ? isRtl
+                            ? "پیشنهادات و ایده‌های ارتقای سیستم"
+                            : "Feature Ideas"
+                          : isRtl
+                          ? "اشکالات فنی و گزارش‌های باگ"
+                          : "Bug Reports"}
                       </h1>
                       <p className="text-xs text-muted-foreground mt-1">
                         {isRtl
-                          ? "رهگیری اشکالات فنی، درخواست‌های ارتقا و وضعیت رسیدگی به باگ‌های گزارش‌شده"
-                          : "Track technical issues, bug resolution progress and system health."}
+                          ? "رهگیری کلیه تیکت‌ها، درخواست‌های پشتیبانی، بازخوردها و اشکالات فنی ارسال‌شده توسط کاربران"
+                          : "Track all tickets, support inquiries, feedback, and technical bug reports."}
                       </p>
                     </div>
 
@@ -587,15 +495,6 @@ export function BugReportsModule({
                           )}
                         />
                         <span>{isRtl ? "بروزرسانی" : "Refresh"}</span>
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        onClick={() => setSubmissionDialogOpen(true)}
-                        className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-white cursor-pointer shadow-md shadow-primary/20"
-                      >
-                        <PlusCircle className="size-4" />
-                        <span>{isRtl ? "ثبت گزارش جدید" : "Report Bug"}</span>
                       </Button>
                     </div>
                   </div>
@@ -641,17 +540,41 @@ export function BugReportsModule({
                       analytics={analytics}
                       recentReports={reports}
                       onSelectReport={(r) => setSelectedReport(r)}
-                      onOpenNewReport={() => setSubmissionDialogOpen(true)}
-                      onViewAll={() => setActiveTab("reports")}
+                      onOpenNewReport={() => {}}
+                      onViewAll={() => setActiveTab("all")}
+                    />
+                  ) : activeTab === "all" ? (
+                    <AllRequestsList
+                      reports={reports}
+                      supportRequests={supportRequests}
+                      feedbackList={feedbackList}
+                      ideasList={ideasList}
+                      onSelectBug={(bug) => setSelectedReport(bug)}
+                      onSelectSupport={() => setActiveTab("support")}
+                      onSelectFeedback={() => setActiveTab("feedback")}
+                      onSelectIdea={() => setActiveTab("ideas")}
+                    />
+                  ) : activeTab === "support" ? (
+                    <SupportRequestsList
+                      requests={supportRequests}
+                      onRefresh={() => fetchReports(true)}
+                    />
+                  ) : activeTab === "feedback" ? (
+                    <FeedbackList
+                      feedbackList={feedbackList}
+                      onRefresh={() => fetchReports(true)}
+                    />
+                  ) : activeTab === "ideas" ? (
+                    <IdeasList
+                      ideasList={ideasList}
+                      onRefresh={() => fetchReports(true)}
                     />
                   ) : (
                     <BugReportsList
                       reports={reports}
                       currentUserId={user?.id}
-                      activeFilterTab={activeTab === "my" ? "my" : "all"}
-                      onFilterTabChange={(tab) =>
-                        setActiveTab(tab === "my" ? "my" : "reports")
-                      }
+                      activeFilterTab="all"
+                      onFilterTabChange={() => {}}
                       onSelectReport={(r) => setSelectedReport(r)}
                     />
                   )}

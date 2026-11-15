@@ -540,6 +540,33 @@ export function createServerSupportRequest(
   return req;
 }
 
+export function updateServerSupportRequestStatus(
+  id: string,
+  status: string
+): SupportRequestItem | null {
+  const list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
+  const idx = list.findIndex((r) => r.id === id || r.ticketNumber === id);
+  if (idx === -1) return null;
+  list[idx] = {
+    ...list[idx],
+    status,
+    updatedAt: new Date().toISOString(),
+  };
+  globalThis.__espServerSupportRequests = list;
+  trySaveJson("support_requests.json", list);
+  return list[idx];
+}
+
+export function deleteServerSupportRequest(id: string): boolean {
+  let list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
+  const initialLen = list.length;
+  list = list.filter((r) => r.id !== id && r.ticketNumber !== id);
+  if (list.length === initialLen) return false;
+  globalThis.__espServerSupportRequests = list;
+  trySaveJson("support_requests.json", list);
+  return true;
+}
+
 // ── Feedback Operations ───────────────────────────────────────────────────────
 
 export function getServerFeedback(userId?: string): FeedbackItem[] {
@@ -570,6 +597,16 @@ export function createServerFeedback(
   globalThis.__espServerFeedback = list;
   trySaveJson("feedback.json", list);
   return item;
+}
+
+export function deleteServerFeedback(id: string): boolean {
+  let list = tryLoadJson<FeedbackItem>("feedback.json", globalThis.__espServerFeedback || []);
+  const initialLen = list.length;
+  list = list.filter((f) => f.id !== id);
+  if (list.length === initialLen) return false;
+  globalThis.__espServerFeedback = list;
+  trySaveJson("feedback.json", list);
+  return true;
 }
 
 // ── Ideas Operations ──────────────────────────────────────────────────────────
@@ -603,5 +640,31 @@ export function createServerIdea(
   globalThis.__espServerIdeas = list;
   trySaveJson("ideas.json", list);
   return item;
+}
+
+export function updateServerIdeaStatus(
+  id: string,
+  status: string
+): IdeaItem | null {
+  const list = tryLoadJson<IdeaItem>("ideas.json", globalThis.__espServerIdeas || []);
+  const idx = list.findIndex((i) => i.id === id);
+  if (idx === -1) return null;
+  list[idx] = {
+    ...list[idx],
+    status,
+  };
+  globalThis.__espServerIdeas = list;
+  trySaveJson("ideas.json", list);
+  return list[idx];
+}
+
+export function deleteServerIdea(id: string): boolean {
+  let list = tryLoadJson<IdeaItem>("ideas.json", globalThis.__espServerIdeas || []);
+  const initialLen = list.length;
+  list = list.filter((i) => i.id !== id);
+  if (list.length === initialLen) return false;
+  globalThis.__espServerIdeas = list;
+  trySaveJson("ideas.json", list);
+  return true;
 }
 
