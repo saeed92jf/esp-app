@@ -38,6 +38,7 @@ export function GlobalQuickActions() {
   const [isScrollToTopVisible, setIsScrollToTopVisible] = useState(false);
   const [footerPushUp, setFooterPushUp] = useState(0);
   const [openIssuesCount, setOpenIssuesCount] = useState<number>(0);
+  const [openSupportCount, setOpenSupportCount] = useState<number>(0);
   const [userReportsCount, setUserReportsCount] = useState<number>(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -82,7 +83,7 @@ export function GlobalQuickActions() {
         setUserReportsCount(0);
       }
 
-      // 2. Fetch general analytics for badge
+      // 2. Fetch general analytics for issues badge
       bugReportsService
         .getAnalytics()
         .then((data) => {
@@ -92,6 +93,18 @@ export function GlobalQuickActions() {
         })
         .catch(() => {
           if (isMounted) setOpenIssuesCount(0);
+        });
+
+      // 3. Fetch support requests for support badge
+      bugReportsService
+        .getSupportRequests()
+        .then((requests) => {
+          if (!isMounted) return;
+          const openSupport = (requests || []).filter((r) => isUnresolvedStatus(r.status));
+          setOpenSupportCount(openSupport.length);
+        })
+        .catch(() => {
+          if (isMounted) setOpenSupportCount(0);
         });
     };
 
@@ -205,9 +218,25 @@ export function GlobalQuickActions() {
 
   const isSuperAdmin = user?.role === "superadmin";
 
-  // Calculate active issues/messages count ONLY for superadmin
-  const activeCount = isSuperAdmin ? openIssuesCount : 0;
-  const hasIssues = isSuperAdmin && activeCount > 0;
+  // Priority Rule: Technical issues/bugs take strict precedence over support requests!
+  const hasBugs = isSuperAdmin && openIssuesCount > 0;
+  const hasSupport = isSuperAdmin && openSupportCount > 0;
+  const hasAlert = hasBugs || hasSupport;
+  const alertType: "issue" | "support" | null = hasBugs
+    ? "issue"
+    : hasSupport
+    ? "support"
+    : null;
+
+  const badgeText = React.useMemo(() => {
+    if (alertType === "issue") {
+      return openIssuesCount > 1 ? `${openIssuesCount} issues` : "1 issue";
+    }
+    if (alertType === "support") {
+      return openSupportCount > 1 ? `${openSupportCount} support` : "support";
+    }
+    return "";
+  }, [alertType, openIssuesCount, openSupportCount]);
 
   // When ScrollToTop is visible, push Issue Center up by 60px (48px size + 12px gap)
   const baseBottom = isScrollToTopVisible ? "84px" : "24px";
@@ -341,9 +370,12 @@ export function GlobalQuickActions() {
           style={
             isSuperAdmin
               ? {
-                  background: hasIssues
-                    ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
-                    : "radial-gradient(circle at center, #4EFA8A 0%, #22EA6B 25%, #15CA53 55%, #10A343 85%, #0A732E 100%)",
+                  background:
+                    alertType === "issue"
+                      ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
+                      : alertType === "support"
+                      ? "radial-gradient(ellipse at center, #38BDF8 0%, #0284C7 32%, #0369A1 65%, #075985 85%, #0C4A6E 100%)"
+                      : "radial-gradient(circle at center, #4EFA8A 0%, #22EA6B 25%, #15CA53 55%, #10A343 85%, #0A732E 100%)",
                 }
               : undefined
           }
@@ -354,12 +386,13 @@ export function GlobalQuickActions() {
             isSuperAdmin
               ? [
                   "text-white border-0 ring-1 ring-white/25 ring-inset",
-                  hasIssues
+                  hasAlert
                     ? [
-                        /* Superadmin Oval/Pill shape with radial red gradient */
-                        "h-12 rounded-full px-4 gap-2.5 min-w-[92px]",
-                        "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)]",
-                        "hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]",
+                        /* Superadmin Oval/Pill shape */
+                        "h-12 rounded-full min-w-[104px] p-0 overflow-hidden",
+                        alertType === "issue"
+                          ? "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]"
+                          : "shadow-[0_8px_24px_-4px_rgba(2,132,199,0.55),0_3px_10px_-2px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(2,132,199,0.7),0_4px_14px_-2px_rgba(3,105,161,0.5)]",
                         "hover:brightness-105",
                       ]
                     : [
@@ -380,20 +413,39 @@ export function GlobalQuickActions() {
                 ]
           )}
         >
-          {isSuperAdmin && hasIssues ? (
-            /* Superadmin Oval / Pill mode: ESP CORE icon and filled pill badge centered side-by-side */
-            isOpen ? (
-              <div className="flex items-center justify-center size-full">
-                <X className="size-5.5 text-white stroke-[2.5]" />
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-2 px-0.5">
+          {isSuperAdmin && hasAlert ? (
+            /* Superadmin Oval / Pill mode:
+               - In RTL (left-6): [EspCoreIcon] on the left (concentric with left cap), trailing [Text or Close] on the right.
+               - In LTR (right-6): [Text or Close] on the left, [EspCoreIcon] on the right (concentric with right cap).
+               In both cases:
+               The icon's distance to the outer rounded edge is strictly 12px, concentric with the 24px radius cap.
+               The icon NEVER moves between open and closed states.
+            */
+            <div
+              dir="ltr"
+              className={cn(
+                "flex items-center h-full w-full select-none",
+                isRtl
+                  ? "flex-row ps-3 pe-3.5 gap-2"
+                  : "flex-row-reverse pe-3 ps-3.5 gap-2"
+              )}
+            >
+              {/* Concentric ESP CORE Icon: exactly 12px from pill cap, 12px from top/bottom */}
+              <div className="size-6 shrink-0 flex items-center justify-center pointer-events-none">
                 <EspCoreIcon className="size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] shrink-0" />
-                <span className="inline-flex items-center justify-center min-w-6 h-6 px-2 rounded-full bg-white text-[#B91C1C] font-bold text-xs font-mono shadow-xs shrink-0 leading-none">
-                  {formatLocaleNumber(activeCount, isRtl)}
-                </span>
               </div>
-            )
+
+              {/* Trailing Area: In closed state displays badge text; in open state displays close X */}
+              <div className="flex-1 flex items-center justify-center min-w-[50px]">
+                {isOpen ? (
+                  <X className="size-4.5 text-white stroke-[2.5] animate-in fade-in zoom-in-75 duration-150" />
+                ) : (
+                  <span className="text-xs sm:text-[13px] font-bold text-white tracking-tight whitespace-nowrap leading-none drop-shadow-xs animate-in fade-in duration-150">
+                    {badgeText}
+                  </span>
+                )}
+              </div>
+            </div>
           ) : isSuperAdmin ? (
             /* Superadmin Circular mode with epic radial green gradient from center and large crisp icon */
             <div className="relative flex items-center justify-center size-full">
