@@ -393,23 +393,23 @@ export function GlobalQuickActions() {
             "shadow-[0_4px_14px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)] hover:brightness-105",
             isSuperAdmin
               ? [
-                  "text-white border-0",
+                  "text-white aria-expanded:text-white border-0",
                   hasAlert
                     ? [
                         /* Superadmin Oval/Pill shape: solid flat colors */
                         "h-12 rounded-full min-w-[104px] p-0 overflow-hidden",
                         alertType === "issue"
-                          ? "bg-red-600 hover:bg-red-700"
-                          : "bg-sky-600 hover:bg-sky-700",
+                          ? "bg-red-600 hover:bg-red-700 aria-expanded:bg-red-600"
+                          : "bg-sky-600 hover:bg-sky-700 aria-expanded:bg-sky-600",
                       ]
                     : [
                         /* Superadmin Circular shape: solid flat green */
-                        "size-12 rounded-full p-0 bg-green-600 hover:bg-green-700",
+                        "size-12 rounded-full p-0 bg-green-600 hover:bg-green-700 aria-expanded:bg-green-600",
                       ],
                 ]
               : [
                   /* Regular User: Primary theme colored circular button */
-                  "size-12 rounded-full p-0 bg-primary hover:bg-primary/90 text-primary-foreground",
+                  "size-12 rounded-full p-0 bg-primary hover:bg-primary/90 aria-expanded:bg-primary text-primary-foreground aria-expanded:text-primary-foreground",
                 ]
           )}
         >
@@ -425,7 +425,7 @@ export function GlobalQuickActions() {
             >
               {/* Concentric, larger ESP CORE Icon: size-7.5 (30px) */}
               <div className="size-7.5 shrink-0 flex items-center justify-center pointer-events-none">
-                <EspCoreIcon className="size-7.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)] shrink-0" />
+                <EspCoreIcon fill="white" className="size-7.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)] shrink-0" />
               </div>
 
               {/* Trailing Area: Bilingual badge text stays visible even when open (no X) */}
@@ -439,6 +439,7 @@ export function GlobalQuickActions() {
             /* Superadmin Circular mode: solid green with large crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
+                fill="white"
                 className="size-8 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-200 group-hover:scale-105"
               />
             </div>

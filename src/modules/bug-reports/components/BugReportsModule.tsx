@@ -6,7 +6,6 @@ import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import {
-  LayoutDashboard,
   ListOrdered,
   PlusCircle,
   RefreshCw,
@@ -32,7 +31,6 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/hooks/use-auth";
 import { bugReportsService } from "../services/bug-reports.service";
-import { BugReportsDashboard } from "./BugReportsDashboard";
 import { BugReportsList } from "./BugReportsList";
 import { BugReportDetailView } from "./BugReportDetailView";
 import { BugReportSubmissionDialog } from "./BugReportSubmissionDialog";
@@ -51,7 +49,7 @@ import type {
   IdeaSubmission,
 } from "../types";
 
-type ModuleTab = "dashboard" | "all" | "support" | "feedback" | "ideas" | "bugs";
+type ModuleTab = "all" | "support" | "feedback" | "ideas" | "bugs";
 
 interface BugReportsModuleProps {
   initialReportId?: string;
@@ -60,7 +58,7 @@ interface BugReportsModuleProps {
 
 export function BugReportsModule({
   initialReportId,
-  initialTab = "dashboard",
+  initialTab = "all",
 }: BugReportsModuleProps) {
   const locale = useLocale();
   const isRtl = locale === "fa";
@@ -144,7 +142,7 @@ export function BugReportsModule({
 
   const handleDeleteAllActive = async () => {
     let confirmMsg = "";
-    if (activeTab === "all" || activeTab === "dashboard") {
+    if (activeTab === "all") {
       confirmMsg = isRtl
         ? "آیا از حذف تمام درخواست‌ها، باگ‌ها، تیکت‌های پشتیبانی، بازخوردها و ایده‌ها اطمینان دارید؟ تمام داده‌های ایشو سنتر پاک خواهد شد."
         : "Are you sure you want to delete ALL issues, tickets, feedback, and ideas? This will completely clear all issue center data.";
@@ -169,7 +167,7 @@ export function BugReportsModule({
     if (!confirm(confirmMsg)) return;
 
     try {
-      if (activeTab === "all" || activeTab === "dashboard") {
+      if (activeTab === "all") {
         await bugReportsService.deleteAllIssues();
       } else if (activeTab === "support") {
         await bugReportsService.deleteAllSupportRequests();
@@ -188,12 +186,6 @@ export function BugReportsModule({
   };
 
   const navItems = [
-    {
-      id: "dashboard" as const,
-      labelFa: "داشبورد تحلیلی",
-      labelEn: "Analytics Dashboard",
-      icon: LayoutDashboard,
-    },
     {
       id: "all" as const,
       labelFa: "همه درخواست‌ها",
@@ -424,8 +416,8 @@ export function BugReportsModule({
                   </h2>
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     {isRtl
-                      ? "مشاهده داشبورد تحلیلی و مدیریت کلیه گزارش‌ها و تیکت‌ها منحصراً برای سوپرادمین سامانه فعال است. شما می‌توانید با استفاده از گزینه‌های زیر درخواست پشتیبانی یا گزارش اشکال فنی خود را ارسال فرمایید."
-                      : "The full issue center dashboard and ticket management are accessible to system administrators only. You can use the quick actions below to submit bug reports or support requests."}
+                      ? "مشاهده و مدیریت کلیه گزارش‌ها و تیکت‌ها منحصراً برای سوپرادمین سامانه فعال است. شما می‌توانید با استفاده از گزینه‌های زیر درخواست پشتیبانی یا گزارش اشکال فنی خود را ارسال فرمایید."
+                      : "The full issue center and ticket management are accessible to system administrators only. You can use the quick actions below to submit bug reports or support requests."}
                   </p>
                 </div>
 
@@ -495,11 +487,7 @@ export function BugReportsModule({
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                       <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                        {activeTab === "dashboard"
-                          ? isRtl
-                            ? "داشبورد تحلیلی و آمار تیکت‌ها"
-                            : "Analytics Dashboard"
-                          : activeTab === "all"
+                        {activeTab === "all"
                           ? isRtl
                             ? "همه درخواست‌ها و تیکت‌های دریافتی"
                             : "All Incoming Requests"
@@ -551,7 +539,7 @@ export function BugReportsModule({
                       >
                         <Trash2 className="size-3.5" />
                         <span>
-                          {activeTab === "all" || activeTab === "dashboard"
+                          {activeTab === "all"
                             ? isRtl ? "پاکسازی کامل تیکت‌ها" : "Clear All Tickets"
                             : isRtl ? "حذف همه موارد" : "Delete All"}
                         </span>
@@ -597,14 +585,6 @@ export function BugReportsModule({
                           window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
                         }
                       }}
-                    />
-                  ) : activeTab === "dashboard" ? (
-                    <BugReportsDashboard
-                      analytics={analytics}
-                      recentReports={reports}
-                      onSelectReport={(r) => setSelectedReport(r)}
-                      onOpenNewReport={() => {}}
-                      onViewAll={() => setActiveTab("all")}
                     />
                   ) : activeTab === "all" ? (
                     <AllRequestsList
