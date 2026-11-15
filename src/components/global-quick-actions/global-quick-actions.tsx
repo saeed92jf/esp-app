@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocale } from "next-intl";
 import { usePathname, Link } from "@/i18n/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ChevronRight, Settings } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EspCoreIcon } from "@/components/brand/esp-core-icon";
@@ -230,13 +230,23 @@ export function GlobalQuickActions() {
 
   const badgeText = React.useMemo(() => {
     if (alertType === "issue") {
+      if (isRtl) {
+        return openIssuesCount > 1
+          ? `${formatLocaleNumber(openIssuesCount, true)} ایشو`
+          : "۱ ایشو";
+      }
       return openIssuesCount > 1 ? `${openIssuesCount} issues` : "1 issue";
     }
     if (alertType === "support") {
+      if (isRtl) {
+        return openSupportCount > 1
+          ? `${formatLocaleNumber(openSupportCount, true)} پشتیبانی`
+          : "پشتیبانی";
+      }
       return openSupportCount > 1 ? `${openSupportCount} support` : "support";
     }
     return "";
-  }, [alertType, openIssuesCount, openSupportCount]);
+  }, [alertType, openIssuesCount, openSupportCount, isRtl]);
 
   // When ScrollToTop is visible, push Issue Center up by 60px (48px size + 12px gap)
   const baseBottom = isScrollToTopVisible ? "84px" : "24px";
@@ -352,11 +362,14 @@ export function GlobalQuickActions() {
 
         {/* Floating Action Button (FAB) */}
         {/*
+          - Flat solid colors, no gradients, no glowing halos
           - For Superadmin:
-            * When no issues: circular with epic radial green gradient from center
-            * When issues exist: oval/pill shape with radial red gradient from center and active count
+            * When issues exist: solid red oval/pill with count and large ESP CORE icon
+            * When support exists: solid sky blue oval/pill with count and large ESP CORE icon
+            * When all clear: solid green circle with large ESP CORE icon
           - For Normal Users:
-            * Clean neutral circular button, no red/green gradients, no issue counters
+            * Solid primary circular button with large ESP CORE icon
+          - Bilingual text stays visible when open (no X close icon)
         */}
         <Button
           ref={triggerButtonRef}
@@ -374,114 +387,68 @@ export function GlobalQuickActions() {
               ? "مرکز اشکالات و گزارش‌ها"
               : "Issue Center"
           }
-          style={
-            isSuperAdmin
-              ? {
-                  background:
-                    alertType === "issue"
-                      ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
-                      : alertType === "support"
-                      ? "radial-gradient(ellipse at center, #38BDF8 0%, #0284C7 32%, #0369A1 65%, #075985 85%, #0C4A6E 100%)"
-                      : "radial-gradient(circle at center, #4EFA8A 0%, #22EA6B 25%, #15CA53 55%, #10A343 85%, #0A732E 100%)",
-                }
-              : undefined
-          }
           className={cn(
             "group relative flex items-center justify-center cursor-pointer select-none outline-none",
-            "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-95",
+            "transition-all duration-200 active:scale-95",
             "focus-visible:ring-2 focus-visible:ring-primary/40",
+            "shadow-[0_4px_14px_rgba(0,0,0,0.18)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.24)] hover:brightness-105",
             isSuperAdmin
               ? [
-                  "text-white border-0 ring-1 ring-white/25 ring-inset",
+                  "text-white border-0",
                   hasAlert
                     ? [
-                        /* Superadmin Oval/Pill shape */
+                        /* Superadmin Oval/Pill shape: solid flat colors */
                         "h-12 rounded-full min-w-[104px] p-0 overflow-hidden",
                         alertType === "issue"
-                          ? "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]"
-                          : "shadow-[0_8px_24px_-4px_rgba(2,132,199,0.55),0_3px_10px_-2px_rgba(3,105,161,0.4)] hover:shadow-[0_12px_30px_-4px_rgba(2,132,199,0.7),0_4px_14px_-2px_rgba(3,105,161,0.5)]",
-                        "hover:brightness-105",
+                          ? "bg-red-600 hover:bg-red-700"
+                          : "bg-sky-600 hover:bg-sky-700",
                       ]
                     : [
-                        /* Superadmin Circular shape with attractive luminous phosphor lime green */
-                        "size-12 rounded-full p-0",
-                        "shadow-[0_8px_24px_-2px_rgba(34,197,94,0.65),0_0_22px_rgba(78,250,138,0.45)]",
-                        "hover:shadow-[0_12px_32px_-2px_rgba(34,197,94,0.8),0_0_30px_rgba(78,250,138,0.6)]",
-                        "hover:brightness-110",
+                        /* Superadmin Circular shape: solid flat green */
+                        "size-12 rounded-full p-0 bg-green-600 hover:bg-green-700",
                       ],
                 ]
               : [
                   /* Regular User: Primary theme colored circular button */
-                  "size-12 rounded-full p-0",
-                  "bg-primary hover:bg-primary/90 text-primary-foreground",
-                  "border-0 ring-1 ring-white/20 ring-inset",
-                  "shadow-[0_8px_24px_-4px_rgba(2,132,199,0.45),0_2px_8px_rgba(0,0,0,0.12)]",
-                  "hover:brightness-105 active:scale-95",
+                  "size-12 rounded-full p-0 bg-primary hover:bg-primary/90 text-primary-foreground",
                 ]
           )}
         >
           {isSuperAdmin && hasAlert ? (
-            /* Superadmin Oval / Pill mode:
-               - In RTL (left-6): [EspCoreIcon] on the left (concentric with left cap), trailing [Text or Close] on the right.
-               - In LTR (right-6): [Text or Close] on the left, [EspCoreIcon] on the right (concentric with right cap).
-               In both cases:
-               The icon's distance to the outer rounded edge is strictly 12px, concentric with the 24px radius cap.
-               The icon NEVER moves between open and closed states.
-            */
             <div
               dir="ltr"
               className={cn(
                 "flex items-center h-full w-full select-none",
                 isRtl
-                  ? "flex-row ps-3 pe-3.5 gap-2"
-                  : "flex-row-reverse pe-3 ps-3.5 gap-2"
+                  ? "flex-row ps-2.5 pe-3.5 gap-2"
+                  : "flex-row-reverse pe-2.5 ps-3.5 gap-2"
               )}
             >
-              {/* Concentric ESP CORE Icon: exactly 12px from pill cap, 12px from top/bottom */}
-              <div className="size-6 shrink-0 flex items-center justify-center pointer-events-none">
-                <EspCoreIcon className="size-6 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)] shrink-0" />
+              {/* Concentric, larger ESP CORE Icon: size-7.5 (30px) */}
+              <div className="size-7.5 shrink-0 flex items-center justify-center pointer-events-none">
+                <EspCoreIcon className="size-7.5 text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.25)] shrink-0" />
               </div>
 
-              {/* Trailing Area: In closed state displays badge text; in open state displays close X */}
-              <div className="flex-1 flex items-center justify-center min-w-[50px]">
-                {isOpen ? (
-                  <X className="size-4.5 text-white stroke-[2.5] animate-in fade-in zoom-in-75 duration-150" />
-                ) : (
-                  <span className="text-xs sm:text-[13px] font-bold text-white tracking-tight whitespace-nowrap leading-none drop-shadow-xs animate-in fade-in duration-150">
-                    {badgeText}
-                  </span>
-                )}
+              {/* Trailing Area: Bilingual badge text stays visible even when open (no X) */}
+              <div className="flex-1 flex items-center justify-center min-w-[48px]">
+                <span className="text-xs sm:text-[13px] font-bold text-white tracking-tight whitespace-nowrap leading-none drop-shadow-xs">
+                  {badgeText}
+                </span>
               </div>
             </div>
           ) : isSuperAdmin ? (
-            /* Superadmin Circular mode with epic radial green gradient from center and large crisp icon */
+            /* Superadmin Circular mode: solid green with large crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
-                className={cn(
-                  "size-7.5 sm:size-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)] transition-transform duration-200 select-none pointer-events-none",
-                  isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-110"
-                )}
+                className="size-8 text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.25)] select-none pointer-events-none transition-transform duration-200 group-hover:scale-105"
               />
-              {isOpen && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/25 backdrop-blur-xs rounded-full">
-                  <X className="size-5.5 text-white stroke-[2.5]" />
-                </div>
-              )}
             </div>
           ) : (
-            /* Regular User: Primary theme mode with prominent crisp icon */
+            /* Regular User: Primary theme mode with large crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
-                className={cn(
-                  "size-7.5 text-primary-foreground drop-shadow-xs transition-transform duration-200 select-none pointer-events-none",
-                  isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-110"
-                )}
+                className="size-8 text-primary-foreground drop-shadow-xs select-none pointer-events-none transition-transform duration-200 group-hover:scale-105"
               />
-              {isOpen && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-xs rounded-full">
-                  <X className="size-5 text-primary-foreground stroke-[2.5]" />
-                </div>
-              )}
             </div>
           )}
         </Button>
