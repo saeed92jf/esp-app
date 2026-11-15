@@ -19,6 +19,7 @@ import {
   Sparkles,
   Target,
   Crosshair,
+  Mail,
 } from "lucide-react";
 import {
   Dialog,
@@ -272,23 +273,38 @@ export function BugReportSubmissionDialog({
               {submittedTicket}
             </div>
 
+            {/* Email Notification Note */}
+            <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 text-xs text-muted-foreground flex items-center gap-2 max-w-sm">
+              <Mail className="size-4 text-primary shrink-0" />
+              <span>
+                {isRtl
+                  ? "نتیجه بررسی و رفع مشکل از طریق ایمیل به اطلاع شما خواهد رسید."
+                  : "The review and resolution updates will be emailed to you."}
+              </span>
+            </div>
+
             <div className="flex items-center gap-3 pt-4 w-full justify-center">
               <Button
-                variant="outline"
+                variant={user?.role === "superadmin" ? "outline" : "default"}
                 onClick={handleReset}
-                className="rounded-xl px-5"
+                className={cn(
+                  "rounded-xl px-6",
+                  user?.role !== "superadmin" && "bg-primary hover:bg-primary/90 text-white font-bold"
+                )}
               >
-                {isRtl ? "بستن پنجره" : "Close"}
+                {isRtl ? "متوجه شدم و بستن" : "Got it & Close"}
               </Button>
-              <Button
-                asChild
-                className="rounded-xl px-5 gap-2 bg-primary hover:bg-primary/90 text-white"
-              >
-                <a href={`/${locale}/bug-reports/${submittedTicket}`}>
-                  <span>{isRtl ? "مشاهده تیکت در سامانه" : "View Ticket"}</span>
-                  <ExternalLink className="size-4" />
-                </a>
-              </Button>
+              {user?.role === "superadmin" && (
+                <Button
+                  asChild
+                  className="rounded-xl px-5 gap-2 bg-primary hover:bg-primary/90 text-white"
+                >
+                  <a href={`/${locale}/bug-reports/${submittedTicket}`}>
+                    <span>{isRtl ? "مشاهده در پنل مدیریت" : "View in Admin Panel"}</span>
+                    <ExternalLink className="size-4" />
+                  </a>
+                </Button>
+              )}
             </div>
           </div>
         ) : (
@@ -337,14 +353,16 @@ export function BugReportSubmissionDialog({
                       <Crosshair className="size-3.5" />
                       <span>{isRtl ? "نشانه‌گیری مجدد" : "Re-target"}</span>
                     </Button>
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => setInspectedElement(null)}
-                      className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                      className="size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
                       title={isRtl ? "حذف المان" : "Remove element"}
                     >
                       <X className="size-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -479,8 +497,9 @@ export function BugReportSubmissionDialog({
                 {SEVERITIES.map((s) => {
                   const isSelected = severity === s.id;
                   return (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
                       key={s.id}
                       onClick={() => setSeverity(s.id)}
                       className={cn(
@@ -491,7 +510,7 @@ export function BugReportSubmissionDialog({
                       )}
                     >
                       {isRtl ? s.labelFa : s.labelEn}
-                    </button>
+                    </Button>
                   );
                 })}
               </div>
@@ -607,13 +626,15 @@ export function BugReportSubmissionDialog({
                       className="rounded-lg py-1 px-2.5 text-[11px] gap-1.5 bg-muted/40 font-normal"
                     >
                       <span className="truncate max-w-[140px]">{att.fileName}</span>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}
-                        className="text-muted-foreground hover:text-destructive cursor-pointer"
+                        className="size-4 p-0 text-muted-foreground hover:text-destructive hover:bg-transparent"
                       >
                         <X className="size-3" />
-                      </button>
+                      </Button>
                     </Badge>
                   ))}
                 </div>

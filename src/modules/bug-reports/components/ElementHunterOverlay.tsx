@@ -4,6 +4,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { Crosshair, Target, X, Check, Eye } from "lucide-react";
 import { useLocale } from "next-intl";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { InspectedElementData } from "../types";
 import {
@@ -192,9 +193,11 @@ export function ElementHunterOverlay({
           </div>
 
           {/* Cancel Button */}
-          <button
+          <Button
             ref={cancelBtnRef}
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={onCancel}
             className={cn(
               "ms-2 h-7 px-3 rounded-full text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer",
@@ -203,7 +206,7 @@ export function ElementHunterOverlay({
           >
             <X className="size-3.5" />
             <span>{isRtl ? "انصراف (Esc)" : "Cancel (Esc)"}</span>
-          </button>
+          </Button>
         </div>
       </div>
 

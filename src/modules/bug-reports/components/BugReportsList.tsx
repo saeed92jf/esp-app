@@ -97,28 +97,34 @@ export function BugReportsList({
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* View Tab Toggle */}
           <div className="flex items-center p-1 rounded-xl bg-muted/60 border border-border/60 shrink-0 w-full sm:w-auto">
-            <button
+            <Button
+              type="button"
+              variant={activeFilterTab === "all" ? "secondary" : "ghost"}
+              size="sm"
               onClick={() => onFilterTabChange("all")}
               className={cn(
-                "flex-1 sm:flex-initial px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                "flex-1 sm:flex-initial h-8 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer",
                 activeFilterTab === "all"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-background text-foreground shadow-xs hover:bg-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-transparent"
               )}
             >
               {isRtl ? "همه گزارش‌ها" : "All Reports"}
-            </button>
-            <button
+            </Button>
+            <Button
+              type="button"
+              variant={activeFilterTab === "my" ? "secondary" : "ghost"}
+              size="sm"
               onClick={() => onFilterTabChange("my")}
               className={cn(
-                "flex-1 sm:flex-initial px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                "flex-1 sm:flex-initial h-8 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer",
                 activeFilterTab === "my"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-background text-foreground shadow-xs hover:bg-background"
+                  : "text-muted-foreground hover:text-foreground hover:bg-transparent"
               )}
             >
               {isRtl ? "گزارش‌های من" : "My Reports"}
-            </button>
+            </Button>
           </div>
 
           {/* Search Input */}

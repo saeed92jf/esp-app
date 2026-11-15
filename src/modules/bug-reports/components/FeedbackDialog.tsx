@@ -154,11 +154,13 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
               </label>
               <div className="flex items-center justify-center gap-2 pt-1">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     key={star}
                     onClick={() => setRating(star)}
-                    className="p-1 transition-transform hover:scale-110 cursor-pointer"
+                    className="size-8 p-0 hover:bg-transparent transition-transform hover:scale-110 cursor-pointer"
                   >
                     <Star
                       className={cn(
@@ -168,7 +170,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                           : "text-muted-foreground/30 hover:text-amber-300"
                       )}
                     />
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>

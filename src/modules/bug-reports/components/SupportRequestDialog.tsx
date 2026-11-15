@@ -12,6 +12,7 @@ import {
   ExternalLink,
   Upload,
   X,
+  Mail,
 } from "lucide-react";
 import {
   Dialog,
@@ -176,7 +177,15 @@ export function SupportRequestDialog({
             <div className="p-3 px-6 rounded-xl bg-muted/60 border border-border/60 font-mono text-lg font-bold text-sky-600 tracking-wider select-all">
               {submittedTicket}
             </div>
-            <Button onClick={handleReset} className="rounded-xl px-6 mt-4">
+            <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-700 dark:text-sky-300 text-xs max-w-sm">
+              <Mail className="size-4 shrink-0 text-sky-600 dark:text-sky-400" />
+              <span>
+                {isRtl
+                  ? "نتیجه بررسی و پاسخ پشتیبانی از طریق ایمیل به اطلاع شما خواهد رسید."
+                  : "Updates and support resolution will be sent to your email."}
+              </span>
+            </div>
+            <Button onClick={handleReset} className="rounded-xl px-6 mt-2">
               {isRtl ? "بستن" : "Close"}
             </Button>
           </div>
@@ -267,11 +276,17 @@ export function SupportRequestDialog({
               {attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2 pt-1">
                   {attachments.map((att) => (
-                    <Badge key={att.id} variant="outline" className="rounded-lg py-1 px-2.5 text-[11px] gap-1.5 bg-muted/40">
+                    <Badge key={att.id} variant="outline" className="rounded-lg py-1 px-2.5 text-[11px] gap-1.5 bg-muted/40 font-normal">
                       <span className="truncate max-w-[140px]">{att.fileName}</span>
-                      <button type="button" onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setAttachments((prev) => prev.filter((a) => a.id !== att.id))}
+                        className="size-4 p-0 text-muted-foreground hover:text-destructive hover:bg-transparent"
+                      >
                         <X className="size-3" />
-                      </button>
+                      </Button>
                     </Badge>
                   ))}
                 </div>

@@ -197,14 +197,11 @@ export function GlobalQuickActions() {
     return null;
   }
 
-  // Calculate active issues/messages count
-  // Admins see total open issues; users see their own reported issues
-  const activeCount =
-    user?.role === "admin" || user?.role === "superadmin"
-      ? openIssuesCount
-      : userReportsCount;
+  const isSuperAdmin = user?.role === "superadmin";
 
-  const hasIssues = activeCount > 0;
+  // Calculate active issues/messages count ONLY for superadmin
+  const activeCount = isSuperAdmin ? openIssuesCount : 0;
+  const hasIssues = isSuperAdmin && activeCount > 0;
 
   // When ScrollToTop is visible, push Issue Center up by 60px (48px size + 12px gap)
   const currentBottom = isScrollToTopVisible ? bottomOffset + 60 : bottomOffset;
@@ -263,9 +260,9 @@ export function GlobalQuickActions() {
                         </span>
                       </div>
 
-                      {/* Right: Neutral Pill Badge */}
+                      {/* Right: Neutral Pill Badge (Only for superadmin if issues exist) */}
                       <div className="shrink-0 ps-2">
-                        {action.badge?.type === "dot-count" && activeCount > 0 ? (
+                        {action.badge?.type === "dot-count" && isSuperAdmin && activeCount > 0 ? (
                           <Badge
                             variant="secondary"
                             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium"
@@ -286,32 +283,38 @@ export function GlobalQuickActions() {
                 })}
               </div>
 
-              {/* Minimal Divider */}
-              <div className="h-px bg-border/40 my-1 mx-2" />
-
-              {/* Bottom Row Link: Issue Center */}
-              <Link
-                href="/bug-reports"
-                onClick={() => setIsOpen(false)}
-                className={cn(
-                  "w-full text-start flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-150 group cursor-pointer outline-none",
-                  "hover:bg-muted/80 text-foreground/80 hover:text-foreground active:scale-[0.99]"
-                )}
-              >
-                <span className="text-xs sm:text-[13px] font-medium text-foreground/90 group-hover:text-foreground">
-                  {isRtl ? "مرکز گزارش‌ها و تیکت‌ها" : "Issue Center"}
-                </span>
-                <Settings className="size-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
-              </Link>
+              {/* Bottom Row Link: Issue Center Panel - ONLY for superadmin */}
+              {isSuperAdmin && (
+                <>
+                  <div className="h-px bg-border/40 my-1 mx-2" />
+                  <Button
+                    asChild
+                    variant="ghost"
+                    className="w-full text-start flex items-center justify-between px-3 py-2 h-auto rounded-xl font-normal hover:bg-muted/80 text-foreground/80 hover:text-foreground active:scale-[0.99] cursor-pointer"
+                  >
+                    <Link
+                      href="/bug-reports"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <span className="text-xs sm:text-[13px] font-medium text-foreground/90 group-hover:text-foreground">
+                        {isRtl ? "مرکز گزارش‌ها و تیکت‌ها" : "Issue Center"}
+                      </span>
+                      <Settings className="size-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                    </Link>
+                  </Button>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
 
         {/* Floating Action Button (FAB) */}
         {/*
-          - When no issues: circular (دایره) with epic radial green gradient from center (گردینت سبز خفن از مرکز)
-          - When issues exist: oval/pill shape (بیضی) with radial red gradient from center (قرمز گرادینت از مرکز) and count
-          - Large, prominent icon in both states
+          - For Superadmin:
+            * When no issues: circular with epic radial green gradient from center
+            * When issues exist: oval/pill shape with radial red gradient from center and active count
+          - For Normal Users:
+            * Clean neutral circular button, no red/green gradients, no issue counters
         */}
         <Button
           ref={triggerButtonRef}
@@ -329,35 +332,50 @@ export function GlobalQuickActions() {
               ? "مرکز اشکالات و گزارش‌ها"
               : "Issue Center"
           }
-          style={{
-            background: hasIssues
-              ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
-              : "radial-gradient(circle at center, #34D399 0%, #10B981 28%, #059669 58%, #047857 85%, #022C22 100%)",
-          }}
+          style={
+            isSuperAdmin
+              ? {
+                  background: hasIssues
+                    ? "radial-gradient(ellipse at center, #EF4444 0%, #DC2626 28%, #B91C1C 58%, #8A0002 85%, #550001 100%)"
+                    : "radial-gradient(circle at center, #34D399 0%, #10B981 28%, #059669 58%, #047857 85%, #022C22 100%)",
+                }
+              : undefined
+          }
           className={cn(
             "group relative flex items-center justify-center cursor-pointer select-none outline-none",
             "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] active:scale-95",
-            "focus-visible:ring-2 focus-visible:ring-primary/40 text-white border-0",
-            "ring-1 ring-white/25 ring-inset",
-            hasIssues
+            "focus-visible:ring-2 focus-visible:ring-primary/40",
+            isSuperAdmin
               ? [
-                  /* Oval/Pill shape with radial red gradient from center */
-                  "h-12 rounded-full px-3.5 gap-2.5 min-w-[104px]",
-                  "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)]",
-                  "hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]",
-                  "hover:brightness-105",
+                  "text-white border-0 ring-1 ring-white/25 ring-inset",
+                  hasIssues
+                    ? [
+                        /* Superadmin Oval/Pill shape with radial red gradient */
+                        "h-12 rounded-full px-3.5 gap-2.5 min-w-[104px]",
+                        "shadow-[0_8px_24px_-4px_rgba(220,38,38,0.55),0_3px_10px_-2px_rgba(153,0,2,0.4)]",
+                        "hover:shadow-[0_12px_30px_-4px_rgba(220,38,38,0.7),0_4px_14px_-2px_rgba(153,0,2,0.5)]",
+                        "hover:brightness-105",
+                      ]
+                    : [
+                        /* Superadmin Circular shape with epic radial green gradient */
+                        "size-12 rounded-full p-0",
+                        "shadow-[0_8px_24px_-4px_rgba(16,185,129,0.5),0_3px_10px_-2px_rgba(5,150,105,0.4)]",
+                        "hover:shadow-[0_12px_30px_-4px_rgba(16,185,129,0.65),0_4px_14px_-2px_rgba(5,150,105,0.5)]",
+                        "hover:brightness-105",
+                      ],
                 ]
               : [
-                  /* Circular shape with epic radial green gradient from center */
+                  /* Regular User: Clean neutral circular button (no red/green alert) */
                   "size-12 rounded-full p-0",
-                  "shadow-[0_8px_24px_-4px_rgba(16,185,129,0.5),0_3px_10px_-2px_rgba(5,150,105,0.4)]",
-                  "hover:shadow-[0_12px_30px_-4px_rgba(16,185,129,0.65),0_4px_14px_-2px_rgba(5,150,105,0.5)]",
-                  "hover:brightness-105",
+                  "bg-background/95 dark:bg-card/95 hover:bg-muted/90 text-foreground",
+                  "border border-border/60 hover:border-border/80",
+                  "shadow-[0_4px_16px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-lg",
+                  "backdrop-blur-xl",
                 ]
           )}
         >
-          {hasIssues ? (
-            /* Oval / Pill mode with count and red radial gradient styling */
+          {isSuperAdmin && hasIssues ? (
+            /* Superadmin Oval / Pill mode with count and red radial gradient styling */
             <>
               {/* ESP CORE Icon framed in a crisp white circular backing so the red emblem pops and never fades */}
               <div className="size-8 rounded-full bg-white flex items-center justify-center shrink-0 shadow-md ring-1 ring-black/10">
@@ -382,8 +400,8 @@ export function GlobalQuickActions() {
                 {isOpen ? <X className="size-4 text-white" /> : <Plus className="size-4 text-white" />}
               </div>
             </>
-          ) : (
-            /* Circular mode with epic radial green gradient from center and large crisp icon */
+          ) : isSuperAdmin ? (
+            /* Superadmin Circular mode with epic radial green gradient from center and large crisp icon */
             <div className="relative flex items-center justify-center size-full">
               <EspCoreIcon
                 className={cn(
@@ -394,6 +412,21 @@ export function GlobalQuickActions() {
               {isOpen && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/25 backdrop-blur-xs rounded-full">
                   <X className="size-5.5 text-white stroke-[2.5]" />
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Regular User: Clean neutral mode with large brand icon */
+            <div className="relative flex items-center justify-center size-full">
+              <EspCoreIcon
+                className={cn(
+                  "size-7 text-[#9C0002] dark:text-[#E30613] transition-transform duration-200 select-none pointer-events-none",
+                  isOpen ? "scale-90 opacity-60" : "scale-100 group-hover:scale-110"
+                )}
+              />
+              {isOpen && (
+                <div className="absolute inset-0 flex items-center justify-center bg-card/70 backdrop-blur-xs rounded-full">
+                  <X className="size-5 text-foreground stroke-[2]" />
                 </div>
               )}
             </div>

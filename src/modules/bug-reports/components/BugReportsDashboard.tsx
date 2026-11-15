@@ -14,6 +14,7 @@ import {
   Layers,
   ArrowUpRight,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { BugReportsAnalytics, BugReport } from "../types";
 
@@ -187,13 +188,15 @@ export function BugReportsDashboard({
               <Bug className="size-4 text-primary" />
               <span>{isRtl ? "آخرین گزارش‌های ثبت‌شده" : "Recent Bug Reports"}</span>
             </h3>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={onViewAll}
-              className="text-xs text-primary font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+              className="h-auto p-0 text-xs text-primary font-semibold hover:underline hover:bg-transparent flex items-center gap-1 cursor-pointer"
             >
               <span>{isRtl ? "مشاهده همه" : "View All"}</span>
               <ArrowUpRight className="size-3.5" />
-            </button>
+            </Button>
           </div>
 
           <div className="divide-y divide-border/50">

@@ -16,6 +16,9 @@ import {
   Lightbulb,
   Headset,
   Search,
+  ShieldAlert,
+  Mail,
+  Home,
 } from "lucide-react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Button } from "@/components/ui/button";
@@ -51,6 +54,7 @@ export function BugReportsModule({
   const locale = useLocale();
   const isRtl = locale === "fa";
   const { user } = useAuth();
+  const isSuperAdmin = user?.role === "superadmin";
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -100,8 +104,12 @@ export function BugReportsModule({
   }, [initialReportId]);
 
   useEffect(() => {
-    fetchReports(!!bugReportsService.getCachedReports());
-  }, [fetchReports]);
+    if (isSuperAdmin) {
+      fetchReports(!!bugReportsService.getCachedReports());
+    } else {
+      setIsLoading(false);
+    }
+  }, [fetchReports, isSuperAdmin]);
 
   // Handle direct ticket link in URL if provided
   useEffect(() => {
@@ -168,29 +176,32 @@ export function BugReportsModule({
         isMenuOpen={sidebarOpen}
         logoHref="/"
       >
-        <div className="hidden sm:flex items-center justify-center flex-1 max-w-xs md:max-w-sm ms-2 sm:ms-4">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedReport(null);
-              setActiveTab("reports");
-            }}
-            className="w-full h-8.5 rounded-full bg-background/80 hover:bg-muted/70 border border-border/60 hover:border-primary/40 px-3 flex items-center justify-between text-xs text-muted-foreground hover:text-foreground shadow-xs transition-colors duration-150 cursor-pointer"
-          >
-            <div className="flex items-center gap-2 truncate">
-              <Search className="size-3.5 text-muted-foreground shrink-0" />
-              <span className="truncate">
-                {isRtl ? "جستجوی گزارش‌ها و تیکت‌ها..." : "Search issues & bug reports..."}
-              </span>
-            </div>
-            <kbd
-              className="inline-flex items-center gap-0.5 text-[10px] font-sans font-semibold bg-muted/70 px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground shrink-0"
-              dir="ltr"
+        {isSuperAdmin && (
+          <div className="hidden sm:flex items-center justify-center flex-1 max-w-xs md:max-w-sm ms-2 sm:ms-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setSelectedReport(null);
+                setActiveTab("reports");
+              }}
+              className="w-full h-8.5 rounded-full bg-background/80 hover:bg-muted/70 border border-border/60 hover:border-primary/40 px-3 flex items-center justify-between text-xs text-muted-foreground hover:text-foreground shadow-xs transition-colors duration-150 cursor-pointer font-normal"
             >
-              Ctrl+k
-            </kbd>
-          </button>
-        </div>
+              <div className="flex items-center gap-2 truncate">
+                <Search className="size-3.5 text-muted-foreground shrink-0" />
+                <span className="truncate">
+                  {isRtl ? "جستجوی گزارش‌ها و تیکت‌ها..." : "Search issues & bug reports..."}
+                </span>
+              </div>
+              <kbd
+                className="inline-flex items-center gap-0.5 text-[10px] font-sans font-semibold bg-muted/70 px-1.5 py-0.5 rounded border border-border/40 text-muted-foreground shrink-0"
+                dir="ltr"
+              >
+                Ctrl+k
+              </kbd>
+            </Button>
+          </div>
+        )}
       </AppHeader>
 
       <div className="flex flex-1 w-full relative">
@@ -220,85 +231,89 @@ export function BugReportsModule({
                 sidebarOpen ? "pe-3 sm:pe-4" : "pe-[5px] sm:pe-[11px]"
               )}
             >
-              {/* Primary Views */}
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = !selectedReport && activeTab === item.id;
-                const label = isRtl ? item.labelFa : item.labelEn;
+              {/* Primary Views (Superadmin only) */}
+              {isSuperAdmin &&
+                navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = !selectedReport && activeTab === item.id;
+                  const label = isRtl ? item.labelFa : item.labelEn;
 
-                const buttonElement = (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedReport(null);
-                      setActiveTab(item.id);
-                      if (typeof window !== "undefined" && window.innerWidth < 768) {
-                        setSidebarOpen(false);
-                      }
-                    }}
-                    className={cn(
-                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0",
-                      sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]",
-                      isActive
-                        ? "bg-primary text-white border-primary shadow-xs ring-1 ring-primary/30"
-                        : "bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60"
-                    )}
-                    aria-label={label}
-                  >
-                    {/* Fixed 42px circle icon aligned with header button */}
-                    <div className="size-[42px] shrink-0 flex items-center justify-center">
-                      <Icon
-                        className={cn(
-                          "size-5 shrink-0 transition-colors duration-150",
-                          isActive
-                            ? "text-white"
-                            : "text-foreground/60 group-hover:text-foreground"
-                        )}
-                      />
-                    </div>
-
-                    {/* Smooth horizontal expansion label */}
-                    <span
+                  const buttonElement = (
+                    <Button
+                      key={item.id}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedReport(null);
+                        setActiveTab(item.id);
+                        if (typeof window !== "undefined" && window.innerWidth < 768) {
+                          setSidebarOpen(false);
+                        }
+                      }}
                       className={cn(
-                        "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none",
+                        "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 p-0 justify-start h-[42px]",
+                        sidebarOpen ? "w-full" : "w-[42px]",
                         isActive
-                          ? "font-semibold text-white"
-                          : "font-medium text-foreground/75 group-hover:text-foreground",
-                        sidebarOpen
-                          ? "opacity-100 max-w-[170px] pe-3 ps-1"
-                          : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
+                          ? "bg-primary text-white border border-primary shadow-xs ring-1 ring-primary/30 hover:bg-primary/90 hover:text-white"
+                          : "bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60"
                       )}
+                      aria-label={label}
                     >
-                      {label}
-                    </span>
-                  </button>
-                );
+                      {/* Fixed 42px circle icon aligned with header button */}
+                      <div className="size-[42px] shrink-0 flex items-center justify-center">
+                        <Icon
+                          className={cn(
+                            "size-5 shrink-0 transition-colors duration-150",
+                            isActive
+                              ? "text-white"
+                              : "text-foreground/60 group-hover:text-foreground"
+                          )}
+                        />
+                      </div>
 
-                if (!sidebarOpen) {
-                  return (
-                    <Tooltip key={item.id}>
-                      <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
-                      <TooltipContent
-                        side={isRtl ? "left" : "right"}
-                        className="text-xs font-medium"
+                      {/* Smooth horizontal expansion label */}
+                      <span
+                        className={cn(
+                          "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none",
+                          isActive
+                            ? "font-semibold text-white"
+                            : "font-medium text-foreground/75 group-hover:text-foreground",
+                          sidebarOpen
+                            ? "opacity-100 max-w-[170px] pe-3 ps-1"
+                            : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
+                        )}
                       >
                         {label}
-                      </TooltipContent>
-                    </Tooltip>
+                      </span>
+                    </Button>
                   );
-                }
 
-                return buttonElement;
-              })}
+                  if (!sidebarOpen) {
+                    return (
+                      <Tooltip key={item.id}>
+                        <TooltipTrigger asChild>{buttonElement}</TooltipTrigger>
+                        <TooltipContent
+                          side={isRtl ? "left" : "right"}
+                          className="text-xs font-medium"
+                        >
+                          {label}
+                        </TooltipContent>
+                      </Tooltip>
+                    );
+                  }
 
-              {/* Divider */}
-              <div
-                className={cn(
-                  "h-px bg-border/40 my-1 transition-all duration-300",
-                  sidebarOpen ? "w-[calc(100%-16px)]" : "w-[32px] mx-auto"
-                )}
-              />
+                  return buttonElement;
+                })}
+
+              {/* Divider (Superadmin only) */}
+              {isSuperAdmin && (
+                <div
+                  className={cn(
+                    "h-px bg-border/40 my-1 transition-all duration-300",
+                    sidebarOpen ? "w-[calc(100%-16px)]" : "w-[32px] mx-auto"
+                  )}
+                />
+              )}
 
               {/* Quick Actions (Feedback, Idea, Support) */}
               {quickActionItems.map((action) => {
@@ -306,9 +321,10 @@ export function BugReportsModule({
                 const label = isRtl ? action.labelFa : action.labelEn;
 
                 const actionButton = (
-                  <button
+                  <Button
                     key={action.id}
                     type="button"
+                    variant="ghost"
                     onClick={() => {
                       action.onClick();
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -316,8 +332,8 @@ export function BugReportsModule({
                       }
                     }}
                     className={cn(
-                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60",
-                      sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]"
+                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60 p-0 justify-start h-[42px]",
+                      sidebarOpen ? "w-full" : "w-[42px]"
                     )}
                     aria-label={label}
                   >
@@ -334,7 +350,7 @@ export function BugReportsModule({
                     >
                       {label}
                     </span>
-                  </button>
+                  </Button>
                 );
 
                 if (!sidebarOpen) {
@@ -366,8 +382,9 @@ export function BugReportsModule({
               {(() => {
                 const label = isRtl ? "ثبت گزارش باگ" : "Report Bug";
                 const plusButton = (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => {
                       setSubmissionDialogOpen(true);
                       if (typeof window !== "undefined" && window.innerWidth < 768) {
@@ -375,8 +392,8 @@ export function BugReportsModule({
                       }
                     }}
                     className={cn(
-                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/25 hover:border-primary shadow-xs",
-                      sidebarOpen ? "w-full h-[42px]" : "w-[42px] h-[42px]"
+                      "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-primary/10 hover:bg-primary text-primary hover:text-white border border-primary/25 hover:border-primary shadow-xs p-0 justify-start h-[42px]",
+                      sidebarOpen ? "w-full" : "w-[42px]"
                     )}
                     aria-label={label}
                   >
@@ -393,7 +410,7 @@ export function BugReportsModule({
                     >
                       {label}
                     </span>
-                  </button>
+                  </Button>
                 );
 
                 if (!sidebarOpen) {
@@ -412,6 +429,46 @@ export function BugReportsModule({
 
                 return plusButton;
               })()}
+
+              {/* Non-superadmin: Return to Dashboard button in sidebar */}
+              {!isSuperAdmin && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => router.push("/dashboard")}
+                      className={cn(
+                        "group relative flex items-center rounded-full outline-hidden cursor-pointer select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden shrink-0 bg-foreground/[0.03] hover:bg-foreground/[0.08] text-foreground/70 hover:text-foreground border border-border/30 hover:border-border/60 p-0 justify-start h-[42px]",
+                        sidebarOpen ? "w-full" : "w-[42px]"
+                      )}
+                      aria-label={isRtl ? "بازگشت به داشبورد" : "Dashboard"}
+                    >
+                      <div className="size-[42px] shrink-0 flex items-center justify-center">
+                        <Home className="size-5 shrink-0 text-foreground/60 group-hover:text-foreground transition-colors duration-150" />
+                      </div>
+                      <span
+                        className={cn(
+                          "inline-block text-sm whitespace-nowrap truncate overflow-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none font-medium text-foreground/75 group-hover:text-foreground",
+                          sidebarOpen
+                            ? "opacity-100 max-w-[170px] pe-3 ps-1"
+                            : "opacity-0 max-w-0 pe-0 ps-0 pointer-events-none"
+                        )}
+                      >
+                        {isRtl ? "بازگشت به داشبورد" : "Dashboard"}
+                      </span>
+                    </Button>
+                  </TooltipTrigger>
+                  {!sidebarOpen && (
+                    <TooltipContent
+                      side={isRtl ? "left" : "right"}
+                      className="text-xs font-medium"
+                    >
+                      {isRtl ? "بازگشت به داشبورد" : "Dashboard"}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              )}
             </nav>
           </TooltipProvider>
         </aside>
@@ -419,106 +476,188 @@ export function BugReportsModule({
         {/* Main Content Area */}
         <main className="flex-1 bg-transparent w-full relative z-10 p-3 sm:p-6 lg:p-8 pb-28 min-h-0 animate-in fade-in duration-150">
           <div className="max-w-7xl mx-auto w-full space-y-6">
-            {/* Header Action Row */}
-            {!selectedReport && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            {!isSuperAdmin ? (
+              <div className="max-w-xl mx-auto py-12 px-4 text-center space-y-6">
+                <div className="size-20 rounded-3xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 mx-auto flex items-center justify-center border border-amber-500/20 shadow-inner">
+                  <ShieldAlert className="size-10" />
+                </div>
+
+                <div className="space-y-2">
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
                     {isRtl
-                      ? "مرکز گزارش و مدیریت باگ‌ها"
-                      : "Issue Center & Bug Tracking"}
-                  </h1>
-                  <p className="text-xs text-muted-foreground mt-1">
+                      ? "دسترسی به پنل مدیریت ویژه مدیران ارشد سیستم است"
+                      : "Management Panel Restricted to Superadmins"}
+                  </h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     {isRtl
-                      ? "رهگیری اشکالات فنی، درخواست‌های ارتقا و وضعیت رسیدگی به باگ‌های گزارش‌شده"
-                      : "Track technical issues, bug resolution progress and system health."}
+                      ? "مشاهده داشبورد تحلیلی و مدیریت کلیه گزارش‌ها و تیکت‌ها منحصراً برای سوپرادمین سامانه فعال است. شما می‌توانید با استفاده از گزینه‌های زیر درخواست پشتیبانی یا گزارش اشکال فنی خود را ارسال فرمایید."
+                      : "The full issue center dashboard and ticket management are accessible to system administrators only. You can use the quick actions below to submit bug reports or support requests."}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fetchReports(false)}
-                    disabled={isLoading}
-                    className="rounded-xl h-10 px-3.5 text-xs font-semibold gap-1.5 cursor-pointer"
-                  >
-                    <RefreshCw
-                      className={cn(
-                        "size-3.5",
-                        isLoading && "animate-spin text-primary"
-                      )}
-                    />
-                    <span>{isRtl ? "بروزرسانی" : "Refresh"}</span>
-                  </Button>
+                {/* Email Notification Notice */}
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-800 dark:text-sky-300 text-xs text-start leading-relaxed shadow-xs">
+                  <Mail className="size-5 shrink-0 text-sky-600 dark:text-sky-400" />
+                  <span>
+                    {isRtl
+                      ? "توجه: کلیه نتایج بررسی، پاسخ‌های تیم فنی و وضعیت رفع اشکال به صورت مستقیم به ایمیل شما ارسال خواهد شد و نیازی به پیگیری در پنل اختصاصی ندارید."
+                      : "Note: Investigation findings, IT responses, and resolution updates will be delivered directly to your email address."}
+                  </span>
+                </div>
 
+                {/* Quick Submission Action Buttons */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <Button
-                    size="sm"
                     onClick={() => setSubmissionDialogOpen(true)}
-                    className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-white cursor-pointer shadow-md shadow-primary/20"
+                    className="h-11 rounded-xl text-xs font-bold gap-2 bg-primary hover:bg-primary/90 text-white shadow-md cursor-pointer"
                   >
                     <PlusCircle className="size-4" />
-                    <span>{isRtl ? "ثبت گزارش جدید" : "Report Bug"}</span>
+                    <span>{isRtl ? "ثبت گزارش اشکال فنی" : "Report Bug"}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setSupportDialogOpen(true)}
+                    className="h-11 rounded-xl text-xs font-semibold gap-2 border-border/80 hover:bg-muted/70 cursor-pointer"
+                  >
+                    <Headset className="size-4 text-sky-600" />
+                    <span>{isRtl ? "درخواست پشتیبانی" : "Support Request"}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setFeedbackDialogOpen(true)}
+                    className="h-11 rounded-xl text-xs font-semibold gap-2 border-border/80 hover:bg-muted/70 cursor-pointer"
+                  >
+                    <MessageSquare className="size-4 text-emerald-600" />
+                    <span>{isRtl ? "ارسال بازخورد" : "Send Feedback"}</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setIdeaDialogOpen(true)}
+                    className="h-11 rounded-xl text-xs font-semibold gap-2 border-border/80 hover:bg-muted/70 cursor-pointer"
+                  >
+                    <Lightbulb className="size-4 text-amber-500" />
+                    <span>{isRtl ? "پیشنهاد و ایده جدید" : "Feature Idea"}</span>
+                  </Button>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.push("/dashboard")}
+                    className="h-10 px-5 text-xs text-muted-foreground hover:text-foreground cursor-pointer gap-2"
+                  >
+                    <Home className="size-4" />
+                    <span>{isRtl ? "بازگشت به داشبورد" : "Return to Dashboard"}</span>
                   </Button>
                 </div>
               </div>
-            )}
+            ) : (
+              <>
+                {/* Header Action Row */}
+                {!selectedReport && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                        {isRtl
+                          ? "مرکز گزارش و مدیریت باگ‌ها"
+                          : "Issue Center & Bug Tracking"}
+                      </h1>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {isRtl
+                          ? "رهگیری اشکالات فنی، درخواست‌های ارتقا و وضعیت رسیدگی به باگ‌های گزارش‌شده"
+                          : "Track technical issues, bug resolution progress and system health."}
+                      </p>
+                    </div>
 
-            {/* Error Banner */}
-            {error && (
-              <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="size-4 shrink-0" />
-                  <span>{error}</span>
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchReports(false)}
+                        disabled={isLoading}
+                        className="rounded-xl h-10 px-3.5 text-xs font-semibold gap-1.5 cursor-pointer"
+                      >
+                        <RefreshCw
+                          className={cn(
+                            "size-3.5",
+                            isLoading && "animate-spin text-primary"
+                          )}
+                        />
+                        <span>{isRtl ? "بروزرسانی" : "Refresh"}</span>
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        onClick={() => setSubmissionDialogOpen(true)}
+                        className="rounded-xl h-10 px-4 text-xs font-bold gap-1.5 bg-primary hover:bg-primary/90 text-white cursor-pointer shadow-md shadow-primary/20"
+                      >
+                        <PlusCircle className="size-4" />
+                        <span>{isRtl ? "ثبت گزارش جدید" : "Report Bug"}</span>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Error Banner */}
+                {error && (
+                  <div className="p-4 rounded-2xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="size-4 shrink-0" />
+                      <span>{error}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchReports(false)}
+                      className="h-8 rounded-lg text-xs"
+                    >
+                      {isRtl ? "تلاش مجدد" : "Retry"}
+                    </Button>
+                  </div>
+                )}
+
+                {/* Active View with Pure Opacity Fade */}
+                <div className="w-full animate-in fade-in duration-150">
+                  {selectedReport ? (
+                    <BugReportDetailView
+                      report={selectedReport}
+                      onBack={() => setSelectedReport(null)}
+                      onUpdated={(updated) => {
+                        setSelectedReport(updated);
+                        setReports((prev) =>
+                          prev.map((r) => (r.id === updated.id ? updated : r))
+                        );
+                        bugReportsService.getAnalytics().then(setAnalytics).catch(() => {});
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+                        }
+                      }}
+                    />
+                  ) : activeTab === "dashboard" ? (
+                    <BugReportsDashboard
+                      analytics={analytics}
+                      recentReports={reports}
+                      onSelectReport={(r) => setSelectedReport(r)}
+                      onOpenNewReport={() => setSubmissionDialogOpen(true)}
+                      onViewAll={() => setActiveTab("reports")}
+                    />
+                  ) : (
+                    <BugReportsList
+                      reports={reports}
+                      currentUserId={user?.id}
+                      activeFilterTab={activeTab === "my" ? "my" : "all"}
+                      onFilterTabChange={(tab) =>
+                        setActiveTab(tab === "my" ? "my" : "reports")
+                      }
+                      onSelectReport={(r) => setSelectedReport(r)}
+                    />
+                  )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fetchReports(false)}
-                  className="h-8 rounded-lg text-xs"
-                >
-                  {isRtl ? "تلاش مجدد" : "Retry"}
-                </Button>
-              </div>
+              </>
             )}
-
-            {/* Active View with Pure Opacity Fade */}
-            <div className="w-full animate-in fade-in duration-150">
-              {selectedReport ? (
-                <BugReportDetailView
-                  report={selectedReport}
-                  onBack={() => setSelectedReport(null)}
-                  onUpdated={(updated) => {
-                    setSelectedReport(updated);
-                    setReports((prev) =>
-                      prev.map((r) => (r.id === updated.id ? updated : r))
-                    );
-                    bugReportsService.getAnalytics().then(setAnalytics).catch(() => {});
-                    if (typeof window !== "undefined") {
-                      window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
-                    }
-                  }}
-                />
-              ) : activeTab === "dashboard" ? (
-                <BugReportsDashboard
-                  analytics={analytics}
-                  recentReports={reports}
-                  onSelectReport={(r) => setSelectedReport(r)}
-                  onOpenNewReport={() => setSubmissionDialogOpen(true)}
-                  onViewAll={() => setActiveTab("reports")}
-                />
-              ) : (
-                <BugReportsList
-                  reports={reports}
-                  currentUserId={user?.id}
-                  activeFilterTab={activeTab === "my" ? "my" : "all"}
-                  onFilterTabChange={(tab) =>
-                    setActiveTab(tab === "my" ? "my" : "reports")
-                  }
-                  onSelectReport={(r) => setSelectedReport(r)}
-                />
-              )}
-            </div>
           </div>
         </main>
       </div>
