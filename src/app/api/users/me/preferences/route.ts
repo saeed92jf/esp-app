@@ -46,9 +46,22 @@ function resolveAuthHeaders(req: NextRequest): Record<string, string> {
     }
   }
 
-  const userId = req.headers.get("x-user-id") || req.cookies.get("esp-user-id")?.value;
-  if (userId) {
-    headers["x-user-id"] = userId;
+  const userId =
+    req.headers.get("x-user-id") ||
+    req.nextUrl.searchParams.get("userId") ||
+    req.nextUrl.searchParams.get("user_id") ||
+    req.cookies.get("esp-user-id")?.value ||
+    req.cookies.get("esp_user_id")?.value;
+  if (userId && userId.trim().toLowerCase() !== "guest") {
+    headers["x-user-id"] = userId.trim().toLowerCase();
+  }
+
+  const userEmail =
+    req.headers.get("x-user-email") ||
+    req.nextUrl.searchParams.get("email") ||
+    req.cookies.get("esp-user-email")?.value;
+  if (userEmail && userEmail.trim().toLowerCase() !== "guest") {
+    headers["x-user-email"] = userEmail.trim().toLowerCase();
   }
 
   return headers;
@@ -57,8 +70,9 @@ function resolveAuthHeaders(req: NextRequest): Record<string, string> {
 export async function GET(req: NextRequest) {
   try {
     const headers = resolveAuthHeaders(req);
+    const search = req.nextUrl.search || "";
     try {
-      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences${search}`, {
         headers,
         signal: AbortSignal.timeout(4000),
       });
@@ -83,9 +97,15 @@ export async function PATCH(req: NextRequest) {
     headers["Content-Type"] = "application/json";
 
     const body = await req.json();
+    const search = req.nextUrl.search || "";
+
+    // Ensure userId is present in payload if known from headers
+    if (!body.userId && headers["x-user-id"]) {
+      body.userId = headers["x-user-id"];
+    }
 
     try {
-      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences`, {
+      const remoteRes = await fetch(`${BACKEND_API_URL}/users/me/preferences${search}`, {
         method: "PATCH",
         headers,
         body: JSON.stringify(body),

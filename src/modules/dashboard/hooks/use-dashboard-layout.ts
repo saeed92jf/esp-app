@@ -1,7 +1,7 @@
 // src/modules/dashboard/hooks/use-dashboard-layout.ts
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useAuth } from "../../auth/hooks/use-auth";
 import {
   TabId,
@@ -38,14 +38,35 @@ const enforceLayoutConstraints = (layouts: Layouts): Layouts => {
 
 export function useDashboardLayout(initialTab: TabId = "tasks") {
   const { user } = useAuth();
-  const userId = user?.id || user?.email || "guest";
+  
+  const getResolvedUserId = (): string => {
+    if (user?.id) return user.id;
+    if (user?.email) return user.email;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+        if (raw) {
+          const u = JSON.parse(raw);
+          const id = u?.id || u?.userId || u?.email;
+          if (id && String(id).trim().toLowerCase() !== "guest") {
+            return String(id).trim().toLowerCase();
+          }
+        }
+      } catch {}
+    }
+    return "guest";
+  };
+
+  const userId = getResolvedUserId();
   const [currentTab, setCurrentTab] = useState<TabId>(initialTab);
+  const isHydratedRef = useRef(false);
 
   // Tab widgets (which widgets are present in each tab's center grid)
   const [tabWidgets, setTabWidgets] = useState<Record<TabId, string[]>>(() => {
     if (typeof window === "undefined") return DEFAULT_TAB_WIDGETS;
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_TAB_WIDGETS);
+      const userKey = `${STORAGE_KEY_TAB_WIDGETS}_${userId}`;
+      const saved = localStorage.getItem(userKey) || localStorage.getItem(STORAGE_KEY_TAB_WIDGETS);
       if (!saved) return DEFAULT_TAB_WIDGETS;
       const parsed = JSON.parse(saved);
       return {
@@ -71,7 +92,8 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
       return init;
     }
     try {
-      const saved = localStorage.getItem(STORAGE_KEY_TAB_LAYOUTS);
+      const userKey = `${STORAGE_KEY_TAB_LAYOUTS}_${userId}`;
+      const saved = localStorage.getItem(userKey) || localStorage.getItem(STORAGE_KEY_TAB_LAYOUTS);
       if (!saved) {
         return {
           tasks: enforceLayoutConstraints(DEFAULT_TAB_LAYOUTS.tasks),
@@ -102,7 +124,6 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
     try {
       const userKey = `${STORAGE_KEY_TAB_WIDGETS}_${userId}`;
       localStorage.setItem(userKey, JSON.stringify(tabWidgets));
-      localStorage.setItem(STORAGE_KEY_TAB_WIDGETS, JSON.stringify(tabWidgets));
     } catch {}
   }, [tabWidgets, userId]);
 
@@ -110,13 +131,14 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
     try {
       const userKey = `${STORAGE_KEY_TAB_LAYOUTS}_${userId}`;
       localStorage.setItem(userKey, JSON.stringify(tabLayouts));
-      localStorage.setItem(STORAGE_KEY_TAB_LAYOUTS, JSON.stringify(tabLayouts));
     } catch {}
   }, [tabLayouts, userId]);
 
   // Rehydrate personal layout on user login or switch
   useEffect(() => {
     if (typeof window === "undefined") return;
+    let cancelled = false;
+
     try {
       const userWidgetsKey = `${STORAGE_KEY_TAB_WIDGETS}_${userId}`;
       const savedW = localStorage.getItem(userWidgetsKey);
@@ -142,7 +164,55 @@ export function useDashboardLayout(initialTab: TabId = "tasks") {
         });
       }
     } catch {}
+
+    if (userId && userId !== "guest") {
+      import("@/services").then(({ api }) => {
+        api.preferences.get(userId).then((prefs) => {
+          if (cancelled) return;
+          if (prefs.dashboardWidgets && typeof prefs.dashboardWidgets === "object") {
+            setTabWidgets((prev) => ({
+              ...prev,
+              ...(prefs.dashboardWidgets as Record<TabId, string[]>),
+            }));
+          }
+          if (prefs.dashboardLayouts && typeof prefs.dashboardLayouts === "object") {
+            setTabLayouts((prev) => {
+              const res: Record<TabId, Layouts> = { ...prev };
+              for (const t in prefs.dashboardLayouts) {
+                res[t as TabId] = enforceLayoutConstraints(prefs.dashboardLayouts[t]);
+              }
+              return res;
+            });
+          }
+          isHydratedRef.current = true;
+        }).catch(() => {
+          isHydratedRef.current = true;
+        });
+      }).catch(() => {
+        isHydratedRef.current = true;
+      });
+    } else {
+      isHydratedRef.current = true;
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [userId]);
+
+  // Debounced backend synchronization
+  useEffect(() => {
+    if (!isHydratedRef.current || !userId || userId === "guest") return;
+    const timer = setTimeout(() => {
+      import("@/services").then(({ api }) => {
+        void api.preferences.update({
+          dashboardWidgets: tabWidgets,
+          dashboardLayouts: tabLayouts,
+        }, userId);
+      }).catch(() => {});
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [tabWidgets, tabLayouts, userId]);
 
   // Layout change from react-grid-layout for current tab
   const onLayoutChange = useCallback(

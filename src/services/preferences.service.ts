@@ -25,6 +25,7 @@ const DEFAULT_PREFS: UserPreferences = {
     "/ESP-Flow",
     "/tasks",
     "/projects",
+    "/customers",
     "/dictionary",
     "/did-you-know",
   ],
@@ -32,6 +33,7 @@ const DEFAULT_PREFS: UserPreferences = {
     "/ESP-Flow",
     "/tasks",
     "/projects",
+    "/customers",
     "/dictionary",
     "/did-you-know",
     "/community",
@@ -41,7 +43,7 @@ const DEFAULT_PREFS: UserPreferences = {
 const STORAGE_KEY = 'esp-user-preferences';
 
 export function getUserStorageKey(userId?: string): string {
-  if (userId && typeof userId === 'string' && userId.trim()) {
+  if (userId && typeof userId === 'string' && userId.trim() && userId.trim().toLowerCase() !== 'guest') {
     return `esp-user-preferences-${userId.trim().toLowerCase()}`;
   }
   if (typeof window === 'undefined') return 'esp-user-preferences-guest';
@@ -49,8 +51,10 @@ export function getUserStorageKey(userId?: string): string {
     const raw = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
     if (raw) {
       const u = JSON.parse(raw);
-      const id = u?.id || u?.email;
-      if (id) return `esp-user-preferences-${String(id).trim().toLowerCase()}`;
+      const id = u?.id || u?.userId || u?.email;
+      if (id && String(id).trim().toLowerCase() !== 'guest') {
+        return `esp-user-preferences-${String(id).trim().toLowerCase()}`;
+      }
     }
   } catch {}
   return 'esp-user-preferences-guest';
@@ -70,7 +74,7 @@ export class FakePreferencesService implements IPreferencesService {
     if (typeof window === 'undefined') return DEFAULT_PREFS;
     try {
       const key = getUserStorageKey(userId);
-      const raw = localStorage.getItem(key) || localStorage.getItem(STORAGE_KEY);
+      const raw = localStorage.getItem(key);
       return raw ? { ...DEFAULT_PREFS, ...JSON.parse(raw) } : DEFAULT_PREFS;
     } catch {
       return DEFAULT_PREFS;
@@ -84,7 +88,6 @@ export class FakePreferencesService implements IPreferencesService {
       try {
         const key = getUserStorageKey(userId);
         localStorage.setItem(key, JSON.stringify(updated));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         window.dispatchEvent(new CustomEvent('esp:user-preferences-updated', { detail: updated }));
 
         if (patch.primaryColor) {
@@ -107,21 +110,60 @@ export class FakePreferencesService implements IPreferencesService {
 export class RealPreferencesService implements IPreferencesService {
   constructor(private http: HttpClient) {}
 
+  private resolveActiveUserId(userId?: string): string {
+    if (userId && typeof userId === 'string' && userId.trim() && userId.trim().toLowerCase() !== 'guest') {
+      return userId.trim().toLowerCase();
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
+        if (raw) {
+          const u = JSON.parse(raw);
+          const id = u?.id || u?.userId || u?.email;
+          if (id && String(id).trim().toLowerCase() !== 'guest') {
+            return String(id).trim().toLowerCase();
+          }
+        }
+      } catch {}
+    }
+    return 'guest';
+  }
+
   async get(userId?: string): Promise<UserPreferences> {
-    const key = getUserStorageKey(userId);
+    const activeId = this.resolveActiveUserId(userId);
+    const key = getUserStorageKey(activeId);
     let cached: UserPreferences | null = null;
     if (typeof window !== 'undefined') {
       try {
-        const raw = localStorage.getItem(key) || localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(key);
         if (raw) cached = JSON.parse(raw);
       } catch {}
     }
 
     try {
-      const res = await this.http.get<UserPreferences>('/users/me/preferences');
-      if (res && (Array.isArray(res.quickAccessHrefs) || Array.isArray(res.favoriteApps))) {
-        const merged = { ...DEFAULT_PREFS, ...cached, ...res };
-        if (typeof window !== 'undefined') {
+      const url = activeId !== 'guest'
+        ? `/users/me/preferences?userId=${encodeURIComponent(activeId)}`
+        : '/users/me/preferences';
+      const res = await this.http.get<UserPreferences>(url);
+      if (res) {
+        let quickAccessHrefs = res.quickAccessHrefs;
+        if (
+          (!quickAccessHrefs || quickAccessHrefs.length === 0) &&
+          cached?.quickAccessHrefs && cached.quickAccessHrefs.length > 0
+        ) {
+          quickAccessHrefs = cached.quickAccessHrefs;
+        }
+
+        const merged: UserPreferences = {
+          ...DEFAULT_PREFS,
+          ...cached,
+          ...res,
+          ...(quickAccessHrefs ? { quickAccessHrefs } : {}),
+          ...(cached?.dashboardWidgets && !res.dashboardWidgets ? { dashboardWidgets: cached.dashboardWidgets } : {}),
+          ...(cached?.dashboardLayouts && !res.dashboardLayouts ? { dashboardLayouts: cached.dashboardLayouts } : {}),
+        };
+
+        if (typeof window !== 'undefined' && activeId !== 'guest') {
           try {
             localStorage.setItem(key, JSON.stringify(merged));
           } catch {}
@@ -135,11 +177,12 @@ export class RealPreferencesService implements IPreferencesService {
   }
 
   async update(patch: Partial<UserPreferences>, userId?: string): Promise<UserPreferences> {
-    const key = getUserStorageKey(userId);
+    const activeId = this.resolveActiveUserId(userId);
+    const key = getUserStorageKey(activeId);
     let current = DEFAULT_PREFS;
     if (typeof window !== 'undefined') {
       try {
-        const raw = localStorage.getItem(key) || localStorage.getItem(STORAGE_KEY);
+        const raw = localStorage.getItem(key);
         if (raw) current = JSON.parse(raw);
       } catch {}
     }
@@ -148,7 +191,6 @@ export class RealPreferencesService implements IPreferencesService {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(key, JSON.stringify(merged));
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
         window.dispatchEvent(new CustomEvent('esp:user-preferences-updated', { detail: merged }));
 
         if (patch.primaryColor) {
@@ -165,7 +207,11 @@ export class RealPreferencesService implements IPreferencesService {
     }
 
     try {
-      const res = await this.http.patch<UserPreferences>('/users/me/preferences', patch);
+      const url = activeId !== 'guest'
+        ? `/users/me/preferences?userId=${encodeURIComponent(activeId)}`
+        : '/users/me/preferences';
+      const payload = { ...patch, userId: activeId !== 'guest' ? activeId : undefined };
+      const res = await this.http.patch<UserPreferences>(url, payload);
       return res || merged;
     } catch {
       return merged;

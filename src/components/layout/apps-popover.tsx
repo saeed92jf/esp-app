@@ -41,7 +41,8 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   useEffect(() => {
     let cancelled = false;
-    api.preferences.get().then((prefs) => {
+    const activeUserId = user?.id || user?.email;
+    api.preferences.get(activeUserId).then((prefs) => {
       if (cancelled) return;
       if (prefs.favoriteApps && prefs.favoriteApps.length > 0) {
         setFavoriteIds(prefs.favoriteApps.slice(0, 6));
@@ -88,7 +89,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
         // Replace target with the new one
         newFavs.splice(targetIndex, 1, draggedAppId);
       }
-      void api.preferences.update({ favoriteApps: newFavs, quickAccessHrefs: newFavs });
+      void api.preferences.update({ favoriteApps: newFavs, quickAccessHrefs: newFavs }, user?.id || user?.email);
       return newFavs;
     });
     setDraggedAppId(null);
@@ -147,7 +148,7 @@ export function AppsPopover({ triggerClassName, iconClassName }: { triggerClassN
                   variant="ghost"
                   onClick={() => {
                     setEditMode(false);
-                    void api.preferences.update({ favoriteApps: favoriteIds, quickAccessHrefs: favoriteIds });
+                    void api.preferences.update({ favoriteApps: favoriteIds, quickAccessHrefs: favoriteIds }, user?.id || user?.email);
                   }}
                   className="h-8 sm:h-9 rounded-full px-4 text-xs sm:text-sm font-semibold bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground transition-colors"
                 >

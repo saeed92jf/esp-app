@@ -62,6 +62,23 @@ export class HttpClient {
     if (auth) {
       const token = getToken();
       if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      if (typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('esp_auth_user') || localStorage.getItem('esp-auth-user');
+          if (raw) {
+            const u = JSON.parse(raw);
+            const uid = u?.id || u?.userId;
+            const uemail = u?.email;
+            if (uid && String(uid).trim().toLowerCase() !== 'guest') {
+              headers['x-user-id'] = String(uid).trim().toLowerCase();
+            }
+            if (uemail && String(uemail).trim().toLowerCase() !== 'guest') {
+              headers['x-user-email'] = String(uemail).trim().toLowerCase();
+            }
+          }
+        } catch {}
+      }
     }
 
     // retry loop

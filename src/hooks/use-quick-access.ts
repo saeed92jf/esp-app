@@ -140,7 +140,26 @@ function getCachedUserHrefs(userId?: string): string[] | null {
 
 export function useQuickAccess() {
   const { user } = useAuth();
-  const activeUserId = user?.id || user?.email || "guest";
+  
+  const getResolvedUserId = (): string => {
+    if (user?.id) return user.id;
+    if (user?.email) return user.email;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+        if (raw) {
+          const u = JSON.parse(raw);
+          const id = u?.id || u?.userId || u?.email;
+          if (id && String(id).trim().toLowerCase() !== "guest") {
+            return String(id).trim().toLowerCase();
+          }
+        }
+      } catch {}
+    }
+    return "guest";
+  };
+
+  const activeUserId = getResolvedUserId();
 
   // Immediate synchronous initialization from user-scoped storage (zero flash)
   const [selectedHrefs, setSelectedHrefs] = useState<string[]>(() => {
@@ -154,16 +173,32 @@ export function useQuickAccess() {
 
   // Synchronize state directly when user changes or logs in
   const loadUserPreferences = useCallback(async (targetUserId: string) => {
+    let resolvedTarget = targetUserId;
+    if (!resolvedTarget || resolvedTarget === "guest") {
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+          if (raw) {
+            const u = JSON.parse(raw);
+            const id = u?.id || u?.userId || u?.email;
+            if (id && String(id).trim().toLowerCase() !== "guest") {
+              resolvedTarget = String(id).trim().toLowerCase();
+            }
+          }
+        } catch {}
+      }
+    }
+
     // 1. Instant local read for the target user
-    const localCached = getCachedUserHrefs(targetUserId);
+    const localCached = getCachedUserHrefs(resolvedTarget);
     if (localCached && localCached.length > 0) {
       setSelectedHrefs(localCached);
     }
 
     // 2. Fetch fresh preferences from server
     try {
-      const prefs = await api.preferences.get(targetUserId);
-      if (activeUserRef.current !== targetUserId) return; // Discard if user changed meanwhile
+      const prefs = await api.preferences.get(resolvedTarget);
+      if (activeUserRef.current !== resolvedTarget && activeUserRef.current !== "guest") return; // Discard if user changed meanwhile
 
       if (Array.isArray(prefs.quickAccessHrefs) && prefs.quickAccessHrefs.length > 0) {
         const cleaned = deduplicateHrefs(prefs.quickAccessHrefs).slice(0, QUICK_ACCESS_MAX);
@@ -174,9 +209,7 @@ export function useQuickAccess() {
     } catch {
       // Fallback already satisfied by localCached
     } finally {
-      if (activeUserRef.current === targetUserId) {
-        setHydrated(true);
-      }
+      setHydrated(true);
     }
   }, []);
 
@@ -219,7 +252,22 @@ export function useQuickAccess() {
     const cleaned = deduplicateHrefs(newHrefs).slice(0, QUICK_ACCESS_MAX);
     setSelectedHrefs(cleaned);
 
-    const userId = activeUserRef.current;
+    let userId = activeUserRef.current;
+    if (!userId || userId === "guest") {
+      if (typeof window !== "undefined") {
+        try {
+          const raw = localStorage.getItem("esp_auth_user") || localStorage.getItem("esp-auth-user");
+          if (raw) {
+            const u = JSON.parse(raw);
+            const id = u?.id || u?.userId || u?.email;
+            if (id && String(id).trim().toLowerCase() !== "guest") {
+              userId = String(id).trim().toLowerCase();
+            }
+          }
+        } catch {}
+      }
+    }
+
     if (typeof window !== "undefined") {
       try {
         const key = getUserStorageKey(userId);
