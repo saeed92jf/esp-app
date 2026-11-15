@@ -60,6 +60,7 @@ interface LicensorDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onEditLogo?: (licensor: Licensor) => void;
+  onEditLicensor?: (licensor: Licensor) => void;
   customLogo?: string;
 }
 
@@ -76,6 +77,7 @@ export function LicensorDetailModal({
   isOpen,
   onClose,
   onEditLogo,
+  onEditLicensor,
   customLogo,
 }: LicensorDetailModalProps) {
   const locale = useLocale();
@@ -178,6 +180,20 @@ export function LicensorDetailModal({
 
           {/* Header Action Buttons */}
           <div className="flex items-center gap-1.5 self-end sm:self-center shrink-0">
+            {onEditLicensor && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onEditLicensor(licensor)}
+                className="h-8 rounded-xl text-xs gap-1.5 cursor-pointer border-primary/40 text-primary hover:bg-primary/10"
+                title={isRtl ? "ویرایش و تغییر اطلاعات لایسنسور" : "Edit Licensor Info"}
+              >
+                <Pencil className="size-3.5" />
+                <span className="hidden sm:inline">{isRtl ? "ویرایش اطلاعات" : "Edit Info"}</span>
+              </Button>
+            )}
+
             {currentLogo && (
               <Button
                 type="button"

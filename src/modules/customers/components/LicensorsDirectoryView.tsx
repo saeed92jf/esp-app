@@ -18,6 +18,7 @@ import {
   Trash2,
   UploadCloud,
   ArrowUpRight,
+  Plus,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ import { formatLocaleNumber } from "@/lib/format-number";
 import { customersService } from "../services/customers.service";
 import { IRANIAN_LICENSORS } from "../data/licensors.data";
 import { LicensorDetailModal } from "./LicensorDetailModal";
+import { AddEditLicensorModal } from "./AddEditLicensorModal";
 import type { Licensor, LicensorCategory } from "../types/licensors.types";
 
 const CATEGORY_TABS: { id: LicensorCategory; labelFa: string; labelEn: string }[] = [
@@ -88,6 +90,11 @@ export function LicensorsDirectoryView() {
   const [detailLicensor, setDetailLicensor] = useState<Licensor | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
+  // Custom Created & Edited Licensors (localStorage persistence)
+  const [customLicensors, setCustomLicensors] = useState<Licensor[]>([]);
+  const [editingLicensor, setEditingLicensor] = useState<Licensor | null>(null);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+
   // Persistent Custom Logos (localStorage)
   const [customLogos, setCustomLogos] = useState<Record<string, string>>({});
   const [editingLogoLicensor, setEditingLogoLicensor] = useState<Licensor | null>(null);
@@ -95,15 +102,78 @@ export function LicensorsDirectoryView() {
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load persisted logos on mount
+  // Load persisted logos and custom licensors on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("esp_licensor_logos_override");
-      if (stored) {
-        setCustomLogos(JSON.parse(stored));
+      const storedLogos = localStorage.getItem("esp_licensor_logos_override");
+      if (storedLogos) {
+        setCustomLogos(JSON.parse(storedLogos));
+      }
+      const storedLicensors = localStorage.getItem("esp_custom_licensors_v1");
+      if (storedLicensors) {
+        setCustomLicensors(JSON.parse(storedLicensors));
       }
     } catch {}
   }, []);
+
+  // Merged Master Licensors List
+  const allLicensors = useMemo(() => {
+    const customMap = new Map<string, Licensor>();
+    customLicensors.forEach((cl) => customMap.set(cl.id, cl));
+
+    const result: Licensor[] = [];
+    const processedIds = new Set<string>();
+
+    // 1. Process base licensors with custom overrides if edited
+    IRANIAN_LICENSORS.forEach((base) => {
+      processedIds.add(base.id);
+      if (customMap.has(base.id)) {
+        result.push(customMap.get(base.id)!);
+      } else {
+        result.push(base);
+      }
+    });
+
+    // 2. Prepend newly created licensors so they appear first
+    customLicensors.forEach((cl) => {
+      if (!processedIds.has(cl.id)) {
+        result.unshift(cl);
+      }
+    });
+
+    return result;
+  }, [customLicensors]);
+
+  const handleSaveLicensor = (updated: Licensor) => {
+    setCustomLicensors((prev) => {
+      const idx = prev.findIndex((l) => l.id === updated.id);
+      let next: Licensor[];
+      if (idx !== -1) {
+        next = [...prev];
+        next[idx] = updated;
+      } else {
+        next = [updated, ...prev];
+      }
+      try {
+        localStorage.setItem("esp_custom_licensors_v1", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+
+    if (detailLicensor && detailLicensor.id === updated.id) {
+      setDetailLicensor(updated);
+    }
+  };
+
+  const handleOpenCreateModal = () => {
+    setEditingLicensor(null);
+    setIsFormModalOpen(true);
+  };
+
+  const handleOpenEditModal = (licensor: Licensor) => {
+    setEditingLicensor(licensor);
+    setIsFormModalOpen(true);
+  };
 
   const getLicensorLogo = (licensor: Licensor): string => {
     if (customLogos[licensor.id] !== undefined) {
@@ -181,18 +251,18 @@ export function LicensorsDirectoryView() {
 
   useEffect(() => {
     if (initialLicensorId) {
-      const found = IRANIAN_LICENSORS.find((l) => l.id === initialLicensorId);
+      const found = allLicensors.find((l) => l.id === initialLicensorId);
       if (found) {
         setDetailLicensor(found);
         setIsDetailModalOpen(true);
       }
     }
-  }, [initialLicensorId]);
+  }, [initialLicensorId, allLicensors]);
 
   const filteredLicensors = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    return IRANIAN_LICENSORS.filter((licensor) => {
+    return allLicensors.filter((licensor) => {
       // Category check
       if (selectedCategory !== "all") {
         if (!licensor.processCategories.includes(selectedCategory)) {
@@ -225,19 +295,19 @@ export function LicensorsDirectoryView() {
 
       return matchName || matchTech || matchPlants;
     });
-  }, [search, selectedCategory]);
+  }, [allLicensors, search, selectedCategory]);
 
   // Aggregate Metrics
-  const totalLicensors = IRANIAN_LICENSORS.length;
+  const totalLicensors = allLicensors.length;
   const uniqueCountries = useMemo(() => {
-    return new Set(IRANIAN_LICENSORS.map((l) => l.countryCode)).size;
-  }, []);
+    return new Set(allLicensors.map((l) => l.countryCode)).size;
+  }, [allLicensors]);
   const totalPlantsLicensed = useMemo(() => {
-    return IRANIAN_LICENSORS.reduce((sum, l) => sum + l.licensedPlants.length, 0);
-  }, []);
+    return allLicensors.reduce((sum, l) => sum + l.licensedPlants.length, 0);
+  }, [allLicensors]);
   const totalTechnologies = useMemo(() => {
-    return IRANIAN_LICENSORS.reduce((sum, l) => sum + l.keyTechnologies.length, 0);
-  }, []);
+    return allLicensors.reduce((sum, l) => sum + l.keyTechnologies.length, 0);
+  }, [allLicensors]);
 
   return (
     <div className="space-y-6 w-full text-start animate-in fade-in duration-150">
@@ -332,12 +402,23 @@ export function LicensorsDirectoryView() {
             )}
           </div>
 
-          <div className="text-xs text-muted-foreground shrink-0">
-            {isRtl ? (
-              <span>نمایش <strong className="text-foreground">{formatLocaleNumber(filteredLicensors.length, true)}</strong> لایسنسور</span>
-            ) : (
-              <span>Showing <strong className="text-foreground">{filteredLicensors.length}</strong> licensors</span>
-            )}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="text-xs text-muted-foreground shrink-0 hidden sm:block">
+              {isRtl ? (
+                <span>نمایش <strong className="text-foreground">{formatLocaleNumber(filteredLicensors.length, true)}</strong> لایسنسور</span>
+              ) : (
+                <span>Showing <strong className="text-foreground">{filteredLicensors.length}</strong> licensors</span>
+              )}
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleOpenCreateModal}
+              className="h-10 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs cursor-pointer shrink-0"
+            >
+              <Plus className="size-4 stroke-[2.5]" />
+              <span>{isRtl ? "ساخت لایسنسور جدید" : "New Licensor"}</span>
+            </Button>
           </div>
         </div>
 
@@ -498,19 +579,35 @@ export function LicensorsDirectoryView() {
                     </span>
                   </span>
 
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenDetail(licensor);
-                    }}
-                    className="h-7.5 px-3 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 gap-1.5 cursor-pointer"
-                  >
-                    <span>{isRtl ? "مشاهده جزئیات" : "View Details"}</span>
-                    <ArrowUpRight className="size-3.5" />
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditModal(licensor);
+                      }}
+                      className="h-7.5 px-2.5 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground hover:border-primary/50 gap-1 cursor-pointer"
+                    >
+                      <Pencil className="size-3" />
+                      <span>{isRtl ? "ویرایش" : "Edit"}</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenDetail(licensor);
+                      }}
+                      className="h-7.5 px-3 rounded-xl text-xs font-semibold text-primary hover:bg-primary/10 gap-1.5 cursor-pointer"
+                    >
+                      <span>{isRtl ? "مشاهده جزئیات" : "View Details"}</span>
+                      <ArrowUpRight className="size-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             );
@@ -524,6 +621,7 @@ export function LicensorsDirectoryView() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         onEditLogo={openEditLogo}
+        onEditLicensor={handleOpenEditModal}
         customLogo={detailLicensor ? getLicensorLogo(detailLicensor) : undefined}
       />
 
@@ -647,6 +745,14 @@ export function LicensorsDirectoryView() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* ── 6. Create / Edit Licensor Modal ── */}
+      <AddEditLicensorModal
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
+        onSave={handleSaveLicensor}
+        licensor={editingLicensor}
+      />
     </div>
   );
 }
