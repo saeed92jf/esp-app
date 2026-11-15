@@ -35,8 +35,8 @@ export function GlobalQuickActions() {
 
   const [isOpen, setIsOpen] = useState(false);
   const [activeModalId, setActiveModalId] = useState<string | null>(null);
-  const [bottomOffset, setBottomOffset] = useState(24); // default 24px from bottom
   const [isScrollToTopVisible, setIsScrollToTopVisible] = useState(false);
+  const [footerPushUp, setFooterPushUp] = useState(0);
   const [openIssuesCount, setOpenIssuesCount] = useState<number>(0);
   const [userReportsCount, setUserReportsCount] = useState<number>(0);
 
@@ -111,38 +111,45 @@ export function GlobalQuickActions() {
     };
   }, [user?.id, pathname]);
 
-  // Dynamic Push-up calculation: detects ScrollToTop and footer collision
+  // Dynamic Push-up calculation: detects ScrollToTop and footer collision via zero-lag GPU transform
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleScroll = () => {
-      // 1. Track ScrollToTop appearance (scroll > 400px)
-      setIsScrollToTopVisible(window.scrollY > 400);
+      if (rafId !== null) return;
 
-      // 2. Detect footer collision to elevate both buttons
-      const footer = document.querySelector("footer");
-      if (!footer) {
-        setBottomOffset(24);
-        return;
-      }
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
 
-      const rect = footer.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
+        // 1. Track ScrollToTop appearance (scroll > 400px)
+        setIsScrollToTopVisible(window.scrollY > 400);
 
-      // If the top edge of the footer enters the viewport
-      if (rect.top < windowHeight) {
-        const visibleFooterHeight = windowHeight - rect.top;
-        setBottomOffset(Math.max(24, Math.round(visibleFooterHeight + 24)));
-      } else {
-        setBottomOffset(24);
-      }
+        // 2. Detect footer collision to elevate smoothly without lag
+        const footer = document.querySelector("footer");
+        if (footer) {
+          const rect = footer.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+
+          // If the top edge of the footer enters the viewport
+          if (rect.top < windowHeight) {
+            setFooterPushUp(Math.max(0, Math.round(windowHeight - rect.top)));
+          } else {
+            setFooterPushUp(0);
+          }
+        } else {
+          setFooterPushUp(0);
+        }
+      });
     };
 
     handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
     };
   }, [pathname]);
 
@@ -203,30 +210,37 @@ export function GlobalQuickActions() {
   const hasIssues = isSuperAdmin && activeCount > 0;
 
   // When ScrollToTop is visible, push Issue Center up by 60px (48px size + 12px gap)
-  const currentBottom = isScrollToTopVisible ? bottomOffset + 60 : bottomOffset;
+  const baseBottom = isScrollToTopVisible ? "84px" : "24px";
 
   return (
     <>
       <div
         id="esp-quick-actions-fab"
         ref={containerRef}
-        style={{ bottom: `${currentBottom}px` }}
+        style={{
+          bottom: baseBottom,
+          transform: footerPushUp > 0 ? `translate3d(0, -${footerPushUp}px, 0)` : undefined,
+          willChange: footerPushUp > 0 ? "transform" : "auto",
+        }}
         className={cn(
-          "fixed right-6 z-50 select-none print:hidden flex flex-col items-end",
-          "transition-[bottom] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          "fixed z-50 select-none print:hidden flex flex-col",
+          isRtl ? "left-6 items-start" : "right-6 items-end",
+          "transition-[bottom] duration-200 ease-out"
         )}
       >
         {/* Borderless Popup Menu with Softer Gentle Shadow & Neutral Icons */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
-              initial={{ opacity: 0, y: 8, scale: 0.96 }}
+              initial={{ opacity: 0, y: 6, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.96 }}
-              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              exit={{ opacity: 0, y: 4, scale: 0.96 }}
+              transition={{ duration: 0.14, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "mb-2.5 w-[250px] sm:w-[270px] rounded-2xl bg-card/95 dark:bg-card/95 backdrop-blur-xl p-1.5 flex flex-col gap-0.5 overflow-hidden",
-                "border-0 ring-0",
+                isSuperAdmin ? "mb-2" : "mb-1.5",
+                isRtl ? "origin-bottom-left" : "origin-bottom-right",
+                "w-[244px] sm:w-[264px] rounded-2xl bg-card/95 dark:bg-card/95 backdrop-blur-xl p-1.5 flex flex-col gap-0.5 overflow-hidden",
+                "border border-border/40 ring-0",
                 "shadow-[0_12px_36px_-6px_rgba(0,0,0,0.08),0_4px_16px_-2px_rgba(0,0,0,0.04)] dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.5)]"
               )}
               role="menu"
@@ -246,7 +260,8 @@ export function GlobalQuickActions() {
                       role="menuitem"
                       onClick={() => handleActionSelect(action.id)}
                       className={cn(
-                        "w-full h-auto justify-between px-3 py-2.5 rounded-xl font-normal text-start",
+                        "w-full h-auto justify-between px-3 rounded-xl font-normal text-start",
+                        isSuperAdmin ? "py-2.5" : "py-2",
                         "hover:bg-muted/80 hover:text-foreground active:scale-[0.99]",
                         "focus-visible:ring-2 focus-visible:ring-primary/40 cursor-pointer"
                       )}
