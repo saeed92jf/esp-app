@@ -37,7 +37,8 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
       "design pressure", "temperature", "flange", "support", "skirt", "saddle", "weights",
       "ای اس پی فلو", "جریان فرایند", "شبیه سازی", "دیاگرام مهندسی", "مخزن", "مخازن",
       "مخازن تحت فشار", "طراحی مخزن", "جکت", "شل", "هد", "نازل", "متریال", "فشار طراحی",
-      "دمای طراحی", "استاندارد ازمی", "ازمه", "پوسته", "عدسی", "ساپورت"
+      "دمای طراحی", "استاندارد ازمی", "ازمه", "پوسته", "عدسی", "ساپورت",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
     ],
   },
   {
@@ -169,7 +170,8 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
       "projects", "project management", "vdis", "transmittal", "wbs", "scrum", "kanban", "miro",
       "quotation", "dms", "risks", "raci", "petrochemical", "euroslot",
       "پروژه", "مدیریت پروژه", "پروژه ها", "ترنسمیتال", "اسناد مهندسی", "وی دی آی اس",
-      "کوتیشن", "ریسک های پروژه", "نقشه راه", "کانبان", "اسکرام", "کارفرما", "ساختار شکست کار"
+      "کوتیشن", "ریسک های پروژه", "نقشه راه", "کانبان", "اسکرام", "کارفرما", "ساختار شکست کار",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
     ],
   },
   {
@@ -189,8 +191,9 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
       categoryName: "اطلاعات کارفرماها و مشتریان",
     },
     keywords: [
-      "customers", "clients", "companies", "petrochemical", "refinery", "steel", "directory",
-      "کارفرما", "کارفرمایان", "مشتریان", "شرکت ها", "اطلاعات کارفرماها", "پتروشیمی", "پالایشگاه", "فولاد", "لوگو"
+      "customers", "clients", "companies", "petrochemical", "refinery", "steel", "directory", "licensors",
+      "کارفرما", "کارفرمایان", "مشتریان", "شرکت ها", "اطلاعات کارفرماها", "پتروشیمی", "پالایشگاه", "فولاد", "لوگو", "لایسنسور", "لایسنسورها",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
     ],
   },
   {
@@ -211,7 +214,118 @@ export const CORE_SEARCH_ITEMS: SearchItem[] = [
     },
     keywords: [
       "sitemap", "map", "navigation", "tree", "pages index", "modules list",
-      "نقشه سایت", "سایت مپ", "ساختار درختی", "صفحات", "راهنمای ناوبری"
+      "نقشه سایت", "سایت مپ", "ساختار درختی", "صفحات", "راهنمای ناوبری",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
+    ],
+  },
+  {
+    id: "mod-tasks",
+    title: "سامانه مدیریت جامع تسک‌ها، وظایف و کارتابل مهندسی",
+    titleEn: "Engineering Tasks & Kanban Workflow Management",
+    category: "modules",
+    href: "/tasks",
+    snippet: "میز کار و تخته کانبان مدیریت وظایف مهندسی با تفکیک شرکتی یورو اسلات پارس و نانو پالایش سرام، نقشه راه، فایل‌های پیوست و کنترل همکاران.",
+    snippetEn: "Kanban board and task tracking with company segregation (Euroslot Pars, Nano Palayesh Ceram), project roadmap, attachments, and collaborators.",
+    breadcrumbs: ["سامانه پارس", "مدیریت", "تسک‌ها و وظایف"],
+    breadcrumbsEn: ["ESP Platform", "Management", "Tasks & Kanban"],
+    iconName: "ListChecks",
+    badge: "ماژول تسک‌ها",
+    badgeEn: "Tasks Module",
+    metadata: {
+      categoryName: "مدیریت کارها و وظایف",
+    },
+    keywords: [
+      "tasks", "kanban", "todo", "workflow", "activities", "board", "euroslot", "nano ceram",
+      "تسک", "تسک‌ها", "وظایف", "کانبان", "اقدامات", "پیگیری کارها", "کارتابل مهندسی",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
+    ],
+  },
+  {
+    id: "mod-datasheet-ai",
+    title: "سامانه هوش مصنوعی استخراج و تحلیل دیتاشیت‌های مهندسی",
+    titleEn: "Datasheet AI: Smart Document Extractor & Analyzer",
+    category: "modules",
+    href: "/datasheet-ai",
+    snippet: "پردازش و استخراج خودکار پارامترهای فنی، جداول و مشخصات مهندسی از اسناد و فایل‌های PDF دیتاشیت توسط هوش مصنوعی.",
+    snippetEn: "Automated extraction and analysis of engineering parameters, tables, and specifications from technical datasheet PDFs using AI.",
+    breadcrumbs: ["سامانه پارس", "هوش مصنوعی", "دیتاشیت AI"],
+    breadcrumbsEn: ["ESP Platform", "AI & Tools", "Datasheet AI"],
+    iconName: "FileMagnifyingGlass",
+    badge: "ماژول هوش مصنوعی",
+    badgeEn: "AI Module",
+    metadata: {
+      categoryName: "هوش مصنوعی و پردازش اسناد",
+    },
+    keywords: [
+      "datasheet", "datasheet ai", "ai", "pdf extract", "parameters", "engineering documents",
+      "دیتاشیت", "استخراج دیتاشیت", "هوش مصنوعی", "تحلیل اسناد", "فایل پی دی اف",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
+    ],
+  },
+  {
+    id: "mod-bug-reports",
+    title: "مرکز ثبت خطاها، گزارش باگ‌ها و ایشو سنتر",
+    titleEn: "Issue Center & System Bug Reports",
+    category: "modules",
+    href: "/bug-reports",
+    snippet: "سامانه پایش پایداری، ثبت باگ‌ها و مشکلات عملکردی، پیگیری روند اصلاح و ارتباط مستقیم با تیم فنی.",
+    snippetEn: "System health monitoring, reporting bugs and issues, tracking resolution progress, and direct contact with technical team.",
+    breadcrumbs: ["سامانه پارس", "پشتیبانی", "مرکز گزارش خطا"],
+    breadcrumbsEn: ["ESP Platform", "Support", "Issue Center"],
+    iconName: "Lifebuoy",
+    badge: "پشتیبانی سیستم",
+    badgeEn: "Support Center",
+    metadata: {
+      categoryName: "پشتیبانی و پایش خطاها",
+    },
+    keywords: [
+      "bug reports", "issues", "issue center", "support", "error", "feedback",
+      "گزارش باگ", "ثبت خطا", "ایشو سنتر", "پشتیبانی", "مشکلات سامانه", "تیکت",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
+    ],
+  },
+  {
+    id: "mod-directory",
+    title: "دفترچه تلفن پرسنل، اطلاعات تماس و چارت سازمانی",
+    titleEn: "Corporate Personnel Directory & Contact Book",
+    category: "modules",
+    href: "/directory",
+    snippet: "دایرکتوری رسمی شماره‌های داخلی، ایمیل، سمت‌های سازمانی و اطلاعات تماس پرسنل یورواسلات پارس.",
+    snippetEn: "Official directory of extension numbers, corporate emails, organizational roles, and contact details of Euroslot Pars personnel.",
+    breadcrumbs: ["سامانه پارس", "سازمانی", "دفترچه تلفن پرسنل"],
+    breadcrumbsEn: ["ESP Platform", "Organization", "Directory"],
+    iconName: "AddressBook",
+    badge: "سازمانی",
+    badgeEn: "Corporate",
+    metadata: {
+      categoryName: "اطلاعات پرسنلی و سازمانی",
+    },
+    keywords: [
+      "directory", "contacts", "personnel", "extensions", "phone book", "team",
+      "دفترچه تلفن", "شماره داخلی", "پرسنل", "اطلاعات تماس", "همکاران", "چارت سازمانی",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
+    ],
+  },
+  {
+    id: "mod-community",
+    title: "تالار گفتگو، پرسش و پاسخ تخصصی مهندسی و شبکه فنی",
+    titleEn: "Engineering Q&A Forum & Technical Community",
+    category: "modules",
+    href: "/community",
+    snippet: "فضای تبادل نظر، حل چالش‌های فنی، پاسخ به سوالات طراحی و اشتراک تجربیات میان مهندسان و متخصصان.",
+    snippetEn: "Collaborative forum for technical discussions, solving design challenges, and sharing engineering experiences.",
+    breadcrumbs: ["سامانه پارس", "کامیونیتی", "تالار گفتگو"],
+    breadcrumbsEn: ["ESP Platform", "Community", "Forum"],
+    iconName: "ChatCircleDots",
+    badge: "تالار گفتگو",
+    badgeEn: "Community",
+    metadata: {
+      categoryName: "جامعه مهندسی و پرسش و پاسخ",
+    },
+    keywords: [
+      "community", "forum", "q&a", "discussion", "questions", "answers",
+      "تالار گفتگو", "کامیونیتی", "پرسش و پاسخ", "انجمن", "بحث فنی", "سوالات مهندسی",
+      "ماژول", "ماژول ها", "ماژول‌ها", "module", "modules"
     ],
   },
 

@@ -321,21 +321,24 @@ export class FakeSearchService implements ISearchService {
     scoredItems.sort((a, b) => (b.score || 0) - (a.score || 0));
 
     // Calculate category counts across all results
+    const isModule = (i: SearchItem) =>
+      i.category === "modules" || i.id.startsWith("mod-");
+
     const isProject = (i: SearchItem) =>
-      i.category === "projects" || i.id.startsWith("proj-") || Boolean(i.href?.includes("/projects"));
+      !isModule(i) && (i.category === "projects" || i.id.startsWith("proj-") || Boolean(i.href?.includes("/projects")));
 
     const isTask = (i: SearchItem) =>
-      !isProject(i) && (i.category === "tasks" || i.id.startsWith("task-") || Boolean(i.href?.includes("/tasks")));
+      !isModule(i) && !isProject(i) && (i.category === "tasks" || i.id.startsWith("task-") || Boolean(i.href?.includes("/tasks")));
 
     const isVideo = (i: SearchItem) =>
-      i.category === "videos" || i.id.startsWith("vid-") || Boolean(i.href?.includes("/aparat"));
+      !isModule(i) && (i.category === "videos" || i.id.startsWith("vid-") || Boolean(i.href?.includes("/aparat")));
 
     const categoryCounts: Record<SearchCategory, number> = {
       all: scoredItems.length,
+      modules: scoredItems.filter(isModule).length,
       videos: scoredItems.filter(isVideo).length,
       projects: scoredItems.filter(isProject).length,
       tasks: scoredItems.filter(isTask).length,
-      modules: scoredItems.filter((i) => i.category === "modules").length,
       dictionary: scoredItems.filter((i) => i.category === "dictionary").length,
       didYouKnow: scoredItems.filter((i) => i.category === "didYouKnow").length,
     };
@@ -344,6 +347,8 @@ export class FakeSearchService implements ISearchService {
     const filteredResults =
       category === "all"
         ? scoredItems
+        : category === "modules"
+        ? scoredItems.filter(isModule)
         : category === "projects"
         ? scoredItems.filter(isProject)
         : category === "tasks"

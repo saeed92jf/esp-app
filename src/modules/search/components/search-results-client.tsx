@@ -25,6 +25,7 @@ import { HighlightMatch } from "@/components/ui/highlight-match";
 import { cn } from "@/lib/utils";
 import { SearchEmptyState } from "./search-empty-state";
 import { SearchFooter } from "./search-footer";
+import { SearchKnowledgeCard } from "./SearchKnowledgeCard";
 import { useUniversalSearch } from "../hooks/use-universal-search";
 import type { SearchCategory, SearchItem } from "../types/search.types";
 import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
@@ -110,6 +111,7 @@ export function SearchResultsClient() {
 
   const categoryTabs: { id: SearchCategory; label: string }[] = [
     { id: "all", label: t("tabs.all") },
+    { id: "modules", label: isRtl ? "ماژول‌ها" : "Modules" },
     { id: "videos", label: t("tabs.videos") },
     { id: "projects", label: t("tabs.projects") },
     { id: "tasks", label: t("tabs.tasks") },
@@ -121,9 +123,14 @@ export function SearchResultsClient() {
       { value: "esp-flow", label: "ESP-Flow (محاسبات فرایندی)" },
       { value: "projects", label: isRtl ? "مدیریت پروژه‌ها (VDIS)" : "Projects Management (VDIS)" },
       { value: "tasks", label: isRtl ? "مدیریت تسک‌ها و وظایف" : "Tasks & Kanban Management" },
+      { value: "customers", label: isRtl ? "اطلاعات کارفرماها و لایسنسورها" : "Clients & Licensors" },
+      { value: "datasheet-ai", label: isRtl ? "استخراج دیتاشیت (Datasheet AI)" : "Datasheet AI Extractor" },
       { value: "dictionary", label: isRtl ? "واژه‌نامه تخصصی مهندسی" : "Engineering Dictionary" },
       { value: "did-you-know", label: isRtl ? "دانستنی‌های علمی" : "Did You Know" },
       { value: "aparat", label: isRtl ? "ویدیوها و آموزش‌ها" : "Video Tutorials" },
+      { value: "bug-reports", label: isRtl ? "مرکز گزارش خطا و ایشو سنتر" : "Issue Center" },
+      { value: "directory", label: isRtl ? "دفترچه تلفن پرسنل" : "Personnel Directory" },
+      { value: "community", label: isRtl ? "تالار گفتگو و پرسش و پاسخ" : "Community" },
       { value: "dashboard", label: isRtl ? "داشبورد مرکزی" : "Central Dashboard" },
       { value: "admin", label: isRtl ? "پنل ادمین و سیستم" : "Admin Panel" },
     ],
@@ -139,9 +146,14 @@ export function SearchResultsClient() {
         if (selectedModule === "esp-flow") return item.id.includes("esp-flow") || item.href.includes("ESP-Flow");
         if (selectedModule === "projects") return item.category === "projects" || item.id.startsWith("proj-") || item.href.includes("/projects");
         if (selectedModule === "tasks") return item.category === "tasks" || item.id.startsWith("task-") || item.href.includes("/tasks");
+        if (selectedModule === "customers") return item.id.includes("customers") || item.href.includes("/customers");
+        if (selectedModule === "datasheet-ai") return item.id.includes("datasheet") || item.href.includes("/datasheet-ai");
         if (selectedModule === "dictionary") return item.category === "dictionary" || item.href.includes("/dictionary");
         if (selectedModule === "did-you-know") return item.category === "didYouKnow" || item.href.includes("/did-you-know");
         if (selectedModule === "aparat") return item.category === "videos" || item.href.includes("/aparat");
+        if (selectedModule === "bug-reports") return item.id.includes("bug-reports") || item.href.includes("/bug-reports");
+        if (selectedModule === "directory") return item.id.includes("directory") || item.href.includes("/directory");
+        if (selectedModule === "community") return item.id.includes("community") || item.href.includes("/community");
         if (selectedModule === "dashboard") return item.id.includes("dashboard") || item.href.includes("/dashboard");
         if (selectedModule === "admin") return item.id.includes("admin") || item.href.includes("/admin");
         return true;
@@ -182,6 +194,32 @@ export function SearchResultsClient() {
   const paginatedResults = useMemo(() => {
     return displayedResults.slice(0, visibleCount);
   }, [displayedResults, visibleCount]);
+
+  // Google-Style Knowledge / Entity Card for "all" category
+  const featuredEntity = useMemo(() => {
+    if (category !== "all" || displayedResults.length === 0 || !response.query.trim()) {
+      return null;
+    }
+
+    // 1. Prioritize any module match (per user instruction)
+    const matchingModule = displayedResults.find(
+      (item) => item.category === "modules" || item.id.startsWith("mod-")
+    );
+    if (matchingModule) return matchingModule;
+
+    // 2. Otherwise, check top result if it represents a distinct primary section
+    const top = displayedResults[0];
+    if (
+      top.category === "projects" ||
+      top.category === "tasks" ||
+      top.category === "videos" ||
+      top.category === "dictionary"
+    ) {
+      return top;
+    }
+
+    return null;
+  }, [category, displayedResults, response.query]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background dark:bg-[#121212] text-foreground transition-colors selection:bg-primary/20">
@@ -451,6 +489,16 @@ export function SearchResultsClient() {
           {/* ──────────────────────────────────────────────────────────── */}
           {displayedResults.length > 0 ? (
             <div className="space-y-7 w-full">
+              {/* Google-like Knowledge / Entity Card for "ALL" category */}
+              {featuredEntity && (
+                <SearchKnowledgeCard
+                  item={featuredEntity}
+                  query={response.query}
+                  locale={locale}
+                  isRtl={isRtl}
+                />
+              )}
+
               {paginatedResults.map((item, idx) => {
                 const midpointIndex = Math.min(3, Math.max(1, Math.floor(paginatedResults.length / 2)));
                 const showRelatedHere = response.relatedSearches.length > 0 && idx === midpointIndex - 1;
