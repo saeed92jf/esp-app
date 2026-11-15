@@ -26,6 +26,7 @@ import {
   Crosshair,
   Copy,
   Check,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,8 @@ export function BugReportDetailView({
     user?.role === "dept_admin" ||
     user?.role === "office_admin";
 
+  const canManageStatus = isStaff || (user?.id && user.id === report.reporterId);
+
   const handleStatusChange = async (newStatus: BugStatus) => {
     if (newStatus === report.status) return;
     setIsUpdatingStatus(true);
@@ -104,6 +107,9 @@ export function BugReportDetailView({
         }
       );
       onUpdated(updated);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+      }
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -228,6 +234,39 @@ export function BugReportDetailView({
           >
             {report.status}
           </Badge>
+
+          {canManageStatus && (
+            report.status !== "Resolved" && report.status !== "Closed" ? (
+              <Button
+                size="sm"
+                onClick={() => handleStatusChange("Resolved")}
+                disabled={isUpdatingStatus}
+                className="rounded-xl h-8.5 px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold cursor-pointer shadow-xs ms-1"
+              >
+                {isUpdatingStatus ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-3.5" />
+                )}
+                <span>{isRtl ? "برطرف شد" : "Mark Resolved"}</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStatusChange("Reopened")}
+                disabled={isUpdatingStatus}
+                className="rounded-xl h-8.5 px-3 gap-1.5 border-border hover:bg-muted text-xs font-medium cursor-pointer ms-1"
+              >
+                {isUpdatingStatus ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="size-3.5" />
+                )}
+                <span>{isRtl ? "بازگشایی مجدد" : "Reopen Issue"}</span>
+              </Button>
+            )
+          )}
         </div>
       </div>
 
@@ -418,7 +457,7 @@ export function BugReportDetailView({
         {/* Right / Sidebar Column */}
         <div className="space-y-5">
           {/* Workflow Status Controls */}
-          {isStaff && (
+          {canManageStatus && (
             <div className="p-5 rounded-2xl border border-border bg-card shadow-xs space-y-3">
               <h3 className="text-xs font-bold text-foreground">
                 {isRtl ? "مدیریت وضعیت تیکت" : "Workflow Status"}

@@ -14,6 +14,12 @@ let cacheAnalytics: BugReportsAnalytics | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL_MS = 60_000; // 1 minute
 
+function notifyBugReportsUpdated() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+  }
+}
+
 export const bugReportsService = {
   getCachedReports(): BugReport[] | null {
     return cacheReports;
@@ -99,6 +105,7 @@ export const bugReportsService = {
     }
     const created = await res.json();
     bugReportsService.clearCache();
+    notifyBugReportsUpdated();
     return created;
   },
 
@@ -116,6 +123,7 @@ export const bugReportsService = {
     if (!res.ok) throw new Error("Failed to update status");
     const updated = await res.json();
     bugReportsService.clearCache();
+    notifyBugReportsUpdated();
     return updated;
   },
 
@@ -138,6 +146,7 @@ export const bugReportsService = {
     if (!res.ok) throw new Error("Failed to assign bug report");
     const updated = await res.json();
     bugReportsService.clearCache();
+    notifyBugReportsUpdated();
     return updated;
   },
 
@@ -154,6 +163,7 @@ export const bugReportsService = {
     if (!res.ok) throw new Error("Failed to change priority");
     const updated = await res.json();
     bugReportsService.clearCache();
+    notifyBugReportsUpdated();
     return updated;
   },
 
@@ -176,6 +186,7 @@ export const bugReportsService = {
       }),
     });
     if (!res.ok) throw new Error("Failed to post comment");
+    notifyBugReportsUpdated();
     return res.json();
   },
 

@@ -493,6 +493,10 @@ export function BugReportsModule({
                     setReports((prev) =>
                       prev.map((r) => (r.id === updated.id ? updated : r))
                     );
+                    bugReportsService.getAnalytics().then(setAnalytics).catch(() => {});
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new CustomEvent("esp:bug-reports-updated"));
+                    }
                   }}
                 />
               ) : activeTab === "dashboard" ? (

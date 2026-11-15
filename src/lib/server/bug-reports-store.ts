@@ -145,11 +145,26 @@ declare global {
   var __espServerIdeas: IdeaItem[] | undefined;
 }
 
-const DATA_DIR = path.resolve(process.cwd(), "..", "ESP-Web-Backend", "app", "data");
+function getDataDir(): string {
+  const envDataDir = process.env.ESP_DATA_DIR;
+  if (envDataDir && fs.existsSync(envDataDir)) {
+    return envDataDir;
+  }
+  const persistentProdDir = "C:\\ESP_DATA\\live\\data";
+  if (fs.existsSync(persistentProdDir)) {
+    return persistentProdDir;
+  }
+  const backendDataDir = path.resolve(process.cwd(), "..", "ESP-Web-Backend", "app", "data");
+  if (fs.existsSync(backendDataDir)) {
+    return backendDataDir;
+  }
+  return path.resolve(process.cwd(), "data");
+}
 
 function tryLoadJson<T>(filename: string, fallback: T[]): T[] {
   try {
-    const p = path.join(DATA_DIR, filename);
+    const dir = getDataDir();
+    const p = path.join(dir, filename);
     if (fs.existsSync(p)) {
       const content = fs.readFileSync(p, "utf-8");
       return JSON.parse(content) as T[];
@@ -160,10 +175,11 @@ function tryLoadJson<T>(filename: string, fallback: T[]): T[] {
 
 function trySaveJson<T>(filename: string, data: T[]): void {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    const dir = getDataDir();
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
     }
-    const p = path.join(DATA_DIR, filename);
+    const p = path.join(dir, filename);
     fs.writeFileSync(p, JSON.stringify(data, null, 2), "utf-8");
   } catch {}
 }
@@ -207,7 +223,8 @@ export function getServerBugReports(filters?: {
   assigneeId?: string;
   search?: string;
 }): BugReportItem[] {
-  let list = globalThis.__espServerBugReports || [];
+  let list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
 
   if (filters?.status && filters.status !== "all") {
     list = list.filter((r) => r.status.toLowerCase() === filters.status!.toLowerCase());
@@ -247,7 +264,8 @@ export function getServerBugReports(filters?: {
 }
 
 export function getServerBugReportById(idOrTicket: string): BugReportItem | null {
-  const list = globalThis.__espServerBugReports || [];
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
   return (
     list.find((r) => r.id === idOrTicket || r.ticketNumber === idOrTicket) || null
   );
@@ -256,7 +274,7 @@ export function getServerBugReportById(idOrTicket: string): BugReportItem | null
 export function createServerBugReport(
   data: Omit<BugReportItem, "id" | "ticketNumber" | "status" | "priority" | "comments" | "activityLogs" | "createdAt" | "updatedAt">
 ): BugReportItem {
-  const list = globalThis.__espServerBugReports || [];
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
   const now = new Date().toISOString();
   const id = `bug-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const ticketNumber = generateTicketNumber("ESP-BUG-", list);
@@ -296,7 +314,9 @@ export function updateServerBugReportStatus(
   explanation: string | undefined,
   user: { id: string; name: string }
 ): BugReportItem | null {
-  const report = getServerBugReportById(idOrTicket);
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
+  const report = list.find((r) => r.id === idOrTicket || r.ticketNumber === idOrTicket);
   if (!report) return null;
 
   const oldStatus = report.status;
@@ -321,7 +341,7 @@ export function updateServerBugReportStatus(
     createdAt: now,
   });
 
-  trySaveJson("bug_reports.json", globalThis.__espServerBugReports || []);
+  trySaveJson("bug_reports.json", list);
   return report;
 }
 
@@ -330,7 +350,9 @@ export function assignServerBugReport(
   assignee: { id?: string | null; name?: string | null; email?: string | null },
   user: { id: string; name: string }
 ): BugReportItem | null {
-  const report = getServerBugReportById(idOrTicket);
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
+  const report = list.find((r) => r.id === idOrTicket || r.ticketNumber === idOrTicket);
   if (!report) return null;
 
   const oldAssignee = report.assigneeName || "Unassigned";
@@ -356,7 +378,7 @@ export function assignServerBugReport(
     createdAt: now,
   });
 
-  trySaveJson("bug_reports.json", globalThis.__espServerBugReports || []);
+  trySaveJson("bug_reports.json", list);
   return report;
 }
 
@@ -365,7 +387,9 @@ export function changeServerBugReportPriority(
   priority: BugReportItem["priority"],
   user: { id: string; name: string }
 ): BugReportItem | null {
-  const report = getServerBugReportById(idOrTicket);
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
+  const report = list.find((r) => r.id === idOrTicket || r.ticketNumber === idOrTicket);
   if (!report) return null;
 
   const oldPriority = report.priority;
@@ -384,7 +408,7 @@ export function changeServerBugReportPriority(
     createdAt: now,
   });
 
-  trySaveJson("bug_reports.json", globalThis.__espServerBugReports || []);
+  trySaveJson("bug_reports.json", list);
   return report;
 }
 
@@ -399,7 +423,9 @@ export function addServerBugReportComment(
     userAvatar?: string;
   }
 ): CommentItem | null {
-  const report = getServerBugReportById(idOrTicket);
+  const list = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = list;
+  const report = list.find((r) => r.id === idOrTicket || r.ticketNumber === idOrTicket);
   if (!report) return null;
 
   const now = new Date().toISOString();
@@ -428,12 +454,13 @@ export function addServerBugReportComment(
     createdAt: now,
   });
 
-  trySaveJson("bug_reports.json", globalThis.__espServerBugReports || []);
+  trySaveJson("bug_reports.json", list);
   return comment;
 }
 
 export function getServerBugReportsAnalytics() {
-  const reports = globalThis.__espServerBugReports || [];
+  const reports = tryLoadJson<BugReportItem>("bug_reports.json", globalThis.__espServerBugReports || []);
+  globalThis.__espServerBugReports = reports;
   const total = reports.length;
 
   const byStatus: Record<string, number> = {};
@@ -458,7 +485,7 @@ export function getServerBugReportsAnalytics() {
     byCategory[cat] = (byCategory[cat] || 0) + 1;
 
     if (st === "New") newCount++;
-    else if (["In Progress", "Assigned", "Under Review", "Confirmed", "Testing"].includes(st)) inProgressCount++;
+    else if (["In Progress", "Assigned", "Under Review", "Confirmed", "Testing", "Reopened"].includes(st)) inProgressCount++;
     else if (["Resolved", "Closed"].includes(st)) resolvedCount++;
 
     if (sev === "Critical") criticalCount++;
@@ -480,7 +507,8 @@ export function getServerBugReportsAnalytics() {
 // ── Support Requests Operations ───────────────────────────────────────────────
 
 export function getServerSupportRequests(userId?: string): SupportRequestItem[] {
-  let list = globalThis.__espServerSupportRequests || [];
+  let list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
+  globalThis.__espServerSupportRequests = list;
   if (userId) {
     list = list.filter((r) => r.userId === userId);
   }
@@ -492,7 +520,7 @@ export function getServerSupportRequests(userId?: string): SupportRequestItem[] 
 export function createServerSupportRequest(
   data: Omit<SupportRequestItem, "id" | "ticketNumber" | "status" | "createdAt" | "updatedAt">
 ): SupportRequestItem {
-  const list = globalThis.__espServerSupportRequests || [];
+  const list = tryLoadJson<SupportRequestItem>("support_requests.json", globalThis.__espServerSupportRequests || []);
   const now = new Date().toISOString();
   const id = `sup-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
   const ticketNumber = generateTicketNumber("ESP-SUP-", list);
@@ -515,7 +543,8 @@ export function createServerSupportRequest(
 // ── Feedback Operations ───────────────────────────────────────────────────────
 
 export function getServerFeedback(userId?: string): FeedbackItem[] {
-  let list = globalThis.__espServerFeedback || [];
+  let list = tryLoadJson<FeedbackItem>("feedback.json", globalThis.__espServerFeedback || []);
+  globalThis.__espServerFeedback = list;
   if (userId) {
     list = list.filter((r) => r.userId === userId);
   }
@@ -527,7 +556,7 @@ export function getServerFeedback(userId?: string): FeedbackItem[] {
 export function createServerFeedback(
   data: Omit<FeedbackItem, "id" | "createdAt">
 ): FeedbackItem {
-  const list = globalThis.__espServerFeedback || [];
+  const list = tryLoadJson<FeedbackItem>("feedback.json", globalThis.__espServerFeedback || []);
   const now = new Date().toISOString();
   const id = `fb-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -546,7 +575,8 @@ export function createServerFeedback(
 // ── Ideas Operations ──────────────────────────────────────────────────────────
 
 export function getServerIdeas(userId?: string): IdeaItem[] {
-  let list = globalThis.__espServerIdeas || [];
+  let list = tryLoadJson<IdeaItem>("ideas.json", globalThis.__espServerIdeas || []);
+  globalThis.__espServerIdeas = list;
   if (userId) {
     list = list.filter((r) => r.userId === userId);
   }
@@ -558,7 +588,7 @@ export function getServerIdeas(userId?: string): IdeaItem[] {
 export function createServerIdea(
   data: Omit<IdeaItem, "id" | "status" | "createdAt">
 ): IdeaItem {
-  const list = globalThis.__espServerIdeas || [];
+  const list = tryLoadJson<IdeaItem>("ideas.json", globalThis.__espServerIdeas || []);
   const now = new Date().toISOString();
   const id = `idea-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 

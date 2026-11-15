@@ -61,41 +61,54 @@ export function GlobalQuickActions() {
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Fetch user reports if logged in
-    if (user?.id) {
+    const isUnresolvedStatus = (status?: string) => {
+      const s = (status || "").toLowerCase().trim();
+      return s !== "closed" && s !== "resolved" && s !== "rejected";
+    };
+
+    const refreshCounts = () => {
+      // 1. Fetch user reports if logged in
+      if (user?.id) {
+        bugReportsService
+          .getMyBugReports(user.id)
+          .then((reports) => {
+            if (!isMounted) return;
+            const active = (reports || []).filter((r) => isUnresolvedStatus(r.status));
+            setUserReportsCount(active.length);
+          })
+          .catch(() => {
+            if (isMounted) setUserReportsCount(0);
+          });
+      } else {
+        setUserReportsCount(0);
+      }
+
+      // 2. Fetch general analytics for badge
       bugReportsService
-        .getMyBugReports(user.id)
-        .then((reports) => {
+        .getAnalytics()
+        .then((data) => {
           if (!isMounted) return;
-          const active = reports.filter(
-            (r) =>
-              r.status !== "Closed" &&
-              r.status !== "Resolved" &&
-              r.status !== "Rejected"
-          );
-          setUserReportsCount(active.length > 0 ? active.length : reports.length);
+          const openCount = (data.new || 0) + (data.inProgress || 0);
+          setOpenIssuesCount(openCount);
         })
         .catch(() => {
-          if (isMounted) setUserReportsCount(0);
+          if (isMounted) setOpenIssuesCount(0);
         });
-    } else {
-      setUserReportsCount(0);
-    }
+    };
 
-    // 2. Fetch general analytics for badge
-    bugReportsService
-      .getAnalytics()
-      .then((data) => {
-        if (!isMounted) return;
-        const count = (data.new || 0) + (data.inProgress || 0);
-        setOpenIssuesCount(count > 0 ? count : data.total || 0);
-      })
-      .catch(() => {
-        if (isMounted) setOpenIssuesCount(0);
-      });
+    refreshCounts();
+
+    const handleUpdate = () => {
+      refreshCounts();
+    };
+
+    window.addEventListener("esp:bug-reports-updated", handleUpdate);
+    window.addEventListener("focus", handleUpdate);
 
     return () => {
       isMounted = false;
+      window.removeEventListener("esp:bug-reports-updated", handleUpdate);
+      window.removeEventListener("focus", handleUpdate);
     };
   }, [user?.id, pathname]);
 
@@ -188,7 +201,7 @@ export function GlobalQuickActions() {
   // Admins see total open issues; users see their own reported issues
   const activeCount =
     user?.role === "admin" || user?.role === "superadmin"
-      ? (openIssuesCount > 0 ? openIssuesCount : userReportsCount)
+      ? openIssuesCount
       : userReportsCount;
 
   const hasIssues = activeCount > 0;
@@ -252,13 +265,13 @@ export function GlobalQuickActions() {
 
                       {/* Right: Neutral Pill Badge */}
                       <div className="shrink-0 ps-2">
-                        {action.badge?.type === "dot-count" && openIssuesCount > 0 ? (
+                        {action.badge?.type === "dot-count" && activeCount > 0 ? (
                           <Badge
                             variant="secondary"
                             className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium"
                           >
                             <span className="size-1.5 rounded-full shrink-0 bg-red-500" />
-                            <span>{formatLocaleNumber(openIssuesCount, isRtl)}</span>
+                            <span>{formatLocaleNumber(activeCount, isRtl)}</span>
                           </Badge>
                         ) : action.badge?.type === "text" ? (
                           <span className="text-[11px] font-medium text-muted-foreground/80">
